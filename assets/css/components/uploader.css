@@ -1,0 +1,67 @@
+.modal-uploader {
+    width: 650px;
+}
+
+.modal-uploader .inputs, .modal-uploader .infos {
+    width: 47%;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+}
+
+.modal-uploader .infos {
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 3%;
+}
+
+.file-infos {
+    text-align: center;
+}
+
+.file-infos input {
+    width: 400px;
+}
+
+.file-infos img {
+    width: 400px;
+    max-height: 400px;
+}
+
+.member-files-container {
+    border-top: 1px solid;
+    max-height: 320px;
+    overflow: auto;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.member-files-container > img {
+    display: inline-block;
+    margin: auto;
+}
+
+.member-files-container div {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    float: left;
+    margin-right: 3px;
+    margin-bottom: 3px;
+    position: relative;
+    cursor: pointer;
+}
+
+.member-files-container div img {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.member-files-container div.larger img {
+    height: 100px;
+}
+
+.member-files-container div.taller img {
+    width: 100px;
+}

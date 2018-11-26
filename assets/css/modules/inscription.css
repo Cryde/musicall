@@ -1,0 +1,36 @@
+#registration-form input,
+#registration-form button,
+#registration-form a{
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+}
+
+#registration-form button {
+    margin: 20px 0 0;
+}
+
+#registration-form input {
+    text-align: left;
+}
+
+#password_field {
+    padding-right: 45px;
+}
+
+.password-container {
+    position: relative;
+    display: inline-block;
+}
+
+.show-password {
+    position: absolute;
+    display: block;
+    top: 4px;
+    right: 0;
+    color: #b9bcbf;
+    font-size: 22px;
+    width: 40px;
+    cursor: pointer;
+    text-align: center;
+}

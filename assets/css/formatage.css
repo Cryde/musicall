@@ -1,0 +1,99 @@
+.citation,
+.code {
+    font-weight: 600;
+    display: block;
+    width: 90%;
+    margin: auto
+}
+
+.citation2,
+.code2 {
+    border: 1px dashed #0063a0;
+    background-color: #fff;
+    width: 80%;
+    padding: 8px;
+    margin-left: 40px;
+    overflow: auto
+}
+
+.ttpetit {
+    font-size: xx-small
+}
+
+.tpetit {
+    font-size: x-small
+}
+
+.petit {
+    font-size: small
+}
+
+.gros {
+    font-size: large
+}
+
+.tgros {
+    font-size: x-large
+}
+
+.ttgros {
+    font-size: xx-large
+}
+
+.texte_gauche {
+    text-align: left
+}
+
+.texte_centre {
+    text-align: center
+}
+
+.texte_droite {
+    text-align: right
+}
+
+.video_gauche {
+    float: left
+}
+
+.video_centre {
+    text-align: center
+}
+
+.video_droite {
+    float: right
+}
+
+.video_gauche, .video_droite {
+    margin: 1em
+}
+
+.tuto_3 {
+    font-size: 17px;
+    height: 30px;
+    padding-left: 2%;
+    text-transform: uppercase;
+}
+
+.tuto_4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 0;
+    padding-left: 5%;
+    text-transform: uppercase;
+}
+
+.ascii {
+    font-size: .9em;
+    border: 1px solid black;
+    background: white;
+    padding: 4px;
+}
+
+.quote {
+    width: 100%;
+    background-color: #dcdcdc;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-family: "Comic sans MS", Arial, Verdana, serif
+}
