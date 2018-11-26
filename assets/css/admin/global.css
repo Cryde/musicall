@@ -1,0 +1,17 @@
+#menu-admin {
+    margin: auto;
+    margin-top: -10px;
+    width: 600px;
+    height: 60px;
+    text-align: center;
+}
+
+#menu-admin a {
+    display: inline-block;
+    border: 1px solid #c7c7c7;
+    padding: 5px 10px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    background: white;
+}
+

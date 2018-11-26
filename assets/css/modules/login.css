@@ -1,0 +1,41 @@
+#login-form button {
+    margin: 20px 0 0;
+}
+
+#login-form button,
+#login-form input,
+#login-form a {
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+}
+
+#login-form input {
+    text-align: left;
+}
+
+.choice-or {
+    text-align: center;
+    overflow: hidden;
+    margin-top: 30px
+}
+
+.choice-or:before,
+.choice-or:after {
+    background-color: #000;
+    content: "";
+    display: inline-block;
+    height: 1px;
+    vertical-align: middle;
+    width: 50%;
+}
+
+.choice-or:before {
+    right: 0.5em;
+    margin-left: -50%
+}
+
+.choice-or:after {
+    left: 0.5em;
+    margin-right: -50%;
+}

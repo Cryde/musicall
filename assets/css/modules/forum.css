@@ -1,0 +1,200 @@
+#messages, #topics {
+    width: 100%;
+    border-top: 2px solid #647c8f;
+    border-bottom: 2px solid #647c8f;
+}
+
+/* FOrum spécifique */
+#forum .forumInfo {
+    padding: 20px 0;
+    color: #666666;
+    clear: both;
+}
+
+#forum .forumInfo a {
+    font-size: 15px;
+    font-weight: bold;
+    color: #647c8f;
+}
+
+#forum .forumInfo a.lastMsg {
+    font-weight: normal;
+}
+
+#forum .forumInfo .nbSujet,
+#forum .forumInfo .nbMessage {
+    float: right;
+    width: 90px;
+}
+
+#forum .forumInfo .nbSujet span,
+#forum .forumInfo .nbMessage span {
+    font-size: 31px;
+    display: block;
+    color: #647c8f;
+    height: 40px;
+}
+
+#forum .forumInfo .nbMessage {
+    margin-left: 10px;
+}
+
+.icone {
+    display: inline-block;
+    margin: 0 5px 0 0;
+}
+
+
+.icone.postit {
+    width: 12px;
+    height: 11px;
+    background: url(../../images/icones/post-it.png);
+}
+
+/* Vue topic */
+#topics td {
+    font-size: 14px;
+    color: #666666;
+    padding: 20px 0;
+}
+
+#topics tr {
+    border-bottom: 1px solid #dde1e6;
+}
+
+#topics tr:last-child {
+    border-bottom: none;
+}
+
+#topics tr:first-child td {
+    padding-top: 35px;
+}
+
+#topics tr:last-child td {
+    padding-bottom: 35px;
+}
+
+#topics .titleTopic {
+    width: 55%;
+    padding-right: 2%;
+}
+
+#topics .titleTopic a {
+    font-weight: bold;
+    color: #647c8f;
+}
+
+#topics .titleTopic a.createLink {
+    font-weight: 600;
+}
+
+#topics .nbMessage {
+    text-align: left;
+    font-size: 12px;
+    width: 16%;
+}
+
+#topics .infoTopic {
+    width: 27%;
+}
+
+#topics .infoTopic a {
+    font-weight: 600;
+    color: #647c8f;
+}
+
+/*Messages */
+#messages {
+    margin: 10px 0;
+}
+
+#messages td {
+    vertical-align: top;
+    padding: 20px 0;
+    color: #666666;
+}
+
+#messages td.photo {
+    width: 160px;
+}
+
+
+#messages td .info {
+    border-bottom: 1px solid #f3f3f3;
+    padding-bottom: 10px;
+}
+
+#messages td .info a {
+    color: #647c8f;
+    font-weight: 700;
+}
+
+#messages td .info .datePost {
+    color: #666666;
+    font-weight: normal;
+}
+
+#messages td .content {
+    padding-top: 10px;
+    width: 510px;
+    word-wrap: break-word;
+}
+
+#messages td .content .editTime {
+    margin: 30px 0 10px 0;
+    padding: 10px;
+    color: #C9C9C9;
+    border-top: 1px solid #C9C9C9;
+}
+
+#messages td .content a {
+    color: #647c8f;
+}
+
+#messages td .content img {
+    max-width: 100%;
+}
+
+#messages td .hiddenInfo {
+    display: none;
+}
+
+/**
+* RESPONSIVE
+**/
+
+@media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
+    #forum .nbMessage,
+    #forum .nbSujet {
+        display: none;
+    }
+
+    #topics .titleTopic,
+    #topics .nbMessage,
+    #topics .infoTopic {
+        width: 100%;
+        padding: 7px;
+    }
+
+    #topics tr:first-child td,
+    #topics tr:last-child td {
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+
+    #messages td {
+        padding: 7px;
+    }
+
+    #messages td.photo {
+        display: none;
+    }
+
+    #messages td .info {
+        width: 100%;
+    }
+
+    #messages td .content {
+        width: 100%;
+    }
+}

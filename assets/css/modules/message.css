@@ -1,0 +1,149 @@
+
+#thread-list {
+    height: 100%;
+    overflow: auto;
+    border-right: 1px solid silver;
+}
+
+#message-view {
+
+}
+
+#message-container {
+    overflow: auto;
+    padding: 15px;
+}
+
+.thread {
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    border-bottom: 1px solid silver;
+    display: inline-block;
+}
+
+.thread.new .date-message {
+    color: #0084ff
+}
+
+.thread.new .last-message,
+.thread.new .login-message {
+    font-weight: 700;
+    color: #000;
+}
+
+.thread.no-messages {
+    cursor: default;
+}
+
+.thread.current {
+    background: #EBEFF2;
+}
+
+.thread:last-of-type {
+    border-bottom: 0;
+}
+
+.avatar-message {
+    float: left;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.login-message {
+
+}
+
+.date-message {
+    display: block;
+    color: rgba(153, 153, 153, 1);
+}
+
+.last-message {
+    display: block;
+    clear: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: rgba(153, 153, 153, 1);
+}
+
+#message-form {
+    padding-top: 7px;
+}
+
+#message-form form {
+    border-top: 1px solid silver;
+}
+
+#message-form textarea {
+    width: 100%;
+    margin-bottom: 13px;
+}
+
+.isAuthor {
+    text-align: right;
+}
+
+p.message-body {
+    word-wrap: break-word;
+    display: inline-block;
+    margin: 3px 0;
+    padding: 7px 10px;
+    background: #EBEFF2;
+    border-radius: 10px;
+}
+
+p.message-body a {
+    color: #5B87AE;
+    text-decoration: underline;
+}
+
+.isAuthor p.message-body a {
+    color: white;
+    text-decoration: underline;
+}
+
+.isAuthor p.message-body {
+    background: #5B87AE;
+    color: white;
+}
+
+.container-no-messages {
+    min-height: 300px;
+}
+
+/**
+Modal pour écrire un nouveau message
+*/
+.new-message-modal {
+    width: 400px;
+}
+
+.new-message-modal select {
+    width: 100%;
+}
+
+.new-message-modal textarea {
+    margin: 10px 0;
+    width: 100%;
+    min-height: 200px;
+}
+
+.new-message-modal button {
+    width: 100%;
+}
+.write-new-message {
+    position: relative;
+    z-index: 99;
+}
+
+.select2-result-user-avatar {
+    float: left;
+}
+
+.select2-result-user-login {
+    display: inline-block;
+    margin: 0 10px;
+    vertical-align: super;
+}

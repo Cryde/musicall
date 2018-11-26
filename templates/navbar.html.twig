@@ -1,0 +1,25 @@
+<nav class="navbar">
+    <div class="container">
+        <div class="navbar-header submenu submenu-brand no-after active">
+            <button class="navbar-toggle"><i class="fa fa-bars"></i></button>
+            <a class="navbar-brand" href="{{ path('app_homepage') }}">
+                <span><img src="{{ asset('build/images/logo.png') }}" alt="Logo MusicAll"></span>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <form class="navbar-form navbar-left" action="/search/" method="get">
+                <div class="form-group">
+                    <input class="form-control" placeholder="Rechercher" name="q" type="text">
+                </div>
+            </form>
+            <ul class="nav navbar-nav navbar-right offline">
+                <li class="">
+                    <a href="{{ path('fos_user_registration_register') }}">S'inscrire</a>
+                </li>
+                <li class="">
+                    <a href="{{ path('fos_user_security_login') }}" class="login">Se connecter</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

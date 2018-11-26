@@ -1,0 +1,34 @@
+textarea {
+    box-sizing: border-box;
+}
+
+textarea,
+select {
+    border: none;
+    border-bottom: 1px solid #DDDDDD;
+    color: #666666;
+    font-size: 17px;
+    padding: 6px 7px;
+    -webkit-transition: height 0.2s;
+    -moz-transition: height 0.2s;
+    transition: height 0.2s;
+    background-color: white;
+}
+
+input[type="text"],
+input[type="password"] {
+    border: none;
+    border-bottom: 1px solid #DDDDDD;
+    color: #666666;
+    font-size: 17px;
+    margin: 0 0 10px;
+    padding: 10px;
+    background-color: white;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+input[type="password"]:focus {
+    border-bottom: 1px solid #799EC5;
+    color: #5D8CBB;
+}
