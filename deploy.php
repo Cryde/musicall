@@ -50,7 +50,7 @@ desc('Restart PHP-FPM service');
 task(
     'php-fpm:restart',
     function () {
-        run('sudo service php7.2-fpm reload');
+        run('sudo service php7.3-fpm reload');
     }
 );
 after('deploy:symlink', 'php-fpm:restart');
