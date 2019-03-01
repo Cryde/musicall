@@ -2,9 +2,6 @@
     "behat/transliterator": {
         "version": "v1.2.0"
     },
-    "deployer/recipes": {
-        "version": "6.1.6"
-    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -354,7 +351,7 @@
         }
     },
     "symfony/templating": {
-        "version": "v4.2.0"
+        "version": "v4.2.2"
     },
     "symfony/test-pack": {
         "version": "v1.0.4"
@@ -422,7 +419,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "master",
             "version": "1.0",
-            "ref": "dd76e869a5d10fac29f4c0c02f8feaac613471ff"
+            "ref": "248c29c070dcd79e8333c676b0c5e284e3b365b5"
         }
     },
     "symfony/yaml": {
