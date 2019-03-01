@@ -1,0 +1,9 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <h2>{{ publication.title }}</h2>
+
+    <div class="content-box">
+        {{ publication.content | nl2br }}
+    </div>
+{% endblock %}
