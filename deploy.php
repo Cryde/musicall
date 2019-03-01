@@ -18,18 +18,10 @@ add('shared_files', ['.env.local']);
 // Hosts
 inventory('hosts.yml');
 
-set(
-    'env',
-    function () {
-        return [
-            'APP_ENV'      => get('APP_ENV'),
-            'DATABASE_URL' => get('DATABASE_URL'),
-            'APP_SECRET'   => get('APP_SECRET'),
-        ];
-    }
-);
-
 // Tasks
+task('npm:ci', function () {
+    run("cd {{release_path}} && {{bin/npm}} ci");
+});
 desc('Build assets');
 task(
     'assets:build',
@@ -37,7 +29,7 @@ task(
         run('cd {{release_path}} && {{bin/npm}} run build');
     }
 );
-after('npm:install', 'assets:build');
+after('npm:ci', 'assets:build');
 
 desc('Remove node_modules folder');
 task(
@@ -59,4 +51,4 @@ after('deploy:symlink', 'php-fpm:restart');
 
 // Migrate database before symlink new release.
 before('deploy:symlink', 'database:migrate');
-after('deploy:update_code', 'npm:install');
+after('deploy:update_code', 'npm:ci');
