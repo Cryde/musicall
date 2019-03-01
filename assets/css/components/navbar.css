@@ -28,3 +28,8 @@
     color: #ffa23f;
     background-color: #fff;
 }
+
+.inset img {
+    width: 40px;
+    height: 40px;
+}

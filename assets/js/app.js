@@ -1,4 +1,5 @@
 import 'bootstrap/js/dist/collapse';
+import 'bootstrap/js/dist/dropdown';
 
 /**import {init as avatarInit} from "./avatar";
 import homeInit from "./home";
