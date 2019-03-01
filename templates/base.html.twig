@@ -1,3 +1,4 @@
+{% set display_menu = display_menu is not defined ? true : display_menu %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -21,8 +22,10 @@
 </div>
 <div class="container">
     <div class="row">
-        <div class="col-12 col-lg-2">{% include 'menu.html.twig' %}</div>
-        <div class="col-12 col-lg-10">{% block body %}{% endblock %}</div>
+        {% if display_menu %}
+            <div class="col-12 col-lg-2">{% include 'menu.html.twig' %}</div>
+        {% endif %}
+        <div class="col-12 col-lg-{{ display_menu ? '10' : '12' }}">{% block body %}{% endblock %}</div>
     </div>
 </div><!-- /.container -->
 
