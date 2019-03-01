@@ -17,6 +17,9 @@ security:
                 provider: fos_userbundle
                 csrf_token_generator: security.csrf.token_manager
 
+            remember_me:
+                secret:   '%kernel.secret%'
+                secure: true
             logout:       true
             anonymous:    true
 
