@@ -1,41 +1,30 @@
-#login-form button {
-    margin: 20px 0 0;
-}
-
-#login-form button,
-#login-form input,
-#login-form a {
-    text-align: center;
-    display: inline-block;
+.form-signin {
     width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+    min-height: 500px;
 }
-
-#login-form input {
-    text-align: left;
+.form-signin .checkbox {
+    font-weight: 400;
 }
-
-.choice-or {
-    text-align: center;
-    overflow: hidden;
-    margin-top: 30px
+.form-signin .form-control {
+    position: relative;
+    box-sizing: border-box;
+    height: auto;
+    padding: 10px;
+    font-size: 16px;
 }
-
-.choice-or:before,
-.choice-or:after {
-    background-color: #000;
-    content: "";
-    display: inline-block;
-    height: 1px;
-    vertical-align: middle;
-    width: 50%;
+.form-signin .form-control:focus {
+    z-index: 2;
 }
-
-.choice-or:before {
-    right: 0.5em;
-    margin-left: -50%
+.form-signin input[type="email"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
 }
-
-.choice-or:after {
-    left: 0.5em;
-    margin-right: -50%;
+.form-signin input[type="password"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
