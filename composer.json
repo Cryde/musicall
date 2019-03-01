@@ -29,6 +29,7 @@
         "symfony/yaml": "4.2.*"
     },
     "require-dev": {
+        "deployer/recipes": "^6.2",
         "symfony/debug-pack": "*",
         "symfony/maker-bundle": "^1.0",
         "symfony/profiler-pack": "*",

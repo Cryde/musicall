@@ -2,6 +2,9 @@
     "behat/transliterator": {
         "version": "v1.2.0"
     },
+    "deployer/recipes": {
+        "version": "6.2.0"
+    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
