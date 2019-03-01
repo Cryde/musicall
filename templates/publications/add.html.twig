@@ -1,0 +1,19 @@
+{% extends "base.html.twig" %}
+
+{% form_theme form 'bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block body %}
+    <h2>Ajouter une publication</h2>
+
+    <div class="content-box">
+        {{ form_start(form) }}
+        <p class="float-right cle">
+            {{ form_widget(form.subCategory) }}
+        </p>
+        {{ form_row(form.title) }}
+        {{ form_row(form.shortDescription) }}
+        {{ form_row(form.content) }}
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}

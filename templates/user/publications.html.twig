@@ -1,0 +1,45 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+
+
+    <h2>Mes publications <a href="{{ path('publications_add') }}" class="float-right btn btn-success">Ajouter un publication</a></h2>
+
+    <h3>Brouillons ({{ drafts | length }})</h3>
+    <div class="content-box">
+        <table class="table table-borderless">
+            <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Création</th>
+                <th>Mise à jour</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for publication in drafts %}
+                <tr>
+                    <td>{{ publication.title }}</td>
+                    <td>{{ publication.creationDatetime | date('d/m/Y H:i') }}</td>
+                    <td>{{ publication.editionDatetime ? publication.editionDatetime | date('d/m/Y H:i') : '/' }}</td>
+                    <td>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <a class="btn btn-outline-primary" href="{{ path('publications_show', {id: publication.id}) }}">
+                                <i class="far fa-eye"></i>
+                            </a>
+
+                            <a class="btn btn-outline-success" href="">
+                                <i class="far fa-edit"></i>
+                            </a>
+
+                            <a class="btn btn-outline-danger" href="">
+                                <i class="far fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

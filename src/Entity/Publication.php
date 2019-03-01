@@ -65,7 +65,7 @@ class Publication
     private $creationDatetime;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $editionDatetime;
 
@@ -77,6 +77,12 @@ class Publication
      * @ORM\Column(type="smallint")
      */
     private $status;
+
+    public function __construct()
+    {
+        $this->creationDatetime = new \DateTime();
+        $this->status = self::STATUS_DRAFT;
+    }
 
     public function getId(): ?int
     {
