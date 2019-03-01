@@ -13,6 +13,8 @@ set('git_tty', true);
 set('keep_releases', 2);
 set('ssh_multiplexing', true);
 
+add('shared_files', ['.env.local']);
+
 // Hosts
 inventory('hosts.yml');
 
