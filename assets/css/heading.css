@@ -1,13 +1,11 @@
 h2 {
     color: #647c8f;
     text-transform: uppercase;
-    margin: 0 0 15px 0;
-    padding: 0 0 0 10px;
-    position: relative;
 }
 
 h2 a {
     color: #647c8f;
+    text-transform: none;
 }
 
 h2 span {
@@ -22,8 +20,4 @@ h3 {
 
 h4 {
     font-size: 11pt
-}
-
-h1, h2, h3, h4 {
-    font-weight: 400;
 }
