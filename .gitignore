@@ -1,8 +1,8 @@
 
 ###> symfony/framework-bundle ###
-/.env.dev.local
+/.env.local
+/.env.local.php
 /.env.*.local
-/.env
 /public/bundles/
 /var/
 /vendor/
