@@ -1,3 +1,5 @@
+import 'bootstrap/js/dist/collapse';
+
 /**import {init as avatarInit} from "./avatar";
 import homeInit from "./home";
 import thread from "./thread";
