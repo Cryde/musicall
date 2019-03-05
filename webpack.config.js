@@ -35,6 +35,11 @@ Encore
       // only copy files matching this pattern
       //pattern: /\.(png|jpg|jpeg)$/
     })
+    .copyFiles({
+        from: './node_modules/sir-trevor/build/',
+        to: 'images/[path][name].[ext]',
+        pattern: /\.(png|jpg|jpeg|svg)$/
+    })
     /*
      * FEATURE CONFIG
      *

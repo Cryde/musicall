@@ -1,5 +1,7 @@
 @import "~bootstrap/dist/css/bootstrap.css";
 
+@import '~sir-trevor/build/sir-trevor.css';
+
 @import "global.css";
 @import "heading.css";
 @import "components/menu.css";
@@ -7,6 +9,12 @@
 @import "components/footer.css";
 
 @import "modules/login.css";
+
+.st-block-addition-top__button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
 
 /*@import "buttons.css";
 @import "form.css";
