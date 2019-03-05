@@ -1,6 +1,10 @@
 import 'bootstrap/js/dist/collapse';
 import 'bootstrap/js/dist/dropdown';
 
+import publication from './publication/main';
+
+publication();
+
 /**import {init as avatarInit} from "./avatar";
 import homeInit from "./home";
 import thread from "./thread";
