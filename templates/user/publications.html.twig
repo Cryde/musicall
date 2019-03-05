@@ -3,7 +3,22 @@
 {% block body %}
 
 
-    <h2>Mes publications <a href="{{ path('publications_add') }}" class="float-right btn btn-success">Ajouter un publication</a></h2>
+    <div class="dropdown float-right">
+        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">
+            Ajouter
+        </a>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            {% for sub_category in sub_categories %}
+                <a class="dropdown-item"
+                   href="{{ path('publications_add', {id:sub_category.id}) }}">{{ sub_category.title }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <h2>Mes publications</h2>
 
     <h3>Brouillons ({{ drafts | length }})</h3>
     <div class="content-box">
@@ -24,11 +39,12 @@
                     <td>{{ publication.editionDatetime ? publication.editionDatetime | date('d/m/Y H:i') : '/' }}</td>
                     <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <a class="btn btn-outline-primary" href="{{ path('publications_show', {id: publication.id}) }}">
+                            <a class="btn btn-outline-primary"
+                               href="{{ path('publications_show', {id: publication.id}) }}">
                                 <i class="far fa-eye"></i>
                             </a>
 
-                            <a class="btn btn-outline-success" href="">
+                            <a class="btn btn-outline-success" href="{{ path('publications_edit', {id: publication.id}) }}">
                                 <i class="far fa-edit"></i>
                             </a>
 
