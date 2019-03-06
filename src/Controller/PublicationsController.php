@@ -58,6 +58,11 @@ class PublicationsController extends AbstractController
      */
     public function edit(Publication $publication, Request $request)
     {
+        if($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+            // todo: add flash message
+            return $this->redirectToRoute('user_publications');
+        }
+
         $form = $this->createForm(PublicationType::class, $publication);
 
         $form->handleRequest($request);
@@ -70,6 +75,32 @@ class PublicationsController extends AbstractController
         }
 
         return $this->render('publications/add.html.twig', ['form' => $form->createView()]);
+    }
+
+    /**
+     * @Route("/publications/{id}/remove", name="publications_remove")
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Publication $publication
+     *
+     * @return RedirectResponse
+     */
+    public function remove(Publication $publication)
+    {
+        if($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+            // todo add flash message
+            return $this->redirectToRoute('user_publications');
+        }
+
+        if($publication->getStatus() !== Publication::STATUS_DRAFT) {
+            // todo add flash message
+            return $this->redirectToRoute('user_publications');
+        }
+
+        $this->getDoctrine()->getManager()->remove($publication);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->redirectToRoute('user_publications');
     }
 
     /**
