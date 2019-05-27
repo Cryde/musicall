@@ -16,6 +16,6 @@
         "jquery": "^3.0.0",
         "select2": "^4.0.3",
         "sir-trevor": "^0.8.0",
-        "tippy.js": "^4.0.4"
+        "tippy.js": "^4.3.1"
     }
 }
