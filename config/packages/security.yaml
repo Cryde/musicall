@@ -15,19 +15,18 @@ security:
         ROLE_SUPER_ADMIN: ROLE_ADMIN
 
     firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
         main:
-            pattern: ^/
-            form_login:
-                csrf_token_generator: security.csrf.token_manager
-
-            remember_me:
-                secret:   '%kernel.secret%'
-                secure: true
-            logout:       true
-            anonymous:    true
+            anonymous: true
             guard:
                 authenticators:
                     - App\Security\AppAuthenticator
+            remember_me:
+                secret:   '%kernel.secret%'
+            logout:
+                path:   app_logout
 
     access_control:
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
