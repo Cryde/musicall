@@ -30,7 +30,7 @@
                     </li>
                 </ul>
             {% else %}
-                <a href="" class="ml-auto btn btn-sm btn-registration">s'inscrire</a>
+                <a href="{{ path('app_register') }}" class="ml-auto btn btn-sm btn-registration">s'inscrire</a>
                 <a href="{{ path('app_login') }}" class="ml-2 btn btn-sm btn-login">se connecter</a>
             {% endif %}
         </div>
