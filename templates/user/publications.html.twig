@@ -1,61 +1,9 @@
 {% extends "base.html.twig" %}
 
 {% block body %}
+    <div id="publications"></div>
+{% endblock %}
 
-
-    <div class="dropdown float-right">
-        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
-           aria-haspopup="true" aria-expanded="false">
-            Ajouter
-        </a>
-
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            {% for sub_category in sub_categories %}
-                <a class="dropdown-item"
-                   href="{{ path('publications_add', {id:sub_category.id}) }}">{{ sub_category.title }}</a>
-            {% endfor %}
-        </div>
-    </div>
-
-
-    <h2>Mes publications</h2>
-
-    <h3>Brouillons ({{ drafts | length }})</h3>
-    <div class="content-box">
-        <table class="table table-borderless">
-            <thead>
-            <tr>
-                <th>Titre</th>
-                <th>Création</th>
-                <th>Mise à jour</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for publication in drafts %}
-                <tr>
-                    <td>{{ publication.title }}</td>
-                    <td>{{ publication.creationDatetime | date('d/m/Y H:i') }}</td>
-                    <td>{{ publication.editionDatetime ? publication.editionDatetime | date('d/m/Y H:i') : '/' }}</td>
-                    <td>
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                            <a class="btn btn-outline-primary" target="_blank"
-                               href="{{ path('publications_show', {id: publication.id}) }}">
-                                <i class="far fa-eye"></i>
-                            </a>
-
-                            <a class="btn btn-outline-success" href="{{ path('publications_edit', {id: publication.id}) }}">
-                                <i class="far fa-edit"></i>
-                            </a>
-
-                            <a class="btn btn-outline-danger" href="{{ path('publications_remove', {id: publication.id}) }}">
-                                <i class="far fa-trash-alt"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+{% block javascripts %}
+    {{ encore_entry_script_tags('publication-user') }}
 {% endblock %}

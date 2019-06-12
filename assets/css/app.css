@@ -1,6 +1,5 @@
 @import "~bootstrap/dist/css/bootstrap.css";
-
-@import '~sir-trevor/build/sir-trevor.css';
+@import '~bootstrap-vue/dist/bootstrap-vue.css';
 
 @import "global.css";
 @import "heading.css";

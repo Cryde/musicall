@@ -26,7 +26,7 @@ class PublicationsController extends AbstractController
 
 
     /**
-     * @Route("/publications/{id}/add", name="publications_add")
+     * @Route("/publications/{id}/add", name="publications_add", options={"expose": true})
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
      * @param PublicationSubCategory $subCategory
@@ -75,32 +75,6 @@ class PublicationsController extends AbstractController
         }
 
         return $this->render('publications/add.html.twig', ['form' => $form->createView()]);
-    }
-
-    /**
-     * @Route("/publications/{id}/remove", name="publications_remove")
-     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Publication $publication
-     *
-     * @return RedirectResponse
-     */
-    public function remove(Publication $publication)
-    {
-        if($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
-            // todo add flash message
-            return $this->redirectToRoute('user_publications');
-        }
-
-        if($publication->getStatus() !== Publication::STATUS_DRAFT) {
-            // todo add flash message
-            return $this->redirectToRoute('user_publications');
-        }
-
-        $this->getDoctrine()->getManager()->remove($publication);
-        $this->getDoctrine()->getManager()->flush();
-
-        return $this->redirectToRoute('user_publications');
     }
 
     /**
