@@ -22,6 +22,12 @@ class Publication
     const STATUS_ONLINE = 1;
     const STATUS_PENDING = 2;
 
+    const STATUS_LABEL = [
+        self::STATUS_DRAFT => 'draft',
+        self::STATUS_ONLINE => 'online',
+        self::STATUS_PENDING => 'pending',
+    ];
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()

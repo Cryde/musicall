@@ -18,6 +18,7 @@ Encore
      * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
      */
     .addEntry('app', './assets/js/app.js')
+    .addEntry('publication-user', './assets/js/components/publication/main.js')
     //.addEntry('page1', './assets/js/page1.js')
     //.addEntry('page2', './assets/js/page2.js')
     .addStyleEntry('css', './assets/css/app.css')
@@ -35,11 +36,6 @@ Encore
       // only copy files matching this pattern
       //pattern: /\.(png|jpg|jpeg)$/
     })
-    .copyFiles({
-        from: './node_modules/sir-trevor/build/',
-        to: 'images/[path][name].[ext]',
-        pattern: /\.(png|jpg|jpeg|svg)$/
-    })
     /*
      * FEATURE CONFIG
      *
@@ -53,6 +49,7 @@ Encore
     // enables hashed filenames (e.g. app.abc123.css)
     .enableVersioning(Encore.isProduction())
 
+    .enableVueLoader()
     // enables Sass/SCSS support
     //.enableSassLoader()
 
