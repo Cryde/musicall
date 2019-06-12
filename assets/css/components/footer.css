@@ -1,4 +1,4 @@
-footer {
+#footer {
     color: white;
     background: #373737;
     padding: 20px 0;
@@ -6,31 +6,31 @@ footer {
     width: 100%;
     clear: both;
 }
-footer:after,
-footer:before {
+#footer:after,
+#footer:before {
     clear: both;
 }
 
-footer h3,
-footer h3 a{
+#footer h3,
+#footer h3 a{
     color: white;
     font-size: 17px;
 }
 
-footer ul {
+#footer ul {
     list-style: none;
     padding: 0;
 }
 
-footer ul a {
+#footer ul a {
     color: rgba(255, 255, 255, .75);
 }
 
-footer a:hover {
+#footer a:hover {
     color: white;
 }
 
-footer .copy {
+#footer .copy {
     text-align: right;
 }
 
