@@ -48,7 +48,7 @@ class PublicationsController extends AbstractController
     }
 
     /**
-     * @Route("/publications/{id}/edit", name="publications_edit")
+     * @Route("/publications/{id}/edit", name="publications_edit", options={"expose":true})
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
      * @param Publication $publication
@@ -78,7 +78,7 @@ class PublicationsController extends AbstractController
     }
 
     /**
-     * @Route("/publications/{id}", name="publications_show")
+     * @Route("/publications/{slug}", name="publications_show", options={"expose":true})
      *
      * @param Publication $publication
      *

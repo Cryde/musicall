@@ -20,9 +20,11 @@
 
                 <template slot="actions" slot-scope="data">
                     <b-button-group>
-                        <b-button variant="outline-primary" href="#"><i class="far fa-eye"></i></b-button>
-                        <b-button variant="outline-success" href="#"><i class="far fa-edit"></i></b-button>
-                        <b-button variant="outline-danger" href="#" @click="showDeleteModal" :data-id="data.item.id"><i
+                        <b-button variant="outline-primary" :href="data.item.url_show" target="_blank"><i
+                                class="far fa-eye"></i></b-button>
+                        <b-button variant="outline-success" :href="data.item.url_edit"><i class="far fa-edit"></i>
+                        </b-button>
+                        <b-button variant="outline-danger" @click="showDeleteModal" :data-id="data.item.id"><i
                                 class="far fa-trash-alt"></i></b-button>
                     </b-button-group>
                 </template>
@@ -52,14 +54,18 @@
         return fetch(Routing.generate('api_user_publication_list'))
         .then(resp => resp.json())
         .then((data) => {
-          return data.publications;
+          return data.publications.map((publication) => {
+            return Object.assign({}, publication, {
+              url_edit: Routing.generate('publications_edit', {id: publication.id}),
+              url_show: Routing.generate('publications_show', {slug: publication.slug})
+            });
+          });
         }).catch(error => {
+          console.error(error);
           return []
         })
       },
       showDeleteModal(item) {
-        console.log(this.items);
-
         this.$bvModal.msgBoxConfirm('Êtes vous sur ?')
         .then(value => {
 
@@ -73,8 +79,8 @@
           .then(() => {
             this.$refs.table.refresh();
           })
-          .catch(() => {
-            console.log(error);
+          .catch((error) => {
+            console.error(error);
           });
         })
         .catch(err => {
