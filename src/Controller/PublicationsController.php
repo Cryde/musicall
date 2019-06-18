@@ -52,29 +52,17 @@ class PublicationsController extends AbstractController
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
      * @param Publication $publication
-     * @param Request     $request
      *
      * @return RedirectResponse|Response
      */
-    public function edit(Publication $publication, Request $request)
+    public function edit(Publication $publication)
     {
         if($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
             // todo: add flash message
             return $this->redirectToRoute('user_publications');
         }
 
-        $form = $this->createForm(PublicationType::class, $publication);
-
-        $form->handleRequest($request);
-
-        if($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->persist($publication);
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('user_publications');
-        }
-
-        return $this->render('publications/add.html.twig', ['form' => $form->createView()]);
+        return $this->render('publications/edit.html.twig', ['publication' => $publication]);
     }
 
     /**

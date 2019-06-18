@@ -9,11 +9,9 @@
 
 @import "modules/login.css";
 
-.st-block-addition-top__button {
-    -webkit-appearance: none;
-    -moz-appearance: none;
+[contenteditable]:focus {
+    outline: 0 solid transparent;
 }
-
 
 /*@import "buttons.css";
 @import "form.css";

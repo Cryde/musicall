@@ -1,0 +1,10 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div id="publication-data" class="hide" data-publication-id="{{ publication.id }}"></div>
+    <div id="publications-edit"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('publication-edit') }}
+{% endblock %}
