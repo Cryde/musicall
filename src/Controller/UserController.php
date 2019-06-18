@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/user/publications", name="user_publications")
+     * @Route("/user/publications", name="user_publications", options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *

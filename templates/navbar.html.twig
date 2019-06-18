@@ -14,21 +14,8 @@
             </form>
 
             {% if app.user %}
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle inset" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <img src="https://via.placeholder.com/150x150" class="rounded-circle">
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#"><strong>{{ app.user.username }}</strong></a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ path('user_publications') }}">Mes publications</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a>
-                        </div>
-                    </li>
-                </ul>
+                <div id="user-data" data-username="{{ app.user.username }}"></div>
+                <div id="nav-bar-dropdown"></div>
             {% else %}
                 <a href="{{ path('app_register') }}" class="ml-auto btn btn-sm btn-registration">s'inscrire</a>
                 <a href="{{ path('app_login') }}" class="ml-2 btn btn-sm btn-login">se connecter</a>

@@ -18,6 +18,7 @@ Encore
      * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
      */
     .addEntry('app', './assets/js/app.js')
+    .addEntry('global', './assets/js/components/global/main.js')
     .addEntry('publication-user', './assets/js/components/publication/main.js')
     .addEntry('publication-edit', './assets/js/components/publication/edit.js')
     //.addEntry('page1', './assets/js/page1.js')
