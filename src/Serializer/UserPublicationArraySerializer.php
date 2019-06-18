@@ -24,18 +24,26 @@ class UserPublicationArraySerializer
 
     /**
      * @param Publication $publication
+     * @param bool        $withContent
      *
      * @return array
      */
-    public function toArray(Publication $publication): array
+    public function toArray(Publication $publication, bool $withContent = false): array
     {
-        return [
+        $result = [
             'id'                => $publication->getId(),
             'title'             => $publication->getTitle(),
             'slug'              => $publication->getSlug(),
             'creation_datetime' => $publication->getCreationDatetime()->format(DatetimeHelper::FORMAT_DATETIME),
             'edition_datetime'  => $publication->getEditionDatetime() ? $publication->getEditionDatetime()->format(DatetimeHelper::FORMAT_DATETIME) : null,
             'status'            => Publication::STATUS_LABEL[$publication->getStatus()],
+            'short_description' => $publication->getShortDescription(),
         ];
+
+        if ($withContent) {
+            $result['content'] = $publication->getContent();
+        }
+
+        return $result;
     }
 }

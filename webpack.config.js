@@ -19,6 +19,7 @@ Encore
      */
     .addEntry('app', './assets/js/app.js')
     .addEntry('publication-user', './assets/js/components/publication/main.js')
+    .addEntry('publication-edit', './assets/js/components/publication/edit.js')
     //.addEntry('page1', './assets/js/page1.js')
     //.addEntry('page2', './assets/js/page2.js')
     .addStyleEntry('css', './assets/css/app.css')
