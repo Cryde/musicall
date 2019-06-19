@@ -7,6 +7,8 @@
 @import "components/navbar.css";
 @import "components/footer.css";
 
+@import "modules/formatting.css";
+
 @import "modules/login.css";
 
 [contenteditable]:focus {
