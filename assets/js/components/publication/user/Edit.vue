@@ -21,6 +21,34 @@
             </b-form-group>
 
             <div class="editor">
+                <editor-menu-bubble class="menububble" :editor="editor" @hide="hideLinkMenu" v-slot="{ commands, isActive, getMarkAttrs, menu }">
+                    <div
+                            class="menububble"
+                            :class="{ 'is-active': menu.isActive }"
+                            :style="`left: ${menu.left}px; bottom: ${menu.bottom}px;`"
+                    >
+
+                        <form class="menububble__form" v-if="linkMenuIsActive" @submit.prevent="setLinkUrl(commands.link, linkUrl)">
+                            <input class="menububble__input" type="text" v-model="linkUrl" placeholder="https://" ref="linkInput" @keydown.esc="hideLinkMenu"/>
+                            <button class="menububble__button" @click="setLinkUrl(commands.link, null)" type="button">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+
+                        <template v-else>
+                            <button
+                                    class="menububble__button"
+                                    @click="showLinkMenu(getMarkAttrs('link'))"
+                                    :class="{ 'is-active': isActive.link() }"
+                            >
+                                <span>{{ isActive.link() ? 'Mettre à jour le lien' : 'Ajouter un lien'}}</span>
+                                <i class="fas fa-link"></i>
+                            </button>
+                        </template>
+
+                    </div>
+                </editor-menu-bubble>
+
                 <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
 
                     <div class="menubar">
@@ -116,7 +144,7 @@
 
 <script>
   import 'babel-polyfill';
-  import {Editor, EditorContent, EditorMenuBar} from 'tiptap'
+  import {Editor, EditorContent, EditorMenuBar, EditorMenuBubble} from 'tiptap'
   import {
     Blockquote,
     Bold,
@@ -135,6 +163,7 @@
     components: {
       EditorContent,
       EditorMenuBar,
+      EditorMenuBubble
     },
     data() {
       return {
@@ -152,6 +181,7 @@
             new Link(),
             new Bold(),
             new Italic(),
+            new Link(),
             new History(),
           ],
           onUpdate: ({getHTML}) => {
@@ -163,6 +193,8 @@
         title: '',
         description: '',
         content: '',
+        linkUrl: null,
+        linkMenuIsActive: false,
         validation: {
           title: {
             state: null,
@@ -241,7 +273,23 @@
           state: null,
           message: ''
         }
-      }
+      },
+      showLinkMenu(attrs) {
+        this.linkUrl = attrs.href
+        this.linkMenuIsActive = true
+        this.$nextTick(() => {
+          this.$refs.linkInput.focus()
+        })
+      },
+      hideLinkMenu() {
+        this.linkUrl = null
+        this.linkMenuIsActive = false
+      },
+      setLinkUrl(command, url) {
+        command({ href: url })
+        this.hideLinkMenu()
+        this.editor.focus()
+      },
     },
     beforeDestroy() {
       this.editor.destroy()
