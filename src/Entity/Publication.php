@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Image\PublicationImage;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -99,7 +100,7 @@ class Publication
     private $status;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\Image")
+     * @ORM\OneToMany(targetEntity="App\Entity\Image\PublicationImage", mappedBy="publication")
      */
     private $images;
 
@@ -248,14 +249,14 @@ class Publication
     }
 
     /**
-     * @return Collection|Image[]
+     * @return Collection|PublicationImage[]
      */
     public function getImages(): Collection
     {
         return $this->images;
     }
 
-    public function addImage(Image $image): self
+    public function addImage(PublicationImage $image): self
     {
         if (!$this->images->contains($image)) {
             $this->images[] = $image;
@@ -264,7 +265,7 @@ class Publication
         return $this;
     }
 
-    public function removeImage(Image $image): self
+    public function removeImage(PublicationImage $image): self
     {
         if ($this->images->contains($image)) {
             $this->images->removeElement($image);

@@ -1,0 +1,16 @@
+vich_uploader:
+    db_driver: orm
+
+
+    mappings:
+        publication_image:
+            uri_prefix: /images/publication/post
+            upload_destination: '%kernel.project_dir%/public/images/publication/post'
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+        publication_image_cover:
+            uri_prefix: /images/publication/cover
+            upload_destination: '%kernel.project_dir%/public/images/publication/cover'
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+

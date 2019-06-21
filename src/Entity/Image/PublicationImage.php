@@ -1,15 +1,18 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Image;
 
+use App\Entity\Publication;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  * @ORM\Entity
+ * @Vich\Uploadable
  */
-class Image
+class PublicationImage
 {
     /**
      * @ORM\Id
@@ -23,6 +26,7 @@ class Image
      *     maxWidth=1501,
      *     maxHeight=1501
      * )
+     * @Vich\UploadableField(mapping="publication_image", fileNameProperty="imageName", size="imageSize")
      *
      * @var File
      */
@@ -44,18 +48,13 @@ class Image
      *
      * @var \DateTimeInterface
      */
-    private $creationDatetime;
+    private $updatedAt;
     /**
-     * @ORM\Column(type="datetime")
+     * @var Publication
      *
-     * @var \DateTimeInterface
+     * @ORM\ManyToOne(targetEntity="App\Entity\Publication", inversedBy="images")
      */
-    private $updateDatetime;
-
-    public function __construct()
-    {
-        $this->creationDatetime = new \DateTimeImmutable();
-    }
+    private $publication;
 
     public function getImageFile(): ?File
     {
@@ -77,8 +76,14 @@ class Image
         if (null !== $image) {
             // It is required that at least one field changes if you are using doctrine
             // otherwise the event listeners won't be called and the file is lost
-            $this->updateDatetime = new \DateTimeImmutable();
+            $this->updatedAt = new \DateTimeImmutable();
         }
+    }
+
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
     }
 
     public function getImageName(): ?string
@@ -86,9 +91,9 @@ class Image
         return $this->imageName;
     }
 
-    public function setImageName(?string $imageName): void
+    public function setImageSize(?int $imageSize): void
     {
-        $this->imageName = $imageName;
+        $this->imageSize = $imageSize;
     }
 
     public function getImageSize(): ?int
@@ -96,52 +101,39 @@ class Image
         return $this->imageSize;
     }
 
-    public function setImageSize(?int $imageSize): void
-    {
-        $this->imageSize = $imageSize;
-    }
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return \DateTimeInterface
-     */
-    public function getCreationDatetime(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->creationDatetime;
+        return $this->updatedAt;
     }
 
-    /**
-     * @param \DateTimeInterface $creationDatetime
-     *
-     * @return Image
-     */
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): Image
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
     {
-        $this->creationDatetime = $creationDatetime;
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
     /**
-     * @return \DateTimeInterface
+     * @return Publication
      */
-    public function getUpdateDatetime(): \DateTimeInterface
+    public function getPublication(): Publication
     {
-        return $this->updateDatetime;
+        return $this->publication;
     }
 
     /**
-     * @param \DateTimeInterface $updateDatetime
+     * @param Publication $publication
      *
-     * @return Image
+     * @return PublicationImage
      */
-    public function setUpdateDatetime(\DateTimeInterface $updateDatetime): Image
+    public function setPublication(Publication $publication): PublicationImage
     {
-        $this->updateDatetime = $updateDatetime;
+        $this->publication = $publication;
 
         return $this;
     }
