@@ -2,7 +2,7 @@
 
     <div>
         <DropdownPublicationCategory/>
-        <h2>Mes publications</h2>
+        <h1>Mes publications</h1>
 
         <div class="content-box mt-3">
             <b-table

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2>Editer une publication</h2>
+        <h1>Editer une publication</h1>
         <div class="content-box publication">
 
             <b-form-group description="Le titre de votre publication">
