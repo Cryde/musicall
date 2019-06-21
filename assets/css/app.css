@@ -1,5 +1,6 @@
 @import "~bootstrap/dist/css/bootstrap.css";
 @import '~bootstrap-vue/dist/bootstrap-vue.css';
+@import "~vue2-dropzone/dist/vue2Dropzone.min.css";
 
 @import "global.css";
 @import "heading.css";
