@@ -1,7 +1,7 @@
 <template>
     <div>
         <h2>Editer une publication</h2>
-        <div class="content-box">
+        <div class="content-box publication">
 
             <b-form-group description="Le titre de votre publication">
                 <b-form-input v-model="title" :state="validation.title.state"

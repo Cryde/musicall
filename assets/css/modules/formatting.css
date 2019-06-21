@@ -1,6 +1,13 @@
-blockquote {
+.publication blockquote {
     border-left: 3px solid rgba(0, 0, 0, .1);
     color: rgba(0, 0, 0, .8);
     padding-left: .8rem;
     font-style: italic;
+}
+
+.publication img {
+    width: 100% !important;
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
 }
