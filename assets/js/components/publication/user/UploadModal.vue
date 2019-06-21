@@ -48,8 +48,6 @@
         thumbnailWidth: 200,
         dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une image"
       };
-
-      console.log(Routing.generate('api_user_publication_upload_image', {id: this.id}));
     },
     computed: {
       validImage() {
@@ -67,12 +65,7 @@
         this.$refs['upload-modal'].hide()
       },
       vfileUploaded(file, resp) {
-
-        console.log(resp);
-
-
-        /** Here is where you get your URL/Base64 string or what ever.*/
-        this.imageSrc = "https://source.unsplash.com/random/2000x400";
+        this.imageSrc = resp.data.uri;
       },
       insertImage() {
         const data = {

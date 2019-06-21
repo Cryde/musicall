@@ -8,6 +8,7 @@ use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
 use App\Serializer\UserPublicationArraySerializer;
 use App\Service\Jsonizer;
+use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserPublicationController extends AbstractController
 {
@@ -121,7 +123,7 @@ class UserPublicationController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function uploadImage(Request $request, Publication $publication)
+    public function uploadImage(Request $request, Publication $publication, UploaderHelper $uploaderHelper, CacheManager $cacheManager)
     {
         $image = new PublicationImage();
         $image->setPublication($publication);
@@ -133,7 +135,9 @@ class UserPublicationController extends AbstractController
             $this->getDoctrine()->getManager()->persist($image);
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->json(['sucess' => 1]);
+            $imagePath = $uploaderHelper->asset($image, 'imageFile');
+
+            return $this->json(['data' => ['uri' => $cacheManager->generateUrl($imagePath, 'publication_image_filter')]]);
         }
 
         return $this->json(['error' => 1]);
