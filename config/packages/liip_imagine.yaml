@@ -3,6 +3,12 @@ liip_imagine:
     # valid drivers options include "gd" or "gmagick" or "imagick"
     driver: "gd"
 
+    loaders:
+        default:
+            filesystem:
+                data_root:
+                    - "%kernel.root_dir%/../public"
+
     filter_sets:
         publication_image_filter:
             filters:
