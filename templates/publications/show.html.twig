@@ -4,6 +4,6 @@
     <h2>{{ publication.title }}</h2>
 
     <div class="content-box publication">
-        {{ publication.content | nl2br }}
+        {{ publication.content | purify }}
     </div>
 {% endblock %}
