@@ -1,0 +1,6 @@
+liip_imagine:
+    loaders:
+        default:
+            filesystem:
+                data_root:
+                    - "%kernel.root_dir%/../../../shared/public"
