@@ -12,7 +12,10 @@ set('repository', 'git@github.com:Cryde/musicall.git');
 set('git_tty', true);
 set('keep_releases', 2);
 set('ssh_multiplexing', true);
-
+add('shared_dirs', [
+    'public/images/publication/post',
+]);
+add('shared_dirs', ['public/media/cache']);
 add('shared_files', ['.env.local']);
 
 // Hosts

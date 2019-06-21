@@ -1,0 +1,12 @@
+# See dos how to configure the bundle: https://symfony.com/doc/current/bundles/LiipImagineBundle/basic-usage.html
+liip_imagine:
+    # valid drivers options include "gd" or "gmagick" or "imagick"
+    driver: "gd"
+
+    filter_sets:
+        publication_image_filter:
+            filters:
+                downscale:
+                    max: [800, 800]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 85, progressive: true }
