@@ -42,3 +42,9 @@
     border-radius: 3px;
     cursor: pointer;
 }
+
+.editor-sticky {
+    background: white;
+    padding: 7px 0;
+    display: inline-block !important;
+}

@@ -52,6 +52,7 @@
                     </div>
                 </editor-menu-bubble>
 
+                <div class="editor-sticky" v-sticky sticky-offset="offset" sticky-side="top" :sticky-z-index="1000">
                 <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
 
                     <div class="menubar">
@@ -137,6 +138,7 @@
 
                     </div>
                 </editor-menu-bar>
+                </div>
 
                 <editor-content :editor="editor" class="mt-3"/>
             </div>
@@ -155,6 +157,7 @@
 
 <script>
   import 'babel-polyfill';
+  import Sticky from 'vue-sticky-directive';
   import {Editor, EditorContent, EditorMenuBar, EditorMenuBubble} from 'tiptap'
   import {
     Blockquote,
@@ -179,8 +182,10 @@
       EditorMenuBubble,
       UploadModal
     },
+    directives: {Sticky},
     data() {
       return {
+        offset: {top: 74},
         submitted: false,
         saved: false,
         editor: new Editor({
