@@ -2,7 +2,9 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Image\PublicationImage;
 use App\Entity\Publication;
+use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
 use App\Serializer\UserPublicationArraySerializer;
 use App\Service\Jsonizer;
@@ -107,5 +109,33 @@ class UserPublicationController extends AbstractController
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json(['data' => ['success' => 1]]);
+    }
+
+    /**
+     * @Route("/api/users/publications/{id}/upload-image", name="api_user_publication_upload_image", options={"expose": true}, methods={"POST"})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Publication        $publication
+     * @param Request            $request
+     *
+     * @return JsonResponse
+     */
+    public function uploadImage(Request $request, Publication $publication)
+    {
+        $image = new PublicationImage();
+        $image->setPublication($publication);
+        $form = $this->createForm(ImageUploaderType::class, $image);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            $this->getDoctrine()->getManager()->persist($image);
+            $this->getDoctrine()->getManager()->flush();
+
+            return $this->json(['sucess' => 1]);
+        }
+
+        return $this->json(['error' => 1]);
     }
 }

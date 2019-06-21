@@ -21,15 +21,18 @@
             </b-form-group>
 
             <div class="editor">
-                <editor-menu-bubble class="menububble" :editor="editor" @hide="hideLinkMenu" v-slot="{ commands, isActive, getMarkAttrs, menu }">
+                <editor-menu-bubble class="menububble" :editor="editor" @hide="hideLinkMenu"
+                                    v-slot="{ commands, isActive, getMarkAttrs, menu }">
                     <div
                             class="menububble"
                             :class="{ 'is-active': menu.isActive }"
                             :style="`left: ${menu.left}px; bottom: ${menu.bottom}px;`"
                     >
 
-                        <form class="menububble__form" v-if="linkMenuIsActive" @submit.prevent="setLinkUrl(commands.link, linkUrl)">
-                            <input class="menububble__input" type="text" v-model="linkUrl" placeholder="https://" ref="linkInput" @keydown.esc="hideLinkMenu"/>
+                        <form class="menububble__form" v-if="linkMenuIsActive"
+                              @submit.prevent="setLinkUrl(commands.link, linkUrl)">
+                            <input class="menububble__input" type="text" v-model="linkUrl" placeholder="https://"
+                                   ref="linkInput" @keydown.esc="hideLinkMenu"/>
                             <button class="menububble__button" @click="setLinkUrl(commands.link, null)" type="button">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -109,6 +112,13 @@
                             <i class="fas fa-quote-right"></i>
                         </b-button>
 
+                        <b-button
+                                variant="outline-primary"
+                                :pressed="isActive.image()"
+                                @click="openUploadModal(commands.image)">
+                            <i class="far fa-image"></i>
+                        </b-button>
+
                         <b-button variant="outline-primary" @click="commands.horizontal_rule">
                             _
                         </b-button>
@@ -139,6 +149,7 @@
                 </b-button>
             </div>
         </div>
+        <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id" />
     </div>
 </template>
 
@@ -153,17 +164,20 @@
     Heading,
     History,
     HorizontalRule,
+    Image,
     Italic,
     Link,
     ListItem,
-    OrderedList,
-  } from 'tiptap-extensions'
+    OrderedList
+  } from 'tiptap-extensions';
+  import UploadModal from './UploadModal';
 
   export default {
     components: {
       EditorContent,
       EditorMenuBar,
-      EditorMenuBubble
+      EditorMenuBubble,
+      UploadModal
     },
     data() {
       return {
@@ -183,6 +197,7 @@
             new Italic(),
             new Link(),
             new History(),
+            new Image()
           ],
           onUpdate: ({getHTML}) => {
             // get new content on update
@@ -190,6 +205,7 @@
           },
           content: '',
         }),
+        id: this.getPublicationId(),
         title: '',
         description: '',
         content: '',
@@ -243,6 +259,14 @@
         .then(this.handleErrors)
         .then(resp => resp.json());
       },
+      openUploadModal(command) {
+        this.$refs.uploadModal.openModal(command);
+      },
+      addCommand(data) {
+        if (data.command !== null) {
+          data.command(data.data);
+        }
+      },
       getPublication(id) {
         return fetch(Routing.generate('api_user_publication_show', {id}))
         .then(this.handleErrors)
@@ -286,7 +310,7 @@
         this.linkMenuIsActive = false
       },
       setLinkUrl(command, url) {
-        command({ href: url })
+        command({href: url})
         this.hideLinkMenu()
         this.editor.focus()
       },

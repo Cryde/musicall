@@ -1,0 +1,90 @@
+<template>
+    <b-modal id="modal-upload-image" centered ref="upload-modal" title="Uploader une image">
+
+            <vue-dropzone
+                    ref="myVueDropzone"
+                    id="dropzone"
+                    @vdropzone-success="vfileUploaded"
+                    :options="dropzoneOptions"
+            >
+            </vue-dropzone>
+
+
+        <div slot="modal-footer">
+            <b-button @click="hideModal">Annuler</b-button>
+            <b-button
+                    @click="insertImage"
+                    variant="success"
+                    :title="validImage ? '' : 'L\'image ne semble pas être valide'"
+                    :disabled="!validImage"
+            >
+                Ajouter l'image
+            </b-button>
+        </div>
+    </b-modal>
+
+</template>
+
+<script>
+  import vue2Dropzone from "vue2-dropzone";
+
+  export default {
+    components: {
+      vueDropzone: vue2Dropzone
+    },
+    props: ['id'],
+    data() {
+      return {
+        imageSrc: "",
+        command: null,
+        dropzoneOptions: {}
+      };
+    },
+    mounted() {
+      const url = Routing.generate('api_user_publication_upload_image', {id: this.id});
+      this.dropzoneOptions = {
+        url,
+        paramName:'image_upload[imageFile][file]',
+        thumbnailWidth: 200,
+        dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une image"
+      };
+
+      console.log(Routing.generate('api_user_publication_upload_image', {id: this.id}));
+    },
+    computed: {
+      validImage() {
+        return this.imageSrc.match(/\.(jpeg|jpg|gif|png)$/) != null;
+      }
+    },
+    methods: {
+      openModal(command) {
+        // Add the sent command
+        this.command = command;
+        this.$refs['upload-modal'].show()
+      },
+      hideModal() {
+        this.imageSrc = "";
+        this.$refs['upload-modal'].hide()
+      },
+      vfileUploaded(file, resp) {
+
+        console.log(resp);
+
+
+        /** Here is where you get your URL/Base64 string or what ever.*/
+        this.imageSrc = "https://source.unsplash.com/random/2000x400";
+      },
+      insertImage() {
+        const data = {
+          command: this.command,
+          data: {
+            src: this.imageSrc,
+          }
+        };
+
+        this.$emit("onConfirm", data);
+        this.hideModal();
+      }
+    }
+  };
+</script>
