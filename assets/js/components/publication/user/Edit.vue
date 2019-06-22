@@ -137,7 +137,7 @@
 
         </div>
         <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id"/>
-        <EditModal :title="title" :description="description" :validation="validation" v-on:saveProperties="saveProperties"/>
+        <EditModal :id="id" :title="title" :description="description" :cover="cover":validation="validation" v-on:saveProperties="saveProperties"/>
     </div>
 </template>
 
@@ -203,6 +203,7 @@
         title: '',
         description: '',
         content: '',
+        cover:'',
         linkUrl: null,
         linkMenuIsActive: false,
         validation: {
@@ -222,6 +223,7 @@
         this.editor.setContent(publication.content);
         this.title = publication.title;
         this.description = publication.short_description;
+        this.cover = publication.cover;
         this.loaded = true;
       });
     },

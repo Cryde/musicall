@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -104,6 +105,11 @@ class Publication
      */
     private $images;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\Image\PublicationCover", cascade={"persist", "remove"}, orphanRemoval=true)
+     */
+    private $cover;
+    
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
@@ -270,6 +276,18 @@ class Publication
         if ($this->images->contains($image)) {
             $this->images->removeElement($image);
         }
+
+        return $this;
+    }
+
+    public function getCover(): ?PublicationCover
+    {
+        return $this->cover;
+    }
+
+    public function setCover(?PublicationCover $cover): self
+    {
+        $this->cover = $cover;
 
         return $this;
     }

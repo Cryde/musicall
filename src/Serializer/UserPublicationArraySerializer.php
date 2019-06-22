@@ -4,9 +4,26 @@ namespace App\Serializer;
 
 use App\Entity\Publication;
 use App\Service\DatetimeHelper;
+use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserPublicationArraySerializer
 {
+    /**
+     * @var UploaderHelper
+     */
+    private $uploaderHelper;
+    /**
+     * @var CacheManager
+     */
+    private $cacheManager;
+
+    public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
+    {
+        $this->uploaderHelper = $uploaderHelper;
+        $this->cacheManager = $cacheManager;
+    }
+
     /**
      * @param array|Publication[] $publications
      *
@@ -30,6 +47,12 @@ class UserPublicationArraySerializer
      */
     public function toArray(Publication $publication, bool $withContent = false): array
     {
+        $cover = '';
+        if($publication->getCover()) {
+            $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile');
+            $cover =  $this->cacheManager->generateUrl($path, 'publication_cover_300x300');
+        }
+
         $result = [
             'id'                => $publication->getId(),
             'title'             => $publication->getTitle(),
@@ -38,8 +61,8 @@ class UserPublicationArraySerializer
             'edition_datetime'  => $publication->getEditionDatetime() ? $publication->getEditionDatetime()->format(DatetimeHelper::FORMAT_DATETIME) : null,
             'status'            => Publication::STATUS_LABEL[$publication->getStatus()],
             'short_description' => $publication->getShortDescription(),
+            'cover'             => $cover,
         ];
-
         if ($withContent) {
             $result['content'] = $publication->getContent();
         }

@@ -16,3 +16,24 @@ liip_imagine:
                     max: [800, 800]
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
+
+        publication_cover_800x800:
+            filters:
+                downscale:
+                    max: [800, 800]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 85, progressive: true }
+
+        publication_cover_300x300:
+            filters:
+                downscale:
+                    max: [300, 300]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 85, progressive: true }
+
+        publication_cover_100x100:
+            filters:
+                downscale:
+                    max: [100, 100]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 85, progressive: true }

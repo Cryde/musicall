@@ -18,6 +18,28 @@
                         rows="3"
                 ></b-form-textarea>
             </b-form-group>
+
+            <p class="alert alert-info">
+                Attention l'image doit être carré et faire max 1500px de ooté.
+            </p>
+            <b-row>
+                <b-col v-if="currentCover">
+                    <b-img :src="currentCover" fluid-grow></b-img>
+                </b-col>
+                <b-col v-else>
+                    Il n'y a pas encore de cover pour cette publication
+                </b-col>
+                <b-col>
+                    <vue-dropzone
+                            ref="myVueDropzone"
+                            id="dropzone"
+                            @vdropzone-success="vfileUploaded"
+                            :options="dropzoneOptions"
+                    >
+                    </vue-dropzone>
+
+                </b-col>
+            </b-row>
         </div>
 
 
@@ -33,23 +55,40 @@
 </template>
 
 <script>
+  import vue2Dropzone from "vue2-dropzone";
+
   export default {
-    props: ['title', 'description', 'validation'],
+    components: {
+      vueDropzone: vue2Dropzone
+    },
+    props: ['id', 'title', 'description', 'validation', 'cover'],
     data() {
       return {
         currentTitle: '',
-        currentDescription: ''
+        currentDescription: '',
+        currentCover: '',
+        dropzoneOptions: {
+          url: Routing.generate('api_user_publication_upload_cover', {id: this.id}),
+          paramName:'image_upload[imageFile][file]',
+          thumbnailWidth: 200,
+          dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une cover"
+        }
       }
     },
     mounted(){
-      console.log(this.title);
       this.currentTitle = this.title;
       this.currentDescription = this.description;
+      this.currentCover = this.cover;
+      console.log(this.cover);
     },
     methods: {
       save() {
         this.$emit('saveProperties', {title: this.currentTitle, description: this.currentDescription});
-      }
+      },
+      vfileUploaded(file, resp) {
+        console.log(resp);
+        this.currentCover = resp.data.uri;
+      },
     }
   }
 </script>
