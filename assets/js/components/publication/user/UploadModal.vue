@@ -1,5 +1,5 @@
 <template>
-    <b-modal id="modal-upload-image" centered ref="upload-modal" title="Uploader une image">
+    <b-modal id="modal-upload-image" centered ref="upload-modal" size="lg" title="Uploader une image">
 
             <vue-dropzone
                     ref="myVueDropzone"
