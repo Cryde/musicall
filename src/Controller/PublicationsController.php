@@ -47,24 +47,6 @@ class PublicationsController extends AbstractController
     }
 
     /**
-     * @Route("/publications/{id}/edit", name="publications_edit", options={"expose":true})
-     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Publication $publication
-     *
-     * @return RedirectResponse|Response
-     */
-    public function edit(Publication $publication)
-    {
-        if($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
-            // todo: add flash message
-            return $this->redirectToRoute('user_publications');
-        }
-
-        return $this->render('publications/edit.html.twig', ['publication' => $publication]);
-    }
-
-    /**
      * @Route("/publications/{slug}", name="publications_show", options={"expose":true})
      *
      * @param Publication $publication

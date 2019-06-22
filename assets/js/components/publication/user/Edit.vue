@@ -1,25 +1,11 @@
 <template>
-    <div>
-        <h1>Editer une publication</h1>
+    <div v-if="loaded">
+        <h1>
+            <router-link :to="{name:'user_publications'}" class="mr-2"><i class="fas fa-chevron-left"></i></router-link>
+            {{ title }}
+            <span v-b-modal.modal-publication-properties><i class="fas fa-cog"></i></span>
+        </h1>
         <div class="content-box publication">
-
-            <b-form-group description="Le titre de votre publication">
-                <b-form-input v-model="title" :state="validation.title.state"
-                              placeholder="Votre titre ici"></b-form-input>
-                <b-form-invalid-feedback :state="validation.title.state">
-                    {{ validation.title.message }}
-                </b-form-invalid-feedback>
-            </b-form-group>
-
-            <b-form-group description="Cette courte description apparaitra sur la page d'accueil">
-                <b-form-textarea
-                        v-model="description"
-                        id="textarea"
-                        placeholder="Une courte description de l'article"
-                        rows="3"
-                ></b-form-textarea>
-            </b-form-group>
-
             <div class="editor">
                 <editor-menu-bubble class="menububble" :editor="editor" @hide="hideLinkMenu"
                                     v-slot="{ commands, isActive, getMarkAttrs, menu }">
@@ -53,105 +39,105 @@
                 </editor-menu-bubble>
 
                 <div class="editor-sticky" v-sticky sticky-offset="offset" sticky-side="top" :sticky-z-index="1000">
-                <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
+                    <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
 
-                    <div class="menubar">
+                        <div class="menubar">
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.bold()"
-                                @click="commands.bold">
-                            <i class="fas fa-bold"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.bold()"
+                                    @click="commands.bold">
+                                <i class="fas fa-bold"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.italic()"
-                                @click="commands.italic">
-                            <i class="fas fa-italic"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.italic()"
+                                    @click="commands.italic">
+                                <i class="fas fa-italic"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.paragraph()"
-                                @click="commands.paragraph">
-                            <i class="fas fa-paragraph"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.paragraph()"
+                                    @click="commands.paragraph">
+                                <i class="fas fa-paragraph"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.heading({ level: 2 })"
-                                @click="commands.heading({ level: 2 })">
-                            H2
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.heading({ level: 2 })"
+                                    @click="commands.heading({ level: 2 })">
+                                H2
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.heading({ level: 3 })"
-                                @click="commands.heading({ level: 3 })">
-                            H3
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.heading({ level: 3 })"
+                                    @click="commands.heading({ level: 3 })">
+                                H3
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.bullet_list()"
-                                @click="commands.bullet_list">
-                            <i class="fas fa-list-ul"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.bullet_list()"
+                                    @click="commands.bullet_list">
+                                <i class="fas fa-list-ul"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.ordered_list()"
-                                @click="commands.ordered_list">
-                            <i class="fas fa-list-ol"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.ordered_list()"
+                                    @click="commands.ordered_list">
+                                <i class="fas fa-list-ol"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.blockquote()"
-                                @click="commands.blockquote">
-                            <i class="fas fa-quote-right"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.blockquote()"
+                                    @click="commands.blockquote">
+                                <i class="fas fa-quote-right"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                :pressed="isActive.image()"
-                                @click="openUploadModal(commands.image)">
-                            <i class="far fa-image"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.image()"
+                                    @click="openUploadModal(commands.image)">
+                                <i class="far fa-image"></i>
+                            </b-button>
 
-                        <b-button variant="outline-primary" @click="commands.horizontal_rule">
-                            _
-                        </b-button>
+                            <b-button variant="outline-primary" @click="commands.horizontal_rule">
+                                _
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                @click="commands.undo">
-                            <i class="fas fa-undo"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    @click="commands.undo">
+                                <i class="fas fa-undo"></i>
+                            </b-button>
 
-                        <b-button
-                                variant="outline-primary"
-                                @click="commands.redo">
-                            <i class="fas fa-redo"></i>
-                        </b-button>
+                            <b-button
+                                    variant="outline-primary"
+                                    @click="commands.redo">
+                                <i class="fas fa-redo"></i>
+                            </b-button>
 
-                    </div>
-                </editor-menu-bar>
+
+                            <b-button variant="success" class="float-right" @click="save" :disabled="submitted">
+                                <b-spinner small v-if="submitted"></b-spinner>
+                                <i class="far fa-save" v-else></i>
+                                Enregistrer
+                            </b-button>
+                        </div>
+                    </editor-menu-bar>
                 </div>
 
                 <editor-content :editor="editor" class="mt-3"/>
             </div>
 
-            <div class="mt-5  clearfix">
-                <b-button variant="success" class="float-right" @click="save" :disabled="submitted">
-                    <b-spinner small v-if="submitted"></b-spinner>
-                    <i class="far fa-save" v-else></i>
-                    Enregistrer
-                </b-button>
-            </div>
         </div>
-        <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id" />
+        <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id"/>
+        <EditModal :title="title" :description="description" :validation="validation" v-on:saveProperties="saveProperties"/>
     </div>
 </template>
 
@@ -174,18 +160,21 @@
     OrderedList
   } from 'tiptap-extensions';
   import UploadModal from './UploadModal';
+  import EditModal from './EditModal';
 
   export default {
     components: {
       EditorContent,
       EditorMenuBar,
       EditorMenuBubble,
-      UploadModal
+      UploadModal,
+      EditModal
     },
     directives: {Sticky},
     data() {
       return {
         offset: {top: 74},
+        loaded: false,
         submitted: false,
         saved: false,
         editor: new Editor({
@@ -210,7 +199,7 @@
           },
           content: '',
         }),
-        id: this.getPublicationId(),
+        id: '',
         title: '',
         description: '',
         content: '',
@@ -225,23 +214,36 @@
       }
     },
     mounted() {
+
       this.getPublication(this.getPublicationId())
       .then((publication) => {
+        this.id = publication.id;
         this.content = publication.content;
         this.editor.setContent(publication.content);
         this.title = publication.title;
         this.description = publication.short_description;
+        this.loaded = true;
       });
     },
     methods: {
+      saveProperties({title, description}) {
+        this.title = title;
+        this.description = description;
+
+        this.save()
+        .then((finish) => {
+          if(finish) {
+            this.$bvModal.hide('modal-publication-properties')
+          }
+        });
+      },
       save() {
         this.submitted = true;
         const publication = {'title': this.title, 'short_description': this.description, 'content': this.content};
 
-        this.saveContent(this.getPublicationId(), publication)
+        return this.saveContent(this.getPublicationId(), publication)
         .then(resp => {
           this.submitted = false;
-          console.log(resp);
           this.$bvToast.toast('Votre publication a été enregistrée', {
             title: `Publication enregistrée`,
             variant: 'success',
@@ -250,6 +252,7 @@
             append: true
           })
 
+          return true;
         })
         .catch(violation => {
           this.submitted = false;
@@ -279,7 +282,7 @@
         .then(resp => resp.data.publication);
       },
       getPublicationId() {
-        return document.querySelector('#publication-data').dataset.publicationId;
+        return this.$route.params.id;
       },
       displayErrors(errors) {
         for (let error of errors) {

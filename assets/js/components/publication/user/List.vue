@@ -22,7 +22,9 @@
                     <b-button-group>
                         <b-button variant="outline-primary" :href="data.item.url_show" target="_blank"><i
                                 class="far fa-eye"></i></b-button>
-                        <b-button variant="outline-success" :href="data.item.url_edit"><i class="far fa-edit"></i>
+                        <b-button variant="outline-success"
+                                  :to="{ name: 'user_publications_edit', params: { id: data.item.id }}"><i
+                                class="far fa-edit"></i>
                         </b-button>
                         <b-button variant="outline-danger" @click="showDeleteModal" :data-id="data.item.id"><i
                                 class="far fa-trash-alt"></i></b-button>
@@ -56,7 +58,6 @@
         .then((data) => {
           return data.publications.map((publication) => {
             return Object.assign({}, publication, {
-              url_edit: Routing.generate('publications_edit', {id: publication.id}),
               url_show: Routing.generate('publications_show', {slug: publication.slug})
             });
           });
