@@ -96,6 +96,10 @@ class UserPublicationController extends AbstractController
      */
     public function save(Publication $publication, Request $request, Jsonizer $jsonizer, ValidatorInterface $validator)
     {
+        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
         $data = $jsonizer->decodeRequest($request);
 
         $publication->setTitle($data['title']);
@@ -118,13 +122,19 @@ class UserPublicationController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
-     * @param Publication        $publication
-     * @param Request            $request
+     * @param Request        $request
+     * @param Publication    $publication
+     * @param UploaderHelper $uploaderHelper
+     * @param CacheManager   $cacheManager
      *
      * @return JsonResponse
      */
     public function uploadImage(Request $request, Publication $publication, UploaderHelper $uploaderHelper, CacheManager $cacheManager)
     {
+        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
         $image = new PublicationImage();
         $image->setPublication($publication);
         $form = $this->createForm(ImageUploaderType::class, $image);
