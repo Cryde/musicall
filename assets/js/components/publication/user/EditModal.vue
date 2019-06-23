@@ -47,8 +47,11 @@
             <b-button variant="default" @click="cancel()">
                 Annuler
             </b-button>
-            <b-button variant="success" @click="save">
-                Sauver
+
+            <b-button variant="success" @click="save" class="float-right" :disabled="submitted">
+                <b-spinner small v-if="submitted"></b-spinner>
+                <i class="far fa-save" v-else></i>
+                Enregistrer
             </b-button>
         </template>
     </b-modal>
@@ -61,7 +64,7 @@
     components: {
       vueDropzone: vue2Dropzone
     },
-    props: ['id', 'title', 'description', 'validation', 'cover'],
+    props: ['id', 'title', 'description', 'validation', 'cover', 'submitted'],
     data() {
       return {
         currentTitle: '',
