@@ -14,6 +14,7 @@ set('keep_releases', 2);
 set('ssh_multiplexing', true);
 add('shared_dirs', [
     'public/images/publication/post',
+    'public/images/publication/cover',
 ]);
 add('shared_dirs', ['public/media/cache']);
 add('shared_files', ['.env.local']);
