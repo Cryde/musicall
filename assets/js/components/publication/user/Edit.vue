@@ -122,11 +122,14 @@
                                 <i class="fas fa-redo"></i>
                             </b-button>
 
-
-                            <b-button variant="success" class="float-right" @click="save" :disabled="submitted">
+                            <b-button variant="outline-success" class="float-right" @click="save" :disabled="submitted">
                                 <b-spinner small v-if="submitted"></b-spinner>
                                 <i class="far fa-save" v-else></i>
                                 Enregistrer
+                            </b-button>
+
+                            <b-button variant="outline-info" :href="viewUrl" target="_blank" class="float-right mr-1">
+                                <i class="far fa-eye"></i>
                             </b-button>
                         </div>
                     </editor-menu-bar>
@@ -176,6 +179,7 @@
     directives: {Sticky},
     data() {
       return {
+        viewUrl: '',
         offset: {top: 74},
         loaded: false,
         submitted: false,
@@ -228,6 +232,7 @@
         this.description = publication.short_description;
         this.cover = publication.cover;
         this.loaded = true;
+        this.viewUrl = Routing.generate('publications_show', {slug: publication.slug})
       });
     },
     methods: {
