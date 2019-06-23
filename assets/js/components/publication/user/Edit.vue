@@ -137,7 +137,10 @@
 
         </div>
         <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id"/>
-        <EditModal :id="id" :title="title" :description="description" :cover="cover":validation="validation" v-on:saveProperties="saveProperties"/>
+        <EditModal :id="id" :title="title" :description="description" :cover="cover"
+                   :validation="validation"
+                   :submitted="submitted"
+                   v-on:saveProperties="saveProperties"/>
     </div>
 </template>
 
