@@ -1,11 +1,13 @@
 <template>
 
     <div>
-        <DropdownPublicationCategory/>
+        <b-button v-b-modal.modal-publication-add variant="outline-success" class="float-right"><i class="fas fa-plus"></i> Ajouter une publication</b-button>
+
         <h1>Mes publications</h1>
 
         <div class="content-box mt-3">
             <b-table
+                    id="publication-table"
                     ref="table"
                     :busy.sync="isBusy"
                     show-empty
@@ -26,20 +28,22 @@
                                   :to="{ name: 'user_publications_edit', params: { id: data.item.id }}"><i
                                 class="far fa-edit"></i>
                         </b-button>
-                        <b-button variant="outline-danger" @click="showDeleteModal" :data-id="data.item.id"><i
-                                class="far fa-trash-alt"></i></b-button>
+                        <b-button variant="outline-danger" @click="showDeleteModal" :data-id="data.item.id">
+                            <i class="far fa-trash-alt" :data-id="data.item.id"></i>
+                        </b-button>
                     </b-button-group>
                 </template>
             </b-table>
         </div>
+        <AddPublicationModal/>
     </div>
 </template>
 
 <script>
-  import DropdownPublicationCategory from './DropdownPublicationCategory'
+  import AddPublicationModal from './AddPublicationModal'
 
   export default {
-    components: {DropdownPublicationCategory},
+    components: {AddPublicationModal},
     data() {
       return {
         isBusy: false,
@@ -50,6 +54,11 @@
           {key: 'actions', sortable: false}
         ],
       }
+    },
+    mounted() {
+      this.$root.$on('reload-table', () => {
+        this.$refs.table.refresh();
+      });
     },
     methods: {
       publicationProvider(ctx) {
@@ -73,6 +82,8 @@
           if (!value) {
             return;
           }
+
+          console.log(item.target);
 
           const id = item.target.dataset.id;
 

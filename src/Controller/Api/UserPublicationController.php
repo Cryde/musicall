@@ -7,6 +7,7 @@ use App\Entity\Image\PublicationImage;
 use App\Entity\Publication;
 use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
+use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\UserPublicationArraySerializer;
 use App\Service\Jsonizer;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -65,6 +66,50 @@ class UserPublicationController extends AbstractController
     }
 
     /**
+     * @Route("/api/users/publications/add", name="api_user_publication_add", options={"expose": true}, methods={"POST"})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Request                          $request
+     * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
+     * @param Jsonizer                         $jsonizer
+     * @param ValidatorInterface               $validator
+     * @param UserPublicationArraySerializer   $userPublicationArraySerializer
+     *
+     * @return JsonResponse
+     */
+    public function add(
+        Request $request,
+        PublicationSubCategoryRepository $publicationSubCategoryRepository,
+        Jsonizer $jsonizer,
+        ValidatorInterface $validator,
+        UserPublicationArraySerializer $userPublicationArraySerializer
+    ) {
+        $data = $jsonizer->decodeRequest($request);
+
+        $publicationSubCategory = $data['category_id'] ? $publicationSubCategoryRepository->find($data['category_id']) : null;
+
+        $publication = new Publication();
+
+        $publication->setTitle($data['title']);
+        $publication->setSubCategory($publicationSubCategory);
+        $publication->setAuthor($this->getUser());
+        $publication->setCategory(Publication::CATEGORY_PUBLICATION_ID);
+
+        $errors = $validator->validate($publication);
+
+        if (count($errors) > 0) {
+            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $this->getDoctrine()->getManager()->persist($publication);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
+    }
+
+
+    /**
      * @Route("/api/users/publications/{id}", name="api_user_publication_show", options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
@@ -88,15 +133,22 @@ class UserPublicationController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
-     * @param Publication        $publication
-     * @param Request            $request
-     * @param Jsonizer           $jsonizer
-     * @param ValidatorInterface $validator
+     * @param Publication                    $publication
+     * @param Request                        $request
+     * @param Jsonizer                       $jsonizer
+     * @param ValidatorInterface             $validator
+     * @param UserPublicationArraySerializer $userPublicationArraySerializer
      *
      * @return JsonResponse
+     * @throws \Exception
      */
-    public function save(Publication $publication, Request $request, Jsonizer $jsonizer, ValidatorInterface $validator)
-    {
+    public function save(
+        Publication $publication,
+        Request $request,
+        Jsonizer $jsonizer,
+        ValidatorInterface $validator,
+        UserPublicationArraySerializer $userPublicationArraySerializer
+    ) {
         if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
@@ -106,6 +158,7 @@ class UserPublicationController extends AbstractController
         $publication->setTitle($data['title']);
         $publication->setShortDescription($data['short_description']);
         $publication->setContent($data['content']);
+        $publication->setEditionDatetime(new \DateTime());
 
         $errors = $validator->validate($publication);
 
@@ -115,7 +168,7 @@ class UserPublicationController extends AbstractController
 
         $this->getDoctrine()->getManager()->flush();
 
-        return $this->json(['data' => ['success' => 1]]);
+        return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
     }
 
     /**
