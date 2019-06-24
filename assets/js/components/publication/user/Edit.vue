@@ -148,7 +148,6 @@
 </template>
 
 <script>
-  import 'babel-polyfill';
   import Sticky from 'vue-sticky-directive';
   import {Editor, EditorContent, EditorMenuBar, EditorMenuBubble} from 'tiptap'
   import {
@@ -252,7 +251,8 @@
         const publication = {'title': this.title, 'short_description': this.description, 'content': this.content};
 
         return this.saveContent(this.getPublicationId(), publication)
-        .then(resp => {
+        .then(publication => {
+          this.viewUrl = Routing.generate('publications_show', {slug: publication.slug})
           this.submitted = false;
           this.$bvToast.toast('Votre publication a été enregistrée', {
             title: `Publication enregistrée`,
@@ -275,7 +275,8 @@
         this.resetValidationState();
         return fetch(Routing.generate('api_user_publication_save', {id}), {method: 'POST', body: JSON.stringify(data)})
         .then(this.handleErrors)
-        .then(resp => resp.json());
+        .then(resp => resp.json())
+        .then(resp => resp.data.publication);
       },
       openUploadModal(command) {
         this.$refs.uploadModal.openModal(command);
@@ -334,7 +335,7 @@
       },
     },
     beforeDestroy() {
-      this.editor.destroy()
+      this.editor.destroy();
     },
   }
 </script>

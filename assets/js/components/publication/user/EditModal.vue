@@ -82,14 +82,12 @@
       this.currentTitle = this.title;
       this.currentDescription = this.description;
       this.currentCover = this.cover;
-      console.log(this.cover);
     },
     methods: {
       save() {
         this.$emit('saveProperties', {title: this.currentTitle, description: this.currentDescription});
       },
       vfileUploaded(file, resp) {
-        console.log(resp);
         this.currentCover = resp.data.uri;
       },
     }

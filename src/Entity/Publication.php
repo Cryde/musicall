@@ -48,6 +48,8 @@ class Publication
      */
     private $category;
     /**
+     * @Assert\NotBlank(message="La catégorie ne peut être vide")
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\PublicationSubCategory", inversedBy="publications")
      * @ORM\JoinColumn(nullable=false)
      */
@@ -58,8 +60,6 @@ class Publication
      */
     private $author;
     /**
-     * @Assert\NotBlank()
-     *
      * @Gedmo\Slug(fields={"title"})
      * @ORM\Column(type="string", length=255, unique=true)
      */
