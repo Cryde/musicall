@@ -10,6 +10,7 @@ use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\UserPublicationArraySerializer;
 use App\Service\Jsonizer;
+use App\Service\UserPublication\SortAndFilterFromArray;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,20 +24,28 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 class UserPublicationController extends AbstractController
 {
     /**
-     * @Route("/api/users/publications/", name="api_user_publication_list", options={"expose": true})
+     * @Route("/api/users/publications/", name="api_user_publication_list", methods={"POST"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
+     * @param Request                        $request
      * @param PublicationRepository          $publicationRepository
      * @param UserPublicationArraySerializer $userPublicationArraySerializer
+     * @param Jsonizer                       $jsonizer
+     * @param SortAndFilterFromArray         $sortAndFilterFromArray
      *
      * @return JsonResponse
      */
     public function list(
+        Request $request,
         PublicationRepository $publicationRepository,
-        UserPublicationArraySerializer $userPublicationArraySerializer
+        UserPublicationArraySerializer $userPublicationArraySerializer,
+        Jsonizer $jsonizer,
+        SortAndFilterFromArray $sortAndFilterFromArray
     ) {
-        $publications = $publicationRepository->findBy(['author' => $this->getUser()]);
+        $filter = $sortAndFilterFromArray->createFromArray($jsonizer->decodeRequest($request));
+        $publications = $publicationRepository->findBy(['author' => $this->getUser()], $filter['sort']);
+
         return $this->json(['publications' => $userPublicationArraySerializer->listToArray($publications)]);
     }
 

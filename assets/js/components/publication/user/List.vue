@@ -1,7 +1,9 @@
 <template>
 
     <div>
-        <b-button v-b-modal.modal-publication-add variant="outline-success" class="float-right"><i class="fas fa-plus"></i> Ajouter une publication</b-button>
+        <b-button v-b-modal.modal-publication-add variant="outline-success" class="float-right">
+            <i class="fas fa-plus"></i> Ajouter une publication
+        </b-button>
 
         <h1>Mes publications</h1>
 
@@ -10,6 +12,8 @@
                     id="publication-table"
                     ref="table"
                     :busy.sync="isBusy"
+                    :sort-by.sync="sortBy"
+                    :sort-desc.sync="sortDesc"
                     show-empty
                     borderless
                     stacked="md"
@@ -47,10 +51,13 @@
     data() {
       return {
         isBusy: false,
+        sortBy: '',
+        sortDesc: true,
         fields: [
           {key: 'title', label: 'Titre', sortable: true},
           {key: 'creation_datetime', label: 'Création', sortable: true},
           {key: 'edition_datetime', label: 'Mis à jour', sortable: true},
+          {key: 'status', label: 'Statut', sortable: true},
           {key: 'actions', sortable: false}
         ],
       }
@@ -62,7 +69,7 @@
     },
     methods: {
       publicationProvider(ctx) {
-        return fetch(Routing.generate('api_user_publication_list'))
+        return fetch(Routing.generate('api_user_publication_list'), {method: 'POST', body: JSON.stringify(ctx)})
         .then(resp => resp.json())
         .then((data) => {
           return data.publications.map((publication) => {
@@ -82,8 +89,6 @@
           if (!value) {
             return;
           }
-
-          console.log(item.target);
 
           const id = item.target.dataset.id;
 

@@ -26,9 +26,9 @@ class Publication
     const STATUS_PENDING = 2;
 
     const STATUS_LABEL = [
-        self::STATUS_DRAFT => 'draft',
-        self::STATUS_ONLINE => 'online',
-        self::STATUS_PENDING => 'pending',
+        self::STATUS_DRAFT => 'Brouillon',
+        self::STATUS_ONLINE => 'Publié',
+        self::STATUS_PENDING => 'En validation',
     ];
 
     /**
