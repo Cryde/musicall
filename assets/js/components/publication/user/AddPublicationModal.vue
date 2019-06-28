@@ -1,5 +1,5 @@
 <template>
-    <b-modal id="modal-publication-add" ref="test" size="lg" title="Ajouter une publication">
+    <b-modal id="modal-publication-add" title="Ajouter une publication">
 
         <div v-if="!saved">
             <div v-if="loading.loaded">
@@ -25,7 +25,6 @@
         </div>
         <div v-else class="text-center p-5">
             <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
-
             Votre publication est créé
         </div>
 
