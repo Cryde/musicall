@@ -48,18 +48,18 @@ class UserPublicationArraySerializer
     public function toArray(Publication $publication, bool $withContent = false): array
     {
         $cover = '';
-        if($publication->getCover()) {
+        if ($publication->getCover()) {
             $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile');
-            $cover =  $this->cacheManager->generateUrl($path, 'publication_cover_300x300');
+            $cover = $this->cacheManager->generateUrl($path, 'publication_cover_300x300');
         }
-
         $result = [
             'id'                => $publication->getId(),
             'title'             => $publication->getTitle(),
             'slug'              => $publication->getSlug(),
             'creation_datetime' => $publication->getCreationDatetime()->format(DatetimeHelper::FORMAT_DATETIME),
             'edition_datetime'  => $publication->getEditionDatetime() ? $publication->getEditionDatetime()->format(DatetimeHelper::FORMAT_DATETIME) : null,
-            'status'            => Publication::STATUS_LABEL[$publication->getStatus()],
+            'status_label'      => Publication::STATUS_LABEL[$publication->getStatus()],
+            'status_id'         => $publication->getStatus(),
             'short_description' => $publication->getShortDescription(),
             'cover'             => $cover,
         ];

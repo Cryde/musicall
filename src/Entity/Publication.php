@@ -65,14 +65,14 @@ class Publication
      */
     private $slug;
     /**
-     * @Assert\NotBlank(groups={"publication"})
+     * @Assert\NotBlank(groups={"publication"}, message="La description de la publication ne doit pas être vide")
      *
      * @ORM\Column(type="text", nullable=true)
      */
     private $shortDescription;
 
     /**
-     * @Assert\NotBlank(groups={"publication"})
+     * @Assert\NotBlank(groups={"publication"}, message="Il doit y avoir du contenu dans la publication")
      *
      * @ORM\Column(type="text", nullable=true)
      */
