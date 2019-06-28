@@ -181,6 +181,41 @@ class UserPublicationController extends AbstractController
     }
 
     /**
+     * @Route("/api/users/publications/{id}/publish", name="api_user_publication_publish", options={"expose": true})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Publication                    $publication
+     * @param ValidatorInterface             $validator
+     * @param UserPublicationArraySerializer $userPublicationArraySerializer
+     *
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function publish(
+        Publication $publication,
+        ValidatorInterface $validator,
+        UserPublicationArraySerializer $userPublicationArraySerializer
+    ) {
+        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
+        $publication->setPublicationDatetime(new \DateTime());
+
+        $errors = $validator->validate($publication, null, ['publication']);
+
+        if (count($errors) > 0) {
+            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $publication->setStatus(Publication::STATUS_ONLINE);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
+    }
+
+    /**
      * @Route("/api/users/publications/{id}/upload-image", name="api_user_publication_upload_image", options={"expose": true}, methods={"POST"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
