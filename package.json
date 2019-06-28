@@ -3,7 +3,7 @@
         "@symfony/webpack-encore": "^0.27.0",
         "vue-loader": "^15.7.0",
         "vue-template-compiler": "^2.6.10",
-        "webpack-notifier": "^1.7.0"
+        "webpack-notifier": "^1.8.0"
     },
     "license": "UNLICENSED",
     "private": true,
