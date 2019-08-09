@@ -22,7 +22,7 @@
         "tiptap": "^1.23.0",
         "tiptap-extensions": "^1.24.0",
         "vue": "^2.6.10",
-        "vue-router": "^3.0.6",
+        "vue-router": "^3.1.2",
         "vue-select": "^3.1.0",
         "vue-sticky-directive": "0.0.8",
         "vue2-dropzone": "^3.5.9"
