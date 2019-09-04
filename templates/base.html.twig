@@ -12,30 +12,20 @@
     <meta name="verify-v1" content="dKTCUOuzn9n0Y5rkFus+08eZunNMKBKj7sqURPF4KIs="/>
     <link rel="shortcut icon" href="{{ asset('build/images/favicon.ico') }}"/>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+          integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
     {{ encore_entry_link_tags('css') }}
 </head>
 <body>
 <noscript>Votre navigateur ne supporte pas le JavaScript! Activez le pour pouvoir profiter au mieux du site.</noscript>
-<div id="nav-container">
-    {% include 'navbar.html.twig' %}
-</div>
-<div class="container">
-    <div class="row">
-        {% if display_menu %}
-            <div class="col-12 col-lg-2">{% include 'menu.html.twig' %}</div>
-        {% endif %}
-        <div class="col-12 col-lg-{{ display_menu ? '10' : '12' }}">{% block body %}{% endblock %}</div>
-    </div>
-</div><!-- /.container -->
 
-{% include "footer.html.twig" %}
+<div id="app" data-is-authenticated="{{ is_authenticated }}" data-user="{{ user }}"></div>
 
 <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
 <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
 {{ encore_entry_script_tags('global') }}
 {% block javascripts %}
-  {{ encore_entry_script_tags('app') }}
+    {{ encore_entry_script_tags('app') }}
 {% endblock %}
 </body>
 </html>

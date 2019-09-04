@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
-use App\Security\AppAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,8 +26,7 @@ class RegistrationController extends AbstractController
     public function register(
         Request $request,
         UserPasswordEncoderInterface $passwordEncoder,
-        GuardAuthenticatorHandler $guardHandler,
-        AppAuthenticator $authenticator
+        GuardAuthenticatorHandler $guardHandler
     ): Response {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -49,12 +47,14 @@ class RegistrationController extends AbstractController
 
             // do anything else you need here, like send an email
 
+            return $this->json(['data' => 1]);
+            /*
             return $guardHandler->authenticateUserAndHandleSuccess(
                 $user,
                 $request,
                 $authenticator,
                 'main' // firewall name in security.yaml
-            );
+            );*/
         }
 
         return $this->render('registration/register.html.twig', [

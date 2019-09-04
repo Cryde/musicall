@@ -20,13 +20,10 @@ security:
             security: false
         main:
             anonymous: true
-            guard:
-                authenticators:
-                    - App\Security\AppAuthenticator
-            remember_me:
-                secret:   '%kernel.secret%'
             logout:
                 path:   app_logout
+            json_login:
+                check_path: api_login
 
     access_control:
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }

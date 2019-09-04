@@ -6,7 +6,7 @@
                     <img src="https://via.placeholder.com/150x150" class="rounded-circle">
                 </div>
             </template>
-            <b-dropdown-text><strong>{{ username }}</strong></b-dropdown-text>
+            <b-dropdown-text><strong>{{ user.username }}</strong></b-dropdown-text>
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item :href="routes.user_publications">Mes publications</b-dropdown-item>
             <b-dropdown-item href="#">Another action</b-dropdown-item>
@@ -17,18 +17,21 @@
 </template>
 
 <script>
+    import {mapGetters} from 'vuex';
+
     export default {
       data() {
         return {
-          username: '',
           routes: {
-            user_publications: Routing.generate('user_publications'),
+            user_publications: '',
             logout: Routing.generate('app_logout'),
           }
         }
       },
-      mounted() {
-        this.username = document.querySelector('#user-data').dataset.username;
+      computed: {
+        ...mapGetters('security', [
+            'user'
+        ])
       }
     }
 </script>
