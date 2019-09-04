@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Serializer\UserAppArraySerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
@@ -10,10 +13,18 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="app_homepage")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param UserAppArraySerializer $userAppArraySerializer
+     *
+     * @return Response
      */
-    public function indexAction()
+    public function indexAction(UserAppArraySerializer $userAppArraySerializer)
     {
-        return $this->render('home/index.html.twig');
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->render('base.html.twig', [
+            'is_authenticated' => json_encode(!empty($user)),
+            'user' => json_encode($user ? $userAppArraySerializer->toArray($user) : [])
+        ]);
     }
 }
