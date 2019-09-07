@@ -114,6 +114,7 @@
         .then((data) => {
           return data.publications.map((publication) => {
             return Object.assign({}, publication, {
+
               url_show: Routing.generate('publications_show', {slug: publication.slug})
             });
           });
