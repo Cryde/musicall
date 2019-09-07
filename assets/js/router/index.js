@@ -41,12 +41,12 @@ export default new Router({
     {
       name: "user_publications",
       path: "/user/publications",
-      component: () => import("../components/publication/user/List"),
+      component: () => import("../components/publication/user/list/List"),
     },
     {
       path: "/user/publications/edit/:id",
       name: "user_publications_edit",
-      component: () => import("../components/publication/user/Edit")
+      component: () => import("../components/publication/user/edit/Edit")
     }
     /*
     {
