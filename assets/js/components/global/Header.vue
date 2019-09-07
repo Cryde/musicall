@@ -16,18 +16,12 @@
                 </form>
 
                 <!-- if user-->
-                <div v-if="isAuthenticated">
-                    <div id="user-data" data-username="dd"></div>
-                    <div id="nav-bar-dropdown">
-                        <Dropdown/>
-
-                    </div>
-                </div>
+                <Dropdown v-if="isAuthenticated"/>
                 <div v-else>
                     <!-- else : -->
-                    <router-link :to="{ name: 'login' }" class="ml-auto btn btn-sm btn-registration">s'inscrire
+                    <router-link :to="{ name: 'login' }" class="ml-auto btn btn-registration">s'inscrire
                     </router-link>
-                    <router-link :to="{ name: 'login' }" class="ml-2 btn btn-sm btn-login">se connecter</router-link>
+                    <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">se connecter</router-link>
                 </div>
             </div>
         </div>

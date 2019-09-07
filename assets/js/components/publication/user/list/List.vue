@@ -24,7 +24,7 @@
                     <b-spinner class="align-middle"></b-spinner>
                 </div>
 
-                <template slot="actions" slot-scope="data">
+                <template v-slot:cell(actions)="data">
                     <b-button-group>
                         <b-button v-if="data.item.status_id === 0" variant="outline-success" v-b-tooltip.hover title="Publier la publication"
                                   @click="publishPublication(data.item.id)">

@@ -7,6 +7,12 @@ export default {
         'Content-Type': 'application/json',
       },
     })
+    .then((resp) => {
+      if (resp.status === 401) {
+        throw new Error('Login ou mot de passe incorrect');
+      }
+      return resp;
+    })
     .then(resp => resp.json())
   }
 };
