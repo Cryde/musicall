@@ -1,5 +1,6 @@
 .navbar {
     background-color: white;
+    min-height: 74px;
 }
 
 .navbar-brand {
