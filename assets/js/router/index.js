@@ -7,25 +7,25 @@ export default new Router({
   routes: [
     {
       path: "/",
-      name:'home',
+      name: 'home',
       component: () => import("../views/Home"),
-     /* children: [
-        {
-          path: "",
-          name: "home",
-          component: () => import("@/views/HomeGlobal")
-        },
-        {
-          path: "my-feed",
-          name: "home-my-feed",
-          component: () => import("@/views/HomeMyFeed")
-        },
-        {
-          path: "tag/:tag",
-          name: "home-tag",
-          component: () => import("@/views/HomeTag")
-        }
-      ]*/
+      /* children: [
+         {
+           path: "",
+           name: "home",
+           component: () => import("@/views/HomeGlobal")
+         },
+         {
+           path: "my-feed",
+           name: "home-my-feed",
+           component: () => import("@/views/HomeMyFeed")
+         },
+         {
+           path: "tag/:tag",
+           name: "home-tag",
+           component: () => import("@/views/HomeTag")
+         }
+       ]*/
     },
     {
       name: "publication",
@@ -38,6 +38,16 @@ export default new Router({
       path: "/login",
       component: () => import("../views/Login")
     },
+    {
+      name: "user_publications",
+      path: "/user/publications",
+      component: () => import("../components/publication/user/List"),
+    },
+    {
+      path: "/user/publications/edit/:id",
+      name: "user_publications_edit",
+      component: () => import("../components/publication/user/Edit")
+    }
     /*
     {
       name: "register",
