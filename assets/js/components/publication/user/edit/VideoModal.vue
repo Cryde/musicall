@@ -2,7 +2,7 @@
     <b-modal id="modal-video" centered ref="video-modal" size="lg" title="Ajouter une video Youtube">
         <div class="row">
             <div class="col-lg-12">
-                <b-form-input v-model="url"  placeholder="Url de votre video" type="url"></b-form-input>
+                <b-form-input v-model="url"  placeholder="ex: https://www.youtube.com/watch?v=yoWDxUVIHPU" type="url"></b-form-input>
             </div>
         </div>
 
