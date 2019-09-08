@@ -135,7 +135,7 @@
                                 Enregistrer
                             </b-button>
 
-                            <b-button variant="outline-info" :href="viewUrl" target="_blank" class="float-right mr-1">
+                            <b-button variant="outline-info"  :to="{ name: 'publication_show', params: { slug: slug }}" target="_blank" class="float-right mr-1">
                                 <i class="far fa-eye"></i>
                             </b-button>
                         </div>
@@ -189,7 +189,6 @@
     directives: {Sticky},
     data() {
       return {
-        viewUrl: '',
         offset: {top: 74},
         loaded: false,
         submitted: false,
@@ -222,6 +221,7 @@
         description: '',
         content: '',
         cover:'',
+        slug:'',
         linkUrl: null,
         linkMenuIsActive: false,
         validation: {
@@ -242,8 +242,8 @@
         this.title = publication.title;
         this.description = publication.short_description;
         this.cover = publication.cover;
+        this.slug = publication.slug;
         this.loaded = true;
-        this.viewUrl = Routing.generate('publications_show', {slug: publication.slug})
       });
     },
     methods: {
@@ -264,7 +264,7 @@
 
         return this.saveContent(this.getPublicationId(), publication)
         .then(publication => {
-          this.viewUrl = Routing.generate('publications_show', {slug: publication.slug})
+          this.slug = publication.slug;
           this.submitted = false;
           this.$bvToast.toast('Votre publication a été enregistrée', {
             title: `Publication enregistrée`,
