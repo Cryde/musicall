@@ -3,3 +3,9 @@ exercise_html_purifier:
     default:
         # the charset used by the original contents
         Core.Encoding: 'UTF-8'
+        Filter:
+            YouTube: true
+        HTML:
+            SafeIframe: true
+        URI:
+            SafeIframeRegexp: '#^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/)#'

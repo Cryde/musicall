@@ -31,7 +31,8 @@
                             <i class="far fa-paper-plane"></i>
                         </b-button>
                         <b-button variant="outline-primary" v-b-tooltip.hover title="Voir la publication"
-                                  :href="data.item.url_show" target="_blank"><i
+                                  :to="{ name: 'publication_show', params: { slug: data.item.slug }}"
+                                  target="_blank"><i
                                 class="far fa-eye"></i></b-button>
                         <b-button v-if="data.item.status_id === 0" variant="outline-success"
                                   v-b-tooltip.hover title="Modifier la publication"
@@ -111,14 +112,8 @@
       publicationProvider(ctx) {
         return fetch(Routing.generate('api_user_publication_list'), {method: 'POST', body: JSON.stringify(ctx)})
         .then(resp => resp.json())
-        .then((data) => {
-          return data.publications.map((publication) => {
-            return Object.assign({}, publication, {
-
-              url_show: Routing.generate('publications_show', {slug: publication.slug})
-            });
-          });
-        }).catch(error => {
+        .then((data) => data.publications)
+        .catch(error => {
           console.error(error);
           return []
         })

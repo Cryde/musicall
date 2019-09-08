@@ -18,16 +18,4 @@ class PublicationsController extends AbstractController
     {
         return $this->render('publications/index.html.twig');
     }
-
-    /**
-     * @Route("/publications/{slug}", name="publications_show", options={"expose":true})
-     *
-     * @param Publication $publication
-     *
-     * @return Response
-     */
-    public function show(Publication $publication)
-    {
-        return $this->render('publications/show.html.twig', ['publication' => $publication]);
-    }
 }
