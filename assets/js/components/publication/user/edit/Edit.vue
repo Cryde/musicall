@@ -106,6 +106,13 @@
                                 <i class="far fa-image"></i>
                             </b-button>
 
+                            <b-button
+                                    variant="outline-primary"
+                                    :pressed="isActive.youtubeiframe()"
+                                    @click="showVideoModal(commands.youtubeiframe)">
+                                <i class="fab fa-youtube"></i>
+                            </b-button>
+
                             <b-button variant="outline-primary" @click="commands.horizontal_rule">
                                 _
                             </b-button>
@@ -140,6 +147,7 @@
 
         </div>
         <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id"/>
+        <VideoModal ref="videoModal" @onConfirm="addCommand" />
         <EditModal :id="id" :title="title" :description="description" :cover="cover"
                    :validation="validation"
                    :submitted="submitted"
@@ -165,7 +173,9 @@
     OrderedList
   } from 'tiptap-extensions';
   import UploadModal from './UploadModal';
+  import VideoModal from './VideoModal';
   import EditModal from './EditModal';
+  import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
 
   export default {
     components: {
@@ -173,7 +183,8 @@
       EditorMenuBar,
       EditorMenuBubble,
       UploadModal,
-      EditModal
+      EditModal,
+      VideoModal
     },
     directives: {Sticky},
     data() {
@@ -197,7 +208,8 @@
             new Italic(),
             new Link(),
             new History(),
-            new Image()
+            new Image(),
+            new YoutubeIframe()
           ],
           onUpdate: ({getHTML}) => {
             // get new content on update
@@ -260,7 +272,7 @@
             solid: true,
             toaster: 'b-toaster-bottom-left',
             append: true
-          })
+          });
 
           return true;
         })
@@ -280,6 +292,9 @@
       },
       openUploadModal(command) {
         this.$refs.uploadModal.openModal(command);
+      },
+      showVideoModal(command) {
+        this.$refs.videoModal.openModal(command)
       },
       addCommand(data) {
         if (data.command !== null) {
