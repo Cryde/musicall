@@ -17,7 +17,7 @@
     "dependencies": {
         "babel-polyfill": "^6.26.0",
         "bootstrap": "^4.3.1",
-        "bootstrap-vue": "^2.0.0",
+        "bootstrap-vue": "^2.0.1",
         "fetch-intercept": "^2.3.1",
         "tippy.js": "^4.3.5",
         "tiptap": "^1.25.0",
