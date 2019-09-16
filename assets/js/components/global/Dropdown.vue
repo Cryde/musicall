@@ -4,7 +4,7 @@
             <b-dropdown size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
                 <template slot="button-content">
                     <div class="inset">
-                        <img src="https://via.placeholder.com/150x150" class="rounded-circle">
+                        <b-img-lazy src="https://via.placeholder.com/150x150" rounded="circle"   />
                     </div>
                 </template>
                 <b-dropdown-text><strong>{{ user.username }}</strong></b-dropdown-text>
