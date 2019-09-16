@@ -9,20 +9,35 @@
         </div>
         <div class="row">
             <form method="post" class="col-lg-4 col-12 offset-lg-4 form-signin">
-                <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+                <h1 class="h3 mb-3 font-weight-normal">Login</h1>
                 <label for="inputUsername" class="sr-only">Username</label>
-                <input v-model="username" type="text" name="login" id="inputUsername" class="form-control"
-                       placeholder="Username" required autofocus>
-                <label for="inputPassword" class="sr-only">Password</label>
-                <input v-model="password" type="password" name="password" id="inputPassword" class="form-control"
-                       placeholder="Password" required>
+                <b-form-input
+                        id="inputUsername"
+                        v-model="username"
+                        required autofocus
+                        size="lg"
+                        placeholder="nom d'utilisateur"
+                ></b-form-input>
 
-                <button
+                <label for="inputPassword" class="sr-only">Password</label>
+                <b-form-input
+                        id="inputPassword"
+                        v-model="password"
+                        type="password"
+                        size="lg"
+                        required
+                        placeholder="mot de passe"
+                ></b-form-input>
+
+                <b-button
+                        variant="primary" block
+                        size="lg"
+                        class="mt-3"
                         :disabled="!username.length || !password.length || isLoading"
-                        class="btn btn-lg btn-primary" type="submit" @click.prevent @click="login">
-                    <b-spinner variant="primary" type="grow" label="Spinning" v-if="isLoading"></b-spinner>
-                    Se connecter
-                </button>
+                        type="submit" @click.prevent @click="login">
+                    <b-spinner small type="grow" v-if="isLoading"></b-spinner>
+                    me connecter
+                </b-button>
             </form>
         </div>
     </div>
