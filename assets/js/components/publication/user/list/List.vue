@@ -68,14 +68,9 @@
 
             <template slot="modal-footer" slot-scope="{ ok, cancel, hide }">
                 <b-button variant="default" @click="cancel()">
-                    Annuler
+                    Fermer
                 </b-button>
 
-                <div v-if="showPublicationUrl">
-                    <b-button variant="outline-success" target="_blank" :href="showPublicationUrl">
-                        Voir la publication
-                    </b-button>
-                </div>
             </template>
         </b-modal>
     </div>
@@ -118,58 +113,50 @@
           return []
         })
       },
-      showDeleteModal(id) {
-        this.$bvModal.msgBoxConfirm('Êtes vous sur ?', {
+      async showDeleteModal(id) {
+        const value = await this.$bvModal.msgBoxConfirm('Êtes vous sur ?', {
           okTitle: 'Oui',
           cancelTitle: 'Annuler',
-        })
-        .then(value => {
+        });
 
-          if (!value) {
-            return;
-          }
+        if (!value) {
+          return;
+        }
 
-          this.deleteItem(id)
-          .then(() => {
-            this.$refs.table.refresh();
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-        })
-        .catch(err => {
-          // An error occurred
-        })
+        try {
+          await this.deleteItem(id)
+          this.$refs.table.refresh();
+        } catch (error) {
+          console.error(error);
+        }
       },
-      publishPublication(id) {
+      async publishPublication(id) {
         this.errors = [];
-        this.$bvModal.msgBoxConfirm('Une fois mise en ligne vous me pourrez plus modifier la publication.', {
+        const value = await this.$bvModal.msgBoxConfirm('Une fois mise en ligne vous me pourrez plus modifier la publication.', {
           title: 'Êtes vous sur ?',
           okTitle: 'Oui',
           cancelTitle: 'Annuler',
           centered: true
-        })
-        .then((value) => {
-          if (!value) {
-            return;
-          }
-          this.loadingControlPublication = true;
-          this.$bvModal.show('modal-publication-control');
+        });
 
-          this.publishPublicationApi(id)
-          .then((resp) => {
-            this.showPublicationUrl = Routing.generate('publications_show', {slug: resp.data.publication.slug})
-            this.loadingControlPublication = false;
-            this.$refs.table.refresh();
-          })
-          .catch((data) => {
-            this.loadingControlPublication = false;
-            for (let error of data.data.errors.violations) {
-              const message = error.title;
-              this.errors.push(message);
-            }
-          });
-        })
+        if (!value) {
+          return;
+        }
+        this.loadingControlPublication = true;
+        this.$bvModal.show('modal-publication-control');
+
+        try {
+          const resp = await this.publishPublicationApi(id);
+          this.$refs.table.refresh();
+
+          this.loadingControlPublication = false;
+        } catch (data) {
+          this.loadingControlPublication = false;
+          for (let error of data.data.errors.violations) {
+            const message = error.title;
+            this.errors.push(message);
+          }
+        }
       },
       publishPublicationApi(id) {
         return fetch(Routing.generate('api_user_publication_publish', {id}))
