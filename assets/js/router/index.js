@@ -13,7 +13,7 @@ export default new Router({
     {
       name: "publication",
       path: "/publications",
-      component: () => import("../views/Publication")
+      component: () => import("../components/publication/list/PublicationList")
     },
     {
       name: "publication_show",

@@ -13,6 +13,7 @@
 @import "modules/editor.css";
 
 @import "modules/login.css";
+@import "modules/publication-list.css";
 
 [contenteditable]:focus {
     outline: 0 solid transparent;

@@ -3,8 +3,10 @@
 namespace App\Controller\Api;
 
 use App\Entity\Publication;
+use App\Repository\PublicationRepository;
+use App\Serializer\PublicationSerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationController extends AbstractController
@@ -12,9 +14,10 @@ class PublicationController extends AbstractController
     /**
      * @Route("api/publications/{slug}", name="api_publications_show", options={"expose":true})
      *
-     * @param Publication $publication
+     * @param Publication   $publication
+     * @param \HTMLPurifier $purifier
      *
-     * @return Response
+     * @return JsonResponse
      */
     public function show(Publication $publication, \HTMLPurifier $purifier)
     {
@@ -22,5 +25,20 @@ class PublicationController extends AbstractController
             'title'   => $publication->getTitle(),
             'content' => $purifier->purify($publication->getContent()),
         ]);
+    }
+
+    /**
+     * @Route("api/publications", name="api_publications_list", options={"expose":true})
+     *
+     * @param PublicationRepository $publicationRepository
+     * @param PublicationSerializer $publicationSerializer
+     *
+     * @return JsonResponse
+     */
+    public function list(PublicationRepository $publicationRepository, PublicationSerializer $publicationSerializer)
+    {
+        $publications = $publicationRepository->findBy(['status' => Publication::STATUS_ONLINE], ['publicationDatetime' => 'DESC']);
+
+        return $this->json(['data' => $publicationSerializer->listToArray($publications)]);
     }
 }
