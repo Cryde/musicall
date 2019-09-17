@@ -5,6 +5,12 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 import BootstrapVue from 'bootstrap-vue';
+import VueMeta from 'vue-meta';
+
+Vue.use(VueMeta, {
+  // optional pluginOptions
+  refreshOnceOnNavigation: true
+});
 
 Vue.use(BootstrapVue);
 
@@ -13,5 +19,9 @@ Vue.config.productionTip = false;
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
+  metaInfo: () => ({
+    title: 'Home',
+    titleTemplate: '%s | MusicAll'
+  })
 }).$mount("#app");

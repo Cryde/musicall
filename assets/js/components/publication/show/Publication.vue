@@ -13,8 +13,12 @@
   import {mapGetters} from 'vuex';
 
   export default {
+    metaInfo () {
+      return {
+        title: this.publication.title
+      }
+    },
     async created() {
-      console.log(this.$route.params.slug);
       await this.$store.dispatch('publication/getPublication', {slug: this.$route.params.slug});
     },
     computed: {
