@@ -14,6 +14,9 @@
     import {mapGetters} from 'vuex';
 
     export default {
+      metaInfo: {
+        title: 'Publications',
+      },
       computed: {
         ...mapGetters('publications', [
             'publications'
