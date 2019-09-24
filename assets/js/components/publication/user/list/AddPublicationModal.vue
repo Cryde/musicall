@@ -81,7 +81,11 @@
     },
     mounted() {
       this.$root.$on('bv::modal::shown', this.loadData);
-      this.$root.$on('bv::modal::hidden', () => {
+      this.$root.$on('bv::modal::hidden', (bvEvent, modalId) => {
+        if (modalId !== 'modal-publication-add') {
+          return;
+        }
+
         this.categories = null;
         this.loading.fetching = false;
         this.loading.loaded = false;

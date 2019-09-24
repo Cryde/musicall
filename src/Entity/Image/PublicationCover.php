@@ -5,6 +5,7 @@ namespace App\Entity\Image;
 use App\Entity\Publication;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -72,9 +73,13 @@ class PublicationCover
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
      *
-     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile $image
+     * @param File|UploadedFile|null $image
+     *
+     * @throws \Exception
+     *
+     * @return $this
      */
-    public function setImageFile(?File $image = null): void
+    public function setImageFile(?File $image = null)
     {
         $this->imageFile = $image;
         if (null !== $image) {
@@ -82,12 +87,20 @@ class PublicationCover
             // otherwise the event listeners won't be called and the file is lost
             $this->updatedAt = new \DateTimeImmutable();
         }
+
+        return $this;
     }
 
-
-    public function setImageName(?string $imageName): void
+    /**
+     * @param string|null $imageName
+     *
+     * @return $this
+     */
+    public function setImageName(?string $imageName)
     {
         $this->imageName = $imageName;
+
+        return $this;
     }
 
     public function getImageName(): ?string
@@ -95,9 +108,11 @@ class PublicationCover
         return $this->imageName;
     }
 
-    public function setImageSize(?int $imageSize): void
+    public function setImageSize(?int $imageSize)
     {
         $this->imageSize = $imageSize;
+
+        return $this;
     }
 
     public function getImageSize(): ?int
