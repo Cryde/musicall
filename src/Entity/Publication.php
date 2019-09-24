@@ -15,11 +15,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Publication
 {
-    const CATEGORY_PUBLICATION_ID = 1;
-    const CATEGORY_COURSE_ID = 2;
+    const CATEGORY_PUBLICATION = 1;
+    const CATEGORY_COURSE = 2;
 
-    const TYPE_TEXT_ID = 1;
-    const TYPE_VIDEO_ID = 2;
+    const TYPE_TEXT = 1;
+    const TYPE_VIDEO = 2;
 
     const STATUS_DRAFT = 0;
     const STATUS_ONLINE = 1;
@@ -109,6 +109,11 @@ class Publication
      * @ORM\OneToOne(targetEntity="App\Entity\Image\PublicationCover", cascade={"persist", "remove"}, orphanRemoval=true)
      */
     private $cover;
+
+    /**
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $type;
     
     public function __construct()
     {
@@ -288,6 +293,18 @@ class Publication
     public function setCover(?PublicationCover $cover): self
     {
         $this->cover = $cover;
+
+        return $this;
+    }
+
+    public function getType(): ?int
+    {
+        return $this->type;
+    }
+
+    public function setType(int $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }
