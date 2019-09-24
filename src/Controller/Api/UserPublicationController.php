@@ -9,11 +9,20 @@ use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\UserPublicationArraySerializer;
+use App\Service\Builder\PublicationCoverDirector;
+use App\Service\Builder\PublicationDirector;
+use App\Service\File\Exception\CorruptedFileException;
+use App\Service\File\RemoteFileDownloader;
+use App\Service\Google\Exception\YoutubeAlreadyExistingVideoException;
+use App\Service\Google\Exception\YoutubeVideoNotFoundException;
+use App\Service\Google\Youtube;
+use App\Service\Google\YoutubeUrlHelper;
 use App\Service\Jsonizer;
 use App\Service\UserPublication\SortAndFilterFromArray;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -98,12 +107,16 @@ class UserPublicationController extends AbstractController
 
         $publicationSubCategory = $data['category_id'] ? $publicationSubCategoryRepository->find($data['category_id']) : null;
 
-        $publication = new Publication();
+        if (!$publicationSubCategory) {
+            throw new \InvalidArgumentException('Catégorie inexistante');
+        }
 
+        $publication = new Publication();
         $publication->setTitle($data['title']);
+        $publication->setType(Publication::TYPE_TEXT);
         $publication->setSubCategory($publicationSubCategory);
         $publication->setAuthor($this->getUser());
-        $publication->setCategory(Publication::CATEGORY_PUBLICATION_ID);
+        $publication->setCategory(Publication::CATEGORY_PUBLICATION);
 
         $errors = $validator->validate($publication);
 
@@ -117,6 +130,95 @@ class UserPublicationController extends AbstractController
         return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
     }
 
+    /**
+     * @Route(
+     *     "/api/users/publications/add/video",
+     *     name="api_user_publication_add_video",
+     *     options={"expose": true},
+     *     methods={"POST"},
+     *     defaults={"_format": "json"}
+     * )
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Request                        $request
+     * @param Jsonizer                       $jsonizer
+     * @param Youtube                        $youtube
+     * @param YoutubeUrlHelper               $youtubeUrlHelper
+     * @param PublicationCoverDirector       $publicationCoverDirector
+     * @param PublicationDirector            $publicationDirector
+     * @param PublicationRepository          $publicationRepository
+     * @param UserPublicationArraySerializer $userPublicationArraySerializer
+     * @param RemoteFileDownloader           $remoteFileDownloader
+     * @param ParameterBagInterface          $containerBag
+     *
+     * @return JsonResponse
+     * @throws YoutubeAlreadyExistingVideoException
+     * @throws YoutubeVideoNotFoundException
+     * @throws CorruptedFileException
+     */
+    public function addVideo(
+        Request $request,
+        Jsonizer $jsonizer,
+        Youtube $youtube,
+        YoutubeUrlHelper $youtubeUrlHelper,
+        PublicationCoverDirector $publicationCoverDirector,
+        PublicationDirector $publicationDirector,
+        PublicationRepository $publicationRepository,
+        UserPublicationArraySerializer $userPublicationArraySerializer,
+        RemoteFileDownloader $remoteFileDownloader,
+        ParameterBagInterface $containerBag
+    ) {
+        $data = $jsonizer->decodeRequest($request);
+        $videoUrl = $data['videoUrl'];
+
+        $videoId = $youtubeUrlHelper->getVideoId($videoUrl);
+
+        if($publicationRepository->findOneBy(['content' => $videoId, 'category' => Publication::CATEGORY_PUBLICATION, 'type' => Publication::TYPE_VIDEO])) {
+            throw new YoutubeAlreadyExistingVideoException('This video is already sent');
+        }
+
+        // @todo : emit handle exceptions
+        $youtube->getVideoInfo($videoUrl); // this to be sure the video still exist
+
+        $file = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
+
+        $cover = $publicationCoverDirector->build($file);
+        $publication = $publicationDirector->buildVideo($data, $this->getUser());
+        $cover->setPublication($publication);
+        $publication->setCover($cover);
+
+        $this->getDoctrine()->getManager()->persist($publication);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json(['data' => $userPublicationArraySerializer->toArray($publication)]);
+    }
+
+    /**
+     * @Route("/api/users/publications/preview/video", name="api_publications_video_preview", options={"expose": true}, methods={"POST"}, defaults={"_format": "json"})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Request  $request
+     * @param Jsonizer $jsonizer
+     * @param Youtube  $youtube
+     *
+     * @return JsonResponse
+     * @throws YoutubeVideoNotFoundException
+     */
+    public function videoPreview(Request $request, Jsonizer $jsonizer, Youtube $youtube, YoutubeUrlHelper $youtubeUrlHelper, PublicationRepository $publicationRepository)
+    {
+        $data = $jsonizer->decodeRequest($request);
+
+        if(!isset($data['videoUrl'])) {
+            throw new \InvalidArgumentException('Missing url');
+        }
+
+        $existingVideo = $publicationRepository->findOneVideo($youtubeUrlHelper->getVideoId($data['videoUrl']));
+        $info = array_merge($youtube->getVideoInfo($data['videoUrl']), ['existing_video' => $existingVideo !== null]);
+
+        return $this->json(['data' => $info]);
+    }
 
     /**
      * @Route("/api/users/publications/{id}", name="api_user_publication_show", options={"expose": true})

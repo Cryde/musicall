@@ -18,4 +18,14 @@ class PublicationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Publication::class);
     }
+
+    /**
+     * @param $videoId
+     *
+     * @return Publication|null
+     */
+    public function findOneVideo(string $videoId)
+    {
+        return $this->findOneBy(['content' => $videoId, 'category' => Publication::CATEGORY_PUBLICATION, 'type' => Publication::TYPE_VIDEO]);
+    }
 }
