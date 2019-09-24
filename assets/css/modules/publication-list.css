@@ -1,5 +1,15 @@
-.card-title {
+#publication-list .card-title {
     color: #212529;
+    font-size: 1.3rem;
+}
+
+#publication-list .video-tag {
+    position: absolute;
+    color: #e9573f;
+    top: 10px;
+    font-size: 5rem;
+    width: 100%;
+    margin-left: -1.25rem;
 }
 
 .card-text {

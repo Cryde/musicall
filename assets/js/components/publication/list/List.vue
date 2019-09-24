@@ -1,11 +1,14 @@
 <template>
-    <div>
+    <div id="publication-list">
         <b-card-group columns>
-            <b-card v-for="publication in publications" key="publication.slug" tag="b-link" :to="{ name: 'publication_show', params: { slug: publication.slug }}" :title="publication.title" :img-src="publication.cover_image" img-alt="Image" img-top>
-                <b-card-text>
-                    {{ publication.description }}
-                </b-card-text>
-            </b-card>
+            <div v-for="publication in publications" :key="publication.id">
+                <b-card tag="b-link" :to="{ name: 'publication_show', params: { slug: publication.slug }}" :title="publication.title" :img-src="publication.cover_image" img-alt="Image" img-top>
+                    <b-card-text v-if="publication.type === 'text'">
+                        {{ publication.description }}
+                    </b-card-text>
+                    <div v-if="publication.type === 'video'" class="text-center video-tag"><i class="fab fa-youtube"></i></div>
+                </b-card>
+            </div>
         </b-card-group>
     </div>
 </template>
