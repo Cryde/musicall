@@ -4,7 +4,6 @@
         <b-dropdown id="dropdown-1" text="Ajouter" right variant="outline-success" class="float-right">
             <b-dropdown-item v-b-modal.modal-publication-add><i class="far fa-edit"></i> une publication</b-dropdown-item>
             <b-dropdown-item v-b-modal.modal-video-add><i class="fas fa-video"></i> une video</b-dropdown-item>
-            <b-dropdown-item><i class="far fa-newspaper"></i> une news</b-dropdown-item>
         </b-dropdown>
 
         <h1>Mes publications</h1>
