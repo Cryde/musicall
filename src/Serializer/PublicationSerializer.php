@@ -37,6 +37,7 @@ class PublicationSerializer
         return [
             'slug'            => $publication->getSlug(),
             'type'            => $publication->getType() === Publication::TYPE_VIDEO ? 'video' : 'text',
+            'category'        => $publication->getSubCategory()->getSlug(),
             'title'           => mb_strtoupper($publication->getTitle()),
             'description'     => $publication->getShortDescription(),
             'cover_image'     => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
