@@ -15,9 +15,14 @@ set('ssh_multiplexing', true);
 add('shared_dirs', [
     'public/images/publication/post',
     'public/images/publication/cover',
+    'public/media/cache',
 ]);
-add('shared_dirs', ['public/media/cache']);
-add('shared_files', ['.env.local']);
+
+add('shared_files', [
+    '.env.local',
+    'config/jwt/private.pem',
+    'config/jwt/public.pem',
+]);
 
 // Hosts
 inventory('hosts.yml');
