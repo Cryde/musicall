@@ -36,6 +36,8 @@ security:
         main:
             anonymous: true
             stateless: true
+            remember_me:
+                secret: '%env(APP_SECRET)%'  # if I don't put that it fail...
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
