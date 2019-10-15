@@ -3,8 +3,12 @@
         <Header/>
         <div class="container">
             <div class="row">
-                <div class="col-12 col-lg-2"><Menu/></div>
-                <div class="col-12 col-lg-10"><router-view></router-view></div>
+                <div class="col-12 col-lg-2">
+                    <Menu/>
+                </div>
+                <div class="col-12 col-lg-10">
+                    <router-view></router-view>
+                </div>
             </div>
         </div>
         <Footer/>
