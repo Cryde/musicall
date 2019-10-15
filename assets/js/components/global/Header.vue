@@ -16,12 +16,17 @@
                 </form>
 
                 <!-- if user-->
-                <Dropdown v-if="isAuthenticated"/>
+                <div v-if="isLoading">
+                    <b-spinner small type="grow"></b-spinner>
+                </div>
                 <div v-else>
-                    <!-- else : -->
-                    <router-link :to="{ name: 'login' }" class="ml-auto btn btn-registration">s'inscrire
-                    </router-link>
-                    <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">se connecter</router-link>
+                    <Dropdown v-if="isAuthenticated"/>
+                    <div v-else>
+                        <!-- else : -->
+                        <router-link :to="{ name: 'login' }" class="ml-auto btn btn-registration">s'inscrire
+                        </router-link>
+                        <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">se connecter</router-link>
+                    </div>
                 </div>
             </div>
         </div>
@@ -33,10 +38,11 @@
   import Dropdown from './Dropdown';
 
   export default {
-    components: { Dropdown},
+    components: {Dropdown},
     computed: {
       ...mapGetters('security', [
-        'isAuthenticated'
+        'isAuthenticated',
+        'isLoading'
       ])
     }
   }

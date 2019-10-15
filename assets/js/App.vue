@@ -26,31 +26,57 @@
     components: {
       Header, Footer, Menu
     },
-    created () {
-      let isAuthenticated = JSON.parse(this.$parent.$el.attributes["data-is-authenticated"].value);
-      let user = JSON.parse(this.$parent.$el.attributes["data-user"].value);
-      this.$store.dispatch("security/refresh", {isAuthenticated, user});
+    async created() {
+
+      await this.$store.dispatch('security/getAuthToken', true);
+      const store = this.$store;
+      const router = this.$router;
 
       const unregister = fetchIntercept.register({
-        response: function (response) {
-          // Modify the reponse object
-          return response;
-        },
-      });
-/*
-      axios.interceptors.response.use(undefined, (err) => {
-        return new Promise(() => {
-          if (err.response.status === 403) {
-            this.$router.push({path: '/login'})
-          } else if (err.response.status === 500) {
-            document.open();
-            document.write(err.response.data);
-            document.close();
+        async request(url, config) {
+
+          const currentRoute = router.history.current;
+
+          if (!currentRoute.meta.isAuthRequired) {
+            return [url, config];
           }
-          throw err;
-        });
+
+          if (!config) {
+            config = {};
+          }
+
+          if (!config.headers) {
+            config.headers = {};
+          }
+
+          if (!url.includes('login') && !url.includes('refresh')) {
+            config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken');
+          }
+
+          return [url, config];
+        },
+        async responseError(error) {
+
+          console.error(error);
+
+          // Prevent endless redirects (login is where you should end up)
+          if (error.request !== undefined) {
+            if (error.request.responseURL.includes('login')) {
+              return Promise.reject(error)
+            }
+          }
+
+          // If you can't refresh your token or you are sent Unauthorized on any request, logout and go to login
+          if (error.request !== undefined && (error.request.responseURL.includes('refresh') || error.request.status === 401 && error.config.__isRetryRequest)) {
+            //store.dispatch('auth/logout')
+            //router.push({name: 'Login'})
+          } else if (error.request !== undefined && error.request.status === 401) {
+            //error.config.__isRetryRequest = true
+            //return axios.request(error.config)
+          }
+          return Promise.reject(error)
+        }
       });
- */
     }
   }
 </script>
