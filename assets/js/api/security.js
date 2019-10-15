@@ -1,6 +1,6 @@
 export default {
   login(username, password) {
-    return fetch(Routing.generate('api_login'), {
+    return fetch(Routing.generate('api_login_check'), {
       method: 'POST',
       body: JSON.stringify({username, password}),
       headers: {
@@ -13,6 +13,16 @@ export default {
       }
       return resp;
     })
-    .then(resp => resp.json())
+    .then(resp => resp.json());
+  },
+  refreshToken(refreshToken) {
+    const formData = new FormData();
+    formData.append('refresh_token', refreshToken);
+
+    return fetch(Routing.generate('gesdinet_jwt_refresh_token'), {
+      method: 'POST',
+      body: formData
+    })
+    .then(resp => resp.json());
   }
 };
