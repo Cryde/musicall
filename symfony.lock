@@ -119,6 +119,9 @@
     "gedmo/doctrine-extensions": {
         "version": "v2.4.36"
     },
+    "gesdinet/jwt-refresh-token-bundle": {
+        "version": "v0.7.1"
+    },
     "google/apiclient": {
         "version": "2.0",
         "recipe": {
@@ -155,6 +158,21 @@
     "jms/metadata": {
         "version": "2.0.0"
     },
+    "lcobucci/jwt": {
+        "version": "3.3.1"
+    },
+    "lexik/jwt-authentication-bundle": {
+        "version": "2.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.5",
+            "ref": "5b2157bcd5778166a5696e42f552ad36529a07a6"
+        },
+        "files": [
+            "config/packages/lexik_jwt_authentication.yaml"
+        ]
+    },
     "liip/imagine-bundle": {
         "version": "1.8",
         "recipe": {
@@ -170,6 +188,9 @@
     },
     "monolog/monolog": {
         "version": "1.24.0"
+    },
+    "namshi/jose": {
+        "version": "7.2.3"
     },
     "nikic/php-parser": {
         "version": "v4.1.0"

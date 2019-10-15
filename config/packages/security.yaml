@@ -18,20 +18,32 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
+        refresh:
+            pattern:  ^/api/token/refresh
+            stateless: true
+            anonymous: true
+
+        login:
+            pattern:  ^/api/login_check
+            stateless: true
+            anonymous: true
+            json_login:
+                check_path:      api_login_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
         main:
             anonymous: true
-            remember_me:
-                secret:  "%kernel.secret%"
-            logout:
-                path:   app_logout
-            json_login:
-                check_path: api_login
+            stateless: true
             guard:
                 authenticators:
-                    - App\Security\AppAuthenticator
+                    - lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/token/refresh, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/admin/, role: ROLE_ADMIN }
