@@ -49,7 +49,7 @@
             config.headers = {};
           }
 
-          if (!url.includes('login') && !url.includes('refresh')) {
+          if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
             config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken');
           }
 

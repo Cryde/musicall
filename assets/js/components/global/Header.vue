@@ -23,7 +23,7 @@
                     <Dropdown v-if="isAuthenticated"/>
                     <div v-else>
                         <!-- else : -->
-                        <router-link :to="{ name: 'login' }" class="ml-auto btn btn-registration">s'inscrire
+                        <router-link :to="{ name: 'user_registration' }" class="ml-auto btn btn-registration">s'inscrire
                         </router-link>
                         <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">se connecter</router-link>
                     </div>
