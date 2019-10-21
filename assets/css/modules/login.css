@@ -1,10 +1,29 @@
 
-.form-signin input[type="text"] {
+.form-signin input {
     margin-bottom: -1px;
+    border-radius: 0;
+}
+
+.form-signin input[type="text"]:first-of-type {
+    margin-bottom: -1px;
+    border-radius: 0.25rem;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
 }
-.form-signin input[type="password"] {
+
+.form-signin input[type="password"]:last-of-type {
+    border-radius: 0.25rem;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+.form-registration input:last-of-type {
+    padding-right: 35px;
+}
+
+.password-shower {
+    padding: 5px 10px ;
+    margin-top: -40px;
+    cursor: pointer;
+    position: relative;
 }

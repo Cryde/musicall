@@ -30,6 +30,12 @@ export default new Router({
       meta: {isAuthRequired: false}
     },
     {
+      name: "user_registration",
+      path: "/registration",
+      component: () => import("../views/user/Registration"),
+      meta: {isAuthRequired: false}
+    },
+    {
       name: "user_publications",
       path: "/user/publications",
       component: () => import("../components/publication/user/list/List"),
