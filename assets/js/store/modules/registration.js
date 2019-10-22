@@ -1,15 +1,20 @@
 import registerApi from '../../api/registration';
+import {retrieveErrors} from "../../helper/errors";
 
 const UPDATE_IS_LOADING = 'UPDATE_IS_LOADING';
 const UPDATE_IS_SUCCESS = 'UPDATE_IS_SUCCESS';
+const UPDATE_ERRORS = 'UPDATE_ERRORS';
 
 const state = {
   isLoading: false,
   isSuccess: false,
-  errors: ''
+  errors: []
 };
 
 const getters = {
+  errors(state) {
+    return state.errors;
+  },
   isLoading(state) {
     return state.isLoading;
   },
@@ -27,6 +32,9 @@ const mutations = {
   },
   [UPDATE_IS_SUCCESS](state, isSuccess) {
     state.isSuccess = isSuccess;
+  },
+  [UPDATE_ERRORS](state, errors) {
+    state.errors = errors;
   }
 };
 
@@ -34,20 +42,25 @@ const actions = {
   async register({commit}, {username, email, password}) {
     commit(UPDATE_IS_SUCCESS, false);
     commit(UPDATE_IS_LOADING, true);
+
     try {
       const resp = await registerApi.register({username, password, email});
-      commit(UPDATE_IS_SUCCESS, true);
 
-      console.log(resp);
+      if (resp.data.hasOwnProperty('errors')) {
+        commit(UPDATE_ERRORS, retrieveErrors(resp.data.errors));
+
+      } else {
+        commit(UPDATE_IS_SUCCESS, true);
+      }
     } catch (e) {
-
-      console.log('ERROR');
       console.log(e);
+      commit(UPDATE_ERRORS, ['Erreur inconnue']);
     }
 
     commit(UPDATE_IS_LOADING, false);
   }
 };
+
 
 export default {
   namespaced: true,

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -23,13 +24,23 @@ class User implements UserInterface
      */
     private $id;
     /**
+     * @Assert\NotBlank(message="Veuillez saisir un nom d'utilisateur")
+     *
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $username;
     /**
+     * @Assert\NotBlank(message="Veuillez saisir un email")
+     * @Assert\Email(message="Email invalide")
+     *
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
+    /**
+     * @Assert\NotBlank(message="Veuillez saisir un mot de passe")
+     * @Assert\Length(min="3", minMessage="Le mot de passe doit au moins contenir 3 caractères")
+     */
+    private $plainPassword;
     /**
      * @ORM\Column(type="json")
      */
@@ -43,12 +54,10 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity="App\Entity\Publication", mappedBy="author", orphanRemoval=true)
      */
     private $publications;
-
     /**
      * @ORM\Column(type="datetime")
      */
     private $creationDatetime;
-
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
@@ -196,6 +205,26 @@ class User implements UserInterface
     public function setLastLoginDatetime(?\DateTimeInterface $lastLoginDatetime): self
     {
         $this->lastLoginDatetime = $lastLoginDatetime;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param mixed $plainPassword
+     *
+     * @return User
+     */
+    public function setPlainPassword($plainPassword)
+    {
+        $this->plainPassword = $plainPassword;
 
         return $this;
     }
