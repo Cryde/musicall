@@ -34,12 +34,13 @@ class RegistrationController extends AbstractController
 
         $user = (new User())
             ->setUsername($data['username'])
-            ->setEmail($data['email']);
+            ->setEmail($data['email'])
+            ->setPlainPassword($data['password']);
 
         $errors = $validator->validate($user);
 
         if (count($errors) > 0) {
-            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_UNAUTHORIZED);
         }
 
         // encode the plain password

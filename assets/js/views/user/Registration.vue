@@ -3,7 +3,7 @@
         <div v-if="hasError" class="row">
             <div class="col-12 col-lg-4 offset-lg-4">
                 <div class="alert alert-danger" role="alert">
-                    {{ error.message }}
+                    <span class="d-block" v-for="error in errors">{{ error }}</span>
                 </div>
             </div>
         </div>
@@ -44,7 +44,6 @@
                         variant="primary" block
                         size="lg"
                         class="mt-3"
-                        :disabled="!username.length || !email.length || !password.length || isLoading"
                         type="submit" @click.prevent @click="register">
                     <b-spinner small type="grow" v-if="isLoading"></b-spinner>
                     m'inscrire
@@ -80,7 +79,8 @@
       ...mapGetters('registration', [
         'isLoading',
         'isSuccess',
-        'hasError'
+        'hasError',
+        'errors'
       ])
     },
     methods: {
