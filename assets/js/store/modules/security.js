@@ -8,6 +8,7 @@ const AUTHENTICATING = 'AUTHENTICATING';
 const UPDATE_AUTH_STATE = 'UPDATE_AUTH_STATE';
 const UPDATE_AUTH_REQUESTED = 'UPDATE_AUTH_REQUESTED';
 const AUTHENTICATING_ERROR = 'AUTHENTICATING_ERROR';
+const REMOVE_DATA_LOCAL_STORAGE = 'REMOVE_DATA_LOCAL_STORAGE';
 
 const state = {
   isLoading: false,
@@ -58,6 +59,10 @@ const mutations = {
     localStorage.setItem('token', payload.token);
     localStorage.setItem('refresh_token', payload.refresh_token);
   },
+  [REMOVE_DATA_LOCAL_STORAGE]() {
+    localStorage.removeItem('token',);
+    localStorage.removeItem('refresh_token');
+  },
   [UPDATE_IS_LOADING](state, isLoading) {
     state.isLoading = isLoading;
   },
@@ -88,6 +93,9 @@ const actions = {
       commit(UPDATE_ERRORS, err);
       commit(UPDATE_IS_LOADING, false);
     }
+  },
+  async logout({commit}) {
+    commit(REMOVE_DATA_LOCAL_STORAGE);
   },
   async getAuthToken({commit, state}, displayLoading) {
 

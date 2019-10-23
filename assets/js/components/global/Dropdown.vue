@@ -4,7 +4,7 @@
             <b-dropdown size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
                 <template slot="button-content">
                     <div class="inset">
-                        <b-img-lazy src="https://via.placeholder.com/150x150" rounded="circle"   />
+                        <b-img-lazy src="https://via.placeholder.com/150x150" rounded="circle"/>
                     </div>
                 </template>
                 <b-dropdown-text><strong>{{ user.username }}</strong></b-dropdown-text>
@@ -12,7 +12,7 @@
                 <b-dropdown-item :to="{name: 'user_publications'}">Mes publications</b-dropdown-item>
                 <b-dropdown-item href="#">Another action</b-dropdown-item>
                 <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item :href="routes.logout">Logout</b-dropdown-item>
+                <b-dropdown-item @click="logout">Logout</b-dropdown-item>
             </b-dropdown>
         </div>
     </div>
@@ -26,7 +26,6 @@
       return {
         routes: {
           user_publications: '',
-          logout: Routing.generate('app_logout'),
         }
       }
     },
@@ -34,6 +33,12 @@
       ...mapGetters('security', [
         'user'
       ])
+    },
+    methods: {
+      async logout() {
+        await this.$store.dispatch('security/logout');
+        window.location.reload();
+      }
     }
   }
 </script>
