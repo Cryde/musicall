@@ -41,6 +41,10 @@
             <li>
                 <a href="">Forum</a>
             </li>
+
+            <li>
+                <router-link :to="{ name: 'todo' }">Todo</router-link>
+            </li>
         </ul>
     </nav>
 
