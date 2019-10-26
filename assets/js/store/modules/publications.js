@@ -49,6 +49,15 @@ const actions = {
       commit('FETCHING_ERROR', err);
     }
   },
+  async getPublicationsByCategory({commit}, {slug}) {
+    commit('FETCHING');
+    try {
+      const resp = await apiPublications.getPublicationsByCategory({slug});
+      commit('FETCHING_SUCCESS', {publications: resp.data});
+    } catch (err) {
+      commit('FETCHING_ERROR', err);
+    }
+  },
 };
 
 export default {

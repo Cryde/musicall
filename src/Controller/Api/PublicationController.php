@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Publication;
+use App\Entity\PublicationSubCategory;
 use App\Repository\PublicationRepository;
 use App\Serializer\PublicationSerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +25,7 @@ class PublicationController extends AbstractController
         return $this->json([
             'title'   => $publication->getTitle(),
             'content' => $purifier->purify($publication->getContent()),
-            'type'    => $publication->getType() === Publication::TYPE_VIDEO ? 'video' : 'text'
+            'type'    => $publication->getType() === Publication::TYPE_VIDEO ? 'video' : 'text',
         ]);
     }
 
@@ -39,6 +40,24 @@ class PublicationController extends AbstractController
     public function list(PublicationRepository $publicationRepository, PublicationSerializer $publicationSerializer)
     {
         $publications = $publicationRepository->findBy(['status' => Publication::STATUS_ONLINE], ['publicationDatetime' => 'DESC']);
+
+        return $this->json(['data' => $publicationSerializer->listToArray($publications)]);
+    }
+
+    /**
+     * @Route("api/publications/category/{slug}", name="api_publications_list_by_category", options={"expose":true})
+     *
+     * @param PublicationRepository $publicationRepository
+     * @param PublicationSerializer $publicationSerializer
+     *
+     * @return JsonResponse
+     */
+    public function listByCategory(
+        PublicationSubCategory $publicationSubCategory,
+        PublicationRepository $publicationRepository,
+        PublicationSerializer $publicationSerializer
+    ) {
+        $publications = $publicationRepository->findBy(['status' => Publication::STATUS_ONLINE, 'subCategory' => $publicationSubCategory], ['publicationDatetime' => 'DESC']);
 
         return $this->json(['data' => $publicationSerializer->listToArray($publications)]);
     }

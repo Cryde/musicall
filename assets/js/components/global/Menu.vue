@@ -12,7 +12,9 @@
                         <b-spinner small type="grow"></b-spinner>
                     </li>
                     <li v-else v-for="category in categories">
-                        <a href="">{{ category.title }}</a>
+                        <router-link :to="{name: 'publications_by_category', params: { slug: category.slug}}">
+                            {{ category.title }}
+                        </router-link>
                     </li>
                 </ul>
             </li>
