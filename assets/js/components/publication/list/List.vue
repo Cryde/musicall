@@ -3,6 +3,8 @@
         <b-spinner variant="primary"></b-spinner>
     </div>
     <div v-else id="publication-list">
+        <h1 v-if="currentCategory">{{ currentCategory.title }}</h1>
+        <h1 v-else>Publications</h1>
         <b-card-group columns>
             <div v-for="publication in publications" :key="publication.id">
                 <b-card v-if="publication.category !== 'news'" tag="b-link"
@@ -29,6 +31,11 @@
   import {mapGetters} from 'vuex';
 
   export default {
+    data() {
+      return {
+        currentCategory: null
+      }
+    },
     metaInfo: {
       title: 'Publications',
     },
@@ -36,10 +43,25 @@
       ...mapGetters('publications', [
         'publications',
         'isLoading'
-      ])
+      ]),
+      ...mapGetters('publicationCategory', ['categories'])
     },
-    async created() {
-      await this.$store.dispatch('publications/getPublications');
+    watch: {
+      '$route': 'fetchData'
+    },
+    async mounted() {
+      await this.fetchData();
+    },
+    methods: {
+      async fetchData() {
+        const slug = this.$route.params.slug;
+        this.currentCategory = this.categories.find((category) => category.slug === slug);
+        if (slug && this.currentCategory) {
+          await this.$store.dispatch('publications/getPublicationsByCategory', {slug});
+        } else {
+          await this.$store.dispatch('publications/getPublications');
+        }
+      }
     }
   }
 </script>
