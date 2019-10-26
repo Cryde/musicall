@@ -2,26 +2,18 @@
     <nav id="menu">
         <ul>
 
-            <li><router-link :to="{ name: 'home' }">Home</router-link></li>
+            <li>
+                <router-link :to="{ name: 'home' }">Home</router-link>
+            </li>
             <li>
                 <router-link :to="{ name: 'publication' }">Publications</router-link>
                 <ul>
-                    <li class="">
-                        <a href="/publications/categorie/chroniques">Chroniques</a>
+                    <li v-if="isLoading">
+                        <b-spinner small type="grow"></b-spinner>
                     </li>
-                    <li class="">
-                        <a href="/publications/categorie/live-reports">Live-reports</a>
+                    <li v-else v-for="category in categories">
+                        <a href="">{{ category.title }}</a>
                     </li>
-                    <li class="">
-                        <a href="/publications/categorie/interviews">Interviews</a>
-                    </li>
-                    <li class="">
-                        <a href="/publications/categorie/articles">Articles</a>
-                    </li>
-                    <li class="">
-                        <a href="/publications/categorie/news">News</a>
-                    </li>
-                    <li class=""><a href="/publications/categorie/decouvertes">Découvertes</a></li>
                 </ul>
             </li>
 
@@ -47,6 +39,17 @@
             </li>
         </ul>
     </nav>
-
-
 </template>
+
+<script>
+  import {mapGetters} from 'vuex';
+
+  export default {
+    computed: {
+      ...mapGetters('publicationCategory', [
+        'isLoading',
+        'categories'
+      ])
+    }
+  }
+</script>

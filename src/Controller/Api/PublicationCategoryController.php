@@ -14,8 +14,6 @@ class PublicationCategoryController extends AbstractController
     /**
      * @Route("/api/publications/categories", name="api_publication_category_list", options={"expose": true})
      *
-     * @IsGranted("IS_AUTHENTICATED_FULLY")
-     *
      * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
      * @param PublicationCategoryArraySerializer $publicationCategoryArraySerializer
      *

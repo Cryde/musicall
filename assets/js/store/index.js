@@ -5,6 +5,7 @@ import registration from './modules/registration';
 import video from './modules/video';
 import publication from './modules/publication';
 import publications from './modules/publications';
+import publicationCategory from './modules/publicationCategory';
 
 Vue.use(Vuex);
 
@@ -17,6 +18,7 @@ export default new Vuex.Store({
     registration,
     publication,
     publications,
+    publicationCategory,
   },
   strict: debug,
 })
