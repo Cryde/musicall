@@ -1,4 +1,6 @@
 {
+    "name": "musicall",
+    "description": "MusicAll is a social network for music lover",
     "type": "project",
     "license": "proprietary",
     "require": {
