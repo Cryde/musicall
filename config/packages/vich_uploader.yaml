@@ -13,4 +13,3 @@ vich_uploader:
             namer:
                 service: Vich\UploaderBundle\Naming\HashNamer
             inject_on_load: true
-
