@@ -16,7 +16,6 @@ class GoogleApi
 
     public function getYoutube()
     {
-      //  $this->client->setApplicationName("Youtube_Video_Infos");
         return new \Google_Service_YouTube($this->client);
     }
 }

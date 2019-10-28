@@ -9,16 +9,6 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 class AuthenticationSuccessListener
 {
     /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
-
-    /**
      * @param AuthenticationSuccessEvent $event
      *
      * @throws \Exception

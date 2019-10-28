@@ -1,5 +1,0 @@
-security:
-  firewalls:
-    main:
-      remember_me:
-        secure: true
