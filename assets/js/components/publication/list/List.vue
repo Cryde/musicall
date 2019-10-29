@@ -3,8 +3,12 @@
         <b-spinner variant="primary"></b-spinner>
     </div>
     <div v-else id="publication-list">
-        <h1 v-if="currentCategory">{{ currentCategory.title }}</h1>
-        <h1 v-else>Publications</h1>
+        <h1 v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
+        <h1 v-else-if="!this.isHome">Publications</h1>
+        <div class="overflow-auto" v-if="numberOfPages > 1">
+            <b-pagination-nav :link-gen="linkGen" :number-of-pages="numberOfPages" use-router align="right"
+                              size="sm"></b-pagination-nav>
+        </div>
         <b-card-group columns>
             <div v-for="publication in publications" :key="publication.id">
                 <b-card v-if="publication.category !== 'news'" tag="b-link"
@@ -33,6 +37,7 @@
   export default {
     data() {
       return {
+        isHome: false,
         currentCategory: null
       }
     },
@@ -42,7 +47,8 @@
     computed: {
       ...mapGetters('publications', [
         'publications',
-        'isLoading'
+        'isLoading',
+        'numberOfPages'
       ]),
       ...mapGetters('publicationCategory', ['categories'])
     },
@@ -50,17 +56,22 @@
       '$route': 'fetchData'
     },
     async mounted() {
+      this.isHome = this.$route.name === 'home';
       await this.fetchData();
     },
     methods: {
       async fetchData() {
         const slug = this.$route.params.slug;
+        const offset = this.$route.query.page ? this.$route.query.page-1 : 0;
         this.currentCategory = this.categories.find((category) => category.slug === slug);
         if (slug && this.currentCategory) {
-          await this.$store.dispatch('publications/getPublicationsByCategory', {slug});
+          await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
         } else {
-          await this.$store.dispatch('publications/getPublications');
+          await this.$store.dispatch('publications/getPublications', {offset});
         }
+      },
+      linkGen(pageNum) {
+        return pageNum === 1 ? '?' : `?page=${pageNum}`
       }
     }
   }

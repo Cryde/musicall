@@ -1,6 +1,6 @@
 export default {
-  getPublications() {
-    return fetch(Routing.generate('api_publications_list'), {
+  getPublications({offset}) {
+    return fetch(Routing.generate('api_publications_list', {offset}), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -8,8 +8,8 @@ export default {
     })
     .then(resp => resp.json())
   },
-  getPublicationsByCategory({slug}) {
-    return fetch(Routing.generate('api_publications_list_by_category', {slug}), {
+  getPublicationsByCategory({slug, offset}) {
+    return fetch(Routing.generate('api_publications_list_by_category', {slug, offset}), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

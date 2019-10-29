@@ -4,6 +4,7 @@ const state = {
   isLoading: false,
   error: null,
   publications: [],
+  numberOfPages: 0,
 };
 
 const getters = {
@@ -18,6 +19,9 @@ const getters = {
   },
   publications(state) {
     return state.publications;
+  },
+  numberOfPages(state) {
+    return state.numberOfPages;
   }
 };
 
@@ -30,7 +34,9 @@ const mutations = {
   ['FETCHING_SUCCESS'](state, payload) {
     state.isLoading = false;
     state.error = null;
-    state.publications = payload.publications;
+    console.log(payload.data.publications);
+    state.publications = payload.data.publications;
+    state.numberOfPages = payload.data.meta.numberOfPages;
   },
   ['FETCHING_ERROR'](state, error) {
     state.isLoading = false;
@@ -40,20 +46,20 @@ const mutations = {
 };
 
 const actions = {
-  async getPublications({commit}) {
+  async getPublications({commit}, {offset}) {
     commit('FETCHING');
     try {
-      const resp = await apiPublications.getPublications();
-      commit('FETCHING_SUCCESS', {publications: resp.data});
+      const resp = await apiPublications.getPublications({offset});
+      commit('FETCHING_SUCCESS', {data: resp.data});
     } catch (err) {
       commit('FETCHING_ERROR', err);
     }
   },
-  async getPublicationsByCategory({commit}, {slug}) {
+  async getPublicationsByCategory({commit}, {slug, offset}) {
     commit('FETCHING');
     try {
-      const resp = await apiPublications.getPublicationsByCategory({slug});
-      commit('FETCHING_SUCCESS', {publications: resp.data});
+      const resp = await apiPublications.getPublicationsByCategory({slug, offset});
+      commit('FETCHING_SUCCESS', {data: resp.data});
     } catch (err) {
       commit('FETCHING_ERROR', err);
     }
