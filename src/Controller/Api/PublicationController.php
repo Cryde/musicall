@@ -8,10 +8,13 @@ use App\Repository\PublicationRepository;
 use App\Serializer\PublicationSerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationController extends AbstractController
 {
+    const LIMIT_PUBLICATION_BY_PAGE = 20;
+
     /**
      * @Route("api/publications/{slug}", name="api_publications_show", options={"expose":true})
      *
@@ -32,33 +35,60 @@ class PublicationController extends AbstractController
     /**
      * @Route("api/publications", name="api_publications_list", options={"expose":true})
      *
+     * @param Request               $request
      * @param PublicationRepository $publicationRepository
      * @param PublicationSerializer $publicationSerializer
      *
      * @return JsonResponse
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function list(PublicationRepository $publicationRepository, PublicationSerializer $publicationSerializer)
-    {
-        $publications = $publicationRepository->findBy(['status' => Publication::STATUS_ONLINE], ['publicationDatetime' => 'DESC']);
+    public function list(
+        Request $request,
+        PublicationRepository $publicationRepository,
+        PublicationSerializer $publicationSerializer
+    ) {
+        $offset = $request->get('offset', 0);
+        $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
 
-        return $this->json(['data' => $publicationSerializer->listToArray($publications)]);
+        $total = $publicationRepository->countOnlinePublications();
+        $publications = $publicationRepository->findOnlinePublications($calculatedOffset, self::LIMIT_PUBLICATION_BY_PAGE);
+
+        return $this->json([
+            'data' => [
+                'meta'         => ['numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE)],
+                'publications' => $publicationSerializer->listToArray($publications),
+            ],
+        ]);
     }
 
     /**
      * @Route("api/publications/category/{slug}", name="api_publications_list_by_category", options={"expose":true})
      *
-     * @param PublicationRepository $publicationRepository
-     * @param PublicationSerializer $publicationSerializer
+     * @param Request                $request
+     * @param PublicationSubCategory $publicationSubCategory
+     * @param PublicationRepository  $publicationRepository
+     * @param PublicationSerializer  $publicationSerializer
      *
      * @return JsonResponse
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function listByCategory(
+        Request $request,
         PublicationSubCategory $publicationSubCategory,
         PublicationRepository $publicationRepository,
         PublicationSerializer $publicationSerializer
     ) {
-        $publications = $publicationRepository->findBy(['status' => Publication::STATUS_ONLINE, 'subCategory' => $publicationSubCategory], ['publicationDatetime' => 'DESC']);
+        $offset = $request->get('offset', 0);
+        $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
 
-        return $this->json(['data' => $publicationSerializer->listToArray($publications)]);
+        $total = $publicationRepository->countOnlinePublicationsByCategory($publicationSubCategory);
+        $publications = $publicationRepository->findOnlinePublicationsByCategory($publicationSubCategory, $calculatedOffset, self::LIMIT_PUBLICATION_BY_PAGE);
+
+        return $this->json([
+            'data' => [
+                'meta'         => ['numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE)],
+                'publications' => $publicationSerializer->listToArray($publications),
+            ],
+        ]);
     }
 }

@@ -26,7 +26,7 @@
                 </div>
 
                 <template v-slot:cell(actions)="data">
-                    <b-button-group>
+                    <b-button-group size="sm">
                         <b-button v-if="data.item.status_id === 0" variant="outline-success" v-b-tooltip.hover title="Publier la publication"
                                   @click="publishPublication(data.item.id)">
                             <i class="far fa-paper-plane"></i>
