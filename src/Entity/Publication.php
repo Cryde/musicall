@@ -20,6 +20,8 @@ class Publication
 
     const TYPE_TEXT = 1;
     const TYPE_VIDEO = 2;
+    const TYPE_VIDEO_LABEL = 'video';
+    const TYPE_TEXT_LABEL = 'text';
 
     const STATUS_DRAFT = 0;
     const STATUS_ONLINE = 1;

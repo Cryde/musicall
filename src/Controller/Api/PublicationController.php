@@ -28,7 +28,7 @@ class PublicationController extends AbstractController
         return $this->json([
             'title'   => $publication->getTitle(),
             'content' => $purifier->purify($publication->getContent()),
-            'type'    => $publication->getType() === Publication::TYPE_VIDEO ? 'video' : 'text',
+            'type'    => $publication->getType() === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL,
         ]);
     }
 
