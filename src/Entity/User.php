@@ -63,6 +63,11 @@ class User implements UserInterface
      */
     private $lastLoginDatetime;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $oldId;
+
     public function __construct()
     {
         $this->publications = new ArrayCollection();
@@ -222,6 +227,18 @@ class User implements UserInterface
     public function setPlainPassword($plainPassword)
     {
         $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    public function getOldId(): ?int
+    {
+        return $this->oldId;
+    }
+
+    public function setOldId(?int $oldId): self
+    {
+        $this->oldId = $oldId;
 
         return $this;
     }
