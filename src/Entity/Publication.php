@@ -116,6 +116,11 @@ class Publication
      * @ORM\Column(type="smallint", nullable=true)
      */
     private $type;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $oldPublicationId;
     
     public function __construct()
     {
@@ -307,6 +312,18 @@ class Publication
     public function setType(int $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getOldPublicationId(): ?int
+    {
+        return $this->oldPublicationId;
+    }
+
+    public function setOldPublicationId(?int $oldPublicationId): self
+    {
+        $this->oldPublicationId = $oldPublicationId;
 
         return $this;
     }
