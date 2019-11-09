@@ -30,7 +30,8 @@ const actions = {
   async getCategories({commit}) {
     commit(UPDATE_IS_LOADING, true);
     const resp = await apiCategories.getAllByType({});
-    commit(UPDATE_CATEGORIES, resp.data.categories);
+    console.log(resp);
+    commit(UPDATE_CATEGORIES, resp);
     commit(UPDATE_IS_LOADING, false);
   }
 };
