@@ -1,3 +1,5 @@
+/** global: Routing */
+
 export default {
   register({username, email, password}) {
     return fetch(Routing.generate('api_register'), {
