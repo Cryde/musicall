@@ -21,6 +21,6 @@ class PublicationCategoryController extends AbstractController
     {
         $categories = $publicationSubCategoryRepository->findAll();
 
-        return $this->json($categories, Response::HTTP_OK, [], ['ignored_attributes' => ['publications', 'id']]);
+        return $this->json($categories, Response::HTTP_OK, [], ['ignored_attributes' => ['publications']]);
     }
 }
