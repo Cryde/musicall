@@ -1,3 +1,5 @@
+/** global: Routing */
+
 export default {
   login(username, password) {
     return fetch(Routing.generate('api_login_check'), {

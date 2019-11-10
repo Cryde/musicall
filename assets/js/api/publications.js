@@ -1,3 +1,5 @@
+/** global: Routing */
+
 export default {
   getPublications({offset}) {
     return fetch(Routing.generate('api_publications_list', {offset}), {

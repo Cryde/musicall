@@ -1,3 +1,5 @@
+/** global: Routing */
+
 export default {
   getPublication(slug) {
     return fetch(Routing.generate('api_publications_show', {slug}), {
