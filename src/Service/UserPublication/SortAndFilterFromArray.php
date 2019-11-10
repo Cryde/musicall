@@ -28,7 +28,7 @@ class SortAndFilterFromArray
     /**
      * @param string $name
      *
-     * @return string|string[]|null
+     * @return string
      */
     private function fieldConverter(string $name)
     {
