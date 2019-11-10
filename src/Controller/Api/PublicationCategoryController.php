@@ -19,7 +19,7 @@ class PublicationCategoryController extends AbstractController
      */
     public function list(PublicationSubCategoryRepository $publicationSubCategoryRepository)
     {
-        $categories = $publicationSubCategoryRepository->findAll();
+        $categories = $publicationSubCategoryRepository->findBy([], ['position' => 'ASC']);
 
         return $this->json($categories, Response::HTTP_OK, [], ['ignored_attributes' => ['publications']]);
     }
