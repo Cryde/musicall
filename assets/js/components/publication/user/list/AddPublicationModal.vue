@@ -2,30 +2,25 @@
     <b-modal id="modal-publication-add" title="Ajouter une publication">
 
         <div v-if="!saved">
-            <div v-if="loading.loaded">
-                <b-form-group description="La catégorie de votre publication">
-                    <v-select :options="categories" v-model="category" label="title"></v-select>
-                    <b-form-invalid-feedback :state="validation.subCategory.state">
-                        {{ validation.subCategory.message }}
-                    </b-form-invalid-feedback>
-                </b-form-group>
+            <b-form-group description="La catégorie de votre publication">
+                <v-select :options="categories" v-model="category" label="title"></v-select>
+                <b-form-invalid-feedback :state="validation.subCategory.state">
+                    {{ validation.subCategory.message }}
+                </b-form-invalid-feedback>
+            </b-form-group>
 
 
-                <b-form-group description="Le titre de votre publication">
-                    <b-form-input v-model="title" :state="validation.title.state"
-                                  placeholder="Votre titre ici"></b-form-input>
-                    <b-form-invalid-feedback :state="validation.title.state">
-                        {{ validation.title.message }}
-                    </b-form-invalid-feedback>
-                </b-form-group>
-            </div>
-            <div v-else class="text-center">
-                <b-spinner style="width: 3rem; height: 3rem;" label="Large Spinner"></b-spinner>
-            </div>
+            <b-form-group description="Le titre de votre publication">
+                <b-form-input v-model="title" :state="validation.title.state"
+                              placeholder="Votre titre ici"></b-form-input>
+                <b-form-invalid-feedback :state="validation.title.state">
+                    {{ validation.title.message }}
+                </b-form-invalid-feedback>
+            </b-form-group>
         </div>
         <div v-else class="text-center p-5">
             <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
-            Votre publication est créé
+            Votre publication est créée
         </div>
 
         <template slot="modal-footer" slot-scope="{ ok, cancel, hide }">
@@ -33,7 +28,7 @@
                 Annuler
             </b-button>
 
-            <b-button v-if="!saved" variant="outline-success" @click="save" :disabled="loading.fetching || submitted  ">
+            <b-button v-if="!saved" variant="outline-success" @click="save" :disabled="submitted">
                 <b-spinner small v-if="submitted"></b-spinner>
                 <i class="far fa-save" v-else></i>
                 Enregistrer
@@ -48,7 +43,8 @@
 </template>
 
 <script>
-  import vSelect from 'vue-select'
+  import vSelect from 'vue-select';
+  import {mapGetters} from 'vuex';
 
   export default {
     components: {
@@ -56,14 +52,8 @@
     },
     data() {
       return {
-        loading: {
-          fetching: false,
-          loaded: false
-        },
         submitted: false,
         saved: false,
-
-        categories: null,
         title: '',
         category: null,
         editUrl: '',
@@ -79,16 +69,15 @@
         }
       }
     },
+    computed: {
+      ...mapGetters('publicationCategory', ['categories']),
+    },
     mounted() {
-      this.$root.$on('bv::modal::shown', this.loadData);
       this.$root.$on('bv::modal::hidden', (bvEvent, modalId) => {
         if (modalId !== 'modal-publication-add') {
           return;
         }
 
-        this.categories = null;
-        this.loading.fetching = false;
-        this.loading.loaded = false;
         this.saved = false;
         this.editUrl = '';
         this.title = '';
@@ -97,20 +86,6 @@
       });
     },
     methods: {
-      loadData(bvEvent, modalId) {
-        if (modalId !== 'modal-publication-add' || this.loading.fetching) {
-          return;
-        }
-
-        this.loading.fetching = true;
-
-        this.getCategories()
-        .then((categories) => {
-          this.loading.fetching = false;
-          this.loading.loaded = true;
-          this.categories = categories;
-        });
-      },
       save() {
         this.submitted = true;
         const categoryId = this.category ? this.category.id : null;
@@ -156,7 +131,6 @@
         }
       },
       async handleErrors(response) {
-        console.log(response);
         if (!response.ok) {
           const data = await response.json();
           return Promise.reject(data)
@@ -167,14 +141,6 @@
         this.validation.title = {state: null, message: ''};
         this.validation.subCategory = {state: null, message: ''};
       },
-      getCategories() {
-        return fetch(Routing.generate('api_publication_category_list'))
-        .then(resp => resp.json())
-        .then(resp => resp.data.categories)
-      },
-    },
-    destroyed() {
-      this.$root.$off('bv::modal::shown', this.loadData);
     }
   }
 </script>

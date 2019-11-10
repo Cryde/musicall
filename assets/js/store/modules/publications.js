@@ -34,7 +34,6 @@ const mutations = {
   ['FETCHING_SUCCESS'](state, payload) {
     state.isLoading = false;
     state.error = null;
-    console.log(payload.data.publications);
     state.publications = payload.data.publications;
     state.numberOfPages = payload.data.meta.numberOfPages;
   },
