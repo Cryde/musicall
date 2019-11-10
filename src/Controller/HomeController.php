@@ -19,7 +19,7 @@ class HomeController extends AbstractController
      */
     public function indexAction(UserAppArraySerializer $userAppArraySerializer)
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = $this->getUser();
 
         return $this->render('base.html.twig', [

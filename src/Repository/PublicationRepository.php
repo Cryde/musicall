@@ -21,7 +21,7 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $videoId
+     * @param string $videoId
      *
      * @return Publication|null
      */

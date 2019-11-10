@@ -4,6 +4,7 @@ namespace App\Service;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Serializer\Exception\UnsupportedException;
 
 class Jsonizer
 {
@@ -19,13 +20,17 @@ class Jsonizer
     }
 
     /**
-     * @param string $json
+     * @param string|resource $json
      * @param bool   $isArray
      *
      * @return array|mixed
      */
     public function decode($json, $isArray = true)
     {
+        if (is_resource($json)) {
+            throw new UnsupportedException('JSON content as a ressource is not supported');
+        }
+
         if ($isArray) {
             $data = (array)json_decode($json, true, 512, JSON_BIGINT_AS_STRING);
         } else {

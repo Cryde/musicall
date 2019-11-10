@@ -5,11 +5,11 @@ namespace App\Service\Google;
 class YoutubeUrlHelper
 {
     /**
-     * @param $urlVideo
+     * @param string $urlVideo
      *
-     * @return bool|mixed|string
+     * @return false|mixed|string
      */
-    public function getVideoId($urlVideo)
+    public function getVideoId(string $urlVideo)
     {
         $host = mb_strtolower(parse_url($urlVideo, PHP_URL_HOST));
         if ($host === 'youtu.be') {

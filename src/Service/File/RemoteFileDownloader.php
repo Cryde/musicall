@@ -32,13 +32,13 @@ class RemoteFileDownloader
     }
 
     /**
-     * @param      $path
-     * @param bool $withExtension
+     * @param string $path
+     * @param string $destinationDir
      *
      * @return UploadedFile
-     * @throws \Exception|CorruptedFileException
+     * @throws CorruptedFileException
      */
-    public function download($path, $destinationDir)
+    public function download(string $path, string $destinationDir)
     {
         $tmpFilePath = tempnam('/tmp', 'remote_file_downloader');
         if ($tmpFilePath === false) {
@@ -57,7 +57,7 @@ class RemoteFileDownloader
             throw $e;
         }
 
-        $newFilename = $destinationDir . DIRECTORY_SEPARATOR . sha1(uniqid(time(), true)) . '.'. (new File($tmpFilePath))->guessExtension();
+        $newFilename = $destinationDir . DIRECTORY_SEPARATOR . sha1(uniqid(time() . '', true)) . '.'. (new File($tmpFilePath))->guessExtension();
         $this->filesystem->rename($tmpFilePath, $newFilename);;
         $tmpFilePath = $newFilename;
 
@@ -77,20 +77,4 @@ class RemoteFileDownloader
 
         return new UploadedFile($tmpFilePath, $path);
     }
-
-    /**
-     * @param $path
-     * @param $tmpFilePath
-     * @throws ResourceOpenException
-     * @throws \Exception
-     */
-    /**
-    protected function copyIntoTmp($path, $tmpFilePath): void
-    {
-        $tmpResource = $this->fileManager->open($tmpFilePath, 'wb');
-        foreach ($this->fileManager->readFromPath($path, 'rb') as $line) {
-            $this->fileManager->write($tmpResource, $line);
-        }
-        $this->fileManager->close($tmpResource);
-    }*/
 }

@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Publication;
+use App\Entity\User;
 use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
@@ -115,7 +116,9 @@ class UserPublicationController extends AbstractController
         $publication->setTitle($data['title']);
         $publication->setType(Publication::TYPE_TEXT);
         $publication->setSubCategory($publicationSubCategory);
-        $publication->setAuthor($this->getUser());
+        /** @var User|null $user */
+        $user = $this->getUser();
+        $publication->setAuthor($user);
         $publication->setCategory(Publication::CATEGORY_PUBLICATION);
 
         $errors = $validator->validate($publication);
@@ -184,7 +187,9 @@ class UserPublicationController extends AbstractController
         $file = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
 
         $cover = $publicationCoverDirector->build($file);
-        $publication = $publicationDirector->buildVideo($data, $this->getUser());
+        /** @var User $user */
+        $user = $this->getUser();
+        $publication = $publicationDirector->buildVideo($data, $user);
         $cover->setPublication($publication);
         $publication->setCover($cover);
 
