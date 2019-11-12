@@ -29,9 +29,8 @@ const mutations = {
 const actions = {
   async getCategories({commit}) {
     commit(UPDATE_IS_LOADING, true);
-    const resp = await apiCategories.getAllByType({});
-    console.log(resp);
-    commit(UPDATE_CATEGORIES, resp);
+    const categories = await apiCategories.getAllByType({});
+    commit(UPDATE_CATEGORIES, categories);
     commit(UPDATE_IS_LOADING, false);
   }
 };
