@@ -53,7 +53,6 @@ const actions = {
         commit(UPDATE_IS_SUCCESS, true);
       }
     } catch (e) {
-      console.log(e);
       commit(UPDATE_ERRORS, ['Erreur inconnue']);
     }
 
