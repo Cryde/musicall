@@ -29,7 +29,7 @@
     async created() {
 
       await this.$store.dispatch('security/getAuthToken', true);
-      await this.$store.dispatch('publicationCategory/getCategories');
+      this.$store.dispatch('publicationCategory/getCategories');
 
       const store = this.$store;
       const router = this.$router;
