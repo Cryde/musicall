@@ -316,7 +316,7 @@ class UserPublicationController extends AbstractController
             return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $publication->setStatus(Publication::STATUS_ONLINE);
+        $publication->setStatus(Publication::STATUS_PENDING);
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);

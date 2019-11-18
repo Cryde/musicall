@@ -1,5 +1,6 @@
 <template>
-    <b-modal id="modal-publication-properties" size="lg" title="Propriété de la publication">
+    <b-modal id="modal-publication-properties" ref="modal-publication-properties" size="lg"
+             title="Propriété de la publication">
 
         <div>
             <b-form-group description="Le titre de votre publication">
@@ -31,6 +32,7 @@
                 </b-col>
                 <b-col>
                     <vue-dropzone
+                            v-if="dropzoneOptions"
                             ref="myVueDropzone"
                             id="dropzone"
                             @vdropzone-success="vfileUploaded"
@@ -70,25 +72,35 @@
         currentTitle: '',
         currentDescription: '',
         currentCover: '',
-        dropzoneOptions: {
-          url: Routing.generate('api_user_publication_upload_cover', {id: this.id}),
-          paramName:'image_upload[imageFile][file]',
-          thumbnailWidth: 200,
-          dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une cover"
-        }
+        dropzoneOptions: null
       }
     },
-    mounted(){
+    mounted() {
       this.currentTitle = this.title;
       this.currentDescription = this.description;
       this.currentCover = this.cover;
+
+      this.$refs['modal-publication-properties'].$on('show', async () => {
+        this.dropzoneOptions = {
+          url: Routing.generate('api_user_publication_upload_cover', {id: this.id}),
+          headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {forceAuth: true})},
+          paramName: 'image_upload[imageFile][file]',
+          thumbnailWidth: 200,
+          dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une cover"
+        };
+      });
+
     },
     methods: {
       save() {
         this.$emit('saveProperties', {title: this.currentTitle, description: this.currentDescription});
       },
       vfileUploaded(file, resp) {
-        this.currentCover = resp.data.uri;
+        if (resp.error) {
+          alert('Erreur lors de l\'upload');
+        } else {
+          this.currentCover = resp.data.uri;
+        }
       },
     }
   }

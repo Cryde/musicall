@@ -6,7 +6,7 @@
                 <div class="col-12 col-lg-2">
                     <Menu/>
                 </div>
-                <div class="col-12 col-lg-10">
+                <div class="col-12 col-lg-10" v-if="isReadyWithMinimal">
                     <router-view></router-view>
                 </div>
             </div>
@@ -22,13 +22,19 @@
   import fetchIntercept from 'fetch-intercept';
 
   export default {
+    data() {
+      return {
+        isReadyWithMinimal: false
+      }
+    },
     name: 'app',
     components: {
       Header, Footer, Menu
     },
     async created() {
 
-      await this.$store.dispatch('security/getAuthToken', true);
+      await this.$store.dispatch('security/getAuthToken', {displayLoading: true});
+      this.isReadyWithMinimal = true;
       this.$store.dispatch('publicationCategory/getCategories');
 
       const store = this.$store;
@@ -38,7 +44,6 @@
         async request(url, config) {
 
           const currentRoute = router.history.current;
-
           if (!currentRoute.meta.isAuthRequired) {
             return [url, config];
           }

@@ -3,7 +3,6 @@
 namespace App\EventListener;
 
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 
 class AuthenticationSuccessListener
@@ -16,6 +15,7 @@ class AuthenticationSuccessListener
     public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
     {
         $user = $event->getUser();
+
         if (!$user instanceof User) {
             return;
         }

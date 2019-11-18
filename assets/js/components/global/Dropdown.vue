@@ -10,8 +10,10 @@
                 <b-dropdown-text><strong>{{ user.username }}</strong></b-dropdown-text>
                 <b-dropdown-divider></b-dropdown-divider>
                 <b-dropdown-item :to="{name: 'user_publications'}">Mes publications</b-dropdown-item>
-                <b-dropdown-item href="#">Another action</b-dropdown-item>
+                <b-dropdown-divider v-if="isRoleAdmin"></b-dropdown-divider>
+                <b-dropdown-item v-if="isRoleAdmin" :to="{name: 'admin_publications_pending'}">Publications en attentes</b-dropdown-item>
                 <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item href="#">Paramètres</b-dropdown-item>
                 <b-dropdown-item @click="logout">Logout</b-dropdown-item>
             </b-dropdown>
         </div>
@@ -31,7 +33,8 @@
     },
     computed: {
       ...mapGetters('security', [
-        'user'
+        'user',
+        'isRoleAdmin'
       ])
     },
     methods: {

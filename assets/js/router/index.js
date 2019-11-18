@@ -58,6 +58,12 @@ export default new Router({
       name: "user_publications_edit",
       component: () => import("../components/publication/user/edit/Edit"),
       meta: {isAuthRequired: true}
+    },
+    {
+      path: "/admin/publications/pending/",
+      name: "admin_publications_pending",
+      component: () => import("../views/admin/PublicationPending"),
+      meta: {isAuthRequired: true}
     }
   ]
 });
