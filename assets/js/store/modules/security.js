@@ -35,6 +35,9 @@ const getters = {
   },
   user(state) {
     return state.user;
+  },
+  isRoleAdmin(state) {
+    return state.user.roles.includes('ROLE_ADMIN');
   }
 };
 
@@ -97,7 +100,7 @@ const actions = {
   async logout({commit}) {
     commit(REMOVE_DATA_LOCAL_STORAGE);
   },
-  async getAuthToken({commit, state}, displayLoading) {
+  async getAuthToken({commit, state}, {displayLoading = false}) {
 
     if (!state.token) {
       return null;

@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class PublicationCategoryController extends AbstractController
 {
     /**
-     * @Route("/api/publications/categories", name="api_publication_category_list", options={"expose": true})
+     * @Route("/api/publications/categories", name="api_publication_category_list", methods={"GET"}, options={"expose": true})
      *
      * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
      *

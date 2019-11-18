@@ -135,7 +135,8 @@
                                 Enregistrer
                             </b-button>
 
-                            <b-button variant="outline-info"  :to="{ name: 'publication_show', params: { slug: slug }}" target="_blank" class="float-right mr-1">
+                            <b-button variant="outline-info" :to="{ name: 'publication_show', params: { slug: slug }}"
+                                      target="_blank" class="float-right mr-1">
                                 <i class="far fa-eye"></i>
                             </b-button>
                         </div>
@@ -147,7 +148,7 @@
 
         </div>
         <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id"/>
-        <VideoModal ref="videoModal" @onConfirm="addCommand" />
+        <VideoModal ref="videoModal" @onConfirm="addCommand"/>
         <EditModal :id="id" :title="title" :description="description" :cover="cover"
                    :validation="validation"
                    :submitted="submitted"
@@ -220,8 +221,8 @@
         title: '',
         description: '',
         content: '',
-        cover:'',
-        slug:'',
+        cover: '',
+        slug: '',
         linkUrl: null,
         linkMenuIsActive: false,
         validation: {
@@ -232,10 +233,10 @@
         }
       }
     },
-    mounted() {
+    async mounted() {
 
-      this.getPublication(this.getPublicationId())
-      .then((publication) => {
+      try {
+        const publication = await this.getPublication(this.getPublicationId());
         this.id = publication.id;
         this.content = publication.content;
         this.editor.setContent(publication.content);
@@ -244,7 +245,9 @@
         this.cover = publication.cover;
         this.slug = publication.slug;
         this.loaded = true;
-      });
+      } catch(e) {
+        console.error(e);
+      }
     },
     methods: {
       saveProperties({title, description}) {
@@ -253,7 +256,7 @@
 
         this.save()
         .then((finish) => {
-          if(finish) {
+          if (finish) {
             this.$bvModal.hide('modal-publication-properties')
           }
         });

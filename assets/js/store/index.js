@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import security from './modules/security';
 import registration from './modules/registration';
 import video from './modules/video';
+import adminPendingPublications from './modules/admin/pendingPublications';
 import publication from './modules/publication';
 import publications from './modules/publications';
 import publicationCategory from './modules/publicationCategory';
@@ -19,6 +20,7 @@ export default new Vuex.Store({
     publication,
     publications,
     publicationCategory,
+    adminPendingPublications
   },
   strict: debug,
 })

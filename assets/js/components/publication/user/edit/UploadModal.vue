@@ -1,13 +1,14 @@
 <template>
     <b-modal id="modal-upload-image" centered ref="upload-modal" size="lg" title="Uploader une image">
 
-            <vue-dropzone
-                    ref="myVueDropzone"
-                    id="dropzone"
-                    @vdropzone-success="vfileUploaded"
-                    :options="dropzoneOptions"
-            >
-            </vue-dropzone>
+        <vue-dropzone
+                v-if="dropzoneOptions"
+                ref="myVueDropzone"
+                id="dropzone"
+                @vdropzone-success="vfileUploaded"
+                :options="dropzoneOptions"
+        >
+        </vue-dropzone>
 
 
         <div slot="modal-footer">
@@ -37,17 +38,20 @@
       return {
         imageSrc: "",
         command: null,
-        dropzoneOptions: {}
+        dropzoneOptions: null
       };
     },
-    mounted() {
-      const url = Routing.generate('api_user_publication_upload_image', {id: this.id});
-      this.dropzoneOptions = {
-        url,
-        paramName:'image_upload[imageFile][file]',
-        thumbnailWidth: 200,
-        dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une image"
-      };
+    async mounted() {
+      this.$refs['upload-modal'].$on('show', async () => {
+        const url = Routing.generate('api_user_publication_upload_image', {id: this.id});
+        this.dropzoneOptions = {
+          url,
+          headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {forceAuth: true})},
+          paramName: 'image_upload[imageFile][file]',
+          thumbnailWidth: 200,
+          dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une image"
+        };
+      });
     },
     computed: {
       validImage() {
@@ -56,7 +60,6 @@
     },
     methods: {
       openModal(command) {
-        // Add the sent command
         this.command = command;
         this.$refs['upload-modal'].show()
       },
