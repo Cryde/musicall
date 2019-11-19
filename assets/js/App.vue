@@ -57,7 +57,7 @@
           }
 
           if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
-            config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken');
+            config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken', {displayLoading: false});
           }
 
           return [url, config];
