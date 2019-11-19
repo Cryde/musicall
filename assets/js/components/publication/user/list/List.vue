@@ -107,14 +107,21 @@
       });
     },
     methods: {
-      publicationProvider(ctx) {
-        return fetch(Routing.generate('api_user_publication_list'), {method: 'POST', body: JSON.stringify(ctx)})
-        .then(resp => resp.json())
-        .then((data) => data.publications)
-        .catch(error => {
-          console.error(error);
+      async publicationProvider(ctx) {
+        try {
+
+          const resp = await fetch(Routing.generate('api_user_publication_list'), {
+            method: 'POST',
+            body: JSON.stringify(ctx)
+          });
+          console.log(resp);
+          const json = await resp.json();
+
+          return json.publications;
+        } catch (e) {
+          console.error(e);
           return []
-        })
+        }
       },
       async showDeleteModal(id) {
         const value = await this.$bvModal.msgBoxConfirm('Êtes vous sur ?', {
