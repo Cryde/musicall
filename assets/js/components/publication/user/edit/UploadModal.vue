@@ -46,7 +46,7 @@
         const url = Routing.generate('api_user_publication_upload_image', {id: this.id});
         this.dropzoneOptions = {
           url,
-          headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {forceAuth: true})},
+          headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {displayLoading: false})},
           paramName: 'image_upload[imageFile][file]',
           thumbnailWidth: 200,
           dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une image"

@@ -83,7 +83,7 @@
       this.$refs['modal-publication-properties'].$on('show', async () => {
         this.dropzoneOptions = {
           url: Routing.generate('api_user_publication_upload_cover', {id: this.id}),
-          headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {forceAuth: true})},
+          headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {displayLoading: false})},
           paramName: 'image_upload[imageFile][file]',
           thumbnailWidth: 200,
           dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une cover"
