@@ -131,7 +131,7 @@ const actions = {
 };
 
 function isTokenExpired(token) {
-  return jwt(state.token).exp - 240 <= (Date.now() / 1000).toFixed(0);
+  return jwt(token).exp - 240 <= (Date.now() / 1000).toFixed(0);
 }
 
 export default {
