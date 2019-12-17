@@ -225,6 +225,9 @@
     "ocramius/proxy-manager": {
         "version": "2.2.2"
     },
+    "php": {
+        "version": "7.4"
+    },
     "phpdocumentor/reflection-common": {
         "version": "1.0.1"
     },
@@ -281,9 +284,6 @@
             "version": "1.2",
             "ref": "6c1ceb662f8997085f739cd089bfbef67f245983"
         }
-    },
-    "swiftmailer/swiftmailer": {
-        "version": "v6.1.3"
     },
     "symfony/asset": {
         "version": "v4.2.0"
@@ -378,6 +378,12 @@
             "ref": "fa24f6388ea987b615a2704dc2c9f3a358c8da11"
         }
     },
+    "symfony/http-client": {
+        "version": "v4.4.0"
+    },
+    "symfony/http-client-contracts": {
+        "version": "v2.0.0"
+    },
     "symfony/http-foundation": {
         "version": "v4.2.0"
     },
@@ -389,6 +395,18 @@
     },
     "symfony/intl": {
         "version": "v4.2.0"
+    },
+    "symfony/mailer": {
+        "version": "4.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "4.3",
+            "ref": "15658c2a0176cda2e7dba66276a2030b52bd81b2"
+        },
+        "files": [
+            "config/packages/mailer.yaml"
+        ]
     },
     "symfony/maker-bundle": {
         "version": "1.0",
@@ -498,15 +516,6 @@
     "symfony/stopwatch": {
         "version": "v4.2.0"
     },
-    "symfony/swiftmailer-bundle": {
-        "version": "2.5",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "2.5",
-            "ref": "3db029c03e452b4a23f7fc45cec7c922c2247eb8"
-        }
-    },
     "symfony/templating": {
         "version": "v4.3.1"
     },
@@ -562,15 +571,6 @@
             "branch": "master",
             "version": "3.3",
             "ref": "6bdfa1a95f6b2e677ab985cd1af2eae35d62e0f6"
-        }
-    },
-    "symfony/web-server-bundle": {
-        "version": "3.3",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "3.3",
-            "ref": "dae9b39fd6717970be7601101ce5aa960bf53d9a"
         }
     },
     "symfony/webpack-encore-bundle": {
