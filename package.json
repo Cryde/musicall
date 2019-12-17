@@ -22,7 +22,7 @@
         "jwt-decode": "^2.2.0",
         "tippy.js": "^4.3.5",
         "tiptap": "^1.26.4",
-        "tiptap-extensions": "^1.28.4",
+        "tiptap-extensions": "^1.28.6",
         "vue": "^2.6.10",
         "vue-cookies": "^1.5.13",
         "vue-meta": "^2.3.1",
