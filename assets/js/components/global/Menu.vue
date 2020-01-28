@@ -3,10 +3,10 @@
         <ul>
 
             <li>
-                <router-link :to="{ name: 'home' }">Home</router-link>
+                <router-link :to="{ name: 'home' }"><i class="fas fa-home fa-fw"></i> Home</router-link>
             </li>
             <li>
-                <router-link :to="{ name: 'publication' }">Publications</router-link>
+                <router-link :to="{ name: 'publication' }"><i class="fas fa-newspaper fa-fw"></i> Publications</router-link>
                 <ul>
                     <li v-if="isLoading">
                         <b-spinner small type="grow"></b-spinner>
@@ -20,7 +20,7 @@
             </li>
 
             <li>
-                <a href="">Cours</a>
+                <a href=""><i class="fas fa-graduation-cap fa-fw"></i> Cours</a>
                 <ul>
                     <li><a href="/cours/guitare">Guitare</a></li>
                     <li><a href="/cours/basse">Basse</a></li>
@@ -30,14 +30,14 @@
                 </ul>
             </li>
             <li>
-                <a href="">Annuaire</a>
+                <a href=""><i class="fas fa-stream fa-fw"></i> Annuaire</a>
             </li>
             <li>
-                <a href="">Forum</a>
+                <a href=""><i class="far fa-comments fa-fw"></i> Forum</a>
             </li>
 
             <li>
-                <router-link :to="{ name: 'todo' }">Todo</router-link>
+                <router-link :to="{ name: 'todo' }"><i class="fas fa-clipboard-check fa-fw"></i> Todo</router-link>
             </li>
         </ul>
     </nav>
