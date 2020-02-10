@@ -7,7 +7,9 @@
                     <Menu/>
                 </div>
                 <div class="col-12 col-lg-10" v-if="isReadyWithMinimal">
-                    <router-view></router-view>
+                    <fade-transition :duration="100" origin="center top" mode="out-in">
+                        <router-view></router-view>
+                    </fade-transition>
                 </div>
             </div>
         </div>
@@ -20,6 +22,7 @@
   import Menu from './components/global/Menu';
   import Footer from './components/global/Footer';
   import fetchIntercept from 'fetch-intercept';
+  import {FadeTransition} from 'vue2-transitions'
 
   export default {
     data() {
@@ -29,7 +32,7 @@
     },
     name: 'app',
     components: {
-      Header, Footer, Menu
+      Header, Footer, Menu, FadeTransition
     },
     async created() {
 
