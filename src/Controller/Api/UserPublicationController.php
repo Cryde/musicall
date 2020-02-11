@@ -19,6 +19,7 @@ use App\Service\Google\Exception\YoutubeVideoNotFoundException;
 use App\Service\Google\Youtube;
 use App\Service\Google\YoutubeUrlHelper;
 use App\Service\Jsonizer;
+use App\Service\Publication\PublicationSlug;
 use App\Service\UserPublication\SortAndFilterFromArray;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -114,6 +115,7 @@ class UserPublicationController extends AbstractController
 
         $publication = new Publication();
         $publication->setTitle($data['title']);
+        $publication->setSlug('publication-' . $this->getUser()->getId() . random_int(10, 9999999999));
         $publication->setType(Publication::TYPE_TEXT);
         $publication->setSubCategory($publicationSubCategory);
         /** @var User|null $user */
@@ -154,11 +156,12 @@ class UserPublicationController extends AbstractController
      * @param UserPublicationArraySerializer $userPublicationArraySerializer
      * @param RemoteFileDownloader           $remoteFileDownloader
      * @param ParameterBagInterface          $containerBag
+     * @param PublicationSlug                $publicationSlug
      *
      * @return JsonResponse
+     * @throws CorruptedFileException
      * @throws YoutubeAlreadyExistingVideoException
      * @throws YoutubeVideoNotFoundException
-     * @throws CorruptedFileException
      */
     public function addVideo(
         Request $request,
@@ -170,7 +173,8 @@ class UserPublicationController extends AbstractController
         PublicationRepository $publicationRepository,
         UserPublicationArraySerializer $userPublicationArraySerializer,
         RemoteFileDownloader $remoteFileDownloader,
-        ParameterBagInterface $containerBag
+        ParameterBagInterface $containerBag,
+        PublicationSlug $publicationSlug
     ) {
         $data = $jsonizer->decodeRequest($request);
         $videoUrl = $data['videoUrl'];
@@ -204,15 +208,22 @@ class UserPublicationController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
-     * @param Request  $request
-     * @param Jsonizer $jsonizer
-     * @param Youtube  $youtube
+     * @param Request               $request
+     * @param Jsonizer              $jsonizer
+     * @param Youtube               $youtube
+     * @param YoutubeUrlHelper      $youtubeUrlHelper
+     * @param PublicationRepository $publicationRepository
      *
      * @return JsonResponse
      * @throws YoutubeVideoNotFoundException
      */
-    public function videoPreview(Request $request, Jsonizer $jsonizer, Youtube $youtube, YoutubeUrlHelper $youtubeUrlHelper, PublicationRepository $publicationRepository)
-    {
+    public function videoPreview(
+        Request $request,
+        Jsonizer $jsonizer,
+        Youtube $youtube,
+        YoutubeUrlHelper $youtubeUrlHelper,
+        PublicationRepository $publicationRepository
+    ) {
         $data = $jsonizer->decodeRequest($request);
 
         if(!isset($data['videoUrl'])) {

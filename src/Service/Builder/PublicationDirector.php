@@ -6,6 +6,7 @@ use App\Entity\Publication;
 use App\Entity\User;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Service\Google\YoutubeUrlHelper;
+use App\Service\Publication\PublicationSlug;
 
 class PublicationDirector
 {
@@ -17,13 +18,19 @@ class PublicationDirector
      * @var PublicationSubCategoryRepository
      */
     private $publicationSubCategoryRepository;
+    /**
+     * @var PublicationSlug
+     */
+    private $publicationSlug;
 
     public function __construct(
         YoutubeUrlHelper $youtubeUrlHelper,
-        PublicationSubCategoryRepository $publicationSubCategoryRepository
+        PublicationSubCategoryRepository $publicationSubCategoryRepository,
+        PublicationSlug $publicationSlug
     ) {
         $this->youtubeUrlHelper = $youtubeUrlHelper;
         $this->publicationSubCategoryRepository = $publicationSubCategoryRepository;
+        $this->publicationSlug = $publicationSlug;
     }
 
     public function buildVideo(array $data, User $user)
@@ -32,6 +39,7 @@ class PublicationDirector
 
         return (new Publication())
             ->setTitle($data['title'])
+            ->setSlug($this->publicationSlug->create('v-'.$data['title']))
             ->setType(Publication::TYPE_VIDEO)
             ->setStatus(Publication::STATUS_ONLINE)
             ->setShortDescription($data['description'])

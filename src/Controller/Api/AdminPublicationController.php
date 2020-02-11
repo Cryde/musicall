@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Publication;
 use App\Repository\PublicationRepository;
+use App\Service\Publication\PublicationSlug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,15 +36,17 @@ class AdminPublicationController extends AbstractController
      *
      * @IsGranted("ROLE_ADMIN")
      *
-     * @param Publication $publication
+     * @param Publication     $publication
+     * @param PublicationSlug $publicationSlug
      *
      * @return JsonResponse
      * @throws \Exception
      */
-    public function approve(Publication $publication)
+    public function approve(Publication $publication, PublicationSlug $publicationSlug)
     {
         $publication->setPublicationDatetime(new \DateTime());
         $publication->setStatus(Publication::STATUS_ONLINE);
+        $publication->setSlug($publicationSlug->create($publication->getTitle()));
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json([]);
