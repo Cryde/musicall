@@ -89,7 +89,7 @@ class Publication
     private $editionDatetime;
 
     /**
-     * @Assert\DateTime(groups={"publication"})
+     * @Assert\Type(type="Datetime", groups={"publication"})
      * @Assert\NotBlank(groups={"publication"})
      *
      * @ORM\Column(type="datetime", nullable=true)
