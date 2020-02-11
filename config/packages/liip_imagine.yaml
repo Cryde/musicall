@@ -7,7 +7,7 @@ liip_imagine:
         default:
             filesystem:
                 data_root:
-                    - "%kernel.root_dir%/../public"
+                    - "%kernel.project_dir%/public"
 
     filter_sets:
         publication_image_filter:
