@@ -10,23 +10,23 @@
                               size="sm"></b-pagination-nav>
         </div>
         <b-card-group columns>
-            <div v-for="publication in publications" :key="publication.id">
-                <b-card v-if="publication.category !== 'news'" tag="b-link"
-                        :to="{ name: 'publication_show', params: { slug: publication.slug }}" :title="publication.title"
-                        :img-src="publication.cover_image" img-alt="Image" img-top>
-                    <b-card-text v-if="publication.type === 'text'">
-                        {{ publication.description }}
-                    </b-card-text>
-                    <div v-if="publication.type === 'video'" class="text-center video-tag"><i
-                            class="fab fa-youtube"></i></div>
-                </b-card>
-                <b-card v-else>
-                    <b-card-title>{{ publication.title }}</b-card-title>
-                    <b-card-text>
-                        {{ publication.description }}
-                    </b-card-text>
-                </b-card>
-            </div>
+            <b-card
+                    v-for="publication in publications" :key="publication.id"
+                    v-if="publication.category !== 'news'" tag="b-link"
+                    :to="{ name: 'publication_show', params: { slug: publication.slug }}" :title="publication.title"
+                    :img-src="publication.cover_image" img-alt="Image" img-top>
+                <b-card-text v-if="publication.type === 'text'">
+                    {{ publication.description }}
+                </b-card-text>
+                <div v-if="publication.type === 'video'" class="text-center video-tag"><i
+                        class="fab fa-youtube"></i></div>
+            </b-card>
+            <b-card v-else>
+                <b-card-title>{{ publication.title }}</b-card-title>
+                <b-card-text>
+                    {{ publication.description }}
+                </b-card-text>
+            </b-card>
         </b-card-group>
     </div>
 </template>
@@ -62,7 +62,7 @@
     methods: {
       async fetchData() {
         const slug = this.$route.params.slug;
-        const offset = this.$route.query.page ? this.$route.query.page-1 : 0;
+        const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
         this.currentCategory = this.categories.find((category) => category.slug === slug);
         if (slug && this.currentCategory) {
           await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
