@@ -54,6 +54,12 @@ export default new Router({
       meta: {isAuthRequired: true}
     },
     {
+      name: "user_settings",
+      path: "/user/settings",
+      component: () => import("../views/user/Settings"),
+      meta: {isAuthRequired: true}
+    },
+    {
       path: "/user/publications/edit/:id",
       name: "user_publications_edit",
       component: () => import("../components/publication/user/edit/Edit"),
