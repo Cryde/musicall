@@ -1,7 +1,7 @@
 {
     "devDependencies": {
         "@symfony/webpack-encore": "^0.28.2",
-        "vue-loader": "^15.8.3",
+        "vue-loader": "^15.9.0",
         "vue-template-compiler": "^2.6.11",
         "webpack-notifier": "^1.8.0"
     },
@@ -17,7 +17,7 @@
     "dependencies": {
         "babel-polyfill": "^6.26.0",
         "bootstrap": "^4.4.1",
-        "bootstrap-vue": "^2.4.0",
+        "bootstrap-vue": "^2.5.0",
         "fetch-intercept": "^2.3.1",
         "jwt-decode": "^2.2.0",
         "lodash": "^4.17.15",
