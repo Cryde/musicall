@@ -9,13 +9,15 @@ export default {
         'Content-Type': 'application/json',
       },
     })
-    .then((resp) => {
+    .then(async (resp) => {
       if (resp.status === 401) {
         throw new Error('Login ou mot de passe incorrect');
       }
-      return resp;
-    })
-    .then(resp => resp.json());
+
+      const json = await resp.json();
+
+      return resp.ok ? json : Promise.reject(json);
+    });
   },
   refreshToken(refreshToken) {
     const formData = new FormData();

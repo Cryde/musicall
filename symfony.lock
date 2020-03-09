@@ -177,6 +177,9 @@
             "config/routes/liip_imagine.yaml"
         ]
     },
+    "mailjet/mailjet-apiv3-php": {
+        "version": "v1.4.1"
+    },
     "monolog/monolog": {
         "version": "1.24.0"
     },

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Service;
+
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
@@ -25,13 +26,11 @@ class UserProvider implements UserProviderInterface
      * This method must throw UsernameNotFoundException if the user is not
      * found.
      *
-     * @param string $username The username
+     * @param string $username
      *
-     * @return UserInterface
-     *
-     * @throws UsernameNotFoundException if the user is not found
+     * @return \App\Entity\User|UserInterface|null
      */
-    public function loadUserByUsername($username)
+    public function loadUserByUsername(string $username): ?UserInterface
     {
         return $this->userRepository->findOneBy(['username' => $username]);
     }

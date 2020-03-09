@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Event\UserRegisteredEvent;
 use App\Service\Jsonizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -20,6 +22,7 @@ class RegistrationController extends AbstractController
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @param Jsonizer                     $jsonizer
      * @param ValidatorInterface           $validator
+     * @param EventDispatcherInterface     $eventDispatcher
      *
      * @return Response
      */
@@ -27,7 +30,8 @@ class RegistrationController extends AbstractController
         Request $request,
         UserPasswordEncoderInterface $passwordEncoder,
         Jsonizer $jsonizer,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        EventDispatcherInterface $eventDispatcher
     ): Response {
 
         $data = $jsonizer->decodeRequest($request);
@@ -54,7 +58,8 @@ class RegistrationController extends AbstractController
         $this->getDoctrine()->getManager()->persist($user);
         $this->getDoctrine()->getManager()->flush();
 
-        // do anything else you need here, like send an email
+        $eventDispatcher->dispatch(new UserRegisteredEvent($user), UserRegisteredEvent::NAME);
+
         return $this->json(['data' => ['success' => 1]]);
     }
 }
