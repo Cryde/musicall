@@ -68,6 +68,18 @@ class User implements UserInterface
      */
     private $oldId;
 
+    /**
+     * @var \DateTimeInterface|null
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $confirmationDatetime;
+
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $confirmationToken;
+
     public function __construct()
     {
         $this->publications = new ArrayCollection();
@@ -239,6 +251,30 @@ class User implements UserInterface
     public function setOldId(?int $oldId): self
     {
         $this->oldId = $oldId;
+
+        return $this;
+    }
+
+    public function getConfirmationDatetime(): ?\DateTimeInterface
+    {
+        return $this->confirmationDatetime;
+    }
+
+    public function setConfirmationDatetime(?\DateTimeInterface $confirmationDatetime): self
+    {
+        $this->confirmationDatetime = $confirmationDatetime;
+
+        return $this;
+    }
+
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $confirmationToken): self
+    {
+        $this->confirmationToken = $confirmationToken;
 
         return $this;
     }

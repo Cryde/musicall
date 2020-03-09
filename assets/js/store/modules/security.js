@@ -92,6 +92,7 @@ const actions = {
       commit(UPDATE_LOCALE_STORAGE, {token: resp.token, refresh_token: resp.refresh_token});
       commit(UPDATE_IS_LOADING, false);
     } catch (err) {
+      console.log(err);
       commit(AUTHENTICATING_ERROR);
       commit(UPDATE_ERRORS, err);
       commit(UPDATE_IS_LOADING, false);
