@@ -6,9 +6,11 @@
             <p>
                 MusicAll est pour l'instant en phase de re-développement.<br/>
                 C'est à dire que je reprends tout à partir de zero et reconstruit les briques unes à unes.<br/>
-                Le <strong>design</strong> est pour l'instant relativement basique, je prévois de l'améliorer si pas le changer.<br><br/>
+                Le <strong>design</strong> est pour l'instant relativement basique, je prévois de l'améliorer si pas le
+                changer.<br><br/>
 
-                <strong>Toutes les données que vous rentrerez ici sont suceptible de disparaitre à tout jamais plus tard.</strong>
+                <strong>Toutes les données que vous rentrerez ici sont suceptible de disparaitre à tout jamais plus
+                    tard.</strong>
             </p>
             <p>
                 <strong>Ce qui est fait :</strong>
@@ -21,6 +23,7 @@
                 <li>
                     Publication
                     <ul>
+                        <li>Gérer le cycle de vie d'une publication (draft - pending - online)</li>
                         <li>Mise en place du nouvel éditeur de publication</li>
                         <li>Edit d'une publication</li>
                         <li>Suppression d'une publication</li>
@@ -30,6 +33,13 @@
                         <li>Ajouter une photo de "couverture" à la publication</li>
                     </ul>
                 </li>
+                <li>
+                    User
+                    <ul>
+                        <li>Mot de passe oublié</li>
+                        <li>Changer son mot de passe</li>
+                    </ul>
+                </li>
             </ul>
 
             <p><strong>Ce que je prévois de faire :</strong></p>
@@ -37,7 +47,6 @@
                 <li>
                     Publications
                     <ul>
-                        <li>Gérer le cycle de vie d'une publication (draft - pending - online)</li>
                         <li>Décliner les publication pour les cours</li>
                         <li>Commenter une publication</li>
                     </ul>
@@ -46,8 +55,6 @@
                     User
                     <ul>
                         <li>Gérer les accès connecté/non connecté</li>
-                        <li>Mot de passe oublié</li>
-                        <li>Changer son mot de passe</li>
                         <li>Ajouter une photo de profil</li>
                         <li>Se connecter / s'inscrire avec Facebook si on le souhaite</li>
                         <li>Administration des users (gestion roles - gestion publications)</li>
@@ -61,3 +68,11 @@
         </div>
     </div>
 </template>
+
+<script>
+  export default {
+    metaInfo: {
+      title: 'Liste des choses restant à faire sur MusicAll'
+    }
+  }
+</script>

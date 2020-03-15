@@ -21,7 +21,7 @@
             </b-form-group>
 
             <p class="alert alert-info">
-                Attention l'image doit être carré et faire max 1500px de ooté.
+                Attention l'image doit être carré et faire max 1500px de coté.
             </p>
             <b-row>
                 <b-col v-if="currentCover">

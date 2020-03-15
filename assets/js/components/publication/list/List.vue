@@ -41,8 +41,10 @@
         currentCategory: null
       }
     },
-    metaInfo: {
-      title: 'Publications',
+    metaInfo() {
+      return {
+        title: this.isHome ? 'MusicAll, le site de référence au service de la musique' : 'Toutes les publications relative à la musique | MusicAll',
+      }
     },
     computed: {
       ...mapGetters('publications', [
@@ -55,7 +57,7 @@
     watch: {
       '$route': 'fetchData'
     },
-    async mounted() {
+    async created() {
       this.isHome = this.$route.name === 'home';
       await this.fetchData();
     },

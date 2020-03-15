@@ -21,7 +21,6 @@ new Vue({
   store,
   render: h => h(App),
   metaInfo: () => ({
-    title: 'Home',
-    titleTemplate: '%s | MusicAll'
+    title: 'MusicAll, le site de référence au service de la musique'
   })
 }).$mount("#app");
