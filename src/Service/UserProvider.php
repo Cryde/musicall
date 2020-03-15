@@ -62,7 +62,6 @@ class UserProvider implements UserProviderInterface
      */
     public function supportsClass($class)
     {
-        dump($class);
         // TODO: Implement supportsClass() method.
     }
 }

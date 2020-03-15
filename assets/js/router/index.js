@@ -42,6 +42,18 @@ export default new Router({
       meta: {isAuthRequired: false}
     },
     {
+      name: "user_request_lost_password",
+      path: "/request/lost-password",
+      component: () => import("../views/user/RequestResetPassword"),
+      meta: {isAuthRequired: false}
+    },
+    {
+      name: "user_lost_password",
+      path: "/lost-password/:token",
+      component: () => import("../views/user/ResetPassword"),
+      meta: {isAuthRequired: false}
+    },
+    {
       name: "user_registration",
       path: "/registration",
       component: () => import("../views/user/Registration"),

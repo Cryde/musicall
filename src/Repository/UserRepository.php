@@ -24,17 +24,16 @@ class UserRepository extends ServiceEntityRepository
     /**
      * @param string $login
      *
-     * @return mixed
-     * @throws NoResultException
+     * @return User|null
      * @throws NonUniqueResultException
      */
-    public function findOneByEmailOrLogin(string $login)
+    public function findOneByEmailOrLogin(string $login): ?User
     {
         return $this->createQueryBuilder('user')
             ->where('user.email = :login')
             ->orWhere('user.username = :login')
             ->setParameter('login', $login)
             ->getQuery()
-            ->getSingleResult();
+            ->getOneOrNullResult();
     }
 }

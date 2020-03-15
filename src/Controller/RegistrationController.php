@@ -26,7 +26,7 @@ class RegistrationController extends AbstractController
         }
 
         $user->setConfirmationDatetime(new \DateTime());
-        $user->setConfirmationToken(null);
+        $user->setToken(null);
         $this->getDoctrine()->getManager()->flush();
 
         return $this->redirectToRoute('app_homepage', ['_fragment' => '/registration/success']);

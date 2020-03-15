@@ -26,7 +26,7 @@ class ConfirmRegistrationSender
 
     public function sendConfirmationEmail(User $user)
     {
-        $route = $this->router->generate('app_register_confirm', ['token' => $user->getConfirmationToken()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $route = $this->router->generate('app_register_confirm', ['token' => $user->getToken()], UrlGeneratorInterface::ABSOLUTE_URL);
         $this->registrationMail->send($user->getEmail(), $user->getUsername(), $route);
     }
 }

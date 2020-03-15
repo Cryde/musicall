@@ -32,12 +32,14 @@
                 <b-button
                         variant="primary" block
                         size="lg"
-                        class="mt-3"
+                        class="mt-3 mb-4"
                         :disabled="!username.length || !password.length || isLoading"
                         type="submit" @click.prevent @click="login">
                     <b-spinner small type="grow" v-if="isLoading"></b-spinner>
                     me connecter
                 </b-button>
+
+                <router-link :to="{name: 'user_request_lost_password'}" class="mt-3">Mot de passe oublié ?</router-link>
             </form>
         </div>
     </div>
