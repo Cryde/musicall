@@ -4,7 +4,7 @@ namespace App\EventSubscriber;
 
 use App\Event\UserRegisteredEvent;
 use App\Service\User\ConfirmRegistrationSender;
-use App\Service\User\GenerateConfirmationToken;
+use App\Service\User\UserTokenGenerator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class UserSubscriber implements EventSubscriberInterface
@@ -14,13 +14,13 @@ class UserSubscriber implements EventSubscriberInterface
      */
     private ConfirmRegistrationSender $confirmRegistration;
     /**
-     * @var GenerateConfirmationToken
+     * @var UserTokenGenerator
      */
-    private GenerateConfirmationToken $generateConfirmationToken;
+    private UserTokenGenerator $generateConfirmationToken;
 
     public function __construct(
         ConfirmRegistrationSender $confirmRegistration,
-        GenerateConfirmationToken $generateConfirmationToken
+        UserTokenGenerator $generateConfirmationToken
     ) {
         $this->confirmRegistration = $confirmRegistration;
         $this->generateConfirmationToken = $generateConfirmationToken;

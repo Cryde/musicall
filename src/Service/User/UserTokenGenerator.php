@@ -5,7 +5,7 @@ namespace App\Service\User;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
-class GenerateConfirmationToken
+class UserTokenGenerator
 {
     /**
      * @var EntityManagerInterface
@@ -19,7 +19,7 @@ class GenerateConfirmationToken
 
     public function generate(User $user)
     {
-        $user->setConfirmationToken(sha1(random_bytes(10)));
+        $user->setToken(sha1(random_bytes(10)));
         $this->entityManager->flush();
     }
 }

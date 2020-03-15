@@ -78,7 +78,12 @@ class User implements UserInterface
      * @var string|null
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $confirmationToken;
+    private $token;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $resetRequestDatetime;
 
     public function __construct()
     {
@@ -267,14 +272,26 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getConfirmationToken(): ?string
+    public function getToken(): ?string
     {
-        return $this->confirmationToken;
+        return $this->token;
     }
 
-    public function setConfirmationToken(?string $confirmationToken): self
+    public function setToken(?string $token): self
     {
-        $this->confirmationToken = $confirmationToken;
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function getResetRequestDatetime(): ?\DateTimeInterface
+    {
+        return $this->resetRequestDatetime;
+    }
+
+    public function setResetRequestDatetime(?\DateTimeInterface $resetRequestDatetime): self
+    {
+        $this->resetRequestDatetime = $resetRequestDatetime;
 
         return $this;
     }
