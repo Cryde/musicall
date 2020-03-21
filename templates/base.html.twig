@@ -19,7 +19,7 @@
 <body>
 <noscript>Votre navigateur ne supporte pas le JavaScript! Activez le pour pouvoir profiter au mieux du site.</noscript>
 
-<div id="app" data-is-authenticated="{{ is_authenticated }}" data-user="{{ user }}"></div>
+<div id="app"></div>
 
 <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
 <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
