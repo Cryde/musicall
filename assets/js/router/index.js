@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Router from "vue-router";
+import admin from './admin';
 
 Vue.use(Router);
 
@@ -83,11 +84,6 @@ export default new Router({
       component: () => import("../components/publication/user/edit/Edit"),
       meta: {isAuthRequired: true}
     },
-    {
-      path: "/admin/publications/pending/",
-      name: "admin_publications_pending",
-      component: () => import("../views/admin/PublicationPending"),
-      meta: {isAuthRequired: true}
-    }
+    ...admin
   ]
 });
