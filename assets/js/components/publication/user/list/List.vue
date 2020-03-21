@@ -2,11 +2,25 @@
 
     <div>
         <b-dropdown id="dropdown-1" text="Ajouter" right variant="outline-success" class="float-right">
-            <b-dropdown-item v-b-modal.modal-publication-add><i class="far fa-edit"></i> une publication</b-dropdown-item>
+            <b-dropdown-item v-b-modal.modal-publication-add><i class="far fa-edit"></i> une publication
+            </b-dropdown-item>
             <b-dropdown-item v-b-modal.modal-video-add><i class="fas fa-video"></i> une video</b-dropdown-item>
+            <b-dropdown-item v-b-modal.modal-gallery-add v-if="isRoleAdmin"><i class="far fa-images"></i> une galerie
+            </b-dropdown-item>
         </b-dropdown>
 
         <h1>Mes publications</h1>
+
+        <div v-if="total">
+            Vous avez posté {{ total }} publications
+        </div>
+
+        <b-pagination
+                v-model="currentPage"
+                :total-rows="total"
+                :per-page="perPage"
+                align="right"
+        ></b-pagination>
 
         <div class="content-box mt-3">
             <b-table
@@ -15,6 +29,8 @@
                     :busy.sync="isBusy"
                     :sort-by.sync="sortBy"
                     :sort-desc.sync="sortDesc"
+                    :per-page="perPage"
+                    :current-page="currentPage"
                     show-empty
                     borderless
                     stacked="md"
@@ -27,7 +43,8 @@
 
                 <template v-slot:cell(actions)="data">
                     <b-button-group size="sm">
-                        <b-button v-if="data.item.status_id === 0" variant="outline-success" v-b-tooltip.hover title="Publier la publication"
+                        <b-button v-if="data.item.status_id === 0" variant="outline-success" v-b-tooltip.hover
+                                  title="Publier la publication"
                                   @click="publishPublication(data.item.id)">
                             <i class="far fa-paper-plane"></i>
                         </b-button>
@@ -40,7 +57,8 @@
                                   :to="{ name: 'user_publications_edit', params: { id: data.item.id }}"><i
                                 class="far fa-edit"></i>
                         </b-button>
-                        <b-button v-if="data.item.status_id === 0" variant="outline-danger" v-b-tooltip.hover title="Supprimer la publication"
+                        <b-button v-if="data.item.status_id === 0" variant="outline-danger" v-b-tooltip.hover
+                                  title="Supprimer la publication"
                                   @click="showDeleteModal(data.item.id)">
                             <i class="far fa-trash-alt"></i>
                         </b-button>
@@ -48,8 +66,9 @@
                 </template>
             </b-table>
         </div>
-        <AddPublicationModal/>
-        <AddVideoModal/>
+        <add-publication-modal/>
+        <add-video-modal/>
+        <add-gallery-modal/>
 
         <b-modal id="modal-publication-control" centered title="Publier la publication">
             <div v-if="loadingControlPublication" class="p-5 text-center">
@@ -79,13 +98,19 @@
 </template>
 
 <script>
+  import userPublicationApi from "../../../../api/userPublication";
   import AddPublicationModal from './AddPublicationModal'
   import AddVideoModal from './AddVideoModal'
+  import AddGalleryModal from './AddGalleryModal'
+  import {mapGetters} from 'vuex';
 
   export default {
-    components: {AddPublicationModal, AddVideoModal},
+    components: {AddPublicationModal, AddVideoModal, AddGalleryModal},
     data() {
       return {
+        currentPage: 1,
+        perPage: 0,
+        total: null,
         loadingControlPublication: false,
         isBusy: false,
         errors: [],
@@ -101,6 +126,9 @@
         ],
       }
     },
+    computed: {
+      ...mapGetters('security', ['isRoleAdmin'])
+    },
     mounted() {
       this.$root.$on('reload-table', () => {
         this.$refs.table.refresh();
@@ -109,15 +137,11 @@
     methods: {
       async publicationProvider(ctx) {
         try {
-
-          const resp = await fetch(Routing.generate('api_user_publication_list'), {
-            method: 'POST',
-            body: JSON.stringify(ctx)
-          });
-          console.log(resp);
-          const json = await resp.json();
-
-          return json.publications;
+          console.log(ctx);
+          const resp = await userPublicationApi.getPublications(ctx);
+          this.total = resp.meta.total;
+          this.perPage = resp.meta.items_per_page;
+          return resp.publications;
         } catch (e) {
           console.error(e);
           return []
@@ -134,7 +158,7 @@
         }
 
         try {
-          await this.deleteItem(id)
+          await userPublicationApi.deleteItem(id);
           this.$refs.table.refresh();
         } catch (error) {
           console.error(error);
@@ -156,7 +180,7 @@
         this.$bvModal.show('modal-publication-control');
 
         try {
-          const resp = await this.publishPublicationApi(id);
+          await userPublicationApi.publishPublicationApi(id);
           this.$refs.table.refresh();
 
           this.loadingControlPublication = false;
@@ -168,21 +192,6 @@
           }
         }
       },
-      publishPublicationApi(id) {
-        return fetch(Routing.generate('api_user_publication_publish', {id}))
-        .then(this.handleErrors)
-        .then(resp => resp.json());
-      },
-      deleteItem(id) {
-        return fetch(Routing.generate('api_user_publication_delete', {id}))
-      },
-      async handleErrors(response) {
-        if (!response.ok) {
-          const data = await response.json();
-          return Promise.reject(data)
-        }
-        return response;
-      }
     }
   }
 </script>

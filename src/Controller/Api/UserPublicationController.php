@@ -55,9 +55,16 @@ class UserPublicationController extends AbstractController
         SortAndFilterFromArray $sortAndFilterFromArray
     ) {
         $filter = $sortAndFilterFromArray->createFromArray($jsonizer->decodeRequest($request));
-        $publications = $publicationRepository->findBy(['author' => $this->getUser()], $filter['sort']);
+        $count = $publicationRepository->count(['author' => $this->getUser()]);
+        $publications = $publicationRepository->findBy(['author' => $this->getUser()], $filter['sort'], $filter['limit'], $filter['offset']);
 
-        return $this->json(['publications' => $userPublicationArraySerializer->listToArray($publications)]);
+        return $this->json([
+            'publications' => $userPublicationArraySerializer->listToArray($publications),
+            'meta'         => [
+                'total'          => $count,
+                'items_per_page' => SortAndFilterFromArray::ITEM_PER_PAGE,
+            ],
+        ]);
     }
 
     /**
