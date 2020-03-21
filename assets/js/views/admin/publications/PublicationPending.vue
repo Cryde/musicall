@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>Admin / Publication en attente de validation</h1>
+        <h1><b-link :to="{name: 'admin_dashboard'}">Admin</b-link> / Publication en attente de validation</h1>
 
         <b-table class="mt-5" striped hover :fields="fields" :items="publications" :busy="isLoading" show-empty>
             <template v-slot:table-busy>
