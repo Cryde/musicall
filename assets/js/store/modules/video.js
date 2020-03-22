@@ -1,5 +1,12 @@
 import apiPublication from '../../api/publication';
 
+const FETCHING = 'FETCHING';
+const FETCHING_SUCCESS = 'FETCHING_SUCCESS';
+const FETCHING_ERROR = 'FETCHING_ERROR';
+const ADDING = 'ADDING';
+const ADDING_SUCCESS = 'ADDING_SUCCESS';
+const RESET_ALL = 'RESET_ALL';
+
 const state = {
   isLoading: false,
   error: null,
@@ -33,62 +40,64 @@ const getters = {
 };
 
 const mutations = {
-  ['FETCHING'](state) {
+  [FETCHING](state) {
     state.isLoading = true;
     state.error = null;
     state.video = {};
   },
-  ['FETCHING_SUCCESS'](state, payload) {
+  [FETCHING_SUCCESS](state, payload) {
     state.isLoading = false;
     state.error = null;
     state.video = payload.video;
   },
-  ['FETCHING_ERROR'](state, error) {
+  [FETCHING_ERROR](state, error) {
     state.isLoading = false;
     state.error = error;
     state.video = {};
   },
-  ['ADDING'](state) {
+  [ADDING](state) {
     state.isLoadingAdd = true;
     state.error = null;
     state.newVideo = {};
   },
-  ['ADDING_SUCCESS'](state, payload) {
+  [ADDING_SUCCESS](state, payload) {
     state.isLoadingAdd = false;
     state.error = null;
     state.newVideo = payload;
   },
-  ['RESET_ALL'](state) {
+  [RESET_ALL](state) {
     state = {
-      isLoading: false,
-      error: null,
-      video: {},
-      isLoadingAdd: false,
-      newVideo: {}
+      ...state, ...{
+        isLoading: false,
+        error: null,
+        video: {},
+        isLoadingAdd: false,
+        newVideo: {}
+      }
     };
   }
 };
 
 const actions = {
   resetState({commit}) {
-    commit('RESET_ALL');
+    commit(RESET_ALL);
   },
   async getPreviewVideo({commit}, payload) {
-    commit('FETCHING');
+    commit(FETCHING);
     try {
       const resp = await apiPublication.getPreviewVideo(payload.videoUrl);
-      commit('FETCHING_SUCCESS', {video: resp.data});
+      commit(FETCHING_SUCCESS, {video: resp.data});
     } catch (err) {
-      commit('FETCHING_ERROR', err);
+      commit(FETCHING_ERROR, err);
     }
   },
   async addVideo({commit}, {title, description, videoUrl, imageUrl}) {
-    commit('ADDING');
+    commit(ADDING);
     try {
       const resp = await apiPublication.addVideo({title, description, videoUrl, imageUrl});
-      commit('ADDING_SUCCESS', {video: resp.data});
+      commit(ADDING_SUCCESS, {video: resp.data});
     } catch (err) {
-      commit('FETCHING_ERROR', err);
+      commit(FETCHING_ERROR, err);
     }
   }
 };
