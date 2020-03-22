@@ -1,3 +1,5 @@
+/** global: Routing */
+
 export default {
   getPublications(context) {
     return fetch(Routing.generate('api_user_publication_list'), {
