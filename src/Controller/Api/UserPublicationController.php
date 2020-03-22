@@ -163,7 +163,6 @@ class UserPublicationController extends AbstractController
      * @param UserPublicationArraySerializer $userPublicationArraySerializer
      * @param RemoteFileDownloader           $remoteFileDownloader
      * @param ParameterBagInterface          $containerBag
-     * @param PublicationSlug                $publicationSlug
      *
      * @return JsonResponse
      * @throws CorruptedFileException
@@ -180,8 +179,7 @@ class UserPublicationController extends AbstractController
         PublicationRepository $publicationRepository,
         UserPublicationArraySerializer $userPublicationArraySerializer,
         RemoteFileDownloader $remoteFileDownloader,
-        ParameterBagInterface $containerBag,
-        PublicationSlug $publicationSlug
+        ParameterBagInterface $containerBag
     ) {
         $data = $jsonizer->decodeRequest($request);
         $videoUrl = $data['videoUrl'];
