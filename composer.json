@@ -7,7 +7,7 @@
         "php": "^7.4.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "exercise/htmlpurifier-bundle": "^2.0",
+        "exercise/htmlpurifier-bundle": "^3.0",
         "friendsofsymfony/jsrouting-bundle": "^2.3",
         "gesdinet/jwt-refresh-token-bundle": "^0.9",
         "google/apiclient": "^2.0",
