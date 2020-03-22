@@ -210,6 +210,9 @@
     "phpseclib/phpseclib": {
         "version": "2.0.23"
     },
+    "phpstan/extension-installer": {
+        "version": "1.0.3"
+    },
     "phpstan/phpstan": {
         "version": "0.11.19"
     },
