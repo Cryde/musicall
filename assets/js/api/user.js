@@ -1,3 +1,5 @@
+/** global: Routing */
+
 export default {
   changePassword({oldPassword, newPassword}) {
     return fetch(Routing.generate('api_user_change_password'), {
