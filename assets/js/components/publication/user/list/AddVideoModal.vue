@@ -1,5 +1,5 @@
 <template>
-    <b-modal id="modal-video-add" title="Ajouter une video" ref="videoAddModal">
+    <b-modal id="modal-video-add" title="Ajouter une video" ref="modal-video-add">
 
         <b-form-group description="Le titre de votre publication">
             <b-form-input v-model="videoUrl"
@@ -67,14 +67,12 @@
       ])
     },
     mounted() {
-      this.$root.$on('bv::modal::hidden', async (bvEvent, modalId) => {
-        if (modalId !== 'modal-video-add') {
-          return;
-        }
+      this.$refs['modal-video-add'].$on('hidden', async () => {
 
         await this.$store.dispatch('video/resetState');
 
         this.videoUrl = '';
+        this.previousVideoUrl = '';
         this.showPreview = false;
       });
     },
@@ -110,7 +108,7 @@
             imageUrl: this.videoImage
           });
 
-          this.$refs.videoAddModal.hide();
+          this.$refs['modal-video-add'].hide();
           this.$root.$emit('reload-table');
 
           this.$bvToast.toast('Votre vidéo a été mise en ligne', {
