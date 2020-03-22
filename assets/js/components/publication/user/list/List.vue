@@ -94,6 +94,10 @@
 
             </template>
         </b-modal>
+
+        <h2 class="mt-5">Galleries</h2>
+
+        <gallery-table/>
     </div>
 </template>
 
@@ -102,10 +106,11 @@
   import AddPublicationModal from './AddPublicationModal'
   import AddVideoModal from './AddVideoModal'
   import AddGalleryModal from './AddGalleryModal'
+  import GalleryTable from './gallery/Table'
   import {mapGetters} from 'vuex';
 
   export default {
-    components: {AddPublicationModal, AddVideoModal, AddGalleryModal},
+    components: {AddPublicationModal, AddVideoModal, AddGalleryModal, GalleryTable},
     data() {
       return {
         currentPage: 1,

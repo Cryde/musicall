@@ -37,3 +37,24 @@ liip_imagine:
                     max: [100, 100]
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
+
+        gallery_image_filter_full:
+            filters:
+                downscale:
+                    max: [1500, 1500]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 100, progressive: true }
+
+        gallery_image_filter_medium:
+            filters:
+                downscale:
+                    max: [500, 500]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 75, progressive: true }
+
+        gallery_image_filter_small:
+            filters:
+                downscale:
+                    max: [200, 200]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 30, progressive: true }

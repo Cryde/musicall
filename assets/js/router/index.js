@@ -84,6 +84,12 @@ export default new Router({
       component: () => import("../components/publication/user/edit/Edit"),
       meta: {isAuthRequired: true}
     },
+    {
+      path: "/user/galleries/edit/:id",
+      name: "user_gallery_edit",
+      component: () => import("../components/publication/user/edit/EditGallery"),
+      meta: {isAuthRequired: true}
+    },
     ...admin
   ]
 });
