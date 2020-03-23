@@ -15,6 +15,7 @@ set('ssh_multiplexing', true);
 add('shared_dirs', [
     'public/images/publication/post',
     'public/images/publication/cover',
+    'public/images/gallery',
     'public/media/cache',
 ]);
 
