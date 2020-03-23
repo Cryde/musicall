@@ -146,4 +146,27 @@ class UserGalleryController extends AbstractController
 
         return $this->json(['error' => $form->getErrors(true, true)]);
     }
+
+    /**
+     * @Route("/api/user/gallery/image/{id}", name="api_user_gallery_image_delete", options={"expose": true}, methods={"DELETE"})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param GalleryImage $galleryImage
+     *
+     * @return JsonResponse
+     */
+    public function removeImage(GalleryImage $galleryImage)
+    {
+        if ($this->getUser()->getId() !== $galleryImage->getGallery()->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
+        // todo : vérifier que l'image n'est pas une cover image de la galerie !
+
+        $this->getDoctrine()->getManager()->remove($galleryImage);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json([], Response::HTTP_OK);
+    }
 }

@@ -5,6 +5,7 @@ const IS_LOADING_IMAGES = 'IS_LOADING_IMAGES';
 const UPDATE_GALLERY = 'UPDATE_GALLERY';
 const UPDATE_IMAGES = 'UPDATE_IMAGES';
 const UPDATE_IMAGES_PREPEND = 'UPDATE_IMAGES_PREPEND';
+const UPDATE_IMAGES_REMOVE = 'UPDATE_IMAGES_REMOVE';
 
 const state = {
   isLoading: false,
@@ -40,6 +41,9 @@ const mutations = {
   },
   [UPDATE_IMAGES_PREPEND](state, image) {
     state.images = [image, ...state.images];
+  },
+  [UPDATE_IMAGES_REMOVE](state, image) {
+    state.images = state.images.filter((item) => item.id !== image.id);
   }
 };
 
@@ -58,6 +62,10 @@ const actions = {
   },
   async addImage({commit}, image) {
     commit(UPDATE_IMAGES_PREPEND, image);
+  },
+  async removeImage({commit}, image) {
+    await galleryApi.removeImage(image.id);
+    commit(UPDATE_IMAGES_REMOVE, image);
   }
 };
 
