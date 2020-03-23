@@ -1,15 +1,14 @@
 <?php
 
 namespace App\Service\Google;
-
 class YoutubeUrlHelper
 {
     /**
      * @param string $urlVideo
      *
-     * @return false|mixed|string
+     * @return string
      */
-    public function getVideoId(string $urlVideo)
+    public function getVideoId(string $urlVideo): string
     {
         $host = mb_strtolower(parse_url($urlVideo, PHP_URL_HOST));
         if ($host === 'youtu.be') {
@@ -20,6 +19,6 @@ class YoutubeUrlHelper
             $videoId = $args['v'] ?? '';
         }
 
-        return $videoId;
+        return $videoId ?: '';
     }
 }
