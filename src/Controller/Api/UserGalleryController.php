@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class GalleryController extends AbstractController
+class UserGalleryController extends AbstractController
 {
     /**
      * @Route("/api/user/gallery", name="api_user_gallery_list", methods={"GET"}, options={"expose": true})
