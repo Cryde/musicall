@@ -25,7 +25,11 @@
                     <div class="preview-image">
                         <div class="squared-image"
                              :style="{ backgroundImage: `url(${image.sizes.medium})`}"></div>
-
+                        <div class="actions">
+                            <span class="btn btn-danger" v-b-tooltip title="Supprimer cette image" @click="remove(image)">
+                                <i class="fas fa-trash-alt"></i>
+                            </span>
+                        </div>
                     </div>
                 </b-col>
             </b-row>
@@ -70,6 +74,9 @@
       uploaded(xhr, image) {
         this.$store.dispatch('userGallery/addImage', image);
       },
+      remove(image) {
+        this.$store.dispatch('userGallery/removeImage', image);
+      }
     }
   }
 </script>
@@ -89,12 +96,22 @@
         width: 100%;
         padding-bottom: 100%;
         margin: 15px auto;
-    }
-
-    .squared-image {
         display: block;
         background-position: 50%;
         background-repeat: no-repeat;
         background-size: cover;
+    }
+
+    .preview-image:hover .actions {
+        opacity: 1;
+    }
+
+    .actions {
+
+        opacity: 0;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        transition: all .4s;
     }
 </style>

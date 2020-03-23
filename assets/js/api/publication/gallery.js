@@ -19,5 +19,11 @@ export default {
   getImages(galleryId) {
     return fetch(Routing.generate('api_user_gallery_images', {id: galleryId}))
     .then(resp => resp.json())
+  },
+  removeImage(id) {
+    return fetch(Routing.generate('api_user_gallery_image_delete', {id}), {
+      method: 'DELETE'
+    })
+    .then(resp => resp.json())
   }
 }
