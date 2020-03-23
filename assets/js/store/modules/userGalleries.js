@@ -27,10 +27,9 @@ const mutations = {
 };
 
 const actions = {
-  async load({commit}, id) {
+  async load({commit}) {
     commit(IS_LOADING, true);
     const galleries = await galleryApi.getGalleries();
-    console.log(galleries)
     commit(UPDATE_GALLERIES, galleries);
     commit(IS_LOADING, false);
   },
