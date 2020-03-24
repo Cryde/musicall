@@ -29,8 +29,16 @@
                         <div class="squared-image"
                              :style="{ backgroundImage: `url(${image.sizes.medium})`}"></div>
                         <div class="actions">
-                            <span class="btn btn-danger" v-b-tooltip title="Supprimer cette image" @click="remove(image)">
+                            <span
+                                    v-show="!coverImage || coverImage.id !== image.id"
+                                    class="btn btn-danger" v-b-tooltip title="Supprimer cette image" @click="remove(image)">
                                 <i class="fas fa-trash-alt"></i>
+                            </span>
+
+                            <span
+                                    v-show="!coverImage || coverImage.id !== image.id"
+                                    class="btn btn-primary float-right" v-b-tooltip title="Définir cette image comme image de couverture" @click="editCover(image)">
+                                <i class="fas fa-image"></i>
                             </span>
                         </div>
                     </div>
@@ -59,6 +67,7 @@
         'isLoading',
         'isLoadingImages',
         'gallery',
+        'coverImage',
         'images',
       ])
     },
@@ -82,6 +91,16 @@
       },
       remove(image) {
         this.$store.dispatch('userGallery/removeImage', image);
+      },
+      editCover(image) {
+        this.$store.dispatch('userGallery/editCover', {image});
+        this.$bvToast.toast(`La cover de la galerie a été correctement modifiée`, {
+          title: 'Galerie',
+          toaster: 'b-toaster-bottom-left',
+          variant: 'success',
+          autoHideDelay: 3000,
+          appendToast: false
+        });
       }
     }
   }
@@ -117,6 +136,7 @@
         position: absolute;
         top: 10px;
         left: 10px;
+        right: 10px;
         transition: all .4s;
     }
 </style>

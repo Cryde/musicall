@@ -15,6 +15,12 @@ export default {
     })
     .then(resp => resp.json())
   },
+  patchCoverGallery({imageId}) {
+    return fetch(Routing.generate('api_user_gallery_image_cover', {id: imageId}), {
+      method: 'PATCH',
+    })
+    .then(resp => resp.json())
+  },
   getGallery(id) {
     return fetch(Routing.generate('api_user_gallery_get', {id}))
     .then(resp => resp.json())
