@@ -7,6 +7,7 @@ use App\Entity\Image\GalleryImage;
 use App\Entity\User;
 use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
+use App\Serializer\Normalizer\UserGalleryNormalizer;
 use App\Serializer\UserGalleryImageSerializer;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,8 +21,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserGalleryController extends AbstractController
 {
-    private const GALLERY_IGNORED_ATTRIBUTES_EXPORT = ['author', 'images'];
-
     /**
      * @Route("/api/user/gallery", name="api_user_gallery_list", methods={"GET"}, options={"expose": true})
      *
@@ -36,7 +35,7 @@ class UserGalleryController extends AbstractController
         $galleries = $galleryRepository->findBy(['author' => $this->getUser()], ['creationDatetime' => 'DESC']);
 
         return $this->json($galleries, Response::HTTP_OK, [], [
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['author', 'images']
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['author', 'images', 'coverImage']
         ]);
     }
     /**
@@ -68,7 +67,7 @@ class UserGalleryController extends AbstractController
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json($gallery, Response::HTTP_CREATED, [], [
-            AbstractNormalizer::IGNORED_ATTRIBUTES => self::GALLERY_IGNORED_ATTRIBUTES_EXPORT
+            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
         ]);
     }
 
@@ -101,7 +100,7 @@ class UserGalleryController extends AbstractController
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json($gallery, Response::HTTP_OK, [], [
-            AbstractNormalizer::IGNORED_ATTRIBUTES => self::GALLERY_IGNORED_ATTRIBUTES_EXPORT
+            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
         ]);
     }
 
@@ -121,7 +120,7 @@ class UserGalleryController extends AbstractController
         }
 
         return $this->json($gallery, Response::HTTP_OK, [], [
-            AbstractNormalizer::IGNORED_ATTRIBUTES => self::GALLERY_IGNORED_ATTRIBUTES_EXPORT
+            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
         ]);
     }
 
@@ -191,15 +190,49 @@ class UserGalleryController extends AbstractController
      */
     public function removeImage(GalleryImage $galleryImage)
     {
-        if ($this->getUser()->getId() !== $galleryImage->getGallery()->getAuthor()->getId()) {
+        $gallery = $galleryImage->getGallery();
+        if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
-        // todo : vérifier que l'image n'est pas une cover image de la galerie !
+        $cover = $gallery->getCoverImage();
+        if ($cover && $cover->getId() === $galleryImage->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas supprimer cette image car c\'est la couverture de la galerie']], Response::HTTP_FORBIDDEN);
+        }
 
         $this->getDoctrine()->getManager()->remove($galleryImage);
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json([], Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/user/gallery/image/{id}/cover", name="api_user_gallery_image_cover", methods={"PATCH"}, options={"expose": true})
+     *
+     * @param GalleryImage $image
+     *
+     * @return JsonResponse
+     */
+    public function coverImage(GalleryImage $image)
+    {
+        $gallery = $image->getGallery();
+
+        if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
+        $cover = $gallery->getCoverImage();
+
+        if ($cover && $image->getId() === $cover->getId()) {
+            $gallery->setCoverImage(null);
+        } else {
+            $gallery->setCoverImage($image);
+        }
+
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json($gallery, Response::HTTP_OK, [], [
+            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
+        ]);
     }
 }

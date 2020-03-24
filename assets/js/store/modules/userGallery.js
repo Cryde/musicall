@@ -21,6 +21,9 @@ const getters = {
   gallery(state) {
     return state.gallery;
   },
+  coverImage(state) {
+    return state.gallery.coverImage;
+  },
   images(state) {
     return state.images;
   }
@@ -62,6 +65,10 @@ const actions = {
   },
   async edit({commit}, {id, title}) {
     const gallery = await galleryApi.editGallery({id, title});
+    commit(UPDATE_GALLERY, gallery);
+  },
+  async editCover({commit}, {image}) {
+    const gallery = await galleryApi.patchCoverGallery({imageId: image.id});
     commit(UPDATE_GALLERY, gallery);
   },
   async addImage({commit}, image) {

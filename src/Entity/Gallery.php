@@ -57,6 +57,11 @@ class Gallery
      */
     private $images;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\Image\GalleryImage", cascade={"persist", "remove"})
+     */
+    private $coverImage;
+
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
@@ -168,6 +173,18 @@ class Gallery
                 $image->setGallery(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCoverImage(): ?GalleryImage
+    {
+        return $this->coverImage;
+    }
+
+    public function setCoverImage(?GalleryImage $coverImage): self
+    {
+        $this->coverImage = $coverImage;
 
         return $this;
     }
