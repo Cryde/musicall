@@ -19,6 +19,10 @@
     outline: 0 solid transparent;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 /*@import "buttons.css";
 @import "form.css";
 @import "formatage.css";

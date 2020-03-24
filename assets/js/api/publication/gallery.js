@@ -8,6 +8,13 @@ export default {
     })
     .then(resp => resp.json())
   },
+  editGallery({title, id}) {
+    return fetch(Routing.generate('api_user_gallery_edit', {id}), {
+      method: 'POST',
+      body: JSON.stringify({title})
+    })
+    .then(resp => resp.json())
+  },
   getGallery(id) {
     return fetch(Routing.generate('api_user_gallery_get', {id}))
     .then(resp => resp.json())

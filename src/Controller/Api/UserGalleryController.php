@@ -8,7 +8,6 @@ use App\Entity\User;
 use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
 use App\Serializer\UserGalleryImageSerializer;
-use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,10 +17,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserGalleryController extends AbstractController
 {
+    private const GALLERY_IGNORED_ATTRIBUTES_EXPORT = ['author', 'images'];
+
     /**
      * @Route("/api/user/gallery", name="api_user_gallery_list", methods={"GET"}, options={"expose": true})
      *
@@ -68,7 +68,40 @@ class UserGalleryController extends AbstractController
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json($gallery, Response::HTTP_CREATED, [], [
-            AbstractNormalizer::ATTRIBUTES => ['id'],
+            AbstractNormalizer::IGNORED_ATTRIBUTES => self::GALLERY_IGNORED_ATTRIBUTES_EXPORT
+        ]);
+    }
+
+    /**
+     * @Route("/api/user/gallery/{id}", name="api_user_gallery_edit", methods={"POST"}, options={"expose": true})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Gallery             $gallery
+     * @param Request             $request
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface  $validator
+     *
+     * @return JsonResponse
+     */
+    public function edit(Gallery $gallery, Request $request, SerializerInterface $serializer, ValidatorInterface $validator)
+    {
+        if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
+        /** @var Gallery $gallery */
+        $gallery = $serializer->deserialize($request->getContent(), Gallery::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $gallery]);
+
+        $errors = $validator->validate($gallery);
+        if (count($errors) > 0) {
+            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json($gallery, Response::HTTP_OK, [], [
+            AbstractNormalizer::IGNORED_ATTRIBUTES => self::GALLERY_IGNORED_ATTRIBUTES_EXPORT
         ]);
     }
 
@@ -88,7 +121,7 @@ class UserGalleryController extends AbstractController
         }
 
         return $this->json($gallery, Response::HTTP_OK, [], [
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['author', 'images']
+            AbstractNormalizer::IGNORED_ATTRIBUTES => self::GALLERY_IGNORED_ATTRIBUTES_EXPORT
         ]);
     }
 

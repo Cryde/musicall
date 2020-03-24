@@ -3,7 +3,11 @@
         <b-spinner/>
     </div>
     <div v-else class="uploader">
-        <h1>{{ gallery.title }} <span><i class="fas fa-cog"></i></span></h1>
+        <h1>
+            <router-link :to="{name:'user_publications'}" class="mr-2"><i class="fas fa-chevron-left"></i></router-link>
+            {{ gallery.title }}
+            <span class="p-1 cursor-pointer" v-b-modal.modal-edit-gallery-properties><i class="fas fa-cog"></i></span>
+        </h1>
 
 
         <vue-dropzone
@@ -14,7 +18,6 @@
                 :options="dropzoneOptions"
         >
         </vue-dropzone>
-
 
         <div v-if="isLoading" class="text-center pb-3 pt-3">
             <b-spinner/>
@@ -34,15 +37,18 @@
                 </b-col>
             </b-row>
         </div>
+
+        <edit-gallery-properties-modal/>
     </div>
 </template>
 
 <script>
   import {mapGetters} from 'vuex';
   import vueDropzone from "vue2-dropzone";
+  import EditGalleryPropertiesModal from './Modal/EditGalleryPropertiesModal';
 
   export default {
-    components: {vueDropzone},
+    components: {vueDropzone, EditGalleryPropertiesModal},
     data() {
       return {
         dropzoneOptions: null
@@ -107,7 +113,6 @@
     }
 
     .actions {
-
         opacity: 0;
         position: absolute;
         top: 10px;
