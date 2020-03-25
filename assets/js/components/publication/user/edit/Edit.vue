@@ -5,7 +5,7 @@
             {{ title }}
             <span v-b-modal.modal-publication-properties><i class="fas fa-cog"></i></span>
         </h1>
-        <div class="content-box publication">
+        <div class="content-box p-lg-3 p-3">
             <div class="editor">
                 <editor-menu-bubble class="menububble" :editor="editor" @hide="hideLinkMenu"
                                     v-slot="{ commands, isActive, getMarkAttrs, menu }">

@@ -2,7 +2,7 @@
     <div>
         <h1>Todo</h1>
 
-        <div class="content-box">
+        <div class="content-box p-lg-3 p-3">
             <p>
                 MusicAll est pour l'instant en phase de re-développement.<br/>
                 C'est à dire que je reprends tout à partir de zero et reconstruit les briques unes à unes.<br/>

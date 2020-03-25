@@ -26,7 +26,11 @@ class PublicationController extends AbstractController
     public function show(Publication $publication, \HTMLPurifier $purifier)
     {
         return $this->json([
+            'author' => [
+                'username' => $publication->getAuthor()->getUsername()
+            ],
             'title'   => $publication->getTitle(),
+            'publication_datetime'   => $publication->getPublicationDatetime(),
             'content' => $purifier->purify($publication->getContent()),
             'type'    => $publication->getType() === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL,
         ]);
