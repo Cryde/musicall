@@ -1,11 +1,9 @@
 <template>
     <div id="nav-bar-dropdown">
         <div class="ml-auto">
-            <b-dropdown size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
+            <b-dropdown variant="link" toggle-class="text-decoration-none" no-caret>
                 <template slot="button-content">
-                    <div class="inset">
-                        <b-img-lazy src="https://via.placeholder.com/150x150" rounded="circle"/>
-                    </div>
+                    <b-avatar :text="user.username[0].toLocaleUpperCase()"></b-avatar>
                 </template>
                 <b-dropdown-text><strong>{{ user.username }}</strong></b-dropdown-text>
                 <b-dropdown-divider></b-dropdown-divider>

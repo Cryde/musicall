@@ -1,6 +1,7 @@
 #publication-list .card-title {
     color: #212529;
-    font-size: 1.3rem;
+    font-size: 1rem;
+    margin-bottom: 0;
 }
 
 #publication-list .video-tag {
@@ -10,6 +11,14 @@
     font-size: 5rem;
     width: 100%;
     margin-left: -1.25rem;
+}
+
+#publication-list .card-body {
+    padding: 0.8rem;
+}
+
+#publication-list .card-text {
+    margin-top: 0.75rem;
 }
 
 .card-text {
