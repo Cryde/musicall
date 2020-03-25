@@ -2,17 +2,17 @@
 
 namespace App\Service\Publication;
 
-use App\Repository\PublicationRepository;
+use App\Repository\GalleryRepository;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-class PublicationSlug
+class GallerySlug
 {
-    private PublicationRepository $publicationRepository;
+    private GalleryRepository $galleryRepository;
     private SluggerInterface $slugger;
 
-    public function __construct(PublicationRepository $publicationRepository, SluggerInterface $slugger)
+    public function __construct(GalleryRepository $galleryRepository, SluggerInterface $slugger)
     {
-        $this->publicationRepository = $publicationRepository;
+        $this->galleryRepository = $galleryRepository;
         $this->slugger = $slugger;
     }
 
@@ -21,7 +21,7 @@ class PublicationSlug
         $slug = $this->slugger->slug($slugCandidate)->lower();
         $i = 1;
         $initialSlug = $slug;
-        while ($this->publicationRepository->count(['slug' => $slug]) > 0) {
+        while ($this->galleryRepository->count(['slug' => $slug]) > 0) {
             $slug = $initialSlug . '-' . $i++;
         }
 

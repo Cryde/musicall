@@ -171,7 +171,7 @@
       },
       async publishPublication(id) {
         this.errors = [];
-        const value = await this.$bvModal.msgBoxConfirm('Une fois mise en ligne vous me pourrez plus modifier la publication.', {
+        const value = await this.$bvModal.msgBoxConfirm('Une fois mise en ligne vous ne pourrez plus modifier la publication.', {
           title: 'Êtes vous sur ?',
           okTitle: 'Oui',
           cancelTitle: 'Annuler',

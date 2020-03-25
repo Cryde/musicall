@@ -21,6 +21,15 @@ export default {
     })
     .then(resp => resp.json())
   },
+  publishGallery(galleryId) {
+    return fetch(Routing.generate('api_user_gallery_publish', {id: galleryId}), {
+      method: 'PATCH',
+    })
+    .then(async (resp) => {
+      const json = await resp.json();
+      return resp.ok ? json : Promise.reject(json);
+    });
+  },
   getGallery(id) {
     return fetch(Routing.generate('api_user_gallery_get', {id}))
     .then(resp => resp.json())
