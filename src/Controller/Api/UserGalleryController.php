@@ -57,6 +57,7 @@ class UserGalleryController extends AbstractController
         /** @var Gallery $gallery */
         $gallery = $serializer->deserialize($request->getContent(), Gallery::class, 'json');
         $gallery->setAuthor($author);
+        $gallery->setSlug('gallery-'.uniqid('', true));
 
         $errors = $validator->validate($gallery);
         if (count($errors) > 0) {
