@@ -25,6 +25,7 @@ class Gallery
      * @ORM\Column(type="string", length=255)
      *
      * @Assert\NotBlank()
+     * @Assert\Length(max="200")
      */
     private $title;
     /**
@@ -58,6 +59,7 @@ class Gallery
     private $images;
 
     /**
+     * @Assert\NotNull(groups={"publish"}, message="Vous devez spécifier une image de couverture")
      * @ORM\OneToOne(targetEntity="App\Entity\Image\GalleryImage", cascade={"persist", "remove"})
      */
     private $coverImage;

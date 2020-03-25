@@ -33,6 +33,11 @@ const actions = {
     commit(UPDATE_GALLERIES, galleries);
     commit(IS_LOADING, false);
   },
+  async publish({commit}, galleryId) {
+    await galleryApi.publishGallery(galleryId);
+    const galleries = await galleryApi.getGalleries();
+    commit(UPDATE_GALLERIES, galleries);
+  }
 };
 
 export default {

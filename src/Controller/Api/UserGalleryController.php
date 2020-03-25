@@ -9,6 +9,7 @@ use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
 use App\Serializer\Normalizer\UserGalleryNormalizer;
 use App\Serializer\UserGalleryImageSerializer;
+use App\Service\Publication\GallerySlug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -143,6 +144,41 @@ class UserGalleryController extends AbstractController
 
         return $this->json($userGalleryImageSerializer->toList($gallery->getImages()));
     }
+
+    /**
+     * @Route("/api/user/gallery/{id}/publish", name="api_user_gallery_publish", methods={"PATCH"}, options={"expose": true})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param Gallery            $gallery
+     * @param ValidatorInterface $validator
+     * @param GallerySlug        $gallerySlug
+     *
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function publish(Gallery $gallery, ValidatorInterface $validator, GallerySlug $gallerySlug)
+    {
+        if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
+        $errors = $validator->validate($gallery, null, ['publish']);
+        if (count($errors) > 0) {
+            return $this->json($errors, Response::HTTP_UNAUTHORIZED);
+        }
+
+        $gallery->setPublicationDatetime(new \DateTime());
+        $gallery->setStatus(Gallery::STATUS_ONLINE);
+        $gallery->setSlug($gallerySlug->create($gallery->getTitle()));
+
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->json($gallery, Response::HTTP_OK, [], [
+            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
+        ]);
+    }
+
 
     /**
      * @Route("/api/user/gallery/{id}/upload-image", name="api_user_gallery_upload_image", options={"expose": true}, methods={"POST"})
