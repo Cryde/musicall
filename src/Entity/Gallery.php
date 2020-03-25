@@ -62,6 +62,11 @@ class Gallery
      */
     private $coverImage;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $slug;
+
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
@@ -185,6 +190,18 @@ class Gallery
     public function setCoverImage(?GalleryImage $coverImage): self
     {
         $this->coverImage = $coverImage;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): self
+    {
+        $this->slug = $slug;
 
         return $this;
     }
