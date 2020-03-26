@@ -4,8 +4,6 @@ const IS_LOADING = 'IS_LOADING';
 const IS_LOADING_IMAGES = 'IS_LOADING_IMAGES';
 const UPDATE_GALLERY = 'UPDATE_GALLERY';
 const UPDATE_IMAGES = 'UPDATE_IMAGES';
-const UPDATE_IMAGES_PREPEND = 'UPDATE_IMAGES_PREPEND';
-const UPDATE_IMAGES_REMOVE = 'UPDATE_IMAGES_REMOVE';
 
 const state = {
   isLoading: false,
@@ -18,11 +16,11 @@ const getters = {
   isLoading(state) {
     return state.isLoading;
   },
+  isLoadingImages(state) {
+    return state.isLoadingImages;
+  },
   gallery(state) {
     return state.gallery;
-  },
-  coverImage(state) {
-    return state.gallery.coverImage;
   },
   images(state) {
     return state.images;
@@ -42,42 +40,21 @@ const mutations = {
   [UPDATE_IMAGES](state, images) {
     state.images = images;
   },
-  [UPDATE_IMAGES_PREPEND](state, image) {
-    state.images = [image, ...state.images];
-  },
-  [UPDATE_IMAGES_REMOVE](state, image) {
-    state.images = state.images.filter((item) => item.id !== image.id);
-  }
 };
 
 const actions = {
-  async loadGallery({commit}, id) {
+  async loadGallery({commit}, slug) {
     commit(IS_LOADING, true);
-    const gallery = await galleryApi.getUserGallery(id);
+    const gallery = await galleryApi.getGallery(slug);
     commit(UPDATE_GALLERY, gallery);
     commit(IS_LOADING, false);
   },
-  async loadImages({commit}, galleryId) {
+  async loadImages({commit}, slug) {
     commit(IS_LOADING_IMAGES, true);
-    const images = await galleryApi.getUserImages(galleryId);
+    const images = await galleryApi.getGalleryImages(slug);
     commit(UPDATE_IMAGES, images);
     commit(IS_LOADING_IMAGES, false);
   },
-  async edit({commit}, {id, title}) {
-    const gallery = await galleryApi.editGallery({id, title});
-    commit(UPDATE_GALLERY, gallery);
-  },
-  async editCover({commit}, {image}) {
-    const gallery = await galleryApi.patchCoverGallery({imageId: image.id});
-    commit(UPDATE_GALLERY, gallery);
-  },
-  async addImage({commit}, image) {
-    commit(UPDATE_IMAGES_PREPEND, image);
-  },
-  async removeImage({commit}, image) {
-    await galleryApi.removeImage(image.id);
-    commit(UPDATE_IMAGES_REMOVE, image);
-  }
 };
 
 export default {

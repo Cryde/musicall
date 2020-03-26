@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class UserGalleryImageSerializer
+class GalleryImageSerializer
 {
     /**
      * @var UploaderHelper

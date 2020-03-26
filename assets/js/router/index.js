@@ -37,6 +37,12 @@ export default new Router({
       meta: {isAuthRequired: false}
     },
     {
+      name: "gallery_show",
+      path: "/gallery/:slug",
+      component: () => import("../views/gallery/show/Gallery"),
+      meta: {isAuthRequired: false}
+    },
+    {
       name: "login",
       path: "/login",
       component: () => import("../views/Login"),

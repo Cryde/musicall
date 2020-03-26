@@ -28,6 +28,7 @@
                     </b-button>
 
                     <b-button variant="outline-primary" v-b-tooltip.hover title="Voir la galerie"
+                              :to="{name: 'gallery_show', params: {slug: data.item.slug}}"
                               target="_blank"><i
                             class="far fa-eye"></i></b-button>
 

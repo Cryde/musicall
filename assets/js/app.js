@@ -6,6 +6,7 @@ import router from "./router";
 import store from "./store";
 import BootstrapVue from 'bootstrap-vue';
 import VueMeta from 'vue-meta';
+import VueLazyload from 'vue-lazyload'
 
 Vue.use(VueMeta, {
   // optional pluginOptions
@@ -13,6 +14,7 @@ Vue.use(VueMeta, {
 });
 
 Vue.use(BootstrapVue);
+Vue.use(VueLazyload);
 
 Vue.config.productionTip = false;
 

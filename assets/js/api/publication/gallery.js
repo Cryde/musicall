@@ -1,6 +1,14 @@
 /** global: Routing */
 
 export default {
+  getGallery(slug) {
+    return fetch(Routing.generate('api_gallery_show', {slug}))
+    .then(resp => resp.json())
+  },
+  getGalleryImages(slug) {
+    return fetch(Routing.generate('api_gallery_images_show', {slug}))
+    .then(resp => resp.json())
+  },
   addGallery({title}) {
     return fetch(Routing.generate('api_user_gallery_add'), {
       method: 'POST',
@@ -30,15 +38,15 @@ export default {
       return resp.ok ? json : Promise.reject(json);
     });
   },
-  getGallery(id) {
+  getUserGallery(id) {
     return fetch(Routing.generate('api_user_gallery_get', {id}))
     .then(resp => resp.json())
   },
-  getGalleries() {
+  getUserGalleries() {
     return fetch(Routing.generate('api_user_gallery_list'))
     .then(resp => resp.json())
   },
-  getImages(galleryId) {
+  getUserImages(galleryId) {
     return fetch(Routing.generate('api_user_gallery_images', {id: galleryId}))
     .then(resp => resp.json())
   },
