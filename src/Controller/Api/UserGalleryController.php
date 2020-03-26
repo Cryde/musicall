@@ -8,7 +8,7 @@ use App\Entity\User;
 use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
 use App\Serializer\Normalizer\UserGalleryNormalizer;
-use App\Serializer\UserGalleryImageSerializer;
+use App\Serializer\GalleryImageSerializer;
 use App\Service\Publication\GallerySlug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -131,12 +131,12 @@ class UserGalleryController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
-     * @param Gallery                    $gallery
-     * @param UserGalleryImageSerializer $userGalleryImageSerializer
+     * @param Gallery                $gallery
+     * @param GalleryImageSerializer $userGalleryImageSerializer
      *
      * @return JsonResponse
      */
-    public function images(Gallery $gallery, UserGalleryImageSerializer $userGalleryImageSerializer)
+    public function images(Gallery $gallery, GalleryImageSerializer $userGalleryImageSerializer)
     {
         if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
@@ -185,16 +185,16 @@ class UserGalleryController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
-     * @param Request                    $request
-     * @param Gallery                    $gallery
-     * @param UserGalleryImageSerializer $userGalleryImageSerializer
+     * @param Request                $request
+     * @param Gallery                $gallery
+     * @param GalleryImageSerializer $userGalleryImageSerializer
      *
      * @return JsonResponse
      */
     public function uploadImage(
         Request $request,
         Gallery $gallery,
-        UserGalleryImageSerializer $userGalleryImageSerializer
+        GalleryImageSerializer $userGalleryImageSerializer
     ) {
         if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);

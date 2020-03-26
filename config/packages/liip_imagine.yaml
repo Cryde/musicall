@@ -57,4 +57,4 @@ liip_imagine:
                 downscale:
                     max: [200, 200]
             post_processors:
-                jpegoptim: { strip_all: true, max: 30, progressive: true }
+                jpegoptim: { strip_all: true, max: 10, progressive: true }

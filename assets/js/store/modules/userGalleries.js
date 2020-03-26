@@ -29,13 +29,13 @@ const mutations = {
 const actions = {
   async load({commit}) {
     commit(IS_LOADING, true);
-    const galleries = await galleryApi.getGalleries();
+    const galleries = await galleryApi.getUserGalleries();
     commit(UPDATE_GALLERIES, galleries);
     commit(IS_LOADING, false);
   },
   async publish({commit}, galleryId) {
     await galleryApi.publishGallery(galleryId);
-    const galleries = await galleryApi.getGalleries();
+    const galleries = await galleryApi.getUserGalleries();
     commit(UPDATE_GALLERIES, galleries);
   }
 };

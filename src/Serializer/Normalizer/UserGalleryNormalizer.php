@@ -3,7 +3,7 @@
 namespace App\Serializer\Normalizer;
 
 use App\Entity\Gallery;
-use App\Serializer\UserGalleryImageSerializer;
+use App\Serializer\GalleryImageSerializer;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -15,11 +15,11 @@ class UserGalleryNormalizer implements NormalizerInterface, CacheableSupportsMet
 
     private $normalizer;
     /**
-     * @var UserGalleryImageSerializer
+     * @var GalleryImageSerializer
      */
-    private UserGalleryImageSerializer $userGalleryImageSerializer;
+    private GalleryImageSerializer $userGalleryImageSerializer;
 
-    public function __construct(ObjectNormalizer $normalizer, UserGalleryImageSerializer $userGalleryImageSerializer)
+    public function __construct(ObjectNormalizer $normalizer, GalleryImageSerializer $userGalleryImageSerializer)
     {
         $this->normalizer = $normalizer;
         $this->userGalleryImageSerializer = $userGalleryImageSerializer;
