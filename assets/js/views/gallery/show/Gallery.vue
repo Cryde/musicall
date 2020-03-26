@@ -7,7 +7,7 @@
             <h1>{{ gallery.title }}</h1>
 
             <div class="author">
-                Photo de <strong>{{ gallery.author.username }}</strong> le {{ gallery.publicationDatetime | dateFormat }}
+                Photo de <strong>{{ gallery.author.username }}</strong> <span v-if="gallery.publicationDatetime">le {{ gallery.publicationDatetime | dateFormat }}</span>
             </div>
 
             <div v-if="isLoadingImages" class="text-center pt-5">
