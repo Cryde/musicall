@@ -5,6 +5,8 @@ exercise_html_purifier:
             config:
                 # the charset used by the original contents
                 Core.Encoding: 'UTF-8'
+                Cache:
+                    SerializerPermissions: null
                 Filter:
                     YouTube: true
                 HTML:
