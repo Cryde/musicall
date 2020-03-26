@@ -6,7 +6,7 @@ const UPDATE_GALLERY = 'UPDATE_GALLERY';
 const UPDATE_IMAGES = 'UPDATE_IMAGES';
 
 const state = {
-  isLoading: false,
+  isLoading: true,
   isLoadingImages: false,
   gallery: {},
   images: [],
