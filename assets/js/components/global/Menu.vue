@@ -16,6 +16,9 @@
                             {{ category.title }}
                         </router-link>
                     </li>
+                    <li v-if="!isLoading">
+                        <router-link :to="{name: 'gallery_list'}">Galeries</router-link>
+                    </li>
                 </ul>
             </li>
 
