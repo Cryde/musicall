@@ -5,6 +5,10 @@ export default {
     return fetch(Routing.generate('api_gallery_show', {slug}))
     .then(resp => resp.json())
   },
+  getGalleries() {
+    return fetch(Routing.generate('api_gallery_list'))
+    .then(resp => resp.json())
+  },
   getGalleryImages(slug) {
     return fetch(Routing.generate('api_gallery_images_show', {slug}))
     .then(resp => resp.json())

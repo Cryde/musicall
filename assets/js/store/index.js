@@ -10,6 +10,7 @@ import publicationCategory from './modules/publicationCategory';
 import userGallery from './modules/userGallery';
 import userGalleries from './modules/userGalleries';
 import gallery from './modules/gallery';
+import galleries from './modules/galleries';
 
 Vue.use(Vuex);
 
@@ -26,7 +27,8 @@ export default new Vuex.Store({
     adminPendingPublications,
     userGallery,
     userGalleries,
-    gallery
+    gallery,
+    galleries,
   },
   strict: debug,
 })

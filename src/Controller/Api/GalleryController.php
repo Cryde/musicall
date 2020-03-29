@@ -3,7 +3,9 @@
 namespace App\Controller\Api;
 
 use App\Entity\Gallery;
+use App\Repository\GalleryRepository;
 use App\Serializer\GalleryImageSerializer;
+use App\Serializer\Normalizer\GalleryNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,11 +15,20 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 class GalleryController extends AbstractController
 {
     /**
-     * @Route("/api/gallery", name="api_gallery", options={"expose": true})
+     * @Route("/api/gallery", name="api_gallery_list", options={"expose": true})
+     *
+     * @param GalleryRepository $galleryRepository
+     *
+     * @return JsonResponse
      */
-    public function list()
+    public function list(GalleryRepository $galleryRepository)
     {
-        return $this->json([]);
+        $galleries = $galleryRepository->findBy(['status' => Gallery::STATUS_ONLINE], ['publicationDatetime' => 'DESC']);
+
+        // todo probablement pagination !
+        return $this->json($galleries, Response::HTTP_OK, [], [
+            GalleryNormalizer::CONTEXT_GALLERY => true
+        ]);
     }
 
     /**
