@@ -4,6 +4,7 @@ const IS_LOADING = 'IS_LOADING';
 const IS_LOADING_IMAGES = 'IS_LOADING_IMAGES';
 const UPDATE_GALLERY = 'UPDATE_GALLERY';
 const UPDATE_IMAGES = 'UPDATE_IMAGES';
+const RESET_STATE = 'RESET_STATE';
 
 const state = {
   isLoading: true,
@@ -40,6 +41,14 @@ const mutations = {
   [UPDATE_IMAGES](state, images) {
     state.images = images;
   },
+  [RESET_STATE](state) {
+    state = {
+      isLoading: true,
+      isLoadingImages: false,
+      gallery: {},
+      images: [],
+    };
+  }
 };
 
 const actions = {
@@ -55,6 +64,9 @@ const actions = {
     commit(UPDATE_IMAGES, images);
     commit(IS_LOADING_IMAGES, false);
   },
+  resetState({commit}) {
+    commit(RESET_STATE);
+  }
 };
 
 export default {

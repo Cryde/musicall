@@ -65,7 +65,6 @@
       ])
     },
     async mounted() {
-      // https://www.cssscript.com/css-only-minimal-responsive-image-gallery-lightbox-cssbox/
       const slug = this.$route.params.slug;
 
       await this.$store.dispatch('gallery/loadGallery', slug);
@@ -85,9 +84,11 @@
         }
       });
       this.macy.runOnImageLoad(() => {
-        this.macy.recalculate(true);
-        this.showImages = true;
-      });
+        this.macy.recalculate(true)
+        this.$nextTick(() => {
+          this.showImages = true;
+        })
+      }, true);
 
       this.enableKeyboardNav();
     },
@@ -127,28 +128,39 @@
         this.currentImageLightBox = null;
       },
       enableKeyboardNav() {
-        window.addEventListener('keydown', (e) => {
-          console.log(e.code);
-          if (e.code === 'ArrowRight') {
-            this.showLightBox && this.nextImage();
-          }
+        window.addEventListener('keydown', this.keyboardCallback);
+      },
+      keyboardCallback(e) {
+        if (e.code === 'ArrowRight') {
+          this.showLightBox && this.nextImage();
+        }
 
-          if (e.code === 'ArrowLeft') {
-            this.showLightBox && this.prevImage();
-          }
+        if (e.code === 'ArrowLeft') {
+          this.showLightBox && this.prevImage();
+        }
 
-          if (e.code === 'Escape') {
-            this.showLightBox && this.closeImage();
-          }
-        });
+        if (e.code === 'Escape') {
+          this.showLightBox && this.closeImage();
+        }
       }
     },
     filters: {
       dateFormat(date) {
         return format(parseISO(date), 'dd/MM/yyyy HH:mm');
       }
+    },
+    destroyed() {
+      this.$store.dispatch('gallery/resetState');
+      window.removeEventListener('keydown', this.keyboardCallback);
+      this.macy = null;
+      this.showImages = false;
+      this.showLightBox = false;
+      this.currentImageLightBox = null;
+      this.currentImageIndex = null;
+      this.imageLoading = false;
     }
   }
+
 </script>
 
 <style scoped>
