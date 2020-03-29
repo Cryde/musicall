@@ -6,7 +6,7 @@
         <h1>Galeries</h1>
 
         <b-row :cols="3">
-            <b-col v-for="gallery in galleries">
+            <b-col v-for="gallery in galleries" :key="gallery.id">
 
                 <div class="squared-image-container">
                     <router-link :to="{name: 'gallery_show', params: {slug: gallery.slug}}"
