@@ -4,7 +4,19 @@
         <b-form v-if="!saved">
             <b-input v-model="name" placeholder="Le titre de la galerie"></b-input>
 
-            <b-form-text>La galerie ne sera pas mise en ligne directement</b-form-text>
+            <b-alert variant="warning" :show="true" class="mt-3">
+                <i class="fas fa-exclamation"></i>
+                Privilégiez une forme de titre comme suit : <br/>
+                Artiste - date - salle/festival - ville<br/>
+                <strong>Exemple :</strong><br/>
+                Metallica - 30 mars 2020 - Botanique - Bruxelles<br/>
+                Metallica - 30 juin 2020 - Rock Werchter - Werchter
+            </b-alert>
+
+            <b-form-text text-variant="info">
+                La galerie ne sera pas mise en ligne directement.<br/>
+                Vous pourrez encore modifier le titre plus tard
+            </b-form-text>
         </b-form>
         <div v-else class="text-center">
             <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
