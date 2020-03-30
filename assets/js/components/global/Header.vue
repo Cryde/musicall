@@ -1,36 +1,27 @@
 <template>
-    <nav class="navbar fixed-top navbar-expand-md navbar-light">
-        <div class="container">
-            <a class="navbar-brand" href="">
-                <img src="/build/images/logo.png" alt="Logo MusicAll"/>
-            </a>
+    <b-navbar toggleable="sm" fixed="top" type="light" variant="light">
+        <b-container>
+            <b-navbar-brand><img src="/build/images/logo.png" alt="Logo MusicAll"/></b-navbar-brand>
 
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
-                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <b-nav-form class="ml-auto d-none d-md-block">
+                <b-form-input class="mr-sm-2" placeholder="Search"></b-form-input>
+            </b-nav-form>
 
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <form class="form-inline ml-auto">
-                    <input class="form-control mr-sm-2" type="text" placeholder="Rechercher" aria-label="Search">
-                </form>
-
-                <!-- if user-->
-                <div v-if="isLoading">
-                    <b-spinner small type="grow"></b-spinner>
-                </div>
+            <div v-if="isLoading">
+                <b-spinner small type="grow"></b-spinner>
+            </div>
+            <div v-else>
+                <Dropdown v-if="isAuthenticated"/>
                 <div v-else>
-                    <Dropdown v-if="isAuthenticated"/>
-                    <div v-else>
-                        <!-- else : -->
-                        <router-link :to="{ name: 'user_registration' }" class="ml-auto btn btn-registration">s'inscrire
-                        </router-link>
-                        <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">se connecter</router-link>
-                    </div>
+                    <router-link :to="{ name: 'user_registration' }" class="ml-auto btn btn-registration">s'inscrire
+                    </router-link>
+                    <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">se connecter</router-link>
                 </div>
             </div>
-        </div>
-    </nav>
+
+            <b-navbar-toggle target="nav-text-collapse"></b-navbar-toggle>
+        </b-container>
+    </b-navbar>
 </template>
 
 <script>
