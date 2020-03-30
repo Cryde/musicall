@@ -95,7 +95,7 @@
             </template>
         </b-modal>
 
-        <h2 class="mt-5">Galleries</h2>
+        <h2 class="mt-5">Galeries</h2>
 
         <gallery-table/>
     </div>
