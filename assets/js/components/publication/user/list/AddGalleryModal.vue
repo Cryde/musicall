@@ -1,5 +1,5 @@
 <template>
-    <b-modal id="modal-gallery-add" title="Ajouter une galerie">
+    <b-modal id="modal-gallery-add" ref="modal-gallery-add" title="Ajouter une galerie">
 
         <b-form v-if="!saved">
             <b-input v-model="name" placeholder="Le titre de la galerie"></b-input>
@@ -55,6 +55,11 @@
         galleryUrl: null
       }
     },
+    mounted() {
+      this.$refs['modal-gallery-add'].$on('hidden', () => {
+        this.reset();
+      });
+    },
     methods: {
       async saveGallery() {
         try {
@@ -67,6 +72,12 @@
           this.submitted = false;
           console.error(e);
         }
+      },
+      reset() {
+        this.name = '';
+        this.saved = false;
+        this.submitted = false;
+        this.galleryUrl = null;
       }
     }
   }
