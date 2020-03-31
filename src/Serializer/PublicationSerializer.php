@@ -34,14 +34,18 @@ class PublicationSerializer
 
     public function toArray(Publication $publication): array
     {
+
+        $isVideo = $publication->getType() === Publication::TYPE_VIDEO;
+        $description = $isVideo ? '' : $publication->getShortDescription();
         return [
-            'slug'            => $publication->getSlug(),
-            'type'            => $publication->getType() === Publication::TYPE_VIDEO ? 'video' : 'text',
-            'category'        => $publication->getSubCategory()->getSlug(),
-            'title'           => mb_strtoupper($publication->getTitle()),
-            'description'     => $publication->getShortDescription(),
-            'cover_image'     => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
-            'author_username' => $publication->getAuthor()->getUsername(),
+            'slug'                 => $publication->getSlug(),
+            'type'                 => $isVideo ? 'video' : 'text',
+            'category'             => $publication->getSubCategory()->getSlug(),
+            'title'                => mb_strtoupper($publication->getTitle()),
+            'description'          => $description,
+            'publication_datetime' => $publication->getPublicationDatetime(),
+            'cover_image'          => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
+            'author_username'      => $publication->getAuthor()->getUsername(),
         ];
     }
 }
