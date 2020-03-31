@@ -18,8 +18,7 @@
                 <b-card-text v-if="publication.type === 'text'">
                     {{ publication.description }}
                 </b-card-text>
-                <div v-if="publication.type === 'video'" class="text-center video-tag"><i
-                        class="fab fa-youtube"></i></div>
+                <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
             </b-card>
             <b-card v-else>
                 <b-card-title>{{ publication.title }}</b-card-title>
@@ -78,3 +77,10 @@
     }
   }
 </script>
+
+<style scoped>
+    .publication-date {
+        color: #8b8b8b;
+        font-size: 0.8em
+    }
+</style>

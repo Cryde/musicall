@@ -7,6 +7,7 @@ import store from "./store";
 import BootstrapVue from 'bootstrap-vue';
 import VueMeta from 'vue-meta';
 import VueLazyload from 'vue-lazyload'
+import relativeDateFilter from "./filters/relative-date-filter";
 
 Vue.use(VueMeta, {
   // optional pluginOptions
@@ -15,6 +16,8 @@ Vue.use(VueMeta, {
 
 Vue.use(BootstrapVue);
 Vue.use(VueLazyload);
+
+Vue.filter('relativeDate', relativeDateFilter);
 
 Vue.config.productionTip = false;
 
