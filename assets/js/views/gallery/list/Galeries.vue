@@ -3,7 +3,7 @@
         <b-spinner variant="primary" label="Spinning"></b-spinner>
     </div>
     <div v-else>
-        <h1>Galeries</h1>
+        <h1>Photos</h1>
 
         <b-row :cols="1" :cols-md="2" :cols-lg="2" :cols-xl="3">
             <b-col v-for="gallery in galleries" :key="gallery.id">

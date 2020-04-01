@@ -44,7 +44,7 @@ export default new Router({
     },
     {
       name: "gallery_list",
-      path: "/gallery/",
+      path: "/photos/",
       component: () => import("../views/gallery/list/Galeries"),
       meta: {isAuthRequired: false}
     },
