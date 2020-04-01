@@ -17,7 +17,7 @@
                         </router-link>
                     </li>
                     <li v-if="!isLoading">
-                        <router-link :to="{name: 'gallery_list'}">Galeries</router-link>
+                        <router-link :to="{name: 'gallery_list'}">Photos</router-link>
                     </li>
                 </ul>
             </li>
@@ -29,7 +29,7 @@
                     <li><a href="/cours/basse">Basse</a></li>
                     <li><a href="/cours/mao">MAO</a></li>
                     <li><a href="/cours/batterie">Batterie</a></li>
-                    <li><a href="/cours/inclassable">Inclassable</a></li>
+                    <li><a href="/cours/divers">Divers</a></li>
                 </ul>
             </li>
             <li>

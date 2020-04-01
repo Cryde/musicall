@@ -5,7 +5,7 @@
             <b-dropdown-item v-b-modal.modal-publication-add><i class="far fa-edit"></i> une publication
             </b-dropdown-item>
             <b-dropdown-item v-b-modal.modal-video-add><i class="fas fa-video"></i> une video</b-dropdown-item>
-            <b-dropdown-item v-b-modal.modal-gallery-add v-if="isRoleAdmin"><i class="far fa-images"></i> une galerie
+            <b-dropdown-item v-b-modal.modal-gallery-add><i class="far fa-images"></i> une galerie
             </b-dropdown-item>
         </b-dropdown>
 
