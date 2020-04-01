@@ -3,30 +3,37 @@
         <div class="container">
             <div class="row">
                 <div class="col-2">
-                    <h3><a href="/">MusicAll</a></h3>
+                    <h3>
+                        <router-link :to="{ name: 'home' }"><i class="fas fa-home fa-fw"></i> MusicAll</router-link>
+                    </h3>
+                </div>
+                <div class="col-2">
+                    <h3>
+                        <router-link :to="{ name: 'publication' }"><i class="fas fa-newspaper fa-fw"></i> Publications
+                        </router-link>
+                    </h3>
                     <ul>
-                        <li><a href="/#infos">Infos</a></li>
-                        <li><a href="/#dernieres-publications">Dernières publications</a></li>
+                        <li v-if="isLoading">
+                            <b-spinner small type="grow"></b-spinner>
+                        </li>
+                        <li v-else v-for="category in categories">
+                            <router-link :to="{name: 'publications_by_category', params: { slug: category.slug}}">
+                                {{ category.title }}
+                            </router-link>
+                        </li>
+                        <li v-if="!isLoading">
+                            <router-link :to="{name: 'gallery_list'}">Photos</router-link>
+                        </li>
                     </ul>
                 </div>
                 <div class="col-2">
-                    <h3><a href="">Publications</a></h3>
+                    <h3><a href=""><i class="fas fa-graduation-cap fa-fw"></i> Cours</a></h3>
                     <ul>
-                        <li><a href="">Chroniques</a></li>
-                        <li><a href="">Live-reports</a></li>
-                        <li><a href="">Interviews</a></li>
-                        <li><a href="">Articles</a></li>
-                        <li><a href="">Découvertes</a></li>
-                    </ul>
-                </div>
-                <div class="col-2">
-                    <h3><a href="">Cours</a></h3>
-                    <ul>
-                        <li><a href="">Guitare</a></li>
-                        <li><a href="">Basse</a></li>
-                        <li><a href="">MAO</a></li>
-                        <li><a href="">Batterie</a></li>
-                        <li><a href="">Inclassable</a></li>
+                        <li><a href="/cours/guitare">Guitare</a></li>
+                        <li><a href="/cours/basse">Basse</a></li>
+                        <li><a href="/cours/mao">MAO</a></li>
+                        <li><a href="/cours/batterie">Batterie</a></li>
+                        <li><a href="/cours/divers">Divers</a></li>
                     </ul>
                 </div>
                 <div class="col-2">
@@ -43,7 +50,8 @@
                             class="fab fa-twitter fa-2x"></i></a>
                     <a class="instagram" href="https://www.instagram.com/music.all.official"
                        title="Suivez nous sur Instagram" target="_blank"><i class="fab fa-instagram fa-2x"></i></a>
-                    <a class="youtube" href="https://www.youtube.com/c/MusicAllCommunity" title="Suivez nous sur YouTube"
+                    <a class="youtube" href="https://www.youtube.com/c/MusicAllCommunity"
+                       title="Suivez nous sur YouTube"
                        target="_blank"><i class="fab fa-youtube fa-2x"></i></a>
                 </div>
             </div>
@@ -55,3 +63,16 @@
         </div>
     </footer>
 </template>
+
+<script>
+  import {mapGetters} from 'vuex';
+
+  export default {
+    computed: {
+      ...mapGetters('publicationCategory', [
+        'isLoading',
+        'categories'
+      ])
+    }
+  }
+</script>
