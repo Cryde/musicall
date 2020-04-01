@@ -21,7 +21,7 @@ class RegistrationController extends AbstractController
      */
     public function confirm(string $token, UserRepository $userRepository)
     {
-        if (!$user = $userRepository->findOneBy(['confirmationToken' => $token])) {
+        if (!$user = $userRepository->findOneBy(['token' => $token])) {
             return new Response('Ce token n\'existe pas/plus, il est possible que vous ayez déjà confirmé votre compte', Response::HTTP_NOT_FOUND);
         }
 
