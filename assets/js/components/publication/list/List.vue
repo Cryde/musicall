@@ -19,9 +19,12 @@
                     {{ publication.description }}
                 </b-card-text>
                 <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
-                <publication-type :type="publication.type" class="mt-1 pull-right" />
+                <publication-type :type="publication.type" class="mt-1 pull-right"/>
             </b-card>
-            <b-card v-else>
+            <b-card v-else
+                    tag="b-link"
+                    :to="{ name: 'publication_show', params: { slug: publication.slug }}"
+            >
                 <b-card-title>{{ publication.title }}</b-card-title>
                 <b-card-text>
                     {{ publication.description }}
