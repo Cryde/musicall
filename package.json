@@ -24,7 +24,7 @@
         "lodash": "^4.17.15",
         "macy": "^2.5.1",
         "tippy.js": "^4.3.5",
-        "tiptap": "^1.26.6",
+        "tiptap": "^1.26.7",
         "tiptap-extensions": "^1.28.6",
         "vue": "^2.6.11",
         "vue-cookies": "^1.7.0",
