@@ -5,11 +5,7 @@
     <div v-else id="publication-list">
         <h1 v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
         <h1 v-else-if="!this.isHome">Publications</h1>
-        <div class="overflow-auto" v-if="numberOfPages > 1">
-            <b-pagination-nav :link-gen="linkGen" :number-of-pages="numberOfPages" use-router align="right"
-                              size="sm"></b-pagination-nav>
-        </div>
-        <b-card-group columns>
+        <b-card-group columns class="mt-4">
             <b-card
                     v-for="publication in publications" :key="publication.id"
                     v-if="publication.category !== 'news'" tag="b-link"
@@ -31,6 +27,10 @@
                 </b-card-text>
             </b-card>
         </b-card-group>
+        <div class="overflow-auto" v-if="numberOfPages > 1">
+            <b-pagination-nav :link-gen="linkGen" :number-of-pages="numberOfPages" use-router align="right"
+                              size="sm"></b-pagination-nav>
+        </div>
     </div>
 </template>
 
