@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationController extends AbstractController
 {
-    const LIMIT_PUBLICATION_BY_PAGE = 20;
+    const LIMIT_PUBLICATION_BY_PAGE = 15;
 
     /**
      * @Route("api/publications/{slug}", name="api_publications_show", options={"expose":true})
