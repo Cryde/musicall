@@ -19,6 +19,7 @@
                     {{ publication.description }}
                 </b-card-text>
                 <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
+                <publication-type :type="publication.type" class="mt-1 pull-right" />
             </b-card>
             <b-card v-else>
                 <b-card-title>{{ publication.title }}</b-card-title>
@@ -32,8 +33,10 @@
 
 <script>
   import {mapGetters} from 'vuex';
+  import PublicationType from "../PublicationType";
 
   export default {
+    components: {PublicationType},
     data() {
       return {
         isHome: false,
