@@ -1,0 +1,34 @@
+{% set display_menu = display_menu is not defined ? true : display_menu %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>{{ title is defined ? title : 'MusicAll, le site de référence au service de la musique' }}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name='description'
+          content="{{ description is defined ? description : 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...' }}"/>
+    <meta name='keywords'
+          content='musicien cherche musicien, chercher musicien, chercher chanteuse, chercher guitariste, chercher batteur, chercher groupe, groupe cherche musicien, musicien cherche groupe, groupe cherche musicien, chercher chanteur, chercher bassiste, groups de rock, cherche pianiste, tutoriel de batterie, tutoriel de guitare, tutoriel de basse, forum, forum de musiciens'/>
+    <meta name='robots' content='index, follow'/>
+
+    <meta name="verify-v1" content="dKTCUOuzn9n0Y5rkFus+08eZunNMKBKj7sqURPF4KIs="/>
+
+    <meta property="og:site_name" content="MusicAll"/>
+    <meta property="fb:app_id" content="1246244158725952"/>
+    <meta property="og:title"
+          content="{{ title is defined ? title : 'MusicAll, le site de référence au service de la musique' }}"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description"
+          content="{{ description is defined ? description : 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...' }}"/>
+    <meta property="og:url" content="{{ app.request.uri() }}"/>
+    {% set imageUrl = cover is defined ? cover : '/build/images/facebook-logo.jpg' %}
+    <meta property="og:image" content="{{ app.request.schemeAndHttpHost() ~ imageUrl }}"/>
+    <meta property="og:locale" content="fr_FR"/>
+</head>
+<body>
+<noscript>Votre navigateur ne supporte pas le JavaScript! Activez le pour pouvoir profiter au mieux du site.</noscript>
+
+<div id="app"></div>
+
+</body>
+</html>
