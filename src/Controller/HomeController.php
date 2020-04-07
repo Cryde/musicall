@@ -10,6 +10,7 @@ class HomeController extends AbstractController
 {
     /**
      * @Route("/", name="app_homepage")
+     * @Route("/{route}", name="vue_pages", requirements={"route"="^(?!.*_wdt|_profiler|api|register\/confirm\/).+"})
      *
      * @return Response
      */
