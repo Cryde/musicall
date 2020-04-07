@@ -29,6 +29,6 @@ class RegistrationController extends AbstractController
         $user->setToken(null);
         $this->getDoctrine()->getManager()->flush();
 
-        return $this->redirectToRoute('app_homepage', ['_fragment' => '/registration/success']);
+        return $this->redirect('/registration/success');
     }
 }
