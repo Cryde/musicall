@@ -14,6 +14,7 @@
             </div>
         </div>
         <Footer/>
+        <AlertDevelopement/>
     </div>
 </template>
 
@@ -21,6 +22,7 @@
   import Header from './components/global/Header';
   import Menu from './components/global/Menu';
   import Footer from './components/global/Footer';
+  import AlertDevelopement from './components/global/AlertDevelopement';
   import fetchIntercept from 'fetch-intercept';
   import {FadeTransition} from 'vue2-transitions'
 
@@ -32,7 +34,7 @@
     },
     name: 'app',
     components: {
-      Header, Footer, Menu, FadeTransition
+      Header, Footer, Menu, FadeTransition, AlertDevelopement
     },
     async created() {
 
