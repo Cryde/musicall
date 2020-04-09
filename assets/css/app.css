@@ -23,6 +23,10 @@
     cursor: pointer;
 }
 
+.alert-development {
+    bottom: 0;
+}
+
 /*@import "buttons.css";
 @import "form.css";
 @import "formatage.css";
