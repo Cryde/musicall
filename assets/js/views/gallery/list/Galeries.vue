@@ -29,7 +29,7 @@
   export default {
     metaInfo() {
       return {
-        title: 'Galeries'
+        title: 'Photos'
       }
     },
     async created() {

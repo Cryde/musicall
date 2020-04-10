@@ -46,6 +46,11 @@
   import {format, parseISO} from 'date-fns';
 
   export default {
+    metaInfo() {
+      return {
+        title: this.gallery.title
+      }
+    },
     data() {
       return {
         macy: null,
