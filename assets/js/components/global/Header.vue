@@ -1,7 +1,7 @@
 <template>
     <b-navbar toggleable="sm" fixed="top" type="light" variant="light">
         <b-container>
-            <b-navbar-brand><img src="/build/images/logo.png" alt="Logo MusicAll"/></b-navbar-brand>
+            <b-navbar-brand :to="{name: 'home'}"><img src="/build/images/logo.png" alt="Logo MusicAll"/></b-navbar-brand>
 
             <b-nav-form class="ml-auto d-none d-md-block">
                 <b-form-input class="mr-sm-2" placeholder="Search"></b-form-input>
