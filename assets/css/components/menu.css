@@ -23,3 +23,11 @@
 #menu a {
     padding: 5px 10px;
 }
+
+#menu a.router-link-exact-active {
+    color: black;
+}
+
+#menu ul > li > a.router-link-exact-active {
+    font-weight: 800;
+}
