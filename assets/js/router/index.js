@@ -1,6 +1,9 @@
 import Vue from "vue";
 import Router from "vue-router";
 import admin from './admin';
+import course from './course';
+import search from './search';
+import forum from './forum';
 
 Vue.use(Router);
 
@@ -103,6 +106,9 @@ export default new Router({
       component: () => import("../components/publication/user/edit/EditGallery"),
       meta: {isAuthRequired: true}
     },
-    ...admin
+    ...admin,
+    ...course,
+    ...search,
+    ...forum
   ]
 });
