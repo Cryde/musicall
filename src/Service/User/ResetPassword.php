@@ -53,10 +53,11 @@ class ResetPassword
         $user->setResetRequestDatetime(new \DateTime());
         $this->userTokenGenerator->generate($user);
 
+        $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $this->resetPasswordMail->send(
             $user->getEmail(),
             $user->getUsername(),
-            $this->router->generate('app_homepage', ['_fragment' => '/lost-password/' . $user->getToken()], UrlGeneratorInterface::ABSOLUTE_URL)
+            $baseUrl . 'lost-password/' . $user->getToken()
         );
     }
 }
