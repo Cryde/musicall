@@ -9,6 +9,12 @@
         </div>
         <div class="row">
             <form method="post" class="col-lg-4 col-12 offset-lg-4 form-signin">
+
+                <b-alert show variant="info">
+                    MusicAll a été mise à jour.<br/>
+                    Vous pouvez toujours utiliser votre précédent login/email.<br/>
+                    Vous allez devoir simplement <router-link :to="{name: 'user_request_lost_password'}" class="mt-3">reset votre password</router-link> la première fois
+                </b-alert>
                 <h1 class="h3 mb-3 font-weight-normal">Login</h1>
                 <label for="inputUsername" class="sr-only">Username</label>
                 <b-form-input
