@@ -92,6 +92,10 @@ class UserGalleryController extends AbstractController
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
+        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas modifier de galerie en ligne ou en validation']], Response::HTTP_FORBIDDEN);
+        }
+
         /** @var Gallery $gallery */
         $gallery = $serializer->deserialize($request->getContent(), Gallery::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $gallery]);
 
@@ -165,6 +169,10 @@ class UserGalleryController extends AbstractController
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
+        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie est déjà en ligne ou en validation']], Response::HTTP_FORBIDDEN);
+        }
+
         $errors = $validator->validate($gallery, null, ['publish']);
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_UNAUTHORIZED);
@@ -202,6 +210,10 @@ class UserGalleryController extends AbstractController
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
+        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas modifier de galerie en ligne ou en validation']], Response::HTTP_FORBIDDEN);
+        }
+
         $image = new GalleryImage();
         $image->setGallery($gallery);
         $form = $this->createForm(ImageUploaderType::class, $image);
@@ -234,6 +246,10 @@ class UserGalleryController extends AbstractController
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
+        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas modifier de galerie en ligne ou en validation']], Response::HTTP_FORBIDDEN);
+        }
+
         $cover = $gallery->getCoverImage();
         if ($cover && $cover->getId() === $galleryImage->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas supprimer cette image car c\'est la couverture de la galerie']], Response::HTTP_FORBIDDEN);
@@ -259,6 +275,10 @@ class UserGalleryController extends AbstractController
 
         if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+            return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas modifier de galerie en ligne ou en validation']], Response::HTTP_FORBIDDEN);
         }
 
         $cover = $gallery->getCoverImage();
