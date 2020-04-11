@@ -44,7 +44,6 @@ const actions = {
     commit(IS_LOADING, true);
     try {
       const galleries = await apiAdminGallery.getPendingGalleries();
-      console.log(galleries);
       commit(UPDATE_GALLERIES, galleries);
       commit(IS_LOADING, false);
     } catch (err) {

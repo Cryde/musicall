@@ -142,7 +142,6 @@
     methods: {
       async publicationProvider(ctx) {
         try {
-          console.log(ctx);
           const resp = await userPublicationApi.getPublications(ctx);
           this.total = resp.meta.total;
           this.perPage = resp.meta.items_per_page;

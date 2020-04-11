@@ -82,7 +82,6 @@
         const slug = this.$route.params.slug;
         const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
         this.currentCategory = this.categories.find((category) => category.slug === slug);
-        console.log(this.currentCategory);
         if (slug && this.currentCategory) {
           await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
         } else {
