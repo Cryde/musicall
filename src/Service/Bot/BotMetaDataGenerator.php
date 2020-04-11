@@ -2,7 +2,9 @@
 
 namespace App\Service\Bot;
 
+use App\Entity\Gallery;
 use App\Entity\Publication;
+use App\Repository\GalleryRepository;
 use App\Repository\PublicationRepository;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -16,11 +18,19 @@ class BotMetaDataGenerator
      * @var UploaderHelper
      */
     private UploaderHelper $uploaderHelper;
+    /**
+     * @var GalleryRepository
+     */
+    private GalleryRepository $galleryRepository;
 
-    public function __construct(PublicationRepository $publicationRepository, UploaderHelper $uploaderHelper)
-    {
+    public function __construct(
+        PublicationRepository $publicationRepository,
+        UploaderHelper $uploaderHelper,
+        GalleryRepository $galleryRepository
+    ) {
         $this->publicationRepository = $publicationRepository;
         $this->uploaderHelper = $uploaderHelper;
+        $this->galleryRepository = $galleryRepository;
     }
 
     public function getMetaData(string $uri): array
@@ -30,6 +40,11 @@ class BotMetaDataGenerator
 
             return $this->getForPublications($slug);
         }
+        if (preg_match('#/gallery/(.+)#', $uri, $matches)) {
+            $slug = $matches[1];
+
+            return $this->getForGallery($slug);
+        }
 
         return [];
     }
@@ -37,7 +52,6 @@ class BotMetaDataGenerator
     private function getForPublications(string $slug): array
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $slug, 'status' => Publication::STATUS_ONLINE]);
-
         if (!$publication) {
             return [];
         }
@@ -46,6 +60,21 @@ class BotMetaDataGenerator
             'title'       => $publication->getTitle(),
             'description' => $publication->getShortDescription(),
             'cover'       => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
+        ];
+    }
+
+    public function getForGallery(string $slug): array
+    {
+        $gallery = $this->galleryRepository->findOneBy(['slug' => $slug, 'status' => Gallery::STATUS_ONLINE]);
+
+        if (!$gallery) {
+            return [];
+        }
+
+        return [
+            'title'       => $gallery->getTitle(),
+            'description' => $gallery->getDescription(),
+            'cover'       => $this->uploaderHelper->asset($gallery->getCoverImage(), 'imageFile'),
         ];
     }
 }

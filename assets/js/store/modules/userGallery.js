@@ -63,8 +63,8 @@ const actions = {
     commit(UPDATE_IMAGES, images);
     commit(IS_LOADING_IMAGES, false);
   },
-  async edit({commit}, {id, title}) {
-    const gallery = await galleryApi.editGallery({id, title});
+  async edit({commit}, {id, title, description}) {
+    const gallery = await galleryApi.editGallery({id, title, description});
     commit(UPDATE_GALLERY, gallery);
   },
   async editCover({commit}, {image}) {

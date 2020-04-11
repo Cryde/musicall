@@ -26,6 +26,9 @@ new Vue({
   store,
   render: h => h(App),
   metaInfo: () => ({
-    title: 'MusicAll, le site de référence au service de la musique'
+    title: 'MusicAll, le site de référence au service de la musique',
+    meta: [
+      {vmid: 'description', name: 'description', 'content': 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...'}
+    ]
   })
 }).$mount("#app");

@@ -28,6 +28,14 @@ class Gallery
      * @Assert\Length(max="200")
      */
     private $title;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     *
+     * @Assert\NotBlank(groups={"publish"}, message="Vous devez spécifier une description pour votre galerie")
+     */
+    private $description;
+
     /**
      * @ORM\Column(type="datetime")
      */
@@ -204,6 +212,18 @@ class Gallery
     public function setSlug(?string $slug): self
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }
