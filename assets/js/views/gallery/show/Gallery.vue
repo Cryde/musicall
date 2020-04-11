@@ -48,7 +48,10 @@
   export default {
     metaInfo() {
       return {
-        title: this.gallery.title
+        title: this.gallery.title,
+        meta: [
+          {vmid: 'description', name: 'description', content: this.gallery.description}
+        ]
       }
     },
     data() {

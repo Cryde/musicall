@@ -1,9 +1,14 @@
 <template>
     <b-modal id="modal-edit-gallery-properties" ref="modal-edit-gallery-properties" title="Paramètres de la galerie">
 
-        <b-form-group description="Le titre de votre publication">
+        <b-form-group description="Le titre de votre galerie">
             <b-form-input v-model="currentTitle"
                           placeholder="Votre titre ici"></b-form-input>
+        </b-form-group>
+
+        <b-form-group description="Description de votre galerie">
+            <b-form-textarea v-model="currentDescription"
+                             placeholder=""></b-form-textarea>
         </b-form-group>
 
         <div v-if="coverImage">
@@ -42,6 +47,7 @@
     data() {
       return {
         currentTitle: '',
+        currentDescription: '',
         submitted: false,
       }
     },
@@ -54,11 +60,16 @@
     },
     mounted() {
       this.currentTitle = this.gallery.title;
+      this.currentDescription = this.gallery.description;
     },
     methods: {
       async save() {
         this.submitted = true;
-        await this.$store.dispatch('userGallery/edit', {title: this.currentTitle, id: this.gallery.id});
+        await this.$store.dispatch('userGallery/edit', {
+          title: this.currentTitle,
+          description: this.currentDescription,
+          id: this.gallery.id
+        });
         this.submitted = false;
         this.$bvModal.hide('modal-edit-gallery-properties');
       }

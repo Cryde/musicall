@@ -44,6 +44,7 @@ class GalleryController extends AbstractController
             AbstractNormalizer::ATTRIBUTES => [
                 'author' => ['username'],
                 'title',
+                'description',
                 'publicationDatetime',
             ],
         ]);

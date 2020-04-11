@@ -84,6 +84,7 @@ class UserGalleryController extends AbstractController
      * @param ValidatorInterface  $validator
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function edit(Gallery $gallery, Request $request, SerializerInterface $serializer, ValidatorInterface $validator)
     {
@@ -99,6 +100,7 @@ class UserGalleryController extends AbstractController
             return $this->json(['data' => ['errors' => $errors]], Response::HTTP_UNAUTHORIZED);
         }
 
+        $gallery->setUpdateDatetime(new \DateTime());
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json($gallery, Response::HTTP_OK, [], [
@@ -249,6 +251,7 @@ class UserGalleryController extends AbstractController
      * @param GalleryImage $image
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function coverImage(GalleryImage $image)
     {
@@ -266,6 +269,7 @@ class UserGalleryController extends AbstractController
             $gallery->setCoverImage($image);
         }
 
+        $gallery->setUpdateDatetime(new \DateTime());
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json($gallery, Response::HTTP_OK, [], [

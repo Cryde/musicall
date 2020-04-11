@@ -48,7 +48,7 @@
     },
     metaInfo() {
       return {
-        title: this.isHome ? 'MusicAll, le site de référence au service de la musique' : 'Toutes les publications relative à la musique | MusicAll',
+        title: this.pageTitle(),
       }
     },
     computed: {
@@ -67,10 +67,22 @@
       await this.fetchData();
     },
     methods: {
+      pageTitle() {
+        if (this.isHome) {
+          return 'MusicAll, le site de référence au service de la musique';
+        }
+
+        if (this.currentCategory) {
+          return this.currentCategory.title;
+        }
+
+        return 'Toutes les publications relative à la musique | MusicAll'
+      },
       async fetchData() {
         const slug = this.$route.params.slug;
         const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
         this.currentCategory = this.categories.find((category) => category.slug === slug);
+        console.log(this.currentCategory);
         if (slug && this.currentCategory) {
           await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
         } else {
