@@ -34,7 +34,7 @@ export default {
     .then(resp => resp.json())
   },
   publishGallery(galleryId) {
-    return fetch(Routing.generate('api_user_gallery_publish', {id: galleryId}), {
+    return fetch(Routing.generate('api_user_gallery_validation', {id: galleryId}), {
       method: 'PATCH',
     })
     .then(async (resp) => {

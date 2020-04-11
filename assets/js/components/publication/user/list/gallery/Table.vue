@@ -17,6 +17,7 @@
             <template v-slot:cell(status)="data">
                 <span v-if="data.item.status === 0">En ligne</span>
                 <span v-if="data.item.status === 1">Brouillon</span>
+                <span v-if="data.item.status === 2">En validation</span>
             </template>
 
             <template v-slot:cell(actions)="data">
@@ -38,7 +39,7 @@
                         <i class="far fa-paper-plane"></i>
                     </b-button>
                     <!--
-                    <b-button v-if="data.item.status === 0" variant="outline-danger" v-b-tooltip.hover
+                    <b-button v-if="data.item.status === 1" variant="outline-danger" v-b-tooltip.hover
                               title="Supprimer la publication"
                               @click="showDeleteModal(data.item.id)">
                         <i class="far fa-trash-alt"></i>

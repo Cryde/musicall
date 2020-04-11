@@ -7,8 +7,8 @@ use App\Entity\Image\GalleryImage;
 use App\Entity\User;
 use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
-use App\Serializer\Normalizer\UserGalleryNormalizer;
 use App\Serializer\GalleryImageSerializer;
+use App\Serializer\Normalizer\UserGalleryNormalizer;
 use App\Service\Publication\GallerySlug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -152,7 +152,7 @@ class UserGalleryController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/gallery/{id}/publish", name="api_user_gallery_publish", methods={"PATCH"}, options={"expose": true})
+     * @Route("/api/user/gallery/{id}/validation", name="api_user_gallery_validation", methods={"PATCH"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
@@ -163,7 +163,7 @@ class UserGalleryController extends AbstractController
      * @return JsonResponse
      * @throws \Exception
      */
-    public function publish(Gallery $gallery, ValidatorInterface $validator, GallerySlug $gallerySlug)
+    public function validation(Gallery $gallery, ValidatorInterface $validator, GallerySlug $gallerySlug)
     {
         if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
@@ -178,9 +178,7 @@ class UserGalleryController extends AbstractController
             return $this->json($errors, Response::HTTP_UNAUTHORIZED);
         }
 
-        $gallery->setPublicationDatetime(new \DateTime());
-        $gallery->setStatus(Gallery::STATUS_ONLINE);
-        $gallery->setSlug($gallerySlug->create($gallery->getTitle()));
+        $gallery->setStatus(Gallery::STATUS_PENDING);
 
         $this->getDoctrine()->getManager()->flush();
 
