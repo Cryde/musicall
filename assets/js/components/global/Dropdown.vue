@@ -7,8 +7,8 @@
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item :to="{name: 'user_publications'}">Mes publications</b-dropdown-item>
         <b-dropdown-divider v-if="isRoleAdmin"></b-dropdown-divider>
-        <b-dropdown-item v-if="isRoleAdmin" :to="{name: 'admin_publications_pending'}">
-            Publications en attentes
+        <b-dropdown-item v-if="isRoleAdmin" :to="{name: 'admin_dashboard'}">
+            <i class="fas fa-bolt"></i> Admin
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item :to="{name: 'user_settings'}">Paramètres</b-dropdown-item>

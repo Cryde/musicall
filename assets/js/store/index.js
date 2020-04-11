@@ -4,6 +4,7 @@ import security from './modules/security';
 import registration from './modules/registration';
 import video from './modules/video';
 import adminPendingPublications from './modules/admin/pendingPublications';
+import adminPendingGalleries from './modules/admin/pendingGalleries';
 import publication from './modules/publication';
 import publications from './modules/publications';
 import publicationCategory from './modules/publicationCategory';
@@ -25,6 +26,7 @@ export default new Vuex.Store({
     publications,
     publicationCategory,
     adminPendingPublications,
+    adminPendingGalleries,
     userGallery,
     userGalleries,
     gallery,

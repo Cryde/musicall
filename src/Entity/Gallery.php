@@ -15,6 +15,7 @@ class Gallery
 {
     const STATUS_ONLINE = 0;
     const STATUS_DRAFT = 1;
+    const STATUS_PENDING = 2;
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
