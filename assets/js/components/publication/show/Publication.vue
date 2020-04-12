@@ -8,7 +8,7 @@
         <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> le {{
             publication.publication_datetime | dateFormat }}
         </div>
-        <div class="content-box p-lg-3 mt-lg-4 mt-3" v-html="publication.content"></div>
+        <div class="content-box p-3 p-lg-3 mt-lg-4 mt-3" v-html="publication.content"></div>
     </div>
     <div v-else-if="publication.type === 'video'">
         <h1>{{ publication.title }}</h1>

@@ -14,6 +14,7 @@
 
 @import "modules/login.css";
 @import "modules/publication-list.css";
+@import "bc.css";
 
 [contenteditable]:focus {
     outline: 0 solid transparent;
@@ -25,19 +26,6 @@
 
 .alert-development {
     bottom: 0;
-}
-
-/* DON'T REMOVE THIS : IT'S FOR BREAK COMPABILITIES */
-.medium-insert-images img {
-    margin: 25px auto;
-    display: block;
-    width: 80%;
-}
-
-@media screen and (max-width: 1000px) {
-    .medium-insert-images img {
-        width: 100%
-    }
 }
 
 /*@import "buttons.css";
