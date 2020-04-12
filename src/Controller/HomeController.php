@@ -4,12 +4,28 @@ namespace App\Controller;
 
 use App\Service\Bot\BotDetector;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class HomeController extends AbstractController
 {
+    /**
+     * @Route("/publication/{slug}", name="redirect_old_publications")
+     *
+     * @param string $slug
+     *
+     * @return RedirectResponse
+     */
+    public function oldPublicationRedirect(string $slug)
+    {
+        $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'publications/' . $slug;
+
+        return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
     /**
      * @Route("/", name="app_homepage")
      * @Route("/{route}", name="vue_pages", requirements={"route"="^(?!.*_wdt|_profiler|api|register\/confirm\/).+"})
@@ -19,7 +35,7 @@ class HomeController extends AbstractController
      *
      * @return Response
      */
-    public function indexAction(Request $request, BotDetector $botDetector)
+    public function index(Request $request, BotDetector $botDetector)
     {
         if ($botDetector->isBot($request->headers->get('User-Agent'))) {
             return $this->forward('\\App\\Controller\\BotController::index');
