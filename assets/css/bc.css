@@ -1,0 +1,16 @@
+/**
+--- THIS FILE CONTAINS ALL THE BREAK-COMPATIBILITIES ---
+---DON'T REMOVE THIS FILE ---
+*/
+
+.medium-insert-images img {
+    margin: 25px auto;
+    display: block;
+    width: 80%;
+}
+
+@media screen and (max-width: 1000px) {
+    .medium-insert-images img {
+        width: 100%
+    }
+}

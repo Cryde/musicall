@@ -2,12 +2,12 @@
     <footer id="footer">
         <div class="container">
             <div class="row">
-                <div class="col-2">
+                <div class="col-lg-2 mt-3 mt-lg-0">
                     <h3>
                         <router-link :to="{ name: 'home' }"><i class="fas fa-home fa-fw"></i> MusicAll</router-link>
                     </h3>
                 </div>
-                <div class="col-2">
+                <div class="col-lg-2 mt-3 mt-lg-0">
                     <h3>
                         <router-link :to="{ name: 'publication' }"><i class="fas fa-newspaper fa-fw"></i> Publications
                         </router-link>
@@ -26,7 +26,7 @@
                         </li>
                     </ul>
                 </div>
-                <div class="col-2">
+                <div class="col-lg-2 mt-3 mt-lg-0">
                     <h3><a href=""><i class="fas fa-graduation-cap fa-fw"></i> Cours</a></h3>
                     <ul>
                         <li><a href="/cours/guitare">Guitare</a></li>
@@ -36,11 +36,11 @@
                         <li><a href="/cours/divers">Divers</a></li>
                     </ul>
                 </div>
-                <div class="col-2">
-                    <h3><a href="">Forum</a></h3>
+                <div class="col-lg-2 mt-3 mt-lg-0">
+                    <h3><a href=""><i class="far fa-comments fa-fw"></i> Forum</a></h3>
                 </div>
-                <div class="col-4 social">
-                    <h3>Nous suivre</h3>
+                <div class="col-lg-4 mt-3 mt-lg-0 social">
+                    <h3><i class="far fa-thumbs-up"></i> Nous suivre</h3>
                     <a class="facebook" href="https://www.facebook.com/Music.All" title="Suivez nous sur facebook"
                        target="_blank">
 
@@ -56,7 +56,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-12 copy">
+                <div class="col-12 mt-5 mt-lg-0 text-center text-lg-right">
                     <i class="fa fa-copyright"></i> 2008-{{ new Date().getFullYear() }} MusicAll
                 </div>
             </div>
