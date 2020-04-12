@@ -31,6 +31,13 @@
 .medium-insert-images img {
     margin: 25px auto;
     display: block;
+    width: 80%;
+}
+
+@media screen and (max-width: 1000px) {
+    .medium-insert-images img {
+        width: 100%
+    }
 }
 
 /*@import "buttons.css";
