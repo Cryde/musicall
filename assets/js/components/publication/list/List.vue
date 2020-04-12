@@ -25,6 +25,7 @@
                 <b-card-text>
                     {{ publication.description }}
                 </b-card-text>
+                <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
             </b-card>
         </b-card-group>
         <div class="overflow-auto" v-if="numberOfPages > 1">
