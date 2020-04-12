@@ -12,15 +12,19 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
           integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-    {{ encore_entry_link_tags('css') }}
+    {% for css in encore_entry_css_files('css') %}
+        <link rel="stylesheet" href="{{ preload(asset(css)) }}">
+    {% endfor %}
+
+    <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
+    <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+    {% for js in encore_entry_js_files('app') %}
+        <script src="{{ preload(asset(js)) }}" type="text/javascript" defer="defer"></script>
+    {% endfor %}
 </head>
 <body>
 <noscript>Votre navigateur ne supporte pas le JavaScript! Activez le pour pouvoir profiter au mieux du site.</noscript>
 
 <div id="app"></div>
-
-<script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
-<script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
-{{ encore_entry_script_tags('app') }}
 </body>
 </html>
