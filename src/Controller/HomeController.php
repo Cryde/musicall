@@ -37,7 +37,7 @@ class HomeController extends AbstractController
      */
     public function index(Request $request, BotDetector $botDetector)
     {
-        if ($botDetector->isBot($request->headers->get('User-Agent'))) {
+        if ($botDetector->isBot($request->headers->get('User-Agent', ''))) {
             return $this->forward('\\App\\Controller\\BotController::index');
         }
 
