@@ -6,6 +6,10 @@ class BotDetector
 {
     public function isBot(string $userAgent): bool
     {
+        if (!$userAgent) {
+            return false;
+        }
+        
         $userAgent = strtolower($userAgent);
 
         if (strpos($userAgent, "facebookexternalhit/") !== false ||
