@@ -1,31 +1,16 @@
-/** global: Routing */
+import axios from 'axios';
 
 export default {
   getPendingPublications() {
-    return fetch(Routing.generate('api_admin_publications_pending_list'), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_admin_publications_pending_list'))
+    .then(resp => resp.data)
   },
   approvePublication(id) {
-    return fetch(Routing.generate('api_admin_publications_approve', {id}), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_admin_publications_approve', {id}))
+    .then(resp => resp.data)
   },
   rejectPublication(id) {
-    return fetch(Routing.generate('api_admin_publications_reject', {id}), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_admin_publications_reject', {id}))
+    .then(resp => resp.data)
   }
 }

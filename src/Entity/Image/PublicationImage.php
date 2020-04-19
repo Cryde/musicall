@@ -23,8 +23,9 @@ class PublicationImage
     /**
      * NOTE: This is not a mapped field of entity metadata, just a simple property.
      * @Assert\Image(
-     *     maxWidth=1501,
-     *     maxHeight=1501
+     *     maxWidth=4000,
+     *     maxHeight=4000,
+     *     maxSize="4Mi"
      * )
      * @Vich\UploadableField(mapping="publication_image", fileNameProperty="imageName", size="imageSize")
      *

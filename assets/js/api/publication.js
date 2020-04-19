@@ -1,33 +1,16 @@
-/** global: Routing */
+import axios from 'axios';
 
 export default {
   getPublication(slug) {
-    return fetch(Routing.generate('api_publications_show', {slug}), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_publications_show', {slug}))
+    .then(resp => resp.data)
   },
   getPreviewVideo(videoUrl) {
-    return fetch(Routing.generate('api_publications_video_preview'), {
-      method: 'POST',
-      body: JSON.stringify({videoUrl}),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.post(Routing.generate('api_publications_video_preview'), {videoUrl})
+    .then(resp => resp.data)
   },
   addVideo(payload) {
-    return fetch(Routing.generate('api_user_publication_add_video'), {
-      method: 'POST',
-      body: JSON.stringify({...payload}),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.post(Routing.generate('api_user_publication_add_video'), {...payload})
+    .then(resp => resp.data)
   }
 }

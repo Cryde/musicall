@@ -45,6 +45,7 @@
 <script>
   import vSelect from 'vue-select';
   import {mapGetters} from 'vuex';
+  import userPublication from "../../../../api/userPublication";
 
   export default {
     components: {
@@ -89,7 +90,8 @@
       save() {
         this.submitted = true;
         const categoryId = this.category ? this.category.id : null;
-        this.savePublication({title: this.title, categoryId})
+        this.resetValidationState();
+        userPublication.addPublication({title: this.title, categoryId})
         .then((publication) => {
           this.submitted = false;
           this.saved = true;
@@ -109,17 +111,6 @@
             this.displayErrors(violation.data.errors.violations);
           }
         });
-
-      },
-      savePublication({title, categoryId}) {
-        this.resetValidationState();
-        return fetch(Routing.generate('api_user_publication_add'), {
-          method: 'POST',
-          body: JSON.stringify({title, category_id: categoryId})
-        })
-        .then(this.handleErrors)
-        .then(resp => resp.json())
-        .then(resp => resp.data.publication);
       },
       displayErrors(errors) {
         for (let error of errors) {
@@ -129,13 +120,6 @@
           this.validation[propertyPath].state = false;
           this.validation[propertyPath].message = message;
         }
-      },
-      async handleErrors(response) {
-        if (!response.ok) {
-          const data = await response.json();
-          return Promise.reject(data)
-        }
-        return response;
       },
       resetValidationState() {
         this.validation.title = {state: null, message: ''};

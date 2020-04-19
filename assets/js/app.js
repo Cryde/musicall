@@ -1,5 +1,4 @@
 import 'babel-polyfill';
-import 'whatwg-fetch';
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -9,7 +8,6 @@ import VueMeta from 'vue-meta';
 import VueLazyload from 'vue-lazyload'
 import relativeDateFilter from "./filters/relative-date-filter";
 import VueGtag from "vue-gtag";
-
 
 Vue.use(VueMeta, {
   // optional pluginOptions

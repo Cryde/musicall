@@ -21,8 +21,11 @@
             </b-form-group>
 
             <p class="alert alert-info">
-                Attention l'image doit être carré et faire max 1500px de coté.
+                Attention, l'image doit faire max 4000px de largeur ou hauteur. (max 4mb)
             </p>
+            <b-alert v-show="errors.length" variant="danger" show>
+                <span v-for="error in errors" class="d-block">{{ error }}</span>
+            </b-alert>
             <b-row>
                 <b-col v-if="currentCover">
                     <b-img :src="currentCover" fluid-grow></b-img>
@@ -36,6 +39,8 @@
                             ref="myVueDropzone"
                             id="dropzone"
                             @vdropzone-success="vfileUploaded"
+                            @vdropzone-error="error"
+                            @vdropzone-file-added="start"
                             :options="dropzoneOptions"
                     >
                     </vue-dropzone>
@@ -72,7 +77,8 @@
         currentTitle: '',
         currentDescription: '',
         currentCover: '',
-        dropzoneOptions: null
+        dropzoneOptions: null,
+        errors: [],
       }
     },
     mounted() {
@@ -86,6 +92,8 @@
           headers: {'Authorization': 'Bearer ' + await this.$store.dispatch('security/getAuthToken', {displayLoading: false})},
           paramName: 'image_upload[imageFile][file]',
           thumbnailWidth: 200,
+          maxFilesize: 4,
+          dictFileTooBig: 'Le fichier est trop volumineux ({{filesize}}M). Sa taille ne doit pas dépasser {{maxFilesize}} M.',
           dictDefaultMessage: "<i class=\"fas fa-cloud-upload-alt\"></i> Uploader une cover"
         };
       });
@@ -95,11 +103,24 @@
       save() {
         this.$emit('saveProperties', {title: this.currentTitle, description: this.currentDescription});
       },
+      start() {
+        this.errors = [];
+      },
       vfileUploaded(file, resp) {
         if (resp.error) {
           alert('Erreur lors de l\'upload');
         } else {
           this.currentCover = resp.data.uri;
+        }
+      },
+      error(error, messages) {
+        if (!Array.isArray(messages)) {
+          this.errors.push(messages);
+          return;
+        }
+
+        for (const message of messages) {
+          this.errors.push(message.message);
         }
       },
     }

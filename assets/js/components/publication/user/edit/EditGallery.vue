@@ -15,6 +15,7 @@
                 ref="myVueDropzone"
                 id="dropzone"
                 @vdropzone-success="uploaded"
+                @vdropzone-error="error"
                 :options="dropzoneOptions"
         >
         </vue-dropzone>
@@ -65,7 +66,6 @@
     computed: {
       ...mapGetters('userGallery', [
         'isLoading',
-        'isLoadingImages',
         'gallery',
         'coverImage',
         'images',
@@ -91,6 +91,9 @@
       },
       remove(image) {
         this.$store.dispatch('userGallery/removeImage', image);
+      },
+      error(resp) {
+        console.log(resp)
       },
       editCover(image) {
         this.$store.dispatch('userGallery/editCover', {image});

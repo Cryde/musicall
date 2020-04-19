@@ -188,11 +188,11 @@
           this.$refs.table.refresh();
 
           this.loadingControlPublication = false;
-        } catch (data) {
+        } catch (e) {
+          const data = e.response.data;
           this.loadingControlPublication = false;
-          for (let error of data.data.errors.violations) {
-            const message = error.title;
-            this.errors.push(message);
+          for (let error of data.violations) {
+            this.errors.push(error.title);
           }
         }
       },
