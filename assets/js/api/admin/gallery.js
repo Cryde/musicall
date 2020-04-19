@@ -1,31 +1,16 @@
-/** global: Routing */
+import axios from 'axios';
 
 export default {
   getPendingGalleries() {
-    return fetch(Routing.generate('api_admin_gallery_pending_list'), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_admin_gallery_pending_list'))
+    .then(resp => resp.data)
   },
   approveGallery(id) {
-    return fetch(Routing.generate('api_admin_gallery_approve', {id}), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_admin_gallery_approve', {id}))
+    .then(resp => resp.data)
   },
   rejectGallery(id) {
-    return fetch(Routing.generate('api_admin_gallery_reject', {id}), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_admin_gallery_reject', {id}))
+    .then(resp => resp.data)
   }
 }

@@ -1,63 +1,48 @@
-/** global: Routing */
+import axios from 'axios';
 
 export default {
   getGallery(slug) {
-    return fetch(Routing.generate('api_gallery_show', {slug}))
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_gallery_show', {slug}))
+    .then(resp => resp.data)
   },
   getGalleries() {
-    return fetch(Routing.generate('api_gallery_list'))
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_gallery_list'))
+    .then(resp => resp.data)
   },
   getGalleryImages(slug) {
-    return fetch(Routing.generate('api_gallery_images_show', {slug}))
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_gallery_images_show', {slug}))
+    .then(resp => resp.data)
   },
   addGallery({title}) {
-    return fetch(Routing.generate('api_user_gallery_add'), {
-      method: 'POST',
-      body: JSON.stringify({title})
-    })
-    .then(resp => resp.json())
+    return axios.post(Routing.generate('api_user_gallery_add'), {title})
+    .then(resp => resp.data)
   },
   editGallery({title, id, description}) {
-    return fetch(Routing.generate('api_user_gallery_edit', {id}), {
-      method: 'POST',
-      body: JSON.stringify({title, description})
-    })
-    .then(resp => resp.json())
+    return axios.post(Routing.generate('api_user_gallery_edit', {id}), {title, description})
+    .then(resp => resp.data)
   },
   patchCoverGallery({imageId}) {
-    return fetch(Routing.generate('api_user_gallery_image_cover', {id: imageId}), {
-      method: 'PATCH',
-    })
-    .then(resp => resp.json())
+    return axios.patch(Routing.generate('api_user_gallery_image_cover', {id: imageId}))
+    .then(resp => resp.data)
   },
   publishGallery(galleryId) {
-    return fetch(Routing.generate('api_user_gallery_validation', {id: galleryId}), {
-      method: 'PATCH',
-    })
-    .then(async (resp) => {
-      const json = await resp.json();
-      return resp.ok ? json : Promise.reject(json);
-    });
+    return axios.patch(Routing.generate('api_user_gallery_validation', {id: galleryId}))
+    .then(resp => resp.data);
   },
   getUserGallery(id) {
-    return fetch(Routing.generate('api_user_gallery_get', {id}))
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_user_gallery_get', {id}))
+    .then(resp => resp.data)
   },
   getUserGalleries() {
-    return fetch(Routing.generate('api_user_gallery_list'))
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_user_gallery_list'))
+    .then(resp => resp.data)
   },
   getUserImages(galleryId) {
-    return fetch(Routing.generate('api_user_gallery_images', {id: galleryId}))
-    .then(resp => resp.json())
+    return axios.get(Routing.generate('api_user_gallery_images', {id: galleryId}))
+    .then(resp => resp.data)
   },
   removeImage(id) {
-    return fetch(Routing.generate('api_user_gallery_image_delete', {id}), {
-      method: 'DELETE'
-    })
-    .then(resp => resp.json())
+    return axios.delete(Routing.generate('api_user_gallery_image_delete', {id}))
+    .then(resp => resp.data)
   }
 }

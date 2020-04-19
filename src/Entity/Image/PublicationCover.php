@@ -24,12 +24,9 @@ class PublicationCover
     /**
      * NOTE: This is not a mapped field of entity metadata, just a simple property.
      * @Assert\Image(
-     *     maxWidth=1501,
-     *     maxHeight=1501,
-     *     allowLandscape = false,
-     *     allowPortrait = false,
-     *     allowLandscapeMessage="L'image doit être carré",
-     *     allowPortraitMessage="L'image doit être carré"
+     *     maxWidth=4000,
+     *     maxHeight=4000,
+     *     maxSize="4Mi"
      * )
      * @Vich\UploadableField(mapping="publication_image_cover", fileNameProperty="imageName", size="imageSize")
      *

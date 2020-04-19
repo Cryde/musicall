@@ -22,8 +22,8 @@
   import Header from './components/global/Header';
   import Menu from './components/global/Menu';
   import Footer from './components/global/Footer';
+  import axios  from 'axios';
   import AlertDevelopement from './components/global/AlertDevelopement';
-  import fetchIntercept from 'fetch-intercept';
   import {FadeTransition} from 'vue2-transitions'
 
   export default {
@@ -45,29 +45,24 @@
       const store = this.$store;
       const router = this.$router;
 
-      const unregister = fetchIntercept.register({
-        async request(url, config) {
+      axios.interceptors.request.use(async function (config) {
+        const currentRoute = router.history.current;
+        if (!currentRoute.meta.isAuthRequired) {
+          return config;
+        }
 
-          const currentRoute = router.history.current;
-          if (!currentRoute.meta.isAuthRequired) {
-            return [url, config];
-          }
+        const url = config.url;
+        if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
+          config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken', {displayLoading: false});
+        }
 
-          if (!config) {
-            config = {};
-          }
+        return config;
+      }, function (error) {
+        return Promise.reject(error);
+      });
 
-          if (!config.headers) {
-            config.headers = {};
-          }
-
-          if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
-            config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken', {displayLoading: false});
-          }
-
-          return [url, config];
-        },
-        async responseError(error) {
+      /**
+       async responseError(error) {
 
           console.error(error);
 
@@ -88,7 +83,7 @@
           }
           return Promise.reject(error)
         }
-      });
+       */
     }
   }
 </script>

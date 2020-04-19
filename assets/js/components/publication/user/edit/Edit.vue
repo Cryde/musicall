@@ -177,6 +177,7 @@
   import VideoModal from './VideoModal';
   import EditModal from './EditModal';
   import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
+  import userPublication from "../../../../api/userPublication";
 
   export default {
     components: {
@@ -236,7 +237,7 @@
     async mounted() {
 
       try {
-        const publication = await this.getPublication(this.getPublicationId());
+        const publication = await userPublication.getPublication(this.getPublicationId());
         this.id = publication.id;
         this.content = publication.content;
         this.editor.setContent(publication.content);
@@ -265,7 +266,8 @@
         this.submitted = true;
         const publication = {'title': this.title, 'short_description': this.description, 'content': this.content};
 
-        return this.saveContent(this.getPublicationId(), publication)
+        this.resetValidationState();
+        return userPublication.savePublication({id:this.getPublicationId(), data: publication})
         .then(publication => {
           this.slug = publication.slug;
           this.submitted = false;
@@ -286,13 +288,6 @@
           }
         });
       },
-      saveContent(id, data) {
-        this.resetValidationState();
-        return fetch(Routing.generate('api_user_publication_save', {id}), {method: 'POST', body: JSON.stringify(data)})
-        .then(this.handleErrors)
-        .then(resp => resp.json())
-        .then(resp => resp.data.publication);
-      },
       openUploadModal(command) {
         this.$refs.uploadModal.openModal(command);
       },
@@ -303,12 +298,6 @@
         if (data.command !== null) {
           data.command(data.data);
         }
-      },
-      getPublication(id) {
-        return fetch(Routing.generate('api_user_publication_show', {id}))
-        .then(this.handleErrors)
-        .then(resp => resp.json())
-        .then(resp => resp.data.publication);
       },
       getPublicationId() {
         return this.$route.params.id;

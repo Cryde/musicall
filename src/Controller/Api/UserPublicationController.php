@@ -68,7 +68,7 @@ class UserPublicationController extends AbstractController
     }
 
     /**
-     * @Route("/api/users/publications/{id}/delete", name="api_user_publication_delete", options={"expose": true})
+     * @Route("/api/users/publications/{id}/delete", name="api_user_publication_delete", options={"expose": true}, methods={"DELETE"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      *
@@ -329,7 +329,7 @@ class UserPublicationController extends AbstractController
         $errors = $validator->validate($publication, null, ['publication']);
 
         if (count($errors) > 0) {
-            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
         $publication->setStatus(Publication::STATUS_PENDING);
@@ -371,7 +371,7 @@ class UserPublicationController extends AbstractController
             return $this->json(['data' => ['uri' => $cacheManager->generateUrl($imagePath, 'publication_image_filter')]]);
         }
 
-        return $this->json(['error' => 1]);
+        return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -418,6 +418,6 @@ class UserPublicationController extends AbstractController
             return $this->json(['data' => ['uri' => $cacheManager->generateUrl($imagePath, 'publication_cover_300x300')]]);
         }
 
-        return $this->json(['error' => 1]);
+        return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);
     }
 }

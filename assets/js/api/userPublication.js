@@ -1,27 +1,30 @@
-/** global: Routing */
+import axios from 'axios';
 
 export default {
   getPublications(context) {
-    return fetch(Routing.generate('api_user_publication_list'), {
-      method: 'POST',
-      body: JSON.stringify(context)
-    })
-    .then(resp => resp.json());
+    return axios.post(Routing.generate('api_user_publication_list'), context)
+    .then(resp => resp.data);
+  },
+  getPublication(id) {
+    return axios.get(Routing.generate('api_user_publication_show', {id}))
+    .then(resp => resp.data)
+    .then(resp => resp.data.publication);
   },
   publishPublicationApi(id) {
-    return fetch(Routing.generate('api_user_publication_publish', {id}))
-    .then(handleErrors)
-    .then(resp => resp.json());
+    return axios.get(Routing.generate('api_user_publication_publish', {id}))
+    .then(resp => resp.data);
   },
   deleteItem(id) {
-    return fetch(Routing.generate('api_user_publication_delete', {id}))
+    return axios.delete(Routing.generate('api_user_publication_delete', {id}))
   },
-}
-
-async function handleErrors(response) {
-  if (!response.ok) {
-    const data = await response.json();
-    return Promise.reject(data)
+  addPublication({title, categoryId}) {
+    return axios.post(Routing.generate('api_user_publication_add'), {title, category_id: categoryId})
+    .then(resp => resp.data)
+    .then(resp => resp.data.publication);
+  },
+  savePublication({id, data}) {
+    return axios.post(Routing.generate('api_user_publication_save', {id}), data)
+    .then(resp => resp.data)
+    .then(resp => resp.data.publication);
   }
-  return response;
 }
