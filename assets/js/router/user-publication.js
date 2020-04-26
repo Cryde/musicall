@@ -6,6 +6,12 @@ export default [
     meta: {isAuthRequired: true}
   },
   {
+    name: "user_gallery",
+    path: "/user/galleries",
+    component: () => import("../views/user/Gallery/List"),
+    meta: {isAuthRequired: true}
+  },
+  {
     path: "/user/publications/edit/:id",
     name: "user_publications_edit",
     component: () => import("../components/publication/user/edit/Edit"),
@@ -14,7 +20,7 @@ export default [
   {
     path: "/user/galleries/edit/:id",
     name: "user_gallery_edit",
-    component: () => import("../components/publication/user/edit/EditGallery"),
+    component: () => import("../views/user/Gallery/EditGallery"),
     meta: {isAuthRequired: true}
   },
 ];
