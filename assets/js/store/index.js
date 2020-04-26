@@ -5,6 +5,7 @@ import registration from './modules/registration';
 import video from './modules/video';
 import adminPendingPublications from './modules/admin/pendingPublications';
 import adminPendingGalleries from './modules/admin/pendingGalleries';
+import adminFeatured from './modules/admin/adminFeatured';
 import publication from './modules/publication';
 import publications from './modules/publications';
 import publicationCategory from './modules/publicationCategory';
@@ -12,6 +13,7 @@ import userGallery from './modules/userGallery';
 import userGalleries from './modules/userGalleries';
 import gallery from './modules/gallery';
 import galleries from './modules/galleries';
+import featured from './modules/featured';
 
 Vue.use(Vuex);
 
@@ -31,6 +33,8 @@ export default new Vuex.Store({
     userGalleries,
     gallery,
     galleries,
+    adminFeatured,
+    featured,
   },
   strict: debug,
 })

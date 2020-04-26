@@ -58,3 +58,10 @@ liip_imagine:
                     max: [200, 200]
             post_processors:
                 jpegoptim: { strip_all: true, max: 10, progressive: true }
+
+        featured_cover_filter:
+            filters:
+                downscale:
+                    max: [1500, 1500]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 100, progressive: true }

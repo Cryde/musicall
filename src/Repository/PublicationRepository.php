@@ -21,6 +21,29 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string $title
+     * @param int    $status
+     * @param int    $type
+     * @param int    $limit
+     *
+     * @return int|mixed|string
+     */
+    public function findByTitleAndStatusAndType(string $title, int $status, int $type, int $limit = 10)
+    {
+        return $this->createQueryBuilder('publication')
+            ->where('publication.status = :status')
+            ->andWhere('publication.type = :type')
+            ->andWhere('publication.title like :title')
+            ->setParameter('status', $status)
+            ->setParameter('type', $type)
+            ->setParameter('title', '%' . $title . '%')
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param string $videoId
      *
      * @return Publication|null

@@ -14,5 +14,9 @@ export default {
   rejectPublication(id) {
     return axios.get(Routing.generate('api_admin_publications_reject', {id}))
     .then(resp => resp.data)
+  },
+  searchPublication(query) {
+    return axios.get(Routing.generate('api_admin_search_publication', {query}))
+    .then(resp => resp.data);
   }
 }

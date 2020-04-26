@@ -22,3 +22,10 @@ vich_uploader:
             upload_destination: '%kernel.project_dir%/public/images/gallery'
             namer:
                 service: Vich\UploaderBundle\Naming\HashNamer
+
+        featured_image:
+            uri_prefix: /images/publication/featured
+            upload_destination: '%kernel.project_dir%/public/images/publication/featured'
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+            inject_on_load: true
