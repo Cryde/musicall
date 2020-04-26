@@ -46,7 +46,6 @@ class PublicationDirector
             ->setContent($this->youtubeUrlHelper->getVideoId($data['videoUrl']))
             ->setSubCategory($publicationSubCategory)
             ->setAuthor($user)
-            ->setPublicationDatetime(new \DateTimeImmutable())
-            ->setCategory(Publication::CATEGORY_PUBLICATION);
+            ->setPublicationDatetime(new \DateTimeImmutable());
     }
 }

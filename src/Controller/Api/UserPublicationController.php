@@ -128,7 +128,6 @@ class UserPublicationController extends AbstractController
         /** @var User|null $user */
         $user = $this->getUser();
         $publication->setAuthor($user);
-        $publication->setCategory(Publication::CATEGORY_PUBLICATION);
 
         $errors = $validator->validate($publication);
 
@@ -186,7 +185,7 @@ class UserPublicationController extends AbstractController
 
         $videoId = $youtubeUrlHelper->getVideoId($videoUrl);
 
-        if($publicationRepository->findOneBy(['content' => $videoId, 'category' => Publication::CATEGORY_PUBLICATION, 'type' => Publication::TYPE_VIDEO])) {
+        if($publicationRepository->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO])) {
             throw new YoutubeAlreadyExistingVideoException('This video is already sent');
         }
 
