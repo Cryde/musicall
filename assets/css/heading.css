@@ -14,3 +14,7 @@ h1 span {
     font-weight: bold;
     text-transform: none;
 }
+
+h2 {
+    font-size: 1.4rem;
+}

@@ -16,5 +16,11 @@ export default [
     name: "admin_gallery_pending",
     component: () => import("../views/admin/gallery/GalleryPending"),
     meta: {isAuthRequired: true}
+  },
+  {
+    path: "/admin/publication/featured/",
+    name: "admin_publication_featured",
+    component: () => import("../views/admin/featured/Featured"),
+    meta: {isAuthRequired: true}
   }
 ];
