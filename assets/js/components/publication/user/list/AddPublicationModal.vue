@@ -71,7 +71,7 @@
       }
     },
     computed: {
-      ...mapGetters('publicationCategory', ['categories']),
+      ...mapGetters('publicationCategory', ['publicationCategories']),
     },
     mounted() {
       this.$root.$on('bv::modal::hidden', (bvEvent, modalId) => {

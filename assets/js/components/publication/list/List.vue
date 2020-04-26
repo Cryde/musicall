@@ -58,7 +58,7 @@
         'isLoading',
         'numberOfPages'
       ]),
-      ...mapGetters('publicationCategory', ['categories'])
+      ...mapGetters('publicationCategory', ['publicationCategories'])
     },
     watch: {
       '$route': 'fetchData'
@@ -82,7 +82,7 @@
       async fetchData() {
         const slug = this.$route.params.slug;
         const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
-        this.currentCategory = this.categories.find((category) => category.slug === slug);
+        this.currentCategory = this.publicationCategories.find((category) => category.slug === slug);
         if (slug && this.currentCategory) {
           await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
         } else {

@@ -15,7 +15,7 @@
                     <li v-if="isLoading">
                         <b-spinner small type="grow"></b-spinner>
                     </li>
-                    <li v-else v-for="category in categories">
+                    <li v-else v-for="category in publicationCategories">
                         <router-link :to="{name: 'publications_by_category', params: { slug: category.slug}}">
                             {{ category.title }}
                         </router-link>
@@ -60,7 +60,8 @@
     computed: {
       ...mapGetters('publicationCategory', [
         'isLoading',
-        'categories'
+        'publicationCategories',
+        'courseCategories'
       ])
     }
   }
