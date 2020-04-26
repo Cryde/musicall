@@ -14,9 +14,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Publication
 {
-    const CATEGORY_PUBLICATION = 1;
-    const CATEGORY_COURSE = 2;
-
     const TYPE_TEXT = 1;
     const TYPE_VIDEO = 2;
     const TYPE_VIDEO_LABEL = 'video';
@@ -44,10 +41,7 @@ class Publication
      * @ORM\Column(type="string", length=255)
      */
     private $title;
-    /**
-     * @ORM\Column(type="smallint")
-     */
-    private $category;
+
     /**
      * @Assert\NotBlank(message="La catégorie ne peut être vide")
      *
@@ -248,18 +242,6 @@ class Publication
     public function setSubCategory(?PublicationSubCategory $subCategory): self
     {
         $this->subCategory = $subCategory;
-
-        return $this;
-    }
-
-    public function getCategory(): ?int
-    {
-        return $this->category;
-    }
-
-    public function setCategory(int $category): self
-    {
-        $this->category = $category;
 
         return $this;
     }

@@ -50,7 +50,7 @@ class PublicationRepository extends ServiceEntityRepository
      */
     public function findOneVideo(string $videoId)
     {
-        return $this->findOneBy(['content' => $videoId, 'category' => Publication::CATEGORY_PUBLICATION, 'type' => Publication::TYPE_VIDEO]);
+        return $this->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO]);
     }
 
     /**
