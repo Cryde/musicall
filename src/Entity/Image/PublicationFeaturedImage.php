@@ -24,8 +24,10 @@ class PublicationFeaturedImage
     /**
      * NOTE: This is not a mapped field of entity metadata, just a simple property.
      * @Assert\Image(
-     *     maxWidth=1600,
+     *     minWidth="1500",
+     *     maxWidth=1500,
      *     maxHeight=360,
+     *     minHeight="360",
      *     maxSize="4Mi"
      * )
      * @Vich\UploadableField(mapping="featured_image", fileNameProperty="imageName", size="imageSize")
