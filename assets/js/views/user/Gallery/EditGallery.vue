@@ -4,7 +4,7 @@
     </div>
     <div v-else class="uploader">
         <h1>
-            <router-link :to="{name:'user_publications'}" class="mr-2"><i class="fas fa-chevron-left"></i></router-link>
+            <router-link :to="{name:'user_gallery'}" class="mr-2"><i class="fas fa-chevron-left"></i></router-link>
             {{ gallery.title }}
             <span class="p-1 cursor-pointer" v-b-modal.modal-edit-gallery-properties><i class="fas fa-cog"></i></span>
         </h1>
@@ -54,7 +54,7 @@
 <script>
   import {mapGetters} from 'vuex';
   import vueDropzone from "vue2-dropzone";
-  import EditGalleryPropertiesModal from './Modal/EditGalleryPropertiesModal';
+  import EditGalleryPropertiesModal from '../../../components/publication/user/edit/Modal/EditGalleryPropertiesModal';
 
   export default {
     components: {vueDropzone, EditGalleryPropertiesModal},

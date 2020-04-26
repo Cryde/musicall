@@ -5,8 +5,6 @@
             <b-dropdown-item v-b-modal.modal-publication-add><i class="far fa-edit"></i> une publication
             </b-dropdown-item>
             <b-dropdown-item v-b-modal.modal-video-add><i class="fas fa-video"></i> une video</b-dropdown-item>
-            <b-dropdown-item v-b-modal.modal-gallery-add><i class="far fa-images"></i> une galerie
-            </b-dropdown-item>
         </b-dropdown>
 
         <h1>Mes publications</h1>
@@ -68,7 +66,6 @@
         </div>
         <add-publication-modal/>
         <add-video-modal/>
-        <add-gallery-modal/>
 
         <b-modal id="modal-publication-control" centered title="Publier la publication">
             <div v-if="loadingControlPublication" class="p-5 text-center">
@@ -94,23 +91,17 @@
 
             </template>
         </b-modal>
-
-        <h2 class="mt-5">Galeries</h2>
-
-        <gallery-table/>
     </div>
 </template>
 
 <script>
   import userPublicationApi from "../../../../api/userPublication";
-  import AddPublicationModal from './AddPublicationModal'
-  import AddVideoModal from './AddVideoModal'
-  import AddGalleryModal from './AddGalleryModal'
-  import GalleryTable from './gallery/Table'
+  import AddPublicationModal from './AddPublicationModal';
+  import AddVideoModal from './AddVideoModal';
   import {mapGetters} from 'vuex';
 
   export default {
-    components: {AddPublicationModal, AddVideoModal, AddGalleryModal, GalleryTable},
+    components: {AddPublicationModal, AddVideoModal},
     data() {
       return {
         currentPage: 1,
