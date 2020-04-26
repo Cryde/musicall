@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class PublicationSubCategory
 {
+    const TYPE_PUBLICATION = 1;
+    const TYPE_COURSE = 2;
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -37,6 +39,11 @@ class PublicationSubCategory
      * @ORM\Column(type="integer", nullable=true)
      */
     private $position;
+
+    /**
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $type;
 
     public function __construct()
     {
@@ -111,6 +118,18 @@ class PublicationSubCategory
     public function setPosition(?int $position): self
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    public function getType(): ?int
+    {
+        return $this->type;
+    }
+
+    public function setType(?int $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }
