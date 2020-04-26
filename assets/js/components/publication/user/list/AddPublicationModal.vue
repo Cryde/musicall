@@ -3,7 +3,7 @@
 
         <div v-if="!saved">
             <b-form-group description="La catégorie de votre publication">
-                <v-select :options="categories" v-model="category" label="title"></v-select>
+                <v-select :options="publicationCategories" v-model="category" label="title"></v-select>
                 <b-form-invalid-feedback :state="validation.subCategory.state">
                     {{ validation.subCategory.message }}
                 </b-form-invalid-feedback>
