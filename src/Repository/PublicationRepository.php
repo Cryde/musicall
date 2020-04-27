@@ -6,6 +6,8 @@ use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 
 /**
  * @method Publication|null find($id, $lockMode = null, $lockVersion = null)
@@ -91,7 +93,7 @@ class PublicationRepository extends ServiceEntityRepository
 
     /**
      * @return mixed
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function countOnlinePublications()
     {
@@ -107,7 +109,7 @@ class PublicationRepository extends ServiceEntityRepository
      * @param PublicationSubCategory $publicationSubCategory
      *
      * @return mixed
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function countOnlinePublicationsByCategory(PublicationSubCategory $publicationSubCategory)
     {
@@ -119,5 +121,24 @@ class PublicationRepository extends ServiceEntityRepository
             ->setParameter('subcat', $publicationSubCategory)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @param $oldId
+     *
+     * @return int|mixed|string
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function findOldCourseByOldId($oldId)
+    {
+        return $this->createQueryBuilder('publication')
+            ->join('publication.subCategory', 'sub_category')
+            ->where('publication.oldPublicationId = :id')
+            ->andWhere('sub_category.type = :type')
+            ->setParameter('id', $oldId)
+            ->setParameter('type', PublicationSubCategory::TYPE_COURSE)
+            ->getQuery()
+            ->getSingleResult();
     }
 }

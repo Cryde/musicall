@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Repository\PublicationRepository;
 use App\Service\Bot\BotDetector;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +25,32 @@ class HomeController extends AbstractController
     public function oldPublicationRedirect(string $slug)
     {
         $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'publications/' . $slug;
+
+        return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    /**
+     * @Route("/cours/{id}/{slug}", name="redirect_old_cours")
+     *
+     * @param string                $id
+     * @param string                $slug
+     * @param PublicationRepository $publicationRepository
+     *
+     * @return RedirectResponse
+     */
+    /**
+     * @param string                $id
+     * @param string                $slug
+     * @param PublicationRepository $publicationRepository
+     *
+     * @return RedirectResponse
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function oldCourseRedirect(string $id, string $slug, PublicationRepository $publicationRepository)
+    {
+        $course = $publicationRepository->findOldCourseByOldId($id);
+        $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'cours/' . $course->getSlug();
 
         return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
     }
