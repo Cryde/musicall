@@ -32,7 +32,7 @@
       ...mapGetters('publication', [
         'isLoading',
         'publication',
-        'hasErrors'
+        'hasError'
       ])
     },
     filters: {

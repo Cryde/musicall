@@ -37,13 +37,6 @@ class HomeController extends AbstractController
      * @param PublicationRepository $publicationRepository
      *
      * @return RedirectResponse
-     */
-    /**
-     * @param string                $id
-     * @param string                $slug
-     * @param PublicationRepository $publicationRepository
-     *
-     * @return RedirectResponse
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
