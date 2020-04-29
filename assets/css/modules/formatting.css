@@ -5,9 +5,14 @@
     font-style: italic;
 }
 
-.publication img {
-    width: 100% !important;
-    max-width: 100%;
-    height: auto;
-    vertical-align: middle;
+.publication-container img {
+    margin: 25px auto;
+    display: block;
+    width: auto;
+}
+
+@media screen and (max-width: 1250px) {
+    .publication-container img {
+        width: 100%;
+    }
 }
