@@ -9,6 +9,10 @@
     width: 80%;
 }
 
+.medium-insert-embeds {
+    margin: 15px auto;
+}
+
 @media screen and (max-width: 1000px) {
     .medium-insert-images img {
         width: 100%
