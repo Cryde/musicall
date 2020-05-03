@@ -143,7 +143,7 @@
                     </editor-menu-bar>
                 </div>
 
-                <editor-content :editor="editor" class="mt-3"/>
+                <editor-content :editor="editor" class="mt-3 publication-container"/>
             </div>
 
         </div>
