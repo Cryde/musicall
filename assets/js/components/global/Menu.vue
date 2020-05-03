@@ -30,6 +30,16 @@
                 <router-link :to="{ name: 'course_index' }">
                     <i class="fas fa-graduation-cap fa-fw"></i> Cours
                 </router-link>
+                <ul>
+                    <li v-if="isLoading">
+                        <b-spinner small type="grow"></b-spinner>
+                    </li>
+                    <li v-else v-for="category in courseCategories">
+                        <router-link :to="{name: 'course_by_category', params: { slug: category.slug}}">
+                            {{ category.title }}
+                        </router-link>
+                    </li>
+                </ul>
             </li>
 
             <li>

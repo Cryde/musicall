@@ -4,6 +4,7 @@
         <h1>Cours</h1>
         <b-row class="mt-5 course-categories">
             <b-col tag="b-link"
+                   :to="{name:'course_by_category', params: {slug: category.slug}}"
                    :cols="3"
                    v-for="category in courseCategories"
                    :key="category.order"

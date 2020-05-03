@@ -1,5 +1,10 @@
 import apiPublications from '../../api/publications';
 
+const IS_LOADING = 'IS_LOADING';
+const UPDATE_ERROR = 'UPDATE_ERROR';
+const UPDATE_PUBLICATIONS = 'UPDATE_PUBLICATIONS';
+const UPDATE_META = 'UPDATE_META';
+
 const state = {
   isLoading: false,
   error: null,
@@ -26,42 +31,44 @@ const getters = {
 };
 
 const mutations = {
-  ['FETCHING'](state) {
-    state.isLoading = true;
-    state.error = null;
-    state.publication = {};
+  [IS_LOADING](state, isLoading) {
+    state.isLoading = isLoading;
   },
-  ['FETCHING_SUCCESS'](state, payload) {
-    state.isLoading = false;
-    state.error = null;
-    state.publications = payload.data.publications;
-    state.numberOfPages = payload.data.meta.numberOfPages;
-  },
-  ['FETCHING_ERROR'](state, error) {
-    state.isLoading = false;
+  [UPDATE_ERROR](state, error) {
     state.error = error;
-    state.publication = {};
+  },
+  [UPDATE_PUBLICATIONS](state, publications) {
+    state.publications = publications;
+  },
+  [UPDATE_META](state, meta) {
+    state.numberOfPages = meta.numberOfPages;
   },
 };
 
 const actions = {
   async getPublications({commit}, {offset}) {
-    commit('FETCHING');
+    commit(IS_LOADING, true);
+    commit(UPDATE_ERROR, null);
     try {
-      const resp = await apiPublications.getPublications({offset});
-      commit('FETCHING_SUCCESS', {data: resp.data});
+      const {publications, meta} = await apiPublications.getPublications({offset});
+      commit(UPDATE_PUBLICATIONS, publications);
+      commit(UPDATE_META, meta);
     } catch (err) {
-      commit('FETCHING_ERROR', err);
+      commit(UPDATE_ERROR, err);
     }
+    commit(IS_LOADING, false);
   },
   async getPublicationsByCategory({commit}, {slug, offset}) {
-    commit('FETCHING');
+    commit(IS_LOADING, true);
+    commit(UPDATE_ERROR, null);
     try {
-      const resp = await apiPublications.getPublicationsByCategory({slug, offset});
-      commit('FETCHING_SUCCESS', {data: resp.data});
+      const {publications, meta} = await apiPublications.getPublicationsByCategory({slug, offset});
+      commit(UPDATE_PUBLICATIONS, publications);
+      commit(UPDATE_META, meta);
     } catch (err) {
-      commit('FETCHING_ERROR', err);
+      commit(UPDATE_ERROR, err);
     }
+    commit(IS_LOADING, false);
   },
 };
 
