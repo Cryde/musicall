@@ -5,8 +5,8 @@
     <div v-else-if="publication.type === 'text'">
         <h1>{{ publication.title }}</h1>
 
-        <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> le {{
-            publication.publication_datetime | dateFormat }}
+        <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> <span v-if="publication.publication_datetime">le {{
+            publication.publication_datetime | dateFormat }}</span>
         </div>
         <div class="content-box p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
     </div>
