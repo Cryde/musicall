@@ -30,7 +30,7 @@ class HomeController extends AbstractController
     }
 
     /**
-     * @Route("/cours/{id}/{slug}", name="redirect_old_cours")
+     * @Route("/cours/{id<\d+>}/{slug}", name="redirect_old_cours")
      *
      * @param string                $id
      * @param string                $slug

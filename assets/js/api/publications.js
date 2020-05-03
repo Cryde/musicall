@@ -6,9 +6,11 @@ export default {
   getPublications({offset}) {
     return axios.get(Routing.generate('api_publications_list', {offset}))
     .then(resp => resp.data)
+    .then(resp => resp.data);
   },
   getPublicationsByCategory({slug, offset}) {
     return axios.get(Routing.generate('api_publications_list_by_category', {slug, offset}))
     .then(resp => resp.data)
+    .then(resp => resp.data);
   }
 }
