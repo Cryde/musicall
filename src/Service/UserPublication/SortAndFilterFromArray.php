@@ -2,6 +2,7 @@
 
 namespace App\Service\UserPublication;
 
+use App\Entity\Publication;
 use App\Repository\PublicationSubCategoryRepository;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
@@ -34,10 +35,15 @@ class SortAndFilterFromArray
 
         $arrayFilters = [];
 
-        if (isset($data['filter']) && isset($data['filter']['category_id'])) {
-            $category = $this->publicationSubCategoryRepository->find($data['filter']['category_id']);
-            if ($category) {
-                $arrayFilters['subCategory'] = $category;
+        if (isset($data['filter'])) {
+            if(isset($data['filter']['category_id'])) {
+                $category = $this->publicationSubCategoryRepository->find($data['filter']['category_id']);
+                if ($category) {
+                    $arrayFilters['subCategory'] = $category;
+                }
+            }
+            if(isset($data['filter']['status']) && in_array($data['filter']['status'], Publication::ALL_STATUS)) {
+                $arrayFilters['status'] = $data['filter']['status'];
             }
         }
 

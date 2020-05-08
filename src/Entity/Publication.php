@@ -23,6 +23,8 @@ class Publication
     const STATUS_ONLINE = 1;
     const STATUS_PENDING = 2;
 
+    const ALL_STATUS = [self::STATUS_ONLINE, self::STATUS_DRAFT, self::STATUS_PENDING];
+
     const STATUS_LABEL = [
         self::STATUS_DRAFT => 'Brouillon',
         self::STATUS_ONLINE => 'Publié',
