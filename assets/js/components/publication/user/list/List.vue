@@ -22,7 +22,14 @@
                           label="title"
                           style="background: white;"></v-select>
             </b-col>
-            <b-col cols="9">
+            <b-col cols="3">
+                <v-select :options="status"
+                          v-model="filter.status"
+                          placeholder="Statut"
+                          :reduce="item => item.id"
+                          style="background: white;"></v-select>
+            </b-col>
+            <b-col cols="6">
                 <b-pagination
                         v-model="currentPage"
                         :total-rows="total"
@@ -117,7 +124,8 @@
     components: {AddPublicationModal, AddVideoModal, vSelect},
     data() {
       return {
-        filter: {category_id: null},
+        status: [{label:'Brouillon', id: 0},{label:'Publié', id: 1},{label:'En validation', id: 2},],
+        filter: {category_id: null, status: null},
         currentPage: 1,
         perPage: 0,
         total: null,
