@@ -13,17 +13,30 @@
             Vous avez posté {{ total }} publications
         </div>
 
-        <b-pagination
-                v-model="currentPage"
-                :total-rows="total"
-                :per-page="perPage"
-                align="right"
-        ></b-pagination>
+        <b-row class="mt-3">
+            <b-col cols="3">
+                <v-select :options="publicationCategories"
+                          v-model="filter.category_id"
+                          placeholder="Catégories"
+                          :reduce="item => item.id"
+                          label="title"
+                          style="background: white;"></v-select>
+            </b-col>
+            <b-col cols="9">
+                <b-pagination
+                        v-model="currentPage"
+                        :total-rows="total"
+                        :per-page="perPage"
+                        align="right"
+                ></b-pagination>
+            </b-col>
+        </b-row>
 
         <div class="content-box mt-3">
             <b-table
                     id="publication-table"
                     ref="table"
+                    :filter="filter"
                     :busy.sync="isBusy"
                     :sort-by.sync="sortBy"
                     :sort-desc.sync="sortDesc"
@@ -88,22 +101,23 @@
                 <b-button variant="default" @click="cancel()">
                     Fermer
                 </b-button>
-
             </template>
         </b-modal>
     </div>
 </template>
 
 <script>
+  import vSelect from 'vue-select';
   import userPublicationApi from "../../../../api/userPublication";
   import AddPublicationModal from './AddPublicationModal';
   import AddVideoModal from './AddVideoModal';
   import {mapGetters} from 'vuex';
 
   export default {
-    components: {AddPublicationModal, AddVideoModal},
+    components: {AddPublicationModal, AddVideoModal, vSelect},
     data() {
       return {
+        filter: {category_id: null},
         currentPage: 1,
         perPage: 0,
         total: null,
@@ -123,7 +137,8 @@
       }
     },
     computed: {
-      ...mapGetters('security', ['isRoleAdmin'])
+      ...mapGetters('security', ['isRoleAdmin']),
+      ...mapGetters('publicationCategory', ['publicationCategories']),
     },
     mounted() {
       this.$root.$on('reload-table', () => {

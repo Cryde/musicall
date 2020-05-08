@@ -19,7 +19,6 @@ use App\Service\Google\Exception\YoutubeVideoNotFoundException;
 use App\Service\Google\Youtube;
 use App\Service\Google\YoutubeUrlHelper;
 use App\Service\Jsonizer;
-use App\Service\Publication\PublicationSlug;
 use App\Service\UserPublication\SortAndFilterFromArray;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -55,8 +54,15 @@ class UserPublicationController extends AbstractController
         SortAndFilterFromArray $sortAndFilterFromArray
     ) {
         $filter = $sortAndFilterFromArray->createFromArray($jsonizer->decodeRequest($request));
-        $count = $publicationRepository->count(['author' => $this->getUser()]);
-        $publications = $publicationRepository->findBy(['author' => $this->getUser()], $filter['sort'], $filter['limit'], $filter['offset']);
+        $filters = array_merge(['author' => $this->getUser()], $filter['filters']);
+        $count = $publicationRepository->count($filters);
+
+        $publications = $publicationRepository->findBy(
+            $filters,
+            $filter['sort'],
+            $filter['limit'],
+            $filter['offset']
+        );
 
         return $this->json([
             'publications' => $userPublicationArraySerializer->listToArray($publications),
