@@ -56,8 +56,7 @@
           }
 
           if(!token && currentRoute.meta.isAuthRequired) {
-            router.push({name:'home'});
-            return;
+            await router.replace({name:'home'});
           }
         }
 
