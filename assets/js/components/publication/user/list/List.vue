@@ -149,7 +149,7 @@
       ...mapGetters('publicationCategory', ['publicationCategories']),
     },
     mounted() {
-      this.$root.$on('reload-table', () => {
+      this.$root.$on('publication-added', () => {
         this.$refs.table.refresh();
       });
     },
