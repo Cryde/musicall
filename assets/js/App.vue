@@ -46,14 +46,19 @@
       const router = this.$router;
 
       axios.interceptors.request.use(async function (config) {
-        const currentRoute = router.history.current;
-        if (!currentRoute.meta.isAuthRequired) {
-          return config;
-        }
-
         const url = config.url;
+        const currentRoute = router.history.current;
+
         if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
-          config.headers['Authorization'] = 'Bearer ' + await store.dispatch('security/getAuthToken', {displayLoading: false});
+          const token = await store.dispatch('security/getAuthToken', {displayLoading: false});
+          if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          if(!token && currentRoute.meta.isAuthRequired) {
+            router.push({name:'home'});
+            return;
+          }
         }
 
         return config;

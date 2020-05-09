@@ -66,6 +66,10 @@
     async created() {
       this.isHome = this.$route.name === 'home';
       await this.fetchData();
+
+      this.$root.$on('publication-added', async () => {
+        await this.fetchData();
+      });
     },
     methods: {
       pageTitle() {

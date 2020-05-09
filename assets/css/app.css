@@ -15,6 +15,7 @@
 @import "modules/login.css";
 @import "modules/publication-list.css";
 @import "components/featured.css";
+@import "components/buttons.css";
 @import "bc.css";
 
 [contenteditable]:focus {

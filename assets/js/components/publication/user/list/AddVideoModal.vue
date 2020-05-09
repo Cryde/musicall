@@ -1,7 +1,7 @@
 <template>
     <b-modal id="modal-video-add" title="Ajouter une video" ref="modal-video-add">
 
-        <b-form-group description="Le titre de votre publication">
+        <b-form-group description="Avec ce lien nous pourrons récupérer quelque informations">
             <b-form-input v-model="videoUrl"
                           @keyup="preview"
                           placeholder="Url de la video Youtube"></b-form-input>
@@ -109,7 +109,7 @@
           });
 
           this.$refs['modal-video-add'].hide();
-          this.$root.$emit('reload-table');
+          this.$root.$emit('publication-added');
 
           this.$bvToast.toast('Votre vidéo a été mise en ligne', {
             title: `C'est en ligne !`,

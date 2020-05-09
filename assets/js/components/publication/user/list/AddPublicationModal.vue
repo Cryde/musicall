@@ -95,7 +95,7 @@
         .then((publication) => {
           this.submitted = false;
           this.saved = true;
-          this.$root.$emit('reload-table');
+          this.$root.$emit('publication-added');
           this.editUrl = { name: 'user_publications_edit', params: { id: publication.id }};
           this.$bvToast.toast('Votre publication a été enregistrée', {
             title: `Publication enregistrée`,
