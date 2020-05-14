@@ -38,15 +38,24 @@
         ]
       }
     },
+    watch: {
+      '$route.params.slug': function (slug) {
+        this.load(slug);
+      }
+    },
     async created() {
-      await this.$store.dispatch('publication/getPublication', {slug: this.$route.params.slug});
+      await this.load(this.$route.params.slug);
     },
     computed: {
       ...mapGetters('publication', [
         'isLoading',
-        'publication',
-        'hasErrors'
+        'publication'
       ])
+    },
+    methods: {
+      async load(slug) {
+        await this.$store.dispatch('publication/getPublication', {slug});
+      }
     },
     filters: {
       dateFormat(date) {

@@ -141,4 +141,22 @@ class PublicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleResult();
     }
+
+    /**
+     * @param string $term
+     * @param int    $limit
+     *
+     * @return int|mixed|string
+     */
+    public function getBySearchTerm(string $term, int $limit = 10)
+    {
+        return $this->createQueryBuilder('publication')
+            ->where('publication.status = :status')
+            ->andWhere('MATCH_AGAINST(publication.title, publication.shortDescription, publication.content) AGAINST(:term) > 0')
+            ->setParameter('term', $term)
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
