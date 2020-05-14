@@ -3,6 +3,7 @@
 namespace App\Serializer;
 
 use App\Entity\Publication;
+use App\Entity\PublicationSubCategory;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class PublicationSerializer
@@ -34,12 +35,13 @@ class PublicationSerializer
 
     public function toArray(Publication $publication): array
     {
-
         $isVideo = $publication->getType() === Publication::TYPE_VIDEO;
         $description = $isVideo ? '' : $publication->getShortDescription();
+
         return [
             'slug'                 => $publication->getSlug(),
             'type'                 => $isVideo ? 'video' : 'text',
+            'category_type'        => $publication->getSubCategory()->getType() === PublicationSubCategory::TYPE_PUBLICATION ? 'publication' : 'course',
             'category'             => $publication->getSubCategory()->getSlug(),
             'title'                => mb_strtoupper($publication->getTitle()),
             'description'          => $description,
