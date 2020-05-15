@@ -9,8 +9,8 @@
 
                     <i class="fas fa-search mr-3" v-if="!isLoadingSearch"></i>
                     <b-spinner v-else small class="mr-3"></b-spinner>
-                    <b-form-input class="mr-sm-2" placeholder="Recherche" debounce="1000" @update="search"
-                                  @focus="search"
+                    <b-form-input class="mr-sm-2" placeholder="Recherche" debounce="500" @update="search"
+                                  @focus="search" @keydown.enter.prevent
                                   v-model="term"></b-form-input>
 
                 </b-nav-form>
