@@ -10,22 +10,30 @@
     font-size: 0.8rem;
 }
 
-.results i  {
+.results > i {
     cursor: pointer;
 }
 
-.results span {
+.results div {
     padding-top: 7px;
     padding-bottom: 7px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
 }
 
-.results span:first-of-type {
+.results div em {
+    font-size: 0.75em;
+}
+
+.results div:first-of-type {
     padding-top: 0px;
 }
 
-.results span:last-of-type {
+.results div:last-of-type {
     padding-bottom: 0px;
     border: none;
+}
+
+.results div .publication-type {
+    font-size: 0.60em;
 }
