@@ -8,6 +8,7 @@ import VueMeta from 'vue-meta';
 import VueLazyload from 'vue-lazyload'
 import relativeDateFilter from "./filters/relative-date-filter";
 import VueGtag from "vue-gtag";
+import './directives/click-outside';
 
 Vue.use(VueMeta, {
   // optional pluginOptions

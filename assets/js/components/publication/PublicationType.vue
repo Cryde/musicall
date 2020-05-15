@@ -13,22 +13,3 @@
     props: ['type']
   }
 </script>
-
-<style>
-    .publication-type {
-        border-radius: 4px;
-        padding: 3px 6px;
-        font-size: 0.8em;
-        display: inline-block;
-        text-transform: uppercase;
-        color: white;
-    }
-
-    .publication-type.text {
-        background: #5b87ae;
-    }
-
-    .publication-type.video {
-        background: #e9573f;
-    }
-</style>

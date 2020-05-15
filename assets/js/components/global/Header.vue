@@ -4,7 +4,7 @@
             <b-navbar-brand :to="{name: 'home'}"><img src="/build/images/logo.png" alt="Logo MusicAll"/>
             </b-navbar-brand>
 
-            <b-navbar-nav class="ml-auto mr-3 position-relative">
+            <b-navbar-nav class="ml-auto mr-3 position-relative" v-click-outside="hide">
                 <b-nav-form class="d-none d-md-block">
 
                     <i class="fas fa-search mr-3" v-if="!isLoadingSearch"></i>
@@ -18,12 +18,12 @@
                     <i class="fas fa-times float-right" @click="searched = false"></i>
                     <h4 v-if="results.length">Il y a {{ results.length }} résultat(s) :</h4>
                     <span v-else>Il n'y a pas de résultat</span>
-                    <span v-for="result in results"
+                    <div v-for="result in results"
                                  @click="go(result)"
-                                 class="d-block"
                     >
-                        {{ result.title }}
-                    </span>
+                        {{ result.title }}<br/>
+                        <em class="mr-2">{{ result.publication_datetime | relativeDate }}</em> <publication-type :type="result.type"/>
+                    </div>
                 </div>
             </b-navbar-nav>
 
@@ -51,10 +51,11 @@
 <script>
   import {mapGetters} from 'vuex';
   import Dropdown from './Dropdown';
+  import PublicationType from "../publication/PublicationType";
   import searchApi from "../../api/search";
 
   export default {
-    components: {Dropdown},
+    components: {Dropdown, PublicationType},
     data() {
       return {
         term: '',
@@ -70,6 +71,9 @@
       ])
     },
     methods: {
+      hide() {
+        this.searched = false;
+      },
       async search() {
         if (!this.term.trim().length) {
           this.searched = false;
