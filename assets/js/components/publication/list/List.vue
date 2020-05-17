@@ -5,7 +5,7 @@
     <div v-else id="publication-list">
         <h1 v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
         <h1 v-else-if="!this.isHome">Publications</h1>
-        <b-card-group columns class="mt-4">
+        <div class="mt-4" ref="publication-container" v-show="showContainer">
             <b-card
                     v-for="publication in publications" :key="publication.id"
                     v-if="publication.category !== 'news'" tag="b-link"
@@ -27,8 +27,8 @@
                 </b-card-text>
                 <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
             </b-card>
-        </b-card-group>
-        <div class="overflow-auto" v-if="numberOfPages > 1">
+        </div>
+        <div class="overflow-auto" v-if="numberOfPages > 1" v-show="showContainer">
             <b-pagination-nav :link-gen="linkGen" :number-of-pages="numberOfPages" use-router align="right"
                               size="sm"></b-pagination-nav>
         </div>
@@ -38,13 +38,16 @@
 <script>
   import {mapGetters} from 'vuex';
   import PublicationType from "../PublicationType";
+  import Macy from "macy";
 
   export default {
     components: {PublicationType},
     data() {
       return {
+        macy: null,
         isHome: false,
-        currentCategory: null
+        currentCategory: null,
+        showContainer: false,
       }
     },
     metaInfo() {
@@ -61,10 +64,15 @@
       ...mapGetters('publicationCategory', ['publicationCategories'])
     },
     watch: {
-      '$route': 'fetchData'
+      $route() {
+        this.macy && this.macy.remove();
+        this.macy = null;
+        this.fetchData();
+      },
     },
     async created() {
       this.isHome = this.$route.name === 'home';
+
       await this.fetchData();
 
       this.$root.$on('publication-added', async () => {
@@ -92,10 +100,35 @@
         } else {
           await this.$store.dispatch('publications/getPublications', {offset});
         }
+        await this.initMacy();
+      },
+      async initMacy() {
+        this.showContainer = false;
+        this.macy = Macy({
+          container: this.$refs['publication-container'],
+          trueOrder: true,
+          waitForImages: false,
+          margin: 14,
+          columns: 3,
+          breakAt: {
+            1200: 4,
+            940: 3,
+            560: 2,
+            400: 1
+          }
+        });
+        await this.macy.recalculateOnImageLoad(true);
+        this.showContainer = true;
+        this.macy.runOnImageLoad(() => {
+        });// we have to let this
       },
       linkGen(pageNum) {
         return pageNum === 1 ? '?' : `?page=${pageNum}`
       }
+    },
+    destroyed() {
+      this.macy = null;
+      this.showContainer = false;
     }
   }
 </script>
