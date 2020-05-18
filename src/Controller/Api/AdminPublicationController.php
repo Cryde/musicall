@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Publication;
 use App\Repository\PublicationRepository;
+use App\Service\Builder\CommentThreadDirector;
 use App\Service\Publication\PublicationSlug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,14 +37,21 @@ class AdminPublicationController extends AbstractController
      *
      * @IsGranted("ROLE_ADMIN")
      *
-     * @param Publication     $publication
-     * @param PublicationSlug $publicationSlug
+     * @param Publication           $publication
+     * @param PublicationSlug       $publicationSlug
+     * @param CommentThreadDirector $commentThreadDirector
      *
      * @return JsonResponse
-     * @throws \Exception
      */
-    public function approve(Publication $publication, PublicationSlug $publicationSlug)
-    {
+    public function approve(
+        Publication $publication,
+        PublicationSlug $publicationSlug,
+        CommentThreadDirector $commentThreadDirector
+    ) {
+        $commentThread = $commentThreadDirector->create();
+        $this->getDoctrine()->getManager()->persist($commentThread);
+
+        $publication->setThread($commentThread);
         $publication->setPublicationDatetime(new \DateTime());
         $publication->setStatus(Publication::STATUS_ONLINE);
         $publication->setSlug($publicationSlug->create($publication->getTitle()));

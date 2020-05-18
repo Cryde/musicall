@@ -10,6 +10,7 @@ use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\UserPublicationArraySerializer;
+use App\Service\Builder\CommentThreadDirector;
 use App\Service\Builder\PublicationCoverDirector;
 use App\Service\Builder\PublicationDirector;
 use App\Service\File\Exception\CorruptedFileException;
@@ -168,6 +169,7 @@ class UserPublicationController extends AbstractController
      * @param UserPublicationArraySerializer $userPublicationArraySerializer
      * @param RemoteFileDownloader           $remoteFileDownloader
      * @param ParameterBagInterface          $containerBag
+     * @param CommentThreadDirector          $commentThreadDirector
      *
      * @return JsonResponse
      * @throws CorruptedFileException
@@ -184,7 +186,8 @@ class UserPublicationController extends AbstractController
         PublicationRepository $publicationRepository,
         UserPublicationArraySerializer $userPublicationArraySerializer,
         RemoteFileDownloader $remoteFileDownloader,
-        ParameterBagInterface $containerBag
+        ParameterBagInterface $containerBag,
+        CommentThreadDirector $commentThreadDirector
     ) {
         $data = $jsonizer->decodeRequest($request);
         $videoUrl = $data['videoUrl'];
@@ -200,12 +203,15 @@ class UserPublicationController extends AbstractController
 
         $file = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
 
+        $thread = $commentThreadDirector->create();
+        $this->getDoctrine()->getManager()->persist($thread);
         $cover = $publicationCoverDirector->build($file);
         /** @var User $user */
         $user = $this->getUser();
         $publication = $publicationDirector->buildVideo($data, $user);
         $cover->setPublication($publication);
         $publication->setCover($cover);
+        $publication->setThread($thread);
 
         $this->getDoctrine()->getManager()->persist($publication);
         $this->getDoctrine()->getManager()->flush();
