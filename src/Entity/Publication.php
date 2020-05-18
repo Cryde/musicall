@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -120,6 +121,11 @@ class Publication
      * @ORM\Column(type="integer", nullable=true)
      */
     private $oldPublicationId;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=CommentThread::class)
+     */
+    private $thread;
     
     public function __construct()
     {
@@ -311,6 +317,18 @@ class Publication
     public function setOldPublicationId(?int $oldPublicationId): self
     {
         $this->oldPublicationId = $oldPublicationId;
+
+        return $this;
+    }
+
+    public function getThread(): ?CommentThread
+    {
+        return $this->thread;
+    }
+
+    public function setThread(?CommentThread $thread): self
+    {
+        $this->thread = $thread;
 
         return $this;
     }
