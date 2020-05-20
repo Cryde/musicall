@@ -34,8 +34,14 @@ class CommentThread
      */
     private $comments;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $creationDatetime;
+
     public function __construct()
     {
+        $this->creationDatetime = new \DateTime();
         $this->commentNumber = 0;
         $this->isActive = true;
         $this->comments = new ArrayCollection();
@@ -97,6 +103,18 @@ class CommentThread
                 $comment->setThread(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreationDatetime(): ?\DateTimeInterface
+    {
+        return $this->creationDatetime;
+    }
+
+    public function setCreationDatetime(?\DateTimeInterface $creationDatetime): self
+    {
+        $this->creationDatetime = $creationDatetime;
 
         return $this;
     }
