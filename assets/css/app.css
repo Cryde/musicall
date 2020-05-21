@@ -8,6 +8,7 @@
 @import "components/menu.css";
 @import "components/navbar.css";
 @import "components/footer.css";
+@import "components/comment.css";
 
 @import "modules/formatting.css";
 @import "modules/editor.css";

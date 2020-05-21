@@ -1,35 +1,41 @@
 <template>
-    <div v-if="isLoading" class="text-center pt-5">
-        <b-spinner variant="primary" label="Spinning"></b-spinner>
-    </div>
-    <div v-else-if="publication.type === 'text'">
-        <h1>{{ publication.title }}</h1>
+    <div>
+        <div v-if="isLoading" class="text-center pt-5">
+            <b-spinner variant="primary" label="Spinning"></b-spinner>
+        </div>
+        <div v-else-if="publication.type === 'text'">
+            <h1>{{ publication.title }}</h1>
 
-        <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> <span v-if="publication.publication_datetime">le {{
+            <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> <span
+                    v-if="publication.publication_datetime">le {{
             publication.publication_datetime | dateFormat }}</span>
+            </div>
+            <div class="content-box p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
         </div>
-        <div class="content-box p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
-    </div>
-    <div v-else-if="publication.type === 'video'">
-        <h1>{{ publication.title }}</h1>
-        <div class="author">Publié par <strong>{{publication.author.username}}</strong> le {{
-            publication.publication_datetime | dateFormat }}
+        <div v-else-if="publication.type === 'video'">
+            <h1>{{ publication.title }}</h1>
+            <div class="author">Publié par <strong>{{publication.author.username}}</strong> le {{
+                publication.publication_datetime | dateFormat }}
+            </div>
+            <b-embed
+                    type="iframe"
+                    aspect="16by9"
+                    class="mt-lg-4 mt-3"
+                    :src="`https://www.youtube.com/embed/${publication.content}`"
+                    allowfullscreen
+            ></b-embed>
         </div>
-        <b-embed
-                type="iframe"
-                aspect="16by9"
-                class="mt-lg-4 mt-3"
-                :src="`https://www.youtube.com/embed/${publication.content}`"
-                allowfullscreen
-        ></b-embed>
+        <comment v-if="!isLoading && publication.thread.id" :thread-id="publication.thread.id" />
     </div>
 </template>
 
 <script>
   import {mapGetters} from 'vuex';
   import {format, parseISO} from 'date-fns';
+  import Comment from "../../../views/comment/Thread";
 
   export default {
+    components: {Comment},
     metaInfo() {
       return {
         title: this.publication.title,

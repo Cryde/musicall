@@ -13,3 +13,7 @@ exercise_html_purifier:
                     SafeIframe: true
                 URI:
                     SafeIframeRegexp: '#^(https?:)?//(www\.youtube(?:-nocookie)?\.com/embed/|player\.vimeo\.com/video/)#'
+        comment:
+            config:
+                HTML.Allowed:
+                    br
