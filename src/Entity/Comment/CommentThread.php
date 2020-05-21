@@ -31,6 +31,7 @@ class CommentThread
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="thread")
+     * @ORM\OrderBy({"creationDatetime" = "DESC"})
      */
     private $comments;
 

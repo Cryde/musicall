@@ -5,6 +5,7 @@ namespace App\Entity\Comment;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=CommentRepository::class)
@@ -19,12 +20,14 @@ class Comment
     private $id;
 
     /**
+     * @Assert\NotNull()
      * @ORM\ManyToOne(targetEntity=CommentThread::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
     private $thread;
 
     /**
+     * @Assert\NotNull()
      * @ORM\ManyToOne(targetEntity=User::class)
      * @ORM\JoinColumn(nullable=false)
      */
@@ -36,9 +39,16 @@ class Comment
     private $creationDatetime;
 
     /**
+     * @Assert\NotBlank(message="Le commentaire est vide")
+     *
      * @ORM\Column(type="text")
      */
     private $content;
+
+    public function __construct()
+    {
+        $this->creationDatetime = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -88,7 +98,7 @@ class Comment
 
     public function setContent(string $content): self
     {
-        $this->content = $content;
+        $this->content = trim($content);
 
         return $this;
     }
