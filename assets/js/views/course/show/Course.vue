@@ -1,22 +1,27 @@
 <template>
-    <div v-if="isLoading" class="text-center pt-5">
-        <b-spinner variant="primary" label="Spinning"></b-spinner>
-    </div>
-    <div v-else>
-        <h1>{{ publication.title }}</h1>
-
-        <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> le {{
-            publication.publication_datetime | dateFormat }}
+    <div>
+        <div v-if="isLoading" class="text-center pt-5">
+            <b-spinner variant="primary" label="Spinning"></b-spinner>
         </div>
-        <div class="content-box p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
+        <div v-else>
+            <h1>{{ publication.title }}</h1>
+
+            <div class="author">Rédigé par <strong>{{publication.author.username}}</strong> le {{
+                publication.publication_datetime | dateFormat }}
+            </div>
+            <div class="content-box p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
+        </div>
+        <comment v-if="!isLoading && publication.thread.id" :thread-id="publication.thread.id" />
     </div>
 </template>
 
 <script>
   import {mapGetters} from 'vuex';
   import {format, parseISO} from 'date-fns';
+  import Comment from "../../comment/Thread";
 
   export default {
+    components: {Comment},
     metaInfo() {
       return {
         title: this.publication.title,
