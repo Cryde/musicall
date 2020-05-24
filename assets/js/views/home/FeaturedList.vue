@@ -3,7 +3,7 @@
         <b-card
                 v-if="featured1"
                 overlay
-                class="featured-level-1"
+                class="d-lg-block d-md-block d-none"
                 :img-src="featured1.cover"
                 :img-alt="featured1.title"
                 tag="b-link"
