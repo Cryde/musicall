@@ -15,7 +15,7 @@
                 </div>
             </b-row>
         </b-col>
-        <b-col cols="12" class="text-center thread-list-container pr-2 no-thread pt-4">
+        <b-col v-else cols="12" class="text-center thread-list-container pr-2 no-thread pt-4">
             Vous n'avez pas encore de message.
         </b-col>
     </b-row>
