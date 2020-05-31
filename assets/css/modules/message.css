@@ -2,6 +2,12 @@
     height: 70vh;
 }
 
+.no-thread {
+    font-size: 0.8em;
+    border-right: 1px solid silver;
+}
+
+.thread-list-container,
 #thread-list-container {
     height: 69vh;
     overflow: auto;
