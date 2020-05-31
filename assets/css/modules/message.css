@@ -1,4 +1,88 @@
+#thread-container {
+    height: 70vh;
+}
 
+#thread-list-container {
+    height: 69vh;
+    overflow: auto;
+    border-right: 1px solid silver;
+}
+
+.thread-item {
+    cursor: pointer;
+    border-bottom: 1px solid silver;
+    display: inline-block;
+}
+
+.thread-item:last-of-type {
+    border-bottom: 0;
+}
+
+.thread-item.current {
+    background: #EBEFF2;
+}
+
+.thread-item.is-new .thread-item-date {
+    color: #0084ff
+}
+
+.thread-item.is-new .thread-item-last-message,
+.thread-item.is-new .thread-item-username {
+    font-weight: 700;
+    color: #000;
+}
+
+
+.thread-avatar {
+    vertical-align: top;
+}
+
+.thread-item-date {
+    clear: left;
+    color: rgba(153, 153, 153, 1);
+    font-size: 0.8em;
+}
+
+.thread-item-last-message {
+    clear: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: rgba(153, 153, 153, 1);
+    font-size: 0.8em;
+}
+
+#message-container {
+    overflow: auto;
+    height: 70%;
+}
+
+#message-container .message-body{
+    word-wrap: break-word;
+    display: inline-block;
+    margin: 3px 0;
+    padding: 7px 10px;
+    background: #EBEFF2;
+    border-radius: 10px;
+}
+
+#message-container .is-sender .message-body {
+    background: #5B87AE;
+    color: white;
+}
+
+#message-container .message-body a {
+    color: #5B87AE;
+    text-decoration: underline;
+}
+
+#message-container .is-sender .message-body a {
+    color: white;
+    text-decoration: underline;
+}
+
+
+/*
 #thread-list {
     height: 100%;
     overflow: auto;
@@ -112,38 +196,4 @@ p.message-body a {
 .container-no-messages {
     min-height: 300px;
 }
-
-/**
-Modal pour écrire un nouveau message
 */
-.new-message-modal {
-    width: 400px;
-}
-
-.new-message-modal select {
-    width: 100%;
-}
-
-.new-message-modal textarea {
-    margin: 10px 0;
-    width: 100%;
-    min-height: 200px;
-}
-
-.new-message-modal button {
-    width: 100%;
-}
-.write-new-message {
-    position: relative;
-    z-index: 99;
-}
-
-.select2-result-user-avatar {
-    float: left;
-}
-
-.select2-result-user-login {
-    display: inline-block;
-    margin: 0 10px;
-    vertical-align: super;
-}

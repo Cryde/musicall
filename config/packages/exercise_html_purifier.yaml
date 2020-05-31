@@ -17,3 +17,11 @@ exercise_html_purifier:
             config:
                 HTML.Allowed:
                     br
+        message:
+            config:
+                HTML.Allowed:
+                    br
+        lastMessage:
+            config:
+                HTML.Allowed:
+                    ''

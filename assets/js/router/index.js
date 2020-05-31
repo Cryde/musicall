@@ -8,6 +8,7 @@ import publication from './publication';
 import user from './user';
 import userPublication from './user-publication';
 import gallery from './gallery';
+import message from './message';
 
 Vue.use(Router);
 
@@ -33,6 +34,7 @@ export default new Router({
     ...admin,
     ...course,
     ...search,
-    ...forum
+    ...forum,
+    ...message
   ]
 });
