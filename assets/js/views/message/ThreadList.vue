@@ -1,6 +1,6 @@
 <template>
     <b-row no-gutters>
-        <b-col cols="12" id="thread-list-container">
+        <b-col cols="12" id="thread-list-container" v-if="threads.length">
             <b-row v-for="thread in orderedThreads" :key="thread.thread.id" class="thread-item w-100 p-2"
                    :class="{'is-new': !thread.meta.is_read, 'current': currentThreadId === thread.thread.id}"
                    @click="selectCurrentThread(thread.thread)"
@@ -14,6 +14,9 @@
                     <span class="d-block thread-item-last-message">{{ thread.thread.last_message.content }}</span>
                 </div>
             </b-row>
+        </b-col>
+        <b-col cols="12" class="text-center thread-list-container pr-2 no-thread pt-4">
+            Vous n'avez pas encore de message.
         </b-col>
     </b-row>
 </template>
