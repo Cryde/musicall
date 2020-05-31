@@ -15,6 +15,7 @@
 
 @import "modules/login.css";
 @import "modules/publication-list.css";
+@import "modules/message.css";
 @import "components/featured.css";
 @import "components/buttons.css";
 @import "components/search.css";

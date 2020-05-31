@@ -4,9 +4,8 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -35,5 +34,21 @@ class UserRepository extends ServiceEntityRepository
             ->setParameter('login', $login)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @param string $username
+     * @param int    $limit
+     *
+     * @return int|mixed|string
+     */
+    public function searchByUserName(string $username, int $limit = 15)
+    {
+        return $this->createQueryBuilder('user')
+            ->where('user.username LIKE :search')
+            ->setParameter('search', $username . '%')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

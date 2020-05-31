@@ -15,6 +15,7 @@ import gallery from './modules/gallery';
 import galleries from './modules/galleries';
 import featured from './modules/featured';
 import thread from './modules/thread';
+import messages from './modules/messages';
 
 Vue.use(Vuex);
 
@@ -37,6 +38,7 @@ export default new Vuex.Store({
     adminFeatured,
     featured,
     thread,
+    messages,
   },
   strict: debug,
 })

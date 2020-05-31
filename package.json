@@ -15,6 +15,7 @@
         "build": "encore production --progress"
     },
     "dependencies": {
+        "autolinker": "^3.14.1",
         "axios": "^0.19.2",
         "babel-polyfill": "^6.26.0",
         "bootstrap": "^4.5.0",
