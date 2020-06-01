@@ -16,6 +16,7 @@ import galleries from './modules/galleries';
 import featured from './modules/featured';
 import thread from './modules/thread';
 import messages from './modules/messages';
+import notifications from './modules/notifications';
 
 Vue.use(Vuex);
 
@@ -39,6 +40,7 @@ export default new Vuex.Store({
     featured,
     thread,
     messages,
+    notifications,
   },
   strict: debug,
 })
