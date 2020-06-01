@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Api;
+namespace App\Controller\Api\User;
 
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
@@ -111,6 +111,7 @@ class UserPublicationController extends AbstractController
      * @param UserPublicationArraySerializer   $userPublicationArraySerializer
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function add(
         Request $request,
@@ -413,7 +414,7 @@ class UserPublicationController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid()) {
 
-            if($previousCover) {
+            if ($previousCover) {
                 $publication->setCover(null);
                 $this->getDoctrine()->getManager()->flush();
                 $this->getDoctrine()->getManager()->remove($previousCover);
