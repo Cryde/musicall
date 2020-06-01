@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Api;
+namespace App\Controller\Api\Publication;
 
 use App\Entity\PublicationFeatured;
 use App\Repository\PublicationFeaturedRepository;
