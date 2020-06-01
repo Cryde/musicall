@@ -8,8 +8,8 @@
                 <b-avatar :text="participantWithoutCurrentUser(thread.participants) | firstLetter"
                           class="mr-2 ml-3 thread-avatar"></b-avatar>
 
-                <div class="d-inline-block" style="width: 73%">
-                    <span class="d-block thread-item-username">{{ participantWithoutCurrentUser(thread.participants) }}</span>
+                <div class="d-inline-block" style="width: 72%">
+                    <span class="d-block thread-item-username text-truncate">{{ participantWithoutCurrentUser(thread.participants) }}</span>
                     <span class="d-block thread-item-date">{{ thread.thread.last_message.creation_datetime | relativeDate }}</span>
                     <span class="d-block thread-item-last-message">{{ thread.thread.last_message.content }}</span>
                 </div>
