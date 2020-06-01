@@ -23,6 +23,7 @@
   import Menu from './components/global/Menu';
   import Footer from './components/global/Footer';
   import axios  from 'axios';
+  import {mapGetters} from 'vuex';
   import AlertDevelopement from './components/global/AlertDevelopement';
   import {FadeTransition} from 'vue2-transitions'
 
@@ -35,6 +36,9 @@
     name: 'app',
     components: {
       Header, Footer, Menu, FadeTransition, AlertDevelopement
+    },
+    computed: {
+      ...mapGetters('security', ['isAuthenticated'])
     },
     async created() {
 
@@ -64,6 +68,10 @@
       }, function (error) {
         return Promise.reject(error);
       });
+
+      if(this.isAuthenticated) {
+        this.$store.dispatch('notifications/loadNotifications');
+      }
 
       /**
        async responseError(error) {

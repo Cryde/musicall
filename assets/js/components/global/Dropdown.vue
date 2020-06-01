@@ -1,9 +1,16 @@
 <template>
     <b-dropdown variant="link" right toggle-class="text-decoration-none" no-caret>
         <template slot="button-content">
-            <b-avatar :text="user.username[0].toLocaleUpperCase()"></b-avatar>
+            <b-avatar
+                    :badge="totalCount"
+                    :text="user.username[0].toLocaleUpperCase()"></b-avatar>
         </template>
         <b-dropdown-text><strong>{{ user.username }}</strong></b-dropdown-text>
+        <b-dropdown-divider></b-dropdown-divider>
+        <b-dropdown-item :to="{name: 'message_list'}">
+            Mes messages
+            <b-badge variant="primary" v-if="messageCount">{{messageCount}}</b-badge>
+        </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item :to="{name: 'user_publications'}">Mes publications</b-dropdown-item>
         <b-dropdown-item :to="{name: 'user_gallery'}">Mes galeries</b-dropdown-item>
@@ -32,7 +39,14 @@
       ...mapGetters('security', [
         'user',
         'isRoleAdmin'
-      ])
+      ]),
+      ...mapGetters('notifications', ['messageCount']),
+      totalCount() {
+        if (!this.messageCount) {
+          return false;
+        }
+        return this.messageCount + '';
+      }
     },
     methods: {
       async logout() {

@@ -85,13 +85,14 @@ const actions = {
     commit(UPDATE_THREADS, threads);
     commit(IS_LOADING, false);
   },
-  async loadThread({commit}, {threadId}) {
+  async loadThread({commit, dispatch}, {threadId}) {
     commit(IS_LOADING_MESSAGES, true);
     commit(UPDATE_CURRENT_THREAD_ID, threadId);
     const messages = await messageApi.getMessages({threadId});
     commit(UPDATE_MESSAGES, messages);
 
     commit(UPDATE_THREAD_IS_READ, {threadId, isRead: true});
+    dispatch('notifications/decrementMessageCount', {}, {root: true});
     commit(IS_LOADING_MESSAGES, false);
     await messageApi.markThreadAsRead({threadId});
   },
