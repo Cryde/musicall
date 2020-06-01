@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Api;
+namespace App\Controller\Api\Publication;
 
 use App\Repository\PublicationSubCategoryRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
