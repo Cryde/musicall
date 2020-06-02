@@ -5,6 +5,7 @@ namespace App\Service\Procedure\Message;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
+use App\Event\MessageSentEvent;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Repository\Message\MessageThreadRepository;
 use App\Service\Builder\Message\MessageDirector;
@@ -14,6 +15,7 @@ use App\Service\Builder\Message\MessageThreadMetaDirector;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class MessageSenderProcedure
 {
@@ -45,6 +47,10 @@ class MessageSenderProcedure
      * @var MessageThreadMetaRepository
      */
     private MessageThreadMetaRepository $messageThreadMetaRepository;
+    /**
+     * @var EventDispatcherInterface
+     */
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -53,7 +59,8 @@ class MessageSenderProcedure
         MessageThreadMetaDirector $messageThreadMetaDirector,
         MessageParticipantDirector $messageParticipantDirector,
         MessageThreadMetaRepository $messageThreadMetaRepository,
-        MessageDirector $messageDirector
+        MessageDirector $messageDirector,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->entityManager = $entityManager;
         $this->messageThreadRepository = $messageThreadRepository;
@@ -62,6 +69,7 @@ class MessageSenderProcedure
         $this->messageParticipantDirector = $messageParticipantDirector;
         $this->messageDirector = $messageDirector;
         $this->messageThreadMetaRepository = $messageThreadMetaRepository;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -87,6 +95,8 @@ class MessageSenderProcedure
             $this->entityManager->persist($threadMetaRecipient);
             $this->entityManager->persist($participantSender);
             $this->entityManager->persist($participantRecipient);
+
+            $this->eventDispatcher->dispatch(new MessageSentEvent($recipient), MessageSentEvent::NAME);
         } else {
             $this->handleReadMessage($thread, $sender);
         }
@@ -125,6 +135,7 @@ class MessageSenderProcedure
             if ($recipient->getId() !== $sender->getId()) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
                 $threadMetaRecipient->setIsRead(false);
+                $this->eventDispatcher->dispatch(new MessageSentEvent($recipient), MessageSentEvent::NAME);
             }
         }
 
