@@ -15,6 +15,12 @@
             <b-list-group-item>Galerie : associer un évènement à une galerie</b-list-group-item>
         </b-list-group>
 
+        <h2>Attributs</h2>
+        <b-list-group class="mt-2 mb-4">
+            <b-list-group-item :to="{name: 'admin_attribute_style_list'}">Gérer les styles de musique</b-list-group-item>
+            <b-list-group-item :to="{name: 'admin_attribute_instrument_list'}">Gérer les instruments de musique</b-list-group-item>
+        </b-list-group>
+
         <h2>Users</h2>
         <b-list-group class="mt-2 mb-4">
             <b-list-group-item>Gérer les membres</b-list-group-item>
