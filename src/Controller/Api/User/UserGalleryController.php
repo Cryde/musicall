@@ -158,12 +158,11 @@ class UserGalleryController extends AbstractController
      *
      * @param Gallery            $gallery
      * @param ValidatorInterface $validator
-     * @param GallerySlug        $gallerySlug
      *
      * @return JsonResponse
      * @throws \Exception
      */
-    public function validation(Gallery $gallery, ValidatorInterface $validator, GallerySlug $gallerySlug)
+    public function validation(Gallery $gallery, ValidatorInterface $validator)
     {
         if ($this->getUser()->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
