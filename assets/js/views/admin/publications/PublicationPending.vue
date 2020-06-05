@@ -14,7 +14,7 @@
             </template>
 
             <template v-slot:cell(subCategory)="data">
-                {{ data.item.subCategory.title }}
+                {{ data.item.sub_category.title }}
             </template>
 
             <template v-slot:cell(author)="data">
