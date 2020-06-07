@@ -56,12 +56,14 @@
         errors: [],
       }
     },
+    mounted() {
+      this.$refs['modal-artist-add'].$on('hide', () => {
+        this.reset();
+      });
+    },
     methods: {
       addNew() {
-        this.value = '';
-        this.isSubmitted = false;
-        this.isSent = false;
-        this.errors = [];
+        this.reset();
       },
       async save() {
         this.isSubmitted = true;
@@ -75,6 +77,12 @@
           this.errors = e.response.data.violations.map(violation => violation.title);
         }
         this.isSubmitted = false;
+      },
+      reset() {
+        this.value = '';
+        this.isSubmitted = false;
+        this.isSent = false;
+        this.errors = [];
       }
     }
   }
