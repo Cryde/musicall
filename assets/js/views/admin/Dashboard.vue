@@ -25,5 +25,10 @@
         <b-list-group class="mt-2 mb-4">
             <b-list-group-item>Gérer les membres</b-list-group-item>
         </b-list-group>
+
+        <h2>Wiki</h2>
+        <b-list-group class="mt-2 mb-4">
+            <b-list-group-item :to="{name: 'admin_artists_list'}">Gérer les artistes</b-list-group-item>
+        </b-list-group>
     </div>
 </template>

@@ -35,4 +35,10 @@ export default [
     component: () => import("../views/admin/attribute/instrument/List"),
     meta: {isAuthRequired: true}
   },
+  {
+    path: "/admin/artists",
+    name: "admin_artists_list",
+    component: () => import("../views/admin/artist/List"),
+    meta: {isAuthRequired: true}
+  },
 ];
