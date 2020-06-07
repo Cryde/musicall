@@ -2,6 +2,6 @@
     <div>
         <h1>Recherche</h1>
 
-        La recherche de musiciens sera bientôt de retour !
+        Entry point de toutes les recherches (musiciens, locaux, studios, magasins, ...)
     </div>
 </template>

@@ -1,8 +1,8 @@
 export default [
   {
-    path: "/search/",
+    path: "/rechercher-un-musicien/",
     name: "search_index",
-    component: () => import("../views/search/Search"),
+    component: () => import("../views/search/Musician/Search"),
     meta: {isAuthRequired: false}
   },
 ];
