@@ -76,13 +76,15 @@
 
         await this.$store.dispatch('security/login', {username, password});
 
-        if (!this.hasError) {
-          if (typeof redirect !== "undefined") {
-            this.$router.push({path: redirect});
-          } else {
-            this.$router.push({name: "home"});
+        this.$nextTick(() => {
+          if (!this.hasError) {
+            if (typeof redirect !== "undefined") {
+              this.$router.push({path: redirect});
+            } else {
+              this.$router.push({name: "home"});
+            }
           }
-        }
+        })
       },
     }
   }
