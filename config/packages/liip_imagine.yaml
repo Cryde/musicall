@@ -65,3 +65,10 @@ liip_imagine:
                     max: [1500, 1500]
             post_processors:
                 jpegoptim: { strip_all: true, max: 100, progressive: true }
+
+        wiki_artist_cover_filter:
+            filters:
+                downscale:
+                    max: [1500, 1500]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 100, progressive: true }

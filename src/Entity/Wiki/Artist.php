@@ -2,6 +2,7 @@
 
 namespace App\Entity\Wiki;
 
+use App\Entity\Image\WikiArtistCover;
 use App\Repository\Wiki\ArtistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -50,7 +51,8 @@ class Artist
     private $labelName;
 
     /**
-     * @ORM\OneToMany(targetEntity=ArtistSocial::class, mappedBy="artist")
+     * @Assert\Valid()
+     * @ORM\OneToMany(targetEntity=ArtistSocial::class, mappedBy="artist", cascade={"persist", "remove"})
      */
     private $socials;
 
@@ -59,6 +61,10 @@ class Artist
      */
     private $slug;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\Image\WikiArtistCover", cascade={"persist", "remove"}, orphanRemoval=true)
+     */
+    private $cover;
 
     public function __construct()
     {
@@ -170,6 +176,18 @@ class Artist
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getCover(): ?WikiArtistCover
+    {
+        return $this->cover;
+    }
+
+    public function setCover(?WikiArtistCover $cover): self
+    {
+        $this->cover = $cover;
 
         return $this;
     }

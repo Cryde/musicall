@@ -39,7 +39,7 @@ class ArtistSocial
 
     /**
      * @Assert\Url()
-     *  @Assert\NotBlank()
+     * @Assert\NotBlank()
      *
      * @ORM\Column(type="string", length=255)
      */
@@ -64,6 +64,13 @@ class ArtistSocial
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getType(): ?int
