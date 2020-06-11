@@ -15,7 +15,9 @@
             <b-list-group class="mt-4 mb-4">
                 <b-list-group-item v-for="artist in artists" :key="artist.id">
                     {{ artist.name }}
-                    <b-button size="sm" variant="primary" class="ml-3" title="Editer" v-b-tooltip>
+                    <b-button
+                            :to="{name: 'admin_artists_edit', params: {id: artist.id}}"
+                            size="sm" variant="primary" class="ml-3" title="Editer" v-b-tooltip>
                         <i class="far fa-edit"></i>
                     </b-button>
                 </b-list-group-item>
