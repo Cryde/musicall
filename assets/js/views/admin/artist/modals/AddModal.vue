@@ -28,7 +28,7 @@
                 Ajouter un nouveau
             </b-button>
 
-            <b-button v-if="isSent" variant="success">
+            <b-button v-if="isSent" variant="success" :to="{name: 'admin_artists_edit', params: {id: newArtist.id}}">
                 <i class="far fa-edit"></i>
                 Editer
             </b-button>
@@ -53,6 +53,7 @@
         value: '',
         isSubmitted: false,
         isSent: false,
+        newArtist: null,
         errors: [],
       }
     },
@@ -68,7 +69,7 @@
       async save() {
         this.isSubmitted = true;
         try {
-          await artistApi.addArtist({name: this.value});
+          this.newArtist = await artistApi.addArtist({name: this.value});
           this.value = '';
           this.errors = [];
           this.isSent = true;
@@ -79,6 +80,7 @@
         this.isSubmitted = false;
       },
       reset() {
+        this.newArtist = null,
         this.value = '';
         this.isSubmitted = false;
         this.isSent = false;

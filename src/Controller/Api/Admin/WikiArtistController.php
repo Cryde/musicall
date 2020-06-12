@@ -32,10 +32,11 @@ class WikiArtistController extends AbstractController
      *
      * @IsGranted("ROLE_ADMIN")
      *
-     * @param Request             $request
-     * @param SerializerInterface $serializer
-     * @param ValidatorInterface  $validator
-     * @param Slugifier           $slugifier
+     * @param Request                    $request
+     * @param SerializerInterface        $serializer
+     * @param ValidatorInterface         $validator
+     * @param Slugifier                  $slugifier
+     * @param AdminArtistArraySerializer $adminArtistArraySerializer
      *
      * @return JsonResponse
      */
@@ -43,7 +44,8 @@ class WikiArtistController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         ValidatorInterface $validator,
-        Slugifier $slugifier
+        Slugifier $slugifier,
+        AdminArtistArraySerializer $adminArtistArraySerializer
     ) {
         /** @var Artist $artist */
         $artist = $serializer->deserialize($request->getContent(), Artist::class, 'json');
@@ -58,7 +60,7 @@ class WikiArtistController extends AbstractController
         $this->getDoctrine()->getManager()->persist($artist);
         $this->getDoctrine()->getManager()->flush();
 
-        return $this->json([]);
+        return $this->json($adminArtistArraySerializer->toArray($artist));
     }
 
     /**
