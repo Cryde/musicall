@@ -20,6 +20,12 @@
                             size="sm" variant="primary" class="ml-3" title="Editer" v-b-tooltip>
                         <i class="far fa-edit"></i>
                     </b-button>
+
+                    <b-button
+                            :to="{name: 'artist_show', params: {slug: artist.slug}}"
+                            size="sm" variant="success" class="ml-3" title="Voir" v-b-tooltip>
+                        <i class="far fa-eye"></i>
+                    </b-button>
                 </b-list-group-item>
             </b-list-group>
         </b-col>
