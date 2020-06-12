@@ -38,8 +38,8 @@
   export default {
     metaInfo() {
       return {
-        title: this.gallery.title,
-        meta: [{vmid: 'description', name: 'description', content: this.gallery.description}]
+        title: this.artist.name,
+        meta: [{vmid: 'description', name: 'description', content: this.artist.biography}]
       }
     },
     computed: {
