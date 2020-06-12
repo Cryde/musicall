@@ -3,15 +3,12 @@
 namespace App\Serializer\Artist;
 
 use App\Entity\Wiki\Artist;
+use App\Service\Formatter\Artist\ArtistTextFormatter;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class AdminArtistArraySerializer
+class ArtistArraySerializer
 {
-    /**
-     * @var AdminArtistSocialSerializer
-     */
-    private AdminArtistSocialSerializer $adminArtistSocialSerializer;
     /**
      * @var UploaderHelper
      */
@@ -20,15 +17,25 @@ class AdminArtistArraySerializer
      * @var CacheManager
      */
     private CacheManager $cacheManager;
+    /**
+     * @var ArtistSocialSerializer
+     */
+    private ArtistSocialSerializer $artistSocialSerializer;
+    /**
+     * @var ArtistTextFormatter
+     */
+    private ArtistTextFormatter $artistTextFormatter;
 
     public function __construct(
-        AdminArtistSocialSerializer $adminArtistSocialSerializer,
+        ArtistSocialSerializer $artistSocialSerializer,
         UploaderHelper $uploaderHelper,
-        CacheManager $cacheManager
+        CacheManager $cacheManager,
+        ArtistTextFormatter $artistTextFormatter
     ) {
-        $this->adminArtistSocialSerializer = $adminArtistSocialSerializer;
         $this->uploaderHelper = $uploaderHelper;
         $this->cacheManager = $cacheManager;
+        $this->artistSocialSerializer = $artistSocialSerializer;
+        $this->artistTextFormatter = $artistTextFormatter;
     }
 
     /**
@@ -54,10 +61,10 @@ class AdminArtistArraySerializer
             'id'         => $artist->getId(),
             'name'       => $artist->getName(),
             'slug'       => $artist->getSlug(),
-            'biography'  => $artist->getBiography(),
+            'biography'  => $this->artistTextFormatter->formatNewLine($artist->getBiography()),
             'label_name' => $artist->getLabelName(),
-            'members'    => $artist->getMembers(),
-            'socials'    => $this->adminArtistSocialSerializer->listToArray($artist->getSocials()),
+            'members'    => $this->artistTextFormatter->formatNewLine($artist->getMembers()),
+            'socials'    => $this->artistSocialSerializer->listToArray($artist->getSocials()),
             'cover'      => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'wiki_artist_cover_filter') : '',
         ];
     }
