@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=ArtistRepository::class)
  * @UniqueEntity(fields={"name"})
+ * @UniqueEntity(fields={"slug"})
  */
 class Artist
 {
@@ -26,7 +27,7 @@ class Artist
     /**
      * @Assert\NotBlank()
      *
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $name;
 
@@ -57,7 +58,7 @@ class Artist
     private $socials;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $slug;
 
