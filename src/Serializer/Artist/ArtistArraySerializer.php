@@ -61,9 +61,9 @@ class ArtistArraySerializer
             'id'         => $artist->getId(),
             'name'       => $artist->getName(),
             'slug'       => $artist->getSlug(),
-            'biography'  => $this->artistTextFormatter->formatNewLine($artist->getBiography()),
+            'biography'  => $this->artistTextFormatter->formatNewLine($artist->getBiography() ?? ''),
             'label_name' => $artist->getLabelName(),
-            'members'    => $this->artistTextFormatter->formatNewLine($artist->getMembers()),
+            'members'    => $this->artistTextFormatter->formatNewLine($artist->getMembers() ?? ''),
             'socials'    => $this->artistSocialSerializer->listToArray($artist->getSocials()),
             'cover'      => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'wiki_artist_cover_filter') : '',
         ];
