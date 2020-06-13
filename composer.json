@@ -11,7 +11,7 @@
         "friendsofsymfony/jsrouting-bundle": "^2.3",
         "gesdinet/jwt-refresh-token-bundle": "^0.9",
         "google/apiclient": "^2.0",
-        "google/apiclient-services": "^v0.135",
+        "google/apiclient-services": "^v0.139",
         "lexik/jwt-authentication-bundle": "^2.6",
         "liip/imagine-bundle": "^2.1",
         "mailjet/mailjet-apiv3-php": "^1.4",
