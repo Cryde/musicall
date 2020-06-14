@@ -14,7 +14,6 @@
             </div>
         </div>
         <Footer/>
-        <AlertDevelopement/>
     </div>
 </template>
 
@@ -24,7 +23,6 @@
   import Footer from './components/global/Footer';
   import axios  from 'axios';
   import {mapGetters} from 'vuex';
-  import AlertDevelopement from './components/global/AlertDevelopement';
   import {FadeTransition} from 'vue2-transitions'
 
   export default {
@@ -35,7 +33,7 @@
     },
     name: 'app',
     components: {
-      Header, Footer, Menu, FadeTransition, AlertDevelopement
+      Header, Footer, Menu, FadeTransition
     },
     computed: {
       ...mapGetters('security', ['isAuthenticated'])

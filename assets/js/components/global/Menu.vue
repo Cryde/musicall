@@ -53,12 +53,6 @@
                     <i class="far fa-comments fa-fw"></i> Forum
                 </router-link>
             </li>
-
-            <li>
-                <router-link :to="{ name: 'todo' }">
-                    <i class="fas fa-clipboard-check fa-fw"></i> Todo
-                </router-link>
-            </li>
         </ul>
     </nav>
 </template>
