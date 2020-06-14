@@ -44,87 +44,88 @@
                         <div class="menubar">
 
                             <b-button-group>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Gras"
-                                    :pressed="isActive.bold()"
-                                    @click="commands.bold">
-                                <i class="fas fa-bold"></i>
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Italique"
-                                    :pressed="isActive.italic()"
-                                    @click="commands.italic">
-                                <i class="fas fa-italic"></i>
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Paragraphe"
-                                    :pressed="isActive.paragraph()"
-                                    @click="commands.paragraph">
-                                <i class="fas fa-paragraph"></i>
-                            </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Gras"
+                                        :pressed="isActive.bold()"
+                                        @click="commands.bold">
+                                    <i class="fas fa-bold"></i>
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Italique"
+                                        :pressed="isActive.italic()"
+                                        @click="commands.italic">
+                                    <i class="fas fa-italic"></i>
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Paragraphe"
+                                        :pressed="isActive.paragraph()"
+                                        @click="commands.paragraph">
+                                    <i class="fas fa-paragraph"></i>
+                                </b-button>
                             </b-button-group>
 
                             <b-button-group>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Titre niveau 2"
-                                    :pressed="isActive.heading({ level: 2 })"
-                                    @click="commands.heading({ level: 2 })">
-                                H2
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Titre niveau 3"
-                                    :pressed="isActive.heading({ level: 3 })"
-                                    @click="commands.heading({ level: 3 })">
-                                H3
-                            </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Titre niveau 2"
+                                        :pressed="isActive.heading({ level: 2 })"
+                                        @click="commands.heading({ level: 2 })">
+                                    H2
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Titre niveau 3"
+                                        :pressed="isActive.heading({ level: 3 })"
+                                        @click="commands.heading({ level: 3 })">
+                                    H3
+                                </b-button>
                             </b-button-group>
 
                             <b-button-group>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Aligner à gauche"
-                                    :pressed="getMarkAttrs('align').textAlign === 'left'"
-                                    @click="commands.align({textAlign: 'left'})">
-                                <i class="fas fa-align-left"></i>
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Aligner au centre"
-                                    :pressed="getMarkAttrs('align').textAlign === 'center'"
-                                    @click="commands.align({textAlign: 'center'})">
-                                <i class="fas fa-align-center"></i>
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Aligner à droite"
-                                    :pressed="getMarkAttrs('align').textAlign === 'right'"
-                                    @click="commands.align({textAlign: 'right'})">
-                                <i class="fas fa-align-right"></i>
-                            </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Aligner à gauche"
+                                        :pressed="getMarkAttrs('align').textAlign === 'left'"
+                                        @click="commands.align({textAlign: 'left'})">
+                                    <i class="fas fa-align-left"></i>
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Aligner au centre"
+                                        :pressed="getMarkAttrs('align').textAlign === 'center'"
+                                        @click="commands.align({textAlign: 'center'})">
+                                    <i class="fas fa-align-center"></i>
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Aligner à droite"
+                                        :pressed="getMarkAttrs('align').textAlign === 'right'"
+                                        @click="commands.align({textAlign: 'right'})">
+                                    <i class="fas fa-align-right"></i>
+                                </b-button>
                             </b-button-group>
 
                             <b-button-group>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Liste à puce"
-                                    :pressed="isActive.bullet_list()"
-                                    @click="commands.bullet_list">
-                                <i class="fas fa-list-ul"></i>
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Liste numérotée"
-                                    :pressed="isActive.ordered_list()"
-                                    @click="commands.ordered_list">
-                                <i class="fas fa-list-ol"></i>
-                            </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Liste à puce"
+                                        :pressed="isActive.bullet_list()"
+                                        @click="commands.bullet_list">
+                                    <i class="fas fa-list-ul"></i>
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Liste numérotée"
+                                        :pressed="isActive.ordered_list()"
+                                        @click="commands.ordered_list">
+                                    <i class="fas fa-list-ol"></i>
+                                </b-button>
                             </b-button-group>
 
                             <b-button-group>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Citation"
-                                    :pressed="isActive.blockquote()"
-                                    @click="commands.blockquote">
-                                <i class="fas fa-quote-right"></i>
-                            </b-button>
-                            <b-button variant="outline-primary" size="sm" v-b-tooltip.hover title="Séparation" @click="commands.horizontal_rule">
-                                _
-                            </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Citation"
+                                        :pressed="isActive.blockquote()"
+                                        @click="commands.blockquote">
+                                    <i class="fas fa-quote-right"></i>
+                                </b-button>
+                                <b-button variant="outline-primary" size="sm" v-b-tooltip.hover title="Séparation"
+                                          @click="commands.horizontal_rule">
+                                    _
+                                </b-button>
                             </b-button-group>
 
                             <b-button
@@ -135,32 +136,35 @@
                             </b-button>
 
                             <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Insérer une vidéo YouTube"
+                                    variant="outline-primary" size="sm" v-b-tooltip.hover
+                                    title="Insérer une vidéo YouTube"
                                     :pressed="isActive.youtubeiframe()"
                                     @click="showVideoModal(commands.youtubeiframe)">
                                 <i class="fab fa-youtube"></i>
                             </b-button>
 
                             <b-button-group>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Défaire"
-                                    @click="commands.undo">
-                                <i class="fas fa-undo"></i>
-                            </b-button>
-                            <b-button
-                                    variant="outline-primary" size="sm" v-b-tooltip.hover title="Refaire"
-                                    @click="commands.redo">
-                                <i class="fas fa-redo"></i>
-                            </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Défaire"
+                                        @click="commands.undo">
+                                    <i class="fas fa-undo"></i>
+                                </b-button>
+                                <b-button
+                                        variant="outline-primary" size="sm" v-b-tooltip.hover title="Refaire"
+                                        @click="commands.redo">
+                                    <i class="fas fa-redo"></i>
+                                </b-button>
                             </b-button-group>
 
-                            <b-button variant="outline-success" size="sm" class="float-right" @click="save" :disabled="submitted">
+                            <b-button variant="outline-success" size="sm" class="float-right" @click="save"
+                                      :disabled="submitted">
                                 <b-spinner small v-if="submitted"></b-spinner>
                                 <i class="far fa-save" v-else></i>
                                 Enregistrer
                             </b-button>
 
-                            <b-button variant="outline-info" size="sm" :to="{ name: 'publication_show', params: { slug: slug }}"
+                            <b-button variant="outline-info" size="sm"
+                                      :to="{ name: 'publication_show', params: { slug: slug }}"
                                       target="_blank" class="float-right mr-1">
                                 <i class="far fa-eye"></i>
                             </b-button>
@@ -273,7 +277,7 @@
         this.cover = publication.cover;
         this.slug = publication.slug;
         this.loaded = true;
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
     },
@@ -294,7 +298,7 @@
         const publication = {'title': this.title, 'short_description': this.description, 'content': this.content};
 
         this.resetValidationState();
-        return userPublication.savePublication({id:this.getPublicationId(), data: publication})
+        return userPublication.savePublication({id: this.getPublicationId(), data: publication})
         .then(publication => {
           this.slug = publication.slug;
           this.submitted = false;
