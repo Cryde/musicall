@@ -40,7 +40,7 @@ class MessageThreadMeta
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     /**
      * @ORM\Column(type="boolean")

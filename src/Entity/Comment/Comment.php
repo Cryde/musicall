@@ -36,7 +36,7 @@ class Comment
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     /**
      * @Assert\NotBlank(message="Le commentaire est vide")

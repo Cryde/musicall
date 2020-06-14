@@ -83,7 +83,7 @@ class Publication
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)

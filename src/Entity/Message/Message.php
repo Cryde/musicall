@@ -21,7 +21,7 @@ class Message
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class)

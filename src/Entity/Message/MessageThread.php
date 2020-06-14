@@ -27,7 +27,7 @@ class MessageThread
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     /**
      * @ORM\OneToMany(targetEntity=MessageParticipant::class, mappedBy="thread")
