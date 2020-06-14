@@ -22,12 +22,6 @@ export default new Router({
       component: () => import("../views/Home"),
       meta: {isAuthRequired: false}
     },
-    {
-      path: "/todo",
-      name: 'todo',
-      component: () => import("../views/Todo"),
-      meta: {isAuthRequired: false}
-    },
     ...publication,
     ...userPublication,
     ...gallery,
