@@ -38,7 +38,7 @@ class CommentThread
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $creationDatetime;
+    private ?\DateTimeInterface$creationDatetime;
 
     public function __construct()
     {

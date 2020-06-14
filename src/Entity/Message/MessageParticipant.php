@@ -40,7 +40,7 @@ class MessageParticipant
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     public function __construct()
     {

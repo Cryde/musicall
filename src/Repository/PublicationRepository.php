@@ -124,13 +124,13 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $oldId
+     * @param int $oldId
      *
      * @return int|mixed|string
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function findOldCourseByOldId($oldId)
+    public function findOldCourseByOldId(int $oldId)
     {
         return $this->createQueryBuilder('publication')
             ->join('publication.subCategory', 'sub_category')

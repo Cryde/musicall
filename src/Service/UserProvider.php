@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
@@ -10,10 +11,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class UserProvider implements UserProviderInterface
 {
-    /**
-     * @var UserRepository
-     */
-    private $userRepository;
+    private UserRepository $userRepository;
 
     public function __construct(UserRepository $userRepository)
     {
@@ -28,7 +26,7 @@ class UserProvider implements UserProviderInterface
      *
      * @param string $username
      *
-     * @return \App\Entity\User|UserInterface|null
+     * @return User|UserInterface|null
      */
     public function loadUserByUsername(string $username): ?UserInterface
     {
@@ -42,6 +40,8 @@ class UserProvider implements UserProviderInterface
      * totally reloaded (e.g. from the database), or if the UserInterface
      * object can just be merged into some internal array of users / identity
      * map.
+     *
+     * @param UserInterface $user
      *
      * @return UserInterface
      *
@@ -60,7 +60,7 @@ class UserProvider implements UserProviderInterface
      *
      * @return bool
      */
-    public function supportsClass($class)
+    public function supportsClass(string $class)
     {
         // TODO: Implement supportsClass() method.
     }

@@ -45,10 +45,8 @@ class GalleryImage
     private $imageSize;
     /**
      * @ORM\Column(type="datetime", nullable=false)
-     *
-     * @var \DateTimeInterface
      */
-    private $creationDatetime;
+    private \DateTimeInterface  $creationDatetime;
     /**
      * @ORM\Column(type="datetime")
      *

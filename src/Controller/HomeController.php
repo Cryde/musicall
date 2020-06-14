@@ -32,7 +32,7 @@ class HomeController extends AbstractController
     /**
      * @Route("/cours/{id<\d+>}/{slug}", name="redirect_old_cours")
      *
-     * @param string                $id
+     * @param int                   $id
      * @param string                $slug
      * @param PublicationRepository $publicationRepository
      *
@@ -40,7 +40,7 @@ class HomeController extends AbstractController
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function oldCourseRedirect(string $id, string $slug, PublicationRepository $publicationRepository)
+    public function oldCourseRedirect(int $id, string $slug, PublicationRepository $publicationRepository)
     {
         $course = $publicationRepository->findOldCourseByOldId($id);
         $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'cours/' . $course->getSlug();

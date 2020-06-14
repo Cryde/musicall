@@ -48,7 +48,7 @@ class ArtistSocial
     /**
      * @ORM\Column(type="datetime")
      */
-    private $creationDatetime;
+    private \DateTimeInterface $creationDatetime;
 
     /**
      * @ORM\ManyToOne(targetEntity=Artist::class, inversedBy="socials")
