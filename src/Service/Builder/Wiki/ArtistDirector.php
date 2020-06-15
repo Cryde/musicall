@@ -21,7 +21,9 @@ class ArtistDirector
         $artist = (new Artist())
             ->setBiography($data['biography'] ?? '')
             ->setMembers($data['members'] ?? '')
-            ->setLabelName($data['label_name'] ?? '');
+            ->setLabelName($data['label_name'] ?? '')
+            ->setCountryCode($data['country_code'] ?? '')
+        ;
 
         foreach ($data['socials'] ?? [] as $social) {
             $artist->addSocial($this->artistSocialDirector->createFromArray($social));

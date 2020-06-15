@@ -27,6 +27,10 @@
                     <h2>Label</h2>
                     <p v-html="artist.label_name"></p>
                 </b-col>
+                <b-col :cols="6" v-if="artist.country_name" class="mt-3">
+                    <h2>Pays d'orgine</h2>
+                    <p v-html="artist.country_name"></p>
+                </b-col>
             </b-row>
         </b-col>
     </b-row>

@@ -3,8 +3,8 @@
 import axios from 'axios';
 
 export default {
-  listStyle() {
-    return axios.get(Routing.generate('api_attributes_styles'))
+  getCountries() {
+    return axios.get(Routing.generate('api_attributes_countries'))
     .then(resp => resp.data);
   }
 }
