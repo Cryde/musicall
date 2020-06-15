@@ -22,6 +22,7 @@ class ArtistUpdater
         $artist->setLabelName($newArtist->getLabelName());
         $artist->setBiography($newArtist->getBiography());
         $artist->setMembers($newArtist->getMembers());
+        $artist->setCountryCode($newArtist->getCountryCode());
 
         foreach ($artist->getSocials() as $social) {
             $artist->removeSocial($social);

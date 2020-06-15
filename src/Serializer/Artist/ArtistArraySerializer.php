@@ -5,6 +5,7 @@ namespace App\Serializer\Artist;
 use App\Entity\Wiki\Artist;
 use App\Service\Formatter\Artist\ArtistTextFormatter;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Component\Intl\Countries;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class ArtistArraySerializer
@@ -58,14 +59,15 @@ class ArtistArraySerializer
         $imagePath = $artist->getCover() ? $this->uploaderHelper->asset($artist->getCover(), 'imageFile') : '';
 
         return [
-            'id'         => $artist->getId(),
-            'name'       => $artist->getName(),
-            'slug'       => $artist->getSlug(),
-            'biography'  => $this->artistTextFormatter->formatNewLine($artist->getBiography() ?? ''),
-            'label_name' => $artist->getLabelName(),
-            'members'    => $this->artistTextFormatter->formatNewLine($artist->getMembers() ?? ''),
-            'socials'    => $this->artistSocialSerializer->listToArray($artist->getSocials()),
-            'cover'      => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'wiki_artist_cover_filter') : '',
+            'id'           => $artist->getId(),
+            'name'         => $artist->getName(),
+            'slug'         => $artist->getSlug(),
+            'biography'    => $this->artistTextFormatter->formatNewLine($artist->getBiography() ?? ''),
+            'label_name'   => $artist->getLabelName(),
+            'country_name' => $artist->getCountryCode() ? Countries::getAlpha3Name($artist->getCountryCode()) : '',
+            'members'      => $this->artistTextFormatter->formatNewLine($artist->getMembers() ?? ''),
+            'socials'      => $this->artistSocialSerializer->listToArray($artist->getSocials()),
+            'cover'        => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'wiki_artist_cover_filter') : '',
         ];
     }
 }

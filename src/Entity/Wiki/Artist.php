@@ -67,6 +67,17 @@ class Artist
      */
     private $cover;
 
+    /**
+     *
+     * @Assert\AtLeastOneOf({
+     *     @Assert\Blank(),
+     *     @Assert\Country(alpha3=true)
+     * })
+     *
+     * @ORM\Column(type="string", length=3, nullable=true)
+     */
+    private $countryCode;
+
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
@@ -189,6 +200,18 @@ class Artist
     public function setCover(?WikiArtistCover $cover): self
     {
         $this->cover = $cover;
+
+        return $this;
+    }
+
+    public function getCountryCode(): ?string
+    {
+        return $this->countryCode;
+    }
+
+    public function setCountryCode(?string $countryCode): self
+    {
+        $this->countryCode = $countryCode;
 
         return $this;
     }

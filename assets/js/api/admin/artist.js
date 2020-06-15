@@ -1,3 +1,5 @@
+/** global: Routing */
+
 import axios from 'axios';
 
 export default {
@@ -13,9 +15,10 @@ export default {
     return axios.get(Routing.generate('api_admin_artist_show', {id}))
     .then(resp => resp.data);
   },
-  edit({id, labelName, biography, members, socials}) {
+  edit({id, labelName, biography, members, socials, countryCode}) {
     return axios.patch(Routing.generate('api_admin_artist_edit', {id}), {
       label_name: labelName,
+      country_code: countryCode,
       biography,
       members,
       socials

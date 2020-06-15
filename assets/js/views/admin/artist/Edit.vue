@@ -36,8 +36,17 @@
             </b-form-group>
 
             <b-row>
+                <b-col cols="6">
+                    <v-select :options="countryOptions" v-model="selectedOptionsCountry"
+                              placeholder="Pays"
+                              style="background: white;"></v-select>
+                </b-col>
+            </b-row>
+
+            <b-row class="mt-3">
                 <b-col>
                     <v-select :options="networkOptions" v-model="selectedOptionsNetwork"
+                              placeholder="Ajouter un lien d'un réseau"
                               style="background: white;"></v-select>
                 </b-col>
                 <b-col>
@@ -84,6 +93,7 @@
 <script>
   import vSelect from "vue-select";
   import artistApi from "../../../api/admin/artist";
+  import countryApi from "../../../api/attribute/country";
   import {uniqueId} from 'lodash';
   import EditCoverModal from "./modals/EditCoverModal";
   import {EVENT_ADMIN_UPDATE_ARTIST_COVER} from '../../../constants/events';
@@ -109,20 +119,24 @@
           {type: 3, 'label': 'Facebook'},
           {type: 4, 'label': 'YouTube'},
         ],
+        countryOptions: [],
         selectedOptionsNetwork: null,
+        selectedOptionsCountry: null,
       }
     },
     async mounted() {
       this.isLoading = true;
+      this.countryOptions = await countryApi.getCountries();
       this.id = this.$route.params.id;
       try {
-        const {name, biography, members, label_name, socials, cover} = await artistApi.getArtist({id: this.id});
+        const {name, biography, members, label_name, socials, cover, country_code} = await artistApi.getArtist({id: this.id});
         this.name = name;
         this.biography = biography;
         this.members = members;
         this.labelName = label_name;
         this.socials = socials;
         this.cover = cover;
+            this.selectedOptionsCountry = this.countryOptions.find(item => item.key === country_code);
         this.isLoading = false;
       } catch (e) {
         this.errors = e.response.data.violations.map(violation => violation.title);
@@ -149,6 +163,7 @@
             members: this.members,
             labelName: this.labelName,
             socials: this.socials.filter(item => item.url.trim() !== ''),
+            countryCode: this.selectedOptionsCountry ? this.selectedOptionsCountry.key : '',
           });
           this.isSubmitted = false;
         } catch (e) {
