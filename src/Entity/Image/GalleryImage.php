@@ -23,8 +23,8 @@ class GalleryImage
     /**
      * NOTE: This is not a mapped field of entity metadata, just a simple property.
      * @Assert\Image(
-     *     maxWidth=2400,
-     *     maxHeight=2400
+     *     maxWidth=4000,
+     *     maxHeight=4000
      * )
      * @Vich\UploadableField(mapping="gallery_image", fileNameProperty="imageName", size="imageSize")
      *
