@@ -16,6 +16,7 @@ liip_imagine:
                     max: [800, 800]
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         publication_cover_800x800:
             filters:
@@ -23,6 +24,7 @@ liip_imagine:
                     max: [800, 800]
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         publication_cover_300x300:
             filters:
@@ -30,6 +32,7 @@ liip_imagine:
                     max: [300, 300]
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         publication_cover_100x100:
             filters:
@@ -37,6 +40,7 @@ liip_imagine:
                     max: [100, 100]
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_full:
             filters:
@@ -44,6 +48,7 @@ liip_imagine:
                     max: [1500, 1500]
             post_processors:
                 jpegoptim: { strip_all: true, max: 100, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_medium:
             filters:
@@ -51,6 +56,7 @@ liip_imagine:
                     max: [500, 500]
             post_processors:
                 jpegoptim: { strip_all: true, max: 75, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_small:
             filters:
@@ -58,6 +64,7 @@ liip_imagine:
                     max: [200, 200]
             post_processors:
                 jpegoptim: { strip_all: true, max: 10, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         featured_cover_filter:
             filters:
@@ -65,6 +72,7 @@ liip_imagine:
                     max: [1500, 1500]
             post_processors:
                 jpegoptim: { strip_all: true, max: 100, progressive: true }
+                optipng: { strip_all: true, level: 5 }
 
         wiki_artist_cover_filter:
             filters:
@@ -72,3 +80,4 @@ liip_imagine:
                     max: [1500, 1500]
             post_processors:
                 jpegoptim: { strip_all: true, max: 100, progressive: true }
+                optipng: { strip_all: true, level: 5 }
