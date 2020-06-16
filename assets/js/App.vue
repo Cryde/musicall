@@ -21,7 +21,7 @@
   import Header from './components/global/Header';
   import Menu from './components/global/Menu';
   import Footer from './components/global/Footer';
-  import axios  from 'axios';
+  import axios from 'axios';
   import {mapGetters} from 'vuex';
   import {FadeTransition} from 'vue2-transitions'
 
@@ -40,7 +40,16 @@
     },
     async created() {
 
-      await this.$store.dispatch('security/getAuthToken', {displayLoading: true});
+      try {
+        await this.$store.dispatch('security/getAuthToken', {displayLoading: true});
+      } catch (e) {
+        if (e.response.status === 401) {
+          await this.$store.dispatch('security/logout');
+          window.location.reload();
+          return;
+        }
+      }
+
       this.isReadyWithMinimal = true;
       this.$store.dispatch('publicationCategory/getCategories');
 
@@ -57,8 +66,8 @@
             config.headers['Authorization'] = `Bearer ${token}`;
           }
 
-          if(!token && currentRoute.meta.isAuthRequired) {
-            await router.replace({name:'home'});
+          if (!token && currentRoute.meta.isAuthRequired) {
+            await router.replace({name: 'home'});
           }
         }
 
@@ -67,7 +76,7 @@
         return Promise.reject(error);
       });
 
-      if(this.isAuthenticated) {
+      if (this.isAuthenticated) {
         this.$store.dispatch('notifications/loadNotifications');
       }
 
