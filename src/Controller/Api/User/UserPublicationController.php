@@ -380,7 +380,7 @@ class UserPublicationController extends AbstractController
 
             $imagePath = $uploaderHelper->asset($image, 'imageFile');
 
-            return $this->json(['data' => ['uri' => $cacheManager->generateUrl($imagePath, 'publication_image_filter')]]);
+            return $this->json(['data' => ['uri' => $cacheManager->getBrowserPath($imagePath, 'publication_image_filter')]]);
         }
 
         return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);
@@ -427,7 +427,7 @@ class UserPublicationController extends AbstractController
 
             $imagePath = $uploaderHelper->asset($cover, 'imageFile');
 
-            return $this->json(['data' => ['uri' => $cacheManager->generateUrl($imagePath, 'publication_cover_300x300')]]);
+            return $this->json(['data' => ['uri' => $cacheManager->getBrowserPath($imagePath, 'publication_cover_300x300')]]);
         }
 
         return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);

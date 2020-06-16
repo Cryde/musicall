@@ -67,7 +67,7 @@ class ArtistArraySerializer
             'country_name' => $artist->getCountryCode() ? Countries::getAlpha3Name($artist->getCountryCode()) : '',
             'members'      => $this->artistTextFormatter->formatNewLine($artist->getMembers() ?? ''),
             'socials'      => $this->artistSocialSerializer->listToArray($artist->getSocials()),
-            'cover'        => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'wiki_artist_cover_filter') : '',
+            'cover'        => $imagePath ? $this->cacheManager->getBrowserPath($imagePath, 'wiki_artist_cover_filter') : '',
         ];
     }
 }

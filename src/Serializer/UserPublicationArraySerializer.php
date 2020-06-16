@@ -50,7 +50,7 @@ class UserPublicationArraySerializer
         $cover = '';
         if ($publication->getCover()) {
             $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile');
-            $cover = $this->cacheManager->generateUrl($path, 'publication_cover_300x300');
+            $cover = $this->cacheManager->getBrowserPath($path, 'publication_cover_300x300');
         }
         $result = [
             'id'                => $publication->getId(),
