@@ -61,7 +61,7 @@ class AdminArtistArraySerializer
             'country_code' => $artist->getCountryCode() ? $artist->getCountryCode() : '',
             'members'      => $artist->getMembers(),
             'socials'      => $this->adminArtistSocialSerializer->listToArray($artist->getSocials()),
-            'cover'        => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'wiki_artist_cover_filter') : '',
+            'cover'        => $imagePath ? $this->cacheManager->getBrowserPath($imagePath, 'wiki_artist_cover_filter') : '',
         ];
     }
 }

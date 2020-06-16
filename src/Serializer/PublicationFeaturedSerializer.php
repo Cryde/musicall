@@ -53,7 +53,7 @@ class PublicationFeaturedSerializer
             'level' => $publicationFeatured->getLevel(),
             'status' => $publicationFeatured->getStatus(),
             'options' => $publicationFeatured->getOptions(),
-            'cover' => $imagePath ? $this->cacheManager->generateUrl($imagePath, 'featured_cover_filter') : '',
+            'cover' => $imagePath ? $this->cacheManager->getBrowserPath($imagePath, 'featured_cover_filter') : '',
         ];
     }
 }

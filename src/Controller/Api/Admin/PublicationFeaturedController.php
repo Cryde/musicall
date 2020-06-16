@@ -228,7 +228,7 @@ class PublicationFeaturedController extends AbstractController
             $this->getDoctrine()->getManager()->flush();
             $imagePath = $uploaderHelper->asset($cover, 'imageFile');
 
-            return $this->json(['data' => ['uri' => $cacheManager->generateUrl($imagePath, 'featured_cover_filter')]]);
+            return $this->json(['data' => ['uri' => $cacheManager->getBrowserPath($imagePath, 'featured_cover_filter')]]);
         }
 
         return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);

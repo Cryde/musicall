@@ -46,9 +46,9 @@ class GalleryImageSerializer
         return [
             'id'    => $galleryImage->getId(),
             'sizes' => [
-                'small'  => $this->cacheManager->generateUrl($imagePath, 'gallery_image_filter_small'),
-                'medium' => $this->cacheManager->generateUrl($imagePath, 'gallery_image_filter_medium'),
-                'full'   => $this->cacheManager->generateUrl($imagePath, 'gallery_image_filter_full'),
+                'small'  => $this->cacheManager->getBrowserPath($imagePath, 'gallery_image_filter_small'),
+                'medium' => $this->cacheManager->getBrowserPath($imagePath, 'gallery_image_filter_medium'),
+                'full'   => $this->cacheManager->getBrowserPath($imagePath, 'gallery_image_filter_full'),
             ],
         ];
     }
