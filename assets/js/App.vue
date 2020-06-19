@@ -50,8 +50,8 @@
         }
       }
 
+      await this.$store.dispatch('publicationCategory/getCategories');
       this.isReadyWithMinimal = true;
-      this.$store.dispatch('publicationCategory/getCategories');
 
       const store = this.$store;
       const router = this.$router;
