@@ -19,23 +19,23 @@
             </b-col>
         </b-row>
 
-        <publication-list/>
+        <list />
         <add-video-modal v-if="isAuthenticated"/>
     </div>
 </template>
 <script>
   import {mapGetters} from 'vuex';
   import FeaturedList from "./home/FeaturedList";
-  import PublicationList from "../components/publication/list/PublicationList";
+  import List from "../components/publication/list/List";
   import AddVideoModal from "../components/publication/user/list/AddVideoModal";
 
   export default {
-    components: {PublicationList, FeaturedList, AddVideoModal},
+    components: {List, FeaturedList, AddVideoModal},
     computed: {
       ...mapGetters('security', ['isAuthenticated']),
       ...mapGetters('featured', ['hasFeatured', 'isLoading'])
     },
-    mounted() {
+    created() {
       this.$store.dispatch('featured/loadFeatured');
     }
   }

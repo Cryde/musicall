@@ -68,7 +68,6 @@
     },
     mounted() {
       this.$refs['modal-video-add'].$on('hidden', async () => {
-
         await this.$store.dispatch('video/resetState');
 
         this.videoUrl = '';

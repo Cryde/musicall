@@ -126,9 +126,10 @@
         return pageNum === 1 ? '?' : `?page=${pageNum}`
       }
     },
-    destroyed() {
+    beforeDestroy() {
       this.macy = null;
       this.showContainer = false;
+      this.currentCategory = null;
     }
   }
 </script>
