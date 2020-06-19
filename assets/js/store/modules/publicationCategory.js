@@ -33,11 +33,13 @@ const mutations = {
 };
 
 const actions = {
-  async getCategories({commit}) {
-    commit(UPDATE_IS_LOADING, true);
-    const categories = await apiCategories.getCategories();
-    commit(UPDATE_CATEGORIES, categories);
-    commit(UPDATE_IS_LOADING, false);
+  async getCategories({commit, state}) {
+    if (state.categories.length === 0) {
+      commit(UPDATE_IS_LOADING, true);
+      const categories = await apiCategories.getCategories();
+      commit(UPDATE_CATEGORIES, categories);
+      commit(UPDATE_IS_LOADING, false);
+    }
   }
 };
 
