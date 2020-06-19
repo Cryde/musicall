@@ -5,10 +5,10 @@
     <div v-else>
         <featured-list/>
         <b-row :class="{'mt-5': hasFeatured}">
-            <b-col cols="6">
+            <b-col cols="8">
                 <h2>Dernières publications</h2>
             </b-col>
-            <b-col cols="6">
+            <b-col cols="4">
                 <div class="float-right" v-if="isAuthenticated">
                     <b-button variant="success" class="youtube-btn" pill size="sm"
                               v-b-modal.modal-video-add
