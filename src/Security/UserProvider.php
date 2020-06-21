@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Security;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
@@ -50,7 +50,6 @@ class UserProvider implements UserProviderInterface
      */
     public function refreshUser(UserInterface $user)
     {
-        // TODO: Implement refreshUser() method.
     }
 
     /**
@@ -60,8 +59,8 @@ class UserProvider implements UserProviderInterface
      *
      * @return bool
      */
-    public function supportsClass(string $class)
+    public function supportsClass(string $class) : bool
     {
-        // TODO: Implement supportsClass() method.
+        return User::class === $class;
     }
 }
