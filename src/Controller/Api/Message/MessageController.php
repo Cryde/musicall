@@ -105,8 +105,9 @@ class MessageController extends AbstractController
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-
-        $message = $messageSenderProcedure->process($this->getUser(), $user, $messageModel->getContent());
+        /** @var User $user */
+        $user = $this->getUser();
+        $message = $messageSenderProcedure->process($user, $user, $messageModel->getContent());
 
         return $this->getMessageResponse($message);
     }
@@ -125,7 +126,10 @@ class MessageController extends AbstractController
         MessageThreadMetaRepository $messageThreadMetaRepository,
         MessageThreadMetaArraySerializer $threadMetaArraySerializer
     ) {
-        $metaThreads = $messageThreadMetaRepository->findByUserAndNotDeleted($this->getUser());
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $metaThreads = $messageThreadMetaRepository->findByUserAndNotDeleted($user);
 
         return $this->json($threadMetaArraySerializer->listToArray($metaThreads, true));
     }
@@ -148,17 +152,20 @@ class MessageController extends AbstractController
         ThreadAccess $threadAccess,
         MessageArraySerializer $messageArraySerializer
     ) {
+        /** @var User $user */
+        $user = $this->getUser();
+
         if (!$messages = $messageRepository->findBy(['thread' => $thread])) {
             throw new \UnexpectedValueException('Ce thread n\'existe pas.');
         }
 
-        if(!$threadAccess->isOneOfParticipant($thread, $this->getUser())) {
+        if(!$threadAccess->isOneOfParticipant($thread, $user)) {
             throw new \UnexpectedValueException('Vous n\'avez pas accès à ce thread.');
         }
 
         $formattedMessages = $this->messageUserSenderFormatter->formatList(
             $messageArraySerializer->listToArray($messages),
-            $this->getUser()
+            $user
         );
 
         return $this->json($formattedMessages);
@@ -178,7 +185,10 @@ class MessageController extends AbstractController
         MessageThread $thread,
         MessageThreadMetaRepository $messageThreadMetaRepository
     ) {
-        if(!$meta = $messageThreadMetaRepository->findOneBy(['thread' => $thread, 'user' => $this->getUser()])) {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if(!$meta = $messageThreadMetaRepository->findOneBy(['thread' => $thread, 'user' => $user])) {
             throw new \UnexpectedValueException('Quelque chose d\'anormal s\'est passé');
         }
 
@@ -213,11 +223,14 @@ class MessageController extends AbstractController
         MessageSenderProcedure $messageSenderProcedure
     )
     {
-        if (!$messages = $messageRepository->findBy(['thread' => $thread])) {
+        if (!$messageRepository->findBy(['thread' => $thread])) {
             throw new \UnexpectedValueException('Ce thread n\'existe pas.');
         }
 
-        if(!$threadAccess->isOneOfParticipant($thread, $this->getUser())) {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if(!$threadAccess->isOneOfParticipant($thread, $user)) {
             throw new \UnexpectedValueException('Vous n\'avez pas accès à ce thread.');
         }
 
@@ -229,21 +242,24 @@ class MessageController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $message = $messageSenderProcedure->processByThread($thread, $this->getUser(), $messageModel->getContent());
+        $message = $messageSenderProcedure->processByThread($thread, $user, $messageModel->getContent());
 
         return $this->getMessageResponse($message);
     }
 
     private function getMessageResponse(Message $message): JsonResponse
     {
-        $metaThread = $this->messageThreadMetaRepository->findOneBy(['user' => $this->getUser(), 'thread' => $message->getThread()]);
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $metaThread = $this->messageThreadMetaRepository->findOneBy(['user' => $user, 'thread' => $message->getThread()]);
         $messageParticipant = $this->messageParticipantRepository->findBy(['thread' => $message->getThread()]);
 
         return $this->json([
             'thread'       => $this->messageThreadArraySerializer->toArray($message->getThread()),
             'meta'         => $this->threadMetaArraySerializer->toArray($metaThread),
             'participants' => $this->messageParticipantArraySerializer->listToArray($messageParticipant),
-            'message'      => $this->messageUserSenderFormatter->format($this->messageArraySerializer->toArray($message), $this->getUser()),
+            'message'      => $this->messageUserSenderFormatter->format($this->messageArraySerializer->toArray($message), $user),
         ]);
     }
 }
