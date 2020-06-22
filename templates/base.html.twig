@@ -5,12 +5,12 @@
     {% set css_files = encore_entry_css_files('css') %}
     {% set js_files = encore_entry_js_files('app') %}
     {% for css in css_files %}
-        <link rel="preload" href="{{ preload(asset(css), { as: 'style' }) }}">
+        <link rel="preload" href="{{ preload(asset(css), { as: 'style' }) }}" as="style">
     {% endfor %}
     {% for js in js_files %}
-        <link rel="preload" href="{{ preload(asset(js), { as: 'script' }) }}">
+        <link rel="preload" href="{{ preload(asset(js), { as: 'script' }) }}" as="script">
     {% endfor %}
-    <link rel="preload" href="{{ preload(asset('bundles/fosjsrouting/js/router.min.js'), { as: 'script' }) }}">
+    <link rel="preload" href="{{ preload(asset('bundles/fosjsrouting/js/router.min.js'), { as: 'script' }) }}" as="script">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name='keywords'
