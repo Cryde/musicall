@@ -28,3 +28,11 @@ a img {
 .content-box {
     background: white;
 }
+
+[contenteditable]:focus {
+    outline: 0 solid transparent;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
