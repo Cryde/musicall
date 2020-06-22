@@ -33,6 +33,10 @@ a img {
     outline: 0 solid transparent;
 }
 
+button:focus {
+    outline: 0 solid transparent !important;
+}
+
 .cursor-pointer {
     cursor: pointer;
 }

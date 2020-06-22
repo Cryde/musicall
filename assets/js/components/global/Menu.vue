@@ -1,7 +1,6 @@
 <template>
-    <nav id="menu">
+    <nav id="menu" ref="menu-nav" class="d-none d-lg-block">
         <ul>
-
             <li>
                 <router-link :to="{ name: 'home' }">
                     <i class="fas fa-home fa-fw"></i> Home
@@ -59,6 +58,7 @@
 
 <script>
   import {mapGetters} from 'vuex';
+  import {EVENT_TOGGLE_MENU} from "../../constants/events";
 
   export default {
     computed: {
@@ -67,6 +67,15 @@
         'publicationCategories',
         'courseCategories'
       ])
+    },
+    mounted() {
+      this.$root.$on(EVENT_TOGGLE_MENU, () => {
+        if ([...this.$refs['menu-nav'].classList].includes('d-none')) {
+          this.$refs['menu-nav'].classList.remove('d-none');
+        } else {
+          this.$refs['menu-nav'].classList.add('d-none');
+        }
+      });
     }
   }
 </script>

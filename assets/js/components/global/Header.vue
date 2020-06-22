@@ -42,7 +42,7 @@
                 </div>
             </div>
 
-            <b-navbar-toggle target="nav-text-collapse"></b-navbar-toggle>
+            <b-navbar-toggle target="nav-collapse" @click="toggleMenu"></b-navbar-toggle>
         </b-container>
 
     </b-navbar>
@@ -53,6 +53,7 @@
   import Dropdown from './Dropdown';
   import PublicationType from "../publication/PublicationType";
   import searchApi from "../../api/search";
+  import {EVENT_TOGGLE_MENU} from '../../constants/events';
 
   export default {
     components: {Dropdown, PublicationType},
@@ -89,6 +90,9 @@
         this.searched = false;
         const routeName = result.category_type === 'publication' ? 'publication_show' : 'course_show';
         this.$router.replace({name: routeName, params: {slug: result.slug}});
+      },
+      toggleMenu() {
+        this.$root.$emit(EVENT_TOGGLE_MENU);
       }
     }
   }
