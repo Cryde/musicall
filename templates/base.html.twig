@@ -2,6 +2,16 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    {% set css_files = encore_entry_css_files('css') %}
+    {% set js_files = encore_entry_js_files('app') %}
+    {% for css in css_files %}
+        <link rel="preload" href="{{ preload(asset(css), { as: 'style' }) }}">
+    {% endfor %}
+    {% for js in js_files %}
+        <link rel="preload" href="{{ preload(asset(js), { as: 'script' }) }}">
+    {% endfor %}
+    <link rel="preload" href="{{ preload(asset('bundles/fosjsrouting/js/router.min.js'), { as: 'script' }) }}">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name='keywords'
           content='musicien cherche musicien, chercher musicien, chercher chanteuse, chercher guitariste, chercher batteur, chercher groupe, groupe cherche musicien, musicien cherche groupe, groupe cherche musicien, chercher chanteur, chercher bassiste, groups de rock, cherche pianiste, tutoriel de batterie, tutoriel de guitare, tutoriel de basse, forum, forum de musiciens'/>
@@ -11,14 +21,14 @@
     <link rel="shortcut icon" href="{{ asset('build/images/favicon.ico') }}"/>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src="https://kit.fontawesome.com/bb0b374c35.js" crossorigin="anonymous"></script>
-    {% for css in encore_entry_css_files('css') %}
-        <link rel="stylesheet" href="{{ preload(asset(css), { as: 'style' }) }}">
+    {% for css in css_files %}
+        <link rel="stylesheet" href="{{ asset(css) }}">
     {% endfor %}
 
     <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
     <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
-    {% for js in encore_entry_js_files('app') %}
-        <script src="{{ preload(asset(js)) }}" type="text/javascript" defer="defer"></script>
+    {% for js in js_files %}
+        <script src="{{ asset(js) }}" type="text/javascript" defer="defer"></script>
     {% endfor %}
 </head>
 <body>
