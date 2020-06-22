@@ -10,8 +10,7 @@
     <meta name="verify-v1" content="dKTCUOuzn9n0Y5rkFus+08eZunNMKBKj7sqURPF4KIs="/>
     <link rel="shortcut icon" href="{{ asset('build/images/favicon.ico') }}"/>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
-          integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/bb0b374c35.js" crossorigin="anonymous"></script>
     {% for css in encore_entry_css_files('css') %}
         <link rel="stylesheet" href="{{ preload(asset(css), { as: 'style' }) }}">
     {% endfor %}
