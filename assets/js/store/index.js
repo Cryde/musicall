@@ -18,6 +18,9 @@ import thread from './modules/thread';
 import messages from './modules/messages';
 import notifications from './modules/notifications';
 import artist from './modules/artist';
+import styles from './modules/styles';
+import instruments from './modules/instruments';
+import announceMusician from './modules/announceMusician';
 
 Vue.use(Vuex);
 
@@ -43,6 +46,9 @@ export default new Vuex.Store({
     messages,
     notifications,
     artist,
+    styles,
+    instruments,
+    announceMusician,
   },
   strict: debug,
 })
