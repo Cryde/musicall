@@ -1,11 +1,11 @@
 {
     "devDependencies": {
         "@symfony/webpack-encore": "^0.30.2",
-        "vue-loader": "^15.9.2",
-        "vue-template-compiler": "^2.6.11",
-        "webpack-notifier": "^1.8.0",
         "core-js": "^3.0.0",
-        "regenerator-runtime": "^0.13.2"
+        "regenerator-runtime": "^0.13.2",
+        "vue-loader": "^15.9.3",
+        "vue-template-compiler": "^2.6.11",
+        "webpack-notifier": "^1.8.0"
     },
     "license": "UNLICENSED",
     "private": true,
@@ -17,8 +17,8 @@
         "build": "encore production --progress"
     },
     "dependencies": {
-        "@sentry/browser": "^5.17.0",
-        "@sentry/integrations": "^5.17.0",
+        "@sentry/browser": "^5.18.0",
+        "@sentry/integrations": "^5.18.0",
         "autolinker": "^3.14.1",
         "axios": "^0.19.2",
         "bootstrap": "^4.5.0",
