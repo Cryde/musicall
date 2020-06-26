@@ -2,10 +2,13 @@ const UPDATE_SELECTED_INSTRUMENTS = 'UPDATE_SELECTED_INSTRUMENTS';
 const UPDATE_SELECTED_STYLES = 'UPDATE_SELECTED_STYLES';
 const UPDATE_SELECTED_LOCATION = 'UPDATE_SELECTED_LOCATION';
 const UPDATE_SELECTED_ANNOUNCE_TYPE = 'UPDATE_SELECTED_ANNOUNCE_TYPE';
+const UPDATE_IS_SENDING = 'UPDATE_IS_SENDING';
+const UPDATE_NOTE = 'UPDATE_NOTE';
 
 const state = {
-  isLoading: true,
+  isSending: false,
   type: '',
+  note: '',
   instrument: [],
   styles: [],
   location: {
@@ -16,8 +19,8 @@ const state = {
 };
 
 const getters = {
-  isLoadingInstruments(state) {
-    return state.isLoading;
+  isSending(state) {
+    return state.isSending;
   },
   selectedInstrument(state) {
     return state.instrument;
@@ -34,6 +37,12 @@ const getters = {
 };
 
 const mutations = {
+  [UPDATE_IS_SENDING](state, isSending) {
+    state.isSending = isSending;
+  },
+  [UPDATE_NOTE](state, note) {
+    state.note = note;
+  },
   [UPDATE_SELECTED_ANNOUNCE_TYPE](state, type) {
     state.type = type;
   },
@@ -66,6 +75,12 @@ const actions = {
   },
   async updateLocation({commit}, {long, lat, name}) {
     commit(UPDATE_SELECTED_LOCATION, {long, lat, name});
+  },
+  updateNote({commit}, note) {
+    commit(UPDATE_NOTE, note);
+  },
+  async send({commit}) {
+    commit(UPDATE_IS_SENDING, true);
   }
 };
 
