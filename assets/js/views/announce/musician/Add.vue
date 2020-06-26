@@ -65,9 +65,26 @@
 
                     <b-col xl="8" offset-xl="2" class="mt-5 text-center">
                         <h2 class="mb-3">{{ titles[search].localisation }}</h2>
-                        <input type="text" class="form-control" ref="search"/>
+                        <input type="text" class="form-control" ref="search" :disabled="isSending"/>
                         <div class="text-left text-info">Indiquez de préférence une ville ou commune.</div>
                         <div id="map" ref="map" style="height: 400px" class="mt-3"></div>
+                    </b-col>
+
+                    <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                        <h2 class="mb-3">Détails supplémentaire</h2>
+
+                        <b-form-group
+                                id="input-group-1"
+                                label-for="input-1"
+                                description="N'est pas obligatoire"
+                        >
+                            <b-form-textarea
+                                    :disabled="isSending"
+                                    v-model="note"
+                                    @keyup="updateNote"
+                                    rows="3" max-rows="5"
+                                    placeholder="Ajoutez des détails ici. Ex : groupe favoris, lien vers un morceau, ..."></b-form-textarea>
+                        </b-form-group>
                     </b-col>
 
                     <b-col xl="8" offset-xl="2" class="mt-5 text-center" v-if="isValid">
@@ -87,7 +104,12 @@
                     </b-col>
 
                     <b-col xl="8" offset-xl="2" class="mt-5 text-center">
-                        <b-button variant="primary" size="lg" :disabled="!isValid">Créer mon annonce</b-button>
+                        <b-button variant="primary" size="lg" :disabled="!isValid || isSending" @click="send">
+                            <b-spinner v-if="isSending" class="mr-1 "></b-spinner>
+
+                            <span v-if="!isSending">Créer mon annonce</span>
+                            <span v-else>Annonce en création</span>
+                        </b-button>
                     </b-col>
                 </b-row>
             </fade-transition>
@@ -105,6 +127,7 @@
     data() {
       return {
         search: '',
+        note: '',
         band: {},
         musician: {},
         map: null,
@@ -114,7 +137,7 @@
     computed: {
       ...mapGetters('instruments', ['instruments']),
       ...mapGetters('styles', ['styles']),
-      ...mapGetters('announceMusician', ['selectedInstrument', 'selectedStyles', 'selectedAnnounceTypeName', 'selectedLocationName']),
+      ...mapGetters('announceMusician', ['isSending', 'selectedInstrument', 'selectedStyles', 'selectedAnnounceTypeName', 'selectedLocationName']),
       firstStyles() {
         return [...this.styles].slice(0, 5);
       },
@@ -145,15 +168,27 @@
     },
     methods: {
       selectSearch(flow) {
+        if (this.isSending) {
+          return;
+        }
         this.search = flow;
         this.$store.dispatch('announceMusician/updateAnnounceType', flow);
         !this.map && this.initGoogle();
       },
       selectInstrument(instrument) {
+        if (this.isSending) {
+          return;
+        }
         this.$store.dispatch('announceMusician/updateSelectedInstruments', {instrument});
       },
       addSelectedStyle(style) {
+        if (this.isSending) {
+          return;
+        }
         this.$store.dispatch('announceMusician/updateSelectedStyles', {style});
+      },
+      updateNote(elem) {
+        this.$store.dispatch('announceMusician/updateNote', elem.target.value);
       },
       async initGoogle() {
         const loader = new Loader('AIzaSyBsfoARa2MWlsB-1lUxwHjk6Z_4Xwcp-mQ', {
@@ -164,6 +199,9 @@
         const google = await loader.load();
         await this.initMap(google);
         await this.initAutoComplete(google);
+      },
+      async send() {
+        await this.$store.dispatch('announceMusician/send');
       },
       async initMap(google) {
         this.map = new google.maps.Map(this.$refs['map'], {
