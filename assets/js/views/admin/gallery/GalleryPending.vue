@@ -68,6 +68,7 @@
         if (value) {
           await this.$store.dispatch('adminPendingGalleries/approveGallery', {id});
           await this.$store.dispatch('adminPendingGalleries/loadPendingGalleries');
+          this.$store.dispatch('notifications/loadNotifications');
         }
       },
       async confirmReject(id) {
@@ -75,6 +76,7 @@
         if (value) {
           await this.$store.dispatch('adminPendingGalleries/rejectGallery', {id});
           await this.$store.dispatch('adminPendingGalleries/loadPendingGalleries');
+          this.$store.dispatch('notifications/loadNotifications');
         }
       }
     }
