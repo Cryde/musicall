@@ -1,15 +1,19 @@
+import announceApi from "../../api/musician/announce";
+
 const UPDATE_SELECTED_INSTRUMENTS = 'UPDATE_SELECTED_INSTRUMENTS';
 const UPDATE_SELECTED_STYLES = 'UPDATE_SELECTED_STYLES';
 const UPDATE_SELECTED_LOCATION = 'UPDATE_SELECTED_LOCATION';
 const UPDATE_SELECTED_ANNOUNCE_TYPE = 'UPDATE_SELECTED_ANNOUNCE_TYPE';
 const UPDATE_IS_SENDING = 'UPDATE_IS_SENDING';
+const UPDATE_IS_SUCCESS = 'UPDATE_IS_SUCCESS';
 const UPDATE_NOTE = 'UPDATE_NOTE';
 
 const state = {
   isSending: false,
+  isSuccess: false,
   type: '',
   note: '',
-  instrument: [],
+  instrument: '',
   styles: [],
   location: {
     name: '',
@@ -19,6 +23,9 @@ const state = {
 };
 
 const getters = {
+  isSuccess(state) {
+    return state.isSuccess;
+  },
   isSending(state) {
     return state.isSending;
   },
@@ -37,6 +44,9 @@ const getters = {
 };
 
 const mutations = {
+  [UPDATE_IS_SUCCESS](state, isSuccess) {
+    state.isSuccess = isSuccess;
+  },
   [UPDATE_IS_SENDING](state, isSending) {
     state.isSending = isSending;
   },
@@ -79,7 +89,22 @@ const actions = {
   updateNote({commit}, note) {
     commit(UPDATE_NOTE, note);
   },
-  async send({commit}) {
+  async send({commit, state}) {
+    commit(UPDATE_IS_SENDING, true);
+    try {
+      await announceApi.add({
+        type: state.type === 'band' ? 2 : 1,
+        note: state.note,
+        styles: state.styles.map(style => style.id),
+        instrument: state.instrument.id,
+        locationName: state.location.name,
+        longitude: state.location.longitude,
+        latitude: state.location.latitude,
+      });
+      commit(UPDATE_IS_SUCCESS, true);
+    } catch (e) {
+      console.log(e);
+    }
     commit(UPDATE_IS_SENDING, true);
   }
 };
