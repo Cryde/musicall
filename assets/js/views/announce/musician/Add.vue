@@ -1,6 +1,14 @@
 <template>
     <b-row>
-        <b-col cols="12">
+        <b-col cols="12" v-if="isSuccess">
+            <h1>Ajouter une annonce musicien</h1>
+
+            <div class="text-center p-5">
+                <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
+                Votre annonce est créée
+            </div>
+        </b-col>
+        <b-col cols="12" v-else>
             <h1>Ajouter une annonce musicien</h1>
 
             <b-row>
@@ -137,7 +145,7 @@
     computed: {
       ...mapGetters('instruments', ['instruments']),
       ...mapGetters('styles', ['styles']),
-      ...mapGetters('announceMusician', ['isSending', 'selectedInstrument', 'selectedStyles', 'selectedAnnounceTypeName', 'selectedLocationName']),
+      ...mapGetters('announceMusician', ['isSuccess', 'isSending', 'selectedInstrument', 'selectedStyles', 'selectedAnnounceTypeName', 'selectedLocationName']),
       firstStyles() {
         return [...this.styles].slice(0, 5);
       },
@@ -191,7 +199,7 @@
         this.$store.dispatch('announceMusician/updateNote', elem.target.value);
       },
       async initGoogle() {
-        const loader = new Loader('AIzaSyBsfoARa2MWlsB-1lUxwHjk6Z_4Xwcp-mQ', {
+        const loader = new Loader('AIzaSyDQvp4YIr-dH46Kjwxmy90vyGR9c9SGqJM', {
           libraries: ['places'],
           language: 'fr',
         });
