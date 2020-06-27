@@ -70,6 +70,7 @@
         if(value) {
           await this.$store.dispatch('adminPendingPublications/approvePublication', {id});
           await this.$store.dispatch('adminPendingPublications/getPublications');
+          this.$store.dispatch('notifications/loadNotifications');
         }
       },
       async confirmReject(id) {
@@ -77,6 +78,7 @@
         if(value) {
           await this.$store.dispatch('adminPendingPublications/rejectPublication', {id});
           await this.$store.dispatch('adminPendingPublications/getPublications');
+          this.$store.dispatch('notifications/loadNotifications');
         }
       }
     }
