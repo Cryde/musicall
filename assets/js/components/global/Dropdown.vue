@@ -17,6 +17,7 @@
         <b-dropdown-divider v-if="isRoleAdmin"></b-dropdown-divider>
         <b-dropdown-item v-if="isRoleAdmin" :to="{name: 'admin_dashboard'}">
             <i class="fas fa-bolt"></i> Admin
+            <b-badge variant="primary" v-if="adminCount">{{ adminCount }}</b-badge>
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item :to="{name: 'user_settings'}">Paramètres</b-dropdown-item>
@@ -40,12 +41,17 @@
         'user',
         'isRoleAdmin'
       ]),
-      ...mapGetters('notifications', ['messageCount']),
+      ...mapGetters('notifications', ['messageCount', 'pendingGalleriesCount', 'pendingPublicationsCount']),
+      adminCount() {
+        return this.pendingGalleriesCount + this.pendingPublicationsCount;
+      },
       totalCount() {
-        if (!this.messageCount) {
+        const total = this.messageCount + this.pendingGalleriesCount + this.pendingPublicationsCount;
+
+        if (!total) {
           return false;
         }
-        return this.messageCount + '';
+        return total + '';
       }
     },
     methods: {
