@@ -209,7 +209,7 @@
         this.$store.dispatch('announceMusician/updateNote', elem.target.value);
       },
       async initGoogle() {
-        const loader = new Loader('AIzaSyDQvp4YIr-dH46Kjwxmy90vyGR9c9SGqJM', {
+        const loader = new Loader('AIzaSyBsfoARa2MWlsB-1lUxwHjk6Z_4Xwcp-mQ', {
           libraries: ['places'],
           language: 'fr',
         });
