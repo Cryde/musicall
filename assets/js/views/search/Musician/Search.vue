@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-button v-if="isAuthenticated && isRoleAdmin" :to="{name: 'announce_musician_add'}"
+        <b-button v-if="isAuthenticated" :to="{name: 'announce_musician_add'}"
                   variant="primary" class="float-right">
             <i class="fas fa-bullhorn"></i> Poster une annonce
         </b-button>
