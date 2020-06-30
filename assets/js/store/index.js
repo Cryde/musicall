@@ -21,6 +21,7 @@ import artist from './modules/artist';
 import styles from './modules/styles';
 import instruments from './modules/instruments';
 import announceMusician from './modules/announceMusician';
+import userMusicianAnnounces from './modules/userMusicianAnnounces';
 
 Vue.use(Vuex);
 
@@ -49,6 +50,7 @@ export default new Vuex.Store({
     styles,
     instruments,
     announceMusician,
+    userMusicianAnnounces,
   },
   strict: debug,
 })
