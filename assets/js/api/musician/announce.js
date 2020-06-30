@@ -14,5 +14,9 @@ export default {
       latitude
     })
     .then(resp => resp.data);
+  },
+  getByCurrentUser() {
+    return axios.get(Routing.generate('api_user_announce_musician_list'))
+    .then(resp => resp.data);
   }
 }

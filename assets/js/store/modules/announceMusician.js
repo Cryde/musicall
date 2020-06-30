@@ -7,6 +7,7 @@ const UPDATE_SELECTED_ANNOUNCE_TYPE = 'UPDATE_SELECTED_ANNOUNCE_TYPE';
 const UPDATE_IS_SENDING = 'UPDATE_IS_SENDING';
 const UPDATE_IS_SUCCESS = 'UPDATE_IS_SUCCESS';
 const UPDATE_NOTE = 'UPDATE_NOTE';
+const RESET = 'RESET';
 
 const state = {
   isSending: false,
@@ -70,6 +71,17 @@ const mutations = {
     state.location.name = name;
     state.location.longitude = long;
     state.location.latitude = lat;
+  },
+  [RESET](state) {
+    state.isSending = false;
+    state.isSuccess = false;
+    state.type = '';
+    state.note = '';
+    state.instrument = '';
+    state.styles = [];
+    state.location.name = '';
+    state.location.longitude = null;
+    state.location.latitude = null;
   }
 };
 
@@ -106,6 +118,9 @@ const actions = {
       console.log(e);
     }
     commit(UPDATE_IS_SENDING, true);
+  },
+  reset({commit}) {
+    commit(RESET);
   }
 };
 

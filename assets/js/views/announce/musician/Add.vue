@@ -5,7 +5,7 @@
 
             <div class="text-center p-5">
                 <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
-                Votre annonce est créée
+                Votre annonce est créée.<br/> Vous pouvez <b-link :to="{name: 'user_musician_announce'}">retrouver vos annonces ici</b-link>
             </div>
         </b-col>
         <b-col cols="12" v-else>
@@ -170,11 +170,21 @@
         return this.selectedInstrument !== '' && this.selectedStyles.length > 0 && this.selectedAnnounceTypeName !== '' && this.selectedLocationName !== '';
       }
     },
-    mounted() {
+    async mounted() {
+      await this.$store.dispatch('announceMusician/reset');
+      this.reset();
       this.$store.dispatch('styles/loadStyles');
       this.$store.dispatch('instruments/loadInstruments');
     },
     methods: {
+      reset() {
+        this.search = '';
+        this.note = '';
+        this.band = {};
+        this.musician = {};
+        this.map = null;
+        this.seeMoreStyle = false;
+      },
       selectSearch(flow) {
         if (this.isSending) {
           return;
