@@ -13,12 +13,10 @@ import './directives/click-outside';
 import * as Sentry from '@sentry/browser';
 import { Vue as VueIntegration } from '@sentry/integrations';
 
-/*
 Sentry.init({
   dsn: 'https://a9b30a7de3c74df4a2811c7e98bfa21a@o408327.ingest.sentry.io/5278941',
   integrations: [new VueIntegration({Vue, attachProps: true})],
 });
-*/
 
 Vue.use(VueMeta, {
   // optional pluginOptions
