@@ -7,22 +7,24 @@
             <h1>{{ gallery.title }}</h1>
 
             <div class="author">
-                Photo de <strong>{{ gallery.author.username }}</strong> <span v-if="gallery.publicationDatetime">le {{ gallery.publicationDatetime | dateFormat }}</span>
+                Photo de <strong>{{ gallery.author.username }}</strong> <span v-if="gallery.publication_datetime">le {{ gallery.publication_datetime | dateFormat }}</span>
             </div>
 
             <div v-if="isLoadingImages" class="text-center pt-5">
                 <b-spinner variant="primary" label="Spinning"></b-spinner>
             </div>
             <div v-else>
-                <div class="mt-lg-4 mt-3 image-container" ref="image-container" v-show="showImages">
-                    <img
-                            v-for="(image, index) in images"
-                            v-lazy="{src: image.sizes.medium, loading: image.sizes.small}"
-                            :ref="`image-${index}`"
-                            :data-full-image="image.sizes.full"
-                            @click="openLightBox(index)"
-                    />
-                </div>
+                <vue-masonry-wall :items="images" :options="{padding: 5}" class="mt-lg-4 mt-3 image-container">
+                    <template v-slot:default="{item: image, index}">
+                        <img
+                                class="w-100"
+                                v-lazy="{src: image.sizes.medium, loading: image.sizes.small}"
+                                :ref="`image-${index}`"
+                                :data-full-image="image.sizes.full"
+                                @click="openLightBox(index)"
+                        />
+                    </template>
+                </vue-masonry-wall>
             </div>
 
             <div class="lightbox-container" :class="{'displayed': showLightBox}">
@@ -42,10 +44,11 @@
 
 <script>
   import {mapGetters} from 'vuex';
-  import Macy from 'macy';
+  import VueMasonryWall from "vue-masonry-wall";
   import {format, parseISO} from 'date-fns';
 
   export default {
+    components: {VueMasonryWall},
     metaInfo() {
       return {
         title: this.gallery.title,
@@ -56,7 +59,6 @@
     },
     data() {
       return {
-        macy: null,
         showImages: false,
         showLightBox: false,
         currentImageLightBox: null,
@@ -78,26 +80,6 @@
       await this.$store.dispatch('gallery/loadGallery', slug);
       await this.$store.dispatch('gallery/loadImages', slug);
 
-      this.macy = Macy({
-        container: this.$refs['image-container'],
-        trueOrder: false,
-        waitForImages: true,
-        margin: 14,
-        columns: 3,
-        breakAt: {
-          1200: 4,
-          940: 3,
-          520: 2,
-          400: 1
-        }
-      });
-      this.macy.runOnImageLoad(() => {
-        this.macy.recalculate(true)
-        this.$nextTick(() => {
-          this.showImages = true;
-        })
-      }, true);
-
       this.enableKeyboardNav();
     },
     methods: {
@@ -118,7 +100,7 @@
       },
       openImage() {
         this.imageLoading = true;
-        const image = this.$refs[`image-${this.currentImageIndex}`][0];
+        const image = this.$refs[`image-${this.currentImageIndex}`];
         const imageSrc = image.dataset.fullImage;
         const imageObject = new Image();
         imageObject.onload = () => {
@@ -160,7 +142,6 @@
     destroyed() {
       this.$store.dispatch('gallery/resetState');
       window.removeEventListener('keydown', this.keyboardCallback);
-      this.macy = null;
       this.showImages = false;
       this.showLightBox = false;
       this.currentImageLightBox = null;
@@ -262,6 +243,9 @@
 </style>
 
 <style>
+    .image-container {
+        max-width: 100%;
+    }
     .image-container img {
         cursor: pointer;
         transition: opacity .25s ease-in-out;
