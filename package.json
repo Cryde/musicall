@@ -28,7 +28,7 @@
         "jwt-decode": "^2.2.0",
         "lodash": "^4.17.15",
         "tippy.js": "^6.2.4",
-        "tiptap": "^1.27.1",
+        "tiptap": "^1.29.0",
         "tiptap-extensions": "^1.29.1",
         "vue": "^2.6.11",
         "vue-cookies": "^1.7.0",
