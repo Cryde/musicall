@@ -26,7 +26,7 @@
         "date-fns": "^2.14.0",
         "google-maps": "^4.3.2",
         "jwt-decode": "^2.2.0",
-        "lodash": "^4.17.15",
+        "lodash": "^4.17.19",
         "tippy.js": "^6.2.4",
         "tiptap": "^1.27.1",
         "tiptap-extensions": "^1.29.1",
