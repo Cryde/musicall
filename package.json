@@ -31,7 +31,7 @@
         "tiptap": "^1.27.1",
         "tiptap-extensions": "^1.29.1",
         "vue": "^2.6.11",
-        "vue-cookies": "^1.7.0",
+        "vue-cookies": "^1.7.2",
         "vue-gtag": "^1.7.0",
         "vue-lazyload": "^1.3.3",
         "vue-masonry-wall": "^0.2.5",
