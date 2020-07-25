@@ -34,8 +34,15 @@
                         </b-row>
                         <b-row class="align-content-end mt-2 ">
                             <b-col>
-                                <b-button class="mt-auto float-right" size="sm"
+                                <b-button v-if="isAuthenticated"
+                                          class="mt-auto float-right" size="sm"
                                           @click="openSendMessageModal(announce.user)">
+                                    Contacter
+                                </b-button>
+                                <b-button v-else class="mt-auto float-right" size="sm"
+                                          v-b-tooltip.noninteractive.hover
+                                          title="Vous devez être inscrit ou connecté pour contacter un utilisateur"
+                                >
                                     Contacter
                                 </b-button>
                                 <b-button v-if="announce.note" class="mt-auto float-right mr-2" size="sm">
