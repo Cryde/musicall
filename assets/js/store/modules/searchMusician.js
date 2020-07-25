@@ -80,6 +80,7 @@ const mutations = {
     state.type = '';
     state.instrument = '';
     state.styles = [];
+    state.results = [];
     state.location.longitude = null;
     state.location.latitude = null;
   }

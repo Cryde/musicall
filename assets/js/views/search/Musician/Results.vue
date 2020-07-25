@@ -1,7 +1,11 @@
 <template>
-    <b-col cols="12" v-if="!isSuccess" class="pt-5 pb-4">
-        <span v-if="!isSearching">Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens.</span>
-        <div v-else class="text-center">
+    <b-col xl="8" offset-xl="2" v-if="!isSuccess" class="pt-5 pb-4">
+        <b-alert variant="info" show v-if="!isSearching" class="mt-5">
+            <i class="fas fa-filter fa-3x mr-3 mt-3 mb-1 float-left"></i>
+            Cherchez parmis + de 2000 annonces des musiciens ou groupes.
+            Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
+        </b-alert>
+        <div v-else class="text-center mt-5">
             <b-spinner/>
         </div>
     </b-col>
@@ -55,8 +59,7 @@
 
                         Vous ne trouvez pas ce que vous chercher ?<br/>
                         N'hésitez pas à
-                        <b-link :to="{name: 'announce_musician_add'}">poster une annonce gratuitement</b-link>
-                        .
+                        <b-link :to="{name: 'announce_musician_add'}">poster une annonce gratuitement.</b-link>
                     </b-alert>
                 </b-col>
             </b-row>
