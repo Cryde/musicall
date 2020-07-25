@@ -12,6 +12,7 @@ import VueGtag from "vue-gtag";
 import './directives/click-outside';
 import * as Sentry from '@sentry/browser';
 import { Vue as VueIntegration } from '@sentry/integrations';
+import * as GmapVue from 'gmap-vue'
 
 Sentry.init({
   dsn: 'https://a9b30a7de3c74df4a2811c7e98bfa21a@o408327.ingest.sentry.io/5278941',
@@ -29,6 +30,14 @@ Vue.use(VueLazyload);
 Vue.use(VueGtag, {
   config: { id: "UA-4980079-1" }
 }, router);
+
+Vue.use(GmapVue, {
+  load: {
+    key: 'AIzaSyC-nabI-pVih-bF20ApW1tIZWUmhcSc3jM',
+    libraries: 'places',
+  },
+  installComponents: true
+})
 
 
 Vue.filter('relativeDate', relativeDateFilter);

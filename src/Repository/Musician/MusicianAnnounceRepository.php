@@ -3,6 +3,8 @@
 namespace App\Repository\Musician;
 
 use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\User;
+use App\Model\Search\Musician;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,32 +21,43 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
         parent::__construct($registry, MusicianAnnounce::class);
     }
 
-    // /**
-    //  * @return MusicianAnnounce[] Returns an array of MusicianAnnounce objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param Musician  $musician
+     * @param User|null $currentUser
+     * @param int       $limit
+     *
+     * @return int|mixed|string
+     */
+    public function findByCriteria(Musician $musician, ?User $currentUser, int $limit = 10)
     {
-        return $this->createQueryBuilder('m')
-            ->andWhere('m.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('m.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $qb = $this->createQueryBuilder('musician_announce')
+            ->select('musician_announce')
+            ->where('musician_announce.instrument = :instrument')
+            ->andWhere('musician_announce.type = :type')
+            ->setParameter('type', $musician->getType())
+            ->setParameter('instrument', $musician->getInstrument())
+            ->setMaxResults($limit);
 
-    /*
-    public function findOneBySomeField($value): ?MusicianAnnounce
-    {
-        return $this->createQueryBuilder('m')
-            ->andWhere('m.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if ($currentUser) {
+            $qb->andWhere('musician_announce.author != :current_user')
+                ->setParameter('current_user', $currentUser);
+        }
+
+        if ($styles = $musician->getStyles()) {
+            $qb->leftJoin('musician_announce.styles', 'styles')
+                ->andWhere('styles IN (:styles)')
+                ->addSelect('styles')
+                ->setParameter('styles', $styles);
+        }
+
+        if ($musician->getLatitude() && $musician->getLongitude()) {
+            $qb->addSelect("
+            ST_DISTANCE(ST_GeomFromText(:point), ST_POINT(musician_announce.longitude, musician_announce.latitude)) as distance
+            ")
+                ->setParameter('point', 'POINT(' . $musician->getLongitude() . ' ' . $musician->getLatitude() . ')')
+                ->orderBy('distance', 'ASC');
+        }
+
+        return $qb->getQuery()->getResult();
     }
-    */
 }

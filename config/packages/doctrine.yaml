@@ -21,3 +21,6 @@ doctrine:
         dql:
             string_functions:
                 MATCH_AGAINST: App\Extensions\Doctrine\MatchAgainst
+                ST_Distance: App\Extensions\Doctrine\STDistance
+                ST_GeomFromText: App\Extensions\Doctrine\STGeomFromText
+                ST_Point: App\Extensions\Doctrine\STPoint
