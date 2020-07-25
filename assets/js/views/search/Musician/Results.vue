@@ -34,8 +34,12 @@
                         </b-row>
                         <b-row class="align-content-end mt-2 ">
                             <b-col>
-                                <b-button class="mt-auto float-right" size="sm">Contacter</b-button>
-                                <b-button v-if="announce.note" class="mt-auto float-right mr-2" size="sm">Voir la note
+                                <b-button class="mt-auto float-right" size="sm"
+                                          @click="openSendMessageModal(announce.user)">
+                                    Contacter
+                                </b-button>
+                                <b-button v-if="announce.note" class="mt-auto float-right mr-2" size="sm">
+                                    Voir la note
                                 </b-button>
                             </b-col>
                         </b-row>
@@ -64,13 +68,25 @@
                 </b-col>
             </b-row>
         </div>
+        <send-message-modal
+                v-if="selectedRecipient && isAuthenticated"
+                :selected-recipient="selectedRecipient"
+                :show-is-sent-confirmation="true"
+        />
     </b-col>
 </template>
 
 <script>
   import {mapGetters} from "vuex";
+  import SendMessageModal from "../../message/modal/SendMessageModal";
 
   export default {
+    components: {SendMessageModal},
+    data() {
+      return {
+        selectedRecipient: null,
+      }
+    },
     computed: {
       ...mapGetters('searchMusician', ['isSearching', 'isSuccess', 'results']),
       ...mapGetters('security', ['isAuthenticated']),
@@ -79,6 +95,14 @@
       formatDistance(distance) {
         const formattedDistance = (parseFloat(distance) * 100).toFixed(2);
         return `± ${formattedDistance} km`;
+      }
+    },
+    methods: {
+      openSendMessageModal(recipient) {
+        this.selectedRecipient = recipient;
+        this.$nextTick(() => {
+          this.$bvModal.show('modal-send-message');
+        })
       }
     }
   }

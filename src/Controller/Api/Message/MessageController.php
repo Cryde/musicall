@@ -105,9 +105,9 @@ class MessageController extends AbstractController
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-        /** @var User $user */
-        $user = $this->getUser();
-        $message = $messageSenderProcedure->process($user, $user, $messageModel->getContent());
+        /** @var User $currentUser */
+        $currentUser = $this->getUser();
+        $message = $messageSenderProcedure->process($currentUser, $user, $messageModel->getContent());
 
         return $this->getMessageResponse($message);
     }
