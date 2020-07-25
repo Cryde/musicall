@@ -81,9 +81,6 @@
     methods: {
       async append() {
         return this.publications;
-        console.log('appned !!');
-        //await this.fetchData();
-       // return this.publications;
       },
       pageTitle() {
         if (this.isHome) {
