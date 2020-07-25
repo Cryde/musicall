@@ -163,6 +163,9 @@
       send() {
         this.$store.dispatch('searchMusician/search');
       }
+    },
+    destroyed() {
+      this.$store.dispatch('searchMusician/reset');
     }
   }
 </script>
