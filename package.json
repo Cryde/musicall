@@ -2,7 +2,7 @@
     "devDependencies": {
         "@symfony/webpack-encore": "^0.30.2",
         "core-js": "^3.0.0",
-        "regenerator-runtime": "^0.13.2",
+        "regenerator-runtime": "^0.13.7",
         "vue-loader": "^15.9.3",
         "vue-template-compiler": "^2.6.11",
         "webpack-notifier": "^1.8.0"
@@ -11,19 +11,19 @@
     "private": true,
     "scripts": {
         "dev-server": "encore dev-server",
-        "dev-server-hot": "encore dev-server --hot --port 9000",
+        "dev-server-hot": "encore dev-server --hot",
         "dev": "encore dev",
         "watch": "encore dev --watch",
         "build": "encore production --progress"
     },
     "dependencies": {
-        "@sentry/browser": "^5.19.2",
-        "@sentry/integrations": "^5.19.2",
+        "@sentry/browser": "^5.20.1",
+        "@sentry/integrations": "^5.20.1",
         "autolinker": "^3.14.1",
         "axios": "^0.19.2",
         "bootstrap": "^4.5.0",
         "bootstrap-vue": "^2.15.0",
-        "date-fns": "^2.14.0",
+        "date-fns": "^2.15.0",
         "gmap-vue": "^1.0.0",
         "google-maps": "^4.3.2",
         "jwt-decode": "^2.2.0",
@@ -32,7 +32,7 @@
         "tiptap": "^1.29.1",
         "tiptap-extensions": "^1.31.1",
         "vue": "^2.6.11",
-        "vue-cookies": "^1.7.2",
+        "vue-cookies": "^1.7.3",
         "vue-gtag": "^1.8.0",
         "vue-lazyload": "^1.3.3",
         "vue-masonry-wall": "^0.2.5",
