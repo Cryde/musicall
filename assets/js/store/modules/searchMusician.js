@@ -107,7 +107,10 @@ const actions = {
     commit(UPDATE_IS_SUCCESS, false);
     try {
       const results = await musicianApi.getResults({
-        type: state.type === TYPES_ANNOUNCE_BAND_LABEL ? TYPES_ANNOUNCE_BAND : TYPES_ANNOUNCE_MUSICIAN,
+        // we need to reverse the search because
+        // when the announce search a band it mean it's a musician
+        // so we search a musician
+        type: state.type === TYPES_ANNOUNCE_BAND_LABEL ? TYPES_ANNOUNCE_MUSICIAN : TYPES_ANNOUNCE_BAND,
         instrument: state.instrument,
         styles: state.styles ? state.styles.map(item => item.id) : [],
         latitude: state.location.latitude,
