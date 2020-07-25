@@ -22,7 +22,7 @@
                             <b-col cols="3" class="text-center">
                                 <b-avatar></b-avatar>
                                 <br/>
-                                <span class="mt-2 d-inline-block">{{ announce.user.username }}</span>
+                                <span class="mt-2 d-inline-block text-truncate w-100">{{ announce.user.username }}</span>
                             </b-col>
                             <b-col>
                                 <strong>Localisation:</strong> {{ announce.location_name }}<br/>
