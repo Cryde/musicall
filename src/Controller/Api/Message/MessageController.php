@@ -155,7 +155,7 @@ class MessageController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (!$messages = $messageRepository->findBy(['thread' => $thread])) {
+        if (!$messages = $messageRepository->findBy(['thread' => $thread], ['creationDatetime' => 'ASC'])) {
             throw new \UnexpectedValueException('Ce thread n\'existe pas.');
         }
 
