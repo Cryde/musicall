@@ -16,11 +16,11 @@ class Musician
      */
     private $type;
     /**
-     * @var int
+     * @var string
      */
     private $instrument;
     /**
-     * @var int[]
+     * @var string[]
      */
     private $styles;
     /**
@@ -53,19 +53,19 @@ class Musician
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getInstrument(): int
+    public function getInstrument(): string
     {
         return $this->instrument;
     }
 
     /**
-     * @param int $instrument
+     * @param string $instrument
      *
      * @return Musician
      */
-    public function setInstrument(int $instrument): Musician
+    public function setInstrument(string $instrument): Musician
     {
         $this->instrument = $instrument;
 
@@ -73,7 +73,7 @@ class Musician
     }
 
     /**
-     * @return int[]
+     * @return string[]
      */
     public function getStyles(): array
     {
@@ -81,7 +81,7 @@ class Musician
     }
 
     /**
-     * @param int[] $styles
+     * @param string[] $styles
      *
      * @return Musician
      */
