@@ -40,6 +40,7 @@ class MusicianSearchArraySerializer
             'note'          => $this->onlybrPurifier->purify(nl2br($musicianAnnounce->getNote())),
             'user'          => $this->userSearchArraySerializer->toArray($musicianAnnounce->getAuthor()),
             'instrument'    => $musicianAnnounce->getInstrument()->getName(),
+            'type'          => $musicianAnnounce->getType(),
             'styles'        => $this->formatStyle($musicianAnnounce->getStyles()),
         ];
     }
