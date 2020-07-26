@@ -28,7 +28,7 @@
                                 <strong>Localisation:</strong> {{ announce.location_name }}<br/>
                                 <strong v-if="announce.distance">Distance:</strong>
                                 <span v-if="announce.distance">{{ announce.distance | formatDistance }}<br/></span>
-                                <strong>Instrument:</strong> {{ announce.instrument }}<br/>
+                                <strong>{{ announce.type | instrumentLabel }}:</strong> {{ announce.instrument }}<br/>
                                 <strong>Styles:</strong> {{ announce.styles }}<br/>
                             </b-col>
                         </b-row>
@@ -85,6 +85,7 @@
 
 <script>
   import {mapGetters} from "vuex";
+  import {TYPES_ANNOUNCE_MUSICIAN, TYPES_ANNOUNCE_BAND} from "../../../constants/types";
   import SendMessageModal from "../../message/modal/SendMessageModal";
 
   export default {
@@ -102,6 +103,15 @@
       formatDistance(distance) {
         const formattedDistance = (parseFloat(distance) * 100).toFixed(2);
         return `± ${formattedDistance} km`;
+      },
+      instrumentLabel(type) {
+        if(type === TYPES_ANNOUNCE_MUSICIAN) {
+          return 'Instrument cherché';
+        }
+
+        if(type === TYPES_ANNOUNCE_BAND) {
+          return 'Instrument joué';
+        }
       }
     },
     methods: {
