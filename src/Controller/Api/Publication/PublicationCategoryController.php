@@ -12,8 +12,16 @@ use Symfony\Component\Routing\Annotation\Route;
 class PublicationCategoryController extends AbstractController
 {
     /**
-     * @Route("/api/publications/categories", name="api_publication_category_list", methods={"GET"}, options={"expose": true})
+     * @Route(
+     *     "/api/publications/categories",
+     *     name="api_publication_category_list",
+     *     methods={"GET"},
+     *     options={"expose": true},
+     *     priority=30
+     * )
+     *
      * @Cache(expires="+2 weeks", public=true)
+     *
      * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
      *
      * @return JsonResponse
