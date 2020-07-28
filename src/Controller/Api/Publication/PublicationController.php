@@ -16,7 +16,12 @@ class PublicationController extends AbstractController
     const LIMIT_PUBLICATION_BY_PAGE = 15;
 
     /**
-     * @Route("api/publications/{slug}", name="api_publications_show", options={"expose":true})
+     * @Route(
+     *     "/api/publications/{slug}",
+     *     name="api_publications_show",
+     *     options={"expose":true},
+     *     priority=2
+     * )
      *
      * @param Publication   $publication
      * @param \HTMLPurifier $purifier
@@ -68,7 +73,12 @@ class PublicationController extends AbstractController
     }
 
     /**
-     * @Route("api/publications/category/{slug}", name="api_publications_list_by_category", options={"expose":true})
+     * @Route(
+     *     "/api/publications/category/{slug}",
+     *     name="api_publications_list_by_category",
+     *     options={"expose":true},
+     *     priority=1
+     * )
      *
      * @param Request                $request
      * @param PublicationSubCategory $publicationSubCategory
