@@ -1,7 +1,7 @@
 # [MusicAll](https://www.musicall.com)
 
 Community website powered by the Symfony 5 & PHP.  
-MusicAll is a platform where people can share video, article, cours, search musician & talk with them.
+MusicAll is a platform where people can share videos, articles, courses, search musicians or band & talk with them.
 
 ## Getting Started
 
@@ -72,3 +72,8 @@ Start the local dev server
 bin/console server:start
 ```
 You will get a message like : ``` [OK] Server listening on http://127.0.0.1:8000```
+
+## TODO
+
+- [ ] Create fixtures
+- [ ] Create a docker 
