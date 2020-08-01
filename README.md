@@ -37,7 +37,7 @@ You will have to initialize your JWT configuration.
 Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/master/Resources/doc/index.md#generate-the-ssh-keys
 
 
-Configure you ```.env.dev.local``` file (I only put important values here) :
+Configure you ```.env.local``` file (I only put important values here) :
 ```
 APP_ENV=dev
 APP_SECRET=thisissecretchangeit
