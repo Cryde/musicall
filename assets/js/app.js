@@ -52,7 +52,11 @@ new Vue({
   metaInfo: () => ({
     title: 'MusicAll, le site de référence au service de la musique',
     meta: [
-      {vmid: 'description', name: 'description', 'content': 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...'}
+      {vmid: 'description', name: 'description', 'content': 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...'},
+      { property: "og:type", content: 'website' },
+      { property: "og:locale", content: 'fr_FR' },
+      { property: "og:image", content: window.location.origin + '/build/images/facebook-logo.jpg' },
+      { property: "og:site_name", content: 'MusicAll' },
     ]
   })
 }).$mount("#app");

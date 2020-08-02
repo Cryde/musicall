@@ -26,7 +26,9 @@
       return {
         title: this.publication.title,
         meta: [
-          {vmid: 'description', name: 'description', content: this.publication.description}
+          {vmid: 'description', name: 'description', content: this.publication.description},
+          { property: "og:title", content: this.publication.title },
+          { property: "og:description", content: this.publication.description },
         ]
       }
     },
