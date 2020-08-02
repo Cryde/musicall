@@ -29,11 +29,14 @@
                 <div class="col-lg-2 mt-3 mt-lg-0">
                     <h3><a href=""><i class="fas fa-graduation-cap fa-fw"></i> Cours</a></h3>
                     <ul>
-                        <li><a href="/cours/guitare">Guitare</a></li>
-                        <li><a href="/cours/basse">Basse</a></li>
-                        <li><a href="/cours/mao">MAO</a></li>
-                        <li><a href="/cours/batterie">Batterie</a></li>
-                        <li><a href="/cours/divers">Divers</a></li>
+                      <li v-if="isLoading">
+                        <b-spinner small type="grow"></b-spinner>
+                      </li>
+                      <li v-else v-for="category in courseCategories">
+                        <router-link :to="{name: 'course_by_category', params: { slug: category.slug}}">
+                          {{ category.title }}
+                        </router-link>
+                      </li>
                     </ul>
                 </div>
                 <div class="col-lg-2 mt-3 mt-lg-0">
@@ -65,14 +68,15 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex';
+import {mapGetters} from 'vuex';
 
-  export default {
-    computed: {
-      ...mapGetters('publicationCategory', [
-        'isLoading',
-        'publicationCategories'
-      ])
-    }
+export default {
+  computed: {
+    ...mapGetters('publicationCategory', [
+      'isLoading',
+      'publicationCategories',
+      'courseCategories'
+    ])
   }
+}
 </script>
