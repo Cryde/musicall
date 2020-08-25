@@ -14,10 +14,12 @@ import * as Sentry from '@sentry/browser';
 import { Vue as VueIntegration } from '@sentry/integrations';
 import * as GmapVue from 'gmap-vue'
 
-Sentry.init({
-  dsn: 'https://a9b30a7de3c74df4a2811c7e98bfa21a@o408327.ingest.sentry.io/5278941',
-  integrations: [new VueIntegration({Vue, attachProps: true})],
-});
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [new VueIntegration({Vue, attachProps: true})],
+  });
+}
 
 Vue.use(VueMeta, {
   // optional pluginOptions
@@ -33,7 +35,7 @@ Vue.use(VueGtag, {
 
 Vue.use(GmapVue, {
   load: {
-    key: 'AIzaSyC-nabI-pVih-bF20ApW1tIZWUmhcSc3jM',
+    key: process.env.GOOGLE_API_KEY_FRONT,
     libraries: 'places',
   },
   installComponents: true
