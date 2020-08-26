@@ -25,7 +25,7 @@
         "bootstrap-vue": "^2.16.0",
         "date-fns": "^2.15.0",
         "dotenv-flow": "^3.2.0",
-        "gmap-vue": "^1.0.0",
+        "gmap-vue": "^1.4.0",
         "google-maps": "^4.3.2",
         "jwt-decode": "^2.2.0",
         "lodash": "^4.17.19",
