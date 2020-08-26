@@ -22,6 +22,7 @@ add('shared_dirs', [
 ]);
 
 add('shared_files', [
+    '.env',
     '.env.local',
     'config/jwt/private.pem',
     'config/jwt/public.pem',
