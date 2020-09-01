@@ -14,9 +14,16 @@
         <b-row class="mt-lg-5">
             <b-col cols="12" xl="5" order-xl="1" order="2" class="mt-2 mt-lg-0">
                 <span class="d-block">Je recherche</span>
-                <v-select :options="optionsType"
-                          class="bg-white"
-                          @input="changeType"></v-select>
+                 <b-row no-gutters>
+                  <div class="col-lg-6 col-12 mb-1 mb-lg-0 mt-2"
+                       :class="{'pr-lg-1': i === 0, 'selected' : selectedTypeName === option.value}"
+                       @click="changeType(option)"
+                       v-for="(option, i) in optionsType">
+                  <span class="btn-selection-type w-100">
+                    {{ option.label }}
+                  </span>
+                  </div>
+                </b-row>
 
                 <div v-if="selectedTypeName">
                     <span class="d-block mt-3" v-if="selectedTypeName === 'band'">Je suis</span>
@@ -71,19 +78,17 @@
 </template>
 
 <script>
-  import {mapGetters} from 'vuex';
-  import {gmapApi} from 'gmap-vue'
-  import vSelect from "vue-select";
-  import Results from './Results';
+import {mapGetters} from 'vuex';
+import vSelect from "vue-select";
+import Results from './Results';
 
-  export default {
+export default {
     components: {vSelect, Results},
     computed: {
       ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching']),
       ...mapGetters('instruments', ['instruments']),
       ...mapGetters('styles', ['styles']),
       ...mapGetters('security', ['isAuthenticated']),
-      google: gmapApi,
       canSearch() {
         return (this.selectedTypeName && this.selectedInstrument);
       },
@@ -173,5 +178,21 @@
 <style>
     .vue-map {
         height: 100%
+    }
+
+    .selected .btn-selection-type{
+      background: #97C2E8;
+      color: white;
+    }
+
+    .btn-selection-type {
+      padding: 5px 10px;
+      text-align: center;
+      display: inline-block;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+      transition: all 200ms;
+      border-radius: 0.25rem;
     }
 </style>
