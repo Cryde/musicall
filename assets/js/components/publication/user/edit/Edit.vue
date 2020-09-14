@@ -179,37 +179,37 @@
         <UploadModal ref="uploadModal" @onConfirm="addCommand" :id="id"/>
         <VideoModal ref="videoModal" @onConfirm="addCommand"/>
         <EditModal :id="id" :title="title" :description="description" :cover="cover"
-                   :validation="validation"
+                   :publication-errors="errors"
                    :submitted="submitted"
                    v-on:saveProperties="saveProperties"/>
     </div>
 </template>
 
 <script>
-  import Sticky from 'vue-sticky-directive';
-  import {Editor, EditorContent, EditorMenuBar, EditorMenuBubble} from 'tiptap'
-  import {
-    Blockquote,
-    Bold,
-    BulletList,
-    HardBreak,
-    Heading,
-    History,
-    HorizontalRule,
-    Image,
-    Italic,
-    Link,
-    ListItem,
-    OrderedList
-  } from 'tiptap-extensions';
-  import UploadModal from './UploadModal';
-  import VideoModal from './VideoModal';
-  import EditModal from './EditModal';
-  import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
-  import Align from "../../../../tiptap/Align";
-  import userPublication from "../../../../api/userPublication";
+import Sticky from 'vue-sticky-directive';
+import {Editor, EditorContent, EditorMenuBar, EditorMenuBubble} from 'tiptap'
+import {
+  Blockquote,
+  Bold,
+  BulletList,
+  HardBreak,
+  Heading,
+  History,
+  HorizontalRule,
+  Image,
+  Italic,
+  Link,
+  ListItem,
+  OrderedList
+} from 'tiptap-extensions';
+import UploadModal from './UploadModal';
+import VideoModal from './VideoModal';
+import EditModal from './EditModal';
+import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
+import Align from "../../../../tiptap/Align";
+import userPublication from "../../../../api/userPublication";
 
-  export default {
+export default {
     components: {
       EditorContent,
       EditorMenuBar,
@@ -257,12 +257,7 @@
         slug: '',
         linkUrl: null,
         linkMenuIsActive: false,
-        validation: {
-          title: {
-            state: null,
-            message: '',
-          }
-        }
+        errors: [],
       }
     },
     async mounted() {
@@ -293,13 +288,13 @@
           }
         });
       },
-      save() {
+      async save() {
         this.submitted = true;
-        const publication = {'title': this.title, 'short_description': this.description, 'content': this.content};
+        const data = {'title': this.title, 'short_description': this.description, 'content': this.content};
 
-        this.resetValidationState();
-        return userPublication.savePublication({id: this.getPublicationId(), data: publication})
-        .then(publication => {
+        this.resetErrors();
+        try {
+          const publication = await userPublication.savePublication({id: this.getPublicationId(), data});
           this.slug = publication.slug;
           this.submitted = false;
           this.$bvToast.toast('Votre publication a été enregistrée', {
@@ -311,13 +306,14 @@
           });
 
           return true;
-        })
-        .catch(violation => {
+        } catch (e) {
           this.submitted = false;
-          if (violation.data.errors.violations) {
-            this.displayErrors(violation.data.errors.violations);
-          }
-        });
+          this.errors = e.response.data.violations.map(violation => violation.title);
+          return false;
+        }
+      },
+      publish() {
+
       },
       openUploadModal(command) {
         this.$refs.uploadModal.openModal(command);
@@ -342,11 +338,8 @@
           this.validation[propertyPath].message = message;
         }
       },
-      resetValidationState() {
-        this.validation.title = {
-          state: null,
-          message: ''
-        }
+      resetErrors() {
+        this.errors = [];
       },
       showLinkMenu(attrs) {
         this.linkUrl = attrs.href
