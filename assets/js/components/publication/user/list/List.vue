@@ -86,30 +86,7 @@
         </div>
         <add-publication-modal/>
         <add-video-modal/>
-
-        <b-modal id="modal-publication-control" centered title="Publier la publication">
-            <div v-if="loadingControlPublication" class="p-5 text-center">
-                <b-spinner label="Spinning"></b-spinner>
-            </div>
-            <div v-else>
-                <div v-if="errors.length">
-                    <ul>
-                        <li v-for="error in errors">{{ error }}</li>
-                    </ul>
-                </div>
-                <div v-else class="text-center">
-                    <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
-                    Votre publication a été publiée !
-                </div>
-            </div>
-
-
-            <template slot="modal-footer" slot-scope="{ ok, cancel, hide }">
-                <b-button variant="default" @click="cancel()">
-                    Fermer
-                </b-button>
-            </template>
-        </b-modal>
+        <publish-modal :errors="errors" :loading="loadingControlPublication"/>
     </div>
 </template>
 
@@ -119,9 +96,10 @@
   import AddPublicationModal from './AddPublicationModal';
   import AddVideoModal from './AddVideoModal';
   import {mapGetters} from 'vuex';
+  import PublishModal from "./PublishModal";
 
   export default {
-    components: {AddPublicationModal, AddVideoModal, vSelect},
+    components: {PublishModal, AddPublicationModal, AddVideoModal, vSelect},
     data() {
       return {
         status: [{label:'Brouillon', id: 0},{label:'Publié', id: 1},{label:'En validation', id: 2},],
