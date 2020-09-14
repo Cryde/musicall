@@ -342,13 +342,6 @@
           this.validation[propertyPath].message = message;
         }
       },
-      async handleErrors(response) {
-        if (!response.ok) {
-          const data = await response.json();
-          return Promise.reject(data)
-        }
-        return response;
-      },
       resetValidationState() {
         this.validation.title = {
           state: null,
