@@ -1,5 +1,6 @@
 exercise_html_purifier:
-    # full configuration reference: http://htmlpurifier.org/live/configdoc/plain.html
+    default_cache_serializer_path: '%kernel.cache_dir%/htmlpurifier'
+
     html_profiles:
         default:
             config:
