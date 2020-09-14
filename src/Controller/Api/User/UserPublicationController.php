@@ -307,7 +307,7 @@ class UserPublicationController extends AbstractController
         $errors = $validator->validate($publication);
 
         if (count($errors) > 0) {
-            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
         $this->getDoctrine()->getManager()->flush();

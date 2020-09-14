@@ -3,12 +3,13 @@
              title="Propriété de la publication">
 
         <div>
+            <b-alert v-show="publicationErrors.length" variant="danger" show>
+              <span v-for="error in publicationErrors" class="d-block">{{ error }}</span>
+            </b-alert>
+
             <b-form-group description="Le titre de votre publication">
-                <b-form-input v-model="currentTitle" :state="validation.title.state"
+                <b-form-input v-model="currentTitle"
                               placeholder="Votre titre ici"></b-form-input>
-                <b-form-invalid-feedback :state="validation.title.state">
-                    {{ validation.title.message }}
-                </b-form-invalid-feedback>
             </b-form-group>
 
             <b-form-group description="Cette courte description apparaitra sur la page d'accueil">
@@ -71,7 +72,7 @@
     components: {
       vueDropzone: vue2Dropzone
     },
-    props: ['id', 'title', 'description', 'validation', 'cover', 'submitted'],
+    props: ['id', 'title', 'description', 'publicationErrors', 'cover', 'submitted'],
     data() {
       return {
         currentTitle: '',
