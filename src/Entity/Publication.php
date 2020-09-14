@@ -108,6 +108,7 @@ class Publication
     private $images;
 
     /**
+     * @Assert\NotNull(groups={"publication"}, message="Vous devez ajouter une image de cover")
      * @ORM\OneToOne(targetEntity="App\Entity\Image\PublicationCover", cascade={"persist", "remove"}, orphanRemoval=true)
      */
     private $cover;
