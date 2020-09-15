@@ -217,9 +217,6 @@
     "php-http/discovery": {
         "version": "1.8.0"
     },
-    "php-http/guzzle6-adapter": {
-        "version": "v2.0.1"
-    },
     "php-http/httplug": {
         "version": "2.1.0"
     },
