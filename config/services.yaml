@@ -53,3 +53,7 @@ services:
         arguments:
             $email: '%env(MAIL_NO_REPLY_EMAIL)%'
             $name: '%env(MAIL_NO_REPLY_NAME)%'
+    gesdinet.jwtrefreshtoken.refresh_token_manager:
+        class: App\Doctrine\RefreshTokenManager
+        public: true
+        arguments: [ '@doctrine.orm.default_entity_manager', 'Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken']
