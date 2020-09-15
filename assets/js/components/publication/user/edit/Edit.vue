@@ -156,7 +156,14 @@
                                 </b-button>
                             </b-button-group>
 
-                            <b-button variant="outline-success" size="sm" class="float-right" @click="save"
+                            <b-button variant="outline-success" size="sm" class="float-right" @click="publish"
+                                      :disabled="submitted">
+                              <b-spinner small v-if="submitted"></b-spinner>
+                              <i class="far fa-paper-plane" v-else></i>
+                              Publier
+                            </b-button>
+
+                            <b-button variant="outline-success" size="sm" class="float-right mr-1" @click="save"
                                       :disabled="submitted">
                                 <b-spinner small v-if="submitted"></b-spinner>
                                 <i class="far fa-save" v-else></i>
@@ -182,6 +189,10 @@
                    :publication-errors="errors"
                    :submitted="submitted"
                    v-on:saveProperties="saveProperties"/>
+      <publish-modal
+          :errors="publishErrors"
+          :loading="isPublishing"
+          ></publish-modal>
     </div>
 </template>
 
@@ -208,9 +219,12 @@ import EditModal from './EditModal';
 import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
 import Align from "../../../../tiptap/Align";
 import userPublication from "../../../../api/userPublication";
+import userPublicationApi from "../../../../api/userPublication";
+import PublishModal from "../list/PublishModal";
 
 export default {
     components: {
+      PublishModal,
       EditorContent,
       EditorMenuBar,
       EditorMenuBubble,
@@ -258,12 +272,18 @@ export default {
         linkUrl: null,
         linkMenuIsActive: false,
         errors: [],
+        publishErrors: [],
+        isPublishing: false,
       }
     },
     async mounted() {
 
       try {
         const publication = await userPublication.getPublication(this.getPublicationId());
+        if (publication.status_id === 2 || publication.status_id === 1) { // online / pending review
+          this.$router.push({name: 'user_publications'});
+          return;
+        }
         this.id = publication.id;
         this.content = publication.content;
         this.editor.setContent(publication.content);
@@ -312,8 +332,35 @@ export default {
           return false;
         }
       },
-      publish() {
+      async publish() {
+        this.publishErrors = [];
+        const value = await this.$bvModal.msgBoxConfirm('Une fois mise en ligne vous ne pourrez plus modifier la publication.', {
+          title: 'Êtes vous sur ?',
+          okTitle: 'Oui',
+          cancelTitle: 'Annuler',
+          centered: true
+        });
 
+        if (!value) {
+          return;
+        }
+
+        try {
+          this.isPublishing = true;
+          const saved = await this.save();
+          if (saved) {
+            this.$bvModal.show('modal-publication-control');
+            await userPublicationApi.publishPublicationApi(this.getPublicationId());
+            this.isPublishing = false;
+            setTimeout(() => {
+              this.$router.push({name: 'user_publications'});
+            }, 2000);
+            return;
+          }
+        } catch (e) {
+          this.publishErrors = e.response.data.violations.map(violation => violation.title);
+          this.isPublishing = false;
+        }
       },
       openUploadModal(command) {
         this.$refs.uploadModal.openModal(command);
