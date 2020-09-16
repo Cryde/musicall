@@ -73,9 +73,27 @@
 
                     <b-col xl="8" offset-xl="2" class="mt-5 text-center">
                         <h2 class="mb-3">{{ titles[search].localisation }}</h2>
-                        <input type="text" class="form-control" ref="search" :disabled="isSending"/>
-                        <div class="text-left text-info">Indiquez de préférence une ville ou commune.</div>
-                        <div id="map" ref="map" style="height: 400px" class="mt-3"></div>
+                        <gmap-autocomplete @place_changed="changePlace"
+                                           :disabled="isSending"
+                                           class="form-control">
+                        </gmap-autocomplete>
+
+
+                      <div class="text-left text-info">Indiquez de préférence une ville ou commune.</div>
+
+                        <GmapMap
+                            ref="map"
+                            class="mb-2"
+                            :center="map.center"
+                            :zoom="map.zoom"
+                            style="width: 100%; height: 400px"
+                        >
+                          <gmap-info-window :options="map.infoOptions" :position="map.infoWindowPos"
+                                            :opened="map.infoWinOpen"></gmap-info-window>
+
+                          <Gmap-Marker v-if="map.place.latitude" :label="map.place.name"
+                                       :position="{lat: map.place.latitude, lng: map.place.longitude}"></Gmap-Marker>
+                        </GmapMap>
                     </b-col>
 
                     <b-col xl="8" offset-xl="2" class="mt-5 text-center">
@@ -128,7 +146,6 @@
 <script>
   import {mapGetters} from 'vuex';
   import {FadeTransition} from 'vue2-transitions';
-  import {Loader} from 'google-maps';
 
   export default {
     components: {FadeTransition},
@@ -138,7 +155,25 @@
         note: '',
         band: {},
         musician: {},
-        map: null,
+        map: {
+          zoom: 13,
+          center: {lat: 50.8504500, lng: 4.3487800},
+          infoWinOpen: false,
+          infoWindowPos: null,
+          infoOptions: {
+            content: '',
+            pixelOffset: {
+              width: 0,
+              height: -35
+            }
+          },
+          place: {
+            icon: null,
+            name: '',
+            latitude: null,
+            longitude: null,
+          }
+        },
         seeMoreStyle: false,
       }
     },
@@ -175,6 +210,7 @@
       this.reset();
       this.$store.dispatch('styles/loadStyles');
       this.$store.dispatch('instruments/loadInstruments');
+      this.selectSearch('musician');
     },
     methods: {
       reset() {
@@ -182,7 +218,25 @@
         this.note = '';
         this.band = {};
         this.musician = {};
-        this.map = null;
+        this.map = {
+          zoom: 13,
+          center: {lat: 50.8504500, lng: 4.3487800},
+          infoWinOpen: false,
+          infoWindowPos: null,
+          infoOptions: {
+            content: '',
+            pixelOffset: {
+              width: 0,
+              height: -35
+            }
+          },
+          place: {
+            icon: null,
+            name: '',
+            latitude: null,
+            longitude: null,
+          }
+        };
         this.seeMoreStyle = false;
       },
       selectSearch(flow) {
@@ -191,7 +245,6 @@
         }
         this.search = flow;
         this.$store.dispatch('announceMusician/updateAnnounceType', flow);
-        !this.map && this.initGoogle();
       },
       selectInstrument(instrument) {
         if (this.isSending) {
@@ -208,86 +261,38 @@
       updateNote(elem) {
         this.$store.dispatch('announceMusician/updateNote', elem.target.value);
       },
-      async initGoogle() {
-        const loader = new Loader(process.env.GOOGLE_API_KEY_FRONT, {
-          libraries: ['places'],
-          language: 'fr',
-        });
-
-        const google = await loader.load();
-        await this.initMap(google);
-        await this.initAutoComplete(google);
-      },
       async send() {
         await this.$store.dispatch('announceMusician/send');
       },
-      async initMap(google) {
-        this.map = new google.maps.Map(this.$refs['map'], {
-          center: {lat: 50.8504500, lng: 4.3487800},
-          zoom: 13
+      changePlace(place) {
+        if (!place) return
+
+        if (place.geometry.viewport) {
+          this.$refs.map.fitBounds(place.geometry.viewport);
+        }
+
+        this.map.infoWindowPos = place.geometry.location;
+        this.map.infoOptions.content = `<strong>${place.formatted_address}</strong>`;
+
+        this.map.place = {
+          latitude: place.geometry.location.lat(),
+          longitude: place.geometry.location.lng(),
+        };
+
+        console.log({
+          name: place.formatted_address,
+          long: place.geometry.location.lng(),
+          lat: place.geometry.location.lat()
+        })
+
+        this.$store.dispatch('announceMusician/updateLocation', {
+          name: place.formatted_address,
+          long: place.geometry.location.lng(),
+          lat: place.geometry.location.lat()
         });
+
+        this.map.infoWinOpen = true;
       },
-      async initAutoComplete(google) {
-        const autocomplete = new google.maps.places.Autocomplete(this.$refs['search']);
-        autocomplete.bindTo('bounds', this.map);
-
-        const infoWindow = new google.maps.InfoWindow();
-
-        const marker = new google.maps.Marker({
-          map: this.map,
-          anchorPoint: new google.maps.Point(0, -29)
-        });
-
-        autocomplete.addListener('place_changed', () => {
-
-          infoWindow.close();
-          marker.setVisible(false);
-
-          // Get the place details from the autocomplete object.
-          const place = autocomplete.getPlace();
-          if (!place.geometry) {
-            // User entered the name of a Place that was not suggested and
-            // pressed the Enter key, or the Place Details request failed.
-            window.alert("Il n'existe pas un lieu connu pour : '" + place.name + "'");
-            return;
-          }
-
-
-          // If the place has a geometry, then present it on a map.
-          if (place.geometry.viewport) {
-            this.map.fitBounds(place.geometry.viewport);
-          } else {
-            this.map.setCenter(place.geometry.location);
-            this.map.setZoom(17);  // Why 17? Because it looks good.
-          }
-
-          marker.setIcon(/** @type {google.maps.Icon} */({
-            url: place.icon,
-            size: new google.maps.Size(71, 71),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(17, 34),
-            scaledSize: new google.maps.Size(35, 35)
-          }));
-          marker.setPosition(place.geometry.location);
-          marker.setVisible(true);
-
-          let address = '';
-          if (place.address_components) {
-            address = [
-              (place.address_components[0] && place.address_components[0].short_name || ''),
-              (place.address_components[1] && place.address_components[1].short_name || ''),
-              (place.address_components[2] && place.address_components[2].short_name || '')
-            ].join(' ');
-          }
-
-          infoWindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
-          infoWindow.open(this.map, marker);
-
-          const long = place.geometry.location.lng();
-          const lat = place.geometry.location.lat();
-          this.$store.dispatch('announceMusician/updateLocation', {lat, long, name: place.formatted_address});
-        });
-      }
     }
   }
 </script>
@@ -304,5 +309,9 @@
     .selectable-button.selected {
         background: #97C2E8;
         color: white;
+    }
+
+    .vue-map {
+      height: 100%
     }
 </style>
