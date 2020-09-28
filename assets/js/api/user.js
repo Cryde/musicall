@@ -14,5 +14,9 @@ export default {
   resetPassword({token, password}) {
     return axios.post(Routing.generate('api_user_reset_password', {token}), {password})
     .then(resp => resp.data);
+  },
+  me() {
+    return axios.get(Routing.generate('api_user_get'))
+    .then(resp => resp.data);
   }
 }

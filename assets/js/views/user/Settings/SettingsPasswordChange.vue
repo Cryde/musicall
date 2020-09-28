@@ -1,7 +1,6 @@
 <template>
-    <div>
         <b-card title="Changer son mot de passe">
-            <b-form @submit.stop.prevent>
+            <b-form @submit.stop.prevent class="pt-4">
 
                 <b-alert v-model="success" variant="success">
                     Mot de passe changé avec succès !
@@ -32,7 +31,6 @@
             </b-form>
 
         </b-card>
-    </div>
 </template>
 
 <script>
