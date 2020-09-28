@@ -6,6 +6,7 @@ use App\Exception\NoMatchedUserAccountException;
 use App\Model\ChangePasswordModel;
 use App\Model\ResetPasswordModel;
 use App\Repository\UserRepository;
+use App\Serializer\User\UserArraySerializer;
 use App\Service\Jsonizer;
 use App\Service\User\ResetPassword;
 use Doctrine\ORM\NonUniqueResultException;
@@ -117,5 +118,19 @@ class UserController extends AbstractController
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json([]);
+    }
+
+    /**
+     * @Route("/api/users/me", name="api_user_get", methods={"GET"}, options={"expose": true})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     * @param UserArraySerializer $userArraySerializer
+     *
+     * @return JsonResponse
+     */
+    public function show(UserArraySerializer $userArraySerializer)
+    {
+        return $this->json($userArraySerializer->toArray($this->getUser(), true));
     }
 }

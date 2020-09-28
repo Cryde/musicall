@@ -30,9 +30,22 @@ export default [
     meta: {isAuthRequired: false}
   },
   {
-    name: "user_settings",
     path: "/user/settings",
     component: () => import("../views/user/Settings"),
-    meta: {isAuthRequired: true}
+    meta: {isAuthRequired: true},
+    children: [
+      {
+        path: '',
+        name: "user_settings",
+        component: () => import("../views/user/Settings/General"),
+        meta: {isAuthRequired: true},
+      },
+      {
+        path: 'password',
+        name: "user_settings_password",
+        component: () => import("../views/user/Settings/SettingsPasswordChange"),
+        meta: {isAuthRequired: true},
+      }
+    ]
   },
 ];
