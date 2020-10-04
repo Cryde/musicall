@@ -77,6 +77,7 @@
       });
 
       if (this.isAuthenticated) {
+        await this.$store.dispatch('user/load');
         this.$store.dispatch('notifications/loadNotifications');
       }
 

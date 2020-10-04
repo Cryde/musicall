@@ -2,7 +2,10 @@
 
 namespace App\Controller\Api\User;
 
+use App\Entity\Image\UserProfilePicture;
+use App\Entity\User;
 use App\Exception\NoMatchedUserAccountException;
+use App\Form\ImageUploaderType;
 use App\Model\ChangePasswordModel;
 use App\Model\ResetPasswordModel;
 use App\Repository\UserRepository;
@@ -132,5 +135,36 @@ class UserController extends AbstractController
     public function show(UserArraySerializer $userArraySerializer)
     {
         return $this->json($userArraySerializer->toArray($this->getUser(), true));
+    }
+
+    /**
+     * @Route("/api/users/picture", name="api_user_picture", methods={"POST"}, options={"expose" = true})
+     *
+     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
+     *
+     */
+    public function changePicture(Request $request, UserArraySerializer $userArraySerializer)
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $previousProfilePicture = $user->getProfilePicture() ? $user->getProfilePicture() : null;
+        $profilePicture = new UserProfilePicture();
+
+        $form = $this->createForm(ImageUploaderType::class, $profilePicture);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user->setProfilePicture($profilePicture);
+
+            if ($previousProfilePicture) {
+                $this->getDoctrine()->getManager()->remove($previousProfilePicture);
+            }
+
+            $this->getDoctrine()->getManager()->flush();
+
+            return $this->json($userArraySerializer->toArray($user, true));
+        }
+
+        return $this->json([]);
     }
 }

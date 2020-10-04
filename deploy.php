@@ -17,6 +17,7 @@ add('shared_dirs', [
     'public/images/publication/cover',
     'public/images/publication/featured',
     'public/images/wiki/artist',
+    'public/images/user/profile',
     'public/images/gallery',
     'public/media/cache',
 ]);

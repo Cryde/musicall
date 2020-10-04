@@ -3,7 +3,7 @@
 namespace App\Controller\Api\User;
 
 use App\Repository\UserRepository;
-use App\Serializer\User\UserSearchArraySerializer;
+use App\Serializer\User\UserArraySerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,16 +20,16 @@ class SearchUserController extends AbstractController
      *     options={"expose": true}
      * )
      *
-     * @param Request                   $request
-     * @param UserRepository            $userRepository
-     * @param UserSearchArraySerializer $userSearchArraySerializer
+     * @param Request             $request
+     * @param UserRepository      $userRepository
+     * @param UserArraySerializer $userArraySerializer
      *
      * @return JsonResponse
      */
     public function list(
         Request $request,
         UserRepository $userRepository,
-        UserSearchArraySerializer $userSearchArraySerializer
+        UserArraySerializer $userArraySerializer
     ) {
         $search = $request->get('search', '');
 
@@ -39,6 +39,6 @@ class SearchUserController extends AbstractController
 
         $results = $userRepository->searchByUserName($search);
 
-        return $this->json($userSearchArraySerializer->listToArray($results));
+        return $this->json($userArraySerializer->listToArray($results));
     }
 }

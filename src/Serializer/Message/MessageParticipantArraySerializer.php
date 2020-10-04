@@ -3,18 +3,15 @@
 namespace App\Serializer\Message;
 
 use App\Entity\Message\MessageParticipant;
-use App\Serializer\UserAppArraySerializer;
+use App\Serializer\User\UserArraySerializer;
 
 class MessageParticipantArraySerializer
 {
-    /**
-     * @var UserAppArraySerializer
-     */
-    private UserAppArraySerializer $userAppArraySerializer;
+    private UserArraySerializer $userArraySerializer;
 
-    public function __construct(UserAppArraySerializer $userAppArraySerializer)
+    public function __construct(UserArraySerializer $userArraySerializer)
     {
-        $this->userAppArraySerializer = $userAppArraySerializer;
+        $this->userArraySerializer = $userArraySerializer;
     }
 
     /**
@@ -35,7 +32,7 @@ class MessageParticipantArraySerializer
     public function toArray(MessageParticipant $messageParticipant): array
     {
         return [
-            'user' => $this->userAppArraySerializer->toArray($messageParticipant->getParticipant()),
+            'user' => $this->userArraySerializer->toArray($messageParticipant->getParticipant()),
         ];
     }
 }

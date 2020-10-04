@@ -4,18 +4,18 @@ namespace App\Serializer\Search;
 
 use App\Entity\Attribute\Style;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Serializer\User\UserSearchArraySerializer;
+use App\Serializer\User\UserArraySerializer;
 use Doctrine\Common\Collections\Collection;
 
 class MusicianSearchArraySerializer
 {
-    private UserSearchArraySerializer $userSearchArraySerializer;
     private \HTMLPurifier $onlybrPurifier;
+    private UserArraySerializer $userArraySerializer;
 
-    public function __construct(UserSearchArraySerializer $userSearchArraySerializer, \HTMLPurifier $onlybrPurifier)
+    public function __construct(UserArraySerializer $userArraySerializer, \HTMLPurifier $onlybrPurifier)
     {
-        $this->userSearchArraySerializer = $userSearchArraySerializer;
         $this->onlybrPurifier = $onlybrPurifier;
+        $this->userArraySerializer = $userArraySerializer;
     }
 
     public function listToArray($list)
@@ -38,7 +38,7 @@ class MusicianSearchArraySerializer
             'id'            => $musicianAnnounce->getId(),
             'location_name' => $musicianAnnounce->getLocationName(),
             'note'          => $this->onlybrPurifier->purify(nl2br($musicianAnnounce->getNote())),
-            'user'          => $this->userSearchArraySerializer->toArray($musicianAnnounce->getAuthor()),
+            'user'          => $this->userArraySerializer->toArray($musicianAnnounce->getAuthor()),
             'instrument'    => $musicianAnnounce->getInstrument()->getName(),
             'type'          => $musicianAnnounce->getType(),
             'styles'        => $this->formatStyle($musicianAnnounce->getStyles()),

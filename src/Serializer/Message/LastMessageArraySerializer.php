@@ -3,21 +3,18 @@
 namespace App\Serializer\Message;
 
 use App\Entity\Message\Message;
-use App\Serializer\UserAppArraySerializer;
+use App\Serializer\User\UserArraySerializer;
 use App\Service\DatetimeHelper;
 
 class LastMessageArraySerializer
 {
-    /**
-     * @var UserAppArraySerializer
-     */
-    private UserAppArraySerializer $userAppArraySerializer;
     private \HTMLPurifier $messagePurifier;
+    private UserArraySerializer $userArraySerializer;
 
-    public function __construct(UserAppArraySerializer $userAppArraySerializer, \HTMLPurifier $lastMessagePurifier)
+    public function __construct(UserArraySerializer $userArraySerializer, \HTMLPurifier $lastMessagePurifier)
     {
-        $this->userAppArraySerializer = $userAppArraySerializer;
         $this->messagePurifier = $lastMessagePurifier;
+        $this->userArraySerializer = $userArraySerializer;
     }
 
     /**
@@ -39,7 +36,7 @@ class LastMessageArraySerializer
     {
         return [
             'id'                => $message->getId(),
-            'author'            => $this->userAppArraySerializer->toArray($message->getAuthor()),
+            'author'            => $this->userArraySerializer->toArray($message->getAuthor()),
             'creation_datetime' => $message->getCreationDatetime()->format(DatetimeHelper::FORMAT_ISO_8601),
             'content'           => $this->messagePurifier->purify(nl2br($message->getContent())),
         ];
