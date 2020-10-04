@@ -154,11 +154,15 @@ class UserController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $user->setProfilePicture($profilePicture);
-
             if ($previousProfilePicture) {
+                $user->setProfilePicture(null);
+                $this->getDoctrine()->getManager()->flush();
                 $this->getDoctrine()->getManager()->remove($previousProfilePicture);
+                $this->getDoctrine()->getManager()->flush();
             }
+
+            $user->setProfilePicture($profilePicture);
+            $profilePicture->setUser($user);
 
             $this->getDoctrine()->getManager()->flush();
 
