@@ -20,7 +20,7 @@
                     <div class="bg-white p-3 mt-4 card-result shadow d-flex flex-column w-100">
                         <b-row class="mb-auto">
                             <b-col cols="3" class="text-center">
-                                <b-avatar></b-avatar>
+                                <avatar :user="announce.user"/>
                                 <br/>
                                 <span class="mt-2 d-inline-block text-truncate w-100">{{ announce.user.username }}</span>
                             </b-col>
@@ -87,9 +87,10 @@
   import {mapGetters} from "vuex";
   import {TYPES_ANNOUNCE_MUSICIAN, TYPES_ANNOUNCE_BAND} from "../../../constants/types";
   import SendMessageModal from "../../message/modal/SendMessageModal";
+  import Avatar from "../../../components/user/Avatar";
 
   export default {
-    components: {SendMessageModal},
+    components: {Avatar, SendMessageModal},
     data() {
       return {
         selectedRecipient: null,

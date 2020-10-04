@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Image\UserProfilePicture;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -84,6 +85,11 @@ class User implements UserInterface
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $resetRequestDatetime;
+
+    /**
+     * @ORM\OneToOne(targetEntity=UserProfilePicture::class, cascade={"persist", "remove"})
+     */
+    private $profilePicture;
 
     public function __construct()
     {
@@ -292,6 +298,18 @@ class User implements UserInterface
     public function setResetRequestDatetime(?\DateTimeInterface $resetRequestDatetime): self
     {
         $this->resetRequestDatetime = $resetRequestDatetime;
+
+        return $this;
+    }
+
+    public function getProfilePicture(): ?UserProfilePicture
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(?UserProfilePicture $profilePicture): self
+    {
+        $this->profilePicture = $profilePicture;
 
         return $this;
     }

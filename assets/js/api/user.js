@@ -18,5 +18,8 @@ export default {
   me() {
     return axios.get(Routing.generate('api_user_get'))
     .then(resp => resp.data);
+  },
+  changePicture(form) {
+    return axios.post(Routing.generate('api_user_picture'), form);
   }
 }

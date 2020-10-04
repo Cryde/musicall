@@ -1,5 +1,5 @@
 <template>
-    <b-row v-if="isAuthenticated">
+    <b-row v-if="isAuthenticated && !isLoading">
         <b-col cols="12" v-show="errors.length">
             <b-alert variant="danger" class="mt-3" show>
                 <span v-for="error in errors" class="d-block">{{ error }}</span>
@@ -7,8 +7,8 @@
         </b-col>
 
         <b-col cols="2" class="text-center">
-            <b-avatar :text="user.username[0].toLocaleUpperCase()" size="4em"></b-avatar>
-            <strong class="mt-2 d-block">{{ user.username }}</strong>
+          <avatar :user="user" :is-loading="isLoading" size="4em" />
+          <strong class="mt-2 d-block">{{ user.username }}</strong>
         </b-col>
         <b-col cols="10">
             <b-textarea v-model="content"></b-textarea>
@@ -33,8 +33,10 @@
 
 <script>
   import {mapGetters} from "vuex";
+  import Avatar from "../../components/user/Avatar";
 
   export default {
+    components: {Avatar},
     data() {
       return {
         content: '',
@@ -43,7 +45,8 @@
       }
     },
     computed: {
-      ...mapGetters('security', ['user', 'isAuthenticated']),
+      ...mapGetters('security', ['isAuthenticated']),
+      ...mapGetters('user', ['isLoading', 'user']),
       enableAddButton() {
         return this.content.trim().length > 0;
       }

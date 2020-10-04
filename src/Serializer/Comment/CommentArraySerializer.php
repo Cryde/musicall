@@ -3,21 +3,18 @@
 namespace App\Serializer\Comment;
 
 use App\Entity\Comment\Comment;
-use App\Serializer\UserAppArraySerializer;
+use App\Serializer\User\UserArraySerializer;
 use Doctrine\Common\Collections\Collection;
 
 class CommentArraySerializer
 {
-    /**
-     * @var UserAppArraySerializer
-     */
-    private UserAppArraySerializer $userAppArraySerializer;
     private \HTMLPurifier $HTMLPurifier;
+    private UserArraySerializer $userArraySerializer;
 
-    public function __construct(UserAppArraySerializer $userAppArraySerializer, \HTMLPurifier $commentPurifier)
+    public function __construct(UserArraySerializer $userArraySerializer, \HTMLPurifier $commentPurifier)
     {
-        $this->userAppArraySerializer = $userAppArraySerializer;
         $this->HTMLPurifier = $commentPurifier;
+        $this->userArraySerializer = $userArraySerializer;
     }
 
     /**
@@ -44,7 +41,7 @@ class CommentArraySerializer
     {
         return [
             'id'                => $comment->getId(),
-            'author'            => $this->userAppArraySerializer->toArray($comment->getAuthor()),
+            'author'            => $this->userArraySerializer->toArray($comment->getAuthor()),
             'content'           => $this->HTMLPurifier->purify(nl2br($comment->getContent())),
             'creation_datetime' => $comment->getCreationDatetime(),
         ];

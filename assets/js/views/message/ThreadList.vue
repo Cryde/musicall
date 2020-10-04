@@ -5,11 +5,12 @@
                    :class="{'is-new': !thread.meta.is_read, 'current': currentThreadId === thread.thread.id}"
                    @click="selectCurrentThread(thread.thread)"
             >
-                <b-avatar :text="participantWithoutCurrentUser(thread.participants) | firstLetter"
-                          class="mr-2 ml-3 thread-avatar"></b-avatar>
+                <avatar :user="participantWithoutCurrentUser(thread.participants)" class="mr-2 ml-3 thread-avatar"/>
 
                 <div class="d-inline-block" style="width: 72%">
-                    <span class="d-block thread-item-username text-truncate">{{ participantWithoutCurrentUser(thread.participants) }}</span>
+                    <span class="d-block thread-item-username text-truncate">
+                      {{ participantWithoutCurrentUser(thread.participants).username }}
+                    </span>
                     <span class="d-block thread-item-date">{{ thread.thread.last_message.creation_datetime | relativeDate }}</span>
                     <span class="d-block thread-item-last-message">{{ thread.thread.last_message.content }}</span>
                 </div>
@@ -23,8 +24,10 @@
 
 <script>
   import {mapGetters} from 'vuex';
+  import Avatar from "../../components/user/Avatar";
 
   export default {
+    components: {Avatar},
     computed: {
       ...mapGetters('messages', ['threads', 'currentThreadId']),
       ...mapGetters('security', ['user']),
@@ -48,13 +51,11 @@
         await this.$store.dispatch('messages/loadThread', {threadId: thread.id});
       },
       participantWithoutCurrentUser(participants) {
-        const results = participants.filter(p => this.user.username !== p.user.username).map(item => item.user.username);
+        const results = participants.filter(p => this.user.username !== p.user.username).map(item => item.user);
 
         if (results.length === 1) {
           return results[0];
         }
-
-        return results.join(', ');
       }
     }
   }

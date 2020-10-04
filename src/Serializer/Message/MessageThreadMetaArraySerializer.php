@@ -6,13 +6,7 @@ use App\Entity\Message\MessageThreadMeta;
 
 class MessageThreadMetaArraySerializer
 {
-    /**
-     * @var MessageThreadArraySerializer
-     */
     private MessageThreadArraySerializer $messageThreadArraySerializer;
-    /**
-     * @var MessageParticipantArraySerializer
-     */
     private MessageParticipantArraySerializer $messageParticipantArraySerializer;
 
     public function __construct(

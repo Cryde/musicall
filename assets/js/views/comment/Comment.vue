@@ -1,7 +1,7 @@
 <template>
     <b-row class="p-3 mt-2 ">
         <b-col cols="2" class="text-center">
-            <b-avatar :text="comment.author.username[0].toLocaleUpperCase()" size="4em"></b-avatar>
+            <avatar :user="comment.author" size="4em"/>
             <strong class="mt-2 d-block">{{ comment.author.username }}</strong>
         </b-col>
         <b-col cols="10" class="comment-box pt-1   ">
@@ -14,7 +14,9 @@
 </template>
 
 <script>
+  import Avatar from "../../components/user/Avatar";
   export default {
+    components: {Avatar},
     props: ['comment']
   }
 </script>
