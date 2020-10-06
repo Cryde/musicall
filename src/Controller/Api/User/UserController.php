@@ -169,6 +169,6 @@ class UserController extends AbstractController
             return $this->json($userArraySerializer->toArray($user, true));
         }
 
-        return $this->json([]);
+        return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);
     }
 }

@@ -24,9 +24,9 @@ class UserProfilePicture
     /**
      * NOTE: This is not a mapped field of entity metadata, just a simple property.
      * @Assert\Image(
-     *     minHeight="500",
+     *     minHeight="450",
      *     maxHeight="4000",
-     *     minWidth="500",
+     *     minWidth="450",
      *     maxWidth="4000",
      *     allowPortrait=true,
      *     allowLandscape=true,
