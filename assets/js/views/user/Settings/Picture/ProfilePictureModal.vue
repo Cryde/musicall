@@ -9,6 +9,9 @@
         <cropper
             ref="cropper"
             :src="image"
+            :min-height="450"
+            :min-width="450"
+            :size-restrictions-algorithm="pixelsRestriction"
             :stencil-component="$options.components.CircleStencil"
         />
       </b-col>
@@ -55,6 +58,14 @@ export default {
     this.$bvModal.show('profile-picture-modal');
   },
   methods: {
+    pixelsRestriction({ minWidth, minHeight, maxWidth, maxHeight, imageWidth, imageHeight }) {
+      return {
+        minWidth: minWidth,
+        minHeight: minHeight,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+      };
+    },
     save() {
       this.isSubmitted = true;
       const {canvas} = this.$refs.cropper.getResult();
@@ -68,8 +79,7 @@ export default {
             await this.$store.dispatch('user/refresh');
             this.$bvModal.hide('profile-picture-modal');
           } catch(e) {
-            console.log(e);
-            // todo
+            this.errors = e.response.data.map(error => error.message);
           }
         }, 'image/jpeg');
       }
