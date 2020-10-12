@@ -17,8 +17,8 @@
         "build": "encore production --progress"
     },
     "dependencies": {
-        "@sentry/browser": "^5.24.2",
-        "@sentry/integrations": "^5.24.2",
+        "@sentry/browser": "^5.25.0",
+        "@sentry/integrations": "^5.25.0",
         "autolinker": "^3.14.1",
         "axios": "^0.20.0",
         "bootstrap": "^4.5.2",
@@ -28,7 +28,7 @@
         "gmap-vue": "^1.4.0",
         "jwt-decode": "^2.2.0",
         "lodash": "^4.17.20",
-        "tippy.js": "^6.2.6",
+        "tippy.js": "^6.2.7",
         "tiptap": "^1.30.0",
         "tiptap-extensions": "^1.33.1",
         "vue": "^2.6.12",
@@ -38,7 +38,7 @@
         "vue-lazyload": "^1.3.3",
         "vue-masonry-wall": "^0.2.5",
         "vue-meta": "^2.4.0",
-        "vue-router": "^3.4.5",
+        "vue-router": "^3.4.6",
         "vue-select": "^3.10.8",
         "vue-sticky-directive": "0.0.8",
         "vue2-dropzone": "^3.6.0",
