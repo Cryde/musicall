@@ -28,7 +28,7 @@
         "gmap-vue": "^1.4.0",
         "jwt-decode": "^2.2.0",
         "lodash": "^4.17.20",
-        "tippy.js": "^6.2.6",
+        "tippy.js": "^6.2.7",
         "tiptap": "^1.30.0",
         "tiptap-extensions": "^1.33.1",
         "vue": "^2.6.12",
