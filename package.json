@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "@sentry/browser": "^5.25.0",
-        "@sentry/integrations": "^5.25.0",
+        "@sentry/integrations": "^5.26.0",
         "autolinker": "^3.14.1",
         "axios": "^0.20.0",
         "bootstrap": "^4.5.2",
