@@ -30,7 +30,7 @@
         "lodash": "^4.17.20",
         "tippy.js": "^6.2.7",
         "tiptap": "^1.30.0",
-        "tiptap-extensions": "^1.33.1",
+        "tiptap-extensions": "^1.33.2",
         "vue": "^2.6.12",
         "vue-advanced-cropper": "^0.17.3",
         "vue-cookies": "^1.7.4",
