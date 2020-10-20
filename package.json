@@ -22,7 +22,7 @@
         "autolinker": "^3.14.1",
         "axios": "^0.20.0",
         "bootstrap": "^4.5.2",
-        "bootstrap-vue": "^2.17.3",
+        "bootstrap-vue": "^2.18.0",
         "date-fns": "^2.16.1",
         "dotenv-flow": "^3.2.0",
         "gmap-vue": "^1.4.0",
