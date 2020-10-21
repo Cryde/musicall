@@ -10,23 +10,32 @@
                 <b-card
                         :key="publication.id"
                         v-if="publication.category !== 'news'" tag="b-link"
-                        :to="{ name: 'publication_show', params: { slug: publication.slug }}" :title="publication.title"
+                        :to="{ name: 'publication_show', params: { slug: publication.slug }}"
                         :img-src="publication.cover_image" img-alt="Image" img-top>
+                    <publication-type :type="publication.type" class="mt-1 mb-2 "/>
+                    <b-card-title>{{ publication.title }}</b-card-title>
                     <b-card-text v-if="publication.type === 'text'">
                         {{ publication.description }}
                     </b-card-text>
-                    <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
-                    <publication-type :type="publication.type" class="mt-1 pull-right"/>
+                    <div class="publication-date mt-1">
+                      {{ publication.author_username }} •
+                      {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours : false}) }}
+                    </div>
+
                 </b-card>
                 <b-card v-else
                         tag="b-link"
                         :to="{ name: 'publication_show', params: { slug: publication.slug }}"
                 >
+                    <publication-type :type="publication.category" class="mb-3 "/>
                     <b-card-title>{{ publication.title }}</b-card-title>
                     <b-card-text>
                         {{ publication.description }}
                     </b-card-text>
-                    <div class="publication-date mt-1">{{publication.publication_datetime | relativeDate }}</div>
+                    <div class="publication-date mt-1">
+                      {{ publication.author_username }} •
+                      {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours : false}) }}
+                    </div>
                 </b-card>
             </template>
         </vue-masonry-wall>

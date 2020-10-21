@@ -63,12 +63,19 @@ class PublicationRepository extends ServiceEntityRepository
      */
     public function findOnlinePublications(int $offset, int $limit)
     {
-        return $this->findBy(
-            ['status' => Publication::STATUS_ONLINE],
-            ['publicationDatetime' => 'DESC'],
-            $limit,
-            $offset
-        );
+        return $this->createQueryBuilder('publication')
+            ->select('publication, author, cover, thread, sub_category')
+            ->join('publication.author', 'author')
+            ->join('publication.cover', 'cover')
+            ->join('publication.thread', 'thread')
+            ->join('publication.subCategory', 'sub_category')
+            ->where('publication.status = :status')
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
     }
 
     /**

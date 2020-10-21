@@ -57,6 +57,7 @@ class PublicationSerializer
             'publication_datetime' => $publication->getPublicationDatetime(),
             'cover_image'          => $cover,
             'author_username'      => $publication->getAuthor()->getUsername(),
+            'comments_number'      => $publication->getThread()->getCommentNumber(),
         ];
     }
 }

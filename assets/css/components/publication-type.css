@@ -1,16 +1,18 @@
 .publication-type {
-    border-radius: 4px;
-    padding: 3px 6px;
+    padding: 3px 0;
     font-size: 0.8em;
-    display: inline-block;
-    text-transform: uppercase;
-    color: white;
+    display: block;
+    color: #666;
 }
 
 .publication-type.text {
-    background: #5b87ae;
+    color: #5b87ae;
 }
 
 .publication-type.video {
-    background: #e9573f;
+    color: #e9573f;
+}
+
+.publication-type.news {
+    color: #ffb236
 }
