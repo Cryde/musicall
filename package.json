@@ -26,7 +26,7 @@
         "date-fns": "^2.16.1",
         "dotenv-flow": "^3.2.0",
         "gmap-vue": "^1.4.0",
-        "jwt-decode": "^2.2.0",
+        "jwt-decode": "^3.0.0",
         "lodash": "^4.17.20",
         "tippy.js": "^6.2.7",
         "tiptap": "^1.30.0",
