@@ -5,7 +5,8 @@ import {fr} from 'date-fns/locale'
 
 export default relativeDateFilter;
 
-function relativeDateFilter(value, {differenceLimit = 2, showHours = true}) {
+function relativeDateFilter(value, options = {}) {
+  const {differenceLimit = 2, showHours = true} = options;
   const parsedDate = parseISO(value);
   const difference = differenceInDays(new Date, parsedDate);
 
