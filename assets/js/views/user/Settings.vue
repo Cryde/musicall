@@ -1,20 +1,18 @@
 <template>
-  <b-row>
-    <b-col xl="12">
-      <b-nav pills class="rounded">
-        <b-nav-item :to="{name: 'user_settings'}" class="mb-3 rounded">Général</b-nav-item>
-        <b-nav-item :to="{name: 'user_settings_password'}" class="mb-3 rounded">Changer le mot de passe</b-nav-item>
-      </b-nav>
+  <div class="columns">
+    <div class="column is-12">
+      <div class="tabs">
+        <ul>
+          <router-link :to="{name: 'user_settings'}" exact-active-class="is-active" tag="li">
+            <a>Général</a>
+          </router-link>
+          <router-link :to="{name: 'user_settings_password'}" exact-active-class="is-active" tag="li">
+            <a>Changer le mot de passe</a>
+          </router-link>
+        </ul>
+      </div>
 
       <router-view></router-view>
-    </b-col>
-  </b-row>
+    </div>
+  </div>
 </template>
-
-<style scoped>
-/* Used by vue-router */
-.router-link-exact-active {
-  background:#5B87AE;
-  color: white;
-}
-</style>

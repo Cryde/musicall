@@ -1,33 +1,34 @@
 <template>
-    <b-card
-            v-if="featured1"
-            overlay
-            class="d-lg-block d-md-block d-none"
-            :img-src="featured1.cover"
-            :img-alt="featured1.title"
-            tag="b-link"
-            :to="{name:'publication_show', params: {slug: featured1.publication.slug}}"
-            :text-variant="featured1 ? getColor(featured1): 'dark'"
-            :body-text-variant="featured1 ? getColor(featured1): 'dark'"
-            :title="featured1.title"
-    >
-        <b-card-text v-if="featured1.description">
-            {{ featured1.description }}
-        </b-card-text>
-    </b-card>
+  <router-link class="card is-clickable"
+               :to="{name:'publication_show', params: {slug: featured1.publication.slug}}"
+               tag="div">
+    <div class="card-image" v-if="featured1.cover">
+      <figure class="image card-image is-overlay">
+        <img :src="featured1.cover" :alt="featured1.title"/>
+      </figure>
+    </div>
+    <header class="card-header is-overlay" v-if="featured1.title">
+      <h2 class="subtitle is-3 mt-3 ml-3" :class="getColor(featured1)">{{ featured1.title }}</h2>
+    </header>
+    <div class="card-content is-overlay">
+      <div class="content" v-if="featured1.description" :class="getColor(featured1)">
+        {{ featured1.description }}
+      </div>
+    </div>
+  </router-link>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex';
+import {mapGetters} from 'vuex';
 
-  export default {
-    computed: {
-      ...mapGetters('featured', ['featured1'])
+export default {
+  computed: {
+    ...mapGetters('featured', ['featured1'])
+  },
+  methods: {
+    getColor(featured) {
+      return featured.options.color === 'dark' ? 'has-text-dark' : 'has-text-light';
     },
-    methods: {
-      getColor(featured) {
-        return featured.options.color === 'dark' ? 'dark' : 'white';
-      },
-    }
   }
+}
 </script>

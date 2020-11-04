@@ -1,78 +1,113 @@
 <template>
-    <b-row class="h-100" v-if="currentThreadId">
-        <b-col cols="12" id="message-container" ref="message-container">
-            <b-row v-if="isLoadingMessages" class="text-center pt-5">
-                <b-col cols="12">
-                    <b-spinner/>
-                </b-col>
-            </b-row>
-            <b-row v-else v-for="message in messages" :key="message.id">
-                <b-col :cols="12">
-                    <b-col cols="8" :class="{'offset-4 is-sender text-right': message.is_sender}">
-                        <p class="message-body" v-html="autoLink(message.content)"
-                           v-b-tooltip.noninteractive.hover :title="message.creation_datetime | relativeDate"
-                        ></p>
-                    </b-col>
-                </b-col>
-            </b-row>
-        </b-col>
-        <b-col :cols="12" class="align-content-start flex-wrap">
-            <b-textarea v-model="content"></b-textarea>
-            <b-button variant="primary" class="mt-2 float-right" :disabled="!content.length" @click="send">
-                Envoyer
-            </b-button>
-        </b-col>
-    </b-row>
-    <b-row v-else class="text-center pt-4"></b-row>
+  <div class="thread" v-if="currentThreadId">
+
+    <perfect-scrollbar ref="scroll">
+      <div class="column is-12" id="message-container">
+        <b-loading :active="isLoadingMessages"/>
+        <div class="columns mb-0" v-if="!isLoadingMessages" v-for="message in messages" :key="message.id">
+          <div class="column is-8 is-message-body" :class="{'is-offset-4 is-sender has-text-right': message.is_sender}">
+            <b-tooltip :label="message.creation_datetime | relativeDate" type="is-dark" :position="message.is_sender ? 'is-left' : 'is-right'">
+              <p v-html="autoLink(message.content)" class="has-background-light" :class="{'has-background-info' : message.is_sender}"></p>
+            </b-tooltip>
+          </div>
+        </div>
+      </div>
+    </perfect-scrollbar>
+
+    <div class="columns form-container-textarea is-flex-wrap-wrap">
+      <div class="column is-12">
+        <b-input type="textarea" v-model="content" :disabled="isAddingMessage"></b-input>
+        <b-button icon-left="paper-plane" type="is-info"
+                  :loading="isAddingMessage"
+                  class="mt-2 is-pulled-right" :disabled="!content.length || isAddingMessage" @click="send">
+          Envoyer
+        </b-button>
+      </div>
+    </div>
+  </div>
+  <div v-else class="has-text-centered pt-5">
+    Sélectionnez un thread sur la gauche ou créez un nouvelle conversation.
+  </div>
 </template>
 
 <script>
-  import {mapGetters} from "vuex";
-  import Autolinker from 'autolinker';
+import {mapGetters} from "vuex";
+import Autolinker from 'autolinker';
 
-  export default {
-    data() {
-      return {
-        content: ''
+export default {
+  data() {
+    return {
+      content: ''
+    }
+  },
+  computed: {
+    ...mapGetters('messages', ['messages', 'isLoadingMessages', 'currentThreadId', 'isAddingMessage'])
+  },
+  mounted() {
+    this.$store.subscribe((mutation, state) => {
+      if (mutation.type === 'messages/IS_LOADING_MESSAGES' && mutation.payload === false) {
+        // when the loading of the message for a thread is done
+        this.scrollBottom();
       }
-    },
-    computed: {
-      ...mapGetters('messages', ['messages', 'isLoadingMessages', 'currentThreadId'])
-    },
-    mounted() {
-      this.$store.subscribe((mutation, state) => {
-        if (mutation.type === 'messages/IS_LOADING_MESSAGES' && mutation.payload === false) {
-          // when the loading of the message for a thread is done
-          this.scrollBottom();
-        }
 
-        if (mutation.type === 'messages/ADD_MESSAGE_TO_MESSAGES') {
-          // when we added a message
-          this.scrollBottom();
-        }
-      })
+      if (mutation.type === 'messages/ADD_MESSAGE_TO_MESSAGES') {
+        // when we added a message
+        this.scrollBottom();
+      }
+    })
+  },
+  methods: {
+    scrollBottom() {
+      this.$nextTick(() => {
+        this.$refs.scroll.$el.scrollTop = this.$refs.scroll.$el.scrollHeight;
+      });
     },
-    methods: {
-      scrollBottom() {
-        this.$nextTick(() => {
-          const messageContainer = document.querySelector('#message-container');
-          messageContainer.scrollTop = messageContainer.scrollHeight;
+    autoLink(str) {
+      return Autolinker.link(str);
+    },
+    async send() {
+      try {
+        await this.$store.dispatch('messages/postMessageInThread', {
+          threadId: this.currentThreadId,
+          content: this.content
         });
-      },
-      autoLink(str) {
-        return Autolinker.link(str);
-      },
-      async send() {
-        try {
-          await this.$store.dispatch('messages/postMessageInThread', {
-            threadId: this.currentThreadId,
-            content: this.content
-          });
-          this.content = '';
-        } catch (e) {
-          console.error(e);
-        }
+        this.content = '';
+      } catch (e) {
+        console.error(e);
       }
     }
   }
+}
 </script>
+
+<style>
+
+#message-container .is-message-body p {
+  word-wrap: break-word;
+  display: inline-block;
+  padding: 7px 10px;
+  border-radius: 10px;
+}
+
+#message-container .is-message-body.is-sender p {
+  color: white;
+}
+
+#message-container .is-message-body a {
+  color: #5B87AE;
+  text-decoration: underline;
+}
+
+#message-container .is-sender.is-message-body a {
+  color: white;
+  text-decoration: underline;
+}
+
+.thread {
+  height: 100%;
+}
+
+.thread .ps {
+  height: 70%
+}
+</style>

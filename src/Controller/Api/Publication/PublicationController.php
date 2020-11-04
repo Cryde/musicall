@@ -66,7 +66,11 @@ class PublicationController extends AbstractController
 
         return $this->json([
             'data' => [
-                'meta'         => ['numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE)],
+                'meta'         => [
+                    'numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE),
+                    'total' => $total,
+                    'limit_by_page' => self::LIMIT_PUBLICATION_BY_PAGE,
+                ],
                 'publications' => $publicationSerializer->listToArray($publications),
             ],
         ]);
@@ -102,7 +106,11 @@ class PublicationController extends AbstractController
 
         return $this->json([
             'data' => [
-                'meta'         => ['numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE)],
+                'meta'         => [
+                    'numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE),
+                    'total' => $total,
+                    'limit_by_page' => self::LIMIT_PUBLICATION_BY_PAGE,
+                ],
                 'publications' => $publicationSerializer->listToArray($publications),
             ],
         ]);

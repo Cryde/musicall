@@ -44,7 +44,7 @@ class RegistrationController extends AbstractController
         $errors = $validator->validate($user);
 
         if (count($errors) > 0) {
-            return $this->json(['data' => ['errors' => $errors]], Response::HTTP_UNAUTHORIZED);
+            return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
         // encode the plain password

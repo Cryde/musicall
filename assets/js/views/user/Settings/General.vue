@@ -1,28 +1,33 @@
 <template>
-  <div v-if="isLoading" class="text-center p-5">
-    <b-spinner/>
+  <div v-if="isLoading" class="has-text-centered p-5">
+    <b-loading active/>
   </div>
-  <b-card v-else title="Paramètres généraux du compte">
-    <b-row class="mt-5 mb-3">
-      <b-col xl="5">Nom d'utilisateur</b-col>
-      <b-col xl="7">{{ user.username }}</b-col>
-    </b-row>
-    <b-row class="mt-4 mb-4">
-      <b-col xl="5">Adresse email</b-col>
-      <b-col xl="7">{{ user.email }}</b-col>
-    </b-row>
-    <b-row class="mt-4 mb-4">
-      <b-col xl="5">Photo de profil</b-col>
-      <b-col xl="7">
-        <b-button @click="$refs.file.click()">
-          <span v-if="!user.picture"><i class="far fa-image"></i> Ajouter une photo de profile</span>
-          <span v-else><i class="far fa-image"></i> Modifier ma photo de profile</span>
-          <input type="file" class="d-none" ref="file" @change="uploadImage($event)" accept="image/*">
-        </b-button>
-      </b-col>
-    </b-row>
-    <profile-picture-modal v-if="image" :image="image"/>
-  </b-card>
+  <div v-else class="card">
+    <div class="card-content">
+
+      <h3 class="subtitle is-4">Paramètres généraux du compte</h3>
+
+      <div class="columns mt-5 mb-3">
+        <div class="column is-3">Nom d'utilisateur</div>
+        <div class="column is-9">{{ user.username }}</div>
+      </div>
+      <div class="columns mt-4 mb-4">
+        <div class="column is-3">Adresse email</div>
+        <div class="column is-9">{{ user.email }}</div>
+      </div>
+      <div class="columns mt-4 mb-4">
+        <div class="column is-3">Photo de profil</div>
+        <div class="column is-9">
+          <b-button @click="$refs.file.click()" type="is-info" icon-left="image">
+            <span v-if="!user.picture">Ajouter une photo de profile</span>
+            <span v-else>Modifier ma photo de profile</span>
+            <input type="file" class="is-hidden" ref="file" @change="uploadImage($event)" accept="image/*">
+          </b-button>
+        </div>
+      </div>
+      <profile-picture-modal v-if="image" :image="image" ref="profile-picture-modal"/>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -46,12 +51,11 @@ export default {
     });
 
     this.$root.$on(EVENT_PROFILE_PICTURE_SUCCESS, () => {
-      this.$bvToast.toast('Votre photo de profile a été mise à jour', {
-        title: `Photo de profile`,
-        variant: 'success',
-        solid: true,
-        toaster: 'b-toaster-bottom-left',
-        append: true
+      this.$buefy.toast.open({
+        message: 'Votre photo de profile a été mise à jour',
+        type: 'is-success',
+        position: 'is-bottom-left',
+        duration: 5000
       });
     });
   },
@@ -62,6 +66,9 @@ export default {
         const reader = new FileReader();
         reader.onload = e => {
           this.image = e.target.result;
+          this.$nextTick(() => {
+            this.$refs['profile-picture-modal'].open();
+          })
         };
         reader.readAsDataURL(input.files[0]);
       }

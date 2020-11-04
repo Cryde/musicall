@@ -37,7 +37,7 @@
                 <b-textarea v-model="description" id="description"></b-textarea>
             </b-form-group>
         </b-form>
-        <div v-else class="mt-5 pt-5 pb-5 text-center">
+        <div v-else class="mt-5 pt-5 pb-5 has-text-centered">
             Choissisez une publication avec le select de recherche
         </div>
 

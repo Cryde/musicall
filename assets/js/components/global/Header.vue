@@ -1,99 +1,134 @@
 <template>
-    <b-navbar toggleable="sm" fixed="top" type="light" variant="light">
-        <b-container>
-            <b-navbar-brand :to="{name: 'home'}"><img src="/build/images/logo.png" alt="Logo MusicAll"/>
-            </b-navbar-brand>
+  <b-navbar fixed-top shadow centered spaced wrapper-class="container">
+    <template slot="brand" class="mr-3">
+      <b-navbar-item tag="router-link" :to="{name: 'home'}">
+        <span class="nav-logo"><img src="/build/images/logo.png" alt="Logo MusicAll"/></span>
+      </b-navbar-item>
+    </template>
 
-            <b-navbar-nav class="ml-auto mr-3 position-relative" v-click-outside="hide">
-                <b-nav-form class="d-none d-md-block">
+    <template slot="start">
 
-                    <i class="fas fa-search mr-3" v-if="!isLoadingSearch"></i>
-                    <b-spinner v-else small class="mr-3"></b-spinner>
-                    <b-form-input class="mr-sm-2" placeholder="Recherche" debounce="500" @update="search"
-                                  @focus="search" @keydown.enter.prevent
-                                  v-model="term"></b-form-input>
-
-                </b-nav-form>
-                <div class="results p-3 shadow" v-if="searched">
-                    <i class="fas fa-times float-right" @click="searched = false"></i>
-                    <h4 v-if="results.length">Il y a {{ results.length }} résultat(s) :</h4>
-                    <span v-else>Il n'y a pas de résultat</span>
-                    <div v-for="result in results"
-                                 @click="go(result)"
-                    >
-                        {{ result.title }}<br/>
-                        <em class="mr-2">{{ result.publication_datetime | relativeDate }}</em> <publication-type :type="result.type"/>
-                    </div>
-                </div>
-            </b-navbar-nav>
-
-            <div v-if="isLoading">
-                <b-spinner small type="grow"></b-spinner>
+      <div class="search-bar">
+        <b-autocomplete
+            :data="results"
+            rounded
+            class="is-block ml-4 is-align-items-self-end  "
+            clearable
+            clear-on-select
+            placeholder="Rechercher..."
+            field="title"
+            :loading="isLoadingSearch"
+            icon="search"
+            @typing="search"
+            @select="go"
+        >
+          <template slot="empty">Il n'y a pas de résultats</template>
+          <template slot-scope="props">
+            <div class="media">
+              <div class="media-content">
+                {{ props.option.title }}
+                <br>
+                <small>
+                  {{ props.option.publication_datetime | relativeDate }}
+                  <publication-type :type="props.option.type" class="ml-3 is-inline-block"/>
+                </small>
+              </div>
             </div>
-            <div v-else>
-                <Dropdown v-if="isAuthenticated"/>
-                <div v-else>
-                    <router-link :to="{ name: 'user_registration' }" class="ml-auto btn btn-registration">
-                        s'inscrire
-                    </router-link>
-                    <router-link :to="{ name: 'login' }" class="ml-2 btn btn-login">
-                        se connecter
-                    </router-link>
-                </div>
-            </div>
+          </template>
+        </b-autocomplete>
+      </div>
 
-            <b-navbar-toggle target="nav-collapse" @click="toggleMenu"></b-navbar-toggle>
-        </b-container>
+    </template>
 
-    </b-navbar>
+    <template slot="end">
+
+      <b-navbar-item tag="div" v-if="isAuthenticated">
+        <div class="buttons">
+          <b-button size="is-light" :to="{ name: 'admin_dashboard' }" tag="router-link"
+                    v-if="isRoleAdmin"
+                    icon-left="bolt">
+            admin
+            <b-tag rounded type="is-warning" v-if="adminCount">{{ adminCount }}</b-tag>
+          </b-button>
+
+          <b-button size="is-light" :to="{ name: 'message_list' }" tag="router-link"
+                    icon-left="envelope">
+            message
+            <b-tag rounded type="is-warning" v-if="messageCount">{{ messageCount }}</b-tag>
+          </b-button>
+        </div>
+      </b-navbar-item>
+
+      <Dropdown v-if="isAuthenticated"/>
+      <b-navbar-item tag="div" v-else>
+        <div class="buttons">
+          <router-link class="button is-info" :to="{ name: 'user_registration' }">
+            <strong>s'inscrire</strong>
+          </router-link>
+          <router-link class="button is-info is-light" :to="{ name: 'login' }">
+            se connecter
+          </router-link>
+        </div>
+      </b-navbar-item>
+    </template>
+  </b-navbar>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex';
-  import Dropdown from './Dropdown';
-  import PublicationType from "../publication/PublicationType";
-  import searchApi from "../../api/search";
-  import {EVENT_TOGGLE_MENU} from '../../constants/events';
+import {mapGetters} from 'vuex';
+import Dropdown from './Dropdown';
+import PublicationType from "../publication/PublicationType";
+import searchApi from "../../api/search";
+import {EVENT_TOGGLE_MENU} from '../../constants/events';
+import {debounce} from 'lodash';
 
-  export default {
-    components: {Dropdown, PublicationType},
-    data() {
-      return {
-        term: '',
-        results: [],
-        searched: false,
-        isLoadingSearch: false
-      }
+export default {
+  components: {Dropdown, PublicationType},
+  data() {
+    return {
+      term: '',
+      results: [],
+      searched: false,
+      isLoadingSearch: false
+    }
+  },
+  computed: {
+    ...mapGetters('security', [
+      'isAuthenticated',
+      'isLoading',
+      'isRoleAdmin'
+    ]),
+    ...mapGetters('notifications', ['messageCount', 'pendingGalleriesCount', 'pendingPublicationsCount']),
+    adminCount() {
+      return this.pendingGalleriesCount + this.pendingPublicationsCount;
     },
-    computed: {
-      ...mapGetters('security', [
-        'isAuthenticated',
-        'isLoading'
-      ])
+  },
+  methods: {
+    hide() {
+      this.searched = false;
     },
-    methods: {
-      hide() {
+    search: debounce(async function (value) {
+      this.results = [];
+      this.isLoadingSearch = true;
+      if (!value.trim().length) {
         this.searched = false;
-      },
-      async search() {
-        if (!this.term.trim().length) {
-          this.searched = false;
-        } else {
-          this.isLoadingSearch = true;
-          this.searched = false;
-          this.results = await searchApi.searchByTerm(this.term);
-          this.searched = true;
-          this.isLoadingSearch = false;
-        }
-      },
-      go(result) {
+      } else {
         this.searched = false;
-        const routeName = result.category_type === 'publication' ? 'publication_show' : 'course_show';
-        this.$router.replace({name: routeName, params: {slug: result.slug}});
-      },
-      toggleMenu() {
-        this.$root.$emit(EVENT_TOGGLE_MENU);
+        this.results = await searchApi.searchByTerm(value);
+        console.log(this.results);
+        this.searched = true;
       }
+      this.isLoadingSearch = false;
+    }, 500),
+    go(result) {
+      console.log(result);
+      this.searched = false;
+      const routeName = result.category_type === 'publication' ? 'publication_show' : 'course_show';
+      this.$router.replace({name: routeName, params: {slug: result.slug}});
+    },
+    toggleMenu() {
+      this.$root.$emit(EVENT_TOGGLE_MENU);
     }
   }
+}
 </script>

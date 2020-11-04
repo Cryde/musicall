@@ -1,6 +1,6 @@
 <template>
     <b-row>
-        <b-col cols="12" v-if="isLoading" class="text-center pt-5">
+        <b-col cols="12" v-if="isLoading" class="has-text-centered pt-5">
             <b-spinner/>
         </b-col>
         <b-col cols="12" v-else>
@@ -76,7 +76,7 @@
                 </b-col>
             </b-row>
 
-            <b-button variant="primary" @click="save" class="float-right mt-3">
+            <b-button variant="primary" @click="save" class="is-pulled-right mt-3">
                 <b-spinner small v-if="isSubmitted"></b-spinner>
                 <i class="far fa-save" v-else></i>
                 Sauver

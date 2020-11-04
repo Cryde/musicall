@@ -5,7 +5,7 @@
             / Publications mise en avant
         </h1>
 
-        <div v-if="isLoading" class="text-center pt-5">
+        <div v-if="isLoading" class="has-text-centered pt-5">
             <b-spinner variant="primary" label="Loading"></b-spinner>
         </div>
         <div v-else>

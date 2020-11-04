@@ -56,7 +56,7 @@
                 Annuler
             </b-button>
 
-            <b-button variant="outline-success" @click="save" class="float-right" :disabled="submitted">
+            <b-button variant="outline-success" @click="save" class="is-pulled-right" :disabled="submitted">
                 <b-spinner small v-if="submitted"></b-spinner>
                 <i class="far fa-save" v-else></i>
                 Enregistrer

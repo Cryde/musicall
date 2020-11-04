@@ -1,103 +1,105 @@
 <template>
-    <div v-if="!isSuccess">
-        <div v-if="hasError" class="row">
-            <div class="col-12 col-lg-4 offset-lg-4">
-                <div class="alert alert-danger" role="alert">
-                    <span class="d-block" v-for="error in errors">{{ error }}</span>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <form method="post" class="col-lg-4 col-12 offset-lg-4 form-signin form-registration">
-                <h1 class="h3 mb-3 font-weight-normal">Inscription</h1>
-                <label for="inputUsername" class="sr-only">Username</label>
-                <b-form-input
-                        id="inputUsername"
-                        v-model="username"
-                        required autofocus
-                        size="lg"
-                        placeholder="nom d'utilisateur"
-                ></b-form-input>
+  <div v-if="!isSuccess">
+    <div class="columns">
+      <div class="column is-4-desktop is-offset-4-desktop">
 
-                <label for="inputEmail" class="sr-only">Email</label>
-                <b-form-input
-                        id="inputEmail"
-                        v-model="email"
-                        required autofocus
-                        size="lg"
-                        placeholder="email"
-                ></b-form-input>
+        <b-message v-if="hasError" type="is-danger">
+          <span class="is-block" v-for="error in errors">{{ error }}</span>
+        </b-message>
 
+        <form method="post" class="form-registration">
+          <h1 class="subtitle is-3 mb-4 ">Inscription</h1>
 
-                <label for="inputPassword" class="sr-only">Password</label>
-                <b-form-input
-                        id="inputPassword"
-                        v-model="password"
-                        :type="passwordType"
-                        size="lg"
-                        required
-                        placeholder="mot de passe"
-                ></b-form-input>
-                <div class="password-shower float-right" @click="viewPassword"><i class="far fa-eye"></i></div>
+          <b-field label="Nom d'utilisateur">
+            <b-input
+                id="inputUsername"
+                v-model="username"
+                required autofocus
+                size="lg"
+                placeholder="nom d'utilisateur"
+            ></b-input>
+          </b-field>
 
-                <b-button
-                        variant="primary" block
-                        size="lg"
-                        class="mt-3"
-                        type="submit" @click.prevent @click="register">
-                    <b-spinner small type="grow" v-if="isLoading"></b-spinner>
-                    m'inscrire
-                </b-button>
-            </form>
-        </div>
+          <b-field label="Email">
+            <b-input
+                id="inputEmail"
+                v-model="email"
+                required autofocus
+                size="lg"
+                placeholder="email"
+            ></b-input>
+          </b-field>
+
+          <b-field label="Mot de passe">
+            <b-input
+                id="inputPassword"
+                password-reveal
+                v-model="password"
+                type="password"
+                size="lg"
+                required
+                placeholder="mot de passe"
+            ></b-input>
+          </b-field>
+
+          <b-button
+              type="is-info"
+              class="mt-3 is-fullwidth"
+              :disabled="!canSubmit"
+              :loading="isLoading"
+              @click.prevent @click="register">
+            m'inscrire
+          </b-button>
+        </form>
+      </div>
     </div>
-    <div v-else>
-        <div class="row">
-            <div class="col-12 col-lg-6 offset-lg-3 pt-5 mt-5 row">
-                <div class="col-lg-2">
-                    <i class="fas fa-check fa-3x mb-3 text-success"></i>
-                </div>
-                <div class="col-lg-10">
-                    <strong>C'est presque fini ! </strong><br/>
-
-                    Il ne vous reste plus qu'à confirmer votre compte en cliquant sur le lien reçu par email.
-                </div>
-            </div>
+  </div>
+  <div v-else>
+    <div class="columns">
+      <div class="column is-6-desktop is-offset-3-desktop pt-5 mt-5 columns">
+        <div class="column is-2">
+          <i class="fas fa-check fa-3x mb-3 has-text-success"></i>
         </div>
+        <div class="column is-10">
+          <strong>C'est presque fini ! </strong><br/>
+
+          Il ne vous reste plus qu'à confirmer votre compte en cliquant sur le lien reçu par email.
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex';
+import {mapGetters} from 'vuex';
 
-  export default {
-    data() {
-      return {
-        passwordType: 'password',
-        username: '',
-        email: '',
-        password: ''
-      }
+export default {
+  data() {
+    return {
+      username: '',
+      email: '',
+      password: ''
+    }
+  },
+  computed: {
+    canSubmit() {
+      return this.username.trim().length && this.email.trim().length && this.password.trim().length;
     },
-    computed: {
-      ...mapGetters('registration', [
-        'isLoading',
-        'isSuccess',
-        'hasError',
-        'errors'
-      ])
-    },
-    methods: {
-      viewPassword() {
-        this.passwordType = this.passwordType === 'password' ? 'text' : 'password';
-      },
-      async register() {
-        await this.$store.dispatch('registration/register', {
-          username: this.username,
-          email: this.email,
-          password: this.password
-        });
-      }
+    ...mapGetters('registration', [
+      'isLoading',
+      'isSuccess',
+      'hasError',
+      'errors'
+    ])
+  },
+  methods: {
+    async register() {
+      await this.$store.dispatch('registration/register', {
+        username: this.username,
+        email: this.email,
+        password: this.password
+      });
     }
   }
+}
 </script>

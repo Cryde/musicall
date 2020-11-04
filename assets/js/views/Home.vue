@@ -1,42 +1,43 @@
 <template>
-    <div v-if="isLoading" class="text-center">
-        <b-spinner variant="primary"></b-spinner>
+  <div v-if="isLoading" class="has-has-text-centereded">
+    <spinner/>
+  </div>
+  <div v-else>
+    <featured-list/>
+    <div class="columns" :class="{'mt-5': hasFeatured}">
+      <div class="column is-12">
+        <h2 class="subtitle is-4">
+          Dernières publications
+          <b-tooltip label="Ajouter une vidéo YouTube" type="is-dark" class="is-pulled-right">
+            <b-button v-if="isAuthenticated" class="youtube-btn" rounded
+                      size="is-small"
+                      @click="$refs['modal-video-add'].open()">
+              <i class="fab fa-youtube"></i>
+            </b-button>
+          </b-tooltip>
+        </h2>
+      </div>
     </div>
-    <div v-else>
-        <featured-list/>
-        <b-row :class="{'mt-5': hasFeatured}">
-            <b-col cols="8">
-                <h2>Dernières publications</h2>
-            </b-col>
-            <b-col cols="4">
-                <div class="float-right" v-if="isAuthenticated">
-                    <b-button variant="success" class="youtube-btn" pill size="sm"
-                              v-b-modal.modal-video-add
-                              v-b-tooltip.noninteractive.hover title="Ajouter une vidéo YouTube">
-                        <i class="fab fa-youtube"></i>
-                    </b-button>
-                </div>
-            </b-col>
-        </b-row>
 
-        <list />
-        <add-video-modal v-if="isAuthenticated"/>
-    </div>
+    <list/>
+    <add-video-modal v-if="isAuthenticated" ref="modal-video-add"/>
+  </div>
 </template>
 <script>
-  import {mapGetters} from 'vuex';
-  import FeaturedList from "./home/FeaturedList";
-  import List from "../components/publication/list/List";
-  import AddVideoModal from "../components/publication/user/list/AddVideoModal";
+import {mapGetters} from 'vuex';
+import FeaturedList from "./home/FeaturedList";
+import List from "../components/publication/list/List";
+import AddVideoModal from "./user/Publication/add/video/AddVideoModal";
+import Spinner from "../components/global/misc/Spinner";
 
-  export default {
-    components: {List, FeaturedList, AddVideoModal},
-    computed: {
-      ...mapGetters('security', ['isAuthenticated']),
-      ...mapGetters('featured', ['hasFeatured', 'isLoading'])
-    },
-    created() {
-      this.$store.dispatch('featured/loadFeatured');
-    }
+export default {
+  components: {Spinner, List, FeaturedList, AddVideoModal},
+  computed: {
+    ...mapGetters('security', ['isAuthenticated']),
+    ...mapGetters('featured', ['hasFeatured', 'isLoading'])
+  },
+  created() {
+    this.$store.dispatch('featured/loadFeatured');
   }
+}
 </script>

@@ -4,7 +4,7 @@
 
         <b-table class="mt-5" striped hover :fields="fields" :items="publications" :busy="isLoading" show-empty>
             <template v-slot:table-busy>
-                <div class="text-center text-danger my-2">
+                <div class="has-text-centered text-danger my-2">
                     <b-spinner class="align-middle"></b-spinner>
                 </div>
             </template>

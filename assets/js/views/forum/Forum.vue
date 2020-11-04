@@ -1,7 +1,9 @@
 <template>
-    <div>
-        <h1>Forum</h1>
+  <div>
+    <h1 class="subtitle is-3">Forum</h1>
 
-        Les forums seront bientôt de retour !
-    </div>
+    <b-message>
+      Les forums seront bientôt de retour !
+    </b-message>
+  </div>
 </template>

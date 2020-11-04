@@ -18,7 +18,7 @@
                 </b-form-invalid-feedback>
             </b-form-group>
         </div>
-        <div v-else class="text-center p-5">
+        <div v-else class="has-text-centered p-5">
             <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
             Votre publication est créée
         </div>

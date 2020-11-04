@@ -3,7 +3,7 @@
         <b-col cols="12" v-if="isSuccess">
             <h1>Ajouter une annonce musicien</h1>
 
-            <div class="text-center p-5">
+            <div class="has-text-centered p-5">
                 <i class="fas fa-check fa-5x text-success mb-3"></i><br/>
                 Votre annonce est créée.<br/> Vous pouvez <b-link :to="{name: 'user_musician_announce'}">retrouver vos annonces ici</b-link>
             </div>
@@ -12,7 +12,7 @@
             <h1>Ajouter une annonce musicien</h1>
 
             <b-row>
-                <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered">
                     <h2 class="mb-3">Que rechercher vous ? </h2>
                     <div class="selectable-button pl-5 pr-5 pt-3 pb-3 d-lg-inline-block d-block mr-lg-3 mb-2 mb-lg-0"
                          :class="{'selected': search === 'musician'}"
@@ -28,7 +28,7 @@
 
             <fade-transition :duration="100" origin="center top" mode="out-in">
                 <b-row v-if="search !== ''">
-                    <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                    <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered">
                         <h2 class="mb-3">{{ titles[search].instrument }}</h2>
 
                         <span v-for="instrument in instruments"
@@ -40,7 +40,7 @@
                         </span>
                     </b-col>
 
-                    <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                    <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered">
                         <h2 class="mb-3">{{ titles[search].styles }}</h2>
 
                         <span v-for="style in firstStyles"
@@ -71,7 +71,7 @@
                     </b-col>
 
 
-                    <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                    <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered">
                         <h2 class="mb-3">{{ titles[search].localisation }}</h2>
                         <gmap-autocomplete @place_changed="changePlace"
                                            :disabled="isSending"
@@ -96,7 +96,7 @@
                         </GmapMap>
                     </b-col>
 
-                    <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                    <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered">
                         <h2 class="mb-3">Détails supplémentaire</h2>
 
                         <b-form-group
@@ -113,7 +113,7 @@
                         </b-form-group>
                     </b-col>
 
-                    <b-col xl="8" offset-xl="2" class="mt-5 text-center" v-if="isValid">
+                    <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered" v-if="isValid">
                         <h2 class="mb-3">Récapitulatif</h2>
                         <div class="preview" v-if="search === 'band'">
                             Je suis un-e <strong>{{ selectedInstrument.musician_name.toLocaleLowerCase() }}</strong> et
@@ -129,7 +129,7 @@
                         </div>
                     </b-col>
 
-                    <b-col xl="8" offset-xl="2" class="mt-5 text-center">
+                    <b-col xl="8" offset-xl="2" class="mt-5 has-text-centered">
                         <b-button variant="primary" size="lg" :disabled="!isValid || isSending" @click="send">
                             <b-spinner v-if="isSending" class="mr-1 "></b-spinner>
 

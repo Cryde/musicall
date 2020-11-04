@@ -1,26 +1,29 @@
 <template>
-    <div v-if="isLoading" class="text-center pt-5">
-        <b-spinner variant="primary" label="Spinning"></b-spinner>
-    </div>
-    <b-row v-else class="mt-4">
-        <b-col cols="10" offset="1">
-            <div class="comment-count mb-3 text-right" v-if="thread.comment_number === 0">Il n'y a pas encore de commentaires</div>
-            <div class="comment-count mb-3 text-right" v-else-if="thread.comment_number === 1">1 commentaire</div>
-            <div class="comment-count mb-3 text-right" v-else>{{thread.comment_number}} commentaires</div>
+  <div v-if="isLoading" class="has-text-centered pt-5">
+    <spinner/>
+  </div>
+  <div v-else class="columns mt-4">
+    <div class="column is-10 is-offset-1">
+      <div class="comment-count mb-3 has-text-right" v-if="thread.comment_number === 0">
+        Il n'y a pas encore de commentaires
+      </div>
+      <div class="comment-count mb-3 has-text-right" v-else-if="thread.comment_number === 1">1 commentaire</div>
+      <div class="comment-count mb-3 has-text-right" v-else>{{ thread.comment_number }} commentaires</div>
 
-            <comment v-for="comment in comments" :comment="comment" :key="comment.id"/>
-        </b-col>
-    </b-row>
+      <comment v-for="comment in comments" :comment="comment" :key="comment.id" class="mb-5"/>
+    </div>
+  </div>
 </template>
 
 <script>
-  import {mapGetters} from "vuex";
-  import Comment from "./Comment";
+import {mapGetters} from "vuex";
+import Comment from "./Comment";
+import Spinner from "../../components/global/misc/Spinner";
 
-  export default {
-    components: {Comment},
-    computed: {
-      ...mapGetters('thread', ['comments', 'thread', 'isLoading'])
-    },
-  }
+export default {
+  components: {Spinner, Comment},
+  computed: {
+    ...mapGetters('thread', ['comments', 'thread', 'isLoading'])
+  },
+}
 </script>

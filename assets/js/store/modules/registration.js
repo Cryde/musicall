@@ -1,5 +1,4 @@
 import registerApi from '../../api/registration';
-import {retrieveErrors} from "../../helper/errors";
 
 const UPDATE_IS_LOADING = 'UPDATE_IS_LOADING';
 const UPDATE_IS_SUCCESS = 'UPDATE_IS_SUCCESS';
@@ -46,14 +45,10 @@ const actions = {
     try {
       const resp = await registerApi.register({username, password, email});
 
-      if (resp.data.hasOwnProperty('errors')) {
-        commit(UPDATE_ERRORS, retrieveErrors(resp.data.errors));
-
-      } else {
-        commit(UPDATE_IS_SUCCESS, true);
-      }
+      commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {
-      commit(UPDATE_ERRORS, ['Erreur inconnue']);
+      console.log(e.response);
+      commit(UPDATE_ERRORS, e.response.data.violations.map(violation => violation.title));
     }
 
     commit(UPDATE_IS_LOADING, false);

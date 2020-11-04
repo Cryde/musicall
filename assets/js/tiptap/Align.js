@@ -21,7 +21,7 @@ export default class Align extends Mark {
           getAttrs: value => ({textAlign: value}),
         },
       ],
-      toDOM: mark => ['span', {class: `text-${mark.attrs.textAlign} d-block`}, 0],
+      toDOM: mark => ['span', {class: `has-text-${mark.attrs.textAlign} is-block`}, 0],
     };
   }
 

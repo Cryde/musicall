@@ -14,7 +14,7 @@
             </b-form-group>
         </b-form>
         <b-row v-else>
-            <b-col cols="12" class="text-center">
+            <b-col cols="12" class="has-text-centered">
                 <i class="fas fa-check fa-2x"></i><br/>
                 Artiste enregistré
             </b-col>
