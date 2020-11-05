@@ -114,10 +114,9 @@
       </b-table-column>
     </b-table>
 
-
+    <b-loading :active="isPublishing"/>
     <add-publication-modal/>
     <add-video-modal/>
-    <publish-modal :errors="errors" :loading="loadingControlPublication"/>
   </div>
 </template>
 
@@ -127,10 +126,9 @@ import userPublicationApi from "../../../../api/userPublication";
 import AddPublicationModal from './AddPublicationModal';
 import AddVideoModal from '../add/video/AddVideoModal';
 import {mapGetters} from 'vuex';
-import PublishModal from "./PublishModal";
 
 export default {
-  components: {PublishModal, AddPublicationModal, AddVideoModal, vSelect},
+  components: {AddPublicationModal, AddVideoModal, vSelect},
   data() {
     return {
       publications: [],
@@ -145,7 +143,6 @@ export default {
 
       filter: {category_id: null, status: null},
       page: 1,
-      loadingControlPublication: false,
       errors: [],
       showPublicationUrl: '',
 
@@ -154,6 +151,7 @@ export default {
   computed: {
     ...mapGetters('security', ['isRoleAdmin']),
     ...mapGetters('publicationCategory', ['publicationCategories']),
+    ...mapGetters('publicationEdit', ['isPublishing', 'errorsPublish']),
   },
   mounted() {
     this.$root.$on('publication-added', () => {
@@ -203,48 +201,61 @@ export default {
       };
     },
     async showDeleteModal(id) {
-      const value = await this.$bvModal.msgBoxConfirm('Êtes vous sur ?', {
-        okTitle: 'Oui',
-        cancelTitle: 'Annuler',
+
+      const {result, dialog} = await this.$buefy.dialog.confirm({
+        message: 'Êtes vous sur ?',
+        type: 'is-danger',
+        confirmText: 'Oui',
+        cancelText: 'Annuler',
       });
 
-      if (!value) {
+      dialog.close();
+
+      if (!result) {
         return;
       }
 
       try {
         await userPublicationApi.deleteItem(id);
-        this.$refs.table.refresh();
+        this.getPublications();
       } catch (error) {
         console.error(error);
       }
     },
     async publishPublication(id) {
-      this.errors = [];
-      const value = await this.$bvModal.msgBoxConfirm('Une fois mise en ligne vous ne pourrez plus modifier la publication.', {
+
+      const {result, dialog} = await this.$buefy.dialog.confirm({
         title: 'Êtes vous sur ?',
-        okTitle: 'Oui',
-        cancelTitle: 'Annuler',
-        centered: true
+        message: 'Une fois mise en ligne vous ne pourrez plus modifier la publication.',
+        confirmText: 'Oui',
+        cancelText: 'Annuler'
       });
 
-      if (!value) {
+      dialog.close();
+
+      if (!result) {
         return;
       }
-      this.loadingControlPublication = true;
-      this.$bvModal.show('modal-publication-control');
 
-      try {
-        await userPublicationApi.publishPublicationApi(id);
-        this.$refs.table.refresh();
+      await this.$store.dispatch('publicationEdit/publish', id);
 
-        this.loadingControlPublication = false;
-      } catch (e) {
-        const data = e.response.data;
-        this.loadingControlPublication = false;
-        for (let error of data.violations) {
-          this.errors.push(error.title);
-        }
+      if (!this.errorsPublish.length) {
+        this.$buefy.dialog.alert({
+          message: `Votre publication a été publiée !`,
+          type: 'is-success',
+          hasIcon: true
+        })
+        this.getPublications();
+      } else {
+        this.$buefy.dialog.alert({
+          title: 'Erreur lors de la publication',
+          message: `
+                <b>Veuillez corriger ces erreurs avant de publier:</b> <br/>
+                <ul>${this.errorsPublish.map(error => `<li>${error}</li>`).join('')}</ul>
+            `,
+          type: 'is-danger',
+          hasIcon: true
+        })
       }
     },
     tagStatusColor(statusId) {

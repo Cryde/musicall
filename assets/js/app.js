@@ -13,7 +13,7 @@ import { Vue as VueIntegration } from '@sentry/integrations';
 import * as GmapVue from 'gmap-vue';
 import Buefy from 'buefy'
 import PerfectScrollbar from 'vue2-perfect-scrollbar'
-
+import VueProgressBar from 'vue-progressbar'
 
 Vue.use(Buefy, {
   defaultIconPack: 'fas',
@@ -26,6 +26,8 @@ if (process.env.SENTRY_DSN) {
     integrations: [new VueIntegration({Vue, attachProps: true})],
   });
 }
+
+Vue.use(VueProgressBar, {});
 
 Vue.use(PerfectScrollbar);
 
