@@ -380,7 +380,7 @@ class UserPublicationController extends AbstractController
 
             $imagePath = $uploaderHelper->asset($image, 'imageFile');
 
-            return $this->json(['data' => ['uri' => $cacheManager->getBrowserPath($imagePath, 'publication_image_filter')]]);
+            return $this->json(['uri' => $cacheManager->getBrowserPath($imagePath, 'publication_image_filter')]);
         }
 
         return $this->json($form->getErrors(true, true), Response::HTTP_BAD_REQUEST);

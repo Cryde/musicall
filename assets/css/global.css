@@ -37,6 +37,6 @@ button:focus {
     outline: 0 solid transparent !important;
 }
 
-.cursor-pointer {
+.is-clickable {
     cursor: pointer;
 }

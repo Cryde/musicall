@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isLoading" class="text-center pt-5">
+    <div v-if="isLoading" class="has-text-centered pt-5">
         <b-spinner variant="primary" label="Spinning"></b-spinner>
     </div>
     <b-row v-else>

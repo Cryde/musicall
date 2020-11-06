@@ -1,7 +1,7 @@
 <template>
     <b-row>
         <b-col :cols="12">
-            <b-button variant="primary" v-b-modal.modal-instrument-add class="float-right">Ajouter un style de musique
+            <b-button variant="primary" v-b-modal.modal-instrument-add class="is-pulled-right">Ajouter un style de musique
             </b-button>
             <h1>
                 <b-link :to="{name: 'admin_dashboard'}">Admin</b-link>

@@ -9,6 +9,7 @@ const UPDATE_AUTH_STATE = 'UPDATE_AUTH_STATE';
 const UPDATE_AUTH_REQUESTED = 'UPDATE_AUTH_REQUESTED';
 const AUTHENTICATING_ERROR = 'AUTHENTICATING_ERROR';
 const REMOVE_DATA_LOCAL_STORAGE = 'REMOVE_DATA_LOCAL_STORAGE';
+const RESET = 'RESET';
 
 const state = {
   isLoading: false,
@@ -78,6 +79,10 @@ const mutations = {
   },
   [UPDATE_AUTH_REQUESTED](state, authRequested) {
     state.authRequested = authRequested;
+  },
+  [RESET](state) {
+    state.isLoading = false;
+    state.error = null;
   }
 };
 
@@ -127,6 +132,9 @@ const actions = {
     displayLoading && commit(UPDATE_IS_LOADING, false);
 
     return state.token;
+  },
+  reset({commit}) {
+    commit(RESET);
   }
 };
 

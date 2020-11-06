@@ -2,7 +2,7 @@
     <b-modal id="modal-upload-wiki-artist-cover" centered ref="modal-upload-wiki-artist-cover" size="lg" title="Uploader une image de cover pour l'artiste">
 
         <b-alert v-show="errors.length" variant="danger" show>
-            <span v-for="error in errors" class="d-block">{{ error }}</span>
+            <span v-for="error in errors" class="is-block">{{ error }}</span>
         </b-alert>
 
         <p>

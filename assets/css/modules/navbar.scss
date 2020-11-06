@@ -1,0 +1,17 @@
+
+.search-bar {
+  width: auto;
+}
+
+@media screen and (min-width: 1000px) {
+  .search-bar {
+    width: 500px;
+  }
+}
+
+
+.navbar-brand .nav-logo {
+  background: #5B87AE;
+  padding: 7px 13px 3px 13px;
+  border-radius: 2px;
+}

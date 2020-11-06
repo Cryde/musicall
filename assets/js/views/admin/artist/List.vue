@@ -1,7 +1,7 @@
 <template>
     <b-row>
         <b-col :cols="12">
-            <b-button variant="primary" v-b-modal.modal-artist-add class="float-right">
+            <b-button variant="primary" v-b-modal.modal-artist-add class="is-pulled-right">
                 <i class="fas fa-plus"></i>
                 Ajouter artiste
             </b-button>

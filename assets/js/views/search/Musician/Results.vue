@@ -1,134 +1,82 @@
 <template>
-    <b-col xl="8" offset-xl="2" v-if="!isSuccess" class="pt-5 pb-4">
-        <b-alert variant="info" show v-if="!isSearching" class="mt-5">
-            <i class="fas fa-filter fa-3x mr-3 mt-3 mb-1 float-left"></i>
-            Cherchez parmis + de 2000 annonces des musiciens ou groupes.
-            Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
-        </b-alert>
-        <div v-else class="text-center mt-5">
-            <b-spinner/>
+  <div v-if="!isSuccess" class="columns pt-5 pb-4">
+    <div class="mt-5 column is-6 is-offset-3">
+      <b-message type="is-info" v-if="!isSearching" has-icon icon="filter">
+        Cherchez parmis + de 2000 annonces des musiciens ou groupes.
+        Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
+      </b-message>
+      <div v-else class="has-text-centered mt-5">
+        <spinner/>
+      </div>
+    </div>
+  </div>
+  <div v-else class="pt-5 pb-4">
+    <div v-if="isSearching" class="has-text-centered">
+      <spinner/>
+    </div>
+    <div v-else>
+      <h2 class="subtitle is-4">Résultats</h2>
+      <div class="columns is-multiline" v-if="results.length">
+        <result-item v-for="announce in results" :key="announce.id"
+                     :announce="announce"
+                     @open-message-modal="openSendMessageModal"
+                     class="column is-4 is-flex is-flex-direction-column"/>
+      </div>
+      <div v-else class="columns">
+        <div class="column mt-5 has-text-centered">
+          <i class="far fa-sad-tear fa-3x mb-2"></i><br/>
+          Il n'y a malheureusement pas de résultat pour votre recherche.<br/>
+          Essayez d'enlever ou de modifier un des filtres pour avoir d'autre résultats.
         </div>
-    </b-col>
-    <b-col v-else class="pt-5 pb-4">
-        <div v-if="isSearching" class="text-center">
-            <b-spinner/>
+      </div>
+
+      <hr class="mt-5 w-25"/>
+
+      <div class="is-12  columns mt-5">
+        <div class="column is-8 is-offset-2">
+          <b-message type="is-info" has-icon icon="search">
+            Vous ne trouvez pas ce que vous chercher ?<br/>
+            N'hésitez pas à
+            <router-link :to="{name: 'announce_musician_add'}">poster une annonce gratuitement.</router-link>
+          </b-message>
         </div>
-        <div v-else>
-            <h2>Résultats</h2>
-            <b-row v-if="results.length">
-                <b-col xl="6" cols="12" v-for="announce in results" :key="announce.id" class="d-flex">
-                    <div class="bg-white p-3 mt-4 card-result shadow d-flex flex-column w-100">
-                        <b-row class="mb-auto">
-                            <b-col cols="3" class="text-center">
-                                <avatar :user="announce.user"/>
-                                <br/>
-                                <span class="mt-2 d-inline-block text-truncate w-100">{{ announce.user.username }}</span>
-                            </b-col>
-                            <b-col>
-                                <strong>Localisation:</strong> {{ announce.location_name }}<br/>
-                                <strong v-if="announce.distance">Distance:</strong>
-                                <span v-if="announce.distance">{{ announce.distance | formatDistance }}<br/></span>
-                                <strong>{{ announce.type | instrumentLabel }}:</strong> {{ announce.instrument }}<br/>
-                                <strong>Styles:</strong> {{ announce.styles }}<br/>
-                            </b-col>
-                        </b-row>
-                        <b-row class="align-content-end mt-2 ">
-                            <b-col>
-                                <b-button v-if="isAuthenticated"
-                                          class="mt-auto float-right" size="sm"
-                                          @click="openSendMessageModal(announce.user)">
-                                    Contacter
-                                </b-button>
-                                <b-button v-else class="mt-auto float-right" size="sm"
-                                          v-b-tooltip.noninteractive.hover
-                                          title="Vous devez être inscrit ou connecté pour contacter un utilisateur"
-                                >
-                                    Contacter
-                                </b-button>
-                                <b-button v-if="announce.note" class="mt-auto float-right mr-2" size="sm">
-                                    Voir la note
-                                </b-button>
-                            </b-col>
-                        </b-row>
-                    </div>
-                </b-col>
-            </b-row>
-            <b-row v-else>
-                <b-col class="mt-5 text-center ">
-                    <i class="far fa-sad-tear fa-3x mb-2"></i><br/>
-                    Il n'y a malheureusement pas de résultat pour votre recherche.<br/>
-                    Essayez d'enlever ou de modifier un des filtres pour avoir d'autre résultats.
-                </b-col>
-            </b-row>
-
-            <hr class="mt-5 w-25"/>
-
-            <b-row class="mt-5">
-                <b-col xl="8" offset-xl="2">
-                    <b-alert variant="info" show>
-                        <i class="fas fa-search fa-3x float-left mr-3"></i>
-
-                        Vous ne trouvez pas ce que vous chercher ?<br/>
-                        N'hésitez pas à
-                        <b-link :to="{name: 'announce_musician_add'}">poster une annonce gratuitement.</b-link>
-                    </b-alert>
-                </b-col>
-            </b-row>
-        </div>
-        <send-message-modal
-                v-if="selectedRecipient && isAuthenticated"
-                :selected-recipient="selectedRecipient"
-                :show-is-sent-confirmation="true"
-        />
-    </b-col>
+      </div>
+    </div>
+    <send-message-modal
+        ref="modal-send-message"
+        v-if="selectedRecipient && isAuthenticated"
+        :selected-recipient="selectedRecipient"
+        :show-is-sent-confirmation="true"
+    />
+  </div>
 </template>
 
 <script>
-  import {mapGetters} from "vuex";
-  import {TYPES_ANNOUNCE_MUSICIAN, TYPES_ANNOUNCE_BAND} from "../../../constants/types";
-  import SendMessageModal from "../../message/modal/SendMessageModal";
-  import Avatar from "../../../components/user/Avatar";
+import {mapGetters} from "vuex";
+import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
+import SendMessageModal from "../../message/modal/SendMessageModal";
+import Avatar from "../../../components/user/Avatar";
+import Spinner from "../../../components/global/misc/Spinner";
+import ResultItem from "./ResultItem";
 
-  export default {
-    components: {Avatar, SendMessageModal},
-    data() {
-      return {
-        selectedRecipient: null,
-      }
-    },
-    computed: {
-      ...mapGetters('searchMusician', ['isSearching', 'isSuccess', 'results']),
-      ...mapGetters('security', ['isAuthenticated']),
-    },
-    filters: {
-      formatDistance(distance) {
-        const formattedDistance = (parseFloat(distance) * 100).toFixed(2);
-        return `± ${formattedDistance} km`;
-      },
-      instrumentLabel(type) {
-        if(type === TYPES_ANNOUNCE_MUSICIAN) {
-          return 'Instrument cherché';
-        }
-
-        if(type === TYPES_ANNOUNCE_BAND) {
-          return 'Instrument joué';
-        }
-      }
-    },
-    methods: {
-      openSendMessageModal(recipient) {
-        this.selectedRecipient = recipient;
-        this.$nextTick(() => {
-          this.$bvModal.show('modal-send-message');
-        })
-      }
+export default {
+  components: {ResultItem, Spinner, Avatar, SendMessageModal},
+  data() {
+    return {
+      selectedRecipient: null,
+    }
+  },
+  computed: {
+    ...mapGetters('searchMusician', ['isSearching', 'isSuccess', 'results']),
+    ...mapGetters('security', ['isAuthenticated']),
+  },
+  methods: {
+    openSendMessageModal(recipient) {
+      this.selectedRecipient = recipient;
+      this.$nextTick(() => {
+        this.$refs['modal-send-message'].open();
+      })
     }
   }
+}
 </script>
-
-<style>
-    .card-result {
-        border-radius: 5px;
-    }
-
-</style>

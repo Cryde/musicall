@@ -27,14 +27,14 @@ export default class YoutubeIframe extends Node {
       toDOM: node => [
         'div',
         {
-          class: 'embed-responsive embed-responsive-21by9'
+          class: 'image is-16by9'
         },
         ["iframe",
           {
             src: node.attrs.src,
             frameborder: 0,
             allowfullscreen: "true",
-            class: "embed-responsive-item",
+            class: "has-ratio",
             allow:
                 "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
           }]

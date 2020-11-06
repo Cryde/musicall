@@ -1,86 +1,116 @@
 <template>
-    <div>
-        <h1><b-link :to="{name: 'admin_dashboard'}">Admin</b-link> / Publication en attente de validation</h1>
+  <div>
+    <breadcrumb
+        :root="{to: {name: 'admin_dashboard'}, label: 'Admin'}"
+        :current="{label: 'Publication en attente de validation'}"
+    />
 
-        <b-table class="mt-5" striped hover :fields="fields" :items="publications" :busy="isLoading" show-empty>
-            <template v-slot:table-busy>
-                <div class="text-center text-danger my-2">
-                    <b-spinner class="align-middle"></b-spinner>
-                </div>
-            </template>
+    <h1 class="subtitle is-3">Publication en attente de validation</h1>
 
-            <template v-slot:empty="scope">
-                <h4>Il n'y a pas de publications en attente !</h4>
-            </template>
+    <b-table :data="publications" :loading="isLoading" mobile-cards>
 
-            <template v-slot:cell(subCategory)="data">
-                {{ data.item.sub_category.title }}
-            </template>
+      <b-table-column field="title" label="Titre" sortable v-slot="props">
+        {{ props.row.title }}
+      </b-table-column>
 
-            <template v-slot:cell(author)="data">
-                {{ data.item.author.username }}
-            </template>
-            <template v-slot:cell(actions)="data">
-                <b-button-group size="sm">
-                    <b-button variant="outline-primary" v-b-tooltip.hover title="Voir la publication"
-                              :to="{ name: 'publication_show', params: { slug: data.item.slug }}"
-                              target="_blank">
-                        <i class="far fa-eye fa-fw"></i>
-                    </b-button>
+      <b-table-column field="sub_category" label="Catégorie" sortable v-slot="props">
+        {{ props.row.sub_category.title }}
+      </b-table-column>
 
-                    <b-button variant="outline-success" v-b-tooltip.hover title="Valider la publication"
-                            @click="confirmApprove(data.item.id)">
-                        <i class="fas fa-check fa-fw"></i>
-                    </b-button>
+      <b-table-column field="author" label="Auteur" sortable v-slot="props">
+        {{ props.row.author.username }}
+      </b-table-column>
 
-                    <b-button variant="outline-danger" v-b-tooltip.hover title="Rejeter la publication"
-                              @click="confirmReject(data.item.id)">
-                        <i class="fas fa-times fa-fw"></i>
-                    </b-button>
+      <b-table-column label="Actions" v-slot="props">
+        <b-field size="is-small">
+          <p class="control">
+            <b-tooltip label="Voir la publication" type="is-black">
+              <b-button size="is-small" type="is-info is-light"
+                        target="_blank" tag="router-link"
+                        icon-left="eye"
+                        :to="{ name: 'publication_show', params: { slug: props.row.slug }}">
+              </b-button>
+            </b-tooltip>
+          </p>
 
-                </b-button-group>
-            </template>
-        </b-table>
-    </div>
+          <p class="control">
+            <b-tooltip label="Valider la publication" type="is-black">
+              <b-button size="is-small" type="is-success is-light"
+                        icon-left="check"
+                        @click="confirmApprove(props.row.id)">
+              </b-button>
+            </b-tooltip>
+          </p>
+
+          <p class="control">
+            <b-tooltip label="Rejeter la publication" type="is-black">
+              <b-button size="is-small" type="is-danger is-light"
+                        icon-left="times"
+                        @click="confirmReject(props.row.id)">
+              </b-button>
+            </b-tooltip>
+          </p>
+        </b-field>
+      </b-table-column>
+
+      <template #empty>
+        <div class="has-text-centered" v-if="!isLoading">
+          Il n'y a pas de publications en attente !
+        </div>
+      </template>
+    </b-table>
+  </div>
 </template>
 
 <script>
-  import {mapGetters} from 'vuex';
+import {mapGetters} from 'vuex';
+import Breadcrumb from "../Breadcrumb";
 
-  export default {
-    data() {
-      return {
-        fields: [
-          {key: 'title', label: 'Titre'},
-          {key: 'subCategory', 'label': 'Categorie'},
-          {key: 'author', label: "Auteur"},
-          {key: 'actions'},
-        ]
+export default {
+  components: {Breadcrumb},
+  data() {
+    return {
+      fields: [
+        {key: 'title', label: 'Titre'},
+        {key: 'subCategory', 'label': 'Categorie'},
+        {key: 'author', label: "Auteur"},
+        {key: 'actions'},
+      ]
+    }
+  },
+  computed: {
+    ...mapGetters('adminPendingPublications', ['publications', 'isLoading'])
+  },
+  async mounted() {
+    await this.$store.dispatch('adminPendingPublications/getPublications');
+  },
+  methods: {
+    async confirmApprove(id) {
+      const {result, dialog} = await this.$buefy.dialog.confirm({
+        message: 'Valider cette publication ?',
+        confirmText: 'Oui', cancelText: 'Annuler',
+      });
+
+      dialog.close();
+
+      if (result) {
+        await this.$store.dispatch('adminPendingPublications/approvePublication', {id});
+        await this.$store.dispatch('adminPendingPublications/getPublications');
+        this.$store.dispatch('notifications/loadNotifications');
       }
     },
-    computed: {
-      ...mapGetters('adminPendingPublications', ['publications', 'isLoading'])
-    },
-    async mounted() {
-      await this.$store.dispatch('adminPendingPublications/getPublications');
-    },
-    methods: {
-      async confirmApprove(id) {
-        const value = await this.$bvModal.msgBoxConfirm('Valider cette publication ?');
-        if(value) {
-          await this.$store.dispatch('adminPendingPublications/approvePublication', {id});
-          await this.$store.dispatch('adminPendingPublications/getPublications');
-          this.$store.dispatch('notifications/loadNotifications');
-        }
-      },
-      async confirmReject(id) {
-        const value = await this.$bvModal.msgBoxConfirm('Rejeter cette publication ?');
-        if(value) {
-          await this.$store.dispatch('adminPendingPublications/rejectPublication', {id});
-          await this.$store.dispatch('adminPendingPublications/getPublications');
-          this.$store.dispatch('notifications/loadNotifications');
-        }
+    async confirmReject(id) {
+      const {result, dialog} = await this.$buefy.dialog.confirm({
+        message: 'Rejeter cette publication ?',
+        confirmText: 'Oui', cancelText: 'Annuler',
+      });
+      dialog.close();
+      if (result) {
+        await this.$store.dispatch('adminPendingPublications/rejectPublication', {id});
+        await this.$store.dispatch('adminPendingPublications/getPublications');
+        this.$store.dispatch('notifications/loadNotifications');
       }
     }
   }
+}
 </script>

@@ -1,54 +1,53 @@
 <template>
   <div>
-    <div v-if="hasError" class="row">
-      <div class="col-12 col-lg-4 offset-lg-4">
-        <div class="alert alert-danger" role="alert">
-          {{ error.message }}
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <form method="post" class="col-lg-4 col-12 offset-lg-4 form-signin">
-
-        <b-alert show variant="info">
+    <div class="columns">
+      <div class="column is-12 is-4-desktop is-offset-4-desktop form-signin">
+        <b-message show type="is-info">
           MusicAll a été mise à jour.<br/>
           Vous pouvez toujours utiliser votre précédent login/email.<br/>
           Vous allez devoir simplement
           <router-link :to="{name: 'user_request_lost_password'}" class="mt-3">reset votre password</router-link>
           la première fois
-        </b-alert>
-        <h1 class="h3 mb-3 font-weight-normal">Login</h1>
-        <label for="inputUsername" class="sr-only">Username</label>
-        <b-form-input
-            id="inputUsername"
-            v-model="username"
-            required autofocus
-            size="lg"
-            placeholder="nom d'utilisateur"
-        ></b-form-input>
+        </b-message>
 
-        <label for="inputPassword" class="sr-only">Password</label>
-        <b-form-input
-            id="inputPassword"
-            v-model="password"
-            type="password"
-            size="lg"
-            required
-            placeholder="mot de passe"
-        ></b-form-input>
+        <b-message type="is-danger" v-if="hasError">
+          {{ error.message }}
+        </b-message>
 
-        <b-button
-            variant="primary" block
-            size="lg"
-            class="mt-3 mb-4"
-            :disabled="!username.length || !password.length || isLoading"
-            type="submit" @click.prevent @click="login">
-          <b-spinner small type="grow" v-if="isLoading"></b-spinner>
-          me connecter
-        </b-button>
+        <form method="post">
+          <h1 class="subtitle is-3 mb-3">Login</h1>
+          <label for="inputUsername" class="sr-only">Username</label>
+          <b-input
+              id="inputUsername"
+              v-model="username"
+              required autofocus
+              size="lg"
+              placeholder="nom d'utilisateur"
+          ></b-input>
 
-        <router-link :to="{name: 'user_request_lost_password'}" class="mt-3">Mot de passe oublié ?</router-link>
-      </form>
+          <label for="inputPassword" class="sr-only">Password</label>
+          <b-input
+              id="inputPassword"
+              v-model="password"
+              type="password"
+              size="lg"
+              required
+              placeholder="mot de passe"
+          ></b-input>
+
+          <b-button
+              type="is-info" block
+              size="lg"
+              class="is-fullwidth mt-3 mb-4"
+              :disabled="!username.length || !password.length || isLoading"
+              :loading="isLoading"
+              @click.prevent @click="login">
+            me connecter
+          </b-button>
+
+          <router-link :to="{name: 'user_request_lost_password'}" class="mt-3">Mot de passe oublié ?</router-link>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -90,6 +89,11 @@ export default {
         }
       })
     },
+  },
+  destroyed() {
+    this.username = '';
+    this.password = '';
+    this.$store.dispatch('security/reset');
   }
 }
 </script>

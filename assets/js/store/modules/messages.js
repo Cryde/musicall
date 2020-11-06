@@ -2,6 +2,7 @@ import messageApi from "../../api/message/message";
 
 const IS_LOADING = 'IS_LOADING';
 const IS_LOADING_MESSAGES = 'IS_LOADING_MESSAGES';
+const IS_ADDING_MESSAGE = 'IS_ADDING_MESSAGE';
 const UPDATE_THREADS = 'UPDATE_THREADS';
 const UPDATE_THREAD_IN_THREADS = 'UPDATE_THREAD_IN_THREADS';
 const ADD_THREAD_IN_THREADS = 'ADD_THREAD_IN_THREADS';
@@ -14,6 +15,7 @@ const state = {
   id: null,
   isLoading: true,
   isLoadingMessages: false,
+  isAddingMessage: false,
   currentThreadId: null,
   threads: [],
   messages: [], // related to the current thread
@@ -34,6 +36,9 @@ const getters = {
   },
   messages(state) {
     return state.messages;
+  },
+  isAddingMessage(state) {
+    return state.isAddingMessage;
   }
 };
 
@@ -75,6 +80,9 @@ const mutations = {
       }
       return item;
     })
+  },
+  [IS_ADDING_MESSAGE](state, isAdding) {
+    state.isAddingMessage = isAdding;
   }
 };
 
@@ -110,9 +118,11 @@ const actions = {
     }
   },
   async postMessageInThread({commit}, {threadId, content}) {
+    commit(IS_ADDING_MESSAGE, true);
     const {meta, thread, message, participants} = await messageApi.postMessageInThread({threadId, content});
     commit(UPDATE_THREAD_IN_THREADS, {thread, meta});
     commit(ADD_MESSAGE_TO_MESSAGES, message);
+    commit(IS_ADDING_MESSAGE, false);
   }
 };
 

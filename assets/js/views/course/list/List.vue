@@ -1,95 +1,84 @@
 <template>
-    <div>
-        <h1>{{ pageTitle }}</h1>
+  <div>
+    <h1 class="subtitle is-3 mb-4">{{ pageTitle }}</h1>
 
-        <b-table
-                ref="course-table"
-                :busy.sync="isBusy"
-                show-empty
-                borderless
-                striped
-                stacked="md"
-                :fields="fields"
-                :items="courseProvider"
-        >
-            <div slot="table-busy" class="text-center my-2">
-                <b-spinner class="align-middle"></b-spinner>
-            </div>
+    <b-table :data="data" :loading="isLoading" mobile-cards>
+      <b-table-column field="title" label="Titre" sortable v-slot="props">
+        <router-link :to="{name: 'course_show', params: {slug: props.row.slug}}">
+          {{ props.row.title }}
+        </router-link>
+      </b-table-column>
 
-            <template v-slot:cell(title)="data">
-                <router-link :to="{name: 'course_show', params: {slug: data.item.slug}}">
-                    {{ data.item.title }}
-                </router-link>
-            </template>
+      <b-table-column field="author_username" label="Auteur" sortable v-slot="props">
+        {{ props.row.author_username }}
+      </b-table-column>
 
-            <template v-slot:cell(publication_datetime)="data">
-                {{ data.item.publication_datetime | relativeDate }}
-            </template>
-        </b-table>
-    </div>
+      <b-table-column field="publication_datetime" label="Date" sortable v-slot="props">
+        {{ props.row.publication_datetime | relativeDate }}
+      </b-table-column>
+
+      <template #empty>
+        <div class="has-text-centered" v-if="!isLoading">
+          Il n'y a pas de contenu dans cette catégorie pour l'instant
+        </div>
+      </template>
+    </b-table>
+  </div>
 </template>
 
 <script>
-  import {mapGetters} from "vuex";
+import {mapGetters} from "vuex";
 
-  export default {
-    metaInfo() {
-      return {
-        title: this.pageTitle,
-      }
+export default {
+  metaInfo() {
+    return {
+      title: this.pageTitle,
+    }
+  },
+  data() {
+    return {
+      currentCategory: null,
+      data: [],
+    }
+  },
+  computed: {
+    pageTitle() {
+      return this.currentCategory ? this.currentCategory.title : '';
     },
-    data() {
-      return {
-        currentCategory: null,
-        currentPage: 1,
-        perPage: 0,
-        total: null,
-        loadingControlPublication: false,
-        isBusy: false,
-        errors: [],
-        showPublicationUrl: '',
-        sortBy: '',
-        sortDesc: true,
-        fields: [{key: 'title', label: 'Titre'}, {
-          key: 'author_username',
-          label: 'Auteur'
-        }, {key: 'publication_datetime', label: 'Publication'}]
-      }
-    },
-    computed: {
-      pageTitle() {
-        return this.currentCategory ? this.currentCategory.title : '';
-      },
-      ...mapGetters('publications', [
-        'publications',
-        'isLoading',
-        'numberOfPages'
-      ]),
-      ...mapGetters('publicationCategory', ['courseCategories'])
-    },
-    watch: {
-      '$route': 'fetchData'
-    },
-    mounted() {
+    ...mapGetters('publications', [
+      'publications',
+      'isLoading',
+      'numberOfPages'
+    ]),
+    ...mapGetters('publicationCategory', ['courseCategories'])
+  },
+  watch: {
+    '$route': 'fetchData'
+  },
+  mounted() {
+    const slug = this.$route.params.slug;
+    this.currentCategory = this.courseCategories.find((category) => category.slug === slug);
+
+    this.loadCourse();
+  },
+  methods: {
+    fetchData() {
       const slug = this.$route.params.slug;
       this.currentCategory = this.courseCategories.find((category) => category.slug === slug);
+      this.loadCourse();
     },
-    methods: {
-      fetchData() {
-        this.$refs['course-table'].refresh()
-      },
-      async courseProvider(ctx, callback) {
-        try {
-          const slug = this.$route.params.slug;
-          await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset: 0});
-          console.log(this.publications);
+    async loadCourse() {
+      try {
+        const slug = this.$route.params.slug;
+        await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset: 0});
+        console.log(this.publications);
 
-          return this.publications;
-        } catch (e) {
-          console.error(e);
-          return [];
-        }
-      },
-    }
+        this.data = this.publications;
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    },
   }
+}
 </script>
