@@ -1,135 +1,127 @@
 <template>
-    <b-card
-            overlay
-            class="featured-bg featured-level-1 position-relative"
-            img-alt="Card Image"
-            :text-variant="featured ? getColor(featured): 'dark'"
-            :body-text-variant="featured ? getColor(featured): 'dark'"
-            :img-src="featured ? featured.cover : ''"
-            :title="featured ? featured.title : ''"
-            @mouseenter="showActions = true"
-            @mouseleave="showActions = false"
-    >
-        <b-card-text>{{ featured ? featured.description : '' }}</b-card-text>
+  <div class="card is-clickable" style="min-height: 250px"
+       @mouseenter="showActions = true"
+       @mouseleave="showActions = false">
+    <div class="card-image" v-if="featured && featured.cover">
+      <figure class="image card-image is-overlay">
+        <img :src="featured.cover" :alt="featured.title"/>
+      </figure>
+    </div>
+    <header class="card-header is-overlay" v-if="featured && featured.title">
+      <h2 class="subtitle is-3 mt-3 ml-5" :class="getColor(featured)">{{ featured.title }}</h2>
+    </header>
+    <div class="card-content is-overlay mt-5 ml-0">
+      <div class="content" v-if="featured && featured.description" :class="getColor(featured)">
+        {{ featured.description }}
+      </div>
 
-        <div class="btn-actions position-absolute" v-show="showActions">
-            <b-button v-if="featured" variant="danger"
-                      class="mr-3"
-                      v-b-tooltip.noninteractive.hover title="Supprimer la mise en mise en avant"
-                      @click="remove(featured)"
-            ><i class="far fa-trash-alt"></i></b-button>
-
-            <b-button v-if="displayAction" variant="primary"
-                      v-b-tooltip.noninteractive.hover title="Editer la mise en mise en avant"
-                      @click="edit(featured)">
-                <i class="far fa-edit"></i>
-            </b-button>
-            <b-button v-if="!featured" variant="primary" @click="add(1)"
-                      v-b-tooltip.noninteractive.hover title="Ajouter une publication mise en avant">
-                <i class="fas fa-plus"></i>
-            </b-button>
-
-            <b-button v-if="displayAction && featured.options.color === 'light'" variant="dark"
-                      v-b-tooltip.noninteractive.hover title="Changer la couleur de la police (dark)"
-                      @click="colorDark(featured)">
-                <i class="fas fa-moon"></i>
-            </b-button>
-
-            <b-button v-if="displayAction && featured.options.color === 'dark'" variant="light"
-                      v-b-tooltip.noninteractive.hover title="Changer la couleur de la police (light)"
-                      @click="colorLight(featured)">
-                <i class="fas fa-sun"></i>
-            </b-button>
-
-            <b-button v-if="displayAction" variant="primary"
-                      v-b-tooltip.noninteractive.hover title="Editer l'image de la mise en avant"
-                      @click="cover(featured)">
-                <i class="far fa-image"></i>
-            </b-button>
-
-            <b-button v-if="showPublish" variant="success"
-                      v-b-tooltip.noninteractive.hover title="Mettre en ligne"
-                      @click="publish(featured)">
-                <i class="far fa-eye"></i>
-            </b-button>
-
-            <b-button v-if="showUnPublish" variant="info"
-                      v-b-tooltip.noninteractive.hover title="Cacher de la mise en ligne"
-                      @click="unpublish(featured)">
-                <i class="far fa-eye-slash"></i>
-            </b-button>
-        </div>
-    </b-card>
+      <div class="btn-actions" v-show="showActions">
+        <b-tooltip v-if="featured" type="is-black" position="is-left" label="Supprimer la mise en mise en avant">
+          <b-button type="is-danger" class="mr-3" @click="remove(featured)" icon-left="trash-alt"/>
+        </b-tooltip>
+        <b-tooltip v-if="displayAction" type="is-black" position="is-left" label="Editer la mise en mise en avant">
+          <b-button type="is-info" icon-left="edit" @click="edit(featured)"/>
+        </b-tooltip>
+        <b-tooltip v-if="!featured" type="is-black" position="is-left" label="Ajouter une publication mise en avant">
+          <b-button type="is-info" @click="add(1)" icon-left="plus"/>
+        </b-tooltip>
+        <b-tooltip
+            v-if="displayAction && featured.options.color === 'light'"
+            type="is-black" position="is-left" label="Changer la couleur de la police (dark)">
+          <b-button type="is-dark" @click="colorDark(featured)" icon-left="moon"/>
+        </b-tooltip>
+        <b-tooltip v-if="displayAction && featured.options.color === 'dark'"
+                   type="is-black" position="is-left" label="Changer la couleur de la police (light)">
+          <b-button type="is-light" icon-left="sun" @click="colorLight(featured)"/>
+        </b-tooltip>
+        <b-tooltip v-if="displayAction" type="is-black" position="is-left" label="Editer l'image de la mise en avant">
+          <b-button type="is-info" icon-left="image" @click="cover(featured)"/>
+        </b-tooltip>
+        <b-tooltip v-if="showPublish" type="is-black" position="is-left" label="Mettre en ligne">
+          <b-button type="is-success" icon-left="eye" @click="publish(featured)"/>
+        </b-tooltip>
+        <b-tooltip v-if="showUnPublish" type="is-black" position="is-left" label="Cacher de la mise en ligne">
+          <b-button type="is-info" icon-left="eye-slash" @click="unpublish(featured)"/>
+        </b-tooltip>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-  export default {
-    props: ['featured', 'level'],
-    data() {
-      return {
-        showActions: false
+export default {
+  props: ['featured', 'level'],
+  data() {
+    return {
+      showActions: false
+    }
+  },
+  computed: {
+    showPublish() {
+      if (!this.featured) {
+        return false;
+      }
+      if (this.featured.status === 1) {
+        return false; // already online
+      }
+
+      return !!this.featured.cover;
+    },
+    showUnPublish() {
+      if (!this.featured) {
+        return false;
+      }
+      return this.featured.status === 1;
+    },
+    displayAction() {
+      if (!this.featured) {
+        return false;
+      }
+      return this.featured.status !== 1;
+    }
+  },
+  methods: {
+    getColor(featured) {
+      return featured.options.color === 'dark' ? 'has-text-dark' : 'has-text-white';
+    },
+    colorDark(featured) {
+      this.$store.dispatch('adminFeatured/changeOption', {featuredId: featured.id, option: 'color', 'value': 'dark'})
+    },
+    colorLight(featured) {
+      this.$store.dispatch('adminFeatured/changeOption', {featuredId: featured.id, option: 'color', 'value': 'light'})
+    },
+    add(level) {
+      this.$emit('add', level);
+    },
+    edit(featured) {
+      this.$emit('edit', featured);
+    },
+    cover(featured) {
+      this.$emit('error', []);
+      this.$emit('cover', featured);
+    },
+    remove(featured) {
+      this.$store.dispatch('adminFeatured/remove', featured.id);
+    },
+    async publish(featured) {
+      this.$emit('error', []);
+      try {
+        await this.$store.dispatch('adminFeatured/publish', featured.id);
+      } catch (e) {
+        this.$emit('error', e.response.data.violations.map(violation => violation.title));
       }
     },
-    computed: {
-      showPublish() {
-        if (!this.featured) {
-          return false;
-        }
-        if (this.featured.status === 1) {
-          return false; // already online
-        }
-
-        return !!this.featured.cover;
-      },
-      showUnPublish() {
-        if (!this.featured) {
-          return false;
-        }
-
-        return this.featured.status === 1;
-      },
-      displayAction() {
-        if (!this.featured) {
-          return false;
-        }
-
-        return this.featured.status !== 1;
-      }
-    },
-    methods: {
-      getColor(featured) {
-        return featured.options.color === 'dark' ? 'dark' : 'white';
-      },
-      colorDark(featured) {
-        this.$store.dispatch('adminFeatured/changeOption', {featuredId: featured.id, option: 'color', 'value': 'dark'})
-      },
-      colorLight(featured) {
-        this.$store.dispatch('adminFeatured/changeOption', {featuredId: featured.id, option: 'color', 'value': 'light'})
-      },
-      add(level) {
-        this.$emit('add', level);
-      },
-      edit(featured) {
-        this.$emit('edit', featured);
-      },
-      cover(featured) {
-        this.$emit('error', []);
-        this.$emit('cover', featured);
-      },
-      remove(featured) {
-        this.$store.dispatch('adminFeatured/remove', featured.id);
-      },
-      async publish(featured) {
-        this.$emit('error', []);
-        try {
-          await this.$store.dispatch('adminFeatured/publish', featured.id);
-        } catch (e) {
-          this.$emit('error', e.response.data.violations.map(violation => violation.title));
-        }
-      },
-      async unpublish(featured) {
-        await this.$store.dispatch('adminFeatured/unpublish', featured.id);
-      }
+    async unpublish(featured) {
+      await this.$store.dispatch('adminFeatured/unpublish', featured.id);
     }
   }
+}
 </script>
+
+<style scoped>
+.btn-actions {
+  bottom: 20px;
+  right: 20px;
+  position: absolute;
+}
+</style>

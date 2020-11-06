@@ -1,88 +1,86 @@
 <template>
-    <div id="app">
-        <Header/>
-        <div class="container">
-            <div class="row">
-                <div class="col-12 col-lg-2">
-                    <Menu/>
-                </div>
-                <div class="col-12 col-lg-10" v-if="isReadyWithMinimal">
-                    <fade-transition :duration="100" origin="center top" mode="out-in">
-                        <router-view></router-view>
-                    </fade-transition>
-                </div>
-            </div>
+  <div id="app">
+    <Header/>
+    <div class="container mt-5 mb-5">
+      <div class="columns">
+        <div class="column is-2">
+          <Menu/>
         </div>
-        <Footer/>
+        <div class="column is-10" v-if="isReadyWithMinimal">
+          <router-view></router-view>
+        </div>
+      </div>
     </div>
+    <Footer/>
+    <vue-progress-bar></vue-progress-bar>
+  </div>
 </template>
 
 <script>
-  import Header from './components/global/Header';
-  import Menu from './components/global/Menu';
-  import Footer from './components/global/Footer';
-  import axios from 'axios';
-  import {mapGetters} from 'vuex';
-  import {FadeTransition} from 'vue2-transitions'
+import Header from './components/global/Header';
+import Menu from './components/global/Menu';
+import Footer from './components/global/Footer';
+import axios from 'axios';
+import {mapGetters} from 'vuex';
 
-  export default {
-    data() {
-      return {
-        isReadyWithMinimal: false
+export default {
+  data() {
+    return {
+      isReadyWithMinimal: false
+    }
+  },
+  name: 'app',
+  components: {
+    Header, Footer, Menu
+  },
+  computed: {
+    ...mapGetters('security', ['isAuthenticated'])
+  },
+  async created() {
+
+    try {
+      await this.$store.dispatch('security/getAuthToken', {displayLoading: true});
+    } catch (e) {
+      if (e.response.status === 401) {
+        await this.$store.dispatch('security/logout');
+        window.location.reload();
+        return;
       }
-    },
-    name: 'app',
-    components: {
-      Header, Footer, Menu, FadeTransition
-    },
-    computed: {
-      ...mapGetters('security', ['isAuthenticated'])
-    },
-    async created() {
+    }
 
-      try {
-        await this.$store.dispatch('security/getAuthToken', {displayLoading: true});
-      } catch (e) {
-        if (e.response.status === 401) {
-          await this.$store.dispatch('security/logout');
-          window.location.reload();
-          return;
+    await this.$store.dispatch('publicationCategory/getCategories');
+    this.isReadyWithMinimal = true;
+
+    const store = this.$store;
+    const router = this.$router;
+
+    axios.interceptors.request.use(async function (config) {
+      const url = config.url;
+      const currentRoute = router.history.current;
+
+      if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
+        const token = await store.dispatch('security/getAuthToken', {displayLoading: false});
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        if (!token && currentRoute.meta.isAuthRequired) {
+          await router.replace({name: 'home'});
         }
       }
 
-      await this.$store.dispatch('publicationCategory/getCategories');
-      this.isReadyWithMinimal = true;
+      return config;
+    }, function (error) {
+      return Promise.reject(error);
+    });
 
-      const store = this.$store;
-      const router = this.$router;
+    if (this.isAuthenticated) {
+      await this.$store.dispatch('user/load');
+      this.$store.dispatch('notifications/loadNotifications');
+    }
 
-      axios.interceptors.request.use(async function (config) {
-        const url = config.url;
-        const currentRoute = router.history.current;
-
-        if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
-          const token = await store.dispatch('security/getAuthToken', {displayLoading: false});
-          if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-          }
-
-          if (!token && currentRoute.meta.isAuthRequired) {
-            await router.replace({name: 'home'});
-          }
-        }
-
-        return config;
-      }, function (error) {
-        return Promise.reject(error);
-      });
-
-      if (this.isAuthenticated) {
-        await this.$store.dispatch('user/load');
-        this.$store.dispatch('notifications/loadNotifications');
-      }
-
-      /**
-       async responseError(error) {
+    /**
+     async responseError(error) {
 
           console.error(error);
 
@@ -103,7 +101,7 @@
           }
           return Promise.reject(error)
         }
-       */
-    }
+     */
   }
+}
 </script>

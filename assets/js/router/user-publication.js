@@ -2,7 +2,7 @@ export default [
   {
     name: "user_publications",
     path: "/user/publications",
-    component: () => import("../components/publication/user/list/List"),
+    component: () => import("../views/user/Publication/list/List"),
     meta: {isAuthRequired: true}
   },
   {
@@ -14,7 +14,7 @@ export default [
   {
     path: "/user/publications/edit/:id",
     name: "user_publications_edit",
-    component: () => import("../components/publication/user/edit/Edit"),
+    component: () => import("../views/user/Publication/edit/Edit"),
     meta: {isAuthRequired: true}
   },
   {

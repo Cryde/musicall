@@ -10,6 +10,8 @@ const state = {
   error: null,
   publications: [],
   numberOfPages: 0,
+  total: 0,
+  limitByPage: 0,
 };
 
 const getters = {
@@ -27,6 +29,12 @@ const getters = {
   },
   numberOfPages(state) {
     return state.numberOfPages;
+  },
+  total(state) {
+    return state.total;
+  },
+  limitByPage(state) {
+    return state.limitByPage;
   }
 };
 
@@ -42,6 +50,8 @@ const mutations = {
   },
   [UPDATE_META](state, meta) {
     state.numberOfPages = meta.numberOfPages;
+    state.total = meta.total;
+    state.limitByPage = meta.limit_by_page;
   },
 };
 

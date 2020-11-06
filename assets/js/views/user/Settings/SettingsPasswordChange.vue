@@ -1,96 +1,111 @@
 <template>
-        <b-card title="Changer son mot de passe">
-            <b-form @submit.stop.prevent class="pt-4">
 
-                <b-alert v-model="success" variant="success">
-                    Mot de passe changé avec succès !
-                </b-alert>
+  <div class="card">
+    <div class="card-content">
+      <h3 class="subtitle is-4">Changer son mot de passe</h3>
 
-                <b-alert v-model="displayErrors" variant="danger">
-                    <span v-for="error in errors">{{ error }}</span>
-                </b-alert>
+      <div class="pt-4 is-clearfix">
 
-                <label for="old-password">Ancien mot de passe</label>
-                <b-input type="password" id="old-password" v-model="oldPassword"
-                         @input="checkPasswordValidity"></b-input>
+        <b-message v-if="success" type="is-success">
+          Mot de passe changé avec succès !
+        </b-message>
 
-                <label for="new-password">Nouveau mot de passe</label>
-                <b-input type="password" id="new-password" v-model="newPassword"
-                         @input="checkPasswordValidity"></b-input>
+        <b-message v-if="displayErrors" type="is-danger">
+          <span v-for="error in errors">{{ error }}</span>
+        </b-message>
 
-                <label for="confirma-password">Confirmation</label>
-                <b-input type="password" id="confirma-password" v-model="confirmationPassword"
-                         @input="checkPasswordValidity"></b-input>
+        <b-field label="Ancien mot de passe">
+          <b-input type="password" id="old-password" v-model="oldPassword"
+                   @input="checkPasswordValidity"></b-input>
+        </b-field>
 
-                <b-button variant="primary" class="mt-3 float-right"
-                          :disabled="!confirmationPassword || !newPassword || !oldPassword || !isPasswordOk"
-                          @click="sendPassword"
-                >
-                    Changer son mot de passe
-                </b-button>
-            </b-form>
+        <b-field label="Nouveau mot de passe">
+          <b-input type="password" password-reveal v-model="newPassword"
+                   @input="checkPasswordValidity"></b-input>
+        </b-field>
 
-        </b-card>
+        <b-field label="Confirmation">
+          <b-input type="password" password-reveal v-model="confirmationPassword"
+                   @input="checkPasswordValidity"></b-input>
+
+        </b-field>
+
+        <b-button type="is-info" class="mt-3 is-pulled-right" :loading="isLoading"
+                  :disabled="!confirmationPassword || !newPassword || !oldPassword || !isPasswordOk || isLoading"
+                  @click="sendPassword"
+        >
+          Changer son mot de passe
+        </b-button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-  import {debounce} from 'lodash';
-  import userApi from '../../../api/user';
+import {debounce} from 'lodash';
+import userApi from '../../../api/user';
 
-  export default {
-    data() {
-      return {
-        success: false,
-        errors: [],
-        oldPassword: '',
-        newPassword: '',
-        confirmationPassword: ''
-      }
+export default {
+  data() {
+    return {
+      success: false,
+      isLoading: false,
+      errors: [],
+      oldPassword: '',
+      newPassword: '',
+      confirmationPassword: ''
+    }
+  },
+  computed: {
+    displayErrors() {
+      return this.errors.length > 0;
     },
-    computed: {
-      displayErrors() {
-        return this.errors.length > 0;
-      },
-      isPasswordOk() {
-        return this.isNewPasswordAndConfirmationEqual() && !this.isOldAndNewPasswordEquals();
+    isPasswordOk() {
+      return this.isNewPasswordAndConfirmationEqual() && !this.isOldAndNewPasswordEquals();
+    }
+  },
+  methods: {
+    async sendPassword() {
+      this.isLoading = true;
+      try {
+        await userApi.changePassword({
+          oldPassword: this.oldPassword,
+          newPassword: this.newPassword
+        });
+        this.success = true;
+        this.oldPassword = '';
+        this.newPassword = '';
+        this.confirmationPassword = '';
+      } catch (e) {
+        if (e.response.data.violations) {
+          this.errors.push(...e.response.data.violations.map(item => item.title));
+        } else {
+          this.errors.push(...e.response.data);
+        }
       }
+      this.isLoading = false;
     },
-    methods: {
-      async sendPassword() {
-        try {
-          await userApi.changePassword({
-            oldPassword: this.oldPassword,
-            newPassword: this.newPassword
-          });
-          this.success = true;
-          this.oldPassword = '';
-          this.newPassword = '';
-          this.confirmationPassword = '';
-        } catch (e) {
-          this.errors.push(...e);
-        }
-      },
-      checkPasswordValidity: debounce(function () {
-        this.success = false;
-        if (!this.oldPassword.length || !this.newPassword.length || !this.confirmationPassword.length) {
-          return;
-        }
-        this.errors = [];
-        if (!this.isNewPasswordAndConfirmationEqual()) {
-          this.errors.push('Le nouveau mot de passe et sa confirmation ne sont pas identique');
-          return;
-        }
+    checkPasswordValidity: debounce(function () {
+      this.success = false;
+      if (!this.oldPassword.length || !this.newPassword.length || !this.confirmationPassword.length) {
+        return;
+      }
+      this.errors = [];
+      if (!this.isNewPasswordAndConfirmationEqual()) {
+        this.errors.push('Le nouveau mot de passe et sa confirmation ne sont pas identique');
+        return;
+      }
 
-        if (this.isOldAndNewPasswordEquals()) {
-          this.errors.push('Votre nouveau mot de passe est identique à l\'ancien');
-        }
-      }, 500),
-      isNewPasswordAndConfirmationEqual() {
-        return this.newPassword === this.confirmationPassword;
-      },
-      isOldAndNewPasswordEquals() {
-        return this.oldPassword === this.newPassword;
+      if (this.isOldAndNewPasswordEquals()) {
+        this.errors.push('Votre nouveau mot de passe est identique à l\'ancien');
       }
+    }, 500),
+    isNewPasswordAndConfirmationEqual() {
+      return this.newPassword === this.confirmationPassword;
+    },
+    isOldAndNewPasswordEquals() {
+      return this.oldPassword === this.newPassword;
     }
   }
+}
 </script>

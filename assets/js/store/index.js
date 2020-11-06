@@ -8,6 +8,7 @@ import adminPendingGalleries from './modules/admin/pendingGalleries';
 import adminFeatured from './modules/admin/adminFeatured';
 import publication from './modules/publication';
 import publications from './modules/publications';
+import publicationEdit from './modules/publicationEdit';
 import publicationCategory from './modules/publicationCategory';
 import userGallery from './modules/userGallery';
 import userGalleries from './modules/userGalleries';
@@ -37,6 +38,7 @@ export default new Vuex.Store({
     publication,
     publications,
     publicationCategory,
+    publicationEdit,
     adminPendingPublications,
     adminPendingGalleries,
     userGallery,

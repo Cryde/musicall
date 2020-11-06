@@ -1,42 +1,47 @@
 <template>
-    <b-row>
-        <b-col cols="12">
-            <b-row>
-                <b-col cols="12">
-                    <b-button v-b-modal.modal-send-message variant="primary" class="float-right">
-                        <i class="far fa-comment-dots"></i> Envoyer un message
-                    </b-button>
-                    <h1>Messages</h1>
-                </b-col>
-            </b-row>
+  <div class="columns">
+    <div class="column is-12">
+      <div class="columns">
+        <div class="column is-12">
+          <b-button
+              @click="$refs['modal-send-message'].open()"
+              type="is-info"
+              class="is-pulled-right mr-3"
+              icon-left="comment-dots"
+          >
+            Envoyer un message
+          </b-button>
+          <h1 class="subtitle is-3">Messages</h1>
+        </div>
+      </div>
 
-            <b-row id="thread-container" class="content-box p-2 mt-4">
-                <b-col cols="4">
-                    <b-spinner v-if="isLoading"></b-spinner>
-                    <thread-list v-else />
-                </b-col>
-                <b-col cols="8" class="h-100">
-                    <thread/>
-                </b-col>
-            </b-row>
-        </b-col>
-        <send-message-modal/>
-    </b-row>
+      <div id="thread-container" class="columns card inbox-messages">
+        <div class="column is-4 pt-0 pb-0 pl-0">
+          <b-loading :active="isLoading"/>
+          <thread-list v-if="!isLoading"/>
+        </div>
+        <div class="column is-8 h-100">
+          <thread/>
+        </div>
+      </div>
+    </div>
+    <send-message-modal ref="modal-send-message"/>
+  </div>
 </template>
 
 <script>
-  import SendMessageModal from './modal/SendMessageModal'
-  import {mapGetters} from "vuex";
-  import ThreadList from "./ThreadList";
-  import Thread from "./Thread";
+import SendMessageModal from './modal/SendMessageModal'
+import {mapGetters} from "vuex";
+import ThreadList from "./ThreadList";
+import Thread from "./Thread";
 
-  export default {
-    components: {ThreadList, SendMessageModal, Thread},
-    computed: {
-      ...mapGetters('messages', ['isLoading'])
-    },
-    async mounted() {
-      await this.$store.dispatch('messages/loadThreads');
-    }
+export default {
+  components: {ThreadList, SendMessageModal, Thread},
+  computed: {
+    ...mapGetters('messages', ['isLoading'])
+  },
+  async mounted() {
+    await this.$store.dispatch('messages/loadThreads');
   }
+}
 </script>
