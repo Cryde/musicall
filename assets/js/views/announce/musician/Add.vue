@@ -28,134 +28,130 @@
         </div>
       </div>
 
-      <fade-transition :duration="100" origin="center top" mode="out-in">
-        <div v-if="search !== ''">
-          <div class="columns">
-            <div class="column is-8 is-offset-2 mt-5 has-text-centered">
-              <h2 class="mb-3 subtitle is-5">{{ titles[search].instrument }}</h2>
+      <div v-if="search !== ''">
+        <div class="columns">
+          <div class="column is-8 is-offset-2 mt-5 has-text-centered">
+            <h2 class="mb-3 subtitle is-5">{{ titles[search].instrument }}</h2>
 
-              <span v-for="instrument in instruments"
-                    class="selectable-button is-inline-block mb-1 pl-4 pr-4 pt-2 pb-2 mr-1"
-                    :class="{'selected': selectedInstrument.id === instrument.id}"
-                    @click="selectInstrument(instrument)"
-              >
+            <span v-for="instrument in instruments"
+                  class="selectable-button is-inline-block mb-1 pl-4 pr-4 pt-2 pb-2 mr-1"
+                  :class="{'selected': selectedInstrument.id === instrument.id}"
+                  @click="selectInstrument(instrument)"
+            >
                             {{ instrument.name }}
                         </span>
-            </div>
           </div>
-          <div class="columns">
-            <div class="column is-8 is-offset-2 mt-5 has-text-centered">
-              <h2 class="mb-3 subtitle is-5">{{ titles[search].styles }}</h2>
+        </div>
+        <div class="columns">
+          <div class="column is-8 is-offset-2 mt-5 has-text-centered">
+            <h2 class="mb-3 subtitle is-5">{{ titles[search].styles }}</h2>
 
-              <span v-for="style in firstStyles"
-                    class="selectable-button is-inline-block pl-4 mb-1 pr-4 pt-2 pb-2 mr-1"
-                    :class="{'selected': selectedStyles.includes(style)}"
-                    @click="addSelectedStyle(style)"
-              >
+            <span v-for="style in firstStyles"
+                  class="selectable-button is-inline-block pl-4 mb-1 pr-4 pt-2 pb-2 mr-1"
+                  :class="{'selected': selectedStyles.includes(style)}"
+                  @click="addSelectedStyle(style)"
+            >
                             {{ style.name }}
                         </span>
 
-              <div></div>
-              <b-button v-if="!seeMoreStyle" size="sm" type="is-default" class="mt-2 mb-2"
-                        @click="seeMoreStyle = true">
-                Voir plus de styles
-              </b-button>
-              <b-button v-else variant="primary" size="sm" class="mt-2 mb-2" @click="seeMoreStyle = false">
-                Voir moins de styles
-              </b-button>
-              <div></div>
-              <span v-for="style in restStyles"
-                    v-if="seeMoreStyle"
-                    class="selectable-button is-inline-block pl-4 mb-1 pr-4 pt-2 pb-2 mr-1"
-                    :class="{'selected': selectedStyles.includes(style)}"
-                    @click="addSelectedStyle(style)"
-              >
+            <div></div>
+            <b-button v-if="!seeMoreStyle" size="sm" type="is-default" class="mt-2 mb-2"
+                      @click="seeMoreStyle = true">
+              Voir plus de styles
+            </b-button>
+            <b-button v-else variant="primary" size="sm" class="mt-2 mb-2" @click="seeMoreStyle = false">
+              Voir moins de styles
+            </b-button>
+            <div></div>
+            <span v-for="style in restStyles"
+                  v-if="seeMoreStyle"
+                  class="selectable-button is-inline-block pl-4 mb-1 pr-4 pt-2 pb-2 mr-1"
+                  :class="{'selected': selectedStyles.includes(style)}"
+                  @click="addSelectedStyle(style)"
+            >
                     {{ style.name }}
                 </span>
-            </div>
           </div>
-          <div class="columns">
+        </div>
+        <div class="columns">
 
-            <div class="column is-8 is-offset-2 mt-5 has-text-centered">
-              <h2 class="mb-3 subtitle is-5">{{ titles[search].localisation }}</h2>
-              <gmap-autocomplete @place_changed="changePlace"
-                                 :disabled="isSending"
-                                 class="input">
-              </gmap-autocomplete>
+          <div class="column is-8 is-offset-2 mt-5 has-text-centered">
+            <h2 class="mb-3 subtitle is-5">{{ titles[search].localisation }}</h2>
+            <gmap-autocomplete @place_changed="changePlace"
+                               :disabled="isSending"
+                               class="input">
+            </gmap-autocomplete>
 
 
-              <div class="text-left text-info">Indiquez de préférence une ville ou commune.</div>
+            <div class="text-left text-info">Indiquez de préférence une ville ou commune.</div>
 
-              <GmapMap
-                  ref="map"
-                  class="mb-2"
-                  :center="map.center"
-                  :zoom="map.zoom"
-                  style="width: 100%; height: 400px"
-              >
-                <gmap-info-window :options="map.infoOptions" :position="map.infoWindowPos"
-                                  :opened="map.infoWinOpen"></gmap-info-window>
+            <GmapMap
+                ref="map"
+                class="mb-2"
+                :center="map.center"
+                :zoom="map.zoom"
+                style="width: 100%; height: 400px"
+            >
+              <gmap-info-window :options="map.infoOptions" :position="map.infoWindowPos"
+                                :opened="map.infoWinOpen"></gmap-info-window>
 
-                <Gmap-Marker v-if="map.place.latitude" :label="map.place.name"
-                             :position="{lat: map.place.latitude, lng: map.place.longitude}"></Gmap-Marker>
-              </GmapMap>
-            </div>
+              <Gmap-Marker v-if="map.place.latitude" :label="map.place.name"
+                           :position="{lat: map.place.latitude, lng: map.place.longitude}"></Gmap-Marker>
+            </GmapMap>
           </div>
-          <div class="columns">
-            <div class="column is-8 is-offset-2 mt-5 has-text-centered">
-              <h2 class="mb-3 subtitle is-5">Détails supplémentaire</h2>
+        </div>
+        <div class="columns">
+          <div class="column is-8 is-offset-2 mt-5 has-text-centered">
+            <h2 class="mb-3 subtitle is-5">Détails supplémentaire</h2>
 
-              <b-input
-                  type="textarea"
-                  :disabled="isSending"
-                  v-model="note"
-                  @keyup.native="updateNote"
-                  rows="3" max-rows="5"
-                  placeholder="Ajoutez des détails ici. Ex : groupe favoris, lien vers un morceau, ..."></b-input>
-            </div>
+            <b-input
+                type="textarea"
+                :disabled="isSending"
+                v-model="note"
+                @keyup.native="updateNote"
+                rows="3" max-rows="5"
+                placeholder="Ajoutez des détails ici. Ex : groupe favoris, lien vers un morceau, ..."></b-input>
           </div>
+        </div>
 
-          <div class="columns">
-            <div class="column is-8 is-offset-2 mt-5 has-text-centered" v-if="isValid">
-              <h2 class="mb-3 subtitle is-5">Récapitulatif</h2>
-              <div class="preview" v-if="search === 'band'">
-                Je suis un-e <strong>{{ selectedInstrument.musician_name.toLocaleLowerCase() }}</strong> et
-                je recherche un groupe jouant du
-                <strong>{{
-                    selectedStyles.map(style => style.name.toLocaleLowerCase()).join(', ')
-                  }}</strong> dans les alentours de <strong>{{ selectedLocationName }}</strong>.
-              </div>
-              <div class="preview" v-else>
-                Je recherche un-e <strong>{{
-                  selectedInstrument.musician_name.toLocaleLowerCase()
-                }}</strong> jouant du
-                <strong>{{
-                    selectedStyles.map(style => style.name.toLocaleLowerCase()).join(', ')
-                  }}</strong> dans les alentours de <strong>{{ selectedLocationName }}</strong>.
-              </div>
+        <div class="columns">
+          <div class="column is-8 is-offset-2 mt-5 has-text-centered" v-if="isValid">
+            <h2 class="mb-3 subtitle is-5">Récapitulatif</h2>
+            <div class="preview" v-if="search === 'band'">
+              Je suis un-e <strong>{{ selectedInstrument.musician_name.toLocaleLowerCase() }}</strong> et
+              je recherche un groupe jouant du
+              <strong>{{
+                  selectedStyles.map(style => style.name.toLocaleLowerCase()).join(', ')
+                }}</strong> dans les alentours de <strong>{{ selectedLocationName }}</strong>.
             </div>
-          </div>
-          <div class="columns">
-            <div class="column is-8 is-offset-2 mt-5 has-text-centered">
-              <b-button type="is-info"
-                        :loading="isSending"
-                        size="is-large" :disabled="!isValid || isSending" @click="send">
-                Créer mon annonce
-              </b-button>
+            <div class="preview" v-else>
+              Je recherche un-e <strong>{{
+                selectedInstrument.musician_name.toLocaleLowerCase()
+              }}</strong> jouant du
+              <strong>{{
+                  selectedStyles.map(style => style.name.toLocaleLowerCase()).join(', ')
+                }}</strong> dans les alentours de <strong>{{ selectedLocationName }}</strong>.
             </div>
           </div>
         </div>
-      </fade-transition>
+        <div class="columns">
+          <div class="column is-8 is-offset-2 mt-5 has-text-centered">
+            <b-button type="is-info"
+                      :loading="isSending"
+                      size="is-large" :disabled="!isValid || isSending" @click="send">
+              Créer mon annonce
+            </b-button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
-import {FadeTransition} from 'vue2-transitions';
 
 export default {
-  components: {FadeTransition},
   data() {
     return {
       search: '',

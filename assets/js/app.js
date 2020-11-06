@@ -7,7 +7,6 @@ import VueMeta from 'vue-meta';
 import relativeDateFilter from "./filters/relative-date-filter";
 import prettyDateFilter from "./filters/pretty-date-filter";
 import VueGtag from "vue-gtag";
-import './directives/click-outside';
 import * as Sentry from '@sentry/browser';
 import { Vue as VueIntegration } from '@sentry/integrations';
 import * as GmapVue from 'gmap-vue';
