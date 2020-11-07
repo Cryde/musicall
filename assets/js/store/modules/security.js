@@ -95,12 +95,16 @@ const actions = {
       const resp = await apiSecurity.login(payload.username, payload.password);
       commit(UPDATE_AUTH_STATE, {token: resp.token, refresh_token: resp.refresh_token});
       commit(UPDATE_LOCALE_STORAGE, {token: resp.token, refresh_token: resp.refresh_token});
-      commit(UPDATE_IS_LOADING, false);
-    } catch (err) {
-      commit(AUTHENTICATING_ERROR);
-      commit(UPDATE_ERRORS, err);
-      commit(UPDATE_IS_LOADING, false);
+    } catch (e) {
+      if (e.response.status === 401) {
+        commit(AUTHENTICATING_ERROR);
+        commit(UPDATE_ERRORS, {message: 'Login et/ou mot de passe invalide'});
+      } else {
+        commit(AUTHENTICATING_ERROR);
+        commit(UPDATE_ERRORS, e.response.data);
+      }
     }
+    commit(UPDATE_IS_LOADING, false);
   },
   async logout({commit}) {
     commit(REMOVE_DATA_LOCAL_STORAGE);
