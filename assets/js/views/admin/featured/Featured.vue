@@ -28,7 +28,7 @@ import AddFeaturedModal from "./modal/AddFeaturedModal";
 import EditFeaturedModal from "./modal/EditFeaturedModal";
 import EditCoverModal from "./modal/EditCoverModal";
 import FeaturedCard from "./FeaturedCard";
-import Breadcrumb from "../Breadcrumb";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
   components: {Breadcrumb, FeaturedCard, EditCoverModal, EditFeaturedModal, AddFeaturedModal},
