@@ -1,6 +1,11 @@
 <template>
   <div class="columns">
     <div class="column is-12">
+      <breadcrumb
+          :root="{to: {name: 'home'}, label: 'Home'}"
+          :level1="{to: {name: 'user_settings'}, label: 'Paramètres'}"
+          :current="{label: currentLabel}"/>
+
       <div class="tabs">
         <ul>
           <router-link :to="{name: 'user_settings'}" exact-active-class="is-active" tag="li">
@@ -16,3 +21,21 @@
     </div>
   </div>
 </template>
+
+<script>
+import Breadcrumb from "../../components/global/Breadcrumb";
+
+export default {
+  components: {Breadcrumb},
+  computed: {
+    currentLabel() {
+      switch (this.$route.name) {
+        case 'user_settings' :
+          return 'Paramètres généraux du compte';
+        case 'user_settings_password':
+          return 'Changer son mot de passe';
+      }
+    }
+  }
+}
+</script>
