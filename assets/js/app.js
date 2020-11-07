@@ -7,8 +7,9 @@ import VueMeta from 'vue-meta';
 import relativeDateFilter from "./filters/relative-date-filter";
 import prettyDateFilter from "./filters/pretty-date-filter";
 import VueGtag from "vue-gtag";
-import * as Sentry from '@sentry/browser';
-import { Vue as VueIntegration } from '@sentry/integrations';
+import * as Sentry from "@sentry/browser";
+import { Vue as VueIntegration } from "@sentry/integrations";
+import { Integrations } from "@sentry/tracing";
 import * as GmapVue from 'gmap-vue';
 import Buefy from 'buefy'
 import PerfectScrollbar from 'vue2-perfect-scrollbar'
@@ -21,8 +22,19 @@ Vue.use(Buefy, {
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
+
+    integrations: [new VueIntegration({Vue, })],
+  });
+  Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    integrations: [new VueIntegration({Vue, attachProps: true})],
+    integrations: [
+      new Integrations.BrowserTracing(),
+      new VueIntegration({Vue, attachProps: true, tracing: true,}),
+    ],
+
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: 1.0,
   });
 }
 
