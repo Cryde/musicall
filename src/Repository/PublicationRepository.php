@@ -5,9 +5,9 @@ namespace App\Repository;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method Publication|null find($id, $lockMode = null, $lockVersion = null)
@@ -56,12 +56,13 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int $offset
-     * @param int $limit
+     * @param array|PublicationSubCategory[] $categories
+     * @param int                      $offset
+     * @param int                      $limit
      *
      * @return Publication[]
      */
-    public function findOnlinePublications(int $offset, int $limit)
+    public function findOnlinePublications($categories, int $offset, int $limit)
     {
         return $this->createQueryBuilder('publication')
             ->select('publication, author, cover, thread, sub_category')
@@ -70,8 +71,10 @@ class PublicationRepository extends ServiceEntityRepository
             ->join('publication.thread', 'thread')
             ->join('publication.subCategory', 'sub_category')
             ->where('publication.status = :status')
+            ->andWhere('publication.subCategory in (:categories)')
             ->orderBy('publication.publicationDatetime', 'DESC')
             ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setParameter('categories', $categories)
             ->setMaxResults($limit)
             ->setFirstResult($offset)
             ->getQuery()

@@ -5,6 +5,8 @@ namespace App\Controller\Api\Publication;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Repository\PublicationRepository;
+use App\Repository\PublicationSubCategoryRepository;
+use App\Serializer\Publication\SubCategoryArraySerializer;
 use App\Serializer\PublicationSerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,7 +30,7 @@ class PublicationController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function show(Publication $publication, \HTMLPurifier $purifier)
+    public function show(Publication $publication, \HTMLPurifier $purifier, SubCategoryArraySerializer $categoryArraySerializer)
     {
         return $this->json([
             'author'               => [
@@ -37,6 +39,7 @@ class PublicationController extends AbstractController
             'title'                => $publication->getTitle(),
             'description'          => $publication->getShortDescription(),
             'publication_datetime' => $publication->getPublicationDatetime(),
+            'category'             => $categoryArraySerializer->toArray($publication->getSubCategory()),
             'content'              => $purifier->purify($publication->getContent()),
             'type'                 => $publication->getType() === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL,
             'thread'               => ['id' => $publication->getThread() ? $publication->getThread()->getId() : null],
@@ -46,9 +49,10 @@ class PublicationController extends AbstractController
     /**
      * @Route("api/publications", name="api_publications_list", options={"expose":true})
      *
-     * @param Request               $request
-     * @param PublicationRepository $publicationRepository
-     * @param PublicationSerializer $publicationSerializer
+     * @param Request                          $request
+     * @param PublicationRepository            $publicationRepository
+     * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
+     * @param PublicationSerializer            $publicationSerializer
      *
      * @return JsonResponse
      * @throws \Doctrine\ORM\NonUniqueResultException
@@ -56,19 +60,24 @@ class PublicationController extends AbstractController
     public function list(
         Request $request,
         PublicationRepository $publicationRepository,
+        PublicationSubCategoryRepository $publicationSubCategoryRepository,
         PublicationSerializer $publicationSerializer
     ) {
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
-
         $total = $publicationRepository->countOnlinePublications();
-        $publications = $publicationRepository->findOnlinePublications($calculatedOffset, self::LIMIT_PUBLICATION_BY_PAGE);
+        $categories = $publicationSubCategoryRepository->findBy(['type' => PublicationSubCategory::TYPE_PUBLICATION]);
+        $publications = $publicationRepository->findOnlinePublications(
+            $categories,
+            $calculatedOffset,
+            self::LIMIT_PUBLICATION_BY_PAGE
+        );
 
         return $this->json([
             'data' => [
                 'meta'         => [
                     'numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE),
-                    'total' => $total,
+                    'total'         => $total,
                     'limit_by_page' => self::LIMIT_PUBLICATION_BY_PAGE,
                 ],
                 'publications' => $publicationSerializer->listToArray($publications),
@@ -100,7 +109,6 @@ class PublicationController extends AbstractController
     ) {
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
-
         $total = $publicationRepository->countOnlinePublicationsByCategory($publicationSubCategory);
         $publications = $publicationRepository->findOnlinePublicationsByCategory($publicationSubCategory, $calculatedOffset, self::LIMIT_PUBLICATION_BY_PAGE);
 
@@ -108,7 +116,7 @@ class PublicationController extends AbstractController
             'data' => [
                 'meta'         => [
                     'numberOfPages' => ceil($total / self::LIMIT_PUBLICATION_BY_PAGE),
-                    'total' => $total,
+                    'total'         => $total,
                     'limit_by_page' => self::LIMIT_PUBLICATION_BY_PAGE,
                 ],
                 'publications' => $publicationSerializer->listToArray($publications),
