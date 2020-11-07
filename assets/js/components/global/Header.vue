@@ -22,7 +22,7 @@
             @typing="search"
             @select="go"
         >
-          <template slot="empty">Il n'y a pas de résultats</template>
+          <template slot="empty"><span v-if="!isLoadingSearch">Il n'y a pas de résultats</span></template>
           <template slot-scope="props">
             <div class="media">
               <div class="media-content">
@@ -108,23 +108,25 @@ export default {
       this.searched = false;
     },
     search: debounce(async function (value) {
-      this.results = [];
       this.isLoadingSearch = true;
+      this.results = [];
       if (!value.trim().length) {
         this.searched = false;
       } else {
         this.searched = false;
         this.results = await searchApi.searchByTerm(value);
-        console.log(this.results);
         this.searched = true;
       }
       this.isLoadingSearch = false;
     }, 500),
     go(result) {
-      console.log(result);
+      if (!result) {
+        return;
+      }
       this.searched = false;
       const routeName = result.category_type === 'publication' ? 'publication_show' : 'course_show';
       this.$router.replace({name: routeName, params: {slug: result.slug}});
+      this.results = [];
     },
     toggleMenu() {
       this.$root.$emit(EVENT_TOGGLE_MENU);
