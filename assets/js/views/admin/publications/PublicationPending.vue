@@ -64,7 +64,7 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Breadcrumb from "../Breadcrumb";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
   components: {Breadcrumb},
