@@ -1,5 +1,5 @@
 <template>
-  <i class="fas fa-spinner fa-spin" :class="defineSizeClass"></i>
+  <i class="fas fa-circle-notch fa-spin" :class="defineSizeClass"></i>
 </template>
 
 <script>

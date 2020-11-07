@@ -5,15 +5,11 @@
         Cherchez parmis + de 2000 annonces des musiciens ou groupes.
         Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
       </b-message>
-      <div v-else class="has-text-centered mt-5">
-        <spinner/>
-      </div>
+      <b-loading v-else active/>
     </div>
   </div>
   <div v-else class="pt-5 pb-4">
-    <div v-if="isSearching" class="has-text-centered">
-      <spinner/>
-    </div>
+    <b-loading v-if="isSearching" active/>
     <div v-else>
       <h2 class="subtitle is-4">Résultats</h2>
       <div class="columns is-multiline" v-if="results.length">
@@ -53,14 +49,12 @@
 
 <script>
 import {mapGetters} from "vuex";
-import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
 import SendMessageModal from "../../message/modal/SendMessageModal";
 import Avatar from "../../../components/user/Avatar";
-import Spinner from "../../../components/global/misc/Spinner";
 import ResultItem from "./ResultItem";
 
 export default {
-  components: {ResultItem, Spinner, Avatar, SendMessageModal},
+  components: {ResultItem, Avatar, SendMessageModal},
   data() {
     return {
       selectedRecipient: null,
