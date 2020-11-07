@@ -1,7 +1,5 @@
 <template>
-  <div v-if="isLoading" class="has-text-centered pt-5">
-    <spinner/>
-  </div>
+  <b-loading v-if="isLoading" active/>
   <div v-else>
     <h1 class="subtitle is-3">Cours</h1>
     <div class="columns mt-5 course-categories">
@@ -20,10 +18,8 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Spinner from "../../components/global/misc/Spinner";
 
 export default {
-  components: {Spinner},
   computed: {
     ...mapGetters('publicationCategory', ['isLoading', 'courseCategories'])
   },

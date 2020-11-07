@@ -1,9 +1,14 @@
 <template>
   <div>
-    <div v-if="isLoading" class="has-text-centered pt-5">
-      <spinner/>
-    </div>
+    <b-loading v-if="isLoading" active/>
     <div v-else>
+      <breadcrumb
+          :root="{to: {name: 'home'}, label: 'Home'}"
+          :level1="{to: {name: 'publication'}, label: 'Publications'}"
+          :level2="{to: {name: 'gallery_list'}, label: 'Photos'}"
+          :current="{label: gallery.title}"
+      />
+
       <h1 class="subtitle is-3">{{ gallery.title }}</h1>
 
       <div class="author">
@@ -47,9 +52,10 @@ import {mapGetters} from 'vuex';
 import VueMasonryWall from "vue-masonry-wall";
 import {format, parseISO} from 'date-fns';
 import Spinner from "../../../components/global/misc/Spinner";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Spinner, VueMasonryWall},
+  components: {Breadcrumb, Spinner, VueMasonryWall},
   metaInfo() {
     return {
       title: this.gallery.title,

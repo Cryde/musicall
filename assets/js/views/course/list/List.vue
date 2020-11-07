@@ -1,5 +1,11 @@
 <template>
   <div>
+    <breadcrumb
+        :root="{to: {name: 'home'}, label: 'Home'}"
+        :level1="{to: {name: 'course_index'}, label: 'Cours'}"
+        :current="{label: pageTitle}"
+    />
+
     <h1 class="subtitle is-3 mb-4">{{ pageTitle }}</h1>
 
     <b-table :data="data" :loading="isLoading" mobile-cards>
@@ -28,8 +34,10 @@
 
 <script>
 import {mapGetters} from "vuex";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
+  components: {Breadcrumb},
   metaInfo() {
     return {
       title: this.pageTitle,

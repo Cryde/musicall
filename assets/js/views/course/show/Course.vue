@@ -1,9 +1,15 @@
 <template>
   <div>
-    <div v-if="isLoading" class="has-text-centered pt-5">
-      <spinner/>
-    </div>
+    <b-loading v-if="isLoading" active/>
     <div v-else>
+
+      <breadcrumb
+          :root="{to: {name: 'home'}, label: 'Home'}"
+          :level1="{to: {name: 'course_index'}, label: 'Cours'}"
+          :level2="{to: {name: 'course_by_category', params: {slug: publication.category.slug}}, label: publication.category.title}"
+          :current="{label: publication.title}"
+      />
+
       <h1 class="subtitle is-3 is-uppercase">{{ publication.title }}</h1>
 
       <div class="author">Rédigé par <strong>{{ publication.author.username }}</strong> le {{
@@ -20,10 +26,10 @@
 import {mapGetters} from 'vuex';
 import {format, parseISO} from 'date-fns';
 import Comment from "../../comment/Thread";
-import Spinner from "../../../components/global/misc/Spinner";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Spinner, Comment},
+  components: {Breadcrumb, Comment},
   metaInfo() {
     return {
       title: this.publication.title,

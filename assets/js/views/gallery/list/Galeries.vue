@@ -1,8 +1,13 @@
 <template>
-  <div v-if="isLoading" class="has-text-centered pt-5">
-    <spinner/>
-  </div>
+  <b-loading v-if="isLoading" active/>
   <div v-else>
+
+    <breadcrumb
+        :root="{to: {name: 'home'}, label: 'Home'}"
+        :level1="{to: {name: 'publication'}, label: 'Publications'}"
+        :current="{label: 'Photos'}"
+    />
+
     <h1 class="subtitle is-3">Photos</h1>
 
     <div class="columns is-multiline">
@@ -25,10 +30,10 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Spinner from "../../../components/global/misc/Spinner";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Spinner},
+  components: {Breadcrumb},
   metaInfo() {
     return {
       title: 'Photos'
