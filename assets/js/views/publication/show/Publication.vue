@@ -32,8 +32,8 @@
 <script>
 import {mapGetters} from 'vuex';
 import {format, parseISO} from 'date-fns';
-import Comment from "../../../views/comment/Thread";
-import Spinner from "../../global/misc/Spinner";
+import Comment from "../../comment/Thread";
+import Spinner from "../../../components/global/misc/Spinner";
 
 export default {
   components: {Spinner, Comment},

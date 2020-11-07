@@ -62,10 +62,10 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import PublicationType from "../PublicationType";
+import PublicationType from "../../../components/publication/PublicationType";
 import VueMasonryWall from "vue-masonry-wall";
-import Card from "../../global/content/Card";
-import Spinner from "../../global/misc/Spinner";
+import Card from "../../../components/global/content/Card";
+import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 
 export default {
