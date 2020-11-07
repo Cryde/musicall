@@ -4,20 +4,38 @@
 */
 
 .medium-insert-images img {
-    margin: 25px auto;
-    display: block;
-    width: 80%;
+  margin: 25px auto;
+  display: block;
+  width: 80%;
 }
 
 .medium-insert-embeds {
-    margin: 15px auto;
+  margin: 15px auto;
 }
 
 @media screen and (max-width: 1000px) {
-    .medium-insert-images img {
-        width: 100%
-    }
+  .medium-insert-images img {
+    width: 100%
+  }
 }
 
+// THis allow us to keep the old class from boostrap (that are already in some part of the publication)
+.embed-responsive.embed-responsive-21by9 {
+  @extend .image;
+  @extend .is-16by9;
 
-//@extend .error;
+  .embed-responsive-item {
+    @extend .has-ratio
+  }
+}
+
+.d-block {
+  @extend .is-block;
+  &.text-center {
+    @extend .has-text-centered;
+  }
+
+  &.text-right {
+    @extend .has-text-right;
+  }
+}
