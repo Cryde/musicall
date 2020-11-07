@@ -1,6 +1,19 @@
 <template>
   <b-loading v-if="isLoading" active/>
   <div v-else id="publication-list">
+
+    <breadcrumb
+        v-if="currentCategory && !this.isHome"
+        :root="{to: {name: 'home'}, label: 'Home'}"
+        :level1="{to: {name: 'publication'}, label: 'Publications'}"
+        :current="{label: currentCategory.title}"
+    />
+    <breadcrumb
+        v-else-if="!this.isHome"
+        :root="{to: {name: 'home'}, label: 'Home'}"
+        :current="{label: 'Publications'}"
+    />
+
     <h1 class="subtitle is-3" v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
     <h1 class="subtitle is-3" v-else-if="!this.isHome">Publications</h1>
     <vue-masonry-wall :items="publications" :options="{padding: 5}" class="mt-4" @append="append">
@@ -67,9 +80,10 @@ import VueMasonryWall from "vue-masonry-wall";
 import Card from "../../../components/global/content/Card";
 import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Spinner, PublicationType, VueMasonryWall, Card},
+  components: {Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
   data() {
     return {
       macy: null,

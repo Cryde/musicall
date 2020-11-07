@@ -1,5 +1,12 @@
 <template>
   <div>
+
+    <breadcrumb
+        :root="{to: {name: 'home'}, label: 'Home'}"
+        :level1="{to: {name: 'search_index'}, label: 'Recherche'}"
+        :current="{label: 'Rechercher un musicien'}"
+    />
+
     <b-button v-if="isAuthenticated" tag="router-link" :to="{name: 'announce_musician_add'}"
               type="is-info" class="is-pulled-right">
       <i class="fas fa-bullhorn"></i> Poster une annonce
@@ -82,9 +89,10 @@ import {mapGetters} from 'vuex';
 import vSelect from "vue-select";
 import Results from './Results';
 import Spinner from "../../../components/global/misc/Spinner";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Spinner, vSelect, Results},
+  components: {Breadcrumb, Spinner, vSelect, Results},
   computed: {
     ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching']),
     ...mapGetters('instruments', ['instruments']),

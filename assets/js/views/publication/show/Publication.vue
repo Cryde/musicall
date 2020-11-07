@@ -1,9 +1,15 @@
 <template>
   <div>
-    <div v-if="isLoading" class="has-text-centered pt-5">
-      <spinner/>
-    </div>
+    <b-loading v-if="isLoading" active/>
     <div v-else-if="publication.type === 'text'">
+
+      <breadcrumb
+          :root="{to: {name: 'home'}, label: 'Home'}"
+          :level1="{to: {name: 'publication'}, label: 'Publications'}"
+          :level2="{to: {name: 'publications_by_category', params:{slug: publication.category.slug}}, label: publication.category.title}"
+          :current="{label: publication.title}"
+      />
+
       <h1 class="subtitle is-3 is-uppercase">{{ publication.title }}</h1>
 
       <div class="author">Rédigé par <strong>{{ publication.author.username }}</strong> <span
@@ -11,9 +17,19 @@
           publication.publication_datetime | dateFormat
         }}</span>
       </div>
-      <div class="box content is-shadowless p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
+      <div class="box content is-shadowless p-3 p-lg-3 mt-lg-4 mt-3 publication-container"
+           v-html="publication.content"></div>
     </div>
     <div v-else-if="publication.type === 'video'">
+
+      <breadcrumb
+          :root="{to: {name: 'home'}, label: 'Home'}"
+          :level1="{to: {name: 'publication'}, label: 'Publications'}"
+          :level2="{to: {name: 'publications_by_category', params:{slug: publication.category.slug}}, label: publication.category.title}"
+          :current="{label: publication.title}"
+      />
+
+
       <h1 class="subtitle is-3 is-uppercase">{{ publication.title }}</h1>
       <div class="author">Publié par <strong>{{ publication.author.username }}</strong> le {{
           publication.publication_datetime | dateFormat
@@ -34,9 +50,10 @@ import {mapGetters} from 'vuex';
 import {format, parseISO} from 'date-fns';
 import Comment from "../../comment/Thread";
 import Spinner from "../../../components/global/misc/Spinner";
+import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Spinner, Comment},
+  components: {Breadcrumb, Spinner, Comment},
   metaInfo() {
     return {
       title: this.publication.title,
