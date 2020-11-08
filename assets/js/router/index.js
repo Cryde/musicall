@@ -24,6 +24,12 @@ export default new Router({
       component: () => import("../views/Home"),
       meta: {isAuthRequired: false}
     },
+    {
+      path: "/contact",
+      name: 'contact',
+      component: () => import("../views/contact/Contact"),
+      meta: {isAuthRequired: false}
+    },
     ...publication,
     ...userPublication,
     ...gallery,
