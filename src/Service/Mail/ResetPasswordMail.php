@@ -5,13 +5,8 @@ namespace App\Service\Mail;
 class ResetPasswordMail
 {
     const TEMPLATE_ID = 1279970;
-    /**
-     * @var Mailer
-     */
+
     private Mailer $mailer;
-    /**
-     * @var ArrayMailBuilder
-     */
     private ArrayMailBuilder $arrayMailBuilder;
 
     public function __construct(Mailer $mailer, ArrayMailBuilder $arrayMailBuilder)

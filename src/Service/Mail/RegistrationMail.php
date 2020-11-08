@@ -5,13 +5,8 @@ namespace App\Service\Mail;
 class RegistrationMail
 {
     const TEMPLATE_ID = 1246593;
-    /**
-     * @var Mailer
-     */
+
     private Mailer $mailer;
-    /**
-     * @var ArrayMailBuilder
-     */
     private ArrayMailBuilder $arrayMailBuilder;
 
     public function __construct(Mailer $mailer, ArrayMailBuilder $arrayMailBuilder)

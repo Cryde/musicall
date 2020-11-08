@@ -5,13 +5,8 @@ namespace App\Service\Mail;
 class MessageReceivedMail
 {
     const TEMPLATE_ID = 1474537;
-    /**
-     * @var Mailer
-     */
+
     private Mailer $mailer;
-    /**
-     * @var ArrayMailBuilder
-     */
     private ArrayMailBuilder $arrayMailBuilder;
 
     public function __construct(Mailer $mailer, ArrayMailBuilder $arrayMailBuilder)
