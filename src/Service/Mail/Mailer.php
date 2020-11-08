@@ -7,9 +7,6 @@ use Mailjet\Resources;
 
 class Mailer
 {
-    /**
-     * @var Client
-     */
     private Client $client;
 
     public function __construct(Client $client)

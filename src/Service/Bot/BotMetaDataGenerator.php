@@ -10,17 +10,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class BotMetaDataGenerator
 {
-    /**
-     * @var PublicationRepository
-     */
     private PublicationRepository $publicationRepository;
-    /**
-     * @var UploaderHelper
-     */
     private UploaderHelper $uploaderHelper;
-    /**
-     * @var GalleryRepository
-     */
     private GalleryRepository $galleryRepository;
 
     public function __construct(

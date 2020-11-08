@@ -4,13 +4,7 @@ namespace App\Service\Mail;
 
 class ArrayMailBuilder
 {
-    /**
-     * @var string
-     */
     private string $email;
-    /**
-     * @var string
-     */
     private string $name;
 
     public function __construct(string $email, string $name)
