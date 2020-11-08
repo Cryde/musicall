@@ -49,6 +49,10 @@ services:
             $call: true
             $settings: { version: v3.1 }
 
+    App\Service\Mail\Contact\ContactMail:
+        arguments:
+            $email:  '%env(MAIL_CONTACT_EMAIL)%'
+
     App\Service\Mail\ArrayMailBuilder:
         arguments:
             $email: '%env(MAIL_NO_REPLY_EMAIL)%'
