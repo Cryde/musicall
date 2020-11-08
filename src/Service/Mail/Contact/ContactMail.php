@@ -12,12 +12,14 @@ class ContactMail
     private Mailer $mailer;
     private ArrayMailBuilder $arrayMailBuilder;
     private string $email;
+    private \HTMLPurifier $onlybrPurifier;
 
-    public function __construct(string $email, Mailer $mailer, ArrayMailBuilder $arrayMailBuilder)
+    public function __construct(string $email, Mailer $mailer, ArrayMailBuilder $arrayMailBuilder, \HTMLPurifier $onlybrPurifier)
     {
         $this->mailer = $mailer;
         $this->arrayMailBuilder = $arrayMailBuilder;
         $this->email = $email;
+        $this->onlybrPurifier = $onlybrPurifier;
     }
 
     public function send(string $name, string $email, string $message)
@@ -30,7 +32,7 @@ class ContactMail
                 [
                     'name'    => $name,
                     'email'   => $email,
-                    'message' => nl2br($message),
+                    'message' => $this->onlybrPurifier->purify(nl2br($message)),
                 ]
             )
         );
