@@ -17,6 +17,10 @@ class BotDetector
             return true;
         }
 
+        if (strpos($userAgent, "Twitterbot") !== false) {
+            return true;
+        }
+
         return false;
     }
 }
