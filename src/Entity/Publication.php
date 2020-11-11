@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
+use App\Entity\Metric\ViewCache;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,7 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  * )
  */
-class Publication
+class Publication implements ViewableInterface
 {
     const TYPE_TEXT = 1;
     const TYPE_VIDEO = 2;
@@ -127,6 +129,11 @@ class Publication
      * @ORM\ManyToOne(targetEntity=CommentThread::class)
      */
     private $thread;
+
+    /**
+     * @ORM\OneToOne(targetEntity=ViewCache::class, cascade={"persist", "remove"})
+     */
+    private $viewCache;
     
     public function __construct()
     {
@@ -330,6 +337,18 @@ class Publication
     public function setThread(?CommentThread $thread): self
     {
         $this->thread = $thread;
+
+        return $this;
+    }
+
+    public function getViewCache(): ?ViewCache
+    {
+        return $this->viewCache;
+    }
+
+    public function setViewCache(?ViewCache $viewCache): self
+    {
+        $this->viewCache = $viewCache;
 
         return $this;
     }
