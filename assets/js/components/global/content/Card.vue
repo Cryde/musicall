@@ -1,16 +1,16 @@
 <template>
-  <router-link class="card is-clickable" :to="to" tag="div">
-    <div class="card-image" v-if="topImage">
-      <figure class="image card-image">
+  <router-link class="card is-block is-clickable" :to="to" tag="a">
+    <span class="card-image" v-if="topImage">
+      <span class="image card-image">
         <img :src="topImage"/>
-      </figure>
-    </div>
-    <div class="card-content">
+      </span>
+    </span>
+    <span class="card-content is-block">
       <slot name="top-content"></slot>
-      <div class="content">
+      <span class="content">
         <slot name="content"></slot>
-      </div>
-    </div>
+      </span>
+    </span>
   </router-link>
 </template>
 
@@ -31,7 +31,7 @@ export default {
 </script>
 
 <style>
-.card-content p {
+.card-content .description {
   font-size: 0.8em;
 }
 </style>
