@@ -29,13 +29,13 @@
             {{ publication.title }}
           </template>
           <template #content>
-            <p v-if="publication.type === 'text'">
+            <span v-if="publication.type === 'text'" class="is-block description">
               {{ publication.description }}
-            </p>
-            <div class="publication-date mt-1">
+            </span>
+            <span class="publication-date is-block mt-1">
               {{ publication.author_username }} •
               {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
-            </div>
+            </span>
           </template>
         </card>
         <card v-else :to="{ name: 'publication_show', params: { slug: publication.slug }}">
@@ -44,13 +44,13 @@
             {{ publication.title }}
           </template>
           <template #content>
-            <p>
+            <span class="description is-block">
               {{ publication.description }}
-            </p>
-            <div class="publication-date mt-1">
+            </span>
+            <span class="publication-date is-block mt-1">
               {{ publication.author_username }} •
               {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
-            </div>
+            </span>
           </template>
         </card>
       </template>
@@ -148,9 +148,6 @@ export default {
         await this.$store.dispatch('publications/getPublications', {offset});
       }
     },
-    linkGen(pageNum) {
-      return pageNum === 1 ? '?' : `?page=${pageNum}`
-    }
   },
   beforeDestroy() {
     this.currentCategory = null;

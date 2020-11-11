@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationController extends AbstractController
 {
-    const LIMIT_PUBLICATION_BY_PAGE = 15;
+    const LIMIT_PUBLICATION_BY_PAGE = 16;
 
     /**
      * @Route(
