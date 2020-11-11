@@ -50,7 +50,6 @@ class ViewProcedure
             $view = $this->viewRepository->findOneByUser($viewCache, $user);
         } else {
             $datetime = new \DateTime(self::DATE_VALIDITY_PERIOD);
-            dump($datetime);
             $view = $this->viewRepository->findOneByIdentifierAndPeriod($viewCache, $this->requestIdentifier->fromRequest($request), $datetime);
         }
 
