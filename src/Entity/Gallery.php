@@ -2,16 +2,18 @@
 
 namespace App\Entity;
 
+use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Image\GalleryImage;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Metric\ViewCache;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\GalleryRepository")
  */
-class Gallery
+class Gallery implements ViewableInterface
 {
     const STATUS_ONLINE = 0;
     const STATUS_DRAFT = 1;
@@ -77,6 +79,11 @@ class Gallery
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $slug;
+
+    /**
+     * @ORM\OneToOne(targetEntity=ViewCache::class, cascade={"persist", "remove"})
+     */
+    private $viewCache;
 
     public function __construct()
     {
@@ -225,6 +232,18 @@ class Gallery
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getViewCache(): ?ViewCache
+    {
+        return $this->viewCache;
+    }
+
+    public function setViewCache(?ViewCache $viewCache): self
+    {
+        $this->viewCache = $viewCache;
 
         return $this;
     }
