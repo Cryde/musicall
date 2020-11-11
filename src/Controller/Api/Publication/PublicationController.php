@@ -8,6 +8,7 @@ use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\Publication\SubCategoryArraySerializer;
 use App\Serializer\PublicationSerializer;
+use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,13 +26,25 @@ class PublicationController extends AbstractController
      *     priority=2
      * )
      *
-     * @param Publication   $publication
-     * @param \HTMLPurifier $purifier
+     * @param Request                    $request
+     * @param Publication                $publication
+     * @param \HTMLPurifier              $purifier
+     * @param SubCategoryArraySerializer $categoryArraySerializer
+     * @param ViewProcedure              $viewProcedure
      *
      * @return JsonResponse
      */
-    public function show(Publication $publication, \HTMLPurifier $purifier, SubCategoryArraySerializer $categoryArraySerializer)
-    {
+    public function show(
+        Request $request,
+        Publication $publication,
+        \HTMLPurifier $purifier,
+        SubCategoryArraySerializer $categoryArraySerializer,
+        ViewProcedure $viewProcedure
+    ) {
+        if ($publication->getStatus() === Publication::STATUS_ONLINE) {
+            $viewProcedure->process($publication, $request, $this->getUser());
+        }
+
         return $this->json([
             'author'               => [
                 'username' => $publication->getAuthor()->getUsername(),

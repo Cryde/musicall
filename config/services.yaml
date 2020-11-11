@@ -49,6 +49,10 @@ services:
             $call: true
             $settings: { version: v3.1 }
 
+    App\Service\Identifier\RequestIdentifier:
+        arguments:
+            $secret: '%env(IDENTIFIER_SECRET)%'
+
     App\Service\Mail\Contact\ContactMail:
         arguments:
             $email:  '%env(MAIL_CONTACT_EMAIL)%'
