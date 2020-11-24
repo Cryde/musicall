@@ -19,7 +19,7 @@
         "build": "encore production --progress"
     },
     "dependencies": {
-        "@sentry/browser": "^5.27.4",
+        "@sentry/browser": "^5.27.6",
         "@sentry/integrations": "^5.27.4",
         "@sentry/tracing": "^5.27.4",
         "autolinker": "^3.14.2",
