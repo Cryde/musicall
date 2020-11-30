@@ -7,7 +7,7 @@
         "sass-loader": "^9.0.3",
         "vue-loader": "^15.9.5",
         "vue-template-compiler": "^2.6.12",
-        "webpack-notifier": "^1.10.1"
+        "webpack-notifier": "^1.11.0"
     },
     "license": "UNLICENSED",
     "private": true,
