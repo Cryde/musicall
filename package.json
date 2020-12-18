@@ -21,7 +21,7 @@
     "dependencies": {
         "@sentry/browser": "^5.27.4",
         "@sentry/integrations": "^5.27.4",
-        "@sentry/tracing": "^5.27.4",
+        "@sentry/tracing": "^5.29.2",
         "autolinker": "^3.14.2",
         "axios": "^0.21.0",
         "buefy": "^0.9.4",
