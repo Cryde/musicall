@@ -2,8 +2,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    {% set css_files = encore_entry_css_files('css') %}
-    {% set js_files = encore_entry_js_files('app') %}
+    {% set css_files_app = encore_entry_css_files('app') %}
+    {% set css_files = css_files_app | merge(encore_entry_css_files('css')) %}
+    {% set js_files = encore_entry_js_files('app') | merge(encore_entry_js_files('css'))  %}
     {% for css in css_files %}
         <link rel="preload" href="{{ preload(asset(css), { as: 'style' }) }}" as="style">
     {% endfor %}
