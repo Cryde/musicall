@@ -1,6 +1,12 @@
 <template>
   <b-loading v-if="isLoading" active/>
   <div v-else>
+
+    <breadcrumb
+        :root="{to: {name: 'home'}, label: 'Home'}"
+        :current="{label: 'Cours'}"
+    />
+
     <h1 class="subtitle is-3">Cours</h1>
     <div class="columns mt-5 course-categories">
       <router-link
@@ -18,8 +24,10 @@
 
 <script>
 import {mapGetters} from 'vuex';
+import Breadcrumb from "../../components/global/Breadcrumb";
 
 export default {
+  components: {Breadcrumb},
   computed: {
     ...mapGetters('publicationCategory', ['isLoading', 'courseCategories'])
   },
