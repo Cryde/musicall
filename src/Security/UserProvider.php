@@ -30,7 +30,7 @@ class UserProvider implements UserProviderInterface
      */
     public function loadUserByUsername(string $username): ?UserInterface
     {
-        return $this->userRepository->findOneBy(['username' => $username]);
+        return $this->userRepository->findOneByEmailOrLogin($username);
     }
 
     /**
