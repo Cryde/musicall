@@ -151,6 +151,7 @@ export default {
   },
   beforeDestroy() {
     this.currentCategory = null;
+    this.$root.$off(EVENT_PUBLICATION_CREATED);
   }
 }
 </script>

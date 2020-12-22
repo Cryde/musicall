@@ -9,7 +9,16 @@
         :current="{label: currentCategory.title}"
     />
 
-    <h1 class="subtitle is-3" v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
+    <h1 class="subtitle is-3" v-if="currentCategory && !this.isHome">
+      {{ currentCategory.title }}
+      <b-tooltip label="Ajouter un cours vidéo YouTube" type="is-dark" class="is-pulled-right">
+        <b-button v-if="isAuthenticated" class="youtube-btn" rounded
+                  icon-left="youtube" icon-pack="fab"
+                  @click="$refs['modal-video-add'].open()">
+          Ajouter
+        </b-button>
+      </b-tooltip>
+    </h1>
     <h1 class="subtitle is-3" v-else-if="!this.isHome">Cours</h1>
     <div v-if="publications.length === 0" class="has-text-centered pt-5">
       Il n'y a pas encore de publications dans cette catégorie.
@@ -53,6 +62,7 @@
         </b-pagination-button>
       </b-pagination>
     </div>
+    <add-video-modal v-if="isAuthenticated" ref="modal-video-add" :display-categories="true" :categories="courseCategories" :pre-selected-category="currentCategory" />
   </div>
 </template>
 
@@ -64,9 +74,10 @@ import Card from "../../../components/global/content/Card";
 import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 import Breadcrumb from "../../../components/global/Breadcrumb";
+import AddVideoModal from "../../user/Publication/add/video/AddVideoModal";
 
 export default {
-  components: {Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
+  components: {AddVideoModal, Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
   data() {
     return {
       macy: null,
@@ -88,6 +99,7 @@ export default {
       'total',
       'limitByPage'
     ]),
+    ...mapGetters('security', ['isAuthenticated']),
     ...mapGetters('publicationCategory', ['courseCategories'])
   },
   watch: {
@@ -100,6 +112,10 @@ export default {
     this.current = this.$route.query.page ? +this.$route.query.page : 1;
 
     await this.fetchData();
+
+    this.$root.$on(EVENT_PUBLICATION_CREATED, async () => {
+      await this.fetchData();
+    });
   },
   methods: {
     async append() {

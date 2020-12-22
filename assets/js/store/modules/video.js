@@ -91,10 +91,10 @@ const actions = {
       commit(FETCHING_ERROR, err);
     }
   },
-  async addVideo({commit}, {title, description, videoUrl, imageUrl}) {
+  async addVideo({commit}, {title, description, videoUrl, imageUrl, categoryId = null}) {
     commit(ADDING);
     try {
-      const resp = await apiPublication.addVideo({title, description, videoUrl, imageUrl});
+      const resp = await apiPublication.addVideo({title, description, videoUrl, imageUrl, categoryId});
       commit(ADDING_SUCCESS, {video: resp.data});
     } catch (err) {
       commit(FETCHING_ERROR, err);
