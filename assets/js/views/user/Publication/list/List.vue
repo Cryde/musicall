@@ -272,6 +272,9 @@ export default {
 
       return '';
     }
+  },
+  beforeDestroy() {
+    this.$root.$off(EVENT_PUBLICATION_CREATED);
   }
 }
 </script>
