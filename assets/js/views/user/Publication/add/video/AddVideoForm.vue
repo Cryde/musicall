@@ -7,7 +7,17 @@
           class="delete"
           @click="$emit('close')"/>
     </header>
-    <section class="modal-card-body">
+    <section class="modal-card-body" :class="{'has-category': displayCategories}">
+
+      <div v-if="displayCategories" class="mb-4 mt-4">
+        <v-select
+            :options="categories"
+            v-model="selectedCategory"
+            label="title"
+            placeholder="Choissisez une catégorie"
+        ></v-select>
+      </div>
+
       <b-field message="Avec ce lien nous pourrons récupérer quelque informations">
         <b-input v-model="videoUrl"
                  @keyup.native="preview"
@@ -42,7 +52,7 @@
       <b-button type="is-success"
                 :loading="isLoadingAdd"
                 icon-left="save"
-                :disabled="!showPreview || isExistingVideo" @click="save">
+                :disabled="!showPreview || isExistingVideo || !canSend" @click="save">
         Publier
       </b-button>
     </footer>
@@ -54,11 +64,27 @@
 import {mapGetters} from 'vuex';
 import Spinner from "../../../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../../../constants/events";
+import VSelect from 'vue-select';
 
 export default {
-  components: {Spinner},
+  components: {Spinner, VSelect},
+  props: {
+    displayCategories: {
+      type: Boolean,
+      default: false,
+    },
+    categories: {
+      type: Array,
+      default: () => []
+    },
+    preSelectedCategory: {
+      type: Object,
+      default: null
+    }
+  },
   data() {
     return {
+      selectedCategory: null,
       showPreview: false,
       previousVideoUrl: '',
       videoUrl: '',
@@ -73,7 +99,13 @@ export default {
       'isExistingVideo',
       'isLoading',
       'isLoadingAdd'
-    ])
+    ]),
+    canSend() {
+      return this.videoUrl.startsWith('https://') && (!this.displayCategories || this.displayCategories && this.selectedCategory !== null);
+    }
+  },
+  mounted() {
+    this.selectedCategory = this.preSelectedCategory;
   },
   methods: {
     async preview() {
@@ -104,7 +136,8 @@ export default {
           title: this.videoTitle,
           description: this.videoDescription,
           videoUrl: this.videoUrl,
-          imageUrl: this.videoImage
+          imageUrl: this.videoImage,
+          categoryId: this.displayCategories ? this.selectedCategory.id : null,
         });
 
         this.$emit('close');
@@ -127,3 +160,8 @@ export default {
   }
 }
 </script>
+<style>
+.has-category {
+  min-height: 250px;
+}
+</style>

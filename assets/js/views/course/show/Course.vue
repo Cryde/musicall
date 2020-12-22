@@ -1,22 +1,45 @@
 <template>
   <div>
     <b-loading v-if="isLoading" active/>
-    <div v-else>
+    <div v-else-if="publication.type === 'text'">
 
       <breadcrumb
           :root="{to: {name: 'home'}, label: 'Home'}"
           :level1="{to: {name: 'course_index'}, label: 'Cours'}"
-          :level2="{to: {name: 'course_by_category', params: {slug: publication.category.slug}}, label: publication.category.title}"
+          :level2="{to: {name: 'course_by_category', params:{slug: publication.category.slug}}, label: publication.category.title}"
           :current="{label: publication.title}"
       />
 
       <h1 class="subtitle is-3 is-uppercase">{{ publication.title }}</h1>
 
-      <div class="author">Rédigé par <strong>{{ publication.author.username }}</strong> le {{
+      <div class="author">Rédigé par <strong>{{ publication.author.username }}</strong> <span
+          v-if="publication.publication_datetime">le {{
+          publication.publication_datetime | dateFormat
+        }}</span>
+      </div>
+      <div class="box content is-shadowless p-3 p-lg-3 mt-lg-4 mt-3 publication-container"
+           v-html="publication.content"></div>
+    </div>
+    <div v-else-if="publication.type === 'video'">
+
+      <breadcrumb
+          :root="{to: {name: 'home'}, label: 'Home'}"
+          :level1="{to: {name: 'course_index'}, label: 'Cours'}"
+          :level2="{to: {name: 'course_by_category', params:{slug: publication.category.slug}}, label: publication.category.title}"
+          :current="{label: publication.title}"
+      />
+
+
+      <h1 class="subtitle is-3 is-uppercase">{{ publication.title }}</h1>
+      <div class="author">Publié par <strong>{{ publication.author.username }}</strong> le {{
           publication.publication_datetime | dateFormat
         }}
       </div>
-      <div class="box content is-shadowless p-3 p-lg-3 mt-lg-4 mt-3 publication-container" v-html="publication.content"></div>
+      <figure class="image is-16by9 mt-4">
+        <iframe class="has-ratio" width="640" height="360"
+                :src="`https://www.youtube.com/embed/${publication.content}?showinfo=0`" frameborder="0"
+                allowfullscreen></iframe>
+      </figure>
     </div>
     <comment v-if="!isLoading && publication.thread.id" :thread-id="publication.thread.id"/>
   </div>
