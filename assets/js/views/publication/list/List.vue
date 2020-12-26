@@ -20,12 +20,23 @@
       <template v-slot:default="{item: publication}">
         <card
             :key="publication.id"
-            v-if="publication.category !== 'news'"
+            v-if="publication.category.slug !== 'news'"
             :top-image="publication.cover_image"
             :to="{ name: 'publication_show', params: { slug: publication.slug }}">
 
           <template #top-content>
-            <publication-type :type="publication.type" class="mt-1 mb-2 "/>
+            <publication-type
+                v-if="isHome"
+                :type="publication.type"
+                :label="publication.category.title"
+                :icon="publication.type === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                class="mt-1 mb-2 "/>
+            <publication-type
+                v-else
+                :type="publication.type"
+                :label="publication.type === 'video' ? 'Vidéo': 'Article'"
+                :icon="publication.type === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                class="mt-1 mb-2 "/>
             {{ publication.title }}
           </template>
           <template #content>
@@ -40,7 +51,11 @@
         </card>
         <card v-else :to="{ name: 'publication_show', params: { slug: publication.slug }}">
           <template #top-content>
-            <publication-type :type="publication.category" class="mb-3 "/>
+            <publication-type
+                type="news"
+                label="News"
+                icon="fab fa-hotjar"
+                class="mb-3"/>
             {{ publication.title }}
           </template>
           <template #content>

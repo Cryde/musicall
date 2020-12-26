@@ -4,24 +4,25 @@ namespace App\Serializer;
 
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Serializer\Publication\SubCategoryArraySerializer;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class PublicationSerializer
 {
-    /**
-     * @var UploaderHelper
-     */
-    private $uploaderHelper;
-    /**
-     * @var CacheManager
-     */
+    private UploaderHelper $uploaderHelper;
     private CacheManager $cacheManager;
+    private SubCategoryArraySerializer $subCategoryArraySerializer;
 
-    public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
+    public function __construct(
+        UploaderHelper $uploaderHelper,
+        CacheManager $cacheManager,
+        SubCategoryArraySerializer $subCategoryArraySerializer
+    )
     {
         $this->uploaderHelper = $uploaderHelper;
         $this->cacheManager = $cacheManager;
+        $this->subCategoryArraySerializer = $subCategoryArraySerializer;
     }
 
     /**
@@ -51,7 +52,8 @@ class PublicationSerializer
             'slug'                 => $publication->getSlug(),
             'type'                 => $isVideo ? 'video' : 'text',
             'category_type'        => $publication->getSubCategory()->getType() === PublicationSubCategory::TYPE_PUBLICATION ? 'publication' : 'course',
-            'category'             => $publication->getSubCategory()->getSlug(),
+            'category'             => $this->subCategoryArraySerializer->toArray($publication->getSubCategory()),
+            'is_course'            => $publication->getSubCategory()->getType() === PublicationSubCategory::TYPE_COURSE,
             'title'                => mb_strtoupper($publication->getTitle()),
             'description'          => $description,
             'publication_datetime' => $publication->getPublicationDatetime(),

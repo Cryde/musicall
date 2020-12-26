@@ -79,7 +79,7 @@ class PublicationController extends AbstractController
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
         $total = $publicationRepository->countOnlinePublications();
-        $categories = $publicationSubCategoryRepository->findBy(['type' => PublicationSubCategory::TYPE_PUBLICATION]);
+        $categories = $publicationSubCategoryRepository->findAll();
         $publications = $publicationRepository->findOnlinePublications(
             $categories,
             $calculatedOffset,
