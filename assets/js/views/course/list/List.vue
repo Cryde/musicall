@@ -32,7 +32,11 @@
             :to="{ name: 'course_show', params: { slug: publication.slug }}">
 
           <template #top-content>
-            <publication-type :type="publication.type" category="course"  class="mt-1 mb-2 "/>
+            <publication-type
+                :type="publication.type"
+                :label="publication.type === 'video' ? 'Vidéo' : 'Cours'"
+                :icon="publication.type === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                class="mt-1 mb-2 "/>
             {{ publication.title }}
           </template>
           <template #content>
