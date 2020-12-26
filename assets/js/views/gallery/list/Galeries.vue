@@ -10,30 +10,36 @@
 
     <h1 class="subtitle is-3">Photos</h1>
 
-    <div class="columns is-multiline">
-      <div class="column is-3 " v-for="gallery in galleries" :key="gallery.id">
-        <div class="squared-image-container">
-          <router-link :to="{name: 'gallery_show', params: {slug: gallery.slug}}"
-                       class="is-block squared-image"
-                       :style="{backgroundImage: `url(${gallery.coverImage.sizes.medium})`}"
-          ></router-link>
-        </div>
-
-        <router-link :to="{name: 'gallery_show', params: {slug: gallery.slug}}"
-                     class="is-block mt-1 mb-lg-2 has-text-dark">
-          {{ gallery.title }}
-        </router-link>
-      </div>
-    </div>
+    <vue-masonry-wall :items="galleries" :options="{padding: 5}" class="mt-4" @append="append">
+      <template v-slot:default="{item: gallery}">
+        <card
+            :key="gallery.id"
+            :top-image="gallery.cover_image.sizes.medium"
+            :to="{name: 'gallery_show', params: {slug: gallery.slug}}">
+          <template #top-content>
+            {{ gallery.title.toUpperCase() }}
+          </template>
+          <template #content>
+            <span class="publication-date is-block mt-1">
+              {{ gallery.author.username }} •
+              {{ gallery.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }} •
+              {{ gallery.image_count }} photos
+            </span>
+          </template>
+        </card>
+      </template>
+    </vue-masonry-wall>
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
 import Breadcrumb from "../../../components/global/Breadcrumb";
+import Card from "../../../components/global/content/Card";
+import VueMasonryWall from "vue-masonry-wall";
 
 export default {
-  components: {Breadcrumb},
+  components: {Card, Breadcrumb, VueMasonryWall},
   metaInfo() {
     return {
       title: 'Photos'
@@ -48,28 +54,17 @@ export default {
       'galleries',
     ])
   },
+  methods: {
+    async append() {
+      return this.galleries;
+    },
+  }
 }
 </script>
 
 <style scoped>
-.squared-image-container {
-  width: 100%;
-  padding-bottom: 100%;
-  margin: 5px auto;
-  position: relative;
-  overflow: hidden;
-}
-
-.squared-image {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  background-position: 50%;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.gallery-title {
-  color: #666
+.publication-date {
+  color: #8b8b8b;
+  font-size: 0.8em
 }
 </style>
