@@ -22,7 +22,7 @@
             :key="publication.id"
             v-if="publication.category.slug !== 'news'"
             :top-image="publication.cover_image"
-            :to="{ name: 'publication_show', params: { slug: publication.slug }}">
+            :to="{ name: publication.is_course ? 'course_show' : 'publication_show', params: { slug: publication.slug }}">
 
           <template #top-content>
             <publication-type
