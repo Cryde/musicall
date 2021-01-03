@@ -41,7 +41,7 @@
                 allowfullscreen></iframe>
       </figure>
     </div>
-    <comment v-if="!isLoading && publication.thread.id" :thread-id="publication.thread.id"/>
+    <comment v-if="!isLoading && !hasError && publication.thread.id" :thread-id="publication.thread.id"/>
   </div>
 </template>
 
@@ -73,13 +73,20 @@ export default {
   computed: {
     ...mapGetters('publication', [
       'isLoading',
-      'publication'
+      'publication',
+      'hasError'
     ])
   },
   methods: {
     async load(slug) {
       await this.$store.dispatch('publication/getPublication', {slug});
+      if (this.hasError) {
+        this.$router.replace({name: 'home'});
+      }
     }
+  },
+  beforeDestroy() {
+    this.$store.dispatch('publication/reset');
   },
   filters: {
     dateFormat(date) {

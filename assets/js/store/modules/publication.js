@@ -1,7 +1,12 @@
 import apiPublication from '../../api/publication';
 
+const IS_LOADING = 'IS_LOADING';
+const UPDATE_PUBLICATION = 'UPDATE_PUBLICATION';
+const UPDATE_ERROR = 'UPDATE_ERROR';
+const RESET = 'RESET';
+
 const state = {
-  isLoading: false,
+  isLoading: true,
   error: null,
   publication: {},
 };
@@ -22,33 +27,40 @@ const getters = {
 };
 
 const mutations = {
-  ['FETCHING'](state) {
-    state.isLoading = true;
-    state.error = null;
-    state.publication = {};
+  [IS_LOADING](state, isLoading) {
+    state.isLoading = isLoading;
   },
-  ['FETCHING_SUCCESS'](state, payload) {
-    state.isLoading = false;
-    state.error = null;
-    state.publication = payload.publication;
+  [UPDATE_PUBLICATION](state, publication) {
+    state.publication = publication;
   },
-  ['FETCHING_ERROR'](state, error) {
-    state.isLoading = false;
+  [UPDATE_ERROR](state, error) {
     state.error = error;
-    state.publication = {};
   },
+  [RESET](state) {
+    state.error = null;
+    state.publication = {};
+    state.isLoading = true;
+  }
 };
 
 const actions = {
   async getPublication({commit}, payload) {
-    commit('FETCHING');
+    commit(IS_LOADING, true);
+    commit(UPDATE_PUBLICATION, {});
+    commit(UPDATE_ERROR, null);
     try {
-      const resp = await apiPublication.getPublication(payload.slug);
-      commit('FETCHING_SUCCESS', {publication: resp});
+      const publication = await apiPublication.getPublication(payload.slug);
+      commit(UPDATE_PUBLICATION, publication);
     } catch (err) {
-      commit('FETCHING_ERROR', err);
+      if (err.response.data.status === 404) {
+        commit(UPDATE_ERROR, 'Publication inexistante.');
+      }
     }
+    commit(IS_LOADING, false);
   },
+  reset({commit}) {
+    commit(RESET);
+  }
 };
 
 export default {

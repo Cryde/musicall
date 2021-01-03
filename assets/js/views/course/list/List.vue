@@ -20,9 +20,13 @@
       </b-tooltip>
     </h1>
     <h1 class="subtitle is-3" v-else-if="!this.isHome">Cours</h1>
-    <div v-if="publications.length === 0" class="has-text-centered pt-5">
+    <b-message type="is-info" v-if="publications.length === 0 && error.length === 0">
       Il n'y a pas encore de publications dans cette catégorie.
-    </div>
+    </b-message>
+
+    <b-message v-if="error.length > 0" type="is-danger">
+      {{ error }}
+    </b-message>
 
     <vue-masonry-wall :items="publications" :options="{padding: 5}" class="mt-4" @append="append">
       <template v-slot:default="{item: publication}">
@@ -88,6 +92,7 @@ export default {
       isHome: false,
       currentCategory: null,
       current: 1,
+      error: '',
     }
   },
   metaInfo() {
@@ -133,16 +138,20 @@ export default {
       return 'Toutes les cours relatifs à la musique | MusicAll'
     },
     async fetchData() {
+      this.error = '';
       const slug = this.$route.params.slug;
       const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
       this.currentCategory = this.courseCategories.find((category) => category.slug === slug);
       if (slug && this.currentCategory) {
         await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
+      } else {
+        this.error = 'Cette catégorie n\'existe pas.';
       }
     },
   },
   beforeDestroy() {
     this.currentCategory = null;
+    this.error = '';
   }
 }
 </script>
