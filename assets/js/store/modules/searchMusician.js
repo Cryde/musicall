@@ -108,7 +108,7 @@ const actions = {
     try {
       const results = await musicianApi.getResults({
         // we need to reverse the search because
-        // when the announce search a band it mean it's a musician
+        // when the announce search a band it mean he/she is a musician
         // so we search a musician
         type: state.type === TYPES_ANNOUNCE_BAND_LABEL ? TYPES_ANNOUNCE_MUSICIAN : TYPES_ANNOUNCE_BAND,
         instrument: state.instrument,
