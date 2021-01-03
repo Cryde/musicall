@@ -90,6 +90,7 @@ import vSelect from "vue-select";
 import Results from './Results';
 import Spinner from "../../../components/global/misc/Spinner";
 import Breadcrumb from "../../../components/global/Breadcrumb";
+import {TYPES_ANNOUNCE_BAND_LABEL, TYPES_ANNOUNCE_MUSICIAN_LABEL} from "../../../constants/types";
 
 export default {
   components: {Breadcrumb, Spinner, vSelect, Results},
@@ -106,8 +107,8 @@ export default {
     return {
       isMapVisible: false, // only used in responsive mode
       optionsType: [
-        {label: 'un musicien', value: "musician"},
-        {label: 'un groupe', value: "band"},
+        {label: 'un musicien', value: TYPES_ANNOUNCE_MUSICIAN_LABEL},
+        {label: 'un groupe', value: TYPES_ANNOUNCE_BAND_LABEL},
       ],
       zoom: 13,
       center: {lat: 50.8504500, lng: 4.3487800},
