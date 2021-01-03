@@ -43,8 +43,7 @@ const actions = {
     commit(UPDATE_IS_LOADING, true);
 
     try {
-      const resp = await registerApi.register({username, password, email});
-
+      await registerApi.register({username, password, email});
       commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {
       console.log(e.response);
