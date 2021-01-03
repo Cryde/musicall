@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-if="isLoading" active/>
-    <div v-else-if="publication.type === 'text'">
+    <div v-else-if="!hasError && publication.type === 'text'">
 
       <breadcrumb
           :root="{to: {name: 'home'}, label: 'Home'}"
@@ -20,7 +20,7 @@
       <div class="box content is-shadowless p-3 p-lg-3 mt-lg-4 mt-3 publication-container"
            v-html="publication.content"></div>
     </div>
-    <div v-else-if="publication.type === 'video'">
+    <div v-else-if="!hasError && publication.type === 'video'">
 
       <breadcrumb
           :root="{to: {name: 'home'}, label: 'Home'}"
@@ -41,7 +41,7 @@
                 allowfullscreen></iframe>
       </figure>
     </div>
-    <comment v-if="!isLoading && publication.thread.id" :thread-id="publication.thread.id"/>
+    <comment v-if="!isLoading && !hasError && publication.thread.id" :thread-id="publication.thread.id"/>
   </div>
 </template>
 
@@ -65,6 +65,9 @@ export default {
   },
   async created() {
     await this.$store.dispatch('publication/getPublication', {slug: this.$route.params.slug});
+    if (this.hasError) {
+      this.$router.replace({name: 'course_index'});
+    }
   },
   computed: {
     ...mapGetters('publication', [
@@ -77,6 +80,9 @@ export default {
     dateFormat(date) {
       return format(parseISO(date), 'dd/MM/yyyy HH:mm');
     }
+  },
+  beforeDestroy() {
+    this.$store.dispatch('publication/reset');
   }
 }
 </script>
