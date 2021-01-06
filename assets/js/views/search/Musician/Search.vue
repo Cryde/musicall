@@ -7,9 +7,13 @@
         :current="{label: 'Rechercher un musicien'}"
     />
 
-    <b-button v-if="isAuthenticated" tag="router-link" :to="{name: 'announce_musician_add'}"
-              type="is-info" class="is-pulled-right">
-      <i class="fas fa-bullhorn"></i> Poster une annonce
+    <b-button
+        @click="$refs['add-musician-announce-modal'].open()"
+        icon-left="bullhorn"
+        type="is-info"
+        v-if="isAuthenticated"
+        class="is-pulled-right">
+      Poster une annonce
     </b-button>
     <b-tooltip v-else class="is-pulled-right" type="is-black" label="Vous devez être connecté pour poster une annonce">
       <b-button type="is-info" >
@@ -81,6 +85,8 @@
     </div>
 
     <results/>
+
+    <add-musician-announce-modal v-if="isAuthenticated" ref="add-musician-announce-modal" :is-from-announce="false" />
   </div>
 </template>
 
@@ -91,9 +97,10 @@ import Results from './Results';
 import Spinner from "../../../components/global/misc/Spinner";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import {TYPES_ANNOUNCE_BAND_LABEL, TYPES_ANNOUNCE_MUSICIAN_LABEL} from "../../../constants/types";
+import AddMusicianAnnounceModal from "../../user/Announce/modal/AddMusicianAnnounceModal";
 
 export default {
-  components: {Breadcrumb, Spinner, vSelect, Results},
+  components: {AddMusicianAnnounceModal, Breadcrumb, Spinner, vSelect, Results},
   computed: {
     ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching']),
     ...mapGetters('instruments', ['instruments']),

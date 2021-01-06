@@ -3,7 +3,7 @@
     <b-loading active/>
   </div>
   <div v-else>
-    <b-button :to="{name: 'announce_musician_add'}" tag="router-link"
+    <b-button @click="$refs['add-musician-announce-modal'].open()"
               icon-left="bullhorn"
               type="is-info" class="is-pulled-right">
       Ajouter une nouvelle annonce
@@ -27,7 +27,10 @@
 
       <b-table-column field="styles" label="Styles" sortable v-slot="props">
         <b-taglist>
-          <b-tag type="is-info" v-for="label in props.row.styles.map(item => item.name)" :key="label"> {{ label }}</b-tag>
+          <b-tag type="is-info" v-for="label in props.row.styles.map(item => item.name)" :key="label"> {{
+              label
+            }}
+          </b-tag>
         </b-taglist>
       </b-table-column>
 
@@ -43,19 +46,26 @@
         {{ props.row.note }}
       </b-table-column>
     </b-table>
+    <add-musician-announce-modal ref="add-musician-announce-modal" :is-from-announce="true" />
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
 import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
+import AddMusicianAnnounceModal from "./modal/AddMusicianAnnounceModal";
+import {EVENT_ANNOUNCE_MUSICIAN_CREATED} from "../../../constants/events";
 
 export default {
+  components: {AddMusicianAnnounceModal},
   computed: {
     ...mapGetters('userMusicianAnnounces', ['isLoading', 'announces']),
   },
   mounted() {
     this.$store.dispatch('userMusicianAnnounces/load');
+    this.$root.$on(EVENT_ANNOUNCE_MUSICIAN_CREATED, () => {
+      this.$store.dispatch('userMusicianAnnounces/refresh');
+    });
   },
   filters: {
     getSearchTypeName(type) {
@@ -67,6 +77,9 @@ export default {
         return 'Musicien';
       }
     }
+  },
+  destroyed() {
+    this.$root.$off(EVENT_ANNOUNCE_MUSICIAN_CREATED);
   }
 }
 </script>
