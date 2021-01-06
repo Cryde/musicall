@@ -48,13 +48,13 @@
                     v-if="isRoleAdmin"
                     icon-left="bolt">
             admin
-            <b-tag rounded type="is-warning" v-if="adminCount">{{ adminCount }}</b-tag>
+            <span class="badge is-warning" v-if="adminCount">{{ adminCount }}</span>
           </b-button>
 
           <b-button size="is-light" :to="{ name: 'message_list' }" tag="router-link"
                     icon-left="envelope">
             message
-            <b-tag rounded type="is-warning" v-if="messageCount">{{ messageCount }}</b-tag>
+            <span class="badge is-warning" v-if="messageCount">{{ messageCount }}</span>
           </b-button>
         </div>
       </b-navbar-item>
