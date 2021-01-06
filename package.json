@@ -19,6 +19,7 @@
         "build": "encore production --progress"
     },
     "dependencies": {
+        "@creativebulma/bulma-badge": "^1.0.1",
         "@sentry/browser": "^5.29.2",
         "@sentry/integrations": "^5.29.2",
         "@sentry/tracing": "^5.29.2",
