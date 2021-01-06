@@ -1,4 +1,5 @@
 import announceApi from "../../api/musician/announce";
+import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_BAND_LABEL, TYPES_ANNOUNCE_MUSICIAN} from "../../constants/types";
 
 const UPDATE_SELECTED_INSTRUMENTS = 'UPDATE_SELECTED_INSTRUMENTS';
 const UPDATE_SELECTED_STYLES = 'UPDATE_SELECTED_STYLES';
@@ -30,6 +31,9 @@ const getters = {
   isSending(state) {
     return state.isSending;
   },
+  selectedType(state) {
+    return state.type;
+  },
   selectedInstrument(state) {
     return state.instrument;
   },
@@ -39,8 +43,20 @@ const getters = {
   selectedLocationName(state) {
     return state.location.name;
   },
+  note(state) {
+    return state.note;
+  },
   selectedAnnounceTypeName(state) {
     return state.type === 'band' ? 'groupe' : 'musicien';
+  },
+  isValid(state) {
+    return state.instrument !== '' && state.styles.length > 0 && state.type !== '' && state.location.name !== '';
+  },
+  isStepStylesValid(state) {
+    return state.styles.length > 0;
+  },
+  isStepLocationValid(state) {
+    return state.location.name !== '';
   }
 };
 
@@ -105,7 +121,7 @@ const actions = {
     commit(UPDATE_IS_SENDING, true);
     try {
       await announceApi.add({
-        type: state.type === 'band' ? 2 : 1,
+        type: state.type === TYPES_ANNOUNCE_BAND_LABEL ? TYPES_ANNOUNCE_BAND : TYPES_ANNOUNCE_MUSICIAN,
         note: state.note,
         styles: state.styles.map(style => style.id),
         instrument: state.instrument.id,
@@ -117,7 +133,7 @@ const actions = {
     } catch (e) {
       console.log(e);
     }
-    commit(UPDATE_IS_SENDING, true);
+    commit(UPDATE_IS_SENDING, false);
   },
   reset({commit}) {
     commit(RESET);

@@ -32,6 +32,10 @@ const actions = {
     const announces = await announceApi.getByCurrentUser();
     commit(UPDATE_ANNOUNCES, announces);
     commit(UPDATE_IS_LOADING, false);
+  },
+  async refresh({commit}) {
+    const announces = await announceApi.getByCurrentUser();
+    commit(UPDATE_ANNOUNCES, announces);
   }
 };
 
