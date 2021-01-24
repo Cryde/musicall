@@ -1,7 +1,7 @@
 {
     "devDependencies": {
         "@symfony/webpack-encore": "^0.33.0",
-        "core-js": "^3.8.1",
+        "core-js": "^3.8.3",
         "node-sass": "^4.14.1",
         "regenerator-runtime": "^0.13.7",
         "sass-loader": "^9.0.3",
@@ -20,9 +20,9 @@
     },
     "dependencies": {
         "@creativebulma/bulma-badge": "^1.0.1",
-        "@sentry/browser": "^5.29.2",
-        "@sentry/integrations": "^5.29.2",
-        "@sentry/tracing": "^5.29.2",
+        "@sentry/browser": "^5.30.0",
+        "@sentry/integrations": "^5.30.0",
+        "@sentry/tracing": "^5.30.0",
         "autolinker": "^3.14.2",
         "axios": "^0.21.1",
         "buefy": "^0.9.4",
@@ -31,8 +31,8 @@
         "gmap-vue": "^1.5.0",
         "jwt-decode": "^3.1.2",
         "lodash": "^4.17.20",
-        "tiptap": "^1.30.0",
-        "tiptap-extensions": "^1.33.2",
+        "tiptap": "^1.31.0",
+        "tiptap-extensions": "^1.34.0",
         "vue": "^2.6.12",
         "vue-advanced-cropper": "^0.19.3",
         "vue-gtag": "^1.10.0",
