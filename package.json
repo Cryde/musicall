@@ -22,7 +22,7 @@
         "@creativebulma/bulma-badge": "^1.0.1",
         "@sentry/browser": "^5.30.0",
         "@sentry/integrations": "^5.30.0",
-        "@sentry/tracing": "^5.30.0",
+        "@sentry/tracing": "^6.2.2",
         "autolinker": "^3.14.2",
         "axios": "^0.21.1",
         "buefy": "^0.9.4",
