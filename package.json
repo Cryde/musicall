@@ -35,7 +35,7 @@
         "tiptap": "^1.32.2",
         "tiptap-extensions": "^1.35.2",
         "vue": "^2.6.14",
-        "vue-advanced-cropper": "^0.19.3",
+        "vue-advanced-cropper": "^1.7.0",
         "vue-gtag": "^1.16.1",
         "vue-masonry-wall": "^0.3.2",
         "vue-meta": "^2.4.0",
