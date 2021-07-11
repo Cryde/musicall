@@ -477,6 +477,9 @@
     "symfony/options-resolver": {
         "version": "v4.2.0"
     },
+    "symfony/password-hasher": {
+        "version": "v5.3.3"
+    },
     "symfony/phpunit-bridge": {
         "version": "5.1",
         "recipe": {
@@ -515,6 +518,9 @@
     },
     "symfony/polyfill-php80": {
         "version": "v1.17.0"
+    },
+    "symfony/polyfill-php81": {
+        "version": "v1.23.0"
     },
     "symfony/polyfill-uuid": {
         "version": "v1.17.0"
