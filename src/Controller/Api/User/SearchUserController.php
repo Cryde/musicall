@@ -12,25 +12,12 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SearchUserController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/user/search",
-     *     name="api_user_search",
-     *     methods={"GET"},
-     *     options={"expose": true}
-     * )
-     *
-     * @param Request             $request
-     * @param UserRepository      $userRepository
-     * @param UserArraySerializer $userArraySerializer
-     *
-     * @return JsonResponse
-     */
+    #[Route("/api/user/search", name: "api_user_search", options: ['expose' => true], methods: ['GET'])]
     public function list(
         Request $request,
         UserRepository $userRepository,
         UserArraySerializer $userArraySerializer
-    ) {
+    ): JsonResponse {
         $search = $request->get('search', '');
 
         if (strlen($search) < 4) {

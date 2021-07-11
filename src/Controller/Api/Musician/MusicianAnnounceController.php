@@ -36,7 +36,7 @@ class MusicianAnnounceController extends AbstractController
         Jsonizer $jsonizer,
         MusicianAnnounceDirector $musicianAnnounceDirector,
         ValidatorInterface $validator
-    ) {
+    ): JsonResponse {
         $announce = $musicianAnnounceDirector->createFromArray($jsonizer->decodeRequest($request));
         $announce->setAuthor($this->getUser());
 

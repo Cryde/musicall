@@ -18,29 +18,14 @@ class PublicationController extends AbstractController
 {
     const LIMIT_PUBLICATION_BY_PAGE = 16;
 
-    /**
-     * @Route(
-     *     "/api/publications/{slug}",
-     *     name="api_publications_show",
-     *     options={"expose":true},
-     *     priority=2
-     * )
-     *
-     * @param Request                    $request
-     * @param Publication                $publication
-     * @param \HTMLPurifier              $purifier
-     * @param SubCategoryArraySerializer $categoryArraySerializer
-     * @param ViewProcedure              $viewProcedure
-     *
-     * @return JsonResponse
-     */
+    #[Route("/api/publications/{slug}", name: "api_publications_show", options: ['expose' => true], priority: 2)]
     public function show(
         Request $request,
         Publication $publication,
         \HTMLPurifier $purifier,
         SubCategoryArraySerializer $categoryArraySerializer,
         ViewProcedure $viewProcedure
-    ) {
+    ): JsonResponse {
         if ($publication->getStatus() === Publication::STATUS_ONLINE) {
             $viewProcedure->process($publication, $request, $this->getUser());
         }
@@ -59,23 +44,13 @@ class PublicationController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("api/publications", name="api_publications_list", options={"expose":true})
-     *
-     * @param Request                          $request
-     * @param PublicationRepository            $publicationRepository
-     * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
-     * @param PublicationSerializer            $publicationSerializer
-     *
-     * @return JsonResponse
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
+    #[Route("api/publications", name: "api_publications_list", options: ["expose" => true])]
     public function list(
         Request $request,
         PublicationRepository $publicationRepository,
         PublicationSubCategoryRepository $publicationSubCategoryRepository,
         PublicationSerializer $publicationSerializer
-    ) {
+    ): JsonResponse {
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
         $total = $publicationRepository->countOnlinePublications();
