@@ -11,22 +11,9 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationCategoryController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/publications/categories",
-     *     name="api_publication_category_list",
-     *     methods={"GET"},
-     *     options={"expose": true},
-     *     priority=30
-     * )
-     *
-     * @Cache(expires="+2 weeks", public=true)
-     *
-     * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
-     *
-     * @return JsonResponse
-     */
-    public function list(PublicationSubCategoryRepository $publicationSubCategoryRepository)
+    /**@Cache(expires="+2 weeks", public=true) */
+    #[Route("/api/publications/categories", name: 'api_publication_category_list', options: ['expose' => true], methods: ['GET'], priority: 30)]
+    public function list(PublicationSubCategoryRepository $publicationSubCategoryRepository): JsonResponse
     {
         $categories = $publicationSubCategoryRepository->findBy([], ['position' => 'ASC']);
 

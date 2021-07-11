@@ -52,19 +52,11 @@ class Musician
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getInstrument(): string
     {
         return $this->instrument;
     }
 
-    /**
-     * @param string $instrument
-     *
-     * @return Musician
-     */
     public function setInstrument(string $instrument): Musician
     {
         $this->instrument = $instrument;
@@ -92,19 +84,11 @@ class Musician
         return $this;
     }
 
-    /**
-     * @return float|null
-     */
     public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    /**
-     * @param float|null $latitude
-     *
-     * @return Musician
-     */
     public function setLatitude(?float $latitude): Musician
     {
         $this->latitude = $latitude;
@@ -112,19 +96,11 @@ class Musician
         return $this;
     }
 
-    /**
-     * @return float|null
-     */
     public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    /**
-     * @param float|null $longitude
-     *
-     * @return Musician
-     */
     public function setLongitude(?float $longitude): Musician
     {
         $this->longitude = $longitude;
