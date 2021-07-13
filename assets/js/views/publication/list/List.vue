@@ -75,14 +75,32 @@
           :total="total"
           :per-page="limitByPage"
           v-model="current">
-        <b-pagination-button
-            slot-scope="props"
-            :page="props.page"
-            :id="`page${props.page.number}`"
-            tag="router-link"
-            :to="props.page.number === 1 ? '?' : `?page=${props.page.number}`">
-          {{ props.page.number }}
-        </b-pagination-button>
+        <template #default="props">
+          <b-pagination-button
+              :page="props.page"
+              :id="`page${props.page.number}`"
+              tag="router-link"
+              :to="props.page.number === 1 ? '?' : `?page=${props.page.number}`">
+            {{ props.page.number }}
+          </b-pagination-button>
+        </template>
+        <template #previous="props">
+          <b-pagination-button
+              :page="props.page"
+              tag="router-link"
+              :to="props.page.number <= 1 ? '?' : `?page=${props.page.number}`">
+            <b-icon icon="angle-left"/>
+          </b-pagination-button>
+        </template>
+
+        <template #next="props">
+          <b-pagination-button
+              :page="props.page"
+              tag="router-link"
+              :to="props.page.number >= numberOfPages  ? `?page=${numberOfPages}` : `?page=${props.page.number}`">
+            <b-icon icon="angle-right"/>
+          </b-pagination-button>
+        </template>
       </b-pagination>
     </div>
   </div>
