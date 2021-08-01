@@ -3,7 +3,7 @@
     <b-loading active/>
   </div>
   <div v-else>
-    <b-button @click="$refs['add-musician-announce-modal'].open()"
+    <b-button @click="openAddMusicianAnnounce()"
               icon-left="bullhorn"
               type="is-info" class="is-pulled-right">
       Ajouter une nouvelle annonce
@@ -46,18 +46,16 @@
         {{ props.row.note }}
       </b-table-column>
     </b-table>
-    <add-musician-announce-modal ref="add-musician-announce-modal" :is-from-announce="true" />
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
 import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
-import AddMusicianAnnounceModal from "./modal/AddMusicianAnnounceModal";
 import {EVENT_ANNOUNCE_MUSICIAN_CREATED} from "../../../constants/events";
+import AddMusicianAnnounceForm from "./modal/AddMusicianAnnounceForm";
 
 export default {
-  components: {AddMusicianAnnounceModal},
   computed: {
     ...mapGetters('userMusicianAnnounces', ['isLoading', 'announces']),
   },
@@ -66,6 +64,17 @@ export default {
     this.$root.$on(EVENT_ANNOUNCE_MUSICIAN_CREATED, () => {
       this.$store.dispatch('userMusicianAnnounces/refresh');
     });
+  },
+  methods: {
+    openAddMusicianAnnounce() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: AddMusicianAnnounceForm,
+        props: {isFromAnnounce: true},
+        hasModalCard: true,
+        trapFocus: true
+      })
+    }
   },
   filters: {
     getSearchTypeName(type) {

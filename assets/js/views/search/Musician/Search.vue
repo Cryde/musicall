@@ -8,7 +8,7 @@
     />
 
     <b-button
-        @click="$refs['add-musician-announce-modal'].open()"
+        @click="openAddMusicianAnnounce()"
         icon-left="bullhorn"
         type="is-info"
         v-if="isAuthenticated"
@@ -27,13 +27,18 @@
       <div class="column is-5 is-12-mobile">
         <span class="is-block">Je recherche</span>
         <div class="columns">
-          <div class="column"
+          <div class="column mt-1"
                @click="changeType(option)"
                v-for="(option, i) in optionsType">
-            <b-button :type="selectedTypeName === option.value ? 'is-info' : 'is-info is-light'"
-                      class="is-fullwidth is-info">
+            <div
+                :class="selectedTypeName === option.value ? 'has-background-info has-text-white' : 'has-background-light has-text-info'"
+                      class="is-fullwidth p-2 has-text-centered box">
               {{ option.label }}
-            </b-button>
+
+              <figure class="image is-48x48 container mb-2 mt-2">
+                <img :src="option.path"/>
+              </figure>
+            </div>
           </div>
         </div>
 
@@ -85,8 +90,6 @@
     </div>
 
     <results/>
-
-    <add-musician-announce-modal v-if="isAuthenticated" ref="add-musician-announce-modal" :is-from-announce="false" />
   </div>
 </template>
 
@@ -97,10 +100,12 @@ import Results from './Results';
 import Spinner from "../../../components/global/misc/Spinner";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import {TYPES_ANNOUNCE_BAND_LABEL, TYPES_ANNOUNCE_MUSICIAN_LABEL} from "../../../constants/types";
-import AddMusicianAnnounceModal from "../../user/Announce/modal/AddMusicianAnnounceModal";
+import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnounceForm";
+import musicianPath from '../../../../images/announce/musician/musician.png'
+import bandPath from '../../../../images/announce/musician/band.png'
 
 export default {
-  components: {AddMusicianAnnounceModal, Breadcrumb, Spinner, vSelect, Results},
+  components: {Breadcrumb, Spinner, vSelect, Results},
   computed: {
     ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching']),
     ...mapGetters('instruments', ['instruments']),
@@ -114,8 +119,8 @@ export default {
     return {
       isMapVisible: false, // only used in responsive mode
       optionsType: [
-        {label: 'un musicien', value: TYPES_ANNOUNCE_MUSICIAN_LABEL},
-        {label: 'un groupe', value: TYPES_ANNOUNCE_BAND_LABEL},
+        {label: 'un musicien', value: TYPES_ANNOUNCE_MUSICIAN_LABEL, path: musicianPath},
+        {label: 'un groupe', value: TYPES_ANNOUNCE_BAND_LABEL, path: bandPath},
       ],
       zoom: 13,
       center: {lat: 50.8504500, lng: 4.3487800},
@@ -184,6 +189,14 @@ export default {
     },
     send() {
       this.$store.dispatch('searchMusician/search');
+    },
+    openAddMusicianAnnounce() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: AddMusicianAnnounceForm,
+        hasModalCard: true,
+        trapFocus: true
+      })
     }
   },
   destroyed() {

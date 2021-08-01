@@ -33,7 +33,7 @@
           <b-message type="is-info" has-icon icon="search">
             Vous ne trouvez pas ce que vous chercher ?<br/>
             N'hésitez pas à
-            <router-link :to="{name: 'announce_musician_add'}">poster une annonce gratuitement.</router-link>
+            <span @click="openAddMusicianAnnounce">poster une annonce gratuitement.</span>
           </b-message>
         </div>
       </div>
@@ -52,6 +52,7 @@ import {mapGetters} from "vuex";
 import SendMessageModal from "../../message/modal/SendMessageModal";
 import Avatar from "../../../components/user/Avatar";
 import ResultItem from "./ResultItem";
+import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnounceForm";
 
 export default {
   components: {ResultItem, Avatar, SendMessageModal},
@@ -69,6 +70,14 @@ export default {
       this.selectedRecipient = recipient;
       this.$nextTick(() => {
         this.$refs['modal-send-message'].open();
+      })
+    },
+    openAddMusicianAnnounce() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: AddMusicianAnnounceForm,
+        hasModalCard: true,
+        trapFocus: true
       })
     }
   }
