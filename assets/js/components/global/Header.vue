@@ -2,7 +2,7 @@
   <b-navbar fixed-top shadow centered spaced wrapper-class="container">
     <template slot="brand" class="mr-3">
       <b-navbar-item tag="router-link" :to="{name: 'home'}">
-        <span class="nav-logo"><img src="/build/images/logo.png" alt="Logo MusicAll"/></span>
+        <span class="nav-logo"><img :src="logoPath" alt="Logo MusicAll"/></span>
       </b-navbar-item>
     </template>
 
@@ -81,6 +81,7 @@ import PublicationType from "../publication/PublicationType";
 import searchApi from "../../api/search";
 import {EVENT_TOGGLE_MENU} from '../../constants/events';
 import {debounce} from 'lodash';
+import logoPath from '../../../images/logo.png';
 
 export default {
   components: {Dropdown, PublicationType},
@@ -89,7 +90,8 @@ export default {
       term: '',
       results: [],
       searched: false,
-      isLoadingSearch: false
+      isLoadingSearch: false,
+      logoPath
     }
   },
   computed: {

@@ -8,7 +8,7 @@
              @click="selectSearch('musician')"
         >
           <figure class="image is-48x48 container mb-2">
-            <img src="/build/images/announce/musician/musician.png"/>
+            <img :src="musicianPath"/>
           </figure>
           Un musicien
         </div>
@@ -19,7 +19,7 @@
              @click="selectSearch('band')"
         >
           <figure class="image is-48x48 container mb-2">
-            <img src="/build/images/announce/musician/band.png"/>
+            <img :src="bandPath"/>
           </figure>
           Un groupe
         </div>
@@ -30,8 +30,13 @@
 
 <script>
 import {mapGetters} from "vuex";
+import musicianPath from '../../../../../../images/announce/musician/musician.png';
+import bandPath from '../../../../../../images/announce/musician/band.png';
 
 export default {
+  data() {
+    return {musicianPath, bandPath}
+  },
   computed: {
     ...mapGetters('announceMusician', ['selectedType']),
   },
