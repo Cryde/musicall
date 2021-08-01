@@ -2,7 +2,7 @@
   <div class="columns">
     <div class="column is-12" id="thread-list-container" v-if="threads.length">
       <perfect-scrollbar>
-        <div class="card is-shadowless"
+        <div class="card is-shadowless is-clickable is-radiusless is-thread-container"
              v-for="thread in orderedThreads" :key="thread.thread.id"
              :class="{'has-background-info-light': !thread.meta.is_read, 'has-background-light': currentThreadId === thread.thread.id}"
              @click="selectCurrentThread(thread.thread)"
