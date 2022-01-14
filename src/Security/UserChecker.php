@@ -10,8 +10,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class UserChecker implements UserCheckerInterface
 {
     /**
-     * @param UserInterface $user
-     *
+     * @return void
      * @throws NotConfirmedAccountException
      */
     public function checkPreAuth(UserInterface $user)
