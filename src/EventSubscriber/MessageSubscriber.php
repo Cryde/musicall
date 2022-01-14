@@ -8,9 +8,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class MessageSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var MessageReceivedMail
-     */
     private MessageReceivedMail $messageReceivedMail;
 
     public function __construct(MessageReceivedMail $messageReceivedMail)
@@ -18,7 +15,7 @@ class MessageSubscriber implements EventSubscriberInterface
         $this->messageReceivedMail = $messageReceivedMail;
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             MessageSentEvent::NAME => 'onMessageSent',

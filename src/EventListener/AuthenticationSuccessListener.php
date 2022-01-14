@@ -8,8 +8,6 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 class AuthenticationSuccessListener
 {
     /**
-     * @param AuthenticationSuccessEvent $event
-     *
      * @throws \Exception
      */
     public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
