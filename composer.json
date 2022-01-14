@@ -43,6 +43,7 @@
         "symfony/property-access": "^5.0",
         "symfony/property-info": "^5.0",
         "symfony/proxy-manager-bridge": "^5.0",
+        "symfony/runtime": "^5.0",
         "symfony/security-bundle": "^5.0",
         "symfony/serializer": "^5.0",
         "symfony/string": "^5.0",
@@ -76,7 +77,8 @@
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "phpstan/extension-installer": true,
-            "symfony/flex": true
+            "symfony/flex": true,
+            "symfony/runtime": true
         }
     },
     "autoload": {

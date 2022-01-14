@@ -1,6 +1,6 @@
 doctrine_migrations:
     migrations_paths:
-        'DoctrineMigrations': '%kernel.project_dir%/src/Migrations'
+        'DoctrineMigrations': '%kernel.project_dir%/migrations'
     organize_migrations: "BY_YEAR_AND_MONTH"
     storage:
         table_storage:
@@ -8,5 +8,3 @@ doctrine_migrations:
             version_column_name: 'version'
             version_column_length: 1024
             executed_at_column_name: 'executed_at'
-    services:
-        'Doctrine\Migrations\Version\MigrationFactory': 'App\Migrations\Factory\MigrationFactoryDecorator'
