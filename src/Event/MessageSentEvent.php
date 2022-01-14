@@ -8,9 +8,6 @@ use Symfony\Contracts\EventDispatcher\Event;
 class MessageSentEvent extends Event
 {
     public const NAME = 'message.sent';
-    /**
-     * @var User
-     */
     private User $recipient;
 
     public function __construct(User $recipient)
