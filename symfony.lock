@@ -147,6 +147,9 @@
     "guzzlehttp/psr7": {
         "version": "1.6.1"
     },
+    "hamcrest/hamcrest-php": {
+        "version": "v2.0.1"
+    },
     "http-interop/http-factory-guzzle": {
         "version": "1.0.0"
     },
@@ -192,6 +195,9 @@
     },
     "mailjet/mailjet-apiv3-php": {
         "version": "v1.4.1"
+    },
+    "mockery/mockery": {
+        "version": "1.4.4"
     },
     "monolog/monolog": {
         "version": "1.24.0"
@@ -625,6 +631,9 @@
             "config/packages/twig.yaml",
             "templates/base.html.twig"
         ]
+    },
+    "symfony/uid": {
+        "version": "v5.4.2"
     },
     "symfony/validator": {
         "version": "4.3",
