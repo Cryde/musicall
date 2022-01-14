@@ -1,6 +1,4 @@
 parameters:
-    inferPrivatePropertyTypeFromConstructor: true
-    excludes_analyse:
-        - %rootDir%/../../../src/Migrations/*
-    symfony:
-        container_xml_path: '%rootDir%/../../../var/cache/dev/App_KernelDevDebugContainer.xml'
+    level: 1
+    paths:
+        - src
