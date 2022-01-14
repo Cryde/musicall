@@ -1,5 +1,7 @@
 security:
-    encoders:
+    enable_authenticator_manager: true
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
         App\Entity\User:
             algorithm: auto
 
@@ -20,13 +22,11 @@ security:
         refresh:
             pattern:  ^/api/token/refresh
             stateless: true
-            anonymous: true
             provider: app_user_provider
 
         login:
             pattern:  ^/api/login_check
             stateless: true
-            anonymous: true
             user_checker: App\Security\UserChecker
             json_login:
                 check_path:      api_login_check
@@ -34,15 +34,11 @@ security:
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
             provider: app_user_provider
 
+
         main:
-            anonymous: true
+            pattern: ^/api
             stateless: true
-            remember_me:
-                secret: '%env(APP_SECRET)%'  # if I don't put that it fail...
-            guard:
-                authenticators:
-                    - lexik_jwt_authentication.jwt_token_authenticator
-            provider: app_user_provider
+            jwt: ~
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
