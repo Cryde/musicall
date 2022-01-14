@@ -9,6 +9,7 @@
         "ext-iconv": "*",
         "composer/package-versions-deprecated": "1.11.99.1",
         "doctrine/annotations": "^1.0",
+        "doctrine/dbal": "^2",
         "doctrine/doctrine-bundle": "^2.2",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.8",
@@ -47,6 +48,7 @@
         "symfony/string": "^5.0",
         "symfony/translation": "^5.0",
         "symfony/twig-bundle": "^5.0",
+        "symfony/uid": "^5.0",
         "symfony/validator": "^5.0",
         "symfony/web-link": "^5.0",
         "symfony/webpack-encore-bundle": "^1.0",
@@ -70,7 +72,12 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "phpstan/extension-installer": true,
+            "symfony/flex": true
+        }
     },
     "autoload": {
         "psr-4": {
