@@ -23,6 +23,7 @@
               required autofocus
               size="lg"
               placeholder="nom d'utilisateur"
+              @keydown.native.enter="login"
           ></b-input>
 
           <label for="inputPassword" class="sr-only">Password</label>
@@ -33,6 +34,7 @@
               size="lg"
               required
               placeholder="mot de passe"
+              @keydown.native.enter="login"
           ></b-input>
 
           <b-button
