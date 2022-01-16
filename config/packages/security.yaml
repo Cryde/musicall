@@ -6,9 +6,9 @@ security:
             algorithm: auto
 
     providers:
-        # used to reload user from session & other features (e.g. switch_user)
-        app_user_provider:
-            id: App\Security\UserProvider
+        users:
+            entity:
+                class: App\Entity\User
 
     role_hierarchy:
         ROLE_ADMIN:       ROLE_USER
@@ -19,10 +19,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        refresh:
+        api_token_refresh:
             pattern:  ^/api/token/refresh
             stateless: true
-            provider: app_user_provider
+            user_checker: App\Security\UserChecker
 
         login:
             pattern:  ^/api/login_check
@@ -32,7 +32,6 @@ security:
                 check_path:      api_login_check
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
-            provider: app_user_provider
 
 
         main:
@@ -51,4 +50,4 @@ security:
         - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/admin, role: ROLE_ADMIN }
         - { path: ^/api/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/token/refresh, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
