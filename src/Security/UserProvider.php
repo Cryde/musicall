@@ -50,14 +50,15 @@ class UserProvider implements UserProviderInterface
      */
     public function refreshUser(UserInterface $user)
     {
+        if (!$user instanceof User) {
+            throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
+        }
+
+        return $user;
     }
 
     /**
      * Whether this provider supports the given user class.
-     *
-     * @param string $class
-     *
-     * @return bool
      */
     public function supportsClass(string $class) : bool
     {
