@@ -9,14 +9,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserPublicationArraySerializer
 {
-    /**
-     * @var UploaderHelper
-     */
-    private $uploaderHelper;
-    /**
-     * @var CacheManager
-     */
-    private $cacheManager;
+    private UploaderHelper $uploaderHelper;
+    private CacheManager $cacheManager;
 
     public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
     {

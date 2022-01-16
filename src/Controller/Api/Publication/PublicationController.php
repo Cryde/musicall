@@ -9,6 +9,7 @@ use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\Publication\SubCategoryArraySerializer;
 use App\Serializer\PublicationSerializer;
 use App\Service\Procedure\Metric\ViewProcedure;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -80,21 +81,14 @@ class PublicationController extends AbstractController
      *     options={"expose":true},
      *     priority=1
      * )
-     *
-     * @param Request                $request
-     * @param PublicationSubCategory $publicationSubCategory
-     * @param PublicationRepository  $publicationRepository
-     * @param PublicationSerializer  $publicationSerializer
-     *
-     * @return JsonResponse
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function listByCategory(
         Request $request,
         PublicationSubCategory $publicationSubCategory,
         PublicationRepository $publicationRepository,
         PublicationSerializer $publicationSerializer
-    ) {
+    ): JsonResponse {
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
         $total = $publicationRepository->countOnlinePublicationsByCategory($publicationSubCategory);

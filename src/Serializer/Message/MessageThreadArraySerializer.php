@@ -6,9 +6,6 @@ use App\Entity\Message\MessageThread;
 
 class MessageThreadArraySerializer
 {
-    /**
-     * @var LastMessageArraySerializer
-     */
     private LastMessageArraySerializer $lastMessageArraySerializer;
 
     public function __construct(LastMessageArraySerializer $lastMessageArraySerializer)

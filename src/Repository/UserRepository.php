@@ -22,7 +22,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Will be deprecated in the future, the correct methd is "loadUserByIdentifier"
+     * Will be deprecated in the future, the correct method is "loadUserByIdentifier"
      * @throws NonUniqueResultException
      */
     public function loadUserByUsername(string $username): ?User

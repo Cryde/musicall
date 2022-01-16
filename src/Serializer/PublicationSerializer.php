@@ -27,8 +27,6 @@ class PublicationSerializer
 
     /**
      * @param array|Publication[] $publications
-     *
-     * @return array
      */
     public function listToArray(array $publications): array
     {

@@ -12,12 +12,8 @@ class SecurityController extends AbstractController
 {
     /**
      * @Route("/api/login", name="api_login", methods={"POST"}, options={"expose":true})
-     *
-     * @param UserArraySerializer $userAppArraySerializer
-     *
-     * @return JsonResponse
      */
-    public function login(UserArraySerializer $userAppArraySerializer)
+    public function login(UserArraySerializer $userAppArraySerializer): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();

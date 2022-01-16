@@ -10,21 +10,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class RemoteFileDownloader
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-    /**
-     * @var Filesystem
-     */
-    private $filesystem;
+    private LoggerInterface $logger;
+    private Filesystem $filesystem;
 
-    /**
-     * RemoteFileDownloader constructor.
-     *
-     * @param Filesystem      $filesystem
-     * @param LoggerInterface $logger
-     */
     public function __construct(Filesystem $filesystem, LoggerInterface $logger)
     {
         $this->filesystem = $filesystem;
@@ -32,13 +20,9 @@ class RemoteFileDownloader
     }
 
     /**
-     * @param string $path
-     * @param string $destinationDir
-     *
-     * @return UploadedFile
      * @throws CorruptedFileException
      */
-    public function download(string $path, string $destinationDir)
+    public function download(string $path, string $destinationDir): UploadedFile
     {
         $tmpFilePath = tempnam('/tmp', 'remote_file_downloader');
         if ($tmpFilePath === false) {

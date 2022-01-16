@@ -6,9 +6,6 @@ use App\Entity\Wiki\Artist;
 
 class ArtistDirector
 {
-    /**
-     * @var ArtistSocialDirector
-     */
     private ArtistSocialDirector $artistSocialDirector;
 
     public function __construct(ArtistSocialDirector $artistSocialDirector)
@@ -16,7 +13,7 @@ class ArtistDirector
         $this->artistSocialDirector = $artistSocialDirector;
     }
 
-    public function createFromArray(array $data)
+    public function createFromArray(array $data): Artist
     {
         $artist = (new Artist())
             ->setBiography($data['biography'] ?? '')

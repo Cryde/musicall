@@ -3,11 +3,6 @@
 namespace App\Service\Google;
 class YoutubeUrlHelper
 {
-    /**
-     * @param string $urlVideo
-     *
-     * @return string
-     */
     public function getVideoId(string $urlVideo): string
     {
         $host = mb_strtolower(parse_url($urlVideo, PHP_URL_HOST));

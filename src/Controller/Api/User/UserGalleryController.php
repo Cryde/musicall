@@ -54,7 +54,6 @@ class UserGalleryController extends AbstractController
     public function add(
         Request             $request,
         SerializerInterface $serializer,
-        ValidatorInterface  $validator,
         #[CurrentUser] $author
     ): JsonResponse {
         /** @var Gallery $gallery */
@@ -85,7 +84,6 @@ class UserGalleryController extends AbstractController
         Gallery $gallery,
         Request $request,
         SerializerInterface $serializer,
-        ValidatorInterface $validator,
         #[CurrentUser] $user
     ): JsonResponse {
         if ($user->getId() !== $gallery->getAuthor()->getId()) {
@@ -133,8 +131,11 @@ class UserGalleryController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      */
-    public function images(Gallery $gallery, GalleryImageSerializer $userGalleryImageSerializer, #[CurrentUser] $user)
-    {
+    public function images(
+        Gallery                $gallery,
+        GalleryImageSerializer $userGalleryImageSerializer,
+        #[CurrentUser] $user
+    ): JsonResponse {
         if ($user->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
@@ -147,7 +148,7 @@ class UserGalleryController extends AbstractController
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
      */
-    public function validation(Gallery $gallery, ValidatorInterface $validator, #[CurrentUser] $user): JsonResponse
+    public function validation(Gallery $gallery, #[CurrentUser] $user): JsonResponse
     {
         if ($user->getId() !== $gallery->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);

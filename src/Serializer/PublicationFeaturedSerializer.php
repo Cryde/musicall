@@ -10,13 +10,7 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class PublicationFeaturedSerializer
 {
-    /**
-     * @var UploaderHelper
-     */
     private UploaderHelper $uploaderHelper;
-    /**
-     * @var CacheManager
-     */
     private CacheManager $cacheManager;
 
     public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)

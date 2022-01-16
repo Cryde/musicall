@@ -16,13 +16,8 @@ class ArtistController extends AbstractController
      *     name="api_artist_show",
      *     options={"expose": true}
      * )
-     *
-     * @param Artist                $artist
-     * @param ArtistArraySerializer $artistArraySerializer
-     *
-     * @return JsonResponse
      */
-    public function show(Artist $artist, ArtistArraySerializer $artistArraySerializer)
+    public function show(Artist $artist, ArtistArraySerializer $artistArraySerializer): JsonResponse
     {
         return $this->json($artistArraySerializer->toArray($artist));
     }

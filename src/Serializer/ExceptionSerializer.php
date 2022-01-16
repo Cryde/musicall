@@ -15,7 +15,7 @@ class ExceptionSerializer implements NormalizerInterface
         ];
     }
 
-    public function supportsNormalization($data, string $format = null)
+    public function supportsNormalization($data, string $format = null): bool
     {
         return 'json' === $format && $data instanceof FlattenException;
     }

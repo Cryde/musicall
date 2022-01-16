@@ -7,9 +7,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class UserTokenGenerator
 {
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)

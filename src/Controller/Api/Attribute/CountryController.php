@@ -16,10 +16,8 @@ class CountryController extends AbstractController
      *     methods={"GET"},
      *     options={"expose": true}
      * )
-     *
-     * @return JsonResponse
      */
-    public function list()
+    public function list(): JsonResponse
     {
         return $this->json(array_map(function ($countryCode3, $countryName) {
             return ['key' => $countryCode3, 'label' => $countryName];

@@ -16,20 +16,13 @@ class ContactController extends AbstractController
 {
     /**
      * @Route("/api/contact", name="api_contact", methods={"POST"}, options={"expose": true})
-     *
-     * @param Request             $request
-     * @param SerializerInterface $serializer
-     * @param ValidatorInterface  $validator
-     * @param ContactMail         $contactMail
-     *
-     * @return JsonResponse
      */
     public function send(
         Request $request,
         SerializerInterface $serializer,
         ValidatorInterface $validator,
         ContactMail $contactMail
-    ) {
+    ): JsonResponse {
         /** @var ContactModel $contact */
         $contact = $serializer->deserialize($request->getContent(), ContactModel::class, 'json');
 

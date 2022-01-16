@@ -18,12 +18,8 @@ class InstrumentController extends AbstractController
      *     methods={"GET"},
      *     options={"expose": true}
      * )
-     *
-     * @param InstrumentRepository $instrumentRepository
-     *
-     * @return JsonResponse
      */
-    public function list(InstrumentRepository $instrumentRepository)
+    public function list(InstrumentRepository $instrumentRepository): JsonResponse
     {
         return $this->json($instrumentRepository->findAll(), Response::HTTP_OK, [], [
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['creationDatetime']

@@ -8,10 +8,8 @@ class AdminArtistSocialSerializer
 {
     /**
      * @param ArtistSocial[] $artistSocials
-     *
-     * @return array
      */
-    public function listToArray($artistSocials): array
+    public function listToArray(array $artistSocials): array
     {
         $result = [];
         foreach ($artistSocials as $artistSocial) {

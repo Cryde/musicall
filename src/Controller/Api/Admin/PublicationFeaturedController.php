@@ -8,6 +8,7 @@ use App\Entity\PublicationFeatured;
 use App\Form\ImageUploaderType;
 use App\Repository\PublicationFeaturedRepository;
 use App\Serializer\PublicationFeaturedSerializer;
+use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,6 +23,12 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class PublicationFeaturedController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
     /**
      * @Route(
      *     "/api/admin/publication/featured",
@@ -30,16 +37,11 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param PublicationFeaturedRepository $publicationFeaturedRepository
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     *
-     * @return JsonResponse
      */
     public function list(
         PublicationFeaturedRepository $publicationFeaturedRepository,
         PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ) {
+    ): JsonResponse {
         return $this->json($publicationFeaturedSerializer->toList($publicationFeaturedRepository->findAll()));
     }
 
@@ -50,14 +52,7 @@ class PublicationFeaturedController extends AbstractController
      *     methods={"POST"},
      *     options={"expose": true}
      * )
-     *
-     * @param Publication                   $publication
-     * @param Request                       $request
-     * @param SerializerInterface           $serializer
-     * @param ValidatorInterface            $validator
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     *
-     * @return JsonResponse
+     * @IsGranted("ROLE_ADMIN")
      */
     public function add(
         Publication $publication,
@@ -65,7 +60,7 @@ class PublicationFeaturedController extends AbstractController
         SerializerInterface $serializer,
         ValidatorInterface $validator,
         PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ) {
+    ): JsonResponse {
         /** @var PublicationFeatured $publicationFeatured */
         $publicationFeatured = $serializer->deserialize($request->getContent(), PublicationFeatured::class, 'json');
         $publicationFeatured->setPublication($publication);
@@ -76,8 +71,8 @@ class PublicationFeaturedController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->persist($publicationFeatured);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->persist($publicationFeatured);
+        $this->entityManager->flush();
 
         return $this->json($publicationFeaturedSerializer->toArray($publicationFeatured));
     }
@@ -91,14 +86,6 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param PublicationFeatured           $publicationFeatured
-     * @param Request                       $request
-     * @param SerializerInterface           $serializer
-     * @param ValidatorInterface            $validator
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     *
-     * @return JsonResponse
      */
     public function edit(
         PublicationFeatured $publicationFeatured,
@@ -106,7 +93,7 @@ class PublicationFeaturedController extends AbstractController
         SerializerInterface $serializer,
         ValidatorInterface $validator,
         PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ) {
+    ): JsonResponse {
         /** @var PublicationFeatured $publicationFeatured */
         $publicationFeatured = $serializer->deserialize($request->getContent(), PublicationFeatured::class, 'json', [
             AbstractNormalizer::OBJECT_TO_POPULATE => $publicationFeatured,
@@ -117,7 +104,7 @@ class PublicationFeaturedController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json($publicationFeaturedSerializer->toArray($publicationFeatured));
     }
@@ -131,25 +118,19 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param PublicationFeatured           $publicationFeatured
-     * @param Request                       $request
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     *
-     * @return JsonResponse
      */
     public function option(
         PublicationFeatured $publicationFeatured,
         Request $request,
         PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ) {
+    ): JsonResponse {
         $backgroundSet = in_array($request->get('color', ''), ['dark', 'light']) ? $request->get('color', '') : 'dark';
 
         $options = $publicationFeatured->getOptions();
         $options['color'] = $backgroundSet;
 
         $publicationFeatured->setOptions($options);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json($publicationFeaturedSerializer->toArray($publicationFeatured));
     }
@@ -163,22 +144,18 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param PublicationFeatured $publicationFeatured
-     *
-     * @return JsonResponse
      */
-    public function remove(PublicationFeatured $publicationFeatured)
+    public function remove(PublicationFeatured $publicationFeatured): JsonResponse
     {
         if($cover = $publicationFeatured->getCover()) {
             $publicationFeatured->setCover(null);
-            $this->getDoctrine()->getManager()->flush();
-            $this->getDoctrine()->getManager()->remove($cover);
-            $this->getDoctrine()->getManager()->flush();
+            $this->entityManager->flush();
+            $this->entityManager->remove($cover);
+            $this->entityManager->flush();
         }
 
-        $this->getDoctrine()->getManager()->remove($publicationFeatured);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->remove($publicationFeatured);
+        $this->entityManager->flush();
 
         return $this->json([], Response::HTTP_NO_CONTENT);
     }
@@ -192,21 +169,14 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Request             $request
-     * @param PublicationFeatured $publicationFeatured
-     * @param UploaderHelper      $uploaderHelper
-     * @param CacheManager        $cacheManager
-     *
-     * @return JsonResponse
      */
     public function uploadImage(
         Request $request,
         PublicationFeatured $publicationFeatured,
         UploaderHelper $uploaderHelper,
         CacheManager $cacheManager
-    ) {
-        $previousFeaturedCover = $publicationFeatured->getCover() ? $publicationFeatured->getCover() : null;
+    ): JsonResponse {
+        $previousFeaturedCover = $publicationFeatured->getCover() ?: null;
 
         $cover = new PublicationFeaturedImage();
         $cover->setPublicationFeatured($publicationFeatured);
@@ -218,14 +188,14 @@ class PublicationFeaturedController extends AbstractController
 
             if ($previousFeaturedCover) {
                 $publicationFeatured->setCover(null);
-                $this->getDoctrine()->getManager()->flush();
-                $this->getDoctrine()->getManager()->remove($previousFeaturedCover);
-                $this->getDoctrine()->getManager()->flush();
+                $this->entityManager->flush();
+                $this->entityManager->remove($previousFeaturedCover);
+                $this->entityManager->flush();
             }
 
-            $this->getDoctrine()->getManager()->persist($cover);
+            $this->entityManager->persist($cover);
             $publicationFeatured->setCover($cover);
-            $this->getDoctrine()->getManager()->flush();
+            $this->entityManager->flush();
             $imagePath = $uploaderHelper->asset($cover, 'imageFile');
 
             return $this->json(['data' => ['uri' => $cacheManager->getBrowserPath($imagePath, 'featured_cover_filter')]]);
@@ -243,18 +213,12 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param PublicationFeatured           $publicationFeatured
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     * @param ValidatorInterface            $validator
-     *
-     * @return JsonResponse
      */
     public function publish(
         PublicationFeatured $publicationFeatured,
         PublicationFeaturedSerializer $publicationFeaturedSerializer,
         ValidatorInterface $validator
-    ) {
+    ): JsonResponse {
         $publicationFeatured->setStatus(PublicationFeatured::STATUS_ONLINE);
         $errors = $validator->validate($publicationFeatured, null, ['publish']);
 
@@ -262,7 +226,7 @@ class PublicationFeaturedController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json($publicationFeaturedSerializer->toArray($publicationFeatured));
     }
@@ -276,18 +240,13 @@ class PublicationFeaturedController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param PublicationFeatured           $publicationFeatured
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     *
-     * @return JsonResponse
      */
     public function unpublish(
         PublicationFeatured $publicationFeatured,
         PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ) {
+    ): JsonResponse {
         $publicationFeatured->setStatus(PublicationFeatured::STATUS_DRAFT);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json($publicationFeaturedSerializer->toArray($publicationFeatured));
     }

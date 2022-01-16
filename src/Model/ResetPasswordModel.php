@@ -12,19 +12,11 @@ class ResetPasswordModel
      */
     public string $password;
 
-    /**
-     * @return string
-     */
     public function getPassword(): string
     {
         return $this->password;
     }
 
-    /**
-     * @param string $password
-     *
-     * @return ResetPasswordModel
-     */
     public function setPassword(string $password): ResetPasswordModel
     {
         $this->password = $password;

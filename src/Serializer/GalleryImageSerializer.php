@@ -9,13 +9,7 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class GalleryImageSerializer
 {
-    /**
-     * @var UploaderHelper
-     */
     private UploaderHelper $uploaderHelper;
-    /**
-     * @var CacheManager
-     */
     private CacheManager $cacheManager;
 
     public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
