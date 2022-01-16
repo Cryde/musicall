@@ -1,2 +1,1 @@
 gesdinet_jwt_refresh_token:
-    user_provider: App\Security\UserProvider
