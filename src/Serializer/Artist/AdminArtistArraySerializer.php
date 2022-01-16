@@ -9,17 +9,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class AdminArtistArraySerializer
 {
-    /**
-     * @var AdminArtistSocialSerializer
-     */
     private AdminArtistSocialSerializer $adminArtistSocialSerializer;
-    /**
-     * @var UploaderHelper
-     */
     private UploaderHelper $uploaderHelper;
-    /**
-     * @var CacheManager
-     */
     private CacheManager $cacheManager;
 
     public function __construct(
@@ -34,10 +25,8 @@ class AdminArtistArraySerializer
 
     /**
      * @param Artist[] $artists
-     *
-     * @return array
      */
-    public function listToArray($artists): array
+    public function listToArray(array $artists): array
     {
         $result = [];
         foreach ($artists as $artist) {

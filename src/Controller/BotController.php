@@ -10,15 +10,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BotController extends AbstractController
 {
-    /**
-     * @Route("/bot", name="bot")
-     *
-     * @param Request              $request
-     * @param BotMetaDataGenerator $botMetaDataGenerator
-     *
-     * @return Response
-     */
-    public function index(Request $request, BotMetaDataGenerator $botMetaDataGenerator)
+    #[Route('/bot', name: 'bot')]
+    public function index(Request $request, BotMetaDataGenerator $botMetaDataGenerator): Response
     {
         return $this->render('bot_base.html.twig', $botMetaDataGenerator->getMetaData($request->getRequestUri()));
     }

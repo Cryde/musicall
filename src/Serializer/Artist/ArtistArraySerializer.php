@@ -10,21 +10,9 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class ArtistArraySerializer
 {
-    /**
-     * @var UploaderHelper
-     */
     private UploaderHelper $uploaderHelper;
-    /**
-     * @var CacheManager
-     */
     private CacheManager $cacheManager;
-    /**
-     * @var ArtistSocialSerializer
-     */
     private ArtistSocialSerializer $artistSocialSerializer;
-    /**
-     * @var ArtistTextFormatter
-     */
     private ArtistTextFormatter $artistTextFormatter;
 
     public function __construct(
@@ -41,10 +29,8 @@ class ArtistArraySerializer
 
     /**
      * @param Artist[] $artists
-     *
-     * @return array
      */
-    public function listToArray($artists): array
+    public function listToArray(array $artists): array
     {
         $result = [];
         foreach ($artists as $artist) {

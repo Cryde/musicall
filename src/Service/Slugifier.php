@@ -8,17 +8,9 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class Slugifier
 {
-    /**
-     * @var SluggerInterface
-     */
+
     private SluggerInterface $slugger;
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $entityManager;
-    /**
-     * @var PropertyAccessorInterface
-     */
     private PropertyAccessorInterface $propertyAccessor;
 
     public function __construct(

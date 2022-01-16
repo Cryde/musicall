@@ -16,6 +16,7 @@ use App\Serializer\Message\MessageThreadMetaArraySerializer;
 use App\Service\Access\ThreadAccess;
 use App\Service\Formatter\Message\MessageUserSenderFormatter;
 use App\Service\Procedure\Message\MessageSenderProcedure;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -29,34 +30,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class MessageController extends AbstractController
 {
-    /**
-     * @var MessageThreadArraySerializer
-     */
     private MessageThreadArraySerializer $messageThreadArraySerializer;
-    /**
-     * @var MessageThreadMetaArraySerializer
-     */
     private MessageThreadMetaArraySerializer $threadMetaArraySerializer;
-    /**
-     * @var MessageParticipantArraySerializer
-     */
     private MessageParticipantArraySerializer $messageParticipantArraySerializer;
-    /**
-     * @var MessageArraySerializer
-     */
     private MessageArraySerializer $messageArraySerializer;
-    /**
-     * @var MessageThreadMetaRepository
-     */
     private MessageThreadMetaRepository $messageThreadMetaRepository;
-    /**
-     * @var MessageParticipantRepository
-     */
     private MessageParticipantRepository $messageParticipantRepository;
-    /**
-     * @var MessageUserSenderFormatter
-     */
     private MessageUserSenderFormatter $messageUserSenderFormatter;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         MessageThreadMetaRepository $messageThreadMetaRepository,
@@ -65,7 +46,8 @@ class MessageController extends AbstractController
         MessageThreadMetaArraySerializer $threadMetaArraySerializer,
         MessageParticipantArraySerializer $messageParticipantArraySerializer,
         MessageArraySerializer $messageArraySerializer,
-        MessageUserSenderFormatter $messageUserSenderFormatter
+        MessageUserSenderFormatter $messageUserSenderFormatter,
+        EntityManagerInterface $entityManager
     ) {
         $this->messageThreadArraySerializer = $messageThreadArraySerializer;
         $this->threadMetaArraySerializer = $threadMetaArraySerializer;
@@ -74,20 +56,13 @@ class MessageController extends AbstractController
         $this->messageThreadMetaRepository = $messageThreadMetaRepository;
         $this->messageParticipantRepository = $messageParticipantRepository;
         $this->messageUserSenderFormatter = $messageUserSenderFormatter;
+        $this->entityManager = $entityManager;
     }
 
     /**
      * @Route("/api/user/{id}/message", name="api_message_add", methods={"POST"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request                $request
-     * @param User                   $user
-     * @param SerializerInterface    $serializer
-     * @param ValidatorInterface     $validator
-     * @param MessageSenderProcedure $messageSenderProcedure
-     *
-     * @return JsonResponse
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
@@ -97,7 +72,7 @@ class MessageController extends AbstractController
         SerializerInterface $serializer,
         ValidatorInterface $validator,
         MessageSenderProcedure $messageSenderProcedure
-    ) {
+    ): JsonResponse {
         /** @var MessageModel $messageModel */
         $messageModel = $serializer->deserialize($request->getContent(), MessageModel::class, 'json');
         $errors = $validator->validate($messageModel);
@@ -116,16 +91,11 @@ class MessageController extends AbstractController
      * @Route("/api/thread", name="api_thread_list", methods={"GET"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param MessageThreadMetaRepository      $messageThreadMetaRepository
-     * @param MessageThreadMetaArraySerializer $threadMetaArraySerializer
-     *
-     * @return JsonResponse
      */
     public function listThread(
         MessageThreadMetaRepository $messageThreadMetaRepository,
         MessageThreadMetaArraySerializer $threadMetaArraySerializer
-    ) {
+    ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
 
@@ -138,28 +108,20 @@ class MessageController extends AbstractController
      * @Route("/api/thread/{id}/messages", name="api_thread_message_list", methods={"GET"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param MessageThread              $thread
-     * @param MessageRepository          $messageRepository
-     * @param ThreadAccess               $threadAccess
-     * @param MessageArraySerializer     $messageArraySerializer
-     *
-     * @return JsonResponse
      */
     public function listMessageByThread(
         MessageThread $thread,
         MessageRepository $messageRepository,
         ThreadAccess $threadAccess,
         MessageArraySerializer $messageArraySerializer
-    ) {
+    ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
 
         if (!$messages = $messageRepository->findBy(['thread' => $thread], ['creationDatetime' => 'ASC'])) {
             throw new \UnexpectedValueException('Ce thread n\'existe pas.');
         }
-
-        if(!$threadAccess->isOneOfParticipant($thread, $user)) {
+        if (!$threadAccess->isOneOfParticipant($thread, $user)) {
             throw new \UnexpectedValueException('Vous n\'avez pas accès à ce thread.');
         }
 
@@ -175,16 +137,11 @@ class MessageController extends AbstractController
      * @Route("/api/thread/{id}/read", name="api_thread_message_mark_read", methods={"PATCH"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param MessageThread               $thread
-     * @param MessageThreadMetaRepository $messageThreadMetaRepository
-     *
-     * @return JsonResponse
      */
     public function markThreadAsRead(
         MessageThread $thread,
         MessageThreadMetaRepository $messageThreadMetaRepository
-    ) {
+    ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
 
@@ -193,7 +150,7 @@ class MessageController extends AbstractController
         }
 
         $meta->setIsRead(true);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json([], Response::HTTP_ACCEPTED);
     }
@@ -202,16 +159,6 @@ class MessageController extends AbstractController
      * @Route("/api/thread/{id}/messages", name="api_thread_message_add", methods={"POST"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param MessageThread          $thread
-     * @param Request                $request
-     * @param MessageRepository      $messageRepository
-     * @param ThreadAccess           $threadAccess
-     * @param SerializerInterface    $serializer
-     * @param ValidatorInterface     $validator
-     * @param MessageSenderProcedure $messageSenderProcedure
-     *
-     * @return JsonResponse
      */
     public function postByThread(
         MessageThread $thread,
@@ -221,16 +168,14 @@ class MessageController extends AbstractController
         SerializerInterface $serializer,
         ValidatorInterface $validator,
         MessageSenderProcedure $messageSenderProcedure
-    )
-    {
+    ): JsonResponse {
         if (!$messageRepository->findBy(['thread' => $thread])) {
             throw new \UnexpectedValueException('Ce thread n\'existe pas.');
         }
 
         /** @var User $user */
         $user = $this->getUser();
-
-        if(!$threadAccess->isOneOfParticipant($thread, $user)) {
+        if (!$threadAccess->isOneOfParticipant($thread, $user)) {
             throw new \UnexpectedValueException('Vous n\'avez pas accès à ce thread.');
         }
 

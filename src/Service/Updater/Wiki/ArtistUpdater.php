@@ -7,9 +7,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ArtistUpdater
 {
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
@@ -23,7 +20,6 @@ class ArtistUpdater
         $artist->setBiography($newArtist->getBiography());
         $artist->setMembers($newArtist->getMembers());
         $artist->setCountryCode($newArtist->getCountryCode());
-
         foreach ($artist->getSocials() as $social) {
             $artist->removeSocial($social);
             $this->entityManager->remove($social);

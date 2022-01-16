@@ -15,10 +15,8 @@ class UserArraySerializer
 
     /**
      * @param User[] $list
-     *
-     * @return array
      */
-    public function listToArray($list)
+    public function listToArray($list): array
     {
         $result = [];
         foreach ($list as $user) {

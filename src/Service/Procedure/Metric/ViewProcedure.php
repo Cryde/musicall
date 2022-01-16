@@ -45,7 +45,6 @@ class ViewProcedure
             $this->entityManager->flush();
         }
 
-        $view = null;
         if ($user) {
             $view = $this->viewRepository->findOneByUser($viewCache, $user);
         } else {

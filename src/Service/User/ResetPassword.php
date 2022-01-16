@@ -11,25 +11,17 @@ use Symfony\Component\Routing\RouterInterface;
 
 class ResetPassword
 {
-    /**
-     * @var UserRepository
-     */
     private UserRepository $userRepository;
-    /**
-     * @var UserTokenGenerator
-     */
     private UserTokenGenerator $userTokenGenerator;
-    /**
-     * @var ResetPasswordMail
-     */
     private ResetPasswordMail $resetPasswordMail;
-    /**
-     * @var RouterInterface
-     */
     private RouterInterface $router;
 
-    public function __construct(UserRepository $userRepository, UserTokenGenerator $userTokenGenerator, ResetPasswordMail $resetPasswordMail, RouterInterface $router)
-    {
+    public function __construct(
+        UserRepository     $userRepository,
+        UserTokenGenerator $userTokenGenerator,
+        ResetPasswordMail  $resetPasswordMail,
+        RouterInterface    $router
+    ) {
         $this->userRepository = $userRepository;
         $this->userTokenGenerator = $userTokenGenerator;
         $this->resetPasswordMail = $resetPasswordMail;
@@ -37,16 +29,13 @@ class ResetPassword
     }
 
     /**
-     * @param string $login
-     *
      * @throws NoMatchedUserAccountException
      * @throws NonUniqueResultException
      */
     public function resetPasswordByLogin(string $login)
     {
         $user = $this->userRepository->findOneByEmailOrLogin($login);
-
-        if(!$user) {
+        if (!$user) {
             throw new NoMatchedUserAccountException('Aucun compte associé à ce login ou email n\'a été trouvé.');
         }
 

@@ -6,7 +6,7 @@ use App\Entity\PublicationSubCategory;
 
 class SubCategoryArraySerializer
 {
-    public function toArray(PublicationSubCategory $category)
+    public function toArray(PublicationSubCategory $category): array
     {
         return [
             'id'    => $category->getId(),

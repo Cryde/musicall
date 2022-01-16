@@ -19,37 +19,13 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class MessageSenderProcedure
 {
-    /**
-     * @var MessageThreadRepository
-     */
     private MessageThreadRepository $messageThreadRepository;
-    /**
-     * @var MessageDirector
-     */
     private MessageDirector $messageDirector;
-    /**
-     * @var MessageThreadDirector
-     */
     private MessageThreadDirector $messageThreadDirector;
-    /**
-     * @var MessageThreadMetaDirector
-     */
     private MessageThreadMetaDirector $messageThreadMetaDirector;
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $entityManager;
-    /**
-     * @var MessageParticipantDirector
-     */
     private MessageParticipantDirector $messageParticipantDirector;
-    /**
-     * @var MessageThreadMetaRepository
-     */
     private MessageThreadMetaRepository $messageThreadMetaRepository;
-    /**
-     * @var EventDispatcherInterface
-     */
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
@@ -73,11 +49,6 @@ class MessageSenderProcedure
     }
 
     /**
-     * @param User   $sender
-     * @param User   $recipient
-     * @param string $message
-     *
-     * @return Message
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
@@ -109,13 +80,6 @@ class MessageSenderProcedure
         return $message;
     }
 
-    /**
-     * @param MessageThread $thread
-     * @param User          $sender
-     * @param string        $message
-     *
-     * @return Message
-     */
     public function processByThread(MessageThread $thread, User $sender, string $message): Message
     {
         $this->handleReadMessage($thread, $sender);

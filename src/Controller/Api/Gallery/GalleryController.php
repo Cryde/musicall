@@ -18,12 +18,8 @@ class GalleryController extends AbstractController
 {
     /**
      * @Route("/api/gallery", name="api_gallery_list", options={"expose": true})
-     *
-     * @param GalleryRepository $galleryRepository
-     *
-     * @return JsonResponse
      */
-    public function list(GalleryRepository $galleryRepository)
+    public function list(GalleryRepository $galleryRepository): JsonResponse
     {
         $galleries = $galleryRepository->findBy(['status' => Gallery::STATUS_ONLINE], ['publicationDatetime' => 'DESC']);
 
@@ -35,14 +31,8 @@ class GalleryController extends AbstractController
 
     /**
      * @Route("/api/gallery/{slug}", name="api_gallery_show", options={"expose": true})
-     *
-     * @param Request       $request
-     * @param Gallery       $gallery
-     * @param ViewProcedure $viewProcedure
-     *
-     * @return JsonResponse
      */
-    public function show(Request $request, Gallery $gallery, ViewProcedure $viewProcedure)
+    public function show(Request $request, Gallery $gallery, ViewProcedure $viewProcedure): JsonResponse
     {
         if ($gallery->getStatus() === Gallery::STATUS_ONLINE) {
             $viewProcedure->process($gallery, $request, $this->getUser());
@@ -60,13 +50,8 @@ class GalleryController extends AbstractController
 
     /**
      * @Route("/api/gallery/{slug}/images", name="api_gallery_images_show", options={"expose": true})
-     *
-     * @param Gallery                $gallery
-     * @param GalleryImageSerializer $galleryImageSerializer
-     *
-     * @return JsonResponse
      */
-    public function images(Gallery $gallery, GalleryImageSerializer $galleryImageSerializer)
+    public function images(Gallery $gallery, GalleryImageSerializer $galleryImageSerializer): JsonResponse
     {
         // todo probablement pagination !
         return $this->json($galleryImageSerializer->toList($gallery->getImages()));

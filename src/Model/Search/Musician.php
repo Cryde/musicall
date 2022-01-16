@@ -32,19 +32,11 @@ class Musician
      */
     private $longitude;
 
-    /**
-     * @return int
-     */
     public function getType(): int
     {
         return $this->type;
     }
 
-    /**
-     * @param int $type
-     *
-     * @return Musician
-     */
     public function setType(int $type): Musician
     {
         $this->type = $type;

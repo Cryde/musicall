@@ -9,13 +9,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 class ConfirmRegistrationSender
 {
-    /**
-     * @var RouterInterface
-     */
     private RouterInterface $router;
-    /**
-     * @var RegistrationMail
-     */
     private RegistrationMail $registrationMail;
 
     public function __construct(RouterInterface $router, RegistrationMail $registrationMail)

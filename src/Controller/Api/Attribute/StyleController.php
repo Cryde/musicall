@@ -18,12 +18,8 @@ class StyleController extends AbstractController
      *     methods={"GET"},
      *     options={"expose": true}
      * )
-     *
-     * @param StyleRepository $styleRepository
-     *
-     * @return JsonResponse
      */
-    public function list(StyleRepository $styleRepository)
+    public function list(StyleRepository $styleRepository): JsonResponse
     {
         return $this->json($styleRepository->findAll(), Response::HTTP_OK, [], [
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['creationDatetime']

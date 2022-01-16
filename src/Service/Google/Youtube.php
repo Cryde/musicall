@@ -5,21 +5,9 @@ use App\Service\Google\Exception\YoutubeVideoNotFoundException;
 
 class Youtube
 {
-    /**
-     * @var \Google_Service_YouTube
-     */
-    private $youtube;
-    /**
-     * @var YoutubeUrlHelper
-     */
-    private $youtubeUrlHelper;
+    private \Google_Service_YouTube $youtube;
+    private YoutubeUrlHelper $youtubeUrlHelper;
 
-    /**
-     * Youtube constructor.
-     *
-     * @param GoogleApi        $googleApi
-     * @param YoutubeUrlHelper $youtubeUrlHelper
-     */
     public function __construct(GoogleApi $googleApi, YoutubeUrlHelper $youtubeUrlHelper)
     {
         $this->youtube = $googleApi->getYoutube();
@@ -27,9 +15,6 @@ class Youtube
     }
 
     /**
-     * @param string $videoUrl
-     *
-     * @return array
      * @throws YoutubeVideoNotFoundException
      */
     public function getVideoInfo(string $videoUrl): array

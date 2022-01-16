@@ -9,15 +9,14 @@ class BotDetector
         if (!$userAgent) {
             return false;
         }
-        
+
         $userAgent = strtolower($userAgent);
 
-        if (strpos($userAgent, "facebookexternalhit/") !== false ||
-            strpos($userAgent, "Facebot") !== false) {
+        if (str_contains($userAgent, "facebookexternalhit/") || str_contains($userAgent, "facebot")) {
             return true;
         }
 
-        if (strpos($userAgent, "Twitterbot") !== false) {
+        if (str_contains($userAgent, "twitterbot")) {
             return true;
         }
 

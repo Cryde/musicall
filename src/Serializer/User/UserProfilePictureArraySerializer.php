@@ -17,7 +17,7 @@ class UserProfilePictureArraySerializer
         $this->cacheManager = $cacheManager;
     }
 
-    public function toArray(UserProfilePicture $userProfilePicture)
+    public function toArray(UserProfilePicture $userProfilePicture): array
     {
         $path = $this->uploaderHelper->asset($userProfilePicture, 'imageFile');
 

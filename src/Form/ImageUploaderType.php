@@ -21,7 +21,7 @@ class ImageUploaderType extends AbstractType
         $resolver->setDefaults(['csrf_protection' => false]);
     }
 
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'image_upload';
     }

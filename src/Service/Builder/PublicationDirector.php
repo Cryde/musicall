@@ -11,18 +11,9 @@ use App\Service\Publication\PublicationSlug;
 
 class PublicationDirector
 {
-    /**
-     * @var YoutubeUrlHelper
-     */
-    private $youtubeUrlHelper;
-    /**
-     * @var PublicationSubCategoryRepository
-     */
-    private $publicationSubCategoryRepository;
-    /**
-     * @var PublicationSlug
-     */
-    private $publicationSlug;
+    private YoutubeUrlHelper $youtubeUrlHelper;
+    private PublicationSubCategoryRepository $publicationSubCategoryRepository;
+    private PublicationSlug $publicationSlug;
 
     public function __construct(
         YoutubeUrlHelper $youtubeUrlHelper,
@@ -34,7 +25,7 @@ class PublicationDirector
         $this->publicationSlug = $publicationSlug;
     }
 
-    public function buildVideo(array $data, User $user)
+    public function buildVideo(array $data, User $user): Publication
     {
         $category = null;
         if (isset($data['categoryId'])) {

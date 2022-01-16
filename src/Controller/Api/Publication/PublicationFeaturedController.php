@@ -17,16 +17,11 @@ class PublicationFeaturedController extends AbstractController
      *     name="api_publication_featured_list",
      *     options={"expose": true}
      * )
-     *
-     * @param PublicationFeaturedRepository $publicationFeaturedRepository
-     * @param PublicationFeaturedSerializer $publicationFeaturedSerializer
-     *
-     * @return JsonResponse
      */
     public function list(
         PublicationFeaturedRepository $publicationFeaturedRepository,
         PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ) {
+    ): JsonResponse {
         return $this->json($publicationFeaturedSerializer->toList($publicationFeaturedRepository->findBy(['status' => PublicationFeatured::STATUS_ONLINE])));
     }
 }

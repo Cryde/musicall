@@ -9,9 +9,6 @@ use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter
 class SortAndFilterFromArray
 {
     const ITEM_PER_PAGE = 15;
-    /**
-     * @var PublicationSubCategoryRepository
-     */
     private PublicationSubCategoryRepository $publicationSubCategoryRepository;
 
     public function __construct(PublicationSubCategoryRepository $publicationSubCategoryRepository)
@@ -19,12 +16,7 @@ class SortAndFilterFromArray
         $this->publicationSubCategoryRepository = $publicationSubCategoryRepository;
     }
 
-    /**
-     * @param array $data
-     *
-     * @return array
-     */
-    public function createFromArray(array $data)
+    public function createFromArray(array $data): array
     {
         // @todo : improve by abstract if into an object
         $sortBy = $data['sortBy'] ? $this->fieldConverter($data['sortBy']) : 'creationDatetime';
@@ -34,15 +26,14 @@ class SortAndFilterFromArray
         }
 
         $arrayFilters = [];
-
         if (isset($data['filter'])) {
-            if(isset($data['filter']['category_id'])) {
+            if (isset($data['filter']['category_id'])) {
                 $category = $this->publicationSubCategoryRepository->find($data['filter']['category_id']);
                 if ($category) {
                     $arrayFilters['subCategory'] = $category;
                 }
             }
-            if(isset($data['filter']['status']) && in_array($data['filter']['status'], Publication::ALL_STATUS)) {
+            if (isset($data['filter']['status']) && in_array($data['filter']['status'], Publication::ALL_STATUS)) {
                 $arrayFilters['status'] = $data['filter']['status'];
             }
         }
@@ -55,12 +46,7 @@ class SortAndFilterFromArray
         ];
     }
 
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    private function fieldConverter(string $name)
+    private function fieldConverter(string $name): string
     {
         $converter = new CamelCaseToSnakeCaseNameConverter();
 

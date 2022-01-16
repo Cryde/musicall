@@ -11,6 +11,7 @@ use App\Service\Builder\Wiki\ArtistDirector;
 use App\Service\Jsonizer;
 use App\Service\Slugifier;
 use App\Service\Updater\Wiki\ArtistUpdater;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class WikiArtistController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
     /**
      * @Route(
      *     "/api/admin/artist",
@@ -31,14 +38,6 @@ class WikiArtistController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Request                    $request
-     * @param SerializerInterface        $serializer
-     * @param ValidatorInterface         $validator
-     * @param Slugifier                  $slugifier
-     * @param AdminArtistArraySerializer $adminArtistArraySerializer
-     *
-     * @return JsonResponse
      */
     public function add(
         Request $request,
@@ -46,7 +45,7 @@ class WikiArtistController extends AbstractController
         ValidatorInterface $validator,
         Slugifier $slugifier,
         AdminArtistArraySerializer $adminArtistArraySerializer
-    ) {
+    ): JsonResponse {
         /** @var Artist $artist */
         $artist = $serializer->deserialize($request->getContent(), Artist::class, 'json');
         $artist->setSlug($slugifier->create($artist, 'name'));
@@ -57,8 +56,8 @@ class WikiArtistController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->persist($artist);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->persist($artist);
+        $this->entityManager->flush();
 
         return $this->json($adminArtistArraySerializer->toArray($artist));
     }
@@ -72,15 +71,6 @@ class WikiArtistController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Artist             $artist
-     * @param Request            $request
-     * @param ArtistDirector     $artistDirector
-     * @param ArtistUpdater      $artistUpdater
-     * @param Jsonizer           $jsonizer
-     * @param ValidatorInterface $validator
-     *
-     * @return JsonResponse
      */
     public function edit(
         Artist $artist,
@@ -89,7 +79,7 @@ class WikiArtistController extends AbstractController
         ArtistUpdater $artistUpdater,
         Jsonizer $jsonizer,
         ValidatorInterface $validator
-    ) {
+    ): JsonResponse {
         $newArtist = $artistDirector->createFromArray($jsonizer->decodeRequest($request));
         $artistUpdater->update($artist, $newArtist);
 
@@ -99,7 +89,7 @@ class WikiArtistController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json([]);
     }
@@ -119,7 +109,8 @@ class WikiArtistController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function list(ArtistRepository $wikiArtistRepository, AdminArtistArraySerializer $adminArtistArraySerializer) {
+    public function list(ArtistRepository $wikiArtistRepository, AdminArtistArraySerializer $adminArtistArraySerializer): JsonResponse
+    {
 
         return $this->json($adminArtistArraySerializer->listToArray($wikiArtistRepository->findAll()));
     }
@@ -133,13 +124,8 @@ class WikiArtistController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Artist                     $artist
-     * @param AdminArtistArraySerializer $adminArtistArraySerializer
-     *
-     * @return JsonResponse
      */
-    public function show(Artist $artist, AdminArtistArraySerializer $adminArtistArraySerializer)
+    public function show(Artist $artist, AdminArtistArraySerializer $adminArtistArraySerializer): JsonResponse
     {
         return $this->json($adminArtistArraySerializer->toArray($artist));
     }
@@ -153,19 +139,13 @@ class WikiArtistController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Request                    $request
-     * @param Artist                     $artist
-     * @param AdminArtistArraySerializer $adminArtistArraySerializer
-     *
-     * @return JsonResponse
      */
     public function uploadCover(
         Request $request,
         Artist $artist,
         AdminArtistArraySerializer $adminArtistArraySerializer
-    ) {
-        $previousCover = $artist->getCover() ? $artist->getCover() : null;
+    ): JsonResponse {
+        $previousCover = $artist->getCover() ?: null;
 
         $cover = new WikiArtistCover();
         $cover->setArtist($artist);
@@ -177,14 +157,14 @@ class WikiArtistController extends AbstractController
 
             if ($previousCover) {
                 $artist->setCover(null);
-                $this->getDoctrine()->getManager()->flush();
-                $this->getDoctrine()->getManager()->remove($previousCover);
-                $this->getDoctrine()->getManager()->flush();
+                $this->entityManager->flush();
+                $this->entityManager->remove($previousCover);
+                $this->entityManager->flush();
             }
 
-            $this->getDoctrine()->getManager()->persist($cover);
+            $this->entityManager->persist($cover);
             $artist->setCover($cover);
-            $this->getDoctrine()->getManager()->flush();
+            $this->entityManager->flush();
 
             return $this->json($adminArtistArraySerializer->toArray($artist));
         }

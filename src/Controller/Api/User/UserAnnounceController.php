@@ -20,12 +20,8 @@ class UserAnnounceController extends AbstractController
      * )
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param MusicianAnnounceRepository $musicianAnnounceRepository
-     *
-     * @return JsonResponse
      */
-    public function list(MusicianAnnounceRepository $musicianAnnounceRepository)
+    public function list(MusicianAnnounceRepository $musicianAnnounceRepository): JsonResponse
     {
         $announces = $musicianAnnounceRepository->findBy(['author' => $this->getUser()], ['creationDatetime' => 'DESC']);
 

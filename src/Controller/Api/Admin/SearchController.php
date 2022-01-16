@@ -21,18 +21,12 @@ class SearchController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Request                    $request
-     * @param PublicationRepository      $publicationRepository
-     * @param SmallPublicationSerializer $smallPublicationSerializer
-     *
-     * @return JsonResponse
      */
     public function publication(
         Request $request,
         PublicationRepository $publicationRepository,
         SmallPublicationSerializer $smallPublicationSerializer
-    ) {
+    ): JsonResponse {
         $query = $request->get('query', '');
 
         $publications = $publicationRepository->findByTitleAndStatusAndType(

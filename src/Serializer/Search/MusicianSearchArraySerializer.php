@@ -18,7 +18,7 @@ class MusicianSearchArraySerializer
         $this->userArraySerializer = $userArraySerializer;
     }
 
-    public function listToArray($list)
+    public function listToArray($list): array
     {
         $result = [];
         foreach ($list as $item) {
@@ -47,10 +47,8 @@ class MusicianSearchArraySerializer
 
     /**
      * @param Style[]|Collection $styles
-     *
-     * @return string
      */
-    private function formatStyle($styles)
+    private function formatStyle($styles): string
     {
         return implode(', ', $styles->map(fn(Style $item) => $item->getName())->toArray());
     }

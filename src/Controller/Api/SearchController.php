@@ -19,18 +19,14 @@ class SearchController extends AbstractController
 {
     /**
      * @Route("/api/search", name="api_search", options={"expose" = true})
-     *
-     * @param Request               $request
-     * @param PublicationRepository $publicationRepository
-     * @param PublicationSerializer $publicationSerializer
-     *
-     * @return JsonResponse
      */
-    public function search(Request $request, PublicationRepository $publicationRepository, PublicationSerializer $publicationSerializer)
-    {
-        $term = $request->get('term');
-
-        if(strlen($term) < 3) {
+    public function search(
+        Request               $request,
+        PublicationRepository $publicationRepository,
+        PublicationSerializer $publicationSerializer
+    ): JsonResponse {
+        $term = $request->get('term', '');
+        if (strlen($term) < 3) {
             return $this->json([], Response::HTTP_NO_CONTENT);
         }
 
@@ -46,20 +42,13 @@ class SearchController extends AbstractController
      *     methods={"POST"},
      *     options={"expose" = true}
      * )
-     *
-     * @param Request                       $request
-     * @param SerializerInterface           $serializer
-     * @param MusicianAnnounceRepository    $musicianAnnounceRepository
-     * @param MusicianSearchArraySerializer $musicianSearchArraySerializer
-     *
-     * @return JsonResponse
      */
     public function searchMusician(
         Request $request,
         SerializerInterface $serializer,
         MusicianAnnounceRepository $musicianAnnounceRepository,
         MusicianSearchArraySerializer $musicianSearchArraySerializer
-    ) {
+    ): JsonResponse {
         /** @var Musician $musicianModel */
         $musicianModel = $serializer->deserialize($request->getContent(), Musician::class, 'json');
 

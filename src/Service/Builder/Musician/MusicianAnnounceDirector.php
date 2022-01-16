@@ -8,13 +8,7 @@ use App\Repository\Attribute\StyleRepository;
 
 class MusicianAnnounceDirector
 {
-    /**
-     * @var InstrumentRepository
-     */
     private InstrumentRepository $instrumentRepository;
-    /**
-     * @var StyleRepository
-     */
     private StyleRepository $styleRepository;
 
     public function __construct(InstrumentRepository $instrumentRepository, StyleRepository $styleRepository)

@@ -5,6 +5,7 @@ namespace App\Controller\Api\Admin;
 use App\Entity\Attribute\Instrument;
 use App\Entity\Attribute\Style;
 use App\Service\Slugifier;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,19 +17,18 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AttributeController extends AbstractController
 {
-    /**
-     * @var SerializerInterface
-     */
     private SerializerInterface $serializer;
-    /**
-     * @var ValidatorInterface
-     */
     private ValidatorInterface $validator;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(SerializerInterface $serializer, ValidatorInterface $validator)
-    {
+    public function __construct(
+        SerializerInterface $serializer,
+        ValidatorInterface $validator,
+        EntityManagerInterface $entityManager
+    ) {
         $this->serializer = $serializer;
         $this->validator = $validator;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -40,13 +40,8 @@ class AttributeController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Request   $request
-     * @param Slugifier $slugifier
-     *
-     * @return JsonResponse
      */
-    public function addStyle(Request $request, Slugifier $slugifier)
+    public function addStyle(Request $request, Slugifier $slugifier): JsonResponse
     {
         /** @var Style $style */
         $style = $this->serializer->deserialize($request->getContent(), Style::class, 'json');
@@ -58,8 +53,8 @@ class AttributeController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->persist($style);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->persist($style);
+        $this->entityManager->flush();
 
         return $this->json([], Response::HTTP_CREATED);
     }
@@ -73,13 +68,8 @@ class AttributeController extends AbstractController
      * )
      *
      * @IsGranted("ROLE_ADMIN")
-     *
-     * @param Request   $request
-     * @param Slugifier $slugifier
-     *
-     * @return JsonResponse
      */
-    public function addInstrument(Request $request, Slugifier $slugifier)
+    public function addInstrument(Request $request, Slugifier $slugifier): JsonResponse
     {
         /** @var Instrument $instrument */
         $instrument = $this->serializer->deserialize($request->getContent(), Instrument::class, 'json');
@@ -91,8 +81,8 @@ class AttributeController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->persist($instrument);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->persist($instrument);
+        $this->entityManager->flush();
 
         return $this->json([], Response::HTTP_CREATED);
     }

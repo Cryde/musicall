@@ -4,17 +4,14 @@ namespace App\Service\Google;
 
 class GoogleApi
 {
-    /**
-     * @var \Google_Client
-     */
-    private $client;
+    private \Google_Client $client;
 
     public function __construct(\Google_Client $client)
     {
         $this->client = $client;
     }
 
-    public function getYoutube()
+    public function getYoutube(): \Google_Service_YouTube
     {
         return new \Google_Service_YouTube($this->client);
     }
