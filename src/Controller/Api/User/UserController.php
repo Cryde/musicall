@@ -12,6 +12,7 @@ use App\Repository\UserRepository;
 use App\Serializer\User\UserArraySerializer;
 use App\Service\Jsonizer;
 use App\Service\User\ResetPassword;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,47 +20,55 @@ use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+    private UserPasswordHasherInterface $userPasswordHasher;
+    private ValidatorInterface $validator;
+    private SerializerInterface $serializer;
+
+    public function __construct(
+        EntityManagerInterface      $entityManager,
+        UserPasswordHasherInterface $userPasswordHasher,
+        ValidatorInterface          $validator,
+        SerializerInterface         $serializer
+    ) {
+        $this->entityManager = $entityManager;
+        $this->userPasswordHasher = $userPasswordHasher;
+        $this->validator = $validator;
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Route("/api/users/change-password", name="api_user_change_password", methods={"POST"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request                      $request
-     * @param SerializerInterface          $serializer
-     * @param ValidatorInterface           $validator
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
-     *
-     * @return JsonResponse
      */
     public function changePassword(
         Request $request,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-        UserPasswordEncoderInterface $userPasswordEncoder
-    ) {
+        #[CurrentUser] $user
+    ): JsonResponse {
         /** @var ChangePasswordModel $changePasswordModel */
-        $changePasswordModel = $serializer->deserialize($request->getContent(), ChangePasswordModel::class, 'json');
-        $errors = $validator->validate($changePasswordModel);
+        $changePasswordModel = $this->serializer->deserialize($request->getContent(), ChangePasswordModel::class, 'json');
+        $errors = $this->validator->validate($changePasswordModel);
 
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $user = $this->getUser();
-
-        if (!$userPasswordEncoder->isPasswordValid($user, $changePasswordModel->getOldPassword())) {
+        if (!$this->userPasswordHasher->isPasswordValid($user, $changePasswordModel->getOldPassword())) {
             return $this->json(['L\'ancien mot de passe est invalide'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user->setPassword($userPasswordEncoder->encodePassword($user, $changePasswordModel->getNewPassword()));
-        $this->getDoctrine()->getManager()->flush();
+        $user->setPassword($this->userPasswordHasher->hashPassword($user, $changePasswordModel->getNewPassword()));
+        $this->entityManager->flush();
 
         return $this->json([]);
     }
@@ -67,16 +76,13 @@ class UserController extends AbstractController
     /**
      * @Route("/api/users/request-reset-password", name="api_user_request_reset_password", methods={"POST"}, options={"expose": true}, format="json")
      *
-     * @param Request       $request
-     * @param Jsonizer      $jsonizer
-     * @param ResetPassword $resetPassword
-     *
-     * @return JsonResponse
-     * @throws NoMatchedUserAccountException
      * @throws NonUniqueResultException
      */
-    public function requestResetPassword(Request $request, Jsonizer $jsonizer, ResetPassword $resetPassword)
-    {
+    public function requestResetPassword(
+        Request       $request,
+        Jsonizer      $jsonizer,
+        ResetPassword $resetPassword
+    ): JsonResponse {
         $data = $jsonizer->decodeRequest($request);
 
         $resetPassword->resetPasswordByLogin($data['login']);
@@ -86,40 +92,28 @@ class UserController extends AbstractController
 
     /**
      * @Route("/api/users/reset-password/{token}", name="api_user_reset_password", methods={"POST"}, options={"expose": true}, defaults={"_format": "json"})
-     *
-     * @param string                       $token
-     * @param Request                      $request
-     * @param UserRepository               $userRepository
-     * @param SerializerInterface          $serializer
-     * @param ValidatorInterface           $validator
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
-     *
-     * @return JsonResponse
      */
     public function resetTokenPassword(
         string $token,
         Request $request,
-        UserRepository $userRepository,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-        UserPasswordEncoderInterface $userPasswordEncoder
-    ) {
+        UserRepository $userRepository
+    ): JsonResponse {
         // @todo : add temporal validation on the token
         if (!$user = $userRepository->findOneBy(['token' => $token])) {
             return $this->json(['message' => 'Ce lien n\'est plus valable'], Response::HTTP_BAD_REQUEST);
         }
 
         /** @var ResetPasswordModel $resetPasswordModel */
-        $resetPasswordModel = $serializer->deserialize($request->getContent(), ResetPasswordModel::class, 'json');
-        $errors = $validator->validate($resetPasswordModel);
+        $resetPasswordModel = $this->serializer->deserialize($request->getContent(), ResetPasswordModel::class, 'json');
+        $errors = $this->validator->validate($resetPasswordModel);
 
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $user->setPassword($userPasswordEncoder->encodePassword($user, $resetPasswordModel->getPassword()));
+        $user->setPassword($this->userPasswordHasher->hashPassword($user, $resetPasswordModel->getPassword()));
         $user->setToken(null);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json([]);
     }
@@ -128,26 +122,22 @@ class UserController extends AbstractController
      * @Route("/api/users/me", name="api_user_get", methods={"GET"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param UserArraySerializer $userArraySerializer
-     *
-     * @return JsonResponse
      */
-    public function show(UserArraySerializer $userArraySerializer)
+    public function show(UserArraySerializer $userArraySerializer, #[CurrentUser] $user): JsonResponse
     {
-        return $this->json($userArraySerializer->toArray($this->getUser(), true));
+        return $this->json($userArraySerializer->toArray($user, true));
     }
 
     /**
      * @Route("/api/users/picture", name="api_user_picture", methods={"POST"}, options={"expose" = true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
      */
-    public function changePicture(Request $request, UserArraySerializer $userArraySerializer)
-    {
-        /** @var User $user */
-        $user = $this->getUser();
+    public function changePicture(
+        Request             $request,
+        UserArraySerializer $userArraySerializer,
+        #[CurrentUser] $user
+    ): JsonResponse {
         $previousProfilePicture = $user->getProfilePicture() ? $user->getProfilePicture() : null;
         $profilePicture = new UserProfilePicture();
 
@@ -157,15 +147,15 @@ class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             if ($previousProfilePicture) {
                 $user->setProfilePicture(null);
-                $this->getDoctrine()->getManager()->flush();
-                $this->getDoctrine()->getManager()->remove($previousProfilePicture);
-                $this->getDoctrine()->getManager()->flush();
+                $this->entityManager->flush();
+                $this->entityManager->remove($previousProfilePicture);
+                $this->entityManager->flush();
             }
 
             $user->setProfilePicture($profilePicture);
             $profilePicture->setUser($user);
 
-            $this->getDoctrine()->getManager()->flush();
+            $this->entityManager->flush();
 
             return $this->json($userArraySerializer->toArray($user, true));
         }

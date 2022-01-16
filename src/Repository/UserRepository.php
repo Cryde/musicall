@@ -6,6 +6,7 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -13,7 +14,7 @@ use Doctrine\ORM\NonUniqueResultException;
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,9 +22,23 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $login
-     *
-     * @return User|null
+     * Will be deprecated in the future, the correct methd is "loadUserByIdentifier"
+     * @throws NonUniqueResultException
+     */
+    public function loadUserByUsername(string $username): ?User
+    {
+        return $this->findOneByEmailOrLogin($username);
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    public function loadUserByIdentifier(string $identifier): ?User
+    {
+        return $this->findOneByEmailOrLogin($identifier);
+    }
+
+    /**
      * @throws NonUniqueResultException
      */
     public function findOneByEmailOrLogin(string $login): ?User

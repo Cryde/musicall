@@ -21,6 +21,7 @@ use App\Service\Google\Youtube;
 use App\Service\Google\YoutubeUrlHelper;
 use App\Service\Jsonizer;
 use App\Service\UserPublication\SortAndFilterFromArray;
+use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,33 +30,34 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserPublicationController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     /**
      * @Route("/api/users/publications/", name="api_user_publication_list", methods={"POST"}, options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request                        $request
-     * @param PublicationRepository          $publicationRepository
-     * @param UserPublicationArraySerializer $userPublicationArraySerializer
-     * @param Jsonizer                       $jsonizer
-     * @param SortAndFilterFromArray         $sortAndFilterFromArray
-     *
-     * @return JsonResponse
      */
     public function list(
         Request $request,
         PublicationRepository $publicationRepository,
         UserPublicationArraySerializer $userPublicationArraySerializer,
         Jsonizer $jsonizer,
-        SortAndFilterFromArray $sortAndFilterFromArray
-    ) {
+        SortAndFilterFromArray $sortAndFilterFromArray,
+        #[CurrentUser] $user
+    ): JsonResponse {
         $filter = $sortAndFilterFromArray->createFromArray($jsonizer->decodeRequest($request));
-        $filters = array_merge(['author' => $this->getUser()], $filter['filters']);
+        $filters = array_merge(['author' => $user], $filter['filters']);
         $count = $publicationRepository->count($filters);
 
         $publications = $publicationRepository->findBy(
@@ -78,14 +80,10 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/{id}/delete", name="api_user_publication_delete", options={"expose": true}, methods={"DELETE"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Publication $publication
-     *
-     * @return JsonResponse
      */
-    public function remove(Publication $publication)
+    public function remove(Publication $publication, #[CurrentUser] $user): JsonResponse
     {
-        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+        if ($user->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
@@ -93,8 +91,8 @@ class UserPublicationController extends AbstractController
             return $this->json(['data' => ['success' => 0, 'message' => 'Vous ne pouvez pas supprimer une publication en ligne ou en review']], Response::HTTP_FORBIDDEN);
         }
 
-        $this->getDoctrine()->getManager()->remove($publication);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->remove($publication);
+        $this->entityManager->flush();
 
         return $this->json(['data' => ['success' => 1]]);
     }
@@ -103,14 +101,6 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/add", name="api_user_publication_add", options={"expose": true}, methods={"POST"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request                          $request
-     * @param PublicationSubCategoryRepository $publicationSubCategoryRepository
-     * @param Jsonizer                         $jsonizer
-     * @param ValidatorInterface               $validator
-     * @param UserPublicationArraySerializer   $userPublicationArraySerializer
-     *
-     * @return JsonResponse
      * @throws \Exception
      */
     public function add(
@@ -118,8 +108,9 @@ class UserPublicationController extends AbstractController
         PublicationSubCategoryRepository $publicationSubCategoryRepository,
         Jsonizer $jsonizer,
         ValidatorInterface $validator,
-        UserPublicationArraySerializer $userPublicationArraySerializer
-    ) {
+        UserPublicationArraySerializer $userPublicationArraySerializer,
+        #[CurrentUser] $user
+    ): JsonResponse {
         $data = $jsonizer->decodeRequest($request);
 
         $publicationSubCategory = $data['category_id'] ? $publicationSubCategoryRepository->find($data['category_id']) : null;
@@ -130,11 +121,9 @@ class UserPublicationController extends AbstractController
 
         $publication = new Publication();
         $publication->setTitle($data['title']);
-        $publication->setSlug('publication-' . $this->getUser()->getId() . random_int(10, 9999999999));
+        $publication->setSlug('publication-' . $user->getId() . random_int(10, 9999999999));
         $publication->setType(Publication::TYPE_TEXT);
         $publication->setSubCategory($publicationSubCategory);
-        /** @var User|null $user */
-        $user = $this->getUser();
         $publication->setAuthor($user);
 
         $errors = $validator->validate($publication);
@@ -143,8 +132,8 @@ class UserPublicationController extends AbstractController
             return $this->json(['data' => ['errors' => $errors]], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $this->getDoctrine()->getManager()->persist($publication);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->persist($publication);
+        $this->entityManager->flush();
 
         return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
     }
@@ -159,20 +148,6 @@ class UserPublicationController extends AbstractController
      * )
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request                        $request
-     * @param Jsonizer                       $jsonizer
-     * @param Youtube                        $youtube
-     * @param YoutubeUrlHelper               $youtubeUrlHelper
-     * @param PublicationCoverDirector       $publicationCoverDirector
-     * @param PublicationDirector            $publicationDirector
-     * @param PublicationRepository          $publicationRepository
-     * @param UserPublicationArraySerializer $userPublicationArraySerializer
-     * @param RemoteFileDownloader           $remoteFileDownloader
-     * @param ParameterBagInterface          $containerBag
-     * @param CommentThreadDirector          $commentThreadDirector
-     *
-     * @return JsonResponse
      * @throws CorruptedFileException
      * @throws YoutubeAlreadyExistingVideoException
      * @throws YoutubeVideoNotFoundException
@@ -188,14 +163,14 @@ class UserPublicationController extends AbstractController
         UserPublicationArraySerializer $userPublicationArraySerializer,
         RemoteFileDownloader $remoteFileDownloader,
         ParameterBagInterface $containerBag,
-        CommentThreadDirector $commentThreadDirector
-    ) {
+        CommentThreadDirector $commentThreadDirector,
+        #[CurrentUser] $user
+    ): JsonResponse {
         $data = $jsonizer->decodeRequest($request);
         $videoUrl = $data['videoUrl'];
 
         $videoId = $youtubeUrlHelper->getVideoId($videoUrl);
-
-        if($publicationRepository->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO])) {
+        if ($publicationRepository->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO])) {
             throw new YoutubeAlreadyExistingVideoException('This video is already sent');
         }
 
@@ -205,17 +180,15 @@ class UserPublicationController extends AbstractController
         $file = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
 
         $thread = $commentThreadDirector->create();
-        $this->getDoctrine()->getManager()->persist($thread);
+        $this->entityManager->persist($thread);
         $cover = $publicationCoverDirector->build($file);
-        /** @var User $user */
-        $user = $this->getUser();
         $publication = $publicationDirector->buildVideo($data, $user);
         $cover->setPublication($publication);
         $publication->setCover($cover);
         $publication->setThread($thread);
 
-        $this->getDoctrine()->getManager()->persist($publication);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->persist($publication);
+        $this->entityManager->flush();
 
         return $this->json(['data' => $userPublicationArraySerializer->toArray($publication)]);
     }
@@ -224,14 +197,6 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/preview/video", name="api_publications_video_preview", options={"expose": true}, methods={"POST"}, defaults={"_format": "json"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request               $request
-     * @param Jsonizer              $jsonizer
-     * @param Youtube               $youtube
-     * @param YoutubeUrlHelper      $youtubeUrlHelper
-     * @param PublicationRepository $publicationRepository
-     *
-     * @return JsonResponse
      * @throws YoutubeVideoNotFoundException
      */
     public function videoPreview(
@@ -240,10 +205,9 @@ class UserPublicationController extends AbstractController
         Youtube $youtube,
         YoutubeUrlHelper $youtubeUrlHelper,
         PublicationRepository $publicationRepository
-    ) {
+    ): JsonResponse {
         $data = $jsonizer->decodeRequest($request);
-
-        if(!isset($data['videoUrl'])) {
+        if (!isset($data['videoUrl'])) {
             throw new \InvalidArgumentException('Missing url');
         }
 
@@ -257,15 +221,13 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/{id}", name="api_user_publication_show", options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Publication                    $publication
-     * @param UserPublicationArraySerializer $userPublicationArraySerializer
-     *
-     * @return object|JsonResponse
      */
-    public function show(Publication $publication, UserPublicationArraySerializer $userPublicationArraySerializer)
-    {
-        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+    public function show(
+        Publication                    $publication,
+        UserPublicationArraySerializer $userPublicationArraySerializer,
+        #[CurrentUser] $user
+    ): JsonResponse {
+        if ($user->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
@@ -276,14 +238,6 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/{id}/save", name="api_user_publication_save", options={"expose": true}, methods={"POST"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Publication                    $publication
-     * @param Request                        $request
-     * @param Jsonizer                       $jsonizer
-     * @param ValidatorInterface             $validator
-     * @param UserPublicationArraySerializer $userPublicationArraySerializer
-     *
-     * @return JsonResponse
      * @throws \Exception
      */
     public function save(
@@ -291,9 +245,10 @@ class UserPublicationController extends AbstractController
         Request $request,
         Jsonizer $jsonizer,
         ValidatorInterface $validator,
-        UserPublicationArraySerializer $userPublicationArraySerializer
-    ) {
-        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+        UserPublicationArraySerializer $userPublicationArraySerializer,
+        #[CurrentUser] $user
+    ): JsonResponse {
+        if ($user->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
@@ -310,7 +265,7 @@ class UserPublicationController extends AbstractController
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
     }
@@ -319,20 +274,15 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/{id}/publish", name="api_user_publication_publish", options={"expose": true})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Publication                    $publication
-     * @param ValidatorInterface             $validator
-     * @param UserPublicationArraySerializer $userPublicationArraySerializer
-     *
-     * @return JsonResponse
      * @throws \Exception
      */
     public function publish(
         Publication $publication,
         ValidatorInterface $validator,
-        UserPublicationArraySerializer $userPublicationArraySerializer
-    ) {
-        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+        UserPublicationArraySerializer $userPublicationArraySerializer,
+        #[CurrentUser] $user
+    ): JsonResponse {
+        if ($user->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
@@ -345,7 +295,7 @@ class UserPublicationController extends AbstractController
         }
 
         $publication->setStatus(Publication::STATUS_PENDING);
-        $this->getDoctrine()->getManager()->flush();
+        $this->entityManager->flush();
 
         return $this->json(['data' => ['publication' => $userPublicationArraySerializer->toArray($publication)]]);
     }
@@ -354,17 +304,15 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/{id}/upload-image", name="api_user_publication_upload_image", options={"expose": true}, methods={"POST"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request        $request
-     * @param Publication    $publication
-     * @param UploaderHelper $uploaderHelper
-     * @param CacheManager   $cacheManager
-     *
-     * @return JsonResponse
      */
-    public function uploadImage(Request $request, Publication $publication, UploaderHelper $uploaderHelper, CacheManager $cacheManager)
-    {
-        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+    public function uploadImage(
+        Request        $request,
+        Publication    $publication,
+        UploaderHelper $uploaderHelper,
+        CacheManager   $cacheManager,
+        #[CurrentUser] $user
+    ): JsonResponse {
+        if ($user->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
@@ -373,11 +321,9 @@ class UserPublicationController extends AbstractController
         $form = $this->createForm(ImageUploaderType::class, $image);
 
         $form->handleRequest($request);
-
-        if($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->persist($image);
-            $this->getDoctrine()->getManager()->flush();
-
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($image);
+            $this->entityManager->flush();
             $imagePath = $uploaderHelper->asset($image, 'imageFile');
 
             return $this->json(['uri' => $cacheManager->getBrowserPath($imagePath, 'publication_image_filter')]);
@@ -390,41 +336,35 @@ class UserPublicationController extends AbstractController
      * @Route("/api/users/publications/{id}/upload-cover", name="api_user_publication_upload_cover", options={"expose": true}, methods={"POST"})
      *
      * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     *
-     * @param Request        $request
-     * @param Publication    $publication
-     * @param UploaderHelper $uploaderHelper
-     * @param CacheManager   $cacheManager
-     *
-     * @return JsonResponse
      */
-    public function uploadCover(Request $request, Publication $publication, UploaderHelper $uploaderHelper, CacheManager $cacheManager)
-    {
-        if ($this->getUser()->getId() !== $publication->getAuthor()->getId()) {
+    public function uploadCover(
+        Request        $request,
+        Publication    $publication,
+        UploaderHelper $uploaderHelper,
+        CacheManager   $cacheManager,
+        #[CurrentUser] $user
+    ): JsonResponse {
+        if ($user->getId() !== $publication->getAuthor()->getId()) {
             return $this->json(['data' => ['success' => 0, 'message' => 'Ce publication ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
-        $previousCover = $publication->getCover() ? $publication->getCover() : null;
+        $previousCover = $publication->getCover() ?: null;
 
         $cover = new PublicationCover();
         $cover->setPublication($publication);
         $form = $this->createForm(ImageUploaderType::class, $cover);
 
         $form->handleRequest($request);
-
-        if($form->isSubmitted() && $form->isValid()) {
-
+        if ($form->isSubmitted() && $form->isValid()) {
             if ($previousCover) {
                 $publication->setCover(null);
-                $this->getDoctrine()->getManager()->flush();
-                $this->getDoctrine()->getManager()->remove($previousCover);
-                $this->getDoctrine()->getManager()->flush();
+                $this->entityManager->flush();
+                $this->entityManager->remove($previousCover);
+                $this->entityManager->flush();
             }
-
-            $this->getDoctrine()->getManager()->persist($cover);
+            $this->entityManager->persist($cover);
             $publication->setCover($cover);
-            $this->getDoctrine()->getManager()->flush();
-
+            $this->entityManager->flush();
             $imagePath = $uploaderHelper->asset($cover, 'imageFile');
 
             return $this->json(['data' => ['uri' => $cacheManager->getBrowserPath($imagePath, 'publication_cover_300x300')]]);
