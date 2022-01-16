@@ -24,12 +24,11 @@
                       @click="openSendMessageModal(announce.user)">
               Contacter
             </b-button>
-            <b-button v-else class="mt-auto is-pulled-right" size="is-small"
-                      v-b-tooltip.noninteractive.hover
-                      title="Vous devez être inscrit ou connecté pour contacter un utilisateur"
-            >
-              Contacter
-            </b-button>
+            <b-tooltip v-else label="Vous devez être inscrit ou connecté pour contacter un utilisateur" multilined type="is-info">
+              <b-button class="mt-auto is-pulled-right" size="is-small">
+                Contacter
+              </b-button>
+            </b-tooltip>
             <b-button v-if="announce.note" class="mt-auto is-pulled-right mr-2" size="is-small">
               Voir la note
             </b-button>
