@@ -25,7 +25,7 @@
         "@sentry/integrations": "^6.10.0",
         "@sentry/tracing": "^6.10.0",
         "autolinker": "^3.14.3",
-        "axios": "^0.21.1",
+        "axios": "^0.25.0",
         "buefy": "^0.9.8",
         "date-fns": "^2.23.0",
         "dotenv-flow": "^3.2.0",
