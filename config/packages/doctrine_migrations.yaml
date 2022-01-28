@@ -1,5 +1,7 @@
 doctrine_migrations:
     migrations_paths:
+        # namespace is arbitrary but should be different from App\Migrations
+        # as migrations classes should NOT be autoloaded
         'DoctrineMigrations': '%kernel.project_dir%/migrations'
     organize_migrations: "BY_YEAR_AND_MONTH"
     storage:
@@ -8,3 +10,4 @@ doctrine_migrations:
             version_column_name: 'version'
             version_column_length: 1024
             executed_at_column_name: 'executed_at'
+    enable_profiler: '%kernel.debug%'
