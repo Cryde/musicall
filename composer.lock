@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5183abda29e292d8ff575479ff9b22d",
+    "content-hash": "f8ca77daeec2ecdec42cd1aed2d23f72",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -10892,47 +10892,6 @@
     ],
     "packages-dev": [
         {
-            "name": "deployer/dist",
-            "version": "v7.0.0-rc.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/deployphp/distribution.git",
-                "reference": "65ede71ee950f2e7a3321d310d0596337a4ad700"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/deployphp/distribution/zipball/65ede71ee950f2e7a3321d310d0596337a4ad700",
-                "reference": "65ede71ee950f2e7a3321d310d0596337a4ad700",
-                "shasum": ""
-            },
-            "replace": {
-                "deployer/deployer": "self.version"
-            },
-            "bin": [
-                "dep"
-            ],
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Anton Medvedev",
-                    "email": "anton@medv.io"
-                }
-            ],
-            "description": "Deployer Phar Distribution",
-            "homepage": "https://deployer.org",
-            "support": {
-                "docs": "https://deployer.org/docs",
-                "issues": "https://github.com/deployphp/deployer/issues",
-                "source": "https://github.com/deployphp/deployer"
-            },
-            "abandoned": "deployer/deployer",
-            "time": "2022-01-13T13:49:11+00:00"
-        },
-        {
             "name": "myclabs/deep-copy",
             "version": "1.11.0",
             "source": {
@@ -13453,9 +13412,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "liip/imagine-bundle": 20,
-        "deployer/deployer": 10,
-        "deployer/dist": 10
+        "liip/imagine-bundle": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
