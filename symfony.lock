@@ -2,6 +2,9 @@
     "clue/stream-filter": {
         "version": "v1.4.1"
     },
+    "composer/package-versions-deprecated": {
+        "version": "1.11.99.1"
+    },
     "deployer/dist": {
         "version": "v6.8.0"
     },
@@ -106,6 +109,9 @@
     "firebase/php-jwt": {
         "version": "v5.0.0"
     },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.7"
+    },
     "friendsofsymfony/jsrouting-bundle": {
         "version": "2.3",
         "recipe": {
@@ -163,8 +169,11 @@
     "jms/metadata": {
         "version": "2.0.0"
     },
-    "laminas/laminas-zendframework-bridge": {
-        "version": "1.0.1"
+    "laminas/laminas-code": {
+        "version": "4.5.1"
+    },
+    "lcobucci/clock": {
+        "version": "2.1.0"
     },
     "lcobucci/jwt": {
         "version": "3.3.1"
@@ -224,12 +233,6 @@
             "config/packages/nyholm_psr7.yaml"
         ]
     },
-    "ocramius/package-versions": {
-        "version": "1.3.0"
-    },
-    "ocramius/proxy-manager": {
-        "version": "2.2.2"
-    },
     "paragonie/constant_time_encoding": {
         "version": "v2.4.0"
     },
@@ -238,9 +241,6 @@
     },
     "phar-io/version": {
         "version": "3.1.0"
-    },
-    "php": {
-        "version": "7.4"
     },
     "php-http/client-common": {
         "version": "2.1.0"
@@ -702,9 +702,6 @@
     "symfony/string": {
         "version": "v5.0.3"
     },
-    "symfony/templating": {
-        "version": "v4.3.1"
-    },
     "symfony/translation": {
         "version": "5.4",
         "recipe": {
@@ -816,11 +813,5 @@
     },
     "willdurand/jsonp-callback-validator": {
         "version": "v1.1.0"
-    },
-    "zendframework/zend-code": {
-        "version": "3.3.1"
-    },
-    "zendframework/zend-eventmanager": {
-        "version": "3.2.1"
     }
 }
