@@ -5,9 +5,6 @@
     "composer/package-versions-deprecated": {
         "version": "1.11.99.1"
     },
-    "deployer/dist": {
-        "version": "v6.8.0"
-    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
