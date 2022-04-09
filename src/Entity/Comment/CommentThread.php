@@ -5,40 +5,29 @@ namespace App\Entity\Comment;
 use App\Repository\Comment\CommentThreadRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=CommentThreadRepository::class)
- */
+#[ORM\Entity(repositoryClass: CommentThreadRepository::class)]
 class CommentThread
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $commentNumber;
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $commentNumber;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isActive;
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $isActive;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="thread")
-     * @ORM\OrderBy({"creationDatetime" = "DESC"})
-     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "thread")]
+    #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     private $comments;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private ?\DateTimeInterface$creationDatetime;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $creationDatetime;
 
     public function __construct()
     {

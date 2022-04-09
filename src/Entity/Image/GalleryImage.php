@@ -3,60 +3,42 @@
 namespace App\Entity\Image;
 
 use App\Entity\Gallery;
+use App\Repository\GalleryImageRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\GalleryImageRepository")
- * @Vich\Uploadable
- */
+#[ORM\Entity(repositoryClass: GalleryImageRepository::class)]
+#[Vich\Uploadable]
 class GalleryImage
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: Types::INTEGER)]
     private $id;
-    /**
-     * NOTE: This is not a mapped field of entity metadata, just a simple property.
-     * @Assert\Image(
-     *     maxWidth=4000,
-     *     maxHeight=4000
-     * )
-     * @Vich\UploadableField(mapping="gallery_image", fileNameProperty="imageName", size="imageSize")
-     *
-     * @var File
-     */
+
+    // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Assert\Image(maxWidth: 4000, maxHeight: 4000)]
+    #[Vich\UploadableField(mapping: 'gallery_image', fileNameProperty: 'imageName', size: 'imageSize')]
     private $imageFile;
-    /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
+
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
-    /**
-     * @ORM\Column(type="integer")
-     *
-     * @var integer
-     */
+
+    #[ORM\Column(type: Types::INTEGER)]
     private $imageSize;
-    /**
-     * @ORM\Column(type="datetime", nullable=false)
-     */
-    private \DateTimeInterface  $creationDatetime;
-    /**
-     * @ORM\Column(type="datetime")
-     *
-     * @var \DateTimeInterface
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    private \DateTimeInterface $creationDatetime;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Gallery", inversedBy="images")
-     * @ORM\JoinColumn(nullable=false)
-     */
+
+    #[ORM\ManyToOne(targetEntity: Gallery::class, inversedBy: "images")]
+    #[ORM\JoinColumn(nullable: false)]
     private $gallery;
 
     public function __construct()
@@ -76,7 +58,7 @@ class GalleryImage
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
      *
-     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile $image
+     * @param File|UploadedFile $image
      */
     public function setImageFile(?File $image = null): void
     {

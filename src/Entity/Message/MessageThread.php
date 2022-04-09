@@ -5,38 +5,27 @@ namespace App\Entity\Message;
 use App\Repository\Message\MessageThreadRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=MessageThreadRepository::class)
- */
+#[ORM\Entity(repositoryClass: MessageThreadRepository::class)]
 class MessageThread
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="thread")
-     */
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'thread')]
     private $messages;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\OneToMany(targetEntity=MessageParticipant::class, mappedBy="thread")
-     */
+    #[ORM\OneToMany(targetEntity: MessageParticipant::class, mappedBy: 'thread')]
     private $messageParticipants;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Message::class)
-     */
+    #[ORM\ManyToOne(targetEntity: Message::class)]
     private $lastMessage;
 
     public function __construct()

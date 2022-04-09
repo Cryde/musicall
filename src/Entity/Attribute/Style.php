@@ -3,41 +3,32 @@
 namespace App\Entity\Attribute;
 
 use App\Repository\Attribute\StyleRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @UniqueEntity("slug")
- * @UniqueEntity("name")
- *
- * @ORM\Entity(repositoryClass=StyleRepository::class)
- * @ORM\Table(name="attribute_style")
- */
+#[UniqueEntity('slug')]
+#[UniqueEntity('name')]
+#[ORM\Entity(repositoryClass: StyleRepository::class)]
+#[ORM\Table(name: 'attribute_style')]
 class Style
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[Ignore]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
     public function __construct()

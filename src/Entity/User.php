@@ -3,93 +3,68 @@
 namespace App\Entity;
 
 use App\Entity\Image\UserProfilePicture;
+use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @ORM\Table(name="fos_user")
- * @UniqueEntity(fields={"username"}, message="Ce login est déjà pris")
- * @UniqueEntity(fields={"email"}, message="Cet email est déjà utilisé")
- */
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: 'fos_user')]
+#[UniqueEntity(fields: ['username'], message: 'Ce login est déjà pris')]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
-    /**
-     * @Assert\NotBlank(message="Veuillez saisir un nom d'utilisateur")
-     *
-     * @ORM\Column(type="string", length=180, unique=true)
-     */
+
+    #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
+    #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     private $username;
-    /**
-     * @Assert\NotBlank(message="Veuillez saisir un email")
-     * @Assert\Email(message="Email invalide")
-     *
-     * @ORM\Column(type="string", length=180, unique=true)
-     */
+
+    #[Assert\NotBlank(message: 'Veuillez saisir un email')]
+    #[Assert\Email(message: 'Email invalide')]
+    #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     private $email;
-    /**
-     * @Assert\NotBlank(message="Veuillez saisir un mot de passe")
-     * @Assert\Length(min="3", minMessage="Le mot de passe doit au moins contenir 3 caractères")
-     */
+
+    #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
+    #[Assert\Length(min: 3, minMessage: 'Le mot de passe doit au moins contenir 3 caractères')]
     private $plainPassword;
-    /**
-     * @ORM\Column(type="json")
-     */
+
+    #[ORM\Column(type: Types::JSON)]
     private $roles = [];
-    /**
-     * @var string The hashed password
-     * @ORM\Column(type="string")
-     */
+
+    #[ORM\Column(type: Types::STRING)]
     private $password;
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Publication", mappedBy="author", orphanRemoval=true)
-     */
+
+    #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: "author", orphanRemoval: true)]
     private $publications;
-    /**
-     * @ORM\Column(type="datetime")
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $creationDatetime;
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $lastLoginDatetime;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private $oldId;
 
-    /**
-     * @var \DateTimeInterface|null
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $confirmationDatetime;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $confirmationDatetime = null;
 
-    /**
-     * @var string|null
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $token;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $token = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $resetRequestDatetime;
 
-    /**
-     * @ORM\OneToOne(targetEntity=UserProfilePicture::class, cascade={"persist", "remove"})
-     */
+    #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     private $profilePicture;
 
     public function __construct()

@@ -6,76 +6,54 @@ use App\Entity\Image\WikiArtistCover;
 use App\Repository\Wiki\ArtistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=ArtistRepository::class)
- * @UniqueEntity(fields={"name"})
- * @UniqueEntity(fields={"slug"})
- */
+#[ORM\Entity(repositoryClass: ArtistRepository::class)]
+#[UniqueEntity(fields: ['name'])]
+#[UniqueEntity(fields: ['slug'])]
 class Artist
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $name;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $biography;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $members;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private $labelName;
 
-    /**
-     * @Assert\Valid()
-     * @ORM\OneToMany(targetEntity=ArtistSocial::class, mappedBy="artist", cascade={"persist", "remove"})
-     */
+    #[Assert\Valid]
+    #[ORM\OneToMany(mappedBy: 'artist', targetEntity: ArtistSocial::class, cascade: ['persist', 'remove'])]
     private $socials;
 
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
-    /**
-     * @ORM\OneToOne(targetEntity="App\Entity\Image\WikiArtistCover", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
+    #[ORM\OneToOne(targetEntity: WikiArtistCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $cover;
 
     /**
-     *
      * @Assert\AtLeastOneOf({
      *     @Assert\Blank(),
      *     @Assert\Country(alpha3=true)
      * })
-     *
-     * @ORM\Column(type="string", length=3, nullable=true)
      */
+    #[ORM\Column(type: Types::STRING, length: 3, nullable: true)]
     private $countryCode;
 
     public function __construct()

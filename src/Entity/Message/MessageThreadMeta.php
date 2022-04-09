@@ -4,52 +4,33 @@ namespace App\Entity\Message;
 
 use App\Entity\User;
 use App\Repository\Message\MessageThreadMetaRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=MessageThreadMetaRepository::class)
- * @ORM\Table(
- *    uniqueConstraints={
- *        @ORM\UniqueConstraint(name="message_thread_meta_unique",
- *            columns={"thread_id", "user_id"}
- *        )
- *    }
- * )
- */
+#[ORM\Entity(repositoryClass: MessageThreadMetaRepository::class)]
+#[ORM\UniqueConstraint(name: 'message_thread_meta_unique', columns: ['thread_id', 'user_id'])]
 class MessageThreadMeta
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=MessageThread::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: MessageThread::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $thread;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $user;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: Types::BOOLEAN)]
     private $isRead;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: Types::BOOLEAN)]
     private $isDeleted;
 
     public function __construct()

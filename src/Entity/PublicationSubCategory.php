@@ -2,47 +2,36 @@
 
 namespace App\Entity;
 
+use App\Repository\PublicationSubCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\PublicationSubCategoryRepository")
- */
+#[ORM\Entity(repositoryClass: PublicationSubCategoryRepository::class)]
 class PublicationSubCategory
 {
     const TYPE_PUBLICATION = 1;
     const TYPE_COURSE = 2;
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $title;
 
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Publication", mappedBy="subCategory", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: "subCategory", orphanRemoval: true)]
     private $publications;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private $position;
 
-    /**
-     * @ORM\Column(type="smallint", nullable=true)
-     */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private $type;
 
     public function __construct()

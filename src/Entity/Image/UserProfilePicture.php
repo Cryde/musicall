@@ -3,63 +3,37 @@
 namespace App\Entity\Image;
 
 use App\Entity\User;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
-/**
- * @ORM\Entity
- * @Vich\Uploadable
- */
+#[ORM\Entity]
+#[Vich\Uploadable]
 class UserProfilePicture
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: Types::INTEGER)]
     private $id;
-    /**
-     * NOTE: This is not a mapped field of entity metadata, just a simple property.
-     * @Assert\Image(
-     *     minHeight="450",
-     *     maxHeight="4000",
-     *     minWidth="450",
-     *     maxWidth="4000",
-     *     allowPortrait=true,
-     *     allowLandscape=true,
-     *     maxSize="4Mi"
-     * )
-     * @Vich\UploadableField(mapping="user_profile_picture", fileNameProperty="imageName", size="imageSize")
-     *
-     * @var File
-     */
+
+    // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true)]
+    #[Vich\UploadableField(mapping: 'user_profile_picture', fileNameProperty: 'imageName', size: 'imageSize')]
     private $imageFile;
-    /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
+
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
-    /**
-     * @ORM\Column(type="integer")
-     *
-     * @var integer
-     */
+
+    #[ORM\Column(type: Types::INTEGER)]
     private $imageSize;
-    /**
-     * @ORM\Column(type="datetime")
-     *
-     * @var \DateTimeInterface
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
-    /**
-     * @var User
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\User")
-     */
+
+    #[ORM\OneToOne(targetEntity: User::class)]
     private $user;
 
     public function getImageFile(): ?File
@@ -138,19 +112,11 @@ class UserProfilePicture
         return $this;
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     *
-     * @return UserProfilePicture
-     */
     public function setUser(User $user): UserProfilePicture
     {
         $this->user = $user;
