@@ -3,61 +3,37 @@
 namespace App\Entity\Image;
 
 use App\Entity\PublicationFeatured;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
-/**
- * @ORM\Entity
- * @Vich\Uploadable
- */
+#[ORM\Entity]
+#[Vich\Uploadable]
 class PublicationFeaturedImage
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: Types::INTEGER)]
     private $id;
-    /**
-     * NOTE: This is not a mapped field of entity metadata, just a simple property.
-     * @Assert\Image(
-     *     minWidth="1500",
-     *     maxWidth=1500,
-     *     maxHeight=360,
-     *     minHeight="360",
-     *     maxSize="4Mi"
-     * )
-     * @Vich\UploadableField(mapping="featured_image", fileNameProperty="imageName", size="imageSize")
-     *
-     * @var File
-     */
+
+    // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Assert\Image(maxSize: '4Mi', minWidth: 1500, maxWidth: 1500, maxHeight: 360, minHeight: 360)]
+    #[Vich\UploadableField(mapping: 'featured_image', fileNameProperty: 'imageName', size: 'imageSize')]
     private $imageFile;
-    /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
+
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
-    /**
-     * @ORM\Column(type="integer")
-     *
-     * @var integer
-     */
+
+    #[ORM\Column(type: Types::INTEGER)]
     private $imageSize;
-    /**
-     * @ORM\Column(type="datetime")
-     *
-     * @var \DateTimeInterface
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
-    /**
-     * @var PublicationFeatured
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\PublicationFeatured")
-     */
+
+    #[ORM\OneToOne(targetEntity: PublicationFeatured::class)]
     private $publicationFeatured;
 
     public function getImageFile(): ?File
@@ -122,19 +98,11 @@ class PublicationFeaturedImage
         return $this;
     }
 
-    /**
-     * @return PublicationFeatured
-     */
     public function getPublicationFeatured(): PublicationFeatured
     {
         return $this->publicationFeatured;
     }
 
-    /**
-     * @param PublicationFeatured $publicationFeatured
-     *
-     * @return PublicationFeaturedImage
-     */
     public function setPublicationFeatured(PublicationFeatured $publicationFeatured): PublicationFeaturedImage
     {
         $this->publicationFeatured = $publicationFeatured;

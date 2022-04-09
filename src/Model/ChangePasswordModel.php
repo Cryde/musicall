@@ -6,9 +6,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class ChangePasswordModel
 {
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     public string $oldPassword;
     /**
      * @Assert\NotBlank()

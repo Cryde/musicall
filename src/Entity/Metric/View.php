@@ -4,39 +4,28 @@ namespace App\Entity\Metric;
 
 use App\Entity\User;
 use App\Repository\Metric\ViewRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ViewRepository::class)
- */
+#[ORM\Entity(repositoryClass: ViewRepository::class)]
 class View
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $creationDatetime;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $identifier;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class)
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     private $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ViewCache::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: ViewCache::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $viewCache;
 
     public function __construct()

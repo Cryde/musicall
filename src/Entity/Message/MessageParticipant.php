@@ -4,42 +4,27 @@ namespace App\Entity\Message;
 
 use App\Entity\User;
 use App\Repository\Message\MessageParticipantRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=MessageParticipantRepository::class)
- * @ORM\Table(
- *    uniqueConstraints={
- *        @ORM\UniqueConstraint(name="message_participant_unique",
- *            columns={"thread_id", "participant_id"}
- *        )
- *    }
- * )
- */
+#[ORM\Entity(repositoryClass: MessageParticipantRepository::class)]
+#[ORM\UniqueConstraint(name: 'message_participant_unique', columns: ['thread_id', 'participant_id'])]
 class MessageParticipant
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=MessageThread::class, inversedBy="messageParticipants")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messageParticipants")]
+    #[ORM\JoinColumn(nullable: false)]
     private $thread;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $participant;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
     public function __construct()

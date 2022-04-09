@@ -3,12 +3,11 @@
 namespace App\Entity\Wiki;
 
 use App\Repository\Wiki\ArtistSocialRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=ArtistSocialRepository::class)
- */
+#[ORM\Entity(repositoryClass: ArtistSocialRepository::class)]
 class ArtistSocial
 {
     const SOCIAL_URL_WEBSITE = 0;
@@ -25,35 +24,24 @@ class ArtistSocial
         self::SOCIAL_URL_YOUTUBE,
     ];
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @ORM\Column(type="smallint")
-     */
+    #[ORM\Column(type: Types::SMALLINT)]
     private $type;
 
-    /**
-     * @Assert\Url()
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[Assert\Url]
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $url;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Artist::class, inversedBy="socials")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: Artist::class, inversedBy: "socials")]
+    #[ORM\JoinColumn(nullable: false)]
     private $artist;
 
     public function __construct()

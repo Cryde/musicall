@@ -4,45 +4,33 @@ namespace App\Entity\Comment;
 
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=CommentRepository::class)
- */
+#[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @Assert\NotNull()
-     * @ORM\ManyToOne(targetEntity=CommentThread::class, inversedBy="comments")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[Assert\NotNull]
+    #[ORM\ManyToOne(targetEntity: CommentThread::class, inversedBy: "comments")]
+    #[ORM\JoinColumn(nullable: false)]
     private $thread;
 
-    /**
-     * @Assert\NotNull()
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[Assert\NotNull]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $author;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @Assert\NotBlank(message="Le commentaire est vide")
-     *
-     * @ORM\Column(type="text")
-     */
+    #[Assert\NotBlank(message: 'Le commentaire est vide')]
+    #[ORM\Column(type: Types::TEXT)]
     private $content;
 
     public function __construct()

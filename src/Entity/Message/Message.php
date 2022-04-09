@@ -4,40 +4,29 @@ namespace App\Entity\Message;
 
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=MessageRepository::class)
- */
+#[ORM\Entity(repositoryClass: MessageRepository::class)]
 class Message
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $author;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=MessageThread::class, inversedBy="messages")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messages")]
+    #[ORM\JoinColumn(nullable: false)]
     private $thread;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: Types::TEXT)]
     private $content;
 
     public function __construct()

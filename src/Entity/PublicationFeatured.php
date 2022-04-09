@@ -3,72 +3,52 @@
 namespace App\Entity;
 
 use App\Entity\Image\PublicationFeaturedImage;
+use App\Repository\PublicationFeaturedRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\PublicationFeaturedRepository")
- */
+#[ORM\Entity(repositoryClass: PublicationFeaturedRepository::class)]
 class PublicationFeatured
 {
     const STATUS_DRAFT = 0;
     const STATUS_ONLINE = 1;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(groups={"add", "edit", "publish"}, message="Vous devez fournir un titre")
-     */
+    #[Assert\NotBlank(groups: ['add', 'edit', 'publish'], message: 'Vous devez fournir un titre')]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $title;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $description;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\Column(type="smallint")
-     * @Assert\NotBlank(groups={"add", "edit", "publish"})
-     */
+    #[Assert\NotBlank(groups: ['add', 'edit', 'publish'])]
+    #[ORM\Column(type: Types::SMALLINT)]
     private $level;
 
-    /**
-     * @ORM\Column(type="smallint")
-     */
+    #[ORM\Column(type: Types::SMALLINT)]
     private $status;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $publicationDatetime;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Publication")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: Publication::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $publication;
 
-    /**
-     * @Assert\NotNull(groups={"publish"}, message="Vous devez spécifier une image de cover")
-     * @ORM\OneToOne(targetEntity="App\Entity\Image\PublicationFeaturedImage", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
+    #[Assert\NotNull(groups: ['publish'], message: 'Vous devez spécifier une image de cover')]
+    #[ORM\OneToOne(targetEntity: PublicationFeaturedImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $cover;
 
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $options = [];
+    #[ORM\Column(type: Types::ARRAY, nullable: true)]
+    private ?array $options = [];
 
     public function __construct()
     {

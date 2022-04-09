@@ -3,59 +3,37 @@
 namespace App\Entity\Image;
 
 use App\Entity\Publication;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
-/**
- * @ORM\Entity
- * @Vich\Uploadable
- */
+#[ORM\Entity]
+#[Vich\Uploadable]
 class PublicationCover
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: Types::INTEGER)]
     private $id;
-    /**
-     * NOTE: This is not a mapped field of entity metadata, just a simple property.
-     * @Assert\Image(
-     *     maxWidth=4000,
-     *     maxHeight=4000,
-     *     maxSize="4Mi"
-     * )
-     * @Vich\UploadableField(mapping="publication_image_cover", fileNameProperty="imageName", size="imageSize")
-     *
-     * @var File
-     */
+
+    // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
+    #[Vich\UploadableField(mapping: 'publication_image_cover', fileNameProperty: 'imageName', size: 'imageSize')]
     private $imageFile;
-    /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
+
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
-    /**
-     * @ORM\Column(type="integer")
-     *
-     * @var integer
-     */
+
+    #[ORM\Column(type: Types::INTEGER)]
     private $imageSize;
-    /**
-     * @ORM\Column(type="datetime")
-     *
-     * @var \DateTimeInterface
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
-    /**
-     * @var Publication
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\Publication")
-     */
+
+    #[ORM\OneToOne(targetEntity: Publication::class)]
     private $publication;
 
     public function getImageFile(): ?File
@@ -134,19 +112,11 @@ class PublicationCover
         return $this;
     }
 
-    /**
-     * @return Publication
-     */
     public function getPublication(): Publication
     {
         return $this->publication;
     }
 
-    /**
-     * @param Publication $publication
-     *
-     * @return PublicationCover
-     */
     public function setPublication(?Publication $publication): PublicationCover
     {
         $this->publication = $publication;

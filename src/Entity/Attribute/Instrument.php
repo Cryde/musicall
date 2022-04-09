@@ -2,50 +2,38 @@
 
 namespace App\Entity\Attribute;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\Attribute\InstrumentRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-/**
- * @UniqueEntity("slug")
- * @UniqueEntity("name")
- * @UniqueEntity("musicianName")
- *
- * @ORM\Entity(repositoryClass=InstrumentRepository::class)
- * @ORM\Table(name="attribute_instrument")
- */
+#[UniqueEntity('slug')]
+#[UniqueEntity('name')]
+#[ORM\Entity(repositoryClass: InstrumentRepository::class)]
+#[ORM\Table(name: 'attribute_instrument')]
 class Instrument
 {
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $name;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $musicianName;
 
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[Ignore]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
     public function __construct()

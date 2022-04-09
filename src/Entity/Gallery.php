@@ -4,85 +4,64 @@ namespace App\Entity;
 
 use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Image\GalleryImage;
+use App\Repository\GalleryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Metric\ViewCache;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\GalleryRepository")
- */
+#[ORM\Entity(repositoryClass: GalleryRepository::class)]
 class Gallery implements ViewableInterface
 {
     const STATUS_ONLINE = 0;
     const STATUS_DRAFT = 1;
     const STATUS_PENDING = 2;
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
-    /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @Assert\NotBlank()
-     * @Assert\Length(max="200")
-     */
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 200)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $title;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"publish"}, message="Vous devez spécifier une description pour votre galerie")
-     */
+    #[Assert\NotBlank(message: 'Vous devez spécifier une description pour votre galerie', groups: ['publish'])]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $description;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $updateDatetime;
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $publicationDatetime;
-    /**
-     * @ORM\Column(type="smallint")
-     */
+
+    #[ORM\Column(type: Types::SMALLINT)]
     private $status;
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=false)
-     *
-     * @Assert\NotNull()
-     */
+
+    #[Assert\NotNull]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $author;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Image\GalleryImage", mappedBy="gallery")
-     * @ORM\OrderBy({"creationDatetime" = "DESC"})
-     */
+    #[ORM\OneToMany(targetEntity: GalleryImage::class, mappedBy: 'gallery')]
+    #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     private $images;
 
-    /**
-     * @Assert\NotNull(groups={"publish"}, message="Vous devez spécifier une image de couverture")
-     * @ORM\OneToOne(targetEntity="App\Entity\Image\GalleryImage", cascade={"persist", "remove"})
-     */
+    #[Assert\NotNull(message: 'Vous devez spécifier une image de couverture', groups: ['publish'])]
+    #[ORM\OneToOne(targetEntity: GalleryImage::class, cascade: ['persist', 'remove'])]
     private $coverImage;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private $slug;
 
-    /**
-     * @ORM\OneToOne(targetEntity=ViewCache::class, cascade={"persist", "remove"})
-     */
+    #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     private $viewCache;
 
     public function __construct()

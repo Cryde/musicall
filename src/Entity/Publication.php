@@ -7,19 +7,15 @@ use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Metric\ViewCache;
+use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\PublicationRepository")
- * @ORM\Table(
- *     indexes={
- *          @ORM\Index(columns={"title", "short_description", "content"}, flags={"fulltext"})
- *     }
- * )
- */
+#[ORM\Entity(repositoryClass: PublicationRepository::class)]
+#[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
 class Publication implements ViewableInterface
 {
     const TYPE_TEXT = 1;
@@ -39,100 +35,66 @@ class Publication implements ViewableInterface
         self::STATUS_PENDING => 'En validation',
     ];
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
-    /**
-     * @Assert\NotBlank(message="Le titre ne peut être vide")
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+
+    #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $title;
 
-    /**
-     * @Assert\NotBlank(message="La catégorie ne peut être vide")
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\PublicationSubCategory", inversedBy="publications")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
+    #[ORM\ManyToOne(targetEntity: PublicationSubCategory::class, inversedBy: "publications")]
+    #[ORM\JoinColumn(nullable: false)]
     private $subCategory;
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="publications")
-     * @ORM\JoinColumn(nullable=false)
-     */
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "publications")]
+    #[ORM\JoinColumn(nullable: false)]
     private $author;
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     */
+
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
-    /**
-     * @Assert\NotBlank(groups={"publication"}, message="La description de la publication ne doit pas être vide")
-     *
-     * @ORM\Column(type="text", nullable=true)
-     */
+
+    #[Assert\NotBlank(groups: ['publication'], message: 'La description de la publication ne doit pas être vide')]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $shortDescription;
 
-    /**
-     * @Assert\NotBlank(groups={"publication"}, message="Il doit y avoir du contenu dans la publication")
-     *
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[Assert\NotBlank(groups: ['publication'], message: 'Il doit y avoir du contenu dans la publication')]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $content;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $editionDatetime;
 
-    /**
-     * @Assert\Type(type="Datetime", groups={"publication"})
-     * @Assert\NotBlank(groups={"publication"})
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[Assert\Type(type: 'DateTime', groups: ['publication'])]
+    #[Assert\NotBlank(groups: ['publication'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $publicationDatetime;
-    /**
-     * @ORM\Column(type="smallint")
-     */
+
+    #[ORM\Column(type: Types::SMALLINT)]
     private $status;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Image\PublicationImage", mappedBy="publication")
-     */
+    #[ORM\OneToMany(targetEntity: PublicationImage::class, mappedBy: "publication")]
     private $images;
 
-    /**
-     * @Assert\NotNull(groups={"publication"}, message="Vous devez ajouter une image de cover")
-     * @ORM\OneToOne(targetEntity="App\Entity\Image\PublicationCover", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
+    #[Assert\NotNull(groups: ['publication'], message: 'Vous devez ajouter une image de cover')]
+    #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $cover;
 
-    /**
-     * @ORM\Column(type="smallint", nullable=true)
-     */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private $type;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private $oldPublicationId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=CommentThread::class)
-     */
+    #[ORM\ManyToOne(targetEntity: CommentThread::class)]
     private $thread;
 
-    /**
-     * @ORM\OneToOne(targetEntity=ViewCache::class, cascade={"persist", "remove"})
-     */
+    #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     private $viewCache;
     
     public function __construct()

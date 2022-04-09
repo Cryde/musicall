@@ -8,83 +8,56 @@ use App\Entity\User;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=MusicianAnnounceRepository::class)
- */
+#[ORM\Entity(repositoryClass: MusicianAnnounceRepository::class)]
 class MusicianAnnounce
 {
     const TYPE_MUSICIAN = 1;
     const TYPE_BAND = 2;
     const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
 
-    /**
-     * @ORM\Id()
-     * @ORM\Column(name="id", type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::GUID)]
+    #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $creationDatetime;
 
-    /**
-     * @Assert\NotNull()
-     *
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[Assert\NotNull]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $author;
 
-    /**
-     * @Assert\Choice(choices=MusicianAnnounce::TYPES)
-     * @ORM\Column(type="smallint")
-     */
+    #[Assert\Choice(choices: MusicianAnnounce::TYPES)]
+    #[ORM\Column(type: Types::SMALLINT)]
     private $type;
 
-    /**
-     * @Assert\NotNull()
-     *
-     * @ORM\ManyToOne(targetEntity=Instrument::class)
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[Assert\NotNull]
+    #[ORM\ManyToOne(targetEntity: Instrument::class)]
+    #[ORM\JoinColumn(nullable: false)]
     private $instrument;
 
-    /**
-     * @Assert\Length(min="1")
-     *
-     * @ORM\ManyToMany(targetEntity=Style::class)
-     */
+    #[Assert\Length(min: 1)]
+    #[ORM\ManyToMany(targetEntity: Style::class)]
     private $styles;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $locationName;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $longitude;
 
-    /**
-     * @Assert\NotBlank()
-     *
-     * @ORM\Column(type="string", length=255)
-     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private $latitude;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $note;
 
     public function __construct()
