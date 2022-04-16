@@ -2,17 +2,19 @@
 
 namespace App\Service\Formatter\Artist;
 
+use HtmlSanitizer\SanitizerInterface;
+
 class ArtistTextFormatter
 {
-    private \HTMLPurifier $artistContentPurifier;
+    private SanitizerInterface $sanitizer;
 
-    public function __construct(\HTMLPurifier $artistContentPurifier)
+    public function __construct(SanitizerInterface $onlyBr)
     {
-        $this->artistContentPurifier = $artistContentPurifier;
+        $this->sanitizer = $onlyBr;
     }
 
     public function formatNewLine(string $str): string
     {
-        return $this->artistContentPurifier->purify(nl2br($str));
+        return $this->sanitizer->sanitize(nl2br($str));
     }
 }

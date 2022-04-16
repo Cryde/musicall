@@ -47,7 +47,7 @@ class AdminArtistArraySerializer
             'biography'    => $artist->getBiography(),
             'label_name'   => $artist->getLabelName(),
             'country_name' => $artist->getCountryCode() ? Countries::getAlpha3Name($artist->getCountryCode()) : '',
-            'country_code' => $artist->getCountryCode() ? $artist->getCountryCode() : '',
+            'country_code' => $artist->getCountryCode() ?: '',
             'members'      => $artist->getMembers(),
             'socials'      => $this->adminArtistSocialSerializer->listToArray($artist->getSocials()),
             'cover'        => $imagePath ? $this->cacheManager->getBrowserPath($imagePath, 'wiki_artist_cover_filter') : '',

@@ -4,6 +4,7 @@ namespace App\Service\Mail\Contact;
 
 use App\Service\Mail\ArrayMailBuilder;
 use App\Service\Mail\Mailer;
+use HtmlSanitizer\SanitizerInterface;
 
 class ContactMail
 {
@@ -12,14 +13,14 @@ class ContactMail
     private Mailer $mailer;
     private ArrayMailBuilder $arrayMailBuilder;
     private string $email;
-    private \HTMLPurifier $onlybrPurifier;
+    private SanitizerInterface $sanitizer;
 
-    public function __construct(string $email, Mailer $mailer, ArrayMailBuilder $arrayMailBuilder, \HTMLPurifier $onlybrPurifier)
+    public function __construct(string $email, Mailer $mailer, ArrayMailBuilder $arrayMailBuilder, SanitizerInterface $onlyBr)
     {
         $this->mailer = $mailer;
         $this->arrayMailBuilder = $arrayMailBuilder;
         $this->email = $email;
-        $this->onlybrPurifier = $onlybrPurifier;
+        $this->sanitizer = $onlyBr;
     }
 
     public function send(string $name, string $email, string $message)
@@ -32,7 +33,7 @@ class ContactMail
                 [
                     'name'    => $name,
                     'email'   => $email,
-                    'message' => $this->onlybrPurifier->purify(nl2br($message)),
+                    'message' => $this->sanitizer->sanitize(nl2br($message)),
                 ]
             )
         );

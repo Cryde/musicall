@@ -54,6 +54,7 @@
         "symfony/web-link": "^5.0",
         "symfony/webpack-encore-bundle": "^1.0",
         "symfony/yaml": "^5.0",
+        "tgalopin/html-sanitizer-bundle": "^1.4",
         "vich/uploader-bundle": "^1.9"
     },
     "require-dev": {

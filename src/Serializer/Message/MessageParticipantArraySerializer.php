@@ -16,10 +16,8 @@ class MessageParticipantArraySerializer
 
     /**
      * @param MessageParticipant[] $participants
-     *
-     * @return array
      */
-    public function listToArray($participants): array
+    public function listToArray(Iterable $participants): array
     {
         $result = [];
         foreach ($participants as $participant) {
