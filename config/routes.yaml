@@ -10,3 +10,11 @@ gesdinet_jwt_refresh_token:
     controller: gesdinet.jwtrefreshtoken::refresh
     options:
         expose: true
+
+controllers:
+    resource: ../src/Controller/
+    type: annotation
+
+kernel:
+    resource: ../src/Kernel.php
+    type: annotation
