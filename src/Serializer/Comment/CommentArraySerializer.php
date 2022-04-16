@@ -5,24 +5,23 @@ namespace App\Serializer\Comment;
 use App\Entity\Comment\Comment;
 use App\Serializer\User\UserArraySerializer;
 use Doctrine\Common\Collections\Collection;
+use HtmlSanitizer\SanitizerInterface;
 
 class CommentArraySerializer
 {
-    private \HTMLPurifier $HTMLPurifier;
     private UserArraySerializer $userArraySerializer;
+    private SanitizerInterface $sanitizer;
 
-    public function __construct(UserArraySerializer $userArraySerializer, \HTMLPurifier $commentPurifier)
+    public function __construct(UserArraySerializer $userArraySerializer, SanitizerInterface $onlyBr)
     {
-        $this->HTMLPurifier = $commentPurifier;
         $this->userArraySerializer = $userArraySerializer;
+        $this->sanitizer = $onlyBr;
     }
 
     /**
-     * @param Collection|Comment[] $comments
-     *
-     * @return array
+     * @param Comment[] $comments
      */
-    public function listToArray($comments): array
+    public function listToArray(iterable $comments): array
     {
         $list = [];
         foreach ($comments as $comment) {
@@ -32,17 +31,12 @@ class CommentArraySerializer
         return $list;
     }
 
-    /**
-     * @param Comment $comment
-     *
-     * @return array
-     */
     public function toArray(Comment $comment): array
     {
         return [
             'id'                => $comment->getId(),
             'author'            => $this->userArraySerializer->toArray($comment->getAuthor()),
-            'content'           => $this->HTMLPurifier->purify(nl2br($comment->getContent())),
+            'content'           => $this->sanitizer->sanitize(nl2br($comment->getContent())),
             'creation_datetime' => $comment->getCreationDatetime(),
         ];
     }

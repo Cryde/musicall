@@ -19,11 +19,8 @@ class MessageThreadMetaArraySerializer
 
     /**
      * @param MessageThreadMeta[] $messageThreadMetas
-     * @param bool                $withThread
-     *
-     * @return array
      */
-    public function listToArray($messageThreadMetas, bool $withThread = false): array
+    public function listToArray(iterable $messageThreadMetas, bool $withThread = false): array
     {
         $result = [];
         foreach ($messageThreadMetas as $messageThreadMeta) {

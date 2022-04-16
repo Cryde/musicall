@@ -5,24 +5,23 @@ namespace App\Serializer\Message;
 use App\Entity\Message\Message;
 use App\Serializer\User\UserArraySerializer;
 use App\Service\DatetimeHelper;
+use HtmlSanitizer\SanitizerInterface;
 
 class LastMessageArraySerializer
 {
-    private \HTMLPurifier $messagePurifier;
     private UserArraySerializer $userArraySerializer;
+    private SanitizerInterface $sanitizer;
 
-    public function __construct(UserArraySerializer $userArraySerializer, \HTMLPurifier $lastMessagePurifier)
+    public function __construct(UserArraySerializer $userArraySerializer, SanitizerInterface $sanitizer)
     {
-        $this->messagePurifier = $lastMessagePurifier;
         $this->userArraySerializer = $userArraySerializer;
+        $this->sanitizer = $sanitizer;
     }
 
     /**
      * @param Message[] $messages
-     *
-     * @return array
      */
-    public function listToArray($messages): array
+    public function listToArray(iterable $messages): array
     {
         $result = [];
         foreach ($messages as $message) {
@@ -38,7 +37,7 @@ class LastMessageArraySerializer
             'id'                => $message->getId(),
             'author'            => $this->userArraySerializer->toArray($message->getAuthor()),
             'creation_datetime' => $message->getCreationDatetime()->format(DatetimeHelper::FORMAT_ISO_8601),
-            'content'           => $this->messagePurifier->purify(nl2br($message->getContent())),
+            'content'           => $this->sanitizer->sanitize(nl2br($message->getContent())),
         ];
     }
 }
