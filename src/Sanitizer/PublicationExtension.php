@@ -43,7 +43,6 @@ class PublicationExtension implements ExtensionInterface
 
     public function createNodeVisitors(array $config = []): array
     {
-        dump($config);
         return [
             # Basics
             'a' => new ANodeVisitor($config['tags']['a'] ?? []),
