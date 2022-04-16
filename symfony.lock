@@ -88,21 +88,6 @@
     "egulias/email-validator": {
         "version": "2.1.6"
     },
-    "exercise/htmlpurifier-bundle": {
-        "version": "3.1",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "3.0",
-            "ref": "99590c5352b58fadacd5535337589aba7e44f5a7"
-        },
-        "files": [
-            "config/packages/exercise_html_purifier.yaml"
-        ]
-    },
-    "ezyang/htmlpurifier": {
-        "version": "v4.10.0"
-    },
     "firebase/php-jwt": {
         "version": "v5.0.0"
     },
