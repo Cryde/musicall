@@ -134,9 +134,7 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int $oldId
-     *
-     * @return int|mixed|string
+     * @return float|int|mixed|string
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
@@ -152,17 +150,12 @@ class PublicationRepository extends ServiceEntityRepository
             ->getSingleResult();
     }
 
-    /**
-     * @param string $term
-     * @param int    $limit
-     *
-     * @return int|mixed|string
-     */
-    public function getBySearchTerm(string $term, int $limit = 10)
+    public function getBySearchTerm(string $term, int $limit = 10): array
     {
         return $this->createQueryBuilder('publication')
             ->where('publication.status = :status')
             ->andWhere('MATCH_AGAINST(publication.title, publication.shortDescription, publication.content) AGAINST(:term) > 0')
+            ->andWhere('publication.cover IS NOT NULL')
             ->setParameter('term', $term)
             ->setParameter('status', Publication::STATUS_ONLINE)
             ->setMaxResults($limit)
