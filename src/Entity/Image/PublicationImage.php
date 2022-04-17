@@ -32,7 +32,7 @@ class PublicationImage
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
 
-    #[ORM\ManyToOne(targetEntity: Publication::class)]
+    #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'images')]
     private $publication;
 
     public function getImageFile(): ?File
