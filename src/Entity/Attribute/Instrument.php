@@ -14,6 +14,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[UniqueEntity('name')]
 #[ORM\Entity(repositoryClass: InstrumentRepository::class)]
 #[ORM\Table(name: 'attribute_instrument')]
+#[ApiResource(collectionOperations: ['get' => ["pagination_items_per_page" => 100]], itemOperations: ['get'])]
 class Instrument
 {
     #[ORM\Id]
