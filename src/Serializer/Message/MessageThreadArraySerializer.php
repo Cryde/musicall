@@ -6,11 +6,8 @@ use App\Entity\Message\MessageThread;
 
 class MessageThreadArraySerializer
 {
-    private LastMessageArraySerializer $lastMessageArraySerializer;
-
-    public function __construct(LastMessageArraySerializer $lastMessageArraySerializer)
+    public function __construct(private readonly LastMessageArraySerializer $lastMessageArraySerializer)
     {
-        $this->lastMessageArraySerializer = $lastMessageArraySerializer;
     }
 
     public function toArray(MessageThread $messageThread): array

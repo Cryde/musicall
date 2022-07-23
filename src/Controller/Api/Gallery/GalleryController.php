@@ -16,22 +16,18 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 class GalleryController extends AbstractController
 {
-    /**
-     * @Route("/api/gallery", name="api_gallery_list", options={"expose": true})
-     */
+    #[Route(path: '/api/gallery', name: 'api_gallery_list', options: ['expose' => true])]
     public function list(GalleryRepository $galleryRepository): JsonResponse
     {
         $galleries = $galleryRepository->findBy(['status' => Gallery::STATUS_ONLINE], ['publicationDatetime' => 'DESC']);
 
         // todo probablement pagination !
         return $this->json($galleries, Response::HTTP_OK, [], [
-            GalleryNormalizer::CONTEXT_GALLERY => true
+            GalleryNormalizer::CONTEXT_GALLERY => true,
         ]);
     }
 
-    /**
-     * @Route("/api/gallery/{slug}", name="api_gallery_show", options={"expose": true})
-     */
+    #[Route(path: '/api/gallery/{slug}', name: 'api_gallery_show', options: ['expose' => true])]
     public function show(Request $request, Gallery $gallery, ViewProcedure $viewProcedure): JsonResponse
     {
         if ($gallery->getStatus() === Gallery::STATUS_ONLINE) {
@@ -48,9 +44,7 @@ class GalleryController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/api/gallery/{slug}/images", name="api_gallery_images_show", options={"expose": true})
-     */
+    #[Route(path: '/api/gallery/{slug}/images', name: 'api_gallery_images_show', options: ['expose' => true])]
     public function images(Gallery $gallery, GalleryImageSerializer $galleryImageSerializer): JsonResponse
     {
         // todo probablement pagination !

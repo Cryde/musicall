@@ -10,13 +10,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class RemoteFileDownloader
 {
-    private LoggerInterface $logger;
-    private Filesystem $filesystem;
-
-    public function __construct(Filesystem $filesystem, LoggerInterface $logger)
+    public function __construct(private readonly Filesystem $filesystem, private readonly LoggerInterface $logger)
     {
-        $this->filesystem = $filesystem;
-        $this->logger = $logger;
     }
 
     /**

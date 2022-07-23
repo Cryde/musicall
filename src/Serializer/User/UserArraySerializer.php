@@ -6,11 +6,8 @@ use App\Entity\User;
 
 class UserArraySerializer
 {
-    private UserProfilePictureArraySerializer $userProfilePictureArraySerializer;
-
-    public function __construct(UserProfilePictureArraySerializer $userProfilePictureArraySerializer)
+    public function __construct(private readonly UserProfilePictureArraySerializer $userProfilePictureArraySerializer)
     {
-        $this->userProfilePictureArraySerializer = $userProfilePictureArraySerializer;
     }
 
     /**

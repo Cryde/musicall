@@ -8,13 +8,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserProfilePictureArraySerializer
 {
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-
-    public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
+    public function __construct(private readonly UploaderHelper $uploaderHelper, private readonly CacheManager $cacheManager)
     {
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
     }
 
     public function toArray(UserProfilePicture $userProfilePicture): array

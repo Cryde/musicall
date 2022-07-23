@@ -8,24 +8,16 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class Slugifier
 {
-
-    private SluggerInterface $slugger;
-    private EntityManagerInterface $entityManager;
-    private PropertyAccessorInterface $propertyAccessor;
-
     public function __construct(
-        SluggerInterface $slugger,
-        EntityManagerInterface $entityManager,
-        PropertyAccessorInterface $propertyAccessor
+        private readonly SluggerInterface          $slugger,
+        private readonly EntityManagerInterface    $entityManager,
+        private readonly PropertyAccessorInterface $propertyAccessor
     ) {
-        $this->slugger = $slugger;
-        $this->entityManager = $entityManager;
-        $this->propertyAccessor = $propertyAccessor;
     }
 
     public function create(object $object, string $property): string
     {
-        $repository = $this->entityManager->getRepository(get_class($object));
+        $repository = $this->entityManager->getRepository($object::class);
 
         if (!$this->propertyAccessor->isReadable($object, $property)) {
             throw new \InvalidArgumentException('Property not valid');

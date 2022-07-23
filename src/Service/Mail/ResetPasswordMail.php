@@ -4,15 +4,10 @@ namespace App\Service\Mail;
 
 class ResetPasswordMail
 {
-    const TEMPLATE_ID = 1279970;
+    final const TEMPLATE_ID = 1_279_970;
 
-    private Mailer $mailer;
-    private ArrayMailBuilder $arrayMailBuilder;
-
-    public function __construct(Mailer $mailer, ArrayMailBuilder $arrayMailBuilder)
+    public function __construct(private readonly Mailer $mailer, private readonly ArrayMailBuilder $arrayMailBuilder)
     {
-        $this->mailer = $mailer;
-        $this->arrayMailBuilder = $arrayMailBuilder;
     }
 
     public function send(string $recipientEmail, string $username, string $changePasswordLink)

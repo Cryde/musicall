@@ -7,13 +7,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class GallerySlug
 {
-    private GalleryRepository $galleryRepository;
-    private SluggerInterface $slugger;
-
-    public function __construct(GalleryRepository $galleryRepository, SluggerInterface $slugger)
+    public function __construct(private readonly GalleryRepository $galleryRepository, private readonly SluggerInterface $slugger)
     {
-        $this->galleryRepository = $galleryRepository;
-        $this->slugger = $slugger;
     }
 
     public function create(string $slugCandidate): string

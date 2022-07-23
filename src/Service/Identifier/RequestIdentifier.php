@@ -6,11 +6,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RequestIdentifier
 {
-    private string $secret;
-
-    public function __construct(string $secret)
+    public function __construct(private readonly string $secret)
     {
-        $this->secret = $secret;
     }
 
     public function fromRequest(Request $request): string

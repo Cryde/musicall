@@ -19,33 +19,16 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class MessageSenderProcedure
 {
-    private MessageThreadRepository $messageThreadRepository;
-    private MessageDirector $messageDirector;
-    private MessageThreadDirector $messageThreadDirector;
-    private MessageThreadMetaDirector $messageThreadMetaDirector;
-    private EntityManagerInterface $entityManager;
-    private MessageParticipantDirector $messageParticipantDirector;
-    private MessageThreadMetaRepository $messageThreadMetaRepository;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        MessageThreadRepository $messageThreadRepository,
-        MessageThreadDirector $messageThreadDirector,
-        MessageThreadMetaDirector $messageThreadMetaDirector,
-        MessageParticipantDirector $messageParticipantDirector,
-        MessageThreadMetaRepository $messageThreadMetaRepository,
-        MessageDirector $messageDirector,
-        EventDispatcherInterface $eventDispatcher
+        private readonly EntityManagerInterface      $entityManager,
+        private readonly MessageThreadRepository     $messageThreadRepository,
+        private readonly MessageThreadDirector       $messageThreadDirector,
+        private readonly MessageThreadMetaDirector   $messageThreadMetaDirector,
+        private readonly MessageParticipantDirector  $messageParticipantDirector,
+        private readonly MessageThreadMetaRepository $messageThreadMetaRepository,
+        private readonly MessageDirector             $messageDirector,
+        private readonly EventDispatcherInterface    $eventDispatcher
     ) {
-        $this->entityManager = $entityManager;
-        $this->messageThreadRepository = $messageThreadRepository;
-        $this->messageThreadDirector = $messageThreadDirector;
-        $this->messageThreadMetaDirector = $messageThreadMetaDirector;
-        $this->messageParticipantDirector = $messageParticipantDirector;
-        $this->messageDirector = $messageDirector;
-        $this->messageThreadMetaRepository = $messageThreadMetaRepository;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**

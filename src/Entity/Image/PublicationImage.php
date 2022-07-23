@@ -49,7 +49,7 @@ class PublicationImage
      *
      * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile $image
      */
-    public function setImageFile(?File $image = null): void
+    public function setImageFile(\Symfony\Component\HttpFoundation\File\File|\Symfony\Component\HttpFoundation\File\UploadedFile $image = null): void
     {
         $this->imageFile = $image;
         if (null !== $image) {

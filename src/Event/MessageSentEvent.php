@@ -7,12 +7,10 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class MessageSentEvent extends Event
 {
-    public const NAME = 'message.sent';
-    private User $recipient;
+    final public const NAME = 'message.sent';
 
-    public function __construct(User $recipient)
+    public function __construct(private readonly User $recipient)
     {
-        $this->recipient = $recipient;
     }
 
     public function getRecipient(): User

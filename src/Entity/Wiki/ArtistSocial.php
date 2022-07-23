@@ -10,13 +10,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ArtistSocialRepository::class)]
 class ArtistSocial
 {
-    const SOCIAL_URL_WEBSITE = 0;
-    const SOCIAL_URL_TWITTER = 1;
-    const SOCIAL_URL_INSTAGRAM = 2;
-    const SOCIAL_URL_FACEBOOK = 3;
-    const SOCIAL_URL_YOUTUBE = 4;
+    final const SOCIAL_URL_WEBSITE = 0;
+    final const SOCIAL_URL_TWITTER = 1;
+    final const SOCIAL_URL_INSTAGRAM = 2;
+    final const SOCIAL_URL_FACEBOOK = 3;
+    final const SOCIAL_URL_YOUTUBE = 4;
 
-    const AVAILABLE_SOCIAL_URL_TYPES = [
+    final const AVAILABLE_SOCIAL_URL_TYPES = [
         self::SOCIAL_URL_WEBSITE,
         self::SOCIAL_URL_TWITTER,
         self::SOCIAL_URL_INSTAGRAM,

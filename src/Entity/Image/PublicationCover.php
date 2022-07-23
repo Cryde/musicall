@@ -48,10 +48,8 @@ class PublicationCover
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
      *
-     * @param File|UploadedFile|null $image
      *
      * @throws \Exception
-     *
      * @return $this
      */
     public function setImageFile(?File $image = null)
@@ -67,8 +65,6 @@ class PublicationCover
     }
 
     /**
-     * @param string|null $imageName
-     *
      * @return $this
      */
     public function setImageName(?string $imageName)

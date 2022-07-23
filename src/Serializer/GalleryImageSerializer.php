@@ -9,21 +9,14 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class GalleryImageSerializer
 {
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-
-    public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
+    public function __construct(private readonly UploaderHelper $uploaderHelper, private readonly CacheManager $cacheManager)
     {
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
     }
 
     /**
      * @param Collection|GalleryImage[] $images
-     *
-     * @return array
      */
-    public function toList(Collection $images): array
+    public function toList(\Doctrine\Common\Collections\Collection|array $images): array
     {
         $list = [];
         foreach ($images as $image) {

@@ -8,19 +8,14 @@ use HtmlSanitizer\SanitizerInterface;
 
 class ContactMail
 {
-    const TEMPLATE_ID = 1876336;
+    final const TEMPLATE_ID = 1_876_336;
 
-    private Mailer $mailer;
-    private ArrayMailBuilder $arrayMailBuilder;
-    private string $email;
-    private SanitizerInterface $sanitizer;
-
-    public function __construct(string $email, Mailer $mailer, ArrayMailBuilder $arrayMailBuilder, SanitizerInterface $onlyBr)
-    {
-        $this->mailer = $mailer;
-        $this->arrayMailBuilder = $arrayMailBuilder;
-        $this->email = $email;
-        $this->sanitizer = $onlyBr;
+    public function __construct(
+        private readonly string             $email,
+        private readonly Mailer             $mailer,
+        private readonly ArrayMailBuilder   $arrayMailBuilder,
+        private readonly SanitizerInterface $sanitizer
+    ) {
     }
 
     public function send(string $name, string $email, string $message)

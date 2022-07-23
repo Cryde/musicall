@@ -15,14 +15,13 @@ class ViewCache
     private $id;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private $count;
+    private int $count = 0;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $creationDatetime;
 
     public function __construct()
     {
-        $this->count = 0;
         $this->creationDatetime = new \DateTime();
     }
 

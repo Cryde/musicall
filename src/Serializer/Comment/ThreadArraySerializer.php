@@ -7,11 +7,8 @@ use App\Service\DatetimeHelper;
 
 class ThreadArraySerializer
 {
-    private CommentArraySerializer $commentArraySerializer;
-
-    public function __construct(CommentArraySerializer $commentArraySerializer)
+    public function __construct(private readonly CommentArraySerializer $commentArraySerializer)
     {
-        $this->commentArraySerializer = $commentArraySerializer;
     }
 
     public function toArray(CommentThread $commentThread): array

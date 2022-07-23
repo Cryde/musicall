@@ -15,39 +15,30 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AdminPublicationController extends AbstractController
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
-    /**
-     * @Route("/api/admin/publications/pending", name="api_admin_publications_pending_list", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/publications/pending', name: 'api_admin_publications_pending_list', options: ['expose' => true], methods: ['GET'])]
     public function listPending(PublicationRepository $publicationRepository): JsonResponse
     {
         $pendingPublication = $publicationRepository->findBy(['status' => Publication::STATUS_PENDING]);
 
         return $this->json($pendingPublication, Response::HTTP_OK, [], [
-            'attributes' => ['id', 'title', 'slug', 'author' => ['username'], 'subCategory' => ['title']]
+            'attributes' => ['id', 'title', 'slug', 'author' => ['username'], 'subCategory' => ['title']],
         ]);
     }
 
-    /**
-     * @Route("/api/admin/publications/{id}/approve", name="api_admin_publications_approve", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/publications/{id}/approve', name: 'api_admin_publications_approve', options: ['expose' => true], methods: ['GET'])]
     public function approve(
-        Publication $publication,
-        PublicationSlug $publicationSlug,
+        Publication           $publication,
+        PublicationSlug       $publicationSlug,
         CommentThreadDirector $commentThreadDirector
     ): JsonResponse {
         $commentThread = $commentThreadDirector->create();
         $this->entityManager->persist($commentThread);
-
         $publication->setThread($commentThread);
         $publication->setPublicationDatetime(new \DateTime());
         $publication->setStatus(Publication::STATUS_ONLINE);
@@ -57,11 +48,8 @@ class AdminPublicationController extends AbstractController
         return $this->json([]);
     }
 
-    /**
-     * @Route("/api/admin/publications/{id}/reject", name="api_admin_publications_reject", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/publications/{id}/reject', name: 'api_admin_publications_reject', options: ['expose' => true], methods: ['GET'])]
     public function reject(Publication $publication): JsonResponse
     {
         $publication->setStatus(Publication::STATUS_DRAFT);

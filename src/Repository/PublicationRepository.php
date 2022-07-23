@@ -23,10 +23,6 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $title
-     * @param int    $status
-     * @param int    $type
-     * @param int    $limit
      *
      * @return int|mixed|string
      */
@@ -46,8 +42,6 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $videoId
-     *
      * @return Publication|null
      */
     public function findOneVideo(string $videoId)
@@ -57,8 +51,6 @@ class PublicationRepository extends ServiceEntityRepository
 
     /**
      * @param array|PublicationSubCategory[] $categories
-     * @param int                      $offset
-     * @param int                      $limit
      *
      * @return Publication[]
      */
@@ -82,9 +74,6 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param PublicationSubCategory $publicationSubCategory
-     * @param int                    $offset
-     * @param int                    $limit
      *
      * @return Publication[]
      */
@@ -116,7 +105,6 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param PublicationSubCategory $publicationSubCategory
      *
      * @return mixed
      * @throws NonUniqueResultException

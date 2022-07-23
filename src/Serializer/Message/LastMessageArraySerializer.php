@@ -9,13 +9,8 @@ use HtmlSanitizer\SanitizerInterface;
 
 class LastMessageArraySerializer
 {
-    private UserArraySerializer $userArraySerializer;
-    private SanitizerInterface $sanitizer;
-
-    public function __construct(UserArraySerializer $userArraySerializer, SanitizerInterface $sanitizer)
+    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly SanitizerInterface $sanitizer)
     {
-        $this->userArraySerializer = $userArraySerializer;
-        $this->sanitizer = $sanitizer;
     }
 
     /**

@@ -10,13 +10,8 @@ use HtmlSanitizer\SanitizerInterface;
 
 class MusicianSearchArraySerializer
 {
-    private UserArraySerializer $userArraySerializer;
-    private SanitizerInterface $sanitizer;
-
-    public function __construct(UserArraySerializer $userArraySerializer, SanitizerInterface $onlyBr)
+    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly SanitizerInterface $sanitizer)
     {
-        $this->userArraySerializer = $userArraySerializer;
-        $this->sanitizer = $onlyBr;
     }
 
     public function listToArray($list): array
@@ -49,7 +44,7 @@ class MusicianSearchArraySerializer
     /**
      * @param Collection|Style[] $styles
      */
-    private function formatStyle(Collection $styles): string
+    private function formatStyle(\Doctrine\Common\Collections\Collection|array $styles): string
     {
         return implode(', ', $styles->map(fn(Style $item) => $item->getName())->toArray());
     }

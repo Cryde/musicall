@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller\Api\User;
+
 use App\Repository\Musician\MusicianAnnounceRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,22 +12,14 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 class UserAnnounceController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/user/announce/musician",
-     *     name="api_user_announce_musician_list",
-     *     methods={"GET"},
-     *     options={"expose": true}
-     * )
-     *
-     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     */
+    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
+    #[Route(path: '/api/user/announce/musician', name: 'api_user_announce_musician_list', options: ['expose' => true], methods: ['GET'])]
     public function list(MusicianAnnounceRepository $musicianAnnounceRepository): JsonResponse
     {
         $announces = $musicianAnnounceRepository->findBy(['author' => $this->getUser()], ['creationDatetime' => 'DESC']);
 
         return $this->json($announces, Response::HTTP_OK, [], [
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['author']
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['author'],
         ]);
     }
 }

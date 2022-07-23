@@ -10,18 +10,11 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class BotMetaDataGenerator
 {
-    private PublicationRepository $publicationRepository;
-    private UploaderHelper $uploaderHelper;
-    private GalleryRepository $galleryRepository;
-
     public function __construct(
-        PublicationRepository $publicationRepository,
-        UploaderHelper $uploaderHelper,
-        GalleryRepository $galleryRepository
+        private readonly PublicationRepository $publicationRepository,
+        private readonly UploaderHelper        $uploaderHelper,
+        private readonly GalleryRepository     $galleryRepository
     ) {
-        $this->publicationRepository = $publicationRepository;
-        $this->uploaderHelper = $uploaderHelper;
-        $this->galleryRepository = $galleryRepository;
     }
 
     public function getMetaData(string $uri): array

@@ -23,145 +23,88 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class WikiArtistController extends AbstractController
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
-    /**
-     * @Route(
-     *     "/api/admin/artist",
-     *     name="api_admin_artist_add",
-     *     options={"expose": true},
-     *     methods={"POST"},
-     * )
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/artist', name: 'api_admin_artist_add', options: ['expose' => true], methods: ['POST'])]
     public function add(
-        Request $request,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-        Slugifier $slugifier,
+        Request                    $request,
+        SerializerInterface        $serializer,
+        ValidatorInterface         $validator,
+        Slugifier                  $slugifier,
         AdminArtistArraySerializer $adminArtistArraySerializer
     ): JsonResponse {
         /** @var Artist $artist */
         $artist = $serializer->deserialize($request->getContent(), Artist::class, 'json');
         $artist->setSlug($slugifier->create($artist, 'name'));
-
         $errors = $validator->validate($artist);
-
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-
         $this->entityManager->persist($artist);
         $this->entityManager->flush();
 
         return $this->json($adminArtistArraySerializer->toArray($artist));
     }
 
-    /**
-     * @Route(
-     *     "/api/admin/artist/{id}",
-     *     name="api_admin_artist_edit",
-     *     options={"expose": true},
-     *     methods={"PATCH"},
-     * )
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/artist/{id}', name: 'api_admin_artist_edit', options: ['expose' => true], methods: ['PATCH'])]
     public function edit(
-        Artist $artist,
-        Request $request,
-        ArtistDirector $artistDirector,
-        ArtistUpdater $artistUpdater,
-        Jsonizer $jsonizer,
+        Artist             $artist,
+        Request            $request,
+        ArtistDirector     $artistDirector,
+        ArtistUpdater      $artistUpdater,
+        Jsonizer           $jsonizer,
         ValidatorInterface $validator
     ): JsonResponse {
         $newArtist = $artistDirector->createFromArray($jsonizer->decodeRequest($request));
         $artistUpdater->update($artist, $newArtist);
-
         $errors = $validator->validate($artist);
-
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-
         $this->entityManager->flush();
 
         return $this->json([]);
     }
 
-    /**
-     * @Route(
-     *     "/api/admin/artist",
-     *     name="api_admin_artist_list",
-     *     options={"expose": true},
-     *     methods={"GET"},
-     * )
-     *
-     * @IsGranted("ROLE_ADMIN")
-     *
-     * @param ArtistRepository           $wikiArtistRepository
-     * @param AdminArtistArraySerializer $adminArtistArraySerializer
-     *
-     * @return JsonResponse
-     */
-    public function list(ArtistRepository $wikiArtistRepository, AdminArtistArraySerializer $adminArtistArraySerializer): JsonResponse
-    {
-
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/artist', name: 'api_admin_artist_list', options: ['expose' => true], methods: ['GET'])]
+    public function list(
+        ArtistRepository           $wikiArtistRepository,
+        AdminArtistArraySerializer $adminArtistArraySerializer
+    ): JsonResponse {
         return $this->json($adminArtistArraySerializer->listToArray($wikiArtistRepository->findAll()));
     }
 
-    /**
-     * @Route(
-     *     "/api/admin/artist/{id}",
-     *     name="api_admin_artist_show",
-     *     options={"expose": true},
-     *     methods={"GET"},
-     * )
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/artist/{id}', name: 'api_admin_artist_show', options: ['expose' => true], methods: ['GET'])]
     public function show(Artist $artist, AdminArtistArraySerializer $adminArtistArraySerializer): JsonResponse
     {
         return $this->json($adminArtistArraySerializer->toArray($artist));
     }
 
-    /**
-     * @Route(
-     *     "/api/admin/artist/{id}/upload-cover",
-     *     name="api_admin_artist_upload_cover",
-     *     options={"expose" = true},
-     *     methods={"POST"}
-     * )
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/artist/{id}/upload-cover', name: 'api_admin_artist_upload_cover', options: ['expose' => true], methods: ['POST'])]
     public function uploadCover(
-        Request $request,
-        Artist $artist,
+        Request                    $request,
+        Artist                     $artist,
         AdminArtistArraySerializer $adminArtistArraySerializer
     ): JsonResponse {
         $previousCover = $artist->getCover() ?: null;
-
         $cover = new WikiArtistCover();
         $cover->setArtist($artist);
         $form = $this->createForm(ImageUploaderType::class, $cover);
-
         $form->handleRequest($request);
-
-        if($form->isSubmitted() && $form->isValid()) {
-
+        if ($form->isSubmitted() && $form->isValid()) {
             if ($previousCover) {
                 $artist->setCover(null);
                 $this->entityManager->flush();
                 $this->entityManager->remove($previousCover);
                 $this->entityManager->flush();
             }
-
             $this->entityManager->persist($cover);
             $artist->setCover($cover);
             $this->entityManager->flush();

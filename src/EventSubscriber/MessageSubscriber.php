@@ -8,11 +8,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class MessageSubscriber implements EventSubscriberInterface
 {
-    private MessageReceivedMail $messageReceivedMail;
-
-    public function __construct(MessageReceivedMail $messageReceivedMail)
+    public function __construct(private readonly MessageReceivedMail $messageReceivedMail)
     {
-        $this->messageReceivedMail = $messageReceivedMail;
     }
 
     public static function getSubscribedEvents(): array

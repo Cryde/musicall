@@ -7,11 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ArtistUpdater
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function update(Artist $artist, Artist $newArtist): void

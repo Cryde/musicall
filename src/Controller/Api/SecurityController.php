@@ -10,9 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SecurityController extends AbstractController
 {
-    /**
-     * @Route("/api/login", name="api_login", methods={"POST"}, options={"expose":true})
-     */
+    #[Route(path: '/api/login', name: 'api_login', options: ['expose' => true], methods: ['POST'])]
     public function login(UserArraySerializer $userAppArraySerializer): JsonResponse
     {
         /** @var User $user */

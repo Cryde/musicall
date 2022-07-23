@@ -10,13 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ArtistController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/artist/{slug}",
-     *     name="api_artist_show",
-     *     options={"expose": true}
-     * )
-     */
+    #[Route(path: '/api/artist/{slug}', name: 'api_artist_show', options: ['expose' => true])]
     public function show(Artist $artist, ArtistArraySerializer $artistArraySerializer): JsonResponse
     {
         return $this->json($artistArraySerializer->toArray($artist));

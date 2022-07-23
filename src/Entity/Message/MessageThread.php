@@ -16,13 +16,13 @@ class MessageThread
     #[ORM\GeneratedValue(strategy: 'UUID')]
     private $id;
 
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'thread')]
+    #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
     private $messages;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $creationDatetime;
 
-    #[ORM\OneToMany(targetEntity: MessageParticipant::class, mappedBy: 'thread')]
+    #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
     private $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]

@@ -9,15 +9,10 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class UserSubscriber implements EventSubscriberInterface
 {
-    private ConfirmRegistrationSender $confirmRegistration;
-    private UserTokenGenerator $generateConfirmationToken;
-
     public function __construct(
-        ConfirmRegistrationSender $confirmRegistration,
-        UserTokenGenerator $generateConfirmationToken
+        private readonly ConfirmRegistrationSender $confirmRegistration,
+        private readonly UserTokenGenerator        $generateConfirmationToken
     ) {
-        $this->confirmRegistration = $confirmRegistration;
-        $this->generateConfirmationToken = $generateConfirmationToken;
     }
 
     public static function getSubscribedEvents(): array

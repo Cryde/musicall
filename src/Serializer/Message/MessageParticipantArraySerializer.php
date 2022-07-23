@@ -7,11 +7,8 @@ use App\Serializer\User\UserArraySerializer;
 
 class MessageParticipantArraySerializer
 {
-    private UserArraySerializer $userArraySerializer;
-
-    public function __construct(UserArraySerializer $userArraySerializer)
+    public function __construct(private readonly UserArraySerializer $userArraySerializer)
     {
-        $this->userArraySerializer = $userArraySerializer;
     }
 
     /**

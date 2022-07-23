@@ -18,31 +18,24 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class RegistrationController extends AbstractController
 {
-    /**
-     * @Route("/api/register", name="api_register", options={"expose": true})
-     */
+    #[Route(path: '/api/register', name: 'api_register', options: ['expose' => true])]
     public function register(
-        Request $request,
+        Request                     $request,
         UserPasswordHasherInterface $userPasswordHasher,
-        Jsonizer $jsonizer,
-        ValidatorInterface $validator,
-        EntityManagerInterface $entityManager,
-        EventDispatcherInterface $eventDispatcher
+        Jsonizer                    $jsonizer,
+        ValidatorInterface          $validator,
+        EntityManagerInterface      $entityManager,
+        EventDispatcherInterface    $eventDispatcher
     ): JsonResponse {
-
         $data = $jsonizer->decodeRequest($request);
-
         $user = (new User())
             ->setUsername($data['username'])
             ->setEmail($data['email'])
             ->setPlainPassword($data['password']);
-
         $errors = $validator->validate($user);
-
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-
         // encode the plain password
         $user->setPassword(
             $userPasswordHasher->hashPassword(
@@ -50,10 +43,8 @@ class RegistrationController extends AbstractController
                 $data['password']
             )
         );
-
         $entityManager->persist($user);
         $entityManager->flush();
-
         $eventDispatcher->dispatch(new UserRegisteredEvent($user), UserRegisteredEvent::NAME);
 
         return $this->json(['data' => ['success' => 1]]);

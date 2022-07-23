@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class MessageModel
 {
     #[Assert\NotBlank]
-    public ?string $content;
+    public ?string $content = null;
 
     public function getContent(): ?string
     {

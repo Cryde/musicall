@@ -4,13 +4,8 @@ namespace App\Service\Mail;
 
 class ArrayMailBuilder
 {
-    private string $email;
-    private string $name;
-
-    public function __construct(string $email, string $name)
+    public function __construct(private readonly string $email, private readonly string $name)
     {
-        $this->email = $email;
-        $this->name = $name;
     }
 
     public function build(string $recipientEmail, int $templateId, string $subject, array $variables): array

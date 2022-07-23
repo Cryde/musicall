@@ -7,13 +7,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class PublicationSlug
 {
-    private PublicationRepository $publicationRepository;
-    private SluggerInterface $slugger;
-
-    public function __construct(PublicationRepository $publicationRepository, SluggerInterface $slugger)
+    public function __construct(private readonly PublicationRepository $publicationRepository, private readonly SluggerInterface $slugger)
     {
-        $this->publicationRepository = $publicationRepository;
-        $this->slugger = $slugger;
     }
 
     public function create(string $slugCandidate): string
