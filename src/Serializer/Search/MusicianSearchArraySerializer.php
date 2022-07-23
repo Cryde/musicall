@@ -47,9 +47,9 @@ class MusicianSearchArraySerializer
     }
 
     /**
-     * @param Style[] $styles
+     * @param Collection|Style[] $styles
      */
-    private function formatStyle(iterable $styles): string
+    private function formatStyle(Collection $styles): string
     {
         return implode(', ', $styles->map(fn(Style $item) => $item->getName())->toArray());
     }
