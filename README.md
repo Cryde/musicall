@@ -1,6 +1,6 @@
 # [MusicAll](https://www.musicall.com)
 
-Community website powered by the Symfony 5 & PHP.  
+Community website powered by the Symfony 6.1 & PHP8.1.  
 MusicAll is a platform where people can share videos, articles, courses, search musicians or band & talk with them.
 
 ## Getting Started
@@ -10,23 +10,23 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 Some Symfony & VueJS knowledges are recommended.  
-You should run this projet with PHP 8.0
+You should run this projet with PHP 8.1
 ```
 php -v
-PHP 8.0.8 (cli) (built: Jul  1 2021 16:14:13) ( NTS )
+PHP 8.1.5 (cli) (built: Apr 21 2022 10:15:06) (NTS)
 Copyright (c) The PHP Group
-Zend Engine v4.0.8, Copyright (c) Zend Technologies
-    with Zend OPcache v8.0.8, Copyright (c), by Zend Technologies
+Zend Engine v4.1.5, Copyright (c) Zend Technologies
+    with Zend OPcache v8.1.5, Copyright (c), by Zend Technologies
 ```
 
-Be sure to have a least Node.js v14.17.1 (use [nvm](https://github.com/creationix/nvm) to have multiple versions of node)
+Be sure to have at least Node.js v16.16.0 (use [nvm](https://github.com/creationix/nvm) to have multiple versions of node)
 ```
 node -v
 ```
 Be sure to also have composer installed (locally or globally) :
 ```
 composer --version
-Composer version 2.0.8 2020-12-03 17:20:38
+Composer version 2.3.10 2022-07-13 15:48:23
 ```
 
 ### Installing
