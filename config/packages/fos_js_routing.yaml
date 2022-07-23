@@ -1,0 +1,4 @@
+fos_js_routing:
+    routes_to_expose:
+        - api_styles_(.*)
+        - api_instruments_(.*)
