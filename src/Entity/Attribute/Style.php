@@ -2,6 +2,7 @@
 
 namespace App\Entity\Attribute;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\Attribute\StyleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity('name')]
 #[ORM\Entity(repositoryClass: StyleRepository::class)]
 #[ORM\Table(name: 'attribute_style')]
+#[ApiResource(collectionOperations: ['get' => ["pagination_items_per_page" => 100]], itemOperations: ['get'])]
 class Style
 {
     #[ORM\Id]
