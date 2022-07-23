@@ -53,16 +53,20 @@
                     multiple></v-select>
 
           <span class="is-block mt-3">Localisation</span>
-          <gmap-autocomplete @place_changed="changePlace"
-                             class="input ">
+          <gmap-autocomplete  @place_changed="changePlace">
+            <template v-slot:default="slotProps">
+             <b-input
+                      placeholder="Indiquez un lieu"
+                      ref="input"
+                      v-on:listeners="slotProps.listeners"
+                      v-on:attrs="slotProps.attrs"
+             />
+            </template>
           </gmap-autocomplete>
 
-          <b-button type="is-info" class="mt-5 is-fullwidth" :disabled="!canSearch"
-                    :loading="isSearching"
-                    @click="send">
-            <i class="fas fa-search"></i>
-            Rechercher
-          </b-button>
+          <b-button type="is-info" class="mt-5 is-fullwidth" :disabled="!canSearch" icon-left="search"
+                    :loading="isSearching" label="Rechercher"
+                    @click="send" />
         </div>
       </div>
       <div class="column mt-3 mt-lg-0 is-7 is-12-mobile">

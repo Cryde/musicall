@@ -1,11 +1,11 @@
 {
     "devDependencies": {
-        "@symfony/webpack-encore": "^1.5.0",
+        "@symfony/webpack-encore": "^3.0.0",
         "core-js": "^3.16.0",
         "file-loader": "^6.2.0",
-        "node-sass": "^6.0.1",
         "regenerator-runtime": "^0.13.9",
-        "sass-loader": "^11.1.1",
+        "sass": "^1.54.0",
+        "sass-loader": "^13.0.2",
         "vue-loader": "^15.9.7",
         "vue-template-compiler": "^2.6.14",
         "webpack-notifier": "^1.13.0"
@@ -28,7 +28,7 @@
         "buefy": "^0.9.8",
         "date-fns": "^2.23.0",
         "dotenv-flow": "^3.2.0",
-        "gmap-vue": "^1.5.0",
+        "gmap-vue": "^2.0.4",
         "jwt-decode": "^3.1.2",
         "lodash": "^4.17.21",
         "tiptap": "^1.32.2",
