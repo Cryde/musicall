@@ -7,9 +7,8 @@ import VueMeta from 'vue-meta';
 import relativeDateFilter from "./filters/relative-date-filter";
 import prettyDateFilter from "./filters/pretty-date-filter";
 import VueGtag from "vue-gtag";
-import * as Sentry from "@sentry/browser";
-import { Vue as VueIntegration } from "@sentry/integrations";
-import { Integrations } from "@sentry/tracing";
+import * as Sentry from "@sentry/vue";
+import { BrowserTracing } from "@sentry/tracing";
 import * as GmapVue from 'gmap-vue';
 import Buefy from 'buefy'
 import PerfectScrollbar from 'vue2-perfect-scrollbar'
@@ -22,18 +21,17 @@ Vue.use(Buefy, {
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
-
-    integrations: [new VueIntegration({Vue, })],
-  });
-  Sentry.init({
+    Vue,
     dsn: process.env.SENTRY_DSN,
     integrations: [
-      new Integrations.BrowserTracing(),
-      new VueIntegration({Vue, attachProps: true, tracing: true,}),
+      new BrowserTracing({
+        routingInstrumentation: Sentry.vueRouterInstrumentation(router),
+        tracingOrigins: ["127.0.0.1", "www.musicall.com", /^\//],
+      }),
     ],
-
-    // We recommend adjusting this value in production, or using tracesSampler
-    // for finer control
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
     tracesSampleRate: 1.0,
   });
 }
