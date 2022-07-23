@@ -7,30 +7,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class Musician
 {
-    /**
-     * @var int
-     * @Assert\Choice(choices={
-     *     MusicianAnnounce::TYPE_MUSICIAN: MusicianAnnounce::TYPE_MUSICIAN,
-     *     MusicianAnnounce::TYPE_BAND: MusicianAnnounce::TYPE_BAND
-     *  })
-     */
-    private $type;
-    /**
-     * @var string
-     */
-    private $instrument;
+    #[Assert\Choice(choices: [MusicianAnnounce::TYPE_MUSICIAN => MusicianAnnounce::TYPE_MUSICIAN, MusicianAnnounce::TYPE_BAND => MusicianAnnounce::TYPE_BAND])]
+    private ?int $type = null;
+    private ?string $instrument = null;
     /**
      * @var string[]
      */
-    private $styles;
-    /**
-     * @var float|null
-     */
-    private $latitude;
-    /**
-     * @var float|null
-     */
-    private $longitude;
+    private ?array $styles = null;
+    private ?float $latitude = null;
+    private ?float $longitude = null;
 
     public function getType(): int
     {
@@ -66,8 +51,6 @@ class Musician
 
     /**
      * @param string[] $styles
-     *
-     * @return Musician
      */
     public function setStyles(array $styles): Musician
     {

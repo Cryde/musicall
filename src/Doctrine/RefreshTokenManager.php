@@ -10,17 +10,15 @@ use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 
 class RefreshTokenManager implements RefreshTokenManagerInterface
 {
-    protected EntityManagerInterface $objectManager;
     protected string $class;
     protected RefreshTokenRepository $repository;
 
-    public function __construct(EntityManagerInterface $om, string $class)
+    public function __construct(protected EntityManagerInterface $objectManager, string $class)
     {
-        $this->objectManager = $om;
         /** @var RefreshTokenRepository $repository */
-        $repository = $om->getRepository($class);
+        $repository = $objectManager->getRepository($class);
         $this->repository = $repository;
-        $metadata = $om->getClassMetadata($class);
+        $metadata = $objectManager->getClassMetadata($class);
         $this->class = $metadata->getName();
     }
 

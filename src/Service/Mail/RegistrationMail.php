@@ -4,15 +4,10 @@ namespace App\Service\Mail;
 
 class RegistrationMail
 {
-    const TEMPLATE_ID = 1246593;
+    final const TEMPLATE_ID = 1_246_593;
 
-    private Mailer $mailer;
-    private ArrayMailBuilder $arrayMailBuilder;
-
-    public function __construct(Mailer $mailer, ArrayMailBuilder $arrayMailBuilder)
+    public function __construct(private readonly Mailer $mailer, private readonly ArrayMailBuilder $arrayMailBuilder)
     {
-        $this->mailer = $mailer;
-        $this->arrayMailBuilder = $arrayMailBuilder;
     }
 
     public function send(string $recipientEmail, string $username, string $confirmEmail)

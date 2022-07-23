@@ -14,32 +14,23 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AdminGalleryController extends AbstractController
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
-    /**
-     * @Route("/api/admin/gallery/pending", name="api_admin_gallery_pending_list", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/gallery/pending', name: 'api_admin_gallery_pending_list', options: ['expose' => true], methods: ['GET'])]
     public function listPending(GalleryRepository $galleryRepository): JsonResponse
     {
         $pendingGalleries = $galleryRepository->findBy(['status' => Gallery::STATUS_PENDING]);
 
         return $this->json($pendingGalleries, Response::HTTP_OK, [], [
-            'attributes' => ['id', 'title', 'slug', 'author' => ['username']]
+            'attributes' => ['id', 'title', 'slug', 'author' => ['username']],
         ]);
     }
 
-    /**
-     * @Route("/api/admin/gallery/{id}/approve", name="api_admin_gallery_approve", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/gallery/{id}/approve', name: 'api_admin_gallery_approve', options: ['expose' => true], methods: ['GET'])]
     public function approve(Gallery $gallery, GallerySlug $gallerySlug): JsonResponse
     {
         $gallery->setPublicationDatetime(new \DateTime());
@@ -50,11 +41,8 @@ class AdminGalleryController extends AbstractController
         return $this->json([]);
     }
 
-    /**
-     * @Route("/api/admin/gallery/{id}/reject", name="api_admin_gallery_reject", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/gallery/{id}/reject', name: 'api_admin_gallery_reject', options: ['expose' => true], methods: ['GET'])]
     public function reject(Gallery $gallery): JsonResponse
     {
         $gallery->setStatus(Gallery::STATUS_DRAFT);

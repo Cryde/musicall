@@ -4,6 +4,6 @@ namespace App\Service;
 
 class DatetimeHelper
 {
-    const FORMAT_DATETIME = 'd/m/Y H:i';
-    const FORMAT_ISO_8601 = 'c';
+    final const FORMAT_DATETIME = 'd/m/Y H:i';
+    final const FORMAT_ISO_8601 = 'c';
 }

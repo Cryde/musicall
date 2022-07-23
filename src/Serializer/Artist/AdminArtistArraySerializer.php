@@ -9,18 +9,11 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class AdminArtistArraySerializer
 {
-    private AdminArtistSocialSerializer $adminArtistSocialSerializer;
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-
     public function __construct(
-        AdminArtistSocialSerializer $adminArtistSocialSerializer,
-        UploaderHelper $uploaderHelper,
-        CacheManager $cacheManager
+        private readonly AdminArtistSocialSerializer $adminArtistSocialSerializer,
+        private readonly UploaderHelper              $uploaderHelper,
+        private readonly CacheManager                $cacheManager
     ) {
-        $this->adminArtistSocialSerializer = $adminArtistSocialSerializer;
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
     }
 
     /**

@@ -7,14 +7,11 @@ use Mailjet\Resources;
 
 class Mailer
 {
-    private Client $client;
-
-    public function __construct(Client $client)
+    public function __construct(private readonly Client $client)
     {
-        $this->client = $client;
     }
 
-    public function send(array $body)
+    public function send(array $body): void
     {
         $this->client->post(Resources::$Email, ['body' => $body]);
     }

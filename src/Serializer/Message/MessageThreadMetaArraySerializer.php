@@ -6,15 +6,10 @@ use App\Entity\Message\MessageThreadMeta;
 
 class MessageThreadMetaArraySerializer
 {
-    private MessageThreadArraySerializer $messageThreadArraySerializer;
-    private MessageParticipantArraySerializer $messageParticipantArraySerializer;
-
     public function __construct(
-        MessageThreadArraySerializer $messageThreadArraySerializer,
-        MessageParticipantArraySerializer $messageParticipantArraySerializer
+        private readonly MessageThreadArraySerializer      $messageThreadArraySerializer,
+        private readonly MessageParticipantArraySerializer $messageParticipantArraySerializer
     ) {
-        $this->messageThreadArraySerializer = $messageThreadArraySerializer;
-        $this->messageParticipantArraySerializer = $messageParticipantArraySerializer;
     }
 
     /**

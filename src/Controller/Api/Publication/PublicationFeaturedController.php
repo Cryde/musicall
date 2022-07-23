@@ -11,13 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationFeaturedController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/publication/featured",
-     *     name="api_publication_featured_list",
-     *     options={"expose": true}
-     * )
-     */
+    #[Route(path: '/api/publication/featured', name: 'api_publication_featured_list', options: ['expose' => true])]
     public function list(
         PublicationFeaturedRepository $publicationFeaturedRepository,
         PublicationFeaturedSerializer $publicationFeaturedSerializer

@@ -8,12 +8,10 @@ use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter
 
 class SortAndFilterFromArray
 {
-    const ITEM_PER_PAGE = 15;
-    private PublicationSubCategoryRepository $publicationSubCategoryRepository;
+    final const ITEM_PER_PAGE = 15;
 
-    public function __construct(PublicationSubCategoryRepository $publicationSubCategoryRepository)
+    public function __construct(private readonly PublicationSubCategoryRepository $publicationSubCategoryRepository)
     {
-        $this->publicationSubCategoryRepository = $publicationSubCategoryRepository;
     }
 
     public function createFromArray(array $data): array

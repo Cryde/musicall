@@ -15,9 +15,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: MusicianAnnounceRepository::class)]
 class MusicianAnnounce
 {
-    const TYPE_MUSICIAN = 1;
-    const TYPE_BAND = 2;
-    const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
+    final const TYPE_MUSICIAN = 1;
+    final const TYPE_BAND = 2;
+    final const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
 
     #[ORM\Id]
     #[ORM\Column(name: 'id', type: Types::GUID)]

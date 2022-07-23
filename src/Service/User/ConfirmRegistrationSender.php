@@ -9,16 +9,11 @@ use Symfony\Component\Routing\RouterInterface;
 
 class ConfirmRegistrationSender
 {
-    private RouterInterface $router;
-    private RegistrationMail $registrationMail;
-
-    public function __construct(RouterInterface $router, RegistrationMail $registrationMail)
+    public function __construct(private readonly RouterInterface $router, private readonly RegistrationMail $registrationMail)
     {
-        $this->router = $router;
-        $this->registrationMail = $registrationMail;
     }
 
-    public function sendConfirmationEmail(User $user)
+    public function sendConfirmationEmail(User $user): void
     {
         $route = $this->router->generate('app_register_confirm', ['token' => $user->getToken()], UrlGeneratorInterface::ABSOLUTE_URL);
         $this->registrationMail->send($user->getEmail(), $user->getUsername(), $route);

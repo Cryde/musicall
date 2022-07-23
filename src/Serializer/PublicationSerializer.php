@@ -10,19 +10,11 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class PublicationSerializer
 {
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-    private SubCategoryArraySerializer $subCategoryArraySerializer;
-
     public function __construct(
-        UploaderHelper $uploaderHelper,
-        CacheManager $cacheManager,
-        SubCategoryArraySerializer $subCategoryArraySerializer
-    )
-    {
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
-        $this->subCategoryArraySerializer = $subCategoryArraySerializer;
+        private readonly UploaderHelper             $uploaderHelper,
+        private readonly CacheManager               $cacheManager,
+        private readonly SubCategoryArraySerializer $subCategoryArraySerializer
+    ) {
     }
 
     /**
@@ -56,7 +48,7 @@ class PublicationSerializer
             'description'          => $description,
             'publication_datetime' => $publication->getPublicationDatetime(),
             'cover_image'          => $cover,
-            'author_username'      => $publication->getAuthor()->getUsername(),
+            'author_username'      => $publication->getAuthor()->getUserIdentifier(),
             'comments_number'      => $publication->getThread()->getCommentNumber(),
         ];
     }

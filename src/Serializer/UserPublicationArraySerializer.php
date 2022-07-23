@@ -9,19 +9,12 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class UserPublicationArraySerializer
 {
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-
-    public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
+    public function __construct(private readonly UploaderHelper $uploaderHelper, private readonly CacheManager $cacheManager)
     {
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
     }
 
     /**
      * @param array|Publication[] $publications
-     *
-     * @return array
      */
     public function listToArray(array $publications): array
     {
@@ -33,12 +26,6 @@ class UserPublicationArraySerializer
         return $data;
     }
 
-    /**
-     * @param Publication $publication
-     * @param bool        $withContent
-     *
-     * @return array
-     */
     public function toArray(Publication $publication, bool $withContent = false): array
     {
         $cover = '';

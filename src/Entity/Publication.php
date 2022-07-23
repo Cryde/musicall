@@ -18,18 +18,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
 class Publication implements ViewableInterface
 {
-    const TYPE_TEXT = 1;
-    const TYPE_VIDEO = 2;
-    const TYPE_VIDEO_LABEL = 'video';
-    const TYPE_TEXT_LABEL = 'text';
+    final const TYPE_TEXT = 1;
+    final const TYPE_VIDEO = 2;
+    final const TYPE_VIDEO_LABEL = 'video';
+    final const TYPE_TEXT_LABEL = 'text';
 
-    const STATUS_DRAFT = 0;
-    const STATUS_ONLINE = 1;
-    const STATUS_PENDING = 2;
+    final const STATUS_DRAFT = 0;
+    final const STATUS_ONLINE = 1;
+    final const STATUS_PENDING = 2;
 
-    const ALL_STATUS = [self::STATUS_ONLINE, self::STATUS_DRAFT, self::STATUS_PENDING];
+    final const ALL_STATUS = [self::STATUS_ONLINE, self::STATUS_DRAFT, self::STATUS_PENDING];
 
-    const STATUS_LABEL = [
+    final const STATUS_LABEL = [
         self::STATUS_DRAFT => 'Brouillon',
         self::STATUS_ONLINE => 'Publié',
         self::STATUS_PENDING => 'En validation',
@@ -56,11 +56,11 @@ class Publication implements ViewableInterface
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
-    #[Assert\NotBlank(groups: ['publication'], message: 'La description de la publication ne doit pas être vide')]
+    #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $shortDescription;
 
-    #[Assert\NotBlank(groups: ['publication'], message: 'Il doit y avoir du contenu dans la publication')]
+    #[Assert\NotBlank(message: 'Il doit y avoir du contenu dans la publication', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $content;
 
@@ -70,18 +70,18 @@ class Publication implements ViewableInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $editionDatetime;
 
-    #[Assert\Type(type: 'DateTime', groups: ['publication'])]
+    #[Assert\Type(type: \DateTime::class, groups: ['publication'])]
     #[Assert\NotBlank(groups: ['publication'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $publicationDatetime;
 
     #[ORM\Column(type: Types::SMALLINT)]
-    private $status;
+    private int $status = self::STATUS_DRAFT;
 
-    #[ORM\OneToMany(targetEntity: PublicationImage::class, mappedBy: "publication")]
+    #[ORM\OneToMany(mappedBy: "publication", targetEntity: PublicationImage::class)]
     private $images;
 
-    #[Assert\NotNull(groups: ['publication'], message: 'Vous devez ajouter une image de cover')]
+    #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]
     #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $cover;
 
@@ -100,7 +100,6 @@ class Publication implements ViewableInterface
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
-        $this->status = self::STATUS_DRAFT;
         $this->images = new ArrayCollection();
     }
 

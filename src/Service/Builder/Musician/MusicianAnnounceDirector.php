@@ -8,13 +8,8 @@ use App\Repository\Attribute\StyleRepository;
 
 class MusicianAnnounceDirector
 {
-    private InstrumentRepository $instrumentRepository;
-    private StyleRepository $styleRepository;
-
-    public function __construct(InstrumentRepository $instrumentRepository, StyleRepository $styleRepository)
+    public function __construct(private readonly InstrumentRepository $instrumentRepository, private readonly StyleRepository $styleRepository)
     {
-        $this->instrumentRepository = $instrumentRepository;
-        $this->styleRepository = $styleRepository;
     }
 
     public function createFromArray(array $data): MusicianAnnounce

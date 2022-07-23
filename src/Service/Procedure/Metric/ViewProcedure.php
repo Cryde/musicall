@@ -13,26 +13,15 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ViewProcedure
 {
-    const DATE_VALIDITY_PERIOD = '24 hour ago';
-
-    private ViewCacheDirector $viewCacheDirector;
-    private EntityManagerInterface $entityManager;
-    private ViewRepository $viewRepository;
-    private RequestIdentifier $requestIdentifier;
-    private ViewDirector $viewDirector;
+    final const DATE_VALIDITY_PERIOD = '24 hour ago';
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ViewCacheDirector $viewCacheDirector,
-        ViewRepository $viewRepository,
-        RequestIdentifier $requestIdentifier,
-        ViewDirector $viewDirector
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ViewCacheDirector      $viewCacheDirector,
+        private readonly ViewRepository         $viewRepository,
+        private readonly RequestIdentifier      $requestIdentifier,
+        private readonly ViewDirector           $viewDirector
     ) {
-        $this->viewCacheDirector = $viewCacheDirector;
-        $this->entityManager = $entityManager;
-        $this->viewRepository = $viewRepository;
-        $this->requestIdentifier = $requestIdentifier;
-        $this->viewDirector = $viewDirector;
     }
 
     public function process(ViewableInterface $viewable, Request $request, ?User $user = null)

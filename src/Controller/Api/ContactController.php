@@ -14,24 +14,19 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ContactController extends AbstractController
 {
-    /**
-     * @Route("/api/contact", name="api_contact", methods={"POST"}, options={"expose": true})
-     */
+    #[Route(path: '/api/contact', name: 'api_contact', options: ['expose' => true], methods: ['POST'])]
     public function send(
-        Request $request,
+        Request             $request,
         SerializerInterface $serializer,
-        ValidatorInterface $validator,
-        ContactMail $contactMail
+        ValidatorInterface  $validator,
+        ContactMail         $contactMail
     ): JsonResponse {
         /** @var ContactModel $contact */
         $contact = $serializer->deserialize($request->getContent(), ContactModel::class, 'json');
-
         $errors = $validator->validate($contact);
-
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-
         $contactMail->send($contact->getName(), $contact->getEmail(), $contact->getMessage());
 
         return $this->json([]);

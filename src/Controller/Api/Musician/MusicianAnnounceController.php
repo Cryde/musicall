@@ -16,33 +16,22 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class MusicianAnnounceController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/musician/announce/add",
-     *     name="api_musician_announce_add",
-     *     methods={"POST"},
-     *     options={"expose": true}
-     * )
-     *
-     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     */
+    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
+    #[Route(path: '/api/musician/announce/add', name: 'api_musician_announce_add', options: ['expose' => true], methods: ['POST'])]
     public function add(
-        Request $request,
-        Jsonizer $jsonizer,
+        Request                  $request,
+        Jsonizer                 $jsonizer,
         MusicianAnnounceDirector $musicianAnnounceDirector,
-        ValidatorInterface $validator,
-        EntityManagerInterface $entityManager,
-        #[CurrentUser] $user
+        ValidatorInterface       $validator,
+        EntityManagerInterface   $entityManager,
+        #[CurrentUser]           $user
     ): JsonResponse {
         $announce = $musicianAnnounceDirector->createFromArray($jsonizer->decodeRequest($request));
         $announce->setAuthor($user);
-
         $errors = $validator->validate($announce);
-
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-
         $entityManager->persist($announce);
         $entityManager->flush();
 

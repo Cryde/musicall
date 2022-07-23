@@ -17,12 +17,12 @@ class CommentThread
     private $id;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private int $commentNumber;
+    private int $commentNumber = 0;
 
     #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $isActive;
+    private bool $isActive = true;
 
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "thread")]
+    #[ORM\OneToMany(mappedBy: "thread", targetEntity: Comment::class)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     private $comments;
 
@@ -32,8 +32,6 @@ class CommentThread
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
-        $this->commentNumber = 0;
-        $this->isActive = true;
         $this->comments = new ArrayCollection();
     }
 

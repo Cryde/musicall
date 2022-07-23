@@ -14,18 +14,14 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class NotificationController extends AbstractController
 {
-    /**
-     * @Route("/api/users/notifications", name="api_user_notifications", methods={"GET"}, options={"expose": true})
-     *
-     * @IsGranted("IS_AUTHENTICATED_REMEMBERED")
-     */
+    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
+    #[Route(path: '/api/users/notifications', name: 'api_user_notifications', options: ['expose' => true], methods: ['GET'])]
     public function notifications(
         MessageThreadMetaRepository $messageThreadMetaRepository,
-        GalleryRepository $galleryRepository,
-        PublicationRepository $publicationRepository
+        GalleryRepository           $galleryRepository,
+        PublicationRepository       $publicationRepository
     ): JsonResponse {
         $unreadMessagesCount = $messageThreadMetaRepository->count(['user' => $this->getUser(), 'isRead' => 0]);
-
         if ($this->isGranted('ROLE_ADMIN')) {
             $pendingGalleriesCount = $galleryRepository->count(['status' => Gallery::STATUS_PENDING]);
             $pendingPublicationCount = $publicationRepository->count(['status' => Publication::STATUS_PENDING]);
@@ -41,8 +37,10 @@ class NotificationController extends AbstractController
             ]);
         }
 
-        return $this->json(['data' => [
-            'messages' => $unreadMessagesCount
-        ]]);
+        return $this->json([
+            'data' => [
+                'messages' => $unreadMessagesCount,
+            ],
+        ]);
     }
 }

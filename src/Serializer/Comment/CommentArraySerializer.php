@@ -9,13 +9,8 @@ use HtmlSanitizer\SanitizerInterface;
 
 class CommentArraySerializer
 {
-    private UserArraySerializer $userArraySerializer;
-    private SanitizerInterface $sanitizer;
-
-    public function __construct(UserArraySerializer $userArraySerializer, SanitizerInterface $onlyBr)
+    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly SanitizerInterface $sanitizer)
     {
-        $this->userArraySerializer = $userArraySerializer;
-        $this->sanitizer = $onlyBr;
     }
 
     /**

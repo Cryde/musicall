@@ -15,9 +15,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: GalleryRepository::class)]
 class Gallery implements ViewableInterface
 {
-    const STATUS_ONLINE = 0;
-    const STATUS_DRAFT = 1;
-    const STATUS_PENDING = 2;
+    final const STATUS_ONLINE = 0;
+    final const STATUS_DRAFT = 1;
+    final const STATUS_PENDING = 2;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -43,14 +43,14 @@ class Gallery implements ViewableInterface
     private $publicationDatetime;
 
     #[ORM\Column(type: Types::SMALLINT)]
-    private $status;
+    private int $status = self::STATUS_DRAFT;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $author;
 
-    #[ORM\OneToMany(targetEntity: GalleryImage::class, mappedBy: 'gallery')]
+    #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryImage::class)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     private $images;
 
@@ -67,7 +67,6 @@ class Gallery implements ViewableInterface
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
-        $this->status = self::STATUS_DRAFT;
         $this->images = new ArrayCollection();
     }
 

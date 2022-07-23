@@ -13,22 +13,14 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SearchController extends AbstractController
 {
-    /**
-     * @Route(
-     *     "/api/admin/search/publication",
-     *     name="api_admin_search_publication",
-     *     options={"expose": true}
-     * )
-     *
-     * @IsGranted("ROLE_ADMIN")
-     */
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route(path: '/api/admin/search/publication', name: 'api_admin_search_publication', options: ['expose' => true])]
     public function publication(
-        Request $request,
-        PublicationRepository $publicationRepository,
+        Request                    $request,
+        PublicationRepository      $publicationRepository,
         SmallPublicationSerializer $smallPublicationSerializer
     ): JsonResponse {
         $query = $request->get('query', '');
-
         $publications = $publicationRepository->findByTitleAndStatusAndType(
             $query,
             Publication::STATUS_ONLINE,

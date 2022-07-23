@@ -6,11 +6,8 @@ use HtmlSanitizer\SanitizerInterface;
 
 class ArtistTextFormatter
 {
-    private SanitizerInterface $sanitizer;
-
-    public function __construct(SanitizerInterface $onlyBr)
+    public function __construct(private readonly SanitizerInterface $sanitizer)
     {
-        $this->sanitizer = $onlyBr;
     }
 
     public function formatNewLine(string $str): string

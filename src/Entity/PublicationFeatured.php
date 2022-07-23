@@ -11,15 +11,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PublicationFeaturedRepository::class)]
 class PublicationFeatured
 {
-    const STATUS_DRAFT = 0;
-    const STATUS_ONLINE = 1;
+    final const STATUS_DRAFT = 0;
+    final const STATUS_ONLINE = 1;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     private $id;
 
-    #[Assert\NotBlank(groups: ['add', 'edit', 'publish'], message: 'Vous devez fournir un titre')]
+    #[Assert\NotBlank(message: 'Vous devez fournir un titre', groups: ['add', 'edit', 'publish'])]
     #[ORM\Column(type: Types::STRING, length: 255)]
     private $title;
 
@@ -34,7 +34,7 @@ class PublicationFeatured
     private $level;
 
     #[ORM\Column(type: Types::SMALLINT)]
-    private $status;
+    private int $status = self::STATUS_DRAFT;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $publicationDatetime;
@@ -43,18 +43,16 @@ class PublicationFeatured
     #[ORM\JoinColumn(nullable: false)]
     private $publication;
 
-    #[Assert\NotNull(groups: ['publish'], message: 'Vous devez spécifier une image de cover')]
+    #[Assert\NotNull(message: 'Vous devez spécifier une image de cover', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: PublicationFeaturedImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $cover;
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
-    private ?array $options = [];
+    private ?array $options = ['color' => 'dark'];
 
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
-        $this->status = self::STATUS_DRAFT;
-        $this->options = ['color' => 'dark'];
     }
 
     public function getId(): ?int

@@ -18,15 +18,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PublicationController extends AbstractController
 {
-    const LIMIT_PUBLICATION_BY_PAGE = 16;
+    final const LIMIT_PUBLICATION_BY_PAGE = 16;
 
     #[Route("/api/publications/{slug}", name: "api_publications_show", options: ['expose' => true], priority: 2)]
     public function show(
-        Request $request,
-        Publication $publication,
-        SanitizerInterface $publicationsSanitizer,
+        Request                    $request,
+        Publication                $publication,
+        SanitizerInterface         $publicationsSanitizer,
         SubCategoryArraySerializer $categoryArraySerializer,
-        ViewProcedure $viewProcedure
+        ViewProcedure              $viewProcedure
     ): JsonResponse {
         if ($publication->getStatus() === Publication::STATUS_ONLINE) {
             $viewProcedure->process($publication, $request, $this->getUser());
@@ -34,7 +34,7 @@ class PublicationController extends AbstractController
 
         return $this->json([
             'author'               => [
-                'username' => $publication->getAuthor()->getUsername(),
+                'username' => $publication->getAuthor()->getUserIdentifier(),
             ],
             'title'                => $publication->getTitle(),
             'description'          => $publication->getShortDescription(),
@@ -48,10 +48,10 @@ class PublicationController extends AbstractController
 
     #[Route("api/publications", name: "api_publications_list", options: ["expose" => true])]
     public function list(
-        Request $request,
-        PublicationRepository $publicationRepository,
+        Request                          $request,
+        PublicationRepository            $publicationRepository,
         PublicationSubCategoryRepository $publicationSubCategoryRepository,
-        PublicationSerializer $publicationSerializer
+        PublicationSerializer            $publicationSerializer
     ): JsonResponse {
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;
@@ -76,19 +76,14 @@ class PublicationController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/api/publications/category/{slug}",
-     *     name="api_publications_list_by_category",
-     *     options={"expose":true},
-     *     priority=1
-     * )
      * @throws NonUniqueResultException
      */
+    #[Route(path: '/api/publications/category/{slug}', name: 'api_publications_list_by_category', options: ['expose' => true], priority: 1)]
     public function listByCategory(
-        Request $request,
+        Request                $request,
         PublicationSubCategory $publicationSubCategory,
-        PublicationRepository $publicationRepository,
-        PublicationSerializer $publicationSerializer
+        PublicationRepository  $publicationRepository,
+        PublicationSerializer  $publicationSerializer
     ): JsonResponse {
         $offset = $request->get('offset', 0);
         $calculatedOffset = $offset ? $offset * self::LIMIT_PUBLICATION_BY_PAGE : 0;

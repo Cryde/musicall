@@ -22,10 +22,6 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Musician  $musician
-     * @param User|null $currentUser
-     * @param int       $limit
-     *
      * @return int|mixed|string
      */
     public function findByCriteria(Musician $musician, ?User $currentUser, int $limit = 10)

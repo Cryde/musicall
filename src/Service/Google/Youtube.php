@@ -5,13 +5,11 @@ use App\Service\Google\Exception\YoutubeVideoNotFoundException;
 
 class Youtube
 {
-    private \Google_Service_YouTube $youtube;
-    private YoutubeUrlHelper $youtubeUrlHelper;
+    private readonly \Google_Service_YouTube $youtube;
 
-    public function __construct(GoogleApi $googleApi, YoutubeUrlHelper $youtubeUrlHelper)
+    public function __construct(GoogleApi $googleApi, private readonly YoutubeUrlHelper $youtubeUrlHelper)
     {
         $this->youtube = $googleApi->getYoutube();
-        $this->youtubeUrlHelper = $youtubeUrlHelper;
     }
 
     /**

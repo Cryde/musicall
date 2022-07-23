@@ -11,21 +11,15 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 class UserGalleryNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
-    public const CONTEXT_USER_GALLERY = 'user_gallery';
+    final public const CONTEXT_USER_GALLERY = 'user_gallery';
 
-    private $normalizer;
-    /**
-     * @var GalleryImageSerializer
-     */
-    private GalleryImageSerializer $userGalleryImageSerializer;
-
-    public function __construct(ObjectNormalizer $normalizer, GalleryImageSerializer $userGalleryImageSerializer)
-    {
-        $this->normalizer = $normalizer;
-        $this->userGalleryImageSerializer = $userGalleryImageSerializer;
+    public function __construct(
+        private readonly ObjectNormalizer       $normalizer,
+        private readonly GalleryImageSerializer $userGalleryImageSerializer
+    ) {
     }
 
-    public function normalize($object, string $format = null, array $context = array()): array
+    public function normalize($object, string $format = null, array $context = []): array
     {
         $data = $this->normalizer->normalize($object, $format, [
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['author', 'images', 'coverImage']
@@ -39,7 +33,7 @@ class UserGalleryNormalizer implements NormalizerInterface, CacheableSupportsMet
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
-        $isContext = isset($context[self::CONTEXT_USER_GALLERY]) ? $context[self::CONTEXT_USER_GALLERY] : false;
+        $isContext = $context[self::CONTEXT_USER_GALLERY] ?? false;
         return $data instanceof Gallery && $isContext;
     }
 

@@ -7,11 +7,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class SmallPublicationSerializer
 {
-    private UploaderHelper $uploaderHelper;
-
-    public function __construct(UploaderHelper $uploaderHelper)
+    public function __construct(private readonly UploaderHelper $uploaderHelper)
     {
-        $this->uploaderHelper = $uploaderHelper;
     }
 
     /**

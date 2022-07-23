@@ -52,8 +52,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * @param string $username
-     * @param int    $limit
      *
      * @return int|mixed|string
      */

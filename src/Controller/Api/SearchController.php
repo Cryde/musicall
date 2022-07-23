@@ -17,41 +17,30 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class SearchController extends AbstractController
 {
-    /**
-     * @Route("/api/search", name="api_search", options={"expose" = true})
-     */
+    #[Route(path: '/api/search', name: 'api_search', options: ['expose' => true])]
     public function search(
         Request               $request,
         PublicationRepository $publicationRepository,
         PublicationSerializer $publicationSerializer
     ): JsonResponse {
         $term = $request->get('term', '');
-        if (strlen($term) < 3) {
+        if (strlen((string)$term) < 3) {
             return $this->json([], Response::HTTP_NO_CONTENT);
         }
-
         $publications = $publicationRepository->getBySearchTerm($term);
 
         return $this->json($publicationSerializer->listToArray($publications));
     }
 
-    /**
-     * @Route(
-     *     "/api/search/musician",
-     *     name="api_search_musician",
-     *     methods={"POST"},
-     *     options={"expose" = true}
-     * )
-     */
+    #[Route(path: '/api/search/musician', name: 'api_search_musician', options: ['expose' => true], methods: ['POST'])]
     public function searchMusician(
-        Request $request,
-        SerializerInterface $serializer,
-        MusicianAnnounceRepository $musicianAnnounceRepository,
+        Request                       $request,
+        SerializerInterface           $serializer,
+        MusicianAnnounceRepository    $musicianAnnounceRepository,
         MusicianSearchArraySerializer $musicianSearchArraySerializer
     ): JsonResponse {
         /** @var Musician $musicianModel */
         $musicianModel = $serializer->deserialize($request->getContent(), Musician::class, 'json');
-
         /** @var User|null $user */
         $user = $this->getUser();
         $results = $musicianAnnounceRepository->findByCriteria($musicianModel, $user);

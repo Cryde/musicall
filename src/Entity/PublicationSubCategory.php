@@ -11,8 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PublicationSubCategoryRepository::class)]
 class PublicationSubCategory
 {
-    const TYPE_PUBLICATION = 1;
-    const TYPE_COURSE = 2;
+    final const TYPE_PUBLICATION = 1;
+    final const TYPE_COURSE = 2;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -25,7 +25,7 @@ class PublicationSubCategory
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
-    #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: "subCategory", orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: "subCategory", targetEntity: Publication::class, orphanRemoval: true)]
     private $publications;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]

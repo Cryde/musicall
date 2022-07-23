@@ -38,12 +38,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $plainPassword;
 
     #[ORM\Column(type: Types::JSON)]
-    private $roles = [];
+    private array $roles = [];
 
     #[ORM\Column(type: Types::STRING)]
     private $password;
 
-    #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: "author", orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: "author", targetEntity: Publication::class, orphanRemoval: true)]
     private $publications;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

@@ -10,21 +10,14 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class PublicationFeaturedSerializer
 {
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-
-    public function __construct(UploaderHelper $uploaderHelper, CacheManager $cacheManager)
+    public function __construct(private readonly UploaderHelper $uploaderHelper, private readonly CacheManager $cacheManager)
     {
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
     }
 
     /**
      * @param Collection|PublicationFeatured[] $publicationFeatured
-     *
-     * @return array
      */
-    public function toList($publicationFeatured): array
+    public function toList(\Doctrine\Common\Collections\Collection|array $publicationFeatured): array
     {
         $list = [];
         foreach ($publicationFeatured as $featured) {

@@ -11,18 +11,11 @@ use App\Service\Publication\PublicationSlug;
 
 class PublicationDirector
 {
-    private YoutubeUrlHelper $youtubeUrlHelper;
-    private PublicationSubCategoryRepository $publicationSubCategoryRepository;
-    private PublicationSlug $publicationSlug;
-
     public function __construct(
-        YoutubeUrlHelper $youtubeUrlHelper,
-        PublicationSubCategoryRepository $publicationSubCategoryRepository,
-        PublicationSlug $publicationSlug
+        private readonly YoutubeUrlHelper                 $youtubeUrlHelper,
+        private readonly PublicationSubCategoryRepository $publicationSubCategoryRepository,
+        private readonly PublicationSlug                  $publicationSlug
     ) {
-        $this->youtubeUrlHelper = $youtubeUrlHelper;
-        $this->publicationSubCategoryRepository = $publicationSubCategoryRepository;
-        $this->publicationSlug = $publicationSlug;
     }
 
     public function buildVideo(array $data, User $user): Publication

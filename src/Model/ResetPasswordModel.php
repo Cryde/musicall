@@ -6,10 +6,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class ResetPasswordModel
 {
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Length(min="6", minMessage="Minimum 6 caractères")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 6, minMessage: 'Minimum 6 caractères')]
     public string $password;
 
     public function getPassword(): string

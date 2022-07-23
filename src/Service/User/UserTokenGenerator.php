@@ -7,14 +7,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class UserTokenGenerator
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
-    public function generate(User $user)
+    public function generate(User $user): void
     {
         $user->setToken(sha1(random_bytes(10)));
         $this->entityManager->flush();

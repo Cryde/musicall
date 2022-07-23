@@ -10,21 +10,12 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class ArtistArraySerializer
 {
-    private UploaderHelper $uploaderHelper;
-    private CacheManager $cacheManager;
-    private ArtistSocialSerializer $artistSocialSerializer;
-    private ArtistTextFormatter $artistTextFormatter;
-
     public function __construct(
-        ArtistSocialSerializer $artistSocialSerializer,
-        UploaderHelper $uploaderHelper,
-        CacheManager $cacheManager,
-        ArtistTextFormatter $artistTextFormatter
+        private readonly ArtistSocialSerializer $artistSocialSerializer,
+        private readonly UploaderHelper         $uploaderHelper,
+        private readonly CacheManager           $cacheManager,
+        private readonly ArtistTextFormatter    $artistTextFormatter
     ) {
-        $this->uploaderHelper = $uploaderHelper;
-        $this->cacheManager = $cacheManager;
-        $this->artistSocialSerializer = $artistSocialSerializer;
-        $this->artistTextFormatter = $artistTextFormatter;
     }
 
     /**
