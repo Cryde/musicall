@@ -9,7 +9,7 @@ import prettyDateFilter from "./filters/pretty-date-filter";
 import VueGtag from "vue-gtag";
 import * as Sentry from "@sentry/vue";
 import { BrowserTracing } from "@sentry/tracing";
-import * as GmapVue from 'gmap-vue';
+import GmapVue from 'gmap-vue';
 import Buefy from 'buefy'
 import PerfectScrollbar from 'vue2-perfect-scrollbar'
 import VueProgressBar from 'vue-progressbar'

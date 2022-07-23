@@ -16,7 +16,7 @@ Encore
 
         for (let key of Object.keys(loadedConfig.parsed)) {
             if (ENV_ALLOWED_LIST.indexOf(key) !== -1) {
-                options['process.env'][key] = JSON.stringify(process.env[key]);
+                options[`process.env.${key}`] = JSON.stringify(process.env[key]);
             }
         }
     })
