@@ -1,4 +1,18 @@
 {
+    "api-platform/core": {
+        "version": "2.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.5",
+            "ref": "05b57782a78c21a664a42055dc11cf1954ca36bb"
+        },
+        "files": [
+            "config/packages/api_platform.yaml",
+            "config/routes/api_platform.yaml",
+            "src/Entity/.gitignore"
+        ]
+    },
     "clue/stream-filter": {
         "version": "v1.4.1"
     },
@@ -83,6 +97,9 @@
     },
     "egulias/email-validator": {
         "version": "2.1.6"
+    },
+    "fig/link-util": {
+        "version": "1.2.0"
     },
     "firebase/php-jwt": {
         "version": "v5.0.0"
@@ -202,6 +219,18 @@
     "namshi/jose": {
         "version": "7.2.3"
     },
+    "nelmio/cors-bundle": {
+        "version": "2.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.5",
+            "ref": "6bea22e6c564fba3a1391615cada1437d0bde39c"
+        },
+        "files": [
+            "config/packages/nelmio_cors.yaml"
+        ]
+    },
     "nikic/php-parser": {
         "version": "v4.1.0"
     },
@@ -261,6 +290,9 @@
     },
     "phpstan/extension-installer": {
         "version": "1.0.3"
+    },
+    "phpstan/phpdoc-parser": {
+        "version": "1.5.1"
     },
     "phpstan/phpstan": {
         "version": "0.11.19"
@@ -401,6 +433,9 @@
         "files": [
             "config/packages/sentry.yaml"
         ]
+    },
+    "stella-maris/clock": {
+        "version": "0.1.4"
     },
     "symfony/asset": {
         "version": "v4.2.0"
@@ -604,9 +639,6 @@
     "symfony/polyfill-php72": {
         "version": "v1.10.0"
     },
-    "symfony/polyfill-php73": {
-        "version": "v1.11.0"
-    },
     "symfony/polyfill-php80": {
         "version": "v1.17.0"
     },
@@ -663,9 +695,6 @@
         "version": "v4.3.0"
     },
     "symfony/security-csrf": {
-        "version": "v4.3.0"
-    },
-    "symfony/security-guard": {
         "version": "v4.3.0"
     },
     "symfony/security-http": {
@@ -812,5 +841,8 @@
     },
     "willdurand/jsonp-callback-validator": {
         "version": "v1.1.0"
+    },
+    "willdurand/negotiation": {
+        "version": "3.1.0"
     }
 }
