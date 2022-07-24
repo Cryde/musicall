@@ -4,6 +4,7 @@ namespace App\Controller\Api\Comment;
 
 use App\Entity\Comment\Comment;
 use App\Entity\Comment\CommentThread;
+use App\Entity\User;
 use App\Serializer\Comment\CommentArraySerializer;
 use App\Serializer\Comment\ThreadArraySerializer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,7 +32,7 @@ class CommentController extends AbstractController
         SerializerInterface    $serializer,
         ValidatorInterface     $validator,
         CommentArraySerializer $commentArraySerializer,
-        #[CurrentUser]         $user
+        #[CurrentUser] User    $user
     ): JsonResponse {
         /** @var Comment $comment */
         $comment = $serializer->deserialize($request->getContent(), Comment::class, 'json');

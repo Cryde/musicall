@@ -9,7 +9,7 @@ class AdminArtistSocialSerializer
     /**
      * @param ArtistSocial[] $artistSocials
      */
-    public function listToArray(array $artistSocials): array
+    public function listToArray(iterable $artistSocials): array
     {
         $result = [];
         foreach ($artistSocials as $artistSocial) {
