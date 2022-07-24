@@ -4,6 +4,7 @@ namespace App\Controller\Api\Publication;
 
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
+use App\Entity\User;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\Publication\SubCategoryArraySerializer;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+/** @method User getUser() */
 class PublicationController extends AbstractController
 {
     final const LIMIT_PUBLICATION_BY_PAGE = 16;

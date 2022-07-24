@@ -6,6 +6,7 @@ use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\AST\Node;
 use Doctrine\ORM\Query\Lexer;
 use Doctrine\ORM\Query\Parser;
+use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
 
 class MatchAgainst extends FunctionNode
@@ -15,6 +16,9 @@ class MatchAgainst extends FunctionNode
     protected bool $booleanMode = false;
     protected bool $queryExpansion = false;
 
+    /**
+     * @throws QueryException
+     */
     public function parse(Parser $parser): void
     {
         // match
@@ -38,10 +42,12 @@ class MatchAgainst extends FunctionNode
         $parser->match(Lexer::T_IDENTIFIER);
         $parser->match(Lexer::T_OPEN_PARENTHESIS);
         $this->against = $parser->StringPrimary();
+        // @phpstan-ignore-next-line
         if (strtolower($lexer->lookahead['value']) === 'boolean') {
             $parser->match(Lexer::T_IDENTIFIER);
             $this->booleanMode = true;
         }
+        // @phpstan-ignore-next-line
         if (strtolower($lexer->lookahead['value']) === 'expand') {
             $parser->match(Lexer::T_IDENTIFIER);
             $this->queryExpansion = true;

@@ -127,9 +127,6 @@ class Artist
         return $this;
     }
 
-    /**
-     * @return Collection|ArtistSocial[]
-     */
     public function getSocials(): Collection
     {
         return $this->socials;
