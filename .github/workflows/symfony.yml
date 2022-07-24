@@ -1,0 +1,64 @@
+# https://help.github.com/en/actions
+# from : https://www.strangebuzz.com/en/blog/setting-a-ci-cd-workflow-for-a-symfony-project-thanks-to-the-github-actions
+name: MusicAll CI process
+on:
+    push:
+        branches:
+            - master
+jobs:
+    symfony:
+        name: Symfony 6.1 (PHP ${{ matrix.php-versions }})
+        # https://hub.docker.com/_/ubuntu/
+        runs-on: ubuntu-20.04
+        services:
+            # https://docs.docker.com/samples/library/mysql/
+            mysql:
+                image: mariadb:10.5
+                env:
+                    MYSQL_ROOT_PASSWORD: toor
+                ports:
+                    - 3306:3306
+                options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+        strategy:
+            fail-fast: true
+            matrix:
+                php-versions: ['8.1']
+        steps:
+            # —— Setup Github actions 🐙 —————————————————————————————————————————————
+            # https://github.com/actions/checkout (official)
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # https://github.com/shivammathur/setup-php (community)
+            - name: Setup PHP, extensions and composer with shivammathur/setup-php
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-versions }}
+                  extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, mysql, dom, filter, gd, iconv, json, mbstring, pdo
+              env:
+                  update: true
+
+            - name: Check PHP Version
+              run: php -v
+
+            # —— Composer 🧙‍️ —————————————————————————————————————————————————————————
+            - name: Cache Composer dependencies
+              uses: actions/cache@v2
+              with:
+                  path: /tmp/composer-cache
+                  key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+
+            - uses: php-actions/composer@v6
+
+
+            # —— Symfony 🎵 ——————————————————————————————————————————————————————————
+            - name: Check the Symfony console
+              run: |
+                  bin/console about
+            ## —— Static analysis ✨ —————————————————————————————————————————————————
+            - name: PHPStan Static Analysis
+              uses: php-actions/phpstan@v2
+              with:
+                  memory_limit: 256M
+                  php_version: ${{ matrix.php-versions }}
