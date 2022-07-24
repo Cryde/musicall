@@ -2,17 +2,28 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use App\Repository\PublicationSubCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PublicationSubCategoryRepository::class)]
+#[ApiResource(
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => PublicationSubCategory::LIST]]],
+    itemOperations: ['get']
+)]
+#[ApiFilter(OrderFilter::class, properties: ['position' => 'ASC'])]
 class PublicationSubCategory
 {
     final const TYPE_PUBLICATION = 1;
     final const TYPE_COURSE = 2;
+
+    final const LIST = 'PUBLICATION_CATEGORY_LIST';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -20,18 +31,22 @@ class PublicationSubCategory
     private $id;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups([PublicationSubCategory::LIST])]
     private $title;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[Groups([PublicationSubCategory::LIST])]
     private $slug;
 
     #[ORM\OneToMany(mappedBy: "subCategory", targetEntity: Publication::class, orphanRemoval: true)]
     private $publications;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Groups([PublicationSubCategory::LIST])]
     private $position;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups([PublicationSubCategory::LIST])]
     private $type;
 
     public function __construct()
