@@ -13,8 +13,4 @@ gesdinet_jwt_refresh_token:
 
 controllers:
     resource: ../src/Controller/
-    type: annotation
-
-kernel:
-    resource: ../src/Kernel.php
-    type: annotation
+    type: attribute
