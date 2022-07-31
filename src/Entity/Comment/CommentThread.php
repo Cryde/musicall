@@ -93,19 +93,6 @@ class CommentThread
         return $this;
     }
 
-    public function removeComment(Comment $comment): self
-    {
-        if ($this->comments->contains($comment)) {
-            $this->comments->removeElement($comment);
-            // set the owning side to null (unless already changed)
-            if ($comment->getThread() === $this) {
-                $comment->setThread(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getCreationDatetime(): ?\DateTimeInterface
     {
         return $this->creationDatetime;
