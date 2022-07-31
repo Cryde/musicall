@@ -18,7 +18,7 @@ class UserProfilePictureNormalizer implements NormalizerInterface, CacheableSupp
 
     public function normalize(mixed $object, string $format = null, array $context = [])
     {
-        /** @var UserProfilePicture $object */
+        /** @var ?UserProfilePicture $object */
         if ($object) {
             $path = $this->uploaderHelper->asset($object, 'imageFile');
 
