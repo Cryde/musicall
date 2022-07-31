@@ -3,3 +3,5 @@ fos_js_routing:
         - api_styles_(.*)
         - api_instruments_(.*)
         - api_publication_sub_categories_(.*)
+        - api_comment_threads_(.*)
+        - api_comments_(.*)

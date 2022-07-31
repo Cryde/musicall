@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Comment\Comment;
 use App\Entity\Image\UserProfilePicture;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -26,6 +28,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
+    #[Groups([Comment::ITEM, Comment::LIST])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
@@ -65,6 +68,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $resetRequestDatetime;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
+    #[Groups([Comment::ITEM, Comment::LIST])]
     private $profilePicture;
 
     public function __construct()

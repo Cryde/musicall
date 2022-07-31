@@ -4,11 +4,11 @@
   </div>
   <div v-else class="columns mt-4">
     <div class="column is-10 is-offset-1">
-      <div class="comment-count mb-3 has-text-right" v-if="thread.comment_number === 0">
+      <div class="comment-count mb-3 has-text-right" v-if="totalComments === 0">
         Il n'y a pas encore de commentaires
       </div>
-      <div class="comment-count mb-3 has-text-right" v-else-if="thread.comment_number === 1">1 commentaire</div>
-      <div class="comment-count mb-3 has-text-right" v-else>{{ thread.comment_number }} commentaires</div>
+      <div class="comment-count mb-3 has-text-right" v-else-if="totalComments === 1">1 commentaire</div>
+      <div class="comment-count mb-3 has-text-right" v-else>{{ totalComments }} commentaires</div>
 
       <comment v-for="comment in comments" :comment="comment" :key="comment.id" class="mb-5"/>
     </div>
@@ -23,7 +23,7 @@ import Spinner from "../../components/global/misc/Spinner";
 export default {
   components: {Spinner, Comment},
   computed: {
-    ...mapGetters('thread', ['comments', 'thread', 'isLoading'])
+    ...mapGetters('thread', ['comments', 'thread', 'isLoading', 'totalComments'])
   },
 }
 </script>
