@@ -37,8 +37,11 @@ export default {
     },
     userPicture() {
       if (this.user) {
-        if (this.user.picture) {
+        if (this.user.picture) { // we will have to remove this in the futur
           return this.user.picture.small;
+        }
+        if (this.user.profile_picture) {
+          return this.user.profile_picture.small;
         }
       }
       return false;

@@ -76,7 +76,7 @@ export default {
         await this.$store.dispatch('thread/postComment', {content: this.content});
         this.content = '';
       } catch (e) {
-        this.errors = e.response.data.violations.map(violation => violation.title);
+        this.errors = e.response.data.violations.map(violation => violation.message);
       }
       this.isAddingComment = false
     }

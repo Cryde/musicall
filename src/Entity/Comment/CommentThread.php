@@ -2,15 +2,25 @@
 
 namespace App\Entity\Comment;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\Comment\CommentThreadRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentThreadRepository::class)]
+#[ApiResource(
+    collectionOperations: [],
+    itemOperations: [
+        'get' => ['normalization_context' => ['groups' => [CommentThread::ITEM]]]
+    ]
+)]
 class CommentThread
 {
+    final const ITEM = 'COMMENT_THREAD_ITEM';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
@@ -20,6 +30,7 @@ class CommentThread
     private int $commentNumber = 0;
 
     #[ORM\Column(type: Types::BOOLEAN)]
+    #[Groups([CommentThread::ITEM])]
     private bool $isActive = true;
 
     #[ORM\OneToMany(mappedBy: "thread", targetEntity: Comment::class)]

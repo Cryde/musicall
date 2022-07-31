@@ -3,6 +3,7 @@ import commentApi from '../../api/comment/comment';
 const IS_LOADING = 'IS_LOADING';
 const UPDATE_THREAD_ID = 'UPDATE_THREAD_ID';
 const UPDATE_COMMENTS = 'UPDATE_COMMENTS';
+const UPDATE_TOTAL_COMMENTS = 'UPDATE_TOTAL_COMMENTS';
 const UPDATE_THREAD = 'UPDATE_THREAD';
 const ADD_COMMENT = 'ADD_COMMENT';
 
@@ -11,6 +12,7 @@ const state = {
   isLoading: true,
   thread: null,
   comments: [],
+  totalComments: 0,
 };
 
 const getters = {
@@ -22,6 +24,9 @@ const getters = {
   },
   thread(state) {
     return state.thread;
+  },
+  totalComments(state) {
+    return state.totalComments;
   }
 };
 
@@ -40,7 +45,10 @@ const mutations = {
   },
   [ADD_COMMENT](state, comment) {
     state.comments = [comment, ...state.comments];
-    state.thread.comment_number += 1;
+    state.totalComments += 1;
+  },
+  [UPDATE_TOTAL_COMMENTS](state, totalComments) {
+    state.totalComments = totalComments;
   }
 };
 
@@ -49,16 +57,20 @@ const actions = {
     commit(IS_LOADING, true);
     commit(UPDATE_THREAD_ID, threadId);
     const thread = await commentApi.getThread({threadId});
+    const commentsResponse = await commentApi.getComments({thread: threadId});
 
-    commit(UPDATE_COMMENTS, thread.comments);
-    delete thread.comments; // maybe it is not good ...
-    // but the reason is that later we will only mutate the comments array
+    commit(UPDATE_COMMENTS, commentsResponse['hydra:member']);
+    commit(UPDATE_TOTAL_COMMENTS, commentsResponse['hydra:totalItems']);
+
     commit(UPDATE_THREAD, thread);
 
     commit(IS_LOADING, false);
   },
   async postComment({commit, state}, {content}) {
-    const comment = await commentApi.postComment({threadId: state.id, content});
+    const comment = await commentApi.postComment({
+      thread: `/api/comment_threads/${state.id}`,
+      content
+    });
 
     commit(ADD_COMMENT, comment);
   }
