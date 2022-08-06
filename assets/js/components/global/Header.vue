@@ -1,18 +1,54 @@
 <template>
   <b-navbar fixed-top shadow centered spaced wrapper-class="container">
-    <template slot="brand" class="mr-3">
+    <template #brand class="mr-3">
       <b-navbar-item tag="router-link" :to="{name: 'home'}">
         <span class="nav-logo"><img :src="logoPath" alt="Logo MusicAll"/></span>
       </b-navbar-item>
     </template>
 
-    <template slot="start">
+    <template #start>
 
-      <div class="search-bar">
+      <b-navbar-item :to="{ name: 'home' }" tag="router-link" exact-active-class="is-active">
+        Home
+      </b-navbar-item>
+      <b-navbar-dropdown :to="{ name: 'publication' }" exact-active-class="is-active" tag="router-link" label="Publications" hoverable>
+
+        <b-navbar-item v-if="isLoading"><spinner size="sm"/></b-navbar-item>
+        <b-navbar-item v-else
+                       v-for="category in publicationCategories"
+                       :to="{name: 'publications_by_category', params: { slug: category.slug}}"
+                       :key="category.id" tag="router-link" exact-active-class="is-active"
+        >
+          {{ category.title }}
+        </b-navbar-item>
+      </b-navbar-dropdown>
+
+      <b-navbar-dropdown :to="{ name: 'course_index' }" tag="router-link" label="Cours" hoverable>
+
+        <b-navbar-item v-if="isLoading"><spinner size="sm"/></b-navbar-item>
+        <b-navbar-item v-else
+                       v-for="category in courseCategories"
+                       :to="{name: 'course_by_category', params: { slug: category.slug}}"
+                       :key="category.id" tag="router-link"
+        >
+          {{ category.title }}
+        </b-navbar-item>
+      </b-navbar-dropdown>
+
+      <b-navbar-item :to="{ name: 'search_index' }" tag="router-link">
+        Recherche
+      </b-navbar-item>
+
+      <b-navbar-item :to="{ name: 'forum_index' }" tag="router-link">
+        Forum
+      </b-navbar-item>
+    </template>
+
+    <template slot="end">
         <b-autocomplete
             :data="results"
             rounded
-            class="is-block ml-4 is-align-items-self-end  "
+            class=""
             clearable
             clear-on-select
             placeholder="Rechercher..."
@@ -36,20 +72,14 @@
             </div>
           </template>
         </b-autocomplete>
-      </div>
 
-    </template>
 
-    <template slot="end">
 
       <b-navbar-item tag="div" v-if="isAuthenticated">
         <div class="buttons">
           <b-button size="is-light" :to="{ name: 'admin_dashboard' }" tag="router-link"
                     v-if="isRoleAdmin"
-                    icon-left="bolt">
-            admin
-            <span class="badge is-warning" v-if="adminCount">{{ adminCount }}</span>
-          </b-button>
+                    icon-left="bolt"><span class="badge is-warning" v-if="adminCount">{{ adminCount }}</span></b-button>
 
           <b-button size="is-light" :to="{ name: 'message_list' }" tag="router-link"
                     icon-left="envelope">
@@ -95,6 +125,11 @@ export default {
     }
   },
   computed: {
+    ...mapGetters('publicationCategory', [
+      'isLoading',
+      'publicationCategories',
+      'courseCategories'
+    ]),
     ...mapGetters('security', [
       'isAuthenticated',
       'isLoading',

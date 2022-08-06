@@ -3,10 +3,7 @@
     <Header/>
     <div class="container mt-5 mb-5">
       <div class="columns">
-        <div class="column is-2">
-          <Menu/>
-        </div>
-        <div class="column is-10" v-if="isReadyWithMinimal">
+        <div class="column is-12" v-if="isReadyWithMinimal">
           <router-view></router-view>
         </div>
       </div>
