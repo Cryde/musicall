@@ -2,15 +2,28 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Entity\Image\PublicationFeaturedImage;
 use App\Repository\PublicationFeaturedRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationFeaturedRepository::class)]
+#[ApiResource(
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => PublicationFeatured::LIST]]],
+    itemOperations: ['get' => ['normalization_context' => ['groups' => PublicationFeatured::ITEM]]]
+)]
+#[ApiFilter(SearchFilter::class, properties: ['status' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationFeatured
 {
+    final const LIST = 'PUBLICATION_SUBCATEGORY_LIST';
+    final const ITEM = 'PUBLICATION_SUBCATEGORY_ITEM';
+
     final const STATUS_DRAFT = 0;
     final const STATUS_ONLINE = 1;
 
@@ -21,9 +34,11 @@ class PublicationFeatured
 
     #[Assert\NotBlank(message: 'Vous devez fournir un titre', groups: ['add', 'edit', 'publish'])]
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private $title;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private $description;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -31,6 +46,7 @@ class PublicationFeatured
 
     #[Assert\NotBlank(groups: ['add', 'edit', 'publish'])]
     #[ORM\Column(type: Types::SMALLINT)]
+    #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private $level;
 
     #[ORM\Column(type: Types::SMALLINT)]
@@ -41,13 +57,16 @@ class PublicationFeatured
 
     #[ORM\ManyToOne(targetEntity: Publication::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private $publication;
 
     #[Assert\NotNull(message: 'Vous devez spécifier une image de cover', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: PublicationFeaturedImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private $cover;
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
+    #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private ?array $options = ['color' => 'dark'];
 
     public function __construct()

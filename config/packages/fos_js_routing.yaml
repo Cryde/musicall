@@ -5,3 +5,4 @@ fos_js_routing:
         - api_publication_sub_categories_(.*)
         - api_comment_threads_(.*)
         - api_comments_(.*)
+        - api_publication_featureds_(.*)
