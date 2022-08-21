@@ -1,6 +1,6 @@
 {% set display_menu = display_menu is not defined ? true : display_menu %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="fontawesome-i2svg-pending">
 <head>
     {% set css_files_app = encore_entry_css_files('app') %}
     {% set css_files = css_files_app | merge(encore_entry_css_files('css')) %}
@@ -23,20 +23,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/bb0b374c35.js" crossorigin="anonymous"></script>
     {% for css in css_files %}
         <link rel="stylesheet" href="{{ asset(css) }}">
     {% endfor %}
 
     <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
     <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
-    {% for js in js_files %}
-        <script src="{{ asset(js) }}" defer="defer"></script>
-    {% endfor %}
+
 </head>
 <body>
 <noscript>Votre navigateur ne supporte pas le JavaScript! Activez le pour pouvoir profiter au mieux du site.</noscript>
 
 <div id="app"></div>
+
+<script defer src="https://kit.fontawesome.com/bb0b374c35.js" crossorigin="anonymous"></script>
+{% for js in js_files %}
+    <script src="{{ asset(js) }}" defer="defer"></script>
+{% endfor %}
 </body>
 </html>
