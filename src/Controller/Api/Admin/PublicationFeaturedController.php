@@ -28,15 +28,6 @@ class PublicationFeaturedController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route(path: '/api/admin/publication/featured', name: 'api_admin_publication_featured_list', options: ['expose' => true])]
-    public function list(
-        PublicationFeaturedRepository $publicationFeaturedRepository,
-        PublicationFeaturedSerializer $publicationFeaturedSerializer
-    ): JsonResponse {
-        return $this->json($publicationFeaturedSerializer->toList($publicationFeaturedRepository->findAll()));
-    }
-
-    #[IsGranted('ROLE_ADMIN')]
     #[Route(path: '/api/admin/publication/{id}/featured/add', name: 'api_admin_publication_featured_add', options: ['expose' => true], methods: ['POST'])]
     public function add(
         Publication                   $publication,

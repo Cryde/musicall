@@ -19,7 +19,7 @@ export default {
     return axios.delete(Routing.generate('api_admin_publication_featured_delete', {id: featuredId}));
   },
   getFeaturedList() {
-    return axios.get(Routing.generate('api_admin_publication_featured_list'))
+    return axios.get(Routing.generate('api_publication_featureds_get_collection'))
     .then(resp => resp.data);
   },
   changeOption({featuredId, option, value}) {

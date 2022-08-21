@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
@@ -54,6 +55,7 @@ class Publication implements ViewableInterface
     private $author;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[Groups([PublicationFeatured::LIST])]
     private $slug;
 
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]

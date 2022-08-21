@@ -61,12 +61,12 @@ const actions = {
   async loadFeatured({commit}) {
     commit(IS_LOADING, true);
     const featuredList = await featuredApi.getFeaturedList();
-    commit(UPDATE_FEATURED, featuredList);
+    commit(UPDATE_FEATURED, featuredList['hydra:member']);
     commit(IS_LOADING, false);
   },
   async refreshFeatured({commit}) {
     const featuredList = await featuredApi.getFeaturedList();
-    commit(UPDATE_FEATURED, featuredList);
+    commit(UPDATE_FEATURED, featuredList['hydra:member']);
   },
   async save({commit}, {level, publicationId, title, description}) {
     const featured = await featuredApi.saveFeatured({level, publicationId, title, description});
