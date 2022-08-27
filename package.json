@@ -27,7 +27,7 @@
         "buefy": "^0.9.8",
         "date-fns": "^2.23.0",
         "dotenv-flow": "^3.2.0",
-        "gmap-vue": "^2.0.4",
+        "gmap-vue": "^3.5.4",
         "jwt-decode": "^3.1.2",
         "lodash": "^4.17.21",
         "tiptap": "^1.32.2",
