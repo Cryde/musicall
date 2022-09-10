@@ -11,7 +11,7 @@ use App\Serializer\Publication\SubCategoryArraySerializer;
 use App\Serializer\PublicationSerializer;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Doctrine\ORM\NonUniqueResultException;
-use HtmlSanitizer\SanitizerInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +26,7 @@ class PublicationController extends AbstractController
     public function show(
         Request                    $request,
         Publication                $publication,
-        SanitizerInterface         $publicationsSanitizer,
+        HtmlSanitizerInterface     $appPublicationSanitizer,
         SubCategoryArraySerializer $categoryArraySerializer,
         ViewProcedure              $viewProcedure
     ): JsonResponse {
@@ -42,7 +42,7 @@ class PublicationController extends AbstractController
             'description'          => $publication->getShortDescription(),
             'publication_datetime' => $publication->getPublicationDatetime(),
             'category'             => $categoryArraySerializer->toArray($publication->getSubCategory()),
-            'content'              => $publicationsSanitizer->sanitize($publication->getContent()),
+            'content'              => $appPublicationSanitizer->sanitize($publication->getContent()),
             'type'                 => $publication->getType() === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL,
             'thread'               => ['id' => $publication->getThread() ? $publication->getThread()->getId() : null],
         ]);

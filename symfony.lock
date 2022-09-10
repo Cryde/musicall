@@ -173,9 +173,6 @@
     "lcobucci/jwt": {
         "version": "3.3.1"
     },
-    "league/uri-parser": {
-        "version": "1.4.1"
-    },
     "lexik/jwt-authentication-bundle": {
         "version": "2.5",
         "recipe": {
@@ -796,21 +793,6 @@
     },
     "symfony/yaml": {
         "version": "v4.2.0"
-    },
-    "tgalopin/html-sanitizer": {
-        "version": "1.5.0"
-    },
-    "tgalopin/html-sanitizer-bundle": {
-        "version": "1.4",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "1.0",
-            "ref": "95b935177db9abb65356fe19e57fe5abd908b5b8"
-        },
-        "files": [
-            "config/packages/html_sanitizer.yaml"
-        ]
     },
     "theseer/tokenizer": {
         "version": "1.2.1"

@@ -6,12 +6,14 @@ use App\Entity\Attribute\Style;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Serializer\User\UserArraySerializer;
 use Doctrine\Common\Collections\Collection;
-use HtmlSanitizer\SanitizerInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class MusicianSearchArraySerializer
 {
-    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly SanitizerInterface $sanitizer)
-    {
+    public function __construct(
+        private readonly UserArraySerializer    $userArraySerializer,
+        private readonly HtmlSanitizerInterface $appOnlybrSanitizer
+    ) {
     }
 
     public function listToArray($list): array
@@ -33,7 +35,7 @@ class MusicianSearchArraySerializer
         return [
             'id'            => $musicianAnnounce->getId(),
             'location_name' => $musicianAnnounce->getLocationName(),
-            'note'          => $this->sanitizer->sanitize(nl2br($musicianAnnounce->getNote())),
+            'note'          => $this->appOnlybrSanitizer->sanitize(nl2br($musicianAnnounce->getNote())),
             'user'          => $this->userArraySerializer->toArray($musicianAnnounce->getAuthor()),
             'instrument'    => $musicianAnnounce->getInstrument()->getName(),
             'type'          => $musicianAnnounce->getType(),
@@ -44,7 +46,7 @@ class MusicianSearchArraySerializer
     /**
      * @param Collection|Style[] $styles
      */
-    private function formatStyle(\Doctrine\Common\Collections\Collection|array $styles): string
+    private function formatStyle(Collection|array $styles): string
     {
         return implode(', ', $styles->map(fn(Style $item) => $item->getName())->toArray());
     }
