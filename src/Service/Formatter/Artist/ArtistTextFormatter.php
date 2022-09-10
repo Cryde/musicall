@@ -2,11 +2,11 @@
 
 namespace App\Service\Formatter\Artist;
 
-use HtmlSanitizer\SanitizerInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class ArtistTextFormatter
 {
-    public function __construct(private readonly SanitizerInterface $sanitizer)
+    public function __construct(private readonly HtmlSanitizerInterface $sanitizer)
     {
     }
 

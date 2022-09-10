@@ -5,11 +5,11 @@ namespace App\Serializer\Message;
 use App\Entity\Message\Message;
 use App\Serializer\User\UserArraySerializer;
 use App\Service\DatetimeHelper;
-use HtmlSanitizer\SanitizerInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class LastMessageArraySerializer
 {
-    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly SanitizerInterface $sanitizer)
+    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly HtmlSanitizerInterface $sanitizer)
     {
     }
 

@@ -5,12 +5,14 @@ namespace App\Serializer\Message;
 use App\Entity\Message\Message;
 use App\Serializer\User\UserArraySerializer;
 use App\Service\DatetimeHelper;
-use HtmlSanitizer\SanitizerInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class MessageArraySerializer
 {
-    public function __construct(private readonly UserArraySerializer $userArraySerializer, private readonly SanitizerInterface $sanitizer)
-    {
+    public function __construct(
+        private readonly UserArraySerializer    $userArraySerializer,
+        private readonly HtmlSanitizerInterface $appOnlybrSanitizer
+    ) {
     }
 
     /**
@@ -32,7 +34,7 @@ class MessageArraySerializer
             'id'                => $message->getId(),
             'author'            => $this->userArraySerializer->toArray($message->getAuthor()),
             'creation_datetime' => $message->getCreationDatetime()->format(DatetimeHelper::FORMAT_ISO_8601),
-            'content'           => $this->sanitizer->sanitize(nl2br($message->getContent())),
+            'content'           => $this->appOnlybrSanitizer->sanitize(nl2br($message->getContent())),
         ];
     }
 }

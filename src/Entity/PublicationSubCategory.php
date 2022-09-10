@@ -28,6 +28,7 @@ class PublicationSubCategory
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[Groups([PublicationSubCategory::LIST])]
     private $id;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
