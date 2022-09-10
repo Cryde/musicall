@@ -11,7 +11,7 @@ export default {
     const formData = new FormData();
     formData.append('refresh_token', refreshToken);
 
-    return axios.post(Routing.generate('gesdinet_jwt_refresh_token'), formData)
+    return axios.post(Routing.generate('api_refresh_token'), formData)
     .then(resp => resp.data);
   }
 };

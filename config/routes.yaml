@@ -5,9 +5,8 @@ api_login_check:
     defaults:
         _format: json
 
-gesdinet_jwt_refresh_token:
-    path:       /api/token/refresh
-    controller: gesdinet.jwtrefreshtoken::refresh
+api_refresh_token:
+    path: /api/token/refresh
     options:
         expose: true
 
