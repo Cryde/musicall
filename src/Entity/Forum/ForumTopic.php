@@ -60,7 +60,7 @@ class ForumTopic
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumTopic::LIST])]
     private $author;
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Groups([ForumTopic::LIST])]
     private $postNumber;
 
