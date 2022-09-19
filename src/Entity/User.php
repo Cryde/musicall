@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Entity\Comment\Comment;
+use App\Entity\Forum\ForumPost;
+use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -28,7 +30,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
@@ -68,7 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $resetRequestDatetime;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
-    #[Groups([Comment::ITEM, Comment::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST])]
     private $profilePicture;
 
     public function __construct()
