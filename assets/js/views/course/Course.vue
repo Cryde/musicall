@@ -44,6 +44,11 @@ export default {
     ...mapGetters('security', ['isAuthenticated']),
     ...mapGetters('publicationCategory', ['isLoading', 'courseCategories'])
   },
+  metaInfo() {
+    return {
+      title: 'Liste des catégories de cours sur MusicAll',
+    }
+  },
   mounted() {
     this.$store.dispatch('publicationCategory/getCategories');
   }

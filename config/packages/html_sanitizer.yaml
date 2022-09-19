@@ -32,13 +32,38 @@ framework:
                     iframe: ['class', 'src', 'frameborder', 'allow', 'allowfullscreen' ]
 
                 allowed_media_hosts: ['musicall.com', 'youtube.com']
-                allowed_media_schemes: ['http', 'https', 'mailto']
+                allowed_media_schemes: ['http', 'https']
                 allowed_link_schemes: ['http', 'https']
+            app.forum_sanitizer:
+                allow_elements:
+                    span: ['class']
+                    a: ['href']
+                    blockquote: []
+                    br: []
+                    em: []
+                    div: []
+                    p: []
+                    strong: []
+                    hr: []
+                    dd: []
+                    dl: []
+                    dt: []
+                    li: []
+                    ol: []
+                    ul: []
+                    img: ['src']
+                    iframe: ['class', 'src', 'frameborder', 'allow', 'allowfullscreen' ]
 
+                allowed_media_hosts: ['musicall.com', 'youtube.com']
+                allowed_media_schemes: ['http', 'https']
+                allowed_link_schemes: ['http', 'https']
 when@dev:
     framework:
         html_sanitizer:
             sanitizers:
                 app.publication_sanitizer:
                     allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1' ]
-                    allowed_media_schemes: ['http', 'https', 'mailto']
+                    allowed_media_schemes: ['http', 'https']
+                app.forum_sanitizer:
+                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1' ]
+                    allowed_media_schemes: [ 'http', 'https']

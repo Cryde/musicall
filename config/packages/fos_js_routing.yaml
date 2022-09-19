@@ -6,3 +6,5 @@ fos_js_routing:
         - api_comment_threads_(.*)
         - api_comments_(.*)
         - api_publication_featureds_(.*)
+        - api_forum_(.*)
+        - api_forums_(.*)

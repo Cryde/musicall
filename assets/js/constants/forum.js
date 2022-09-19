@@ -1,0 +1,2 @@
+export const FORUM_MAX_TOPIC_PER_PAGE = 15;
+export const FORUM_MAX_TOPIC_POST_PER_PAGE = 10;
