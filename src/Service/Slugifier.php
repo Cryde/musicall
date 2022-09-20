@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Contracts\SluggableEntityInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -15,7 +16,7 @@ class Slugifier
     ) {
     }
 
-    public function create(object $object, string $property): string
+    public function create(SluggableEntityInterface $object, string $property): string
     {
         $repository = $this->entityManager->getRepository($object::class);
 
@@ -28,7 +29,7 @@ class Slugifier
         $slug = $this->slugger->slug($slugCandidate)->lower();
         $i = 1;
         $initialSlug = $slug;
-        while ($repository->count([$property => $slug]) > 0) {
+        while ($repository->count(['slug' => $slug]) > 0) {
             $slug = $initialSlug . '-' . $i++;
         }
 

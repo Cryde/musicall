@@ -7,6 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Contracts\SluggableEntityInterface;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,7 +25,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 )]
 #[ApiFilter(SearchFilter::class, properties: ['forum' => SearchFilterInterface::STRATEGY_EXACT])]
 #[ApiFilter(OrderFilter::class, properties: ['creationDatetime' => 'DESC'])]
-class ForumTopic
+class ForumTopic implements SluggableEntityInterface
 {
     final const LIST = 'FORUM_TOPIC_LIST';
     final const ITEM = 'FORUM_TOPIC_ITEM';

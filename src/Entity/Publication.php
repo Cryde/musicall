@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Contracts\Metric\ViewableInterface;
+use App\Contracts\SluggableEntityInterface;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
@@ -17,7 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
-class Publication implements ViewableInterface
+class Publication implements ViewableInterface, SluggableEntityInterface
 {
     final const TYPE_TEXT = 1;
     final const TYPE_VIDEO = 2;

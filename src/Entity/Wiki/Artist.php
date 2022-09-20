@@ -2,6 +2,7 @@
 
 namespace App\Entity\Wiki;
 
+use App\Contracts\SluggableEntityInterface;
 use App\Entity\Image\WikiArtistCover;
 use App\Repository\Wiki\ArtistRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ArtistRepository::class)]
 #[UniqueEntity(fields: ['name'])]
 #[UniqueEntity(fields: ['slug'])]
-class Artist
+class Artist implements SluggableEntityInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

@@ -3,6 +3,7 @@
 namespace App\Entity\Attribute;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Contracts\SluggableEntityInterface;
 use App\Repository\Attribute\InstrumentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,7 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ORM\Entity(repositoryClass: InstrumentRepository::class)]
 #[ORM\Table(name: 'attribute_instrument')]
 #[ApiResource(collectionOperations: ['get' => ["pagination_items_per_page" => 100]], itemOperations: ['get'])]
-class Instrument
+class Instrument implements SluggableEntityInterface
 {
     #[ORM\Id]
     #[ORM\Column(name: 'id', type: Types::GUID)]
