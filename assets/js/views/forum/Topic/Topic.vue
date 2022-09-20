@@ -97,8 +97,8 @@ export default {
   async created() {
     this.isLoading = true;
     this.current = this.$route.query.page ? +this.$route.query.page : 1;
-    const topicId = this.$route.params.id;
-    this.topic = await forum.getTopic(topicId);
+    const slug = this.$route.params.slug;
+    this.topic = await forum.getTopic(slug);
     await this.fetchData();
     this.isLoading = false;
   },
@@ -111,9 +111,8 @@ export default {
       return 'Toutes les publications relative à la musique | MusicAll'
     },
     async fetchData() {
-      const topicId = this.$route.params.id;
       const metaPosts = await forum.getPostsByTopic({
-        topic: topicId,
+        topic: this.topic.id,
         order: {'creationDatetime': 'asc'},
         page: this.current
       });

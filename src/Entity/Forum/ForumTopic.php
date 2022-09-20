@@ -3,6 +3,7 @@
 namespace App\Entity\Forum;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
@@ -33,7 +34,8 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\Id]
     #[ORM\Column(name: 'id', type: 'guid')]
     #[ORM\GeneratedValue(strategy: 'UUID')]
-    #[Groups([ForumTopic::LIST])]
+    #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
+    #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\ManyToOne(targetEntity: Forum::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -43,6 +45,8 @@ class ForumTopic implements SluggableEntityInterface
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
     private $title;
     #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[ApiProperty(identifier: true)]
+    #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
     private $slug;
     #[ORM\Column(type: 'integer')]
     #[Groups([ForumTopic::LIST])]

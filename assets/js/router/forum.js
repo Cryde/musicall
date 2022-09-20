@@ -12,7 +12,7 @@ export default [
     meta: {isAuthRequired: false}
   },
   {
-    path: "/forums/topic/:id/:page?",
+    path: "/forums/topic/:slug/:page?",
     name: "forum_topic_item",
     component: () => import("../views/forum/Topic/Topic"),
     meta: {isAuthRequired: false}
