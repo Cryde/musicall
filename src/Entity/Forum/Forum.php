@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\Forum\ForumRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -19,12 +20,14 @@ class Forum
     #[ORM\Column(name: 'id', type: 'guid')]
     #[ORM\GeneratedValue(strategy: 'UUID')]
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
+    #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
     private $title;
     #[ORM\Column(type: 'string', length: 255, unique: true)]
-    #[Groups([ForumCategory::LIST])]
+    #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
+    #[ApiProperty(identifier: true)]
     private $slug;
     #[ORM\Column(type: 'text')]
     #[Groups([ForumCategory::LIST])]

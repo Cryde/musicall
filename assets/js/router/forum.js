@@ -6,7 +6,7 @@ export default [
     meta: {isAuthRequired: false}
   },
   {
-    path: "/forums/:id",
+    path: "/forums/:slug",
     name: "forum_topic_list",
     component: () => import("../views/forum/Topic/TopicList"),
     meta: {isAuthRequired: false}

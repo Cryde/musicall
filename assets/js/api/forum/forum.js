@@ -11,8 +11,8 @@ export default {
     .then(resp => resp.data)
     .then(resp => resp['hydra:member']);
   },
-  getForum(id) {
-    return axios.get(Routing.generate('api_forums_get_item', {id}))
+  getForum(slug) {
+    return axios.get(Routing.generate('api_forums_get_item', {slug}))
     .then(resp => resp.data);
   },
   getTopicsByForum(params) {
