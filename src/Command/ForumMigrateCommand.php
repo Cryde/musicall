@@ -40,12 +40,6 @@ class ForumMigrateCommand extends Command
             if ($postCount !== $forum->getPostNumber()) {
                 $forum->setPostNumber($postCount);
             }
-
-            if ($forum->getSlug()) {
-                continue;
-            }
-            $slug = $this->slugifier->create($forum, 'title');
-            $forum->setSlug($slug);
         }
         $this->entityManager->flush();
 
@@ -55,16 +49,14 @@ class ForumMigrateCommand extends Command
         foreach ($topics as $topic) {
             $postCount = $this->forumPostRepository->count(['topic' => $topic]);
             $topic->setPostNumber($postCount);
-            if ($lastPost = $this->forumPostRepository->getLastMessageByTopic($topic)) {
-                $topic->setLastPost($lastPost);
-            }
+
             if ($topic->getSlug()) {
-                continue;
+                //continue;
             }
             $slug = $this->slugifier->create($topic, 'title');
             $topic->setSlug($slug);
+            $this->entityManager->flush();
         }
-        $this->entityManager->flush();
 
         return Command::SUCCESS;
     }

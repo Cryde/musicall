@@ -4,6 +4,7 @@ namespace App\Entity\Forum;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Contracts\SluggableEntityInterface;
 use App\Repository\Forum\ForumRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -13,7 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     collectionOperations: [],
     itemOperations: ['get' => ['normalization_context' => ['groups' => [Forum::ITEM]]]]
 )]
-class Forum
+class Forum implements SluggableEntityInterface
 {
     final const ITEM = 'FORUM_ITEM';
     #[ORM\Id]
