@@ -23,7 +23,7 @@ class Forum
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
     private $title;
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Groups([ForumCategory::LIST])]
     private $slug;
     #[ORM\Column(type: 'text')]
