@@ -42,7 +42,7 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
     private $title;
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
     private $slug;
     #[ORM\Column(type: 'integer')]
     #[Groups([ForumTopic::LIST])]
