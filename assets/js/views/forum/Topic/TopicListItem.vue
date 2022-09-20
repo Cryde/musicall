@@ -1,7 +1,7 @@
 <template>
   <div class="columns">
     <div class="column is-8">
-      <router-link :to="{name: 'forum_topic_item', params: {id: topic.id}}"
+      <router-link :to="{name: 'forum_topic_item', params: {slug: topic.slug}}"
                    tag="h3" class="title is-5 mb-1 is-clickable">{{ topic.title }}
       </router-link>
       <span class="is-size-7">Par <strong>{{

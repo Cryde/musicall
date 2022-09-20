@@ -23,8 +23,8 @@ export default {
     return axios.get(Routing.generate('api_forum_posts_get_collection', params))
     .then(resp => resp.data);
   },
-  getTopic(id) {
-    return axios.get(Routing.generate('api_forum_topics_get_item', {id}))
+  getTopic(slug) {
+    return axios.get(Routing.generate('api_forum_topics_get_item', {slug}))
     .then(resp => resp.data);
   },
 }
