@@ -5,7 +5,7 @@
     <breadcrumb
         :root="{to: {name: 'home'}, label: 'Home'}"
         :level1="{to: {name: 'forum_index'}, label: 'Forum'}"
-        :level2="{to: {name: 'forum_topic_list', params: {id: topic.forum.id}}, label: topic.forum.title}"
+        :level2="{to: {name: 'forum_topic_list', params: {slug: topic.forum.slug}}, label: topic.forum.title}"
         :current="{label: topic.title}"
     />
 
