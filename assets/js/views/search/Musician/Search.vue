@@ -112,7 +112,7 @@ export default {
   components: {Breadcrumb, Spinner, vSelect, Results},
   metaInfo() {
     return {
-      title: 'Recherche un musicien ou un groupe - MusicAll',
+      title: 'Rechercher un musicien ou un groupe - MusicAll',
     }
   },
   computed: {
