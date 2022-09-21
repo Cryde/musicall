@@ -108,7 +108,7 @@ export default {
         return this.topic.title;
       }
 
-      return 'Toutes les publications relative à la musique | MusicAll'
+      return 'Toutes les publications relatives à la musique | MusicAll'
     },
     async fetchData() {
       const metaPosts = await forum.getPostsByTopic({
