@@ -21,7 +21,7 @@
       </b-button>
     </b-tooltip>
 
-    <h1 class="subtitle is-3">Rechercher un musicien</h1>
+    <h1 class="subtitle is-3">Rechercher un musicien ou un groupe</h1>
 
     <div class="columns mt-lg-5">
       <div class="column is-5 is-12-mobile">
@@ -110,6 +110,11 @@ import bandPath from '../../../../images/announce/musician/band.png'
 
 export default {
   components: {Breadcrumb, Spinner, vSelect, Results},
+  metaInfo() {
+    return {
+      title: 'Recherche un musicien ou un groupe - MusicAll',
+    }
+  },
   computed: {
     ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching']),
     ...mapGetters('instruments', ['instruments']),

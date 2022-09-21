@@ -81,6 +81,11 @@ export default {
       password: ''
     }
   },
+  metaInfo() {
+    return {
+      title: 'Inscription - MusicAll',
+    }
+  },
   computed: {
     canSubmit() {
       return this.username.trim().length && this.email.trim().length && this.password.trim().length;

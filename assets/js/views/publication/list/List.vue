@@ -166,10 +166,10 @@ export default {
       }
 
       if (this.currentCategory) {
-        return this.currentCategory.title;
+        return `${this.currentCategory.title} - MusicAll`;
       }
 
-      return 'Toutes les publications relative à la musique | MusicAll'
+      return 'Toutes les publications relative à la musique - MusicAll'
     },
     async fetchData() {
       const slug = this.$route.params.slug;

@@ -46,7 +46,7 @@ export default {
   },
   metaInfo() {
     return {
-      title: 'Liste des catégories de cours sur MusicAll',
+      title: 'Liste des catégories de cours - MusicAll',
     }
   },
   mounted() {

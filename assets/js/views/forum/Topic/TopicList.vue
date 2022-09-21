@@ -107,10 +107,10 @@ export default {
   methods: {
     pageTitle() {
       if (this.forum) {
-        return this.forum.title;
+        return `${this.forum.title} - MusicAll`;
       }
 
-      return 'Toutes les publications relative à la musique | MusicAll'
+      return 'Forums - MusicAll'
     },
     async fetchData() {
       const metaTopics = await forum.getTopicsByForum({
