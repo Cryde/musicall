@@ -132,10 +132,10 @@ export default {
     },
     pageTitle() {
       if (this.currentCategory) {
-        return this.currentCategory.title;
+        return `${this.currentCategory.title} - MusicAll`;
       }
 
-      return 'Toutes les cours relatifs à la musique | MusicAll'
+      return 'Toutes les cours relatifs à la musique - MusicAll'
     },
     async fetchData() {
       this.error = '';

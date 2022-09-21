@@ -64,6 +64,11 @@ export default {
       password: '',
     }
   },
+  metaInfo() {
+    return {
+      title: 'Login - MusicAll',
+    }
+  },
   computed: {
     ...mapGetters('security', [
       'isLoading',

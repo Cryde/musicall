@@ -26,7 +26,7 @@ export default {
   },
   metaInfo() {
     return {
-      title: 'Liste des forums de MusicAll',
+      title: 'Liste des forums - MusicAll',
     }
   },
   async mounted() {
