@@ -2,18 +2,18 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Contracts\SluggableEntityInterface;
 use App\Repository\Forum\ForumRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
-#[ApiResource(
-    collectionOperations: [],
-    itemOperations: ['get' => ['normalization_context' => ['groups' => [Forum::ITEM]]]]
-)]
+#[ApiResource(operations: [
+    new Get(normalizationContext: ['groups' => [Forum::ITEM]], name: 'api_forums_get_item'),
+])]
 class Forum implements SluggableEntityInterface
 {
     final const ITEM = 'FORUM_ITEM';

@@ -2,10 +2,13 @@
 
 namespace App\Entity\Comment;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\Contracts\AuthorableEntityInterface;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
@@ -15,19 +18,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
-#[ApiResource(
-    collectionOperations: [
-        'get'  => ['normalization_context' => ['groups' => [Comment::LIST]]],
-        'post' => [
-            'normalization_context'   => ['groups' => [Comment::ITEM]],
-            'denormalization_context' => ['groups' => [Comment::POST]],
-        ],
-    ],
-    itemOperations: [
-        'get' => ['normalization_context' => ['groups' => [Comment::ITEM]],],
-    ]
-)]
-#[ApiFilter(SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
+#[ApiResource(operations: [
+    new Get(normalizationContext: ['groups' => [Comment::ITEM]]),
+    new GetCollection(normalizationContext: ['groups' => [Comment::LIST]], name: 'api_comments_get_collection'),
+    new Post(
+        normalizationContext: ['groups' => [Comment::ITEM]],
+        denormalizationContext: ['groups' => [Comment::POST]],
+        name: 'api_comments_post_collection'
+    )
+])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
 class Comment implements AuthorableEntityInterface
 {
     const LIST = 'COMMENT_LIST';

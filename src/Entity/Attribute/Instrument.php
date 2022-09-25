@@ -2,20 +2,25 @@
 
 namespace App\Entity\Attribute;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\SluggableEntityInterface;
 use App\Repository\Attribute\InstrumentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[UniqueEntity('slug')]
 #[UniqueEntity('name')]
 #[ORM\Entity(repositoryClass: InstrumentRepository::class)]
 #[ORM\Table(name: 'attribute_instrument')]
-#[ApiResource(collectionOperations: ['get' => ["pagination_items_per_page" => 100]], itemOperations: ['get'])]
+#[ApiResource(operations: [
+    new Get(),
+    new GetCollection(paginationItemsPerPage: 100,name: 'api_instruments_get_collection'),
+])]
 class Instrument implements SluggableEntityInterface
 {
     #[ORM\Id]

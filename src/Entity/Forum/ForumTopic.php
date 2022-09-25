@@ -2,12 +2,14 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
@@ -15,17 +17,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
-#[ApiResource(
-    collectionOperations: [
-        'get' => ['normalization_context' => ['groups' => [ForumTopic::LIST]]],
-    ],
-    itemOperations: [
-        'get' => ['normalization_context' => ['groups' => [ForumTopic::ITEM]]],
-    ],
-    attributes: ['pagination_client_enabled' => true, 'pagination_items_per_page' => 15]
+#[ApiResource(operations: [
+    new Get(normalizationContext: ['groups' => [ForumTopic::ITEM]], name: 'api_forum_topics_get_item'),
+    new GetCollection(normalizationContext: ['groups' => [ForumTopic::LIST]], name: 'api_forum_topics_get_collection')
+],
+    paginationClientEnabled: true,
+    paginationItemsPerPage: 15
 )]
-#[ApiFilter(SearchFilter::class, properties: ['forum' => SearchFilterInterface::STRATEGY_EXACT])]
-#[ApiFilter(OrderFilter::class, properties: ['creationDatetime' => 'DESC'])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['forum' => SearchFilterInterface::STRATEGY_EXACT])]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['creationDatetime' => 'DESC'])]
 class ForumTopic implements SluggableEntityInterface
 {
     final const LIST = 'FORUM_TOPIC_LIST';

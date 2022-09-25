@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Entity\Image\PublicationFeaturedImage;
 use App\Repository\PublicationFeaturedRepository;
 use Doctrine\DBAL\Types\Types;
@@ -14,16 +16,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationFeaturedRepository::class)]
-#[ApiResource(
-    collectionOperations: ['get' => ['normalization_context' => ['groups' => PublicationFeatured::LIST]]],
-    itemOperations: ['get' => ['normalization_context' => ['groups' => PublicationFeatured::ITEM]]]
-)]
-#[ApiFilter(SearchFilter::class, properties: ['status' => SearchFilterInterface::STRATEGY_EXACT])]
+#[ApiResource(operations: [
+    new Get(normalizationContext: ['groups' => PublicationFeatured::ITEM]),
+    new GetCollection(normalizationContext: ['groups' => PublicationFeatured::LIST], name: 'api_publication_featureds_get_collection')
+])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['status' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationFeatured
 {
-    final const LIST = 'PUBLICATION_SUBCATEGORY_LIST';
-    final const ITEM = 'PUBLICATION_SUBCATEGORY_ITEM';
-
+    final const LIST = 'PUBLICATION_FEATURED_LIST';
+    final const ITEM = 'PUBLICATION_FEATURED_ITEM';
     final const STATUS_DRAFT = 0;
     final const STATUS_ONLINE = 1;
 
@@ -174,7 +175,6 @@ class PublicationFeatured
 
         return $this;
     }
-
 
     public function getOptions(): ?array
     {

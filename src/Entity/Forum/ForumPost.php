@@ -2,29 +2,27 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\OrderFilterInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Entity\User;
 use App\Repository\Forum\ForumPostRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumPostRepository::class)]
-#[ApiResource(
-    collectionOperations: [
-        'get' => ['normalization_context' => ['groups' => [ForumPost::LIST]]],
-    ],
-    itemOperations: [
-        'get'  => ['normalization_context' => ['groups' => [ForumPost::ITEM]]]
-    ],
-    paginationItemsPerPage: 10
+#[ApiResource(operations: [
+    new Get(normalizationContext: ['groups' => [ForumPost::ITEM]]),
+    new GetCollection(normalizationContext: ['groups' => [ForumPost::LIST]], name: 'api_forum_posts_get_collection')
+], paginationItemsPerPage: 10
 )]
-#[ApiFilter(SearchFilter::class, properties: ['topic' => SearchFilterInterface::STRATEGY_EXACT])]
-#[ApiFilter(OrderFilter::class, properties: ['creationDatetime' => OrderFilterInterface::DIRECTION_ASC])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['topic' => SearchFilterInterface::STRATEGY_EXACT])]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['creationDatetime' => OrderFilterInterface::DIRECTION_ASC])]
 class ForumPost
 {
     final const LIST = 'FORUM_POST_LIST';
