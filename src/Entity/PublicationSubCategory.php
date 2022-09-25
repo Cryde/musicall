@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\PublicationSubCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,11 +15,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PublicationSubCategoryRepository::class)]
-#[ApiResource(
-    collectionOperations: ['get' => ['normalization_context' => ['groups' => PublicationSubCategory::LIST]]],
-    itemOperations: ['get']
-)]
-#[ApiFilter(OrderFilter::class, properties: ['position' => 'ASC'])]
+#[ApiResource(operations: [
+    new Get(),
+    new GetCollection(normalizationContext: ['groups' => PublicationSubCategory::LIST], name: 'api_publication_sub_categories_get_collection')
+])]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['position' => 'ASC'])]
 class PublicationSubCategory
 {
     final const TYPE_PUBLICATION = 1;

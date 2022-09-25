@@ -2,7 +2,8 @@
 
 namespace App\Entity\Comment;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\Comment\CommentThreadRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,12 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentThreadRepository::class)]
-#[ApiResource(
-    collectionOperations: [],
-    itemOperations: [
-        'get' => ['normalization_context' => ['groups' => [CommentThread::ITEM]]]
-    ]
-)]
+#[ApiResource(operations: [
+    new Get(normalizationContext: ['groups' => [CommentThread::ITEM]], name: 'api_comment_threads_get_item')
+])]
 class CommentThread
 {
     final const ITEM = 'COMMENT_THREAD_ITEM';

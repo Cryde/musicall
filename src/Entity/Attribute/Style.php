@@ -2,7 +2,9 @@
 
 namespace App\Entity\Attribute;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
 use App\Contracts\SluggableEntityInterface;
 use App\Repository\Attribute\StyleRepository;
 use Doctrine\DBAL\Types\Types;
@@ -15,7 +17,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity('name')]
 #[ORM\Entity(repositoryClass: StyleRepository::class)]
 #[ORM\Table(name: 'attribute_style')]
-#[ApiResource(collectionOperations: ['get' => ["pagination_items_per_page" => 100]], itemOperations: ['get'])]
+#[ApiResource(operations: [
+    new Get(),
+    new GetCollection(paginationItemsPerPage: 100, name: 'api_styles_get_collection')
+])]
 class Style implements SluggableEntityInterface
 {
     #[ORM\Id]
