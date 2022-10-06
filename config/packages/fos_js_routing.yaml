@@ -8,3 +8,4 @@ fos_js_routing:
         - api_publication_featureds_(.*)
         - api_forum_(.*)
         - api_forums_(.*)
+        - _api_/users/change_password_post

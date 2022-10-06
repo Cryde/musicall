@@ -11,7 +11,7 @@
         </b-message>
 
         <b-message v-if="displayErrors" type="is-danger">
-          <span v-for="error in errors">{{ error }}</span>
+          <span v-for="error in errors" class="d-block">{{ error }}</span>
         </b-message>
 
         <b-field label="Ancien mot de passe">
@@ -78,7 +78,7 @@ export default {
         this.confirmationPassword = '';
       } catch (e) {
         if (e.response.data.violations) {
-          this.errors.push(...e.response.data.violations.map(item => item.title));
+          this.errors.push(...e.response.data.violations.map(item => item.message));
         } else {
           this.errors.push(...e.response.data);
         }
