@@ -98,9 +98,6 @@
     "egulias/email-validator": {
         "version": "2.1.6"
     },
-    "fig/link-util": {
-        "version": "1.2.0"
-    },
     "firebase/php-jwt": {
         "version": "v5.0.0"
     },
