@@ -33,25 +33,6 @@ class UserController extends AbstractController
     ) {
     }
 
-    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/users/change-password', name: 'api_user_change_password', options: ['expose' => true], methods: ['POST'])]
-    public function changePassword(Request $request, #[CurrentUser] $user): JsonResponse
-    {
-        /** @var ChangePasswordModel $changePasswordModel */
-        $changePasswordModel = $this->serializer->deserialize($request->getContent(), ChangePasswordModel::class, 'json');
-        $errors = $this->validator->validate($changePasswordModel);
-        if (count($errors) > 0) {
-            return $this->json($errors, Response::HTTP_BAD_REQUEST);
-        }
-        if (!$this->userPasswordHasher->isPasswordValid($user, $changePasswordModel->getOldPassword())) {
-            return $this->json(['L\'ancien mot de passe est invalide'], Response::HTTP_BAD_REQUEST);
-        }
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $changePasswordModel->getNewPassword()));
-        $this->entityManager->flush();
-
-        return $this->json([]);
-    }
-
     /**
      * @throws NonUniqueResultException
      */
