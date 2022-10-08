@@ -21,6 +21,7 @@
         >
           {{ category.title }}
         </b-navbar-item>
+        <b-navbar-item v-if="!isLoading" :to="{name: 'gallery_list'}" tag="router-link"  exact-active-class="is-active">Photos</b-navbar-item>
       </b-navbar-dropdown>
 
       <b-navbar-dropdown :to="{ name: 'course_index' }" tag="router-link" label="Cours" hoverable>
