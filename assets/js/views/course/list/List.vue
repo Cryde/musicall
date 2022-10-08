@@ -28,7 +28,7 @@
       {{ error }}
     </b-message>
 
-    <vue-masonry-wall :items="publications" :options="{padding: 5}" class="mt-4" @append="append">
+    <masonry-wall :items="publications" :gap="10" :column-width="250" class="mt-4">
       <template v-slot:default="{item: publication}">
         <card
             :key="publication.id"
@@ -54,7 +54,7 @@
           </template>
         </card>
       </template>
-    </vue-masonry-wall>
+    </masonry-wall>
     <div class="overflow-auto mt-3" v-if="displayPagination">
       <b-pagination
           :total="total"
@@ -95,7 +95,7 @@
 <script>
 import {mapGetters} from 'vuex';
 import PublicationType from "../../../components/publication/PublicationType";
-import VueMasonryWall from "vue-masonry-wall";
+import MasonryWall from '@yeger/vue2-masonry-wall'
 import Card from "../../../components/global/content/Card";
 import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
@@ -104,7 +104,7 @@ import AddVideoModal from "../../user/Publication/add/video/AddVideoModal";
 import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
 
 export default {
-  components: {AddVideoModal, Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
+  components: {AddVideoModal, Breadcrumb, Spinner, PublicationType, MasonryWall, Card},
   data() {
     return {
       macy: null,
@@ -150,9 +150,6 @@ export default {
     });
   },
   methods: {
-    async append() {
-      return this.publications;
-    },
     pageTitle() {
       if (this.currentCategory) {
         return `${this.currentCategory.title} - MusicAll`;
