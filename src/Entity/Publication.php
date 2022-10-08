@@ -2,9 +2,15 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\Metric\ViewableInterface;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Comment\CommentThread;
@@ -28,12 +34,20 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => [Publication::ITEM]],
             name: 'api_publication_get_item',
             provider: PublicationProvider::class
-        )
+        ),
+        new GetCollection(
+            paginationItemsPerPage: 16,
+            normalizationContext: ['groups' => [Publication::LIST]],
+            name: 'api_publication_get_collection'
+        ),
     ]
 )]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['publicationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT])]
 class Publication implements ViewableInterface, SluggableEntityInterface
 {
     final const ITEM = 'PUBLICATION_ITEM';
+    final const LIST = 'PUBLICATION_LIST';
 
     final const TYPE_TEXT = 1;
     final const TYPE_VIDEO = 2;
@@ -60,23 +74,23 @@ class Publication implements ViewableInterface, SluggableEntityInterface
 
     #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([Publication::ITEM])]
+    #[Groups([Publication::ITEM, Publication::LIST])]
     private $title;
 
     #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
     #[ORM\ManyToOne(targetEntity: PublicationSubCategory::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([Publication::ITEM])]
+    #[Groups([Publication::ITEM, Publication::LIST])]
     private $subCategory;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([Publication::ITEM])]
+    #[Groups([Publication::ITEM, Publication::LIST])]
     private $author;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
-    #[Groups([PublicationFeatured::LIST, Publication::ITEM])]
+    #[Groups([PublicationFeatured::LIST, Publication::ITEM, Publication::LIST])]
     private $slug;
 
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
@@ -98,7 +112,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[Assert\Type(type: \DateTime::class, groups: ['publication'])]
     #[Assert\NotBlank(groups: ['publication'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups([Publication::ITEM])]
+    #[Groups([Publication::ITEM, Publication::LIST])]
     private $publicationDatetime;
 
     #[ORM\Column(type: Types::SMALLINT)]
@@ -109,6 +123,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
 
     #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]
     #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups([Publication::LIST])]
     private $cover;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
@@ -130,10 +145,16 @@ class Publication implements ViewableInterface, SluggableEntityInterface
         $this->images = new ArrayCollection();
     }
 
-    #[Groups([Publication::ITEM])]
+    #[Groups([Publication::ITEM, Publication::LIST])]
     public function getTypeLabel(): string
     {
         return $this->type === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL;
+    }
+
+    #[Groups([Publication::LIST])]
+    public function getDescription(): ?string
+    {
+        return $this->type === Publication::TYPE_TEXT ? $this->shortDescription : null;
     }
 
     public function getId(): ?int

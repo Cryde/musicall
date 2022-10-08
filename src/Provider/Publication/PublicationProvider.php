@@ -17,7 +17,7 @@ class PublicationProvider implements ProviderInterface
         private readonly PublicationRepository $publicationRepository,
         private readonly ViewProcedure         $viewProcedure,
         private readonly RequestStack          $requestStack,
-        private readonly Security $security
+        private readonly Security              $security
     ) {
     }
 

@@ -1,0 +1,1 @@
+export const PUBLICATION_MAX_ITEMS_PER_PAGE = 16;
