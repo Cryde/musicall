@@ -49,11 +49,10 @@
 import {mapGetters} from 'vuex';
 import {format, parseISO} from 'date-fns';
 import Comment from "../../comment/Thread";
-import Spinner from "../../../components/global/misc/Spinner";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Breadcrumb, Spinner, Comment},
+  components: {Breadcrumb, Comment},
   metaInfo() {
     return {
       title: this.publication.title,
