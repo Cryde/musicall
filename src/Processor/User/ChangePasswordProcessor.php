@@ -5,6 +5,7 @@ namespace App\Processor\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use App\Entity\User;
 use App\Entity\User\ChangePassword;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -25,6 +26,7 @@ class ChangePasswordProcessor implements ProcessorInterface
     public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if ($operation instanceof Post) {
+            /** @var User $user */
             $user = $this->security->getUser();
             $user->setPassword($this->userPasswordHasher->hashPassword($user, $data->getNewPassword()));
             $this->entityManager->flush();

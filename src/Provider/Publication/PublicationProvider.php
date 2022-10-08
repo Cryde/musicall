@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Publication;
+use App\Entity\User;
 use App\Repository\PublicationRepository;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -26,10 +27,13 @@ class PublicationProvider implements ProviderInterface
         if ($operation instanceof Get) {
             $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
             if ($publication->getStatus() === Publication::STATUS_ONLINE) {
-                $this->viewProcedure->process($publication, $this->requestStack->getCurrentRequest(), $this->security->getUser());
+                /** @var User $user */
+                $user = $this->security->getUser();
+                $this->viewProcedure->process($publication, $this->requestStack->getCurrentRequest(), $user);
             }
 
             return $publication;
         }
+        throw new \InvalidArgumentException('Operation not supported by the provider');
     }
 }
