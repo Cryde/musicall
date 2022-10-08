@@ -31,6 +31,9 @@ class ForumTopic implements SluggableEntityInterface
     final const LIST = 'FORUM_TOPIC_LIST';
     final const ITEM = 'FORUM_TOPIC_ITEM';
 
+    final const TYPE_TOPIC_DEFAULT = 0;
+    final const TYPE_TOPIC_PINNED = 1;
+
     #[ORM\Id]
     #[ORM\Column(name: 'id', type: 'guid')]
     #[ORM\GeneratedValue(strategy: 'UUID')]
@@ -72,6 +75,8 @@ class ForumTopic implements SluggableEntityInterface
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
+        $this->isLocked = false;
+        $this->type = self::TYPE_TOPIC_DEFAULT;
     }
 
     public function getId(): ?string
