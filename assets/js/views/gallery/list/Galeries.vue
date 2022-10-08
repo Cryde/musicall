@@ -10,8 +10,8 @@
 
     <h1 class="subtitle is-3">Photos</h1>
 
-    <vue-masonry-wall :items="galleries" :options="{padding: 5}" class="mt-4" @append="append">
-      <template v-slot:default="{item: gallery}">
+    <masonry-wall :items="galleries" :column-width="300"  :gap="12" class="mt-4">
+      <template #default="{ item: gallery, index }">
         <card
             :key="gallery.id"
             :top-image="gallery.cover_image.sizes.medium"
@@ -28,7 +28,7 @@
           </template>
         </card>
       </template>
-    </vue-masonry-wall>
+    </masonry-wall>
   </div>
 </template>
 
@@ -36,10 +36,10 @@
 import {mapGetters} from 'vuex';
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import Card from "../../../components/global/content/Card";
-import VueMasonryWall from "vue-masonry-wall";
+import MasonryWall from '@yeger/vue2-masonry-wall'
 
 export default {
-  components: {Card, Breadcrumb, VueMasonryWall},
+  components: {Card, Breadcrumb, MasonryWall},
   metaInfo() {
     return {
       title: 'Photos'
@@ -53,11 +53,6 @@ export default {
       'isLoading',
       'galleries',
     ])
-  },
-  methods: {
-    async append() {
-      return this.galleries;
-    },
   }
 }
 </script>

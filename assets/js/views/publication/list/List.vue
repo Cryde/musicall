@@ -16,7 +16,7 @@
 
     <h1 class="subtitle is-3" v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
     <h1 class="subtitle is-3" v-else-if="!this.isHome">Publications</h1>
-    <vue-masonry-wall :items="publications" :options="{padding: 5}" class="mt-4" @append="append">
+    <masonry-wall :items="publications" :gap="10" :column-width="250" class="mt-4">
       <template v-slot:default="{item: publication}">
         <card
             :key="publication.id"
@@ -69,7 +69,7 @@
           </template>
         </card>
       </template>
-    </vue-masonry-wall>
+    </masonry-wall>
     <div class="overflow-auto mt-3" v-if="displayPagination">
       <b-pagination
           :total="total"
@@ -109,7 +109,7 @@
 <script>
 import {mapGetters} from 'vuex';
 import PublicationType from "../../../components/publication/PublicationType";
-import VueMasonryWall from "vue-masonry-wall";
+import MasonryWall from '@yeger/vue2-masonry-wall'
 import Card from "../../../components/global/content/Card";
 import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
@@ -117,7 +117,7 @@ import Breadcrumb from "../../../components/global/Breadcrumb";
 import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
 
 export default {
-  components: {Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
+  components: {Breadcrumb, Spinner, PublicationType, MasonryWall, Card},
   data() {
     return {
       macy: null,
@@ -162,9 +162,6 @@ export default {
     });
   },
   methods: {
-    async append() {
-      return this.publications;
-    },
     pageTitle() {
       if (this.isHome) {
         return 'MusicAll, le site de référence au service de la musique';

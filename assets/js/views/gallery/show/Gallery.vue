@@ -20,7 +20,7 @@
         <spinner/>
       </div>
       <div v-else>
-        <vue-masonry-wall :items="images" :options="{padding: 5}" class="mt-lg-4 mt-3 image-container">
+        <masonry-wall :items="images" :column-width="250" :gap="15" class="mt-lg-4 mt-3 image-container">
           <template v-slot:default="{item: image, index}">
             <img
                 :src="image.sizes.medium"
@@ -29,7 +29,7 @@
                 @click="openLightBox(index)"
             />
           </template>
-        </vue-masonry-wall>
+        </masonry-wall>
       </div>
 
       <div class="lightbox-container" :class="{'displayed': showLightBox}">
@@ -49,13 +49,13 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import VueMasonryWall from "vue-masonry-wall";
+import MasonryWall from '@yeger/vue2-masonry-wall'
 import {format, parseISO} from 'date-fns';
 import Spinner from "../../../components/global/misc/Spinner";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 
 export default {
-  components: {Breadcrumb, Spinner, VueMasonryWall},
+  components: {Breadcrumb, Spinner, MasonryWall},
   metaInfo() {
     return {
       title: this.gallery.title,
