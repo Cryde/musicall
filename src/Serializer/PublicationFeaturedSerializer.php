@@ -14,19 +14,6 @@ class PublicationFeaturedSerializer
     {
     }
 
-    /**
-     * @param Collection|PublicationFeatured[] $publicationFeatured
-     */
-    public function toList(\Doctrine\Common\Collections\Collection|array $publicationFeatured): array
-    {
-        $list = [];
-        foreach ($publicationFeatured as $featured) {
-            $list[] = $this->toArray($featured);
-        }
-
-        return $list;
-    }
-
     public function toArray(PublicationFeatured $publicationFeatured): array
     {
         $imagePath = $publicationFeatured->getCover() ? $this->uploaderHelper->asset($publicationFeatured->getCover(), 'imageFile') : '';
