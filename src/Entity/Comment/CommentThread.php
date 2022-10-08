@@ -4,6 +4,7 @@ namespace App\Entity\Comment;
 
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Publication;
 use App\Repository\Comment\CommentThreadRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -22,6 +23,7 @@ class CommentThread
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[Groups([Publication::ITEM])]
     private $id;
 
     #[ORM\Column(type: Types::INTEGER)]

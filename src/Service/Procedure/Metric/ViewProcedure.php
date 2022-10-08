@@ -24,7 +24,7 @@ class ViewProcedure
     ) {
     }
 
-    public function process(ViewableInterface $viewable, Request $request, ?User $user = null)
+    public function process(ViewableInterface $viewable, Request $request, ?User $user = null): void
     {
         $viewCache = $viewable->getViewCache();
         if (!$viewable->getViewCache()) {

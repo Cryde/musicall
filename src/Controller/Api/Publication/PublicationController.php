@@ -22,32 +22,6 @@ class PublicationController extends AbstractController
 {
     final const LIMIT_PUBLICATION_BY_PAGE = 16;
 
-    #[Route("/api/publications/{slug}", name: "api_publications_show", options: ['expose' => true], priority: 2)]
-    public function show(
-        Request                    $request,
-        Publication                $publication,
-        HtmlSanitizerInterface     $appPublicationSanitizer,
-        SubCategoryArraySerializer $categoryArraySerializer,
-        ViewProcedure              $viewProcedure
-    ): JsonResponse {
-        if ($publication->getStatus() === Publication::STATUS_ONLINE) {
-            $viewProcedure->process($publication, $request, $this->getUser());
-        }
-
-        return $this->json([
-            'author'               => [
-                'username' => $publication->getAuthor()->getUserIdentifier(),
-            ],
-            'title'                => $publication->getTitle(),
-            'description'          => $publication->getShortDescription(),
-            'publication_datetime' => $publication->getPublicationDatetime(),
-            'category'             => $categoryArraySerializer->toArray($publication->getSubCategory()),
-            'content'              => $appPublicationSanitizer->sanitize($publication->getContent()),
-            'type'                 => $publication->getType() === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL,
-            'thread'               => ['id' => $publication->getThread() ? $publication->getThread()->getId() : null],
-        ]);
-    }
-
     #[Route("api/publications", name: "api_publications_list", options: ["expose" => true])]
     public function list(
         Request                          $request,

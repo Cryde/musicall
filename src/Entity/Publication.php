@@ -2,12 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Contracts\Metric\ViewableInterface;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Metric\ViewCache;
+use App\Provider\Publication\PublicationProvider;
 use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -18,8 +22,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => [Publication::ITEM]],
+            name: 'api_publication_get_item',
+            provider: PublicationProvider::class
+        )
+    ]
+)]
 class Publication implements ViewableInterface, SluggableEntityInterface
 {
+    final const ITEM = 'PUBLICATION_ITEM';
+
     final const TYPE_TEXT = 1;
     final const TYPE_VIDEO = 2;
     final const TYPE_VIDEO_LABEL = 'video';
@@ -40,31 +55,38 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ApiProperty(identifier: false)]
     private $id;
 
     #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups([Publication::ITEM])]
     private $title;
 
     #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
     #[ORM\ManyToOne(targetEntity: PublicationSubCategory::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([Publication::ITEM])]
     private $subCategory;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([Publication::ITEM])]
     private $author;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([PublicationFeatured::LIST])]
+    #[ApiProperty(identifier: true)]
+    #[Groups([PublicationFeatured::LIST, Publication::ITEM])]
     private $slug;
 
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups([Publication::ITEM])]
     private $shortDescription;
 
     #[Assert\NotBlank(message: 'Il doit y avoir du contenu dans la publication', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups([Publication::ITEM])]
     private $content;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -76,6 +98,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[Assert\Type(type: \DateTime::class, groups: ['publication'])]
     #[Assert\NotBlank(groups: ['publication'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups([Publication::ITEM])]
     private $publicationDatetime;
 
     #[ORM\Column(type: Types::SMALLINT)]
@@ -95,15 +118,22 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     private $oldPublicationId;
 
     #[ORM\ManyToOne(targetEntity: CommentThread::class)]
+    #[Groups([Publication::ITEM])]
     private $thread;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     private $viewCache;
-    
+
     public function __construct()
     {
         $this->creationDatetime = new \DateTime();
         $this->images = new ArrayCollection();
+    }
+
+    #[Groups([Publication::ITEM])]
+    public function getTypeLabel(): string
+    {
+        return $this->type === Publication::TYPE_VIDEO ? Publication::TYPE_VIDEO_LABEL : Publication::TYPE_TEXT_LABEL;
     }
 
     public function getId(): ?int

@@ -17,8 +17,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationFeaturedRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => PublicationFeatured::ITEM]),
-    new GetCollection(normalizationContext: ['groups' => PublicationFeatured::LIST], name: 'api_publication_featureds_get_collection')
+    new Get(normalizationContext: ['groups' => [PublicationFeatured::ITEM]]),
+    new GetCollection(normalizationContext: ['groups' => [PublicationFeatured::LIST]], name: 'api_publication_featureds_get_collection')
 ])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['status' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationFeatured

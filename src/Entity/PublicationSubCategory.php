@@ -30,15 +30,15 @@ class PublicationSubCategory
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
-    #[Groups([PublicationSubCategory::LIST])]
+    #[Groups([PublicationSubCategory::LIST, Publication::ITEM])]
     private $id;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([PublicationSubCategory::LIST])]
+    #[Groups([PublicationSubCategory::LIST, Publication::ITEM])]
     private $title;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([PublicationSubCategory::LIST])]
+    #[Groups([PublicationSubCategory::LIST, Publication::ITEM])]
     private $slug;
 
     #[ORM\OneToMany(mappedBy: "subCategory", targetEntity: Publication::class, orphanRemoval: true)]
