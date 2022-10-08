@@ -15,7 +15,6 @@
 
 <script>
 import Header from './components/global/Header';
-import Menu from './components/global/Menu';
 import Footer from './components/global/Footer';
 import axios from 'axios';
 import {mapGetters} from 'vuex';
@@ -28,7 +27,7 @@ export default {
   },
   name: 'app',
   components: {
-    Header, Footer, Menu
+    Header, Footer
   },
   computed: {
     ...mapGetters('security', ['isAuthenticated'])
