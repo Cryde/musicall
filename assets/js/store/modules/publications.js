@@ -27,14 +27,8 @@ const getters = {
   publications(state) {
     return state.publications;
   },
-  numberOfPages(state) {
-    return state.numberOfPages;
-  },
   total(state) {
     return state.total;
-  },
-  limitByPage(state) {
-    return state.limitByPage;
   }
 };
 
@@ -48,33 +42,31 @@ const mutations = {
   [UPDATE_PUBLICATIONS](state, publications) {
     state.publications = publications;
   },
-  [UPDATE_META](state, meta) {
-    state.numberOfPages = meta.numberOfPages;
-    state.total = meta.total;
-    state.limitByPage = meta.limit_by_page;
+  [UPDATE_META](state, total) {
+    state.total = total;
   },
 };
 
 const actions = {
-  async getPublications({commit}, {offset}) {
+  async getPublications({commit}, {page}) {
     commit(IS_LOADING, true);
     commit(UPDATE_ERROR, null);
     try {
-      const {publications, meta} = await apiPublications.getPublications({offset});
-      commit(UPDATE_PUBLICATIONS, publications);
-      commit(UPDATE_META, meta);
+      const data = await apiPublications.getPublications({page});
+      commit(UPDATE_PUBLICATIONS, data['hydra:member']);
+      commit(UPDATE_META, data['hydra:totalItems']);
     } catch (err) {
       commit(UPDATE_ERROR, err);
     }
     commit(IS_LOADING, false);
   },
-  async getPublicationsByCategory({commit}, {slug, offset}) {
+  async getPublicationsByCategory({commit}, {slug, page}) {
     commit(IS_LOADING, true);
     commit(UPDATE_ERROR, null);
     try {
-      const {publications, meta} = await apiPublications.getPublicationsByCategory({slug, offset});
-      commit(UPDATE_PUBLICATIONS, publications);
-      commit(UPDATE_META, meta);
+      const data = await apiPublications.getPublicationsByCategory({slug, page});
+      commit(UPDATE_PUBLICATIONS, data['hydra:member']);
+      commit(UPDATE_META, data['hydra:totalItems']);
     } catch (err) {
       commit(UPDATE_ERROR, err);
     }

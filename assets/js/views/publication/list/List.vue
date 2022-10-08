@@ -20,31 +20,31 @@
       <template v-slot:default="{item: publication}">
         <card
             :key="publication.id"
-            v-if="publication.category.slug !== 'news'"
-            :top-image="publication.cover_image"
-            :to="{ name: publication.is_course ? 'course_show' : 'publication_show', params: { slug: publication.slug }}">
+            v-if="publication.sub_category.slug !== 'news'"
+            :top-image="publication.cover"
+            :to="{ name: publication.sub_category.is_course ? 'course_show' : 'publication_show', params: { slug: publication.slug }}">
 
           <template #top-content>
             <publication-type
                 v-if="isHome"
-                :type="publication.type"
-                :label="publication.category.title"
-                :icon="publication.type === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                :type="publication.type_label"
+                :label="publication.sub_category.title"
+                :icon="publication.type_label === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
                 class="mt-1 mb-2 "/>
             <publication-type
                 v-else
-                :type="publication.type"
-                :label="publication.type === 'video' ? 'Vidéo': 'Article'"
-                :icon="publication.type === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                :type="publication.type_label"
+                :label="publication.type_label === 'video' ? 'Vidéo': 'Article'"
+                :icon="publication.type_label === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
                 class="mt-1 mb-2 "/>
             {{ publication.title }}
           </template>
           <template #content>
-            <span v-if="publication.type === 'text'" class="is-block description">
+            <span v-if="publication.type_label === 'text'" class="is-block description">
               {{ publication.description }}
             </span>
             <span class="publication-date is-block mt-1">
-              {{ publication.author_username }} •
+              {{ publication.author.username }} •
               {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
             </span>
           </template>
@@ -63,17 +63,17 @@
               {{ publication.description }}
             </span>
             <span class="publication-date is-block mt-1">
-              {{ publication.author_username }} •
+              {{ publication.author.username }} •
               {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
             </span>
           </template>
         </card>
       </template>
     </vue-masonry-wall>
-    <div class="overflow-auto mt-3" v-if="numberOfPages > 1">
+    <div class="overflow-auto mt-3" v-if="displayPagination">
       <b-pagination
           :total="total"
-          :per-page="limitByPage"
+          :per-page="itemPerPage"
           v-model="current">
         <template #default="props">
           <b-pagination-button
@@ -97,7 +97,7 @@
           <b-pagination-button
               :page="props.page"
               tag="router-link"
-              :to="props.page.number >= numberOfPages  ? `?page=${numberOfPages}` : `?page=${props.page.number}`">
+              :to="`?page=${props.page.number}`">
             <b-icon icon="angle-right"/>
           </b-pagination-button>
         </template>
@@ -114,6 +114,7 @@ import Card from "../../../components/global/content/Card";
 import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 import Breadcrumb from "../../../components/global/Breadcrumb";
+import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
 
 export default {
   components: {Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
@@ -134,11 +135,15 @@ export default {
     ...mapGetters('publications', [
       'publications',
       'isLoading',
-      'numberOfPages',
       'total',
-      'limitByPage'
     ]),
-    ...mapGetters('publicationCategory', ['publicationCategories'])
+    ...mapGetters('publicationCategory', ['publicationCategories']),
+    displayPagination() {
+      return this.total > PUBLICATION_MAX_ITEMS_PER_PAGE;
+    },
+    itemPerPage() {
+      return PUBLICATION_MAX_ITEMS_PER_PAGE;
+    }
   },
   watch: {
     $route() {
@@ -173,12 +178,12 @@ export default {
     },
     async fetchData() {
       const slug = this.$route.params.slug;
-      const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
+      const page = this.$route.query.page ? this.$route.query.page : 1;
       this.currentCategory = this.publicationCategories.find((category) => category.slug === slug);
       if (slug && this.currentCategory) {
-        await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
+        await this.$store.dispatch('publications/getPublicationsByCategory', {slug, page});
       } else {
-        await this.$store.dispatch('publications/getPublications', {offset});
+        await this.$store.dispatch('publications/getPublications', {page});
       }
     },
   },

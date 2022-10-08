@@ -32,42 +32,60 @@
       <template v-slot:default="{item: publication}">
         <card
             :key="publication.id"
-            :top-image="publication.cover_image"
+            :top-image="publication.cover"
             :to="{ name: 'course_show', params: { slug: publication.slug }}">
 
           <template #top-content>
             <publication-type
-                :type="publication.type"
-                :label="publication.type === 'video' ? 'Vidéo' : 'Cours'"
-                :icon="publication.type === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                :type="publication.type_label"
+                :label="publication.type_label === 'video' ? 'Vidéo' : 'Cours'"
+                :icon="publication.type_label === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
                 class="mt-1 mb-2 "/>
             {{ publication.title }}
           </template>
           <template #content>
-            <span v-if="publication.type === 'text'" class="is-block description">
+            <span v-if="publication.type_label === 'text'" class="is-block description">
               {{ publication.description }}
             </span>
             <span class="publication-date is-block mt-1">
-              {{ publication.author_username }} •
+              {{ publication.author.username }} •
               {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
             </span>
           </template>
         </card>
       </template>
     </vue-masonry-wall>
-    <div class="overflow-auto mt-3" v-if="numberOfPages > 1">
+    <div class="overflow-auto mt-3" v-if="displayPagination">
       <b-pagination
           :total="total"
-          :per-page="limitByPage"
+          :per-page="itemPerPage"
           v-model="current">
-        <b-pagination-button
-            slot-scope="props"
-            :page="props.page"
-            :id="`page${props.page.number}`"
-            tag="router-link"
-            :to="props.page.number === 1 ? '?' : `?page=${props.page.number}`">
-          {{ props.page.number }}
-        </b-pagination-button>
+        <template #default="props">
+          <b-pagination-button
+              :page="props.page"
+              :id="`page${props.page.number}`"
+              tag="router-link"
+              :to="props.page.number === 1 ? '?' : `?page=${props.page.number}`">
+            {{ props.page.number }}
+          </b-pagination-button>
+        </template>
+        <template #previous="props">
+          <b-pagination-button
+              :page="props.page"
+              tag="router-link"
+              :to="props.page.number <= 1 ? '?' : `?page=${props.page.number}`">
+            <b-icon icon="angle-left"/>
+          </b-pagination-button>
+        </template>
+
+        <template #next="props">
+          <b-pagination-button
+              :page="props.page"
+              tag="router-link"
+              :to="`?page=${props.page.number}`">
+            <b-icon icon="angle-right"/>
+          </b-pagination-button>
+        </template>
       </b-pagination>
     </div>
     <add-video-modal v-if="isAuthenticated" ref="modal-video-add" :display-categories="true" :categories="courseCategories" :pre-selected-category="currentCategory" />
@@ -83,6 +101,7 @@ import Spinner from "../../../components/global/misc/Spinner";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import AddVideoModal from "../../user/Publication/add/video/AddVideoModal";
+import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
 
 export default {
   components: {AddVideoModal, Breadcrumb, Spinner, PublicationType, VueMasonryWall, Card},
@@ -104,12 +123,16 @@ export default {
     ...mapGetters('publications', [
       'publications',
       'isLoading',
-      'numberOfPages',
       'total',
-      'limitByPage'
     ]),
     ...mapGetters('security', ['isAuthenticated']),
-    ...mapGetters('publicationCategory', ['courseCategories'])
+    ...mapGetters('publicationCategory', ['courseCategories']),
+    displayPagination() {
+      return this.total > PUBLICATION_MAX_ITEMS_PER_PAGE;
+    },
+    itemPerPage() {
+      return PUBLICATION_MAX_ITEMS_PER_PAGE;
+    }
   },
   watch: {
     $route() {
@@ -140,10 +163,10 @@ export default {
     async fetchData() {
       this.error = '';
       const slug = this.$route.params.slug;
-      const offset = this.$route.query.page ? this.$route.query.page - 1 : 0;
+      const page = this.$route.query.page ? this.$route.query.page : 1;
       this.currentCategory = this.courseCategories.find((category) => category.slug === slug);
       if (slug && this.currentCategory) {
-        await this.$store.dispatch('publications/getPublicationsByCategory', {slug, offset});
+        await this.$store.dispatch('publications/getPublicationsByCategory', {slug, page});
       } else {
         this.error = 'Cette catégorie n\'existe pas.';
       }
