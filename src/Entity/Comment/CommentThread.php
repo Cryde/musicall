@@ -2,6 +2,8 @@
 
 namespace App\Entity\Comment;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Publication;
@@ -38,11 +40,11 @@ class CommentThread
     private $comments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $creationDatetime;
+    private ?DateTimeInterface $creationDatetime;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->comments = new ArrayCollection();
     }
 
@@ -93,12 +95,12 @@ class CommentThread
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(?\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(?DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

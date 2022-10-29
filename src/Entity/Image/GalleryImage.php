@@ -2,6 +2,9 @@
 
 namespace App\Entity\Image;
 
+use DateTimeInterface;
+use DateTime;
+use DateTimeImmutable;
 use App\Entity\Gallery;
 use App\Repository\GalleryImageRepository;
 use Doctrine\DBAL\Types\Types;
@@ -32,7 +35,7 @@ class GalleryImage
     private $imageSize;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
@@ -43,7 +46,7 @@ class GalleryImage
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getImageFile(): ?File
@@ -66,7 +69,7 @@ class GalleryImage
         if (null !== $image) {
             // It is required that at least one field changes if you are using doctrine
             // otherwise the event listeners won't be called and the file is lost
-            $this->updatedAt = new \DateTimeImmutable();
+            $this->updatedAt = new DateTimeImmutable();
         }
     }
 
@@ -95,12 +98,12 @@ class GalleryImage
         return $this->id;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 

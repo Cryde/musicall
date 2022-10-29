@@ -2,6 +2,8 @@
 
 namespace App\Entity\Message;
 
+use DateTimeInterface;
+use DateTime;
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
 use Doctrine\DBAL\Types\Types;
@@ -16,22 +18,22 @@ class Message
     private $id;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private $author;
+    private User $author;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messages")]
     #[ORM\JoinColumn(nullable: false)]
-    private $thread;
+    private MessageThread $thread;
 
     #[ORM\Column(type: Types::TEXT)]
-    private $content;
+    private string $content;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getId(): ?string
@@ -39,12 +41,12 @@ class Message
         return $this->id;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

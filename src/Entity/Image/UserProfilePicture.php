@@ -2,6 +2,9 @@
 
 namespace App\Entity\Image;
 
+use Exception;
+use DateTimeImmutable;
+use DateTimeInterface;
 use App\Entity\User;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -49,7 +52,7 @@ class UserProfilePicture
      * during Doctrine hydration.
      *
      *
-     * @throws \Exception
+     * @throws Exception
      * @return $this
      */
     public function setImageFile(?File $image = null)
@@ -58,7 +61,7 @@ class UserProfilePicture
         if (null !== $image) {
             // It is required that at least one field changes if you are using doctrine
             // otherwise the event listeners won't be called and the file is lost
-            $this->updatedAt = new \DateTimeImmutable();
+            $this->updatedAt = new DateTimeImmutable();
         }
 
         return $this;
@@ -96,12 +99,12 @@ class UserProfilePicture
         return $this->id;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 

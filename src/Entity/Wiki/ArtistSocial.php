@@ -2,6 +2,8 @@
 
 namespace App\Entity\Wiki;
 
+use DateTimeInterface;
+use DateTime;
 use App\Repository\Wiki\ArtistSocialRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -38,7 +40,7 @@ class ArtistSocial
     private $url;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: Artist::class, inversedBy: "socials")]
     #[ORM\JoinColumn(nullable: false)]
@@ -46,7 +48,7 @@ class ArtistSocial
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getId(): ?int
@@ -85,12 +87,12 @@ class ArtistSocial
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

@@ -2,6 +2,8 @@
 
 namespace App\Entity\Musician;
 
+use DateTime;
+use DateTimeInterface;
 use App\Entity\Attribute\Instrument;
 use App\Entity\Attribute\Style;
 use App\Entity\User;
@@ -62,7 +64,7 @@ class MusicianAnnounce
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->styles = new ArrayCollection();
     }
 
@@ -71,12 +73,12 @@ class MusicianAnnounce
         return $this->id;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
