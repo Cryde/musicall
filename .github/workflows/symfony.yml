@@ -35,7 +35,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php-versions }}
-                  extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, mysql, dom, filter, gd, iconv, json, mbstring, pdo
+                  extensions: mbstring, xml, ctype, intl, pdo, pdo_mysql, mysql, dom, filter, gd, json
               env:
                   update: true
 
@@ -49,7 +49,8 @@ jobs:
                   path: /tmp/composer-cache
                   key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-            - uses: php-actions/composer@v6
+            - name: Install dependencies
+              run: composer install --prefer-dist
 
 
             # —— Symfony 🎵 ——————————————————————————————————————————————————————————
