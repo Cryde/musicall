@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -75,45 +77,45 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private $title;
+    private string $title;
 
     #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
     #[ORM\ManyToOne(targetEntity: PublicationSubCategory::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private $subCategory;
+    private PublicationSubCategory $subCategory;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private $author;
+    private User $author;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
     #[Groups([PublicationFeatured::LIST, Publication::ITEM, Publication::LIST])]
-    private $slug;
+    private string $slug;
 
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([Publication::ITEM])]
-    private $shortDescription;
+    private ?string $shortDescription = null;
 
     #[Assert\NotBlank(message: 'Il doit y avoir du contenu dans la publication', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([Publication::ITEM])]
-    private $content;
+    private ?string $content = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private $editionDatetime;
+    private ?DateTimeInterface $editionDatetime = null;
 
-    #[Assert\Type(type: \DateTime::class, groups: ['publication'])]
+    #[Assert\Type(type: DateTime::class, groups: ['publication'])]
     #[Assert\NotBlank(groups: ['publication'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private $publicationDatetime;
+    private ?DateTimeInterface $publicationDatetime = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
     private int $status = self::STATUS_DRAFT;
@@ -124,24 +126,24 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]
     #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups([Publication::LIST])]
-    private $cover;
+    private ?PublicationCover $cover = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private $type;
+    private ?int $type = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private $oldPublicationId;
+    private ?int $oldPublicationId = null;
 
     #[ORM\ManyToOne(targetEntity: CommentThread::class)]
     #[Groups([Publication::ITEM])]
-    private $thread;
+    private CommentThread $thread;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    private $viewCache;
+    private ViewCache $viewCache;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->images = new ArrayCollection();
     }
 
@@ -198,36 +200,36 @@ class Publication implements ViewableInterface, SluggableEntityInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
         return $this;
     }
 
-    public function getEditionDatetime(): ?\DateTimeInterface
+    public function getEditionDatetime(): ?DateTimeInterface
     {
         return $this->editionDatetime;
     }
 
-    public function setEditionDatetime(\DateTimeInterface $editionDatetime): self
+    public function setEditionDatetime(DateTimeInterface $editionDatetime): self
     {
         $this->editionDatetime = $editionDatetime;
 
         return $this;
     }
 
-    public function getPublicationDatetime(): ?\DateTimeInterface
+    public function getPublicationDatetime(): ?DateTimeInterface
     {
         return $this->publicationDatetime;
     }
 
-    public function setPublicationDatetime(?\DateTimeInterface $publicationDatetime): self
+    public function setPublicationDatetime(?DateTimeInterface $publicationDatetime): self
     {
         $this->publicationDatetime = $publicationDatetime;
 

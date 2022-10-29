@@ -2,6 +2,8 @@
 
 namespace App\Entity\Forum;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use App\Repository\Forum\ForumSourceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -20,15 +22,15 @@ class ForumSource
     private $forumCategories;
     #[ORM\Column(type: 'string', length: 255)]
     #[ApiProperty(identifier: true)]
-    private $slug;
+    private string $slug;
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private $description;
+    private ?string $description = null;
     #[ORM\Column(type: 'datetime')]
-    private $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->forumCategories = new ArrayCollection();
     }
 
@@ -91,12 +93,12 @@ class ForumSource
         return $this;
     }
 
-    public function getCreationDatetime(): \DateTime
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

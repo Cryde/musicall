@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Metadata\Get;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
@@ -62,7 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $oldId;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $confirmationDatetime = null;
+    private ?DateTimeInterface $confirmationDatetime = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $token = null;
@@ -77,7 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->publications = new ArrayCollection();
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function setId(string $id): self
@@ -195,24 +197,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
         return $this;
     }
 
-    public function getLastLoginDatetime(): ?\DateTimeInterface
+    public function getLastLoginDatetime(): ?DateTimeInterface
     {
         return $this->lastLoginDatetime;
     }
 
-    public function setLastLoginDatetime(?\DateTimeInterface $lastLoginDatetime): self
+    public function setLastLoginDatetime(?DateTimeInterface $lastLoginDatetime): self
     {
         $this->lastLoginDatetime = $lastLoginDatetime;
 
@@ -249,12 +251,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getConfirmationDatetime(): ?\DateTimeInterface
+    public function getConfirmationDatetime(): ?DateTimeInterface
     {
         return $this->confirmationDatetime;
     }
 
-    public function setConfirmationDatetime(?\DateTimeInterface $confirmationDatetime): self
+    public function setConfirmationDatetime(?DateTimeInterface $confirmationDatetime): self
     {
         $this->confirmationDatetime = $confirmationDatetime;
 
@@ -273,12 +275,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getResetRequestDatetime(): ?\DateTimeInterface
+    public function getResetRequestDatetime(): ?DateTimeInterface
     {
         return $this->resetRequestDatetime;
     }
 
-    public function setResetRequestDatetime(?\DateTimeInterface $resetRequestDatetime): self
+    public function setResetRequestDatetime(?DateTimeInterface $resetRequestDatetime): self
     {
         $this->resetRequestDatetime = $resetRequestDatetime;
 

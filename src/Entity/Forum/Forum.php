@@ -2,6 +2,8 @@
 
 namespace App\Entity\Forum;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
@@ -25,32 +27,32 @@ class Forum implements SluggableEntityInterface
     private $id;
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
-    private $title;
+    private string $title;
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
     #[ApiProperty(identifier: true)]
-    private $slug;
+    private string $slug;
     #[ORM\Column(type: 'text')]
     #[Groups([ForumCategory::LIST])]
-    private $description;
+    private string $description;
     #[ORM\ManyToOne(targetEntity: ForumCategory::class, inversedBy: 'forums')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Forum::ITEM])]
-    private $forumCategory;
+    private ForumCategory $forumCategory;
     #[ORM\Column(type: 'datetime')]
-    private $creationDatetime;
+    private DateTimeInterface $creationDatetime;
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private $updateDatetime;
+    private ?DateTimeInterface $updateDatetime = null;
     #[ORM\Column(type: 'integer')]
-    private $position;
+    private int $position;
     #[ORM\Column(type: 'integer')]
-    private $topicNumber;
+    private int $topicNumber;
     #[ORM\Column(type: 'integer')]
-    private $postNumber;
+    private int $postNumber;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getId(): ?string
@@ -106,24 +108,24 @@ class Forum implements SluggableEntityInterface
         return $this;
     }
 
-    public function getCreationDatetime(): \DateTime
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
         return $this;
     }
 
-    public function getUpdateDatetime(): ?\DateTimeInterface
+    public function getUpdateDatetime(): ?DateTimeInterface
     {
         return $this->updateDatetime;
     }
 
-    public function setUpdateDatetime(?\DateTimeInterface $updateDatetime): self
+    public function setUpdateDatetime(?DateTimeInterface $updateDatetime): self
     {
         $this->updateDatetime = $updateDatetime;
 

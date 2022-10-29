@@ -2,6 +2,8 @@
 
 namespace App\Entity\Forum;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -34,21 +36,21 @@ class ForumCategory
     private $id;
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups([ForumCategory::LIST, Forum::ITEM])]
-    private $title;
+    private string $title;
     #[ORM\Column(type: 'datetime')]
-    private $creationDatetime;
+    private DateTimeInterface $creationDatetime;
     #[ORM\Column(type: 'integer')]
-    private $position;
+    private int $position;
     #[ORM\ManyToOne(targetEntity: ForumSource::class, inversedBy: 'forumCategories')]
     #[ORM\JoinColumn(nullable: false)]
-    private $forumSource;
+    private ForumSource $forumSource;
     #[ORM\OneToMany(mappedBy: 'forumCategory', targetEntity: Forum::class)]
     #[Groups([ForumCategory::LIST])]
     private $forums;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->forums = new ArrayCollection();
     }
 
@@ -69,12 +71,12 @@ class ForumCategory
         return $this;
     }
 
-    public function getCreationDatetime(): \DateTime
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

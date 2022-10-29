@@ -2,6 +2,8 @@
 
 namespace App\Entity\Message;
 
+use DateTimeInterface;
+use DateTime;
 use App\Repository\Message\MessageThreadRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,20 +19,20 @@ class MessageThread
     private $id;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
-    private $messages;
+    private ArrayCollection $messages;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
-    private $messageParticipants;
+    private ArrayCollection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
-    private $lastMessage;
+    private Message $lastMessage;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->messages = new ArrayCollection();
         $this->messageParticipants = new ArrayCollection();
     }
@@ -71,12 +73,12 @@ class MessageThread
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(?\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(?DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

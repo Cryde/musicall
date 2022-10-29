@@ -2,6 +2,8 @@
 
 namespace App\Entity\Forum;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
@@ -43,38 +45,38 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\ManyToOne(targetEntity: Forum::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumTopic::ITEM])]
-    private $forum;
+    private Forum $forum;
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
-    private $title;
+    private string $title;
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
-    private $slug;
+    private string $slug;
     #[ORM\Column(type: 'integer')]
     #[Groups([ForumTopic::LIST])]
-    private $type;
+    private int $type;
     #[ORM\Column(type: 'boolean')]
     #[Groups([ForumTopic::LIST])]
-    private $isLocked;
+    private bool $isLocked;
     #[ORM\ManyToOne(targetEntity: ForumPost::class)]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups([ForumTopic::LIST])]
-    private $lastPost;
+    private ?ForumPost $lastPost = null;
     #[ORM\Column(type: 'datetime')]
     #[Groups([ForumTopic::LIST])]
-    private $creationDatetime;
+    private DateTimeInterface $creationDatetime;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumTopic::LIST])]
-    private $author;
+    private User $author;
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Groups([ForumTopic::LIST])]
-    private $postNumber;
+    private int $postNumber = 0;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->isLocked = false;
         $this->type = self::TYPE_TOPIC_DEFAULT;
     }
@@ -156,12 +158,12 @@ class ForumTopic implements SluggableEntityInterface
         return $this;
     }
 
-    public function getCreationDatetime(): \DateTime
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 

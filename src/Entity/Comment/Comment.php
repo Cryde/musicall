@@ -2,6 +2,8 @@
 
 namespace App\Entity\Comment;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
@@ -54,7 +56,7 @@ class Comment implements AuthorableEntityInterface
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups([Comment::ITEM, Comment::LIST])]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[Assert\NotBlank(message: 'Le commentaire est vide')]
     #[ORM\Column(type: Types::TEXT)]
@@ -63,7 +65,7 @@ class Comment implements AuthorableEntityInterface
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getId(): int
@@ -95,12 +97,12 @@ class Comment implements AuthorableEntityInterface
         return $this;
     }
 
-    public function getCreationDatetime(): \DateTimeInterface
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): static
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): static
     {
         $this->creationDatetime = $creationDatetime;
 

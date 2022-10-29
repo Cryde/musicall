@@ -2,6 +2,8 @@
 
 namespace App\Entity\Forum;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -35,24 +37,24 @@ class ForumPost
     private $id;
     #[ORM\Column(type: 'datetime')]
     #[Groups([ForumPost::LIST, ForumTopic::LIST])]
-    private $creationDatetime;
+    private DateTimeInterface $creationDatetime;
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups([ForumPost::LIST])]
-    private $updateDatetime;
+    private ?DateTimeInterface $updateDatetime = null;
     #[ORM\Column(type: 'text')]
     #[Groups([ForumPost::LIST])]
-    private $content;
+    private string $content;
     #[ORM\ManyToOne(targetEntity: ForumTopic::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private $topic;
+    private ForumTopic $topic;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumPost::LIST, ForumTopic::LIST])]
-    private $creator;
+    private User $creator;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getId(): ?string
@@ -60,24 +62,24 @@ class ForumPost
         return $this->id;
     }
 
-    public function getCreationDatetime(): \DateTime
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
         return $this;
     }
 
-    public function getUpdateDatetime(): ?\DateTimeInterface
+    public function getUpdateDatetime(): ?DateTimeInterface
     {
         return $this->updateDatetime;
     }
 
-    public function setUpdateDatetime(?\DateTimeInterface $updateDatetime): self
+    public function setUpdateDatetime(?DateTimeInterface $updateDatetime): self
     {
         $this->updateDatetime = $updateDatetime;
 

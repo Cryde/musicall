@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
@@ -43,7 +45,7 @@ class PublicationFeatured
     private $description;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[Assert\NotBlank(groups: ['add', 'edit', 'publish'])]
     #[ORM\Column(type: Types::SMALLINT)]
@@ -72,7 +74,7 @@ class PublicationFeatured
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
     }
 
     public function getId(): ?int
@@ -104,12 +106,12 @@ class PublicationFeatured
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
@@ -140,12 +142,12 @@ class PublicationFeatured
         return $this;
     }
 
-    public function getPublicationDatetime(): ?\DateTimeInterface
+    public function getPublicationDatetime(): ?DateTimeInterface
     {
         return $this->publicationDatetime;
     }
 
-    public function setPublicationDatetime(?\DateTimeInterface $publicationDatetime): self
+    public function setPublicationDatetime(?DateTimeInterface $publicationDatetime): self
     {
         $this->publicationDatetime = $publicationDatetime;
 

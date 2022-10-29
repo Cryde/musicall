@@ -2,6 +2,8 @@
 
 namespace App\Entity\Wiki;
 
+use DateTimeInterface;
+use DateTime;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Image\WikiArtistCover;
 use App\Repository\Wiki\ArtistRepository;
@@ -30,7 +32,7 @@ class Artist implements SluggableEntityInterface
     private $biography;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private $members;
@@ -59,7 +61,7 @@ class Artist implements SluggableEntityInterface
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->socials = new ArrayCollection();
     }
 
@@ -92,12 +94,12 @@ class Artist implements SluggableEntityInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
