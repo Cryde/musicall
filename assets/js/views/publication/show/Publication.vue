@@ -73,13 +73,20 @@ export default {
     ...mapGetters('publication', [
       'isLoading',
       'publication',
-      'hasError'
+      'hasError',
+      'error'
     ])
   },
   methods: {
     async load(slug) {
       await this.$store.dispatch('publication/getPublication', {slug});
       if (this.hasError) {
+        this.$buefy.toast.open({
+          message: this.error,
+          type: 'is-danger',
+          position: 'is-bottom-left',
+          duration: 5000
+        });
         this.$router.replace({name: 'home'});
       }
     }

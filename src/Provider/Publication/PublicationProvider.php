@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Repository\PublicationRepository;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Security;
 
 class PublicationProvider implements ProviderInterface
@@ -26,6 +27,10 @@ class PublicationProvider implements ProviderInterface
     {
         if ($operation instanceof Get) {
             $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
+            if (!$publication) {
+                throw new NotFoundHttpException('Publication inexistante');
+            }
+
             if ($publication->getStatus() === Publication::STATUS_ONLINE) {
                 /** @var User $user */
                 $user = $this->security->getUser();
