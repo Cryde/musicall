@@ -52,9 +52,10 @@ const actions = {
       const publication = await apiPublication.getPublication(payload.slug);
       commit(UPDATE_PUBLICATION, publication);
     } catch (err) {
-      if (err.response.data.status === 404) {
-        commit(UPDATE_ERROR, 'Publication inexistante.');
+      if (err.response.status === 404) {
+        commit(UPDATE_ERROR, 'La publication n\'existe pas.');
       }
+      commit(UPDATE_ERROR, 'Une erreur inconnue est survenue');
     }
     commit(IS_LOADING, false);
   },
