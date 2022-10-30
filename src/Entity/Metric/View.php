@@ -24,7 +24,7 @@ class View
     private string $identifier;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    private User $user;
+    private ?User $user;
 
     #[ORM\ManyToOne(targetEntity: ViewCache::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -69,7 +69,7 @@ class View
         return $this->user;
     }
 
-    public function setUser(User $user): self
+    public function setUser(?User $user): self
     {
         $this->user = $user;
 
