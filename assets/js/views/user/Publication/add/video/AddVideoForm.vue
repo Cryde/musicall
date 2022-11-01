@@ -25,7 +25,7 @@
       </b-field>
 
       <div class="has-text-centered" v-if="isLoading">
-        <spinner/>
+        <b-loading active :is-full-page="false" />
       </div>
 
       <div v-if="showPreview && !isExistingVideo">
@@ -42,9 +42,14 @@
         <img :src="videoImage" class="img-fluid"/>
       </div>
 
-      <div v-if="showPreview && isExistingVideo">
-        La vidéo existe déjà. Vous ne pouvez pas la remettre en ligne une nouvelle fois.
-      </div>
+      <b-message type="is-danger" v-if="hasError">
+        Une erreur est survenue. Fermez cette fenetre puis re-essayer.
+      </b-message>
+
+      <b-message v-if="showPreview && isExistingVideo" type="is-danger">
+        La vidéo existe déjà. <br/>
+        Vous ne pouvez pas la remettre en ligne une nouvelle fois.
+      </b-message>
     </section>
 
     <footer class="modal-card-foot">
@@ -98,7 +103,8 @@ export default {
       'video',
       'isExistingVideo',
       'isLoading',
-      'isLoadingAdd'
+      'isLoadingAdd',
+      'hasError'
     ]),
     canSend() {
       return this.videoUrl.startsWith('https://') && (!this.displayCategories || this.displayCategories && this.selectedCategory !== null);
@@ -124,11 +130,13 @@ export default {
 
       await this.$store.dispatch('video/getPreviewVideo', {videoUrl: this.videoUrl.trim()});
 
-      this.videoTitle = this.video.title;
-      this.videoDescription = this.video.description;
-      this.videoImage = this.video.image_url;
+      if (!this.hasError) {
+        this.videoTitle = this.video.title;
+        this.videoDescription = this.video.description;
+        this.videoImage = this.video.image_url;
 
-      this.showPreview = true;
+        this.showPreview = true;
+      }
     },
     async save() {
       try {
@@ -155,8 +163,8 @@ export default {
       }
     }
   },
-  async destroyed() {
-    await this.$store.dispatch('video/resetState');
+  destroyed() {
+   this.$store.dispatch('video/resetState');
   }
 }
 </script>

@@ -12,7 +12,7 @@
       <b-tooltip label="Ajouter un cours vidéo YouTube" type="is-dark" class="is-pulled-right">
         <b-button v-if="isAuthenticated" class="youtube-btn" rounded
                   icon-left="youtube" icon-pack="fab"
-                  @click="$refs['modal-video-add'].open()">
+                  @click="openAddVideoModal">
           Ajouter
         </b-button>
       </b-tooltip>
@@ -29,17 +29,16 @@
       </router-link>
     </div>
 
-    <add-video-modal v-if="isAuthenticated" ref="modal-video-add" :display-categories="true" :categories="courseCategories" />
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex';
 import Breadcrumb from "../../components/global/Breadcrumb";
-import AddVideoModal from "../user/Publication/add/video/AddVideoModal";
+import AddVideoForm from "../user/Publication/add/video/AddVideoForm";
 
 export default {
-  components: {AddVideoModal, Breadcrumb},
+  components: {AddVideoForm, Breadcrumb},
   computed: {
     ...mapGetters('security', ['isAuthenticated']),
     ...mapGetters('publicationCategory', ['isLoading', 'courseCategories'])
@@ -51,6 +50,17 @@ export default {
   },
   mounted() {
     this.$store.dispatch('publicationCategory/getCategories');
+  },
+  methods: {
+    openAddVideoModal() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: AddVideoForm,
+        props: {displayCategories: true, categories: this.courseCategories},
+        hasModalCard: true,
+        trapFocus: true
+      })
+    }
   }
 }
 </script>
