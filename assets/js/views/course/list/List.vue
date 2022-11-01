@@ -14,7 +14,7 @@
       <b-tooltip label="Ajouter un cours vidéo YouTube" type="is-dark" class="is-pulled-right">
         <b-button v-if="isAuthenticated" class="youtube-btn" rounded
                   icon-left="youtube" icon-pack="fab"
-                  @click="$refs['modal-video-add'].open()">
+                  @click="openAddVideoModal()">
           Ajouter
         </b-button>
       </b-tooltip>
@@ -88,6 +88,8 @@
         </template>
       </b-pagination>
     </div>
+
+
     <add-video-modal v-if="isAuthenticated" ref="modal-video-add" :display-categories="true" :categories="courseCategories" :pre-selected-category="currentCategory" />
   </div>
 </template>
@@ -102,6 +104,7 @@ import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import AddVideoModal from "../../user/Publication/add/video/AddVideoModal";
 import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
+import AddVideoForm from "../../user/Publication/add/video/AddVideoForm";
 
 export default {
   components: {AddVideoModal, Breadcrumb, Spinner, PublicationType, MasonryWall, Card},
@@ -150,6 +153,15 @@ export default {
     });
   },
   methods: {
+    openAddVideoModal() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: AddVideoForm,
+        props: {displayCategories: true, categories: this.courseCategories, preSelectedCategory: this.currentCategory},
+        hasModalCard: true,
+        trapFocus: true
+      })
+    },
     pageTitle() {
       if (this.currentCategory) {
         return `${this.currentCategory.title} - MusicAll`;

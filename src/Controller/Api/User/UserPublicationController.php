@@ -10,6 +10,7 @@ use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\UserPublicationArraySerializer;
 use App\Service\Builder\CommentThreadDirector;
+use App\Service\Builder\Metric\ViewCacheDirector;
 use App\Service\Builder\PublicationCoverDirector;
 use App\Service\Builder\PublicationDirector;
 use App\Service\File\Exception\CorruptedFileException;
@@ -121,6 +122,7 @@ class UserPublicationController extends AbstractController
         RemoteFileDownloader           $remoteFileDownloader,
         ParameterBagInterface          $containerBag,
         CommentThreadDirector          $commentThreadDirector,
+        ViewCacheDirector $viewCacheDirector,
         #[CurrentUser]                 $user
     ): JsonResponse {
         $data = $jsonizer->decodeRequest($request);
@@ -134,12 +136,14 @@ class UserPublicationController extends AbstractController
         // this to be sure the video still exist
         $file = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
         $thread = $commentThreadDirector->create();
+        $viewCache = $viewCacheDirector->build();
         $this->entityManager->persist($thread);
         $cover = $publicationCoverDirector->build($file);
         $publication = $publicationDirector->buildVideo($data, $user);
         $cover->setPublication($publication);
         $publication->setCover($cover);
         $publication->setThread($thread);
+        $publication->setViewCache($viewCache);
         $this->entityManager->persist($publication);
         $this->entityManager->flush();
 

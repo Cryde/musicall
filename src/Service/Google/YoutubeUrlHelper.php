@@ -5,15 +5,8 @@ class YoutubeUrlHelper
 {
     public function getVideoId(string $urlVideo): string
     {
-        $host = mb_strtolower(parse_url($urlVideo, PHP_URL_HOST));
-        if ($host === 'youtu.be') {
-            $path = parse_url($urlVideo, PHP_URL_PATH);
-            $videoId = substr($path, 1);
-        } else {
-            parse_str(parse_url($urlVideo, PHP_URL_QUERY), $args);
-            $videoId = $args['v'] ?? '';
-        }
+        preg_match('~(youtu.*be.*)\/(watch\?v=|embed\/|v|shorts|)(.*?((?=[&#?])|$))~', $urlVideo, $matches);
 
-        return $videoId ?: '';
+        return $matches[3] ?? '';
     }
 }

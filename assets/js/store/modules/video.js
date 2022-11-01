@@ -66,15 +66,11 @@ const mutations = {
     state.newVideo = payload;
   },
   [RESET_ALL](state) {
-    state = {
-      ...state, ...{
-        isLoading: false,
-        error: null,
-        video: {},
-        isLoadingAdd: false,
-        newVideo: {}
-      }
-    };
+    state.isLoading = false;
+    state.error = null;
+    state.video = {};
+    state.isLoadingAdd = false;
+    state.newVideo = {};
   }
 };
 
