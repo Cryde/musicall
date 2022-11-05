@@ -12,9 +12,15 @@
 
       <b-icon icon="chevron-down"></b-icon>
     </a>
-
     <b-dropdown-item custom aria-role="menuitem">
       <strong v-if="user" class="ml-5 ">{{ user.username }}</strong>
+    </b-dropdown-item>
+    <hr class="dropdown-divider">
+    <b-dropdown-item has-link>
+      <router-link :to="{name: 'message_list'}">
+        <b-icon icon="envelope"></b-icon>
+        Messages <b-tag class="is-warning" rounded v-if="messageCount">{{ messageCount }}</b-tag>
+      </router-link>
     </b-dropdown-item>
     <hr class="dropdown-divider">
     <b-dropdown-item has-link>
@@ -36,7 +42,14 @@
       </router-link>
     </b-dropdown-item>
 
-    <hr class="dropdown-divider" aria-role="menuitem">
+    <hr class="dropdown-divider" v-if="isRoleAdmin">
+    <b-dropdown-item has-link v-if="isRoleAdmin">
+      <router-link :to="{name: 'admin_dashboard'}">
+        <b-icon icon="bolt"></b-icon>
+        Admin <b-tag type="is-warning" rounded v-if="adminCount">{{ adminCount }}</b-tag>
+      </router-link>
+    </b-dropdown-item>
+    <hr class="dropdown-divider">
     <b-dropdown-item has-link>
       <router-link :to="{name: 'user_settings'}">
         <b-icon icon="cog"></b-icon>

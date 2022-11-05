@@ -1,19 +1,17 @@
 <template>
-  <b-navbar fixed-top shadow centered spaced wrapper-class="container">
-    <template #brand class="mr-3">
+  <b-navbar fixed-top shadow spaced wrapper-class="container">
+    <template #brand>
       <b-navbar-item tag="router-link" :to="{name: 'home'}">
         <span class="nav-logo"><img :src="logoPath" alt="Logo MusicAll"/></span>
       </b-navbar-item>
     </template>
 
     <template #start>
-
-      <b-navbar-item :to="{ name: 'home' }" tag="router-link" exact-active-class="is-active">
+      <b-navbar-item :to="{ name: 'home' }" tag="router-link" exact-active-class="is-active" class="ml-5">
         Home
       </b-navbar-item>
       <b-navbar-dropdown :to="{ name: 'publication' }" exact-active-class="is-active" tag="router-link" label="Publications" hoverable>
-
-        <b-navbar-item v-if="isLoading"><spinner size="sm"/></b-navbar-item>
+        <b-navbar-item v-if="isLoading"><b-loading size="sm" active/></b-navbar-item>
         <b-navbar-item v-else
                        v-for="category in publicationCategories"
                        :to="{name: 'publications_by_category', params: { slug: category.slug}}"
@@ -24,7 +22,7 @@
         <b-navbar-item v-if="!isLoading" :to="{name: 'gallery_list'}" tag="router-link"  exact-active-class="is-active">Photos</b-navbar-item>
       </b-navbar-dropdown>
 
-      <b-navbar-dropdown :to="{ name: 'course_index' }" tag="router-link" label="Cours" hoverable>
+      <b-navbar-dropdown :to="{ name: 'course_index' }" tag="router-link" exact-active-class="is-active" label="Cours" hoverable>
 
         <b-navbar-item v-if="isLoading"><spinner size="sm"/></b-navbar-item>
         <b-navbar-item v-else
@@ -43,53 +41,38 @@
       <b-navbar-item :to="{ name: 'forum_index' }" tag="router-link">
         Forum
       </b-navbar-item>
+
+
+      <b-autocomplete
+          :data="results"
+          rounded
+          class="ml-5"
+          clearable
+          clear-on-select
+          placeholder="Rechercher..."
+          field="title"
+          :loading="isLoadingSearch"
+          icon="search"
+          @typing="search"
+          @select="go"
+      >
+        <template #empty><span v-if="!isLoadingSearch">Il n'y a pas de résultats</span></template>
+        <template slot-scope="props">
+          <div class="media">
+            <div class="media-content">
+              {{ props.option.title }}
+              <br>
+              <span>
+                {{ props.option.publication_datetime | relativeDate }}
+                <publication-type :type="props.option.type" class="ml-3 is-inline-block"/>
+              </span>
+            </div>
+          </div>
+        </template>
+      </b-autocomplete>
     </template>
 
-    <template slot="end">
-        <b-autocomplete
-            :data="results"
-            rounded
-            class=""
-            clearable
-            clear-on-select
-            placeholder="Rechercher..."
-            field="title"
-            :loading="isLoadingSearch"
-            icon="search"
-            @typing="search"
-            @select="go"
-        >
-          <template slot="empty"><span v-if="!isLoadingSearch">Il n'y a pas de résultats</span></template>
-          <template slot-scope="props">
-            <div class="media">
-              <div class="media-content">
-                {{ props.option.title }}
-                <br>
-                <small>
-                  {{ props.option.publication_datetime | relativeDate }}
-                  <publication-type :type="props.option.type" class="ml-3 is-inline-block"/>
-                </small>
-              </div>
-            </div>
-          </template>
-        </b-autocomplete>
-
-
-
-      <b-navbar-item tag="div" v-if="isAuthenticated">
-        <div class="buttons">
-          <b-button size="is-light" :to="{ name: 'admin_dashboard' }" tag="router-link"
-                    v-if="isRoleAdmin"
-                    icon-left="bolt"><span class="badge is-warning" v-if="adminCount">{{ adminCount }}</span></b-button>
-
-          <b-button size="is-light" :to="{ name: 'message_list' }" tag="router-link"
-                    icon-left="envelope">
-            message
-            <span class="badge is-warning" v-if="messageCount">{{ messageCount }}</span>
-          </b-button>
-        </div>
-      </b-navbar-item>
-
+    <template #end>
       <Dropdown v-if="isAuthenticated"/>
       <b-navbar-item tag="div" v-else>
         <div class="buttons">
@@ -136,10 +119,6 @@ export default {
       'isLoading',
       'isRoleAdmin'
     ]),
-    ...mapGetters('notifications', ['messageCount', 'pendingGalleriesCount', 'pendingPublicationsCount']),
-    adminCount() {
-      return this.pendingGalleriesCount + this.pendingPublicationsCount;
-    },
   },
   methods: {
     hide() {
