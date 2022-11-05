@@ -10,7 +10,7 @@ class AuthenticationSuccessListener
     /**
      * @throws \Exception
      */
-    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
+    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event): void
     {
         $user = $event->getUser();
 
