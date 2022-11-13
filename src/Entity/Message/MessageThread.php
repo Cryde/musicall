@@ -19,13 +19,13 @@ class MessageThread
     private $id;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
-    private ArrayCollection $messages;
+    private Collection $messages;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
-    private ArrayCollection $messageParticipants;
+    private Collection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
     private Message $lastMessage;
