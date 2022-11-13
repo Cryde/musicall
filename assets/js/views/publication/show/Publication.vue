@@ -41,7 +41,7 @@
                 allowfullscreen></iframe>
       </figure>
     </div>
-    <comment v-if="!isLoading && !hasError && publication.thread.id" :thread-id="publication.thread.id"/>
+    <comment v-if="!isLoading && !hasError && publication.thread && publication.thread.id" :thread-id="publication.thread.id"/>
   </div>
 </template>
 
