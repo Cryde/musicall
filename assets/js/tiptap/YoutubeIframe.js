@@ -1,53 +1,57 @@
-import {Node} from "tiptap";
+import {Node} from '@tiptap/core'
+import {mergeAttributes} from "@tiptap/vue-2";
 
-export default class YoutubeIframe extends Node {
-  get name() {
-    return "youtubeiframe";
-  }
+const YoutubeIframe = Node.create({
+  name: 'youtube',
+  draggable: true,
 
-  get schema() {
+  group() {
+    return 'block'
+  },
+
+  addAttributes() {
     return {
-      attrs: {
-        src: {
-          default: null
-        }
+      src: {
+        default: null,
       },
-      group: "block",
-      selectable: false,
-      parseDOM: [
-        {
-          tag: "iframe",
-          getAttrs: (dom) => {
-            return {
-              src: dom.getAttribute("src")
-            }
-          }
-        }
+    }
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'div[data-youtube-video] iframe',
+      },
+    ]
+  },
+  renderHTML({node, HTMLAttributes}) {
+    return [
+      'div',
+      {'data-youtube-video': '', class: 'image is-16by9'},
+      [
+        'iframe',
+        mergeAttributes(
+            HTMLAttributes,
+            {
+              frameborder: 0,
+              allowfullscreen: "true",
+              class: "has-ratio",
+              allow: "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            },
+        ),
       ],
-      toDOM: node => [
-        'div',
-        {
-          class: 'image is-16by9'
-        },
-        ["iframe",
-          {
-            src: node.attrs.src,
-            frameborder: 0,
-            allowfullscreen: "true",
-            class: "has-ratio",
-            allow:
-                "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-          }]
-      ]
-    };
-  }
-  commands({type}) {
-    return attrs => (state, dispatch) => {
-      const {selection} = state;
-      const position = selection.$cursor ? selection.$cursor.pos : selection.$to.pos;
-      const node = type.create(attrs);
-      const transaction = state.tr.insert(position, node);
-      dispatch(transaction);
-    };
-  }
-}
+    ];
+  },
+  addCommands() {
+    return {
+      addYoutubeVideo: options => ({commands}) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: options,
+        })
+      },
+    }
+  },
+})
+
+export default YoutubeIframe;
