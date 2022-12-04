@@ -25,7 +25,6 @@
         "nyholm/psr7": "^1.5.1",
         "phpdocumentor/reflection-docblock": "^5.3",
         "phpstan/phpdoc-parser": "^1.7",
-        "sensio/framework-extra-bundle": "^6.2.6",
         "sentry/sdk": "^3.2",
         "sentry/sentry": "^3.7",
         "sentry/sentry-symfony": "^4.3",
