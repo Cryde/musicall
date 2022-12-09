@@ -9,7 +9,7 @@ use App\Repository\GalleryRepository;
 use App\Serializer\GalleryImageSerializer;
 use App\Serializer\Normalizer\UserGalleryNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

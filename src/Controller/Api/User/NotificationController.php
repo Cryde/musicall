@@ -7,7 +7,7 @@ use App\Entity\Publication;
 use App\Repository\GalleryRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Repository\PublicationRepository;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;

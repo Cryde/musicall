@@ -5,7 +5,7 @@ namespace App\Controller\Api\Admin;
 use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use App\Serializer\SmallPublicationSerializer;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
