@@ -7,6 +7,15 @@
         :current="{label: forum.title}"
     />
 
+    <b-button
+        type="is-info"
+        class="is-pulled-right"
+        icon-left="plus"
+        @click="openAddTopicModal"
+    >
+      Créer un nouveau sujet
+    </b-button>
+
     <h1 class="subtitle is-3">{{ forum.title }}</h1>
 
     <div class="box content topic-box">
@@ -65,6 +74,8 @@ import forum from "../../../api/forum/forum";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import TopicListItem from "./TopicListItem";
 import {FORUM_MAX_TOPIC_PER_PAGE} from "../../../constants/forum";
+import AddTopicForm from "./Add/AddTopicForm";
+import {EVENT_TOPIC_CREATED} from "../../../constants/events";
 
 export default {
   components: {TopicListItem, Breadcrumb},
@@ -97,10 +108,27 @@ export default {
     },
   },
   async created() {
+
+    this.$root.$on(EVENT_TOPIC_CREATED, () => {
+      this.fetchData();
+    });
+
     this.isLoading = true;
     this.current = this.$route.query.page ? +this.$route.query.page : 1;
     const slug = this.$route.params.slug;
-    this.forum = await forum.getForum(slug);
+    try {
+      this.forum = await forum.getForum(slug);
+    } catch (e) {
+      this.$buefy.toast.open({
+        message: 'Une erreur est survenue lors du chargement de ce forum',
+        type: 'is-danger',
+        position: 'is-bottom-left',
+        duration: 5000
+      });
+      this.$router.replace({name: 'forum_index'});
+
+      return;
+    }
     await this.fetchData();
     this.isLoading = false;
   },
@@ -121,6 +149,15 @@ export default {
       this.topics = metaTopics['hydra:member']
       this.totalItems = metaTopics['hydra:totalItems']
     },
+    openAddTopicModal() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: AddTopicForm,
+        props: {forumSlug: this.$route.params.slug},
+        hasModalCard: true,
+        trapFocus: true
+      })
+    }
   }
 }
 </script>

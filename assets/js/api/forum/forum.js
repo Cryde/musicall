@@ -27,4 +27,8 @@ export default {
     return axios.get(Routing.generate('api_forum_topics_get_item', {slug}))
     .then(resp => resp.data);
   },
+  postTopicMessage(data) {
+    return axios.post(Routing.generate('api_forum_topic_post_post'), data)
+    .then(resp => resp.data)
+  }
 }

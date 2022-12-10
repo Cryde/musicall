@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext: ['groups' => [ForumTopic::ITEM]],
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
     output: ForumTopic::class,
+    name: 'api_forum_topic_post_post',
     processor: ForumTopicMessageProcessor::class
 )]
 class ForumTopicMessage
