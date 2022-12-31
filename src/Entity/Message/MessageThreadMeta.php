@@ -8,14 +8,16 @@ use App\Entity\User;
 use App\Repository\Message\MessageThreadMetaRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: MessageThreadMetaRepository::class)]
 #[ORM\UniqueConstraint(name: 'message_thread_meta_unique', columns: ['thread_id', 'user_id'])]
 class MessageThreadMeta
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: Types::GUID)]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class)]
