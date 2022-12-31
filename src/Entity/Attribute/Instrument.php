@@ -11,6 +11,7 @@ use App\Contracts\SluggableEntityInterface;
 use App\Repository\Attribute\InstrumentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -26,8 +27,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Instrument implements SluggableEntityInterface
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: Types::GUID)]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     private $id;
 
     #[Assert\NotBlank]
