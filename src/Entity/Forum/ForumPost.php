@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Entity\User;
 use App\Repository\Forum\ForumPostRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumPostRepository::class)]
@@ -31,8 +32,9 @@ class ForumPost
     final const ITEM = 'FORUM_POST_ITEM';
 
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: 'guid')]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([ForumPost::LIST, ForumTopic::LIST])]
     private $id;
     #[ORM\Column(type: 'datetime')]

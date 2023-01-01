@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MusicianAnnounceRepository::class)]
@@ -22,8 +23,9 @@ class MusicianAnnounce
     final const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
 
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: Types::GUID)]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     private $id;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

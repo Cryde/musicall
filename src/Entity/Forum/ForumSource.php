@@ -9,13 +9,15 @@ use App\Repository\Forum\ForumSourceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: ForumSourceRepository::class)]
 class ForumSource
 {
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: 'guid')]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\OneToMany(mappedBy: 'forumSource', targetEntity: ForumCategory::class)]
