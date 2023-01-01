@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Get;
 use App\Contracts\SluggableEntityInterface;
 use App\Repository\Forum\ForumRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
@@ -19,9 +20,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class Forum implements SluggableEntityInterface
 {
     final const ITEM = 'FORUM_ITEM';
+
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: 'guid')]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
     #[ApiProperty(identifier: false)]
     private $id;

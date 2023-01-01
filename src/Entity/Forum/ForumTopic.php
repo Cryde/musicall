@@ -16,6 +16,7 @@ use App\Contracts\SluggableEntityInterface;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
@@ -37,8 +38,9 @@ class ForumTopic implements SluggableEntityInterface
     final const TYPE_TOPIC_PINNED = 1;
 
     #[ORM\Id]
-    #[ORM\Column(name: 'id', type: 'guid')]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\Column(type: "uuid", unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
     #[ApiProperty(identifier: false)]
     private $id;
