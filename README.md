@@ -34,7 +34,7 @@ Composer version 2.3.10 2022-07-13 15:48:23
 Set up your environment. All of these commands have to be done in the project root.
 
 You will have to initialize your JWT configuration.   
-Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/master/Resources/doc/index.md#generate-the-ssh-keys
+Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys
 
 
 Configure you ```.env.local``` file (I only put important values here) :
