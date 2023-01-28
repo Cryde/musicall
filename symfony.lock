@@ -428,9 +428,6 @@
             "config/packages/sentry.yaml"
         ]
     },
-    "stella-maris/clock": {
-        "version": "0.1.4"
-    },
     "symfony/asset": {
         "version": "v4.2.0"
     },
