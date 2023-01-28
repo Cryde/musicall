@@ -1,6 +1,6 @@
 # [MusicAll](https://www.musicall.com)
 
-Community website powered by the Symfony 6.1 & PHP8.1.  
+Community website powered by the Symfony 6.2 & PHP8.1.
 MusicAll is a platform where people can share videos, articles, courses, search musicians or band & talk with them.
 
 ## Getting Started
@@ -19,9 +19,16 @@ Zend Engine v4.1.5, Copyright (c) Zend Technologies
     with Zend OPcache v8.1.5, Copyright (c), by Zend Technologies
 ```
 
-Be sure to have at least Node.js v16.16.0 (use [nvm](https://github.com/creationix/nvm) to have multiple versions of node)
+The database should be MariaDB version 10.6
+```
+mariadb --version
+mariadb  Ver 15.1 Distrib 10.6.11-MariaDB, for debian-linux-gnu (x86_64) using readline 5.2
+```
+
+Be sure to have at least Node.js v16.x.x (use [nvm](https://github.com/creationix/nvm) to have multiple versions of node)
 ```
 node -v
+v16.19.0
 ```
 Be sure to also have composer installed (locally or globally) :
 ```
@@ -32,6 +39,11 @@ Composer version 2.3.10 2022-07-13 15:48:23
 ### Installing
  
 Set up your environment. All of these commands have to be done in the project root.
+
+Install PHP vendor
+```
+composer install
+```
 
 You will have to initialize your JWT configuration.   
 Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys
@@ -45,11 +57,6 @@ DATABASE_URL=mysql://user:password@127.0.0.1:3306/your-db-name
 JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
 JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 JWT_PASSPHRASE=thepassphrase
-```
-
-Install PHP vendor
-```
-composer install
 ```
 
 Install JS deps
