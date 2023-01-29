@@ -1,0 +1,76 @@
+version: "3.1"
+services:
+  webserver:
+    image: nginx:stable
+    container_name: musicall-webserver
+    ports:
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:8080:8080"
+    restart: always
+    volumes:
+      - $PWD:/var/www/musicall/
+      - ./volumes/nginx/conf:/etc/nginx/conf.d
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.2
+
+  php-fpm:
+    build: .docker/fpm
+    # image: musicall-fpm
+    container_name: php-fpm
+    working_dir: /var/www/musicall
+    volumes:
+      - ./volumes/php-fpm:/var/log/php:cached
+      - $PWD:/var/www/musicall:cached
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.3
+
+  node:
+    image: node:latest
+    container_name: node
+    command: /bin/true
+    working_dir: /var/www
+    volumes:
+      - .:/var/www:cached
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.4
+
+  php-musicall:
+    build: .docker/cli-musicall
+    # image: php-musicall
+    container_name: php-musicall
+    working_dir: /var/www
+    command: /bin/true
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.5
+    volumes:
+      - .:/var/www:cached
+
+  db:
+    image: mariadb:10.6
+    container_name: musicall-db
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: musicall
+    volumes:
+      - db_files:/var/lib/mysql:cached
+      - ./volumes/db/logs:/var/log/mysql:cached
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.6
+        aliases:
+          - db.musicall
+networks:
+  musicall:
+    name: musicall
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.10.100.0/28
+
+volumes:
+  db_files:
+    driver: local
