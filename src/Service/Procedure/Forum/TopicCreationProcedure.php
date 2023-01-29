@@ -9,7 +9,7 @@ use App\Service\Builder\Forum\ForumPostBuilder;
 use App\Service\Builder\Forum\ForumTopicBuilder;
 use App\Service\Slugifier;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class TopicCreationProcedure
 {
