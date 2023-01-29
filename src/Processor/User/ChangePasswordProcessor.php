@@ -8,8 +8,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
 use App\Entity\User\ChangePassword;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Security;
 
 class ChangePasswordProcessor implements ProcessorInterface
 {

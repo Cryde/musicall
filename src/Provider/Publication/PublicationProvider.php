@@ -9,9 +9,9 @@ use App\Entity\Publication;
 use App\Entity\User;
 use App\Repository\PublicationRepository;
 use App\Service\Procedure\Metric\ViewProcedure;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\Security;
 
 class PublicationProvider implements ProviderInterface
 {
