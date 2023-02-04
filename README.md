@@ -2,8 +2,7 @@
 
 [![codecov](https://codecov.io/gh/Cryde/musicall/branch/master/graph/badge.svg?token=7RK8UIL2RH)](https://codecov.io/gh/Cryde/musicall)
 
-Community website powered by the Symfony 6.2 & PHP8.1.
-MusicAll is a platform where people can share videos, articles, courses, search musicians or band & talk with them.
+MusicAll is a platform where people can share videos, articles, courses, search musicians or band and talk with them.
 
 ## Getting Started
 
