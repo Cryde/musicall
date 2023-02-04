@@ -8,7 +8,7 @@ use App\Entity\User;
 
 class ViewDirector
 {
-    public function build(ViewCache $viewCache, $identifier, ?User $user)
+    public function build(ViewCache $viewCache, $identifier, ?User $user): View
     {
         return (new View())
             ->setUser($user)

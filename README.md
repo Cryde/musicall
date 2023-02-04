@@ -1,59 +1,54 @@
 # [MusicAll](https://www.musicall.com)
 
-Community website powered by the Symfony 6.2 & PHP8.1.
-MusicAll is a platform where people can share videos, articles, courses, search musicians or band & talk with them.
+[![codecov](https://codecov.io/gh/Cryde/musicall/branch/master/graph/badge.svg?token=7RK8UIL2RH)](https://codecov.io/gh/Cryde/musicall)
+
+MusicAll is a platform where people can share videos, articles, courses, search musicians or band and talk with them.
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development.
 
-### Prerequisites
-
-Some Symfony & VueJS knowledges are recommended.  
-You should run this projet with PHP 8.1
-```
-php -v
-PHP 8.1.5 (cli) (built: Apr 21 2022 10:15:06) (NTS)
-Copyright (c) The PHP Group
-Zend Engine v4.1.5, Copyright (c) Zend Technologies
-    with Zend OPcache v8.1.5, Copyright (c), by Zend Technologies
-```
-
-The database should be MariaDB version 10.6
-```
-mariadb --version
-mariadb  Ver 15.1 Distrib 10.6.11-MariaDB, for debian-linux-gnu (x86_64) using readline 5.2
-```
-
-Be sure to have at least Node.js v16.x.x (use [nvm](https://github.com/creationix/nvm) to have multiple versions of node)
-```
-node -v
-v16.19.0
-```
-Be sure to also have composer installed (locally or globally) :
-```
-composer --version
-Composer version 2.3.10 2022-07-13 15:48:23
-```
+This project use: 
+- PHP 8.1
+- Symfony 6.2
+- MariaDB version 10.6
+- node 16
+- VueJS 2.7
 
 ### Installing
- 
-Set up your environment. All of these commands have to be done in the project root.
+
+#### Setup Docker
+
+You will need Docker to run this project.
+Follow the Docker installation guide (https://docs.docker.com/get-docker/) to have it on your environment.
+
+Once it's done, go in the project root and run 
+```
+docker compose up -d
+```
+It will pull and build all the required images to run MusicAll
+
+#### Setup the project
+
+Add `musicall.localhost` to your `/etc/hosts`
+```
+127.0.0.1 	musicall.localhost
+```
 
 Install PHP vendor
 ```
-composer install
+docker compose run --rm php-musical composer install
 ```
 
 You will have to initialize your JWT configuration.   
-Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys
-
+Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys  
+**Note**: you will have to run some php command inside docker (eg: `docker compose run --rm php-musical bin/console lexik:jwt:generate-keypair`)
 
 Configure you ```.env.local``` file (I only put important values here) :
 ```
 APP_ENV=dev
 APP_SECRET=thisissecretchangeit
-DATABASE_URL=mysql://user:password@127.0.0.1:3306/your-db-name
+DATABASE_URL=mysql://user:password@db.musicall:3306/musicall
 JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
 JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 JWT_PASSPHRASE=thepassphrase
@@ -66,7 +61,7 @@ npm ci
 
 Run the migrations
 ```
-bin/console doctrine:migration:migrate
+docker compose run --rm php-musical bin/console doctrine:migration:migrate
 ```
 
 Start the assets watcher
@@ -74,13 +69,8 @@ Start the assets watcher
 npm run dev-server
 ```
 
-Start the local dev server
-```
-bin/console server:start
-```
-You will get a message like : ``` [OK] Server listening on http://127.0.0.1:8000```
+You can now access http://musicall.localhost
 
 ## TODO
 
 - [ ] Create fixtures
-- [ ] Create a docker 

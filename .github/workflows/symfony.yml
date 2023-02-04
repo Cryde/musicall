@@ -9,11 +9,11 @@ jobs:
     symfony:
         name: Symfony 6.1 (PHP ${{ matrix.php-versions }})
         # https://hub.docker.com/_/ubuntu/
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
         services:
             # https://docs.docker.com/samples/library/mysql/
             mysql:
-                image: mariadb:10.5
+                image: mariadb:10.6
                 env:
                     MYSQL_ROOT_PASSWORD: toor
                 ports:
@@ -63,3 +63,31 @@ jobs:
               with:
                   memory_limit: 256M
                   php_version: ${{ matrix.php-versions }}
+
+            - name: Create test database
+              run: |
+                  php bin/console doctrine:cache:clear-metadata
+                  php bin/console doctrine:database:create  --if-not-exists
+                  php bin/console doctrine:schema:drop --force
+                  php bin/console doctrine:schema:create
+                  php bin/console doctrine:schema:validate
+              env:
+                  APP_ENV: test
+
+            - name: PHPUnit Tests
+              uses: php-actions/phpunit@v3
+              with:
+                  memory_limit: 400M
+                  version: 9.5
+                  php_extensions: xdebug pdo_mysql mysqli intl json
+                  php_version: ${{ matrix.php-versions }}
+                  args: tests --coverage-clover ./coverage.xml
+              env:
+                  XDEBUG_MODE: coverage
+                  APP_ENV: test
+            - name: Upload to Codecov
+              uses: codecov/codecov-action@v2
+              with:
+                  token: ${{ secrets.CODE_COV_TOKEN }}
+                  files: ./coverage.xml
+                  verbose: true
