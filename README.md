@@ -56,7 +56,7 @@ JWT_PASSPHRASE=thepassphrase
 
 Install JS deps
 ```
-npm ci
+docker compose run --rm node npm ci
 ```
 
 Run the migrations
