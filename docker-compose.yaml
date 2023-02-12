@@ -49,6 +49,17 @@ services:
     volumes:
       - .:/var/www:cached
 
+  php-musicall-coverage:
+    build: .docker/cli-musicall-coverage
+    container_name: php-musicall-coverage
+    working_dir: /var/www
+    command: /bin/true
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.7
+    volumes:
+      - .:/var/www:cached
+
   db:
     image: mariadb:10.6
     container_name: musicall-db
