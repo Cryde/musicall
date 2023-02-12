@@ -7,11 +7,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Publication;
 use App\Entity\User;
+use App\Exception\PublicationNotFoundException;
 use App\Repository\PublicationRepository;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PublicationProvider implements ProviderInterface
 {
@@ -28,7 +28,7 @@ class PublicationProvider implements ProviderInterface
         if ($operation instanceof Get) {
             $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
             if (!$publication) {
-                throw new NotFoundHttpException('Publication inexistante');
+                throw new PublicationNotFoundException('Publication inexistante');
             }
 
             if ($publication->getStatus() === Publication::STATUS_ONLINE) {
