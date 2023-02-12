@@ -50,6 +50,7 @@
 import MessageEditor from "./MessageEditor";
 import forum from "../../../../api/forum/forum";
 import {EVENT_TOPIC_CREATED} from "../../../../constants/events";
+import {FORUM_MIN_LENGTH_MESSAGE, FORUM_MIN_LENGTH_TITLE} from "../../../../constants/forum";
 
 export default {
   components: {MessageEditor},
@@ -71,7 +72,7 @@ export default {
   },
   computed: {
     canSubmit() {
-      return this.title.trim().length > 3 && this.contentText.trim().length > 10;
+      return this.title.trim().length > FORUM_MIN_LENGTH_TITLE && this.contentText.trim().length > FORUM_MIN_LENGTH_MESSAGE;
     }
   },
   methods: {
