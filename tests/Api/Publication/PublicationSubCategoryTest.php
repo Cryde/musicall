@@ -13,6 +13,16 @@ class PublicationSubCategoryTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
+    public function test_get_item_publication_sub_category(): void
+    {
+        $sub = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
+
+        $this->client->request('GET', '/api/publication_sub_categories/' . $sub->getId());
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([]); // empty for now
+    }
+
     public function test_get_publication_sub_category(): void
     {
         $sub1 = PublicationSubCategoryFactory::new()->asNews()->create();

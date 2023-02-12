@@ -4,6 +4,7 @@ namespace App\Tests\Factory\User;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use DateTime;
 use Zenstruck\Foundry\ModelFactory;
 use Zenstruck\Foundry\Proxy;
 use Zenstruck\Foundry\RepositoryProxy;
@@ -45,6 +46,8 @@ use Zenstruck\Foundry\RepositoryProxy;
  */
 final class UserFactory extends ModelFactory
 {
+    const DEFAULT_PASSWORD = '\$2y\$04\$v1LqXePkM/bTdPJSmZnbNuNM3ogkQoUJvQpVvoxT7VF1PItj1c8HO'; // it's 'password'
+
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
      *
@@ -63,15 +66,11 @@ final class UserFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'confirmationDatetime' => self::faker()->dateTime(),
             'creationDatetime' => self::faker()->dateTime(),
             'email' => self::faker()->text(180),
-            'lastLoginDatetime' => self::faker()->dateTime(),
-            'oldId' => self::faker()->randomNumber(),
+            'lastLoginDatetime' => new DateTime(),
             'password' => self::faker()->text(),
-            'resetRequestDatetime' => self::faker()->dateTime(),
             'roles' => [],
-            'token' => self::faker()->text(255),
             'username' => self::faker()->text(180),
         ];
     }
@@ -84,6 +83,17 @@ final class UserFactory extends ModelFactory
         return $this
             // ->afterInstantiate(function(User $user): void {})
         ;
+    }
+
+    public function asAdminUser()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'email' => 'admin@email.com',
+            'password' => self::DEFAULT_PASSWORD,
+            'roles' => ['ROLE_ADMIN'],
+            'username' => 'user_admin',
+        ]);
     }
 
     protected static function getClass(): string

@@ -68,7 +68,6 @@ final class PublicationFactory extends ModelFactory
             'content' => self::faker()->text(),
             'creationDatetime' => self::faker()->dateTime(),
             'editionDatetime' => self::faker()->dateTime(),
-            'oldPublicationId' => self::faker()->randomNumber(),
             'publicationDatetime' => self::faker()->dateTime(),
             'shortDescription' => self::faker()->text(),
             'slug' => self::faker()->text(255),

@@ -7,3 +7,6 @@ api_platform:
         versions: [3]
     show_webby: false
     metadata_backward_compatibility_layer: false
+
+    exception_to_status:
+        App\Exception\PublicationNotFoundException: !php/const Symfony\Component\HttpFoundation\Response::HTTP_NOT_FOUND
