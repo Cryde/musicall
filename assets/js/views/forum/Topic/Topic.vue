@@ -33,7 +33,7 @@
             :page="props.page"
             :id="`page${props.page.number}`"
             tag="router-link"
-            :to="props.page.number === 1 ? '?' : `?page=${props.page.number}`">
+            :to="getDefaultPage(props.page.number)">
           {{ props.page.number }}
         </b-pagination-button>
       </template>
@@ -41,7 +41,7 @@
         <b-pagination-button
             :page="props.page"
             tag="router-link"
-            :to="props.page.number <= 1 ? '?' : `?page=${props.page.number}`">
+            :to="getPreviousPage(props.page.number)">
           <b-icon icon="angle-left"/>
         </b-pagination-button>
       </template>
@@ -50,11 +50,21 @@
         <b-pagination-button
             :page="props.page"
             tag="router-link"
-            :to="`?page=${props.page.number}`">
+            :to="getDefaultPage(props.page.number)">
           <b-icon icon="angle-right"/>
         </b-pagination-button>
       </template>
     </b-pagination>
+
+    <hr/>
+
+    <div class="columns mt-5" v-if="topic">
+      <div class="column is-8 is-offset-2">
+        <h4 class="subtitle is-4">Poster un message sur ce sujet</h4>
+
+        <add-message-form :topic="topic"/>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -63,9 +73,11 @@ import forum from "../../../api/forum/forum";
 import Breadcrumb from "../../../components/global/Breadcrumb";
 import TopicPost from "./TopicPost";
 import {FORUM_MAX_TOPIC_POST_PER_PAGE} from "../../../constants/forum";
+import AddMessageForm from "./Add/AddMessageForm.vue";
+import {EVENT_MESSAGE_CREATED} from "../../../constants/events";
 
 export default {
-  components: {TopicPost, Breadcrumb},
+  components: {AddMessageForm, TopicPost, Breadcrumb},
   data() {
     return {
       isLoading: true,
@@ -90,13 +102,24 @@ export default {
   },
   watch: {
     $route() {
-      this.current = this.$route.query.page ? +this.$route.query.page : 1;
+      this.current = this.$route.params.page ? +this.$route.params.page : 1;
       this.fetchData();
     },
   },
+  mounted() {
+    this.$root.$on(EVENT_MESSAGE_CREATED, (data) => {
+      if (this.posts.length === FORUM_MAX_TOPIC_POST_PER_PAGE) {
+        // todo handle if we are not in the last page
+        // go to next page
+        this.$router.push({name: 'forum_topic_item', params: {slug: this.topic.slug, page: this.current + 1}})
+      } else {
+        this.posts.push(data.post);
+      }
+    });
+  },
   async created() {
     this.isLoading = true;
-    this.current = this.$route.query.page ? +this.$route.query.page : 1;
+    this.current = this.$route.params.page ? +this.$route.params.page : 1;
     const slug = this.$route.params.slug;
     this.topic = await forum.getTopic(slug);
     await this.fetchData();
@@ -119,6 +142,18 @@ export default {
       this.posts = metaPosts['hydra:member']
       this.totalItems = metaPosts['hydra:totalItems']
     },
+    getDefaultPage(pageNumber) {
+      return {
+        name: 'forum_topic_item',
+        params: pageNumber === 1 ? {slug: this.topic.slug} : {slug: this.topic.slug, page: pageNumber}
+      }
+    },
+    getPreviousPage(pageNumber) {
+      return {
+        name: 'forum_topic_item',
+        params: pageNumber <= 1 ? {slug: this.topic.slug} : {slug: this.topic.slug, page: pageNumber}
+      }
+    }
   }
 }
 </script>
