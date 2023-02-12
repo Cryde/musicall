@@ -30,5 +30,9 @@ export default {
   postTopicMessage(data) {
     return axios.post(Routing.generate('api_forum_topic_post_post'), data)
     .then(resp => resp.data)
+  },
+  postPostMessage(data) {
+    return axios.post(Routing.generate('api_forum_posts_post'), data)
+    .then(resp => resp.data)
   }
 }

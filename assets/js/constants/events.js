@@ -9,3 +9,4 @@ export const EVENT_PROFILE_PICTURE_SUCCESS = 'profile-picture-success';
 export const EVENT_PUBLICATION_CREATED = 'publication-created';
 export const EVENT_ANNOUNCE_MUSICIAN_CREATED = 'announce-musician-created';
 export const EVENT_TOPIC_CREATED = 'forum-topic-created';
+export const EVENT_MESSAGE_CREATED = 'forum-message-created';
