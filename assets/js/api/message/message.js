@@ -19,8 +19,8 @@ export default {
     return axios.get(Routing.generate('api_thread_message_list', {id: threadId}))
     .then(resp => resp.data);
   },
-  markThreadAsRead({threadId}) {
-    return axios.patch(Routing.generate('api_thread_message_mark_read', {id: threadId}))
+  markThreadAsRead({threadMetaId}) {
+    return axios.patch(Routing.generate('api_message_thread_meta_patch', {id: threadMetaId}), {is_read: true}, {headers: {'Content-Type': 'application/merge-patch+json'}})
     .then(resp => resp.data);
   }
 }

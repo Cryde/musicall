@@ -5,7 +5,7 @@
         <div class="card is-shadowless is-clickable is-radiusless is-thread-container"
              v-for="thread in orderedThreads" :key="thread.thread.id"
              :class="{'has-background-info-light': !thread.is_read, 'has-background-light': currentThreadId === thread.thread.id}"
-             @click="selectCurrentThread(thread.thread)"
+             @click="selectCurrentThread(thread)"
         >
           <div class="card-content">
             <div class="columns">
@@ -59,8 +59,8 @@ export default {
     }
   },
   methods: {
-    async selectCurrentThread(thread) {
-      await this.$store.dispatch('messages/loadThread', {threadId: thread.id});
+    async selectCurrentThread(meta) {
+      await this.$store.dispatch('messages/loadThread', {meta});
     },
     participantWithoutCurrentUser(participants) {
 
