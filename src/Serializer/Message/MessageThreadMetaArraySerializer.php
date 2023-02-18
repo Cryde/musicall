@@ -6,14 +6,6 @@ use App\Entity\Message\MessageThreadMeta;
 
 class MessageThreadMetaArraySerializer
 {
-    public function __construct(
-        private readonly MessageThreadArraySerializer      $messageThreadArraySerializer,
-        private readonly MessageParticipantArraySerializer $messageParticipantArraySerializer
-    ) {
-    }
-
-
-
     public function toArray(MessageThreadMeta $messageThreadMeta): array
     {
         return [
