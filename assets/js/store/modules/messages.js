@@ -73,9 +73,9 @@ const mutations = {
   [UPDATE_CURRENT_THREAD_ID](state, threadId) {
     state.currentThreadId = threadId;
   },
-  [UPDATE_THREAD_IS_READ](state, {threadId, isRead}) {
+  [UPDATE_THREAD_IS_READ](state, {metaThreadId, isRead}) {
     state.threads = state.threads.map((item) => {
-      if (item.thread.id === threadId) {
+      if (item.id === metaThreadId) {
         item.is_read = isRead;
       }
       return item;
@@ -93,16 +93,16 @@ const actions = {
     commit(UPDATE_THREADS, threads['hydra:member']);
     commit(IS_LOADING, false);
   },
-  async loadThread({commit, dispatch}, {threadId}) {
+  async loadThread({commit, dispatch}, {meta}) {
     commit(IS_LOADING_MESSAGES, true);
-    commit(UPDATE_CURRENT_THREAD_ID, threadId);
-    const messages = await messageApi.getMessages({threadId});
+    commit(UPDATE_CURRENT_THREAD_ID, meta.thread.id);
+    const messages = await messageApi.getMessages({threadId: meta.thread.id});
     commit(UPDATE_MESSAGES, messages);
 
-    commit(UPDATE_THREAD_IS_READ, {threadId, isRead: true});
+    commit(UPDATE_THREAD_IS_READ, {metaThreadId: meta.id, isRead: true});
     dispatch('notifications/decrementMessageCount', {}, {root: true});
     commit(IS_LOADING_MESSAGES, false);
-    await messageApi.markThreadAsRead({threadId});
+    await messageApi.markThreadAsRead({threadMetaId: meta.id});
   },
   async postMessage({commit, state}, {recipientId, content}) {
     const {meta, thread, message, participants} = await messageApi.postMessage({recipientId, content});

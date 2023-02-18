@@ -108,23 +108,6 @@ class MessageController extends AbstractController
     }
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/thread/{id}/read', name: 'api_thread_message_mark_read', options: ['expose' => true], methods: ['PATCH'])]
-    public function markThreadAsRead(
-        MessageThread               $thread,
-        MessageThreadMetaRepository $messageThreadMetaRepository
-    ): JsonResponse {
-        /** @var User $user */
-        $user = $this->getUser();
-        if (!$meta = $messageThreadMetaRepository->findOneBy(['thread' => $thread, 'user' => $user])) {
-            throw new \UnexpectedValueException('Quelque chose d\'anormal s\'est passé');
-        }
-        $meta->setIsRead(true);
-        $this->entityManager->flush();
-
-        return $this->json([], Response::HTTP_ACCEPTED);
-    }
-
-    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
     #[Route(path: '/api/thread/{id}/messages', name: 'api_thread_message_add', options: ['expose' => true], methods: ['POST'])]
     public function postByThread(
         MessageThread          $thread,
