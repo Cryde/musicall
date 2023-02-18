@@ -38,7 +38,6 @@ class MessageController extends AbstractController
         private readonly MessageParticipantArraySerializer $messageParticipantArraySerializer,
         private readonly MessageArraySerializer            $messageArraySerializer,
         private readonly MessageUserSenderFormatter        $messageUserSenderFormatter,
-        private readonly EntityManagerInterface            $entityManager
     ) {
     }
 
