@@ -76,7 +76,7 @@ const mutations = {
   [UPDATE_THREAD_IS_READ](state, {threadId, isRead}) {
     state.threads = state.threads.map((item) => {
       if (item.thread.id === threadId) {
-        item.meta.is_read = isRead;
+        item.is_read = isRead;
       }
       return item;
     })
@@ -90,7 +90,7 @@ const actions = {
   async loadThreads({commit}) {
     commit(IS_LOADING, true);
     const threads = await messageApi.getThreads();
-    commit(UPDATE_THREADS, threads);
+    commit(UPDATE_THREADS, threads['hydra:member']);
     commit(IS_LOADING, false);
   },
   async loadThread({commit, dispatch}, {threadId}) {

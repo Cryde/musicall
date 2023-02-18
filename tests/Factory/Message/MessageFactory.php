@@ -66,7 +66,7 @@ final class MessageFactory extends ModelFactory
         return [
             'author' => UserFactory::new(),
             'content' => self::faker()->text(),
-            'creationDatetime' => self::faker()->dateTime(),
+            'creationDatetime' => new \DateTime(),
             'thread' => MessageThreadFactory::new(),
         ];
     }

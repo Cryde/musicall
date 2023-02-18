@@ -9,6 +9,7 @@ use App\Repository\Message\MessageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 class Message
@@ -20,10 +21,12 @@ class Message
     private $id;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups([MessageThreadMeta::LIST])]
     private DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([MessageThreadMeta::LIST])]
     private User $author;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messages")]
@@ -31,6 +34,7 @@ class Message
     private MessageThread $thread;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups([MessageThreadMeta::LIST])]
     private string $content;
 
     public function __construct()

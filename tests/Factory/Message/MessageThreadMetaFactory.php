@@ -64,9 +64,9 @@ final class MessageThreadMetaFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'creationDatetime' => self::faker()->dateTime(),
-            'isDeleted' => self::faker()->boolean(),
-            'isRead' => self::faker()->boolean(),
+            'creationDatetime' => new \DateTime(),
+            'isDeleted' => false,
+            'isRead' => false,
             'thread' => MessageThreadFactory::new(),
             'user' => UserFactory::new(),
         ];

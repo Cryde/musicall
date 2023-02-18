@@ -84,19 +84,6 @@ class MessageController extends AbstractController
     }
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/thread', name: 'api_thread_list', options: ['expose' => true], methods: ['GET'])]
-    public function listThread(
-        MessageThreadMetaRepository      $messageThreadMetaRepository,
-        MessageThreadMetaArraySerializer $threadMetaArraySerializer
-    ): JsonResponse {
-        /** @var User $user */
-        $user = $this->getUser();
-        $metaThreads = $messageThreadMetaRepository->findByUserAndNotDeleted($user);
-
-        return $this->json($threadMetaArraySerializer->listToArray($metaThreads, true));
-    }
-
-    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
     #[Route(path: '/api/thread/{id}/messages', name: 'api_thread_message_list', options: ['expose' => true], methods: ['GET'])]
     public function listMessageByThread(
         MessageThread          $thread,

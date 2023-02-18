@@ -12,7 +12,7 @@ export default {
     .then(resp => resp.data);
   },
   getThreads() {
-    return axios.get(Routing.generate('api_thread_list'))
+    return axios.get(Routing.generate('api_message_thread_meta_get_collection'))
     .then(resp => resp.data);
   },
   getMessages({threadId}) {
