@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Message\MessageThreadMeta;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\Get;
@@ -35,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
@@ -75,7 +76,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $resetRequestDatetime;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST])]
     private $profilePicture;
 
     public function __construct()

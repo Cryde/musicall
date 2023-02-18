@@ -96,6 +96,17 @@ final class UserFactory extends ModelFactory
         ]);
     }
 
+    public function asBaseUser()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'email' => 'base_user@email.com',
+            'password' => self::DEFAULT_PASSWORD,
+            'roles' => [],
+            'username' => 'base_admin',
+        ]);
+    }
+
     protected static function getClass(): string
     {
         return User::class;
