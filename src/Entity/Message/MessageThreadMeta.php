@@ -33,6 +33,7 @@ class MessageThreadMeta
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups([MessageThreadMeta::LIST])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class)]

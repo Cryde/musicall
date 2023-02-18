@@ -40,7 +40,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         ])->create();
         $thread->object()->setLastMessage($message->object());
         $thread->save();
-        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
+        $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
         // thread between user2 & user3 : shouldn't appear in the response
         $otherThread = MessageThreadFactory::new()->create();
@@ -60,6 +60,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
+                    'id' => $meta->object()->getId(),
                     'is_read' => false,
                     'thread'  => [
                         '@type'                => 'MessageThread',
@@ -70,14 +71,12 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 'participant' => [
                                     '@type'           => 'User',
                                     'username'        => 'base_user_1',
-                                    'profile_picture' => null,
                                 ],
                             ], [
                                 '@type'       => 'MessageParticipant',
                                 'participant' => [
                                     '@type'           => 'User',
                                     'username'        => 'base_user_2',
-                                    'profile_picture' => null,
                                 ],
                             ],
                         ],
@@ -86,7 +85,6 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             'author'            => [
                                 '@type'           => 'User',
                                 'username'        => 'base_user_1',
-                                'profile_picture' => null,
                             ],
                             'content'           => 'basic_content with  in it',
                         ],
