@@ -67,14 +67,6 @@ class UserController extends AbstractController
 
         return $this->json([]);
     }
-
-    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/users/me', name: 'api_user_get', options: ['expose' => true], methods: ['GET'])]
-    public function show(UserArraySerializer $userArraySerializer, #[CurrentUser] $user): JsonResponse
-    {
-        return $this->json($userArraySerializer->toArray($user, true));
-    }
-
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
     #[Route(path: '/api/users/picture', name: 'api_user_picture', options: ['expose' => true], methods: ['POST'])]
     public function changePicture(

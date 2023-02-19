@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Tests\Api\User;
+
+use App\Tests\ApiTestAssertionsTrait;
+use App\Tests\ApiTestCase;
+use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Foundry\Test\Factories;
+use Zenstruck\Foundry\Test\ResetDatabase;
+
+class UserGetTest extends ApiTestCase
+{
+    use ResetDatabase, Factories;
+    use ApiTestAssertionsTrait;
+
+    public function test_get_self_not_logged()
+    {
+        $this->client->request('GET', '/api/users/self');
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertJsonEquals([
+            'code'    => 401,
+            'message' => 'JWT Token not found',
+        ]);
+    }
+
+    public function test_get_self()
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create()->object();
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/users/self');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            'id'              => $user1->getId(),
+            'username'        => $user1->getUsername(),
+            'email'           => $user1->getEmail(),
+            'profile_picture' => null,
+        ]);
+    }
+
+    public function test_get_item()
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create()->object();
+
+        $this->client->request('GET', '/api/users/' . $user1->getId());
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            'id'              => $user1->getId(),
+            'username'        => $user1->getUsername(),
+            'profile_picture' => null,
+        ]);
+    }
+}

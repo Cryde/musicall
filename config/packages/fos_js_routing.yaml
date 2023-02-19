@@ -11,3 +11,4 @@ fos_js_routing:
         - api_forums_(.*)
         - _api_/users/change_password_post
         - api_message_(.*)
+        - api_users_(.*)

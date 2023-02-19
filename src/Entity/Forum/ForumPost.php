@@ -129,7 +129,7 @@ class ForumPost
         return $this;
     }
 
-    public function getCreator(): User
+    public function getCreator(): ?User
     {
         return $this->creator;
     }

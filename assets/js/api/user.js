@@ -16,7 +16,7 @@ export default {
     .then(resp => resp.data);
   },
   me() {
-    return axios.get(Routing.generate('api_user_get'))
+    return axios.get(Routing.generate('api_users_get_self'))
     .then(resp => resp.data);
   },
   changePicture(form) {
