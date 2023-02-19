@@ -63,10 +63,15 @@ final class ForumSourceFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'creationDatetime' => self::faker()->dateTime(),
+            'creationDatetime' => new \DateTime(),
             'description' => self::faker()->text(255),
             'slug' => self::faker()->text(255),
         ];
+    }
+
+    public function asRoot()
+    {
+        return $this->addState(['description' => 'Root source forum', 'slug' => 'root']);
     }
 
     /**

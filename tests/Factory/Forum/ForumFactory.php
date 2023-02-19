@@ -63,15 +63,15 @@ final class ForumFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'creationDatetime' => self::faker()->dateTime(),
-            'description' => self::faker()->text(),
+            'creationDatetime' => new \DateTime(),
+            'description' => self::faker()->text(300),
             'forumCategory' => ForumCategoryFactory::new(),
             'position' => self::faker()->randomNumber(),
-            'postNumber' => self::faker()->randomNumber(),
-            'slug' => self::faker()->text(255),
-            'title' => self::faker()->text(255),
-            'topicNumber' => self::faker()->randomNumber(),
-            'updateDatetime' => self::faker()->dateTime(),
+            'postNumber' => self::faker()->randomNumber(2),
+            'slug' => self::faker()->slug(),
+            'title' => self::faker()->text(150),
+            'topicNumber' => self::faker()->randomNumber(2),
+            'updateDatetime' => null,
         ];
     }
 
