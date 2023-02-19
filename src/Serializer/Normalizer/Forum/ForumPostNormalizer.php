@@ -7,11 +7,13 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\SerializerAwareInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
-class ForumPostNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class ForumPostNormalizer implements NormalizerInterface, SerializerAwareInterface
 {
     public function __construct(
-        private readonly ObjectNormalizer       $normalizer,
+        private readonly NormalizerInterface    $decorated,
         private readonly HtmlSanitizerInterface $appForumSanitizer
     ) {
     }
@@ -19,7 +21,7 @@ class ForumPostNormalizer implements NormalizerInterface, CacheableSupportsMetho
     public function normalize(mixed $forumPost, string $format = null, array $context = [])
     {
         /** @var ForumPost $forumPost */
-        $forumPostArray = $this->normalizer->normalize($forumPost, $format, $context);
+        $forumPostArray = $this->decorated->normalize($forumPost, $format, $context);
         // we only modify the "content" key in the ForumPost List context
         if (in_array(ForumPost::LIST, $context['groups'])) {
             $forumPostArray['content'] = $this->appForumSanitizer->sanitize(nl2br($forumPost->getContent()));
@@ -33,8 +35,10 @@ class ForumPostNormalizer implements NormalizerInterface, CacheableSupportsMetho
         return $data instanceof ForumPost;
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function setSerializer(SerializerInterface $serializer)
     {
-        return true;
+        if ($this->decorated instanceof SerializerAwareInterface) {
+            $this->decorated->setSerializer($serializer);
+        }
     }
 }

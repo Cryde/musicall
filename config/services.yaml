@@ -63,6 +63,9 @@ services:
     App\Serializer\Normalizer\Publication\PublicationNormalizer:
         decorates: 'api_platform.jsonld.normalizer.item'
 
+    App\Serializer\Normalizer\Forum\ForumPostNormalizer:
+        decorates: 'api_platform.jsonld.normalizer.item'
+
     Sentry\Integration\IgnoreErrorsIntegration:
         arguments:
             $options:
