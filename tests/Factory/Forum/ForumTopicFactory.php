@@ -65,13 +65,13 @@ final class ForumTopicFactory extends ModelFactory
     {
         return [
             'author' => UserFactory::new(),
-            'creationDatetime' => self::faker()->dateTime(),
+            'creationDatetime' => new \DateTime(),
             'forum' => ForumFactory::new(),
-            'isLocked' => self::faker()->boolean(),
+            'isLocked' => false,
             'postNumber' => self::faker()->randomNumber(),
             'slug' => self::faker()->text(255),
             'title' => self::faker()->text(255),
-            'type' => self::faker()->randomNumber(),
+            'type' => ForumTopic::TYPE_TOPIC_DEFAULT,
         ];
     }
 
