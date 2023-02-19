@@ -28,19 +28,22 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['username'], message: 'Ce login est déjà pris')]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
 #[ApiResource(
-    operations: [new Get()]
+    operations: [new Get(normalizationContext: ['groups' => [User::ITEM]])]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    const ITEM = 'USER_ITEM';
+
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups(User::ITEM)]
     private $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
