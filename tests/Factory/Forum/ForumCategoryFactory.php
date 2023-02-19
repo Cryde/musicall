@@ -63,8 +63,8 @@ final class ForumCategoryFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'creationDatetime' => self::faker()->dateTime(),
-            'forumSource' => ForumSourceFactory::new(),
+            'creationDatetime' => new \DateTime(),
+            'forumSource' => ForumSourceFactory::new()->asRoot(),
             'position' => self::faker()->randomNumber(),
             'title' => self::faker()->text(255),
         ];
