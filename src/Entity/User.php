@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Message\MessageThreadMeta;
 use DateTimeInterface;
 use DateTime;
@@ -26,6 +27,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'fos_user')]
 #[UniqueEntity(fields: ['username'], message: 'Ce login est déjà pris')]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
+#[ApiResource(
+    operations: [new Get()]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]

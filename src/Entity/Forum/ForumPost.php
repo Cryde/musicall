@@ -28,6 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     new Post(
         normalizationContext: ['groups' => [ForumPost::ITEM]],
         denormalizationContext: ['groups' => [ForumPost::POST]],
+        security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
         name: 'api_forum_posts_post',
         processor: ForumPostPostProcessor::class
     )
@@ -128,7 +129,7 @@ class ForumPost
         return $this;
     }
 
-    public function getCreator(): ?User
+    public function getCreator(): User
     {
         return $this->creator;
     }
