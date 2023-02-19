@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class NotificationController extends AbstractController
 {
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/users/notifications', name: 'api_user_notifications', options: ['expose' => true], methods: ['GET'])]
+    #[Route(path: '/api/notifications', name: 'api_user_notifications', options: ['expose' => true], methods: ['GET'])]
     public function notifications(
         MessageThreadMetaRepository $messageThreadMetaRepository,
         GalleryRepository           $galleryRepository,

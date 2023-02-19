@@ -69,13 +69,11 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             [
                                 '@type'       => 'MessageParticipant',
                                 'participant' => [
-                                    '@type'           => 'User',
                                     'username'        => 'base_user_1',
                                 ],
                             ], [
                                 '@type'       => 'MessageParticipant',
                                 'participant' => [
-                                    '@type'           => 'User',
                                     'username'        => 'base_user_2',
                                 ],
                             ],
@@ -83,7 +81,6 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                         'last_message'         => [
                             'creation_datetime' => $message->object()->getCreationDatetime()->format('c'),
                             'author'            => [
-                                '@type'           => 'User',
                                 'username'        => 'base_user_1',
                             ],
                             'content'           => 'basic_content with  in it',

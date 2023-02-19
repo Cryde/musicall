@@ -52,7 +52,6 @@ class PublicationGetTest extends ApiTestCase
                 'slug'  => 'chroniques',
             ],
             'author'               => [
-                '@type'    => 'User',
                 'username' => 'user_admin',
             ],
             'slug'                 => 'titre-de-la-publication',
