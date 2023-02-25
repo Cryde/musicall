@@ -9,4 +9,14 @@ api_platform:
     metadata_backward_compatibility_layer: false
 
     exception_to_status:
-        App\Exception\PublicationNotFoundException: !php/const Symfony\Component\HttpFoundation\Response::HTTP_NOT_FOUND
+        # Symfony
+        Symfony\Component\Serializer\Exception\ExceptionInterface: 400
+        Symfony\Component\Security\Core\Exception\AccessDeniedException: 401
+        # Api platform specific
+        ApiPlatform\Exception\InvalidArgumentException: 400
+        ApiPlatform\Exception\FilterValidationException: 400
+        # Doctrine specific
+        Doctrine\ORM\OptimisticLockException: 409
+        # APP:
+        # Publication
+        App\Exception\PublicationNotFoundException: 404

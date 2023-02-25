@@ -4,10 +4,10 @@
     <perfect-scrollbar ref="scroll">
       <div class="column is-12" id="message-container">
         <b-loading :active="isLoadingMessages"/>
-        <div class="columns mb-0" v-if="!isLoadingMessages" v-for="message in messages" :key="message.id">
-          <div class="column is-8 is-message-body" :class="{'is-offset-4 is-sender has-text-right': message.is_sender}">
-            <b-tooltip :label="message.creation_datetime | relativeDate" type="is-dark" :position="message.is_sender ? 'is-left' : 'is-right'">
-              <p v-html="autoLink(message.content)" class="has-background-light" :class="{'has-background-info' : message.is_sender}"></p>
+        <div class="columns mb-0" v-if="!isLoadingMessages" v-for="message in orderedMessages" :key="message.id">
+          <div class="column is-8 is-message-body" :class="{'is-offset-4 is-sender has-text-right': isSender(message)}">
+            <b-tooltip :label="message.creation_datetime | relativeDate" type="is-dark" :position="isSender(message) ? 'is-left' : 'is-right'">
+              <p v-html="autoLink(message.content)" class="has-background-light" :class="{'has-background-info' : isSender(message)}"></p>
             </b-tooltip>
           </div>
         </div>
@@ -41,7 +41,11 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('messages', ['messages', 'isLoadingMessages', 'currentThreadId', 'isAddingMessage'])
+    ...mapGetters('messages', ['messages', 'isLoadingMessages', 'currentThreadId', 'isAddingMessage']),
+    ...mapGetters('user', ['user']),
+    orderedMessages() {
+      return this.messages.reverse()
+    }
   },
   mounted() {
     this.$store.subscribe((mutation, state) => {
@@ -57,6 +61,9 @@ export default {
     })
   },
   methods: {
+    isSender(message) {
+      return message.author.id === this.user.id;
+    },
     scrollBottom() {
       this.$nextTick(() => {
         this.$refs.scroll.$el.scrollTop = this.$refs.scroll.$el.scrollHeight;
