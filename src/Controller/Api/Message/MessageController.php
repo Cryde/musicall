@@ -16,7 +16,6 @@ use App\Serializer\Message\MessageThreadMetaArraySerializer;
 use App\Service\Access\ThreadAccess;
 use App\Service\Formatter\Message\MessageUserSenderFormatter;
 use App\Service\Procedure\Message\MessageSenderProcedure;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -80,30 +79,6 @@ class MessageController extends AbstractController
             'participants' => $this->messageParticipantArraySerializer->listToArray($messageParticipant),
             'message'      => $this->messageUserSenderFormatter->format($this->messageArraySerializer->toArray($message), $user),
         ]);
-    }
-
-    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/thread/{id}/messages', name: 'api_thread_message_list', options: ['expose' => true], methods: ['GET'])]
-    public function listMessageByThread(
-        MessageThread          $thread,
-        MessageRepository      $messageRepository,
-        ThreadAccess           $threadAccess,
-        MessageArraySerializer $messageArraySerializer
-    ): JsonResponse {
-        /** @var User $user */
-        $user = $this->getUser();
-        if (!$messages = $messageRepository->findBy(['thread' => $thread], ['creationDatetime' => 'ASC'])) {
-            throw new \UnexpectedValueException('Ce thread n\'existe pas.');
-        }
-        if (!$threadAccess->isOneOfParticipant($thread, $user)) {
-            throw new \UnexpectedValueException('Vous n\'avez pas accès à ce thread.');
-        }
-        $formattedMessages = $this->messageUserSenderFormatter->formatList(
-            $messageArraySerializer->listToArray($messages),
-            $user
-        );
-
-        return $this->json($formattedMessages);
     }
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]

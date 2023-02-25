@@ -16,7 +16,8 @@ export default {
     .then(resp => resp.data);
   },
   getMessages({threadId}) {
-    return axios.get(Routing.generate('api_thread_message_list', {id: threadId}))
+    const order = {creation_datetime: 'desc'};
+    return axios.get(Routing.generate('api_message_get_collection', {threadId, order}))
     .then(resp => resp.data);
   },
   markThreadAsRead({threadMetaId}) {
