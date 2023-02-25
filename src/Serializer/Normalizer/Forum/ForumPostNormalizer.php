@@ -4,9 +4,7 @@ namespace App\Serializer\Normalizer\Forum;
 
 use App\Entity\Forum\ForumPost;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
