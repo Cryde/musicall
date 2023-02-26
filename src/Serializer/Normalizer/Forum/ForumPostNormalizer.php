@@ -4,22 +4,27 @@ namespace App\Serializer\Normalizer\Forum;
 
 use App\Entity\Forum\ForumPost;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
+use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerAwareInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
-class ForumPostNormalizer implements NormalizerInterface, SerializerAwareInterface
+class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterface, CacheableSupportsMethodInterface
 {
+    use NormalizerAwareTrait;
+
+    private const ALREADY_CALLED = 'FORUM_POST_NORMALIZER_ALREADY_CALLED';
+
     public function __construct(
-        private readonly NormalizerInterface    $decorated,
         private readonly HtmlSanitizerInterface $appForumSanitizer
     ) {
     }
 
     public function normalize(mixed $forumPost, string $format = null, array $context = [])
     {
+        $context[self::ALREADY_CALLED] = true;
         /** @var ForumPost $forumPost */
-        $forumPostArray = $this->decorated->normalize($forumPost, $format, $context);
+        $forumPostArray = $this->normalizer->normalize($forumPost, $format, $context);
         // we only modify the "content" key in the ForumPost List context
         if (in_array(ForumPost::LIST, $context['groups'])) {
             $forumPostArray['content'] = $this->appForumSanitizer->sanitize(nl2br($forumPost->getContent()));
@@ -28,15 +33,17 @@ class ForumPostNormalizer implements NormalizerInterface, SerializerAwareInterfa
         return $forumPostArray;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
+        if (isset($context[self::ALREADY_CALLED])) {
+            return false;
+        }
+
         return $data instanceof ForumPost;
     }
 
-    public function setSerializer(SerializerInterface $serializer)
+    public function hasCacheableSupportsMethod(): bool
     {
-        if ($this->decorated instanceof SerializerAwareInterface) {
-            $this->decorated->setSerializer($serializer);
-        }
+        return false;
     }
 }
