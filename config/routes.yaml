@@ -11,5 +11,7 @@ api_refresh_token:
         expose: true
 
 controllers:
-    resource: ../src/Controller/
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
     type: attribute

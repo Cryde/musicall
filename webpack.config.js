@@ -1,4 +1,4 @@
-var Encore = require('@symfony/webpack-encore');
+const Encore = require('@symfony/webpack-encore');
 const dotenv = require('dotenv-flow');
 const ENV_ALLOWED_LIST = ['APP_ENV', 'SENTRY_DSN', 'GOOGLE_API_KEY_FRONT'];
 
@@ -24,7 +24,7 @@ Encore
     .setOutputPath('public/build/')
     // public path used by the web server to access the output path
     .setPublicPath('/build')
-    // only needed for CDN's or sub-directory deploy
+    // only needed for CDN's or subdirectory deploy
     //.setManifestKeyPrefix('build/')
 
     /*
