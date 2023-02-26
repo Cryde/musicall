@@ -5,7 +5,7 @@ namespace App\Service\Mail;
 use Mailjet\Client;
 use Mailjet\Resources;
 
-class Mailer
+class Mailer implements SenderMailerInterface
 {
     public function __construct(private readonly Client $client)
     {

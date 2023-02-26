@@ -36,6 +36,8 @@ services:
             $call: true
             $settings: { version: v3.1 }
 
+    App\Service\Mail\SenderMailerInterface: '@App\Service\Mail\Mailer'
+
     App\Service\Identifier\RequestIdentifier:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'

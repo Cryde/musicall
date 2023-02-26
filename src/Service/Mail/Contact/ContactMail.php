@@ -3,7 +3,7 @@
 namespace App\Service\Mail\Contact;
 
 use App\Service\Mail\ArrayMailBuilder;
-use App\Service\Mail\Mailer;
+use App\Service\Mail\SenderMailerInterface;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class ContactMail
@@ -12,7 +12,7 @@ class ContactMail
 
     public function __construct(
         private readonly string                 $email,
-        private readonly Mailer                 $mailer,
+        private readonly SenderMailerInterface  $mailer,
         private readonly ArrayMailBuilder       $arrayMailBuilder,
         private readonly HtmlSanitizerInterface $appOnlybrSanitizer
     ) {
