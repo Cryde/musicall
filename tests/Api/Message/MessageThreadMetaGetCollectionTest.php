@@ -60,28 +60,28 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
-                    'id' => $meta->object()->getId(),
+                    'id'      => $meta->object()->getId(),
                     'is_read' => false,
                     'thread'  => [
-                        '@type'                => 'MessageThread',
                         'id'                   => $thread->object()->getId(),
                         'message_participants' => [
                             [
-                                '@type'       => 'MessageParticipant',
                                 'participant' => [
-                                    'username'        => 'base_user_1',
+                                    'username' => 'base_user_1',
+                                    'id'       => $user1->object()->getId(),
                                 ],
                             ], [
-                                '@type'       => 'MessageParticipant',
                                 'participant' => [
-                                    'username'        => 'base_user_2',
+                                    'username' => 'base_user_2',
+                                    'id'       => $user2->object()->getId(),
                                 ],
                             ],
                         ],
                         'last_message'         => [
                             'creation_datetime' => $message->object()->getCreationDatetime()->format('c'),
                             'author'            => [
-                                'username'        => 'base_user_1',
+                                'username' => 'base_user_1',
+                                'id'       => $user1->object()->getId(),
                             ],
                             'content'           => 'basic_content with  in it',
                         ],
