@@ -75,7 +75,7 @@ class MessageSenderProcedure
         return $message;
     }
 
-    private function handleReadMessage(MessageThread $thread, User $sender)
+    private function handleReadMessage(MessageThread $thread, User $sender): void
     {
         foreach ($thread->getMessageParticipants() as $participant) {
             $recipient = $participant->getParticipant();

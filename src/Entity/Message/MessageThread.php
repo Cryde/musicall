@@ -2,6 +2,8 @@
 
 namespace App\Entity\Message;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\Message\MessageThreadRepository;
 use DateTime;
 use DateTimeInterface;
@@ -13,13 +15,19 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageThreadRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => [MessageThread::ITEM]])
+    ]
+)]
 class MessageThread
 {
+    const ITEM = 'MESSAGE_THREAD_ITEM';
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([MessageThreadMeta::LIST])]
+    #[Groups([MessageThreadMeta::LIST, Message::ITEM])]
     private $id;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
