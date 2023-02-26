@@ -6,7 +6,7 @@ class ResetPasswordMail
 {
     final const TEMPLATE_ID = 1_279_970;
 
-    public function __construct(private readonly Mailer $mailer, private readonly ArrayMailBuilder $arrayMailBuilder)
+    public function __construct(private readonly SenderMailerInterface $mailer, private readonly ArrayMailBuilder $arrayMailBuilder)
     {
     }
 
