@@ -2,14 +2,17 @@
 
 namespace App\Service\Google;
 
+use Google\Client;
+use Google\Service\YouTube as GoogleYouTube;
+
 class GoogleApi
 {
-    public function __construct(private readonly \Google_Client $client)
+    public function __construct(private readonly Client $client)
     {
     }
 
-    public function getYoutube(): \Google_Service_YouTube
+    public function getYoutube(): GoogleYouTube
     {
-        return new \Google_Service_YouTube($this->client);
+        return new GoogleYouTube($this->client);
     }
 }
