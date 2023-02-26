@@ -2,6 +2,8 @@
 
 namespace App\Entity\Message;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use DateTimeInterface;
 use DateTime;
 use App\Entity\User;
@@ -13,8 +15,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageParticipantRepository::class)]
 #[ORM\UniqueConstraint(name: 'message_participant_unique', columns: ['thread_id', 'participant_id'])]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => MessageParticipant::ITEM])
+    ]
+)]
 class MessageParticipant
 {
+    const ITEM = 'MESSAGE_PARTICIPANT_ITEM';
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]

@@ -8,7 +8,7 @@ export default {
     .then(resp => resp.data);
   },
   postMessageInThread({threadId, content}) {
-    return axios.post(Routing.generate('api_thread_message_add', {id: threadId}), {content})
+    return axios.post(Routing.generate('api_message_post'), {content, thread: `/api/message_threads/${threadId}`})
     .then(resp => resp.data);
   },
   getThreads() {

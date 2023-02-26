@@ -6,9 +6,10 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Post;
+use App\Processor\Message\MessagePostProcessor;
 use App\Provider\Message\MessageCollectionProvider;
 use DateTimeInterface;
 use DateTime;
@@ -18,6 +19,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ApiResource(
@@ -29,33 +31,45 @@ use Symfony\Component\Serializer\Annotation\Groups;
             name: 'api_message_get_collection',
             provider: MessageCollectionProvider::class
         ),
+        new Post(
+            normalizationContext: ['groups' => [Message::ITEM]],
+            denormalizationContext: ['groups' => [Message::POST]],
+            name: 'api_message_post',
+            processor: MessagePostProcessor::class
+        ),
     ]
 )]
 #[ApiFilter(OrderFilter::class, properties: ['creationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
 class Message
 {
     const LIST = 'LIST_MESSAGE';
+    const ITEM = 'ITEM_MESSAGE';
+    const POST = 'POST_MESSAGE';
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups([Message::ITEM])]
     private $id;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([MessageThreadMeta::LIST, Message::LIST])]
+    #[Groups([MessageThreadMeta::LIST, Message::LIST, Message::ITEM])]
     private DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([MessageThreadMeta::LIST, Message::LIST])]
+    #[Groups([MessageThreadMeta::LIST, Message::LIST, Message::ITEM])]
     private User $author;
 
+    #[Assert\NotBlank]
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messages")]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([Message::POST, Message::ITEM])]
     private MessageThread $thread;
 
+    #[Assert\NotBlank]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([MessageThreadMeta::LIST, Message::LIST])]
+    #[Groups([MessageThreadMeta::LIST, Message::LIST, Message::ITEM, Message::POST])]
     private string $content;
 
     public function __construct()

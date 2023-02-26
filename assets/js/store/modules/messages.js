@@ -68,7 +68,7 @@ const mutations = {
     state.threads = [{thread, meta, participants}, ...state.threads];
   },
   [ADD_MESSAGE_TO_MESSAGES](state, message) {
-    state.messages = [message, ...state.messages];
+    state.messages.push(message);
   },
   [UPDATE_CURRENT_THREAD_ID](state, threadId) {
     state.currentThreadId = threadId;
@@ -97,7 +97,7 @@ const actions = {
     commit(IS_LOADING_MESSAGES, true);
     commit(UPDATE_CURRENT_THREAD_ID, meta.thread.id);
     const messages = await messageApi.getMessages({threadId: meta.thread.id});
-    commit(UPDATE_MESSAGES, messages['hydra:member']);
+    commit(UPDATE_MESSAGES, messages['hydra:member'].reverse());
 
     commit(UPDATE_THREAD_IS_READ, {metaThreadId: meta.id, isRead: true});
     dispatch('notifications/decrementMessageCount', {}, {root: true});
@@ -119,9 +119,10 @@ const actions = {
   },
   async postMessageInThread({commit}, {threadId, content}) {
     commit(IS_ADDING_MESSAGE, true);
-    const {meta, thread, message, participants} = await messageApi.postMessageInThread({threadId, content});
-    commit(UPDATE_THREAD_IN_THREADS, {thread, meta});
+    const message = await messageApi.postMessageInThread({threadId, content});
+    const threads = await messageApi.getThreads();
     commit(ADD_MESSAGE_TO_MESSAGES, message);
+    commit(UPDATE_THREADS, threads['hydra:member']);
     commit(IS_ADDING_MESSAGE, false);
   }
 };
