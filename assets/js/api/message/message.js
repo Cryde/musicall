@@ -4,7 +4,10 @@ import axios from 'axios';
 
 export default {
   postMessage({recipientId, content}) {
-    return axios.post(Routing.generate('api_message_add', {id: recipientId}), {content})
+    return axios.post(Routing.generate('api_message_post_to_user'), {
+      recipient: `/api/users/${recipientId}`,
+      content
+    })
     .then(resp => resp.data);
   },
   postMessageInThread({threadId, content}) {
