@@ -47,7 +47,7 @@ class PublicationGetTest extends ApiTestCase
             '@type'                => 'Publication',
             'title'                => 'Titre de la publication',
             'sub_category'         => [
-                'id'    => 1,
+                'id'    => $sub->object()->getId(),
                 'title' => 'Chroniques',
                 'slug'  => 'chroniques',
             ],
