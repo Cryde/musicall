@@ -20,26 +20,4 @@ class ForumPostRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, ForumPost::class);
     }
-
-    public function getLastMessageByTopic(ForumTopic $topic)
-    {
-        return $this->createQueryBuilder('forum_post')
-            ->where('forum_post.topic = :topic')
-            ->orderBy('forum_post.creationDatetime', 'DESC')
-            ->setParameter('topic', $topic)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getResult()[0] ?? null;
-    }
-
-    public function countMessagePerForum(Forum $forum)
-    {
-        return $this->createQueryBuilder('forum_post')
-            ->select('count(forum_post) as count')
-            ->join('forum_post.topic', 'topic')
-            ->where('topic.forum = :forum')
-            ->setParameter('forum', $forum)
-            ->getQuery()
-            ->getSingleResult()['count'];
-    }
 }
