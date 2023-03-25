@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: 'fr'
-    file_publication_cover_destination: '%kernel.project_dir%/public/images/publication/cover'
+    file_publication_cover_destination: 'images/publication/cover'
 
 services:
     # default configuration for services in *this* file

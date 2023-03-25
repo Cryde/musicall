@@ -26,7 +26,6 @@ class CreateUserProfilePictureAction extends AbstractController
         if (!$uploadedFile) {
             throw new BadRequestHttpException('"file" is required');
         }
-        dump('mdr');
         /** @var User $user */
         $user = $this->security->getUser();
         $previousProfilePicture = $user->getProfilePicture() ?: null;
