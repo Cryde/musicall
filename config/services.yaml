@@ -69,3 +69,16 @@ services:
         decorates: 'api_platform.serializer.context_builder'
         arguments: [ '@App\Serializer\ContextBuilder\Notification\NotificationContextBuilder.inner' ]
         autoconfigure: false
+
+    App\Service\DirectoryNamer\StaticDirectoryNamer:
+        public: true # mandatory for vich bundle
+
+    musicall.s3_client:
+        class: Aws\S3\S3Client
+        arguments:
+            -
+                version: '2006-03-01'
+                region: "eu-central-1"
+                credentials:
+                    key: "%env(AWS_KEY)%"
+                    secret: "%env(AWS_SECRET)%"

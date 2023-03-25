@@ -9,6 +9,9 @@ liip_imagine:
             filesystem:
                 data_root:
                     - "%kernel.project_dir%/public"
+        flysystem_loader:
+            flysystem:
+                filesystem_service: oneup_flysystem.musicall_filesystem
 
     filter_sets:
         publication_image_filter:
@@ -84,6 +87,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         user_profile_picture_small:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [ 150, 150 ]
