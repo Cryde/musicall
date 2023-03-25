@@ -1,0 +1,23 @@
+# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle
+oneup_flysystem:
+    adapters:
+        musicall.flysystem_adapter:
+            awss3v3:
+                client: musicall.s3_client
+                bucket: 'musicall-bucket'
+                prefix: ''
+                options:
+                    ACL: bucket-owner-full-control
+    filesystems:
+        musicall:
+            adapter: musicall.flysystem_adapter
+            mount: musicall
+            alias: musicall_filesystem
+
+when@dev:
+    # for dev env we use the local adapter (to not upload on the S3)
+    oneup_flysystem:
+        adapters:
+            musicall.flysystem_adapter:
+                local:
+                    location: "%kernel.project_dir%/public/"
