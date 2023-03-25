@@ -12,13 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class RegistrationController extends AbstractController
 {
-    #[Route(path: '/api/register', name: 'api_register', options: ['expose' => true])]
+    #[Route(path: '/api/register', name: 'api_register', options: ['expose' => true], methods: ['POST'])]
     public function register(
         Request                     $request,
         UserPasswordHasherInterface $userPasswordHasher,
@@ -27,6 +26,10 @@ class RegistrationController extends AbstractController
         EntityManagerInterface      $entityManager,
         EventDispatcherInterface    $eventDispatcher
     ): JsonResponse {
+        if ($this->getUser()) {
+            return $this->json(['errors' => 'you already have an account'], Response::HTTP_FORBIDDEN);
+        }
+
         $data = $jsonizer->decodeRequest($request);
         $user = (new User())
             ->setUsername($data['username'])
