@@ -34,8 +34,6 @@ class StaticDirectoryNamer implements DirectoryNamerInterface, ConfigurableInter
                 throw new NameGenerationException(\sprintf('Directory name could not be generated: property %s is empty.', $this->propertyPath));
             }
 
-            dump($this->path . '/' . $name);
-
             return $this->path . '/' . $name;
         }
 
