@@ -2,29 +2,65 @@
 
 namespace App\Entity\Image;
 
-use Exception;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
+use App\Controller\Api\Media\User\CreateUserProfilePictureAction;
+use App\Entity\Comment\Comment;
+use App\Entity\Forum\ForumPost;
+use App\Entity\Message\MessageThreadMeta;
+use App\Entity\User;
 use DateTimeImmutable;
 use DateTimeInterface;
-use App\Entity\User;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity]
 #[Vich\Uploadable]
+#[ApiResource(
+    operations: [
+        new Post(
+            controller: CreateUserProfilePictureAction::class,
+            openapiContext: [
+                'requestBody' => [
+                    'content' => [
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
+            deserialize: false,
+            name: 'api_user_profile_picture_post'
+        )
+    ],
+)]
 class UserProfilePicture
 {
+    const POST = 'USER_PICTURE_POST';
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
     private $id;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Assert\NotNull]
     #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true)]
     #[Vich\UploadableField(mapping: 'user_profile_picture', fileNameProperty: 'imageName', size: 'imageSize')]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM])]
     private $imageFile;
 
     #[ORM\Column(type: Types::STRING, length: 255)]

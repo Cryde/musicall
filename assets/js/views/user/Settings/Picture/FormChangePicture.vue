@@ -77,7 +77,7 @@ export default {
       if (canvas) {
         const form = new FormData();
         canvas.toBlob(async blob => {
-          form.append('image_upload[imageFile][file]', blob);
+          form.append('file', blob);
           try {
             await userApi.changePicture(form);
             this.$root.$emit(EVENT_PROFILE_PICTURE_SUCCESS)
