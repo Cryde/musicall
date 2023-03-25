@@ -3,6 +3,7 @@
 namespace App\Service\File;
 
 use App\Service\File\Exception\CorruptedFileException;
+use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
@@ -10,8 +11,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class RemoteFileDownloader
 {
-    public function __construct(private readonly Filesystem $filesystem, private readonly LoggerInterface $logger)
-    {
+    public function __construct(
+        private readonly FilesystemOperator $musicallFilesystem,
+        private readonly Filesystem         $filesystem,
+        private readonly LoggerInterface    $logger
+    ) {
     }
 
     /**
@@ -37,7 +41,7 @@ class RemoteFileDownloader
         }
 
         $newFilename = $destinationDir . DIRECTORY_SEPARATOR . sha1(uniqid(time() . '', true)) . '.'. (new File($tmpFilePath))->guessExtension();
-        $this->filesystem->rename($tmpFilePath, $newFilename);;
+        $this->musicallFilesystem->write($newFilename, file_get_contents($tmpFilePath));
         $tmpFilePath = $newFilename;
 
         $this->logger->debug('end of download', [
