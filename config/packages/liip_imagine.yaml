@@ -33,6 +33,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_full:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [1500, 1500]
@@ -41,6 +42,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_medium:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [500, 500]
@@ -49,6 +51,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_small:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [200, 200]
