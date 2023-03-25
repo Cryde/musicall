@@ -35,7 +35,7 @@ class PublicationPendingListTest extends ApiTestCase
         ])->create();
 
         $viewCache = ViewCacheFactory::new(['count' => 123])->create();
-        PublicationFactory::new([
+        $publication = PublicationFactory::new([
             'author'              => $admin,
             'content'             => 'publication_content',
             'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
@@ -58,6 +58,7 @@ class PublicationPendingListTest extends ApiTestCase
                 '@context'             => '/api/contexts/Publication',
                 '@id'                  => '/api/publications/titre-de-la-publication',
                 '@type'                => 'Publication',
+                'id'                   => $publication->object()->getId(),
                 'title'                => 'Titre de la publication',
                 'sub_category'         => [
                     'id'         => $sub->object()->getId(),
