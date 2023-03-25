@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 class AdminPublicationController extends AbstractController
 {
@@ -26,7 +27,7 @@ class AdminPublicationController extends AbstractController
         $pendingPublication = $publicationRepository->findBy(['status' => Publication::STATUS_PENDING]);
 
         return $this->json($pendingPublication, Response::HTTP_OK, [], [
-            'attributes' => ['id', 'title', 'slug', 'author' => ['username'], 'subCategory' => ['title']],
+            AbstractNormalizer::GROUPS => [Publication::LIST],
         ]);
     }
 
