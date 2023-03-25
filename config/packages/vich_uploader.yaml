@@ -25,13 +25,12 @@ vich_uploader:
                 options: { path: '/images/publication/cover' }
             inject_on_load: true
 
-        # todo still to fix to be able to use it with current flystem
         gallery_image:
-            uri_prefix: /images/gallery/
+            upload_destination: oneup_flysystem.musicall_filesystem
+            uri_prefix: ''
             directory_namer:
-                service: vich_uploader.namer_directory_property
-                options: { property: 'gallery.id'}
-            upload_destination: '%kernel.project_dir%/public/images/gallery'
+                service: App\Service\DirectoryNamer\StaticDirectoryNamer
+                options: { property: 'gallery.id', path: '/images/gallery'}
             namer:
                 service: Vich\UploaderBundle\Naming\HashNamer
 
