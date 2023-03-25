@@ -62,8 +62,8 @@ when@dev:
         html_sanitizer:
             sanitizers:
                 app.publication_sanitizer:
-                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1' ]
+                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.localhost' ]
                     allowed_media_schemes: ['http', 'https']
                 app.forum_sanitizer:
-                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1' ]
+                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.localhost' ]
                     allowed_media_schemes: [ 'http', 'https']

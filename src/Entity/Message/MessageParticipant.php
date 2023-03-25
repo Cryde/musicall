@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\UniqueConstraint(name: 'message_participant_unique', columns: ['thread_id', 'participant_id'])]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => MessageParticipant::ITEM])
+        new Get(normalizationContext: ['groups' => [MessageParticipant::ITEM]])
     ]
 )]
 class MessageParticipant

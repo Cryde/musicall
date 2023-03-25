@@ -17,8 +17,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PublicationSubCategoryRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => PublicationSubCategory::ITEM]),
-    new GetCollection(normalizationContext: ['groups' => PublicationSubCategory::LIST], name: 'api_publication_sub_categories_get_collection')
+    new Get(normalizationContext: ['groups' => [PublicationSubCategory::ITEM]]),
+    new GetCollection(normalizationContext: ['groups' => [PublicationSubCategory::LIST]], name: 'api_publication_sub_categories_get_collection')
 ])]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['position' => 'ASC'])]
 class PublicationSubCategory

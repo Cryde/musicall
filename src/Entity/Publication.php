@@ -72,6 +72,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[ApiProperty(identifier: false)]
+    #[Groups([Publication::LIST])]
     private $id;
 
     #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
@@ -139,7 +140,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     private CommentThread $thread;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    private ViewCache $viewCache;
+    private ?ViewCache $viewCache = null;
 
     public function __construct()
     {
