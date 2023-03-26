@@ -49,12 +49,15 @@ class RemoteFileDownloader
             'copy' => $tmpFilePath,
         ]);
 
-        if (md5_file($path) !== md5_file($tmpFilePath)) {
+        $tmpFileCheckSum = $this->musicallFilesystem->checksum($tmpFilePath);
+        if (md5_file($path) !== $tmpFileCheckSum) {
             $this->logger->warning('file corrupted after download', [
                 'origin' => $path,
                 'copy' => $tmpFilePath,
+                'md5_path' => md5_file($path),
+                'md5_path_tmp' => $tmpFileCheckSum,
             ]);
-            $this->filesystem->remove($tmpFilePath);
+            $this->musicallFilesystem->delete($tmpFilePath);
             throw new CorruptedFileException(sprintf('file corrupted after download: %s', $tmpFilePath));
         }
 
