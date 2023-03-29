@@ -134,11 +134,11 @@ class UserPublicationController extends AbstractController
         // @todo : emit handle exceptions
         $youtube->getVideoInfo($videoUrl);
         // this to be sure the video still exist
-        $file = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
+        [$path, $size] = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
         $thread = $commentThreadDirector->create();
         $viewCache = $viewCacheDirector->build();
         $this->entityManager->persist($thread);
-        $cover = $publicationCoverDirector->build($file);
+        $cover = $publicationCoverDirector->build($path, $size);
         $publication = $publicationDirector->buildVideo($data, $user);
         $cover->setPublication($publication);
         $publication->setCover($cover);

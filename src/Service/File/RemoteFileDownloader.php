@@ -19,9 +19,11 @@ class RemoteFileDownloader
     }
 
     /**
+     * @return array{string, int}
      * @throws CorruptedFileException
+     * @throws \League\Flysystem\FilesystemException
      */
-    public function download(string $path, string $destinationDir): UploadedFile
+    public function download(string $path, string $destinationDir): array
     {
         $tmpFilePath = tempnam('/tmp', 'remote_file_downloader');
         if ($tmpFilePath === false) {
@@ -40,9 +42,10 @@ class RemoteFileDownloader
             throw $e;
         }
 
-        $newFilename = $destinationDir . DIRECTORY_SEPARATOR . sha1(uniqid(time() . '', true)) . '.'. (new File($tmpFilePath))->guessExtension();
-        $this->musicallFilesystem->write($newFilename, file_get_contents($tmpFilePath));
-        $tmpFilePath = $newFilename;
+        $filename = sha1(uniqid(time() . '', true)) . '.'. (new File($tmpFilePath))->guessExtension();
+        $fullPath = $destinationDir . DIRECTORY_SEPARATOR . $filename;
+        $this->musicallFilesystem->write($fullPath, file_get_contents($tmpFilePath));
+        $tmpFilePath = $fullPath;
 
         $this->logger->debug('end of download', [
             'origin' => $path,
@@ -61,6 +64,6 @@ class RemoteFileDownloader
             throw new CorruptedFileException(sprintf('file corrupted after download: %s', $tmpFilePath));
         }
 
-        return new UploadedFile($tmpFilePath, $path);
+        return [$filename, $this->musicallFilesystem->fileSize($tmpFilePath)];
     }
 }
