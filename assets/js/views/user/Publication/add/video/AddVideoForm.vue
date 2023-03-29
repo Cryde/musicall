@@ -147,6 +147,7 @@ export default {
           imageUrl: this.videoImage,
           categoryId: this.displayCategories ? this.selectedCategory.id : null,
         });
+        // todo : handle error
 
         this.$emit('close');
         this.$root.$emit(EVENT_PUBLICATION_CREATED);
