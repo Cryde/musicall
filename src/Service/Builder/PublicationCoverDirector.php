@@ -3,15 +3,14 @@
 namespace App\Service\Builder;
 
 use App\Entity\Image\PublicationCover;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class PublicationCoverDirector
 {
-    public function build(UploadedFile $file)
+    public function build(string $path, int $size): PublicationCover
     {
         return (new PublicationCover())
-            ->setImageSize($file->getSize())
-            ->setImageName($file->getBasename())
+            ->setImageSize($size)
+            ->setImageName($path)
             ->setUpdatedAt(new \DateTimeImmutable());
     }
 }
