@@ -24,7 +24,7 @@ class PublicationGetCollectionTest extends ApiTestCase
         $sub2 = PublicationSubCategoryFactory::new()->asNews()->create();
         $author = UserFactory::new()->asAdminUser()->create();
 
-        PublicationFactory::new([
+        $pub1 = PublicationFactory::new([
             'author'              => $author,
             'content'             => 'publication_content1',
             'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
@@ -37,9 +37,9 @@ class PublicationGetCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-        ])->create();
+        ])->create()->object();
 
-        PublicationFactory::new([
+        $pub2 = PublicationFactory::new([
             'author'              => $author,
             'content'             => 'publication_content2',
             'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
@@ -52,7 +52,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 2',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
-        ])->create();
+        ])->create()->object();
 
         // not taken (status) :
         PublicationFactory::new([
@@ -81,7 +81,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-2',
                     '@type'                => 'Publication',
-                    'id'                   => 2,
+                    'id'                   => $pub2->getId(),
                     'title'                => 'Titre de la publication 2',
                     'sub_category'         => [
                         'id'         => $sub->object()->getId(),
@@ -102,7 +102,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-1',
                     '@type'                => 'Publication',
-                    'id'                   => 1,
+                    'id'                   => $pub1->getId(),
                     'title'                => 'Titre de la publication 1',
                     'sub_category'         => [
                         'id'         => $sub->object()->getId(),
