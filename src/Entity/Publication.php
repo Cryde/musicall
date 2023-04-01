@@ -38,6 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             provider: PublicationProvider::class
         ),
         new GetCollection(
+            // "PublicationOnlineExtension" add automatic filter on status of the publication
             paginationItemsPerPage: 16,
             normalizationContext: ['groups' => [Publication::LIST]],
             name: 'api_publication_get_collection'

@@ -1,0 +1,156 @@
+<?php
+
+namespace App\Tests\Api\Publication;
+
+use App\Entity\Publication;
+use App\Tests\ApiTestAssertionsTrait;
+use App\Tests\ApiTestCase;
+use App\Tests\Factory\Metric\ViewCacheFactory;
+use App\Tests\Factory\Publication\PublicationFactory;
+use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
+use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Foundry\Test\Factories;
+use Zenstruck\Foundry\Test\ResetDatabase;
+
+class PublicationGetCollectionTest extends ApiTestCase
+{
+    use ResetDatabase, Factories;
+    use ApiTestAssertionsTrait;
+
+    public function test_get_publications(): void
+    {
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $sub2 = PublicationSubCategoryFactory::new()->asNews()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+
+        PublicationFactory::new([
+            'author'              => $author,
+            'content'             => 'publication_content1',
+            'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
+            'editionDatetime'     => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2021-01-02T02:03:04+00:00'),
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2022-01-02T02:03:04+00:00'),
+            'shortDescription'    => 'Petite description de la publication 1',
+            'slug'                => 'titre-de-la-publication-1',
+            'status'              => Publication::STATUS_ONLINE,
+            'subCategory'         => $sub,
+            'title'               => 'Titre de la publication 1',
+            'type'                => Publication::TYPE_TEXT,
+            'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
+        ])->create();
+
+        PublicationFactory::new([
+            'author'              => $author,
+            'content'             => 'publication_content2',
+            'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
+            'editionDatetime'     => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2021-01-02T02:03:04+00:00'),
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2000-01-02T02:03:04+00:00'),
+            'shortDescription'    => 'Petite description de la publication 2',
+            'slug'                => 'titre-de-la-publication-2',
+            'status'              => Publication::STATUS_ONLINE,
+            'subCategory'         => $sub,
+            'title'               => 'Titre de la publication 2',
+            'type'                => Publication::TYPE_TEXT,
+            'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
+        ])->create();
+
+        // not taken (status) :
+        PublicationFactory::new([
+            'author' => $author, 'status' => Publication::STATUS_DRAFT, 'subCategory' => $sub,
+        ])->create();
+        // not taken (status):
+        PublicationFactory::new([
+            'author' => $author, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub,
+        ])->create();
+        // not taken (category):
+        PublicationFactory::new([
+            'author' => $author, 'status' => Publication::STATUS_ONLINE, 'subCategory' => $sub2,
+        ])->create();
+
+        $this->client->request('GET', '/api/publications', [
+            'order' => ['publication_datetime' => 'asc'],
+            'sub_category.slug' => 'chroniques'
+        ]);
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'         => '/api/contexts/Publication',
+            '@id'              => '/api/publications',
+            '@type'            => 'hydra:Collection',
+            'hydra:member'     => [
+                [
+                    '@id'                  => '/api/publications/titre-de-la-publication-2',
+                    '@type'                => 'Publication',
+                    'id'                   => 2,
+                    'title'                => 'Titre de la publication 2',
+                    'sub_category'         => [
+                        'id'         => $sub->object()->getId(),
+                        'title'      => 'Chroniques',
+                        'slug'       => 'chroniques',
+                        'type_label' => 'publication',
+                        'is_course'  => false,
+                    ],
+                    'author'               => [
+                        'username' => 'user_admin',
+                    ],
+                    'slug'                 => 'titre-de-la-publication-2',
+                    'publication_datetime' => '2000-01-02T02:03:04+00:00',
+                    'cover'                => null,
+                    'type_label'           => 'text',
+                    'description'          => 'Petite description de la publication 2',
+                ],
+                [
+                    '@id'                  => '/api/publications/titre-de-la-publication-1',
+                    '@type'                => 'Publication',
+                    'id'                   => 1,
+                    'title'                => 'Titre de la publication 1',
+                    'sub_category'         => [
+                        'id'         => $sub->object()->getId(),
+                        'title'      => 'Chroniques',
+                        'slug'       => 'chroniques',
+                        'type_label' => 'publication',
+                        'is_course'  => false,
+                    ],
+                    'author'               => [
+                        'username' => 'user_admin',
+                    ],
+                    'slug'                 => 'titre-de-la-publication-1',
+                    'publication_datetime' => '2022-01-02T02:03:04+00:00',
+                    'cover'                => null,
+                    'type_label'           => 'text',
+                    'description'          => 'Petite description de la publication 1',
+                ],
+            ],
+            'hydra:totalItems' => 2,
+            'hydra:view'       => [
+                '@id'   => '/api/publications?order%5Bpublication_datetime%5D=asc&sub_category.slug=chroniques',
+                '@type' => 'hydra:PartialCollectionView',
+            ],
+            'hydra:search'     => [
+                '@type'                        => 'hydra:IriTemplate',
+                'hydra:template'               => '/api/publications{?order[publication_datetime],sub_category.slug,sub_category.slug[]}',
+                'hydra:variableRepresentation' => 'BasicRepresentation',
+                'hydra:mapping'                => [
+                    [
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'order[publication_datetime]',
+                        'property' => 'publication_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'sub_category.slug',
+                        'property' => 'sub_category.slug',
+                        'required' => false,
+                    ],
+                    [
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'sub_category.slug[]',
+                        'property' => 'sub_category.slug',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ]);
+    }
+}
