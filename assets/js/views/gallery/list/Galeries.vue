@@ -14,7 +14,7 @@
       <template #default="{ item: gallery, index }">
         <card
             :key="gallery.id"
-            :top-image="gallery.cover_image.sizes.medium"
+            :top-image="gallery.cover_image"
             :to="{name: 'gallery_show', params: {slug: gallery.slug}}">
           <template #top-content>
             {{ gallery.title.toUpperCase() }}
