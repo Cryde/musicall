@@ -14,3 +14,4 @@ fos_js_routing:
         - api_message_(.*)
         - api_users_(.*)
         - api_notifications_(.*)
+        - api_gallery_(.*)

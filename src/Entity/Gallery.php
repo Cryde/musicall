@@ -2,6 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use DateTimeInterface;
+use DateTime;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Image\GalleryImage;
 use App\Repository\GalleryRepository;
@@ -10,14 +17,25 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Metric\ViewCache;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: GalleryRepository::class)]
+#[ApiResource(operations: [
+    new GetCollection(
+        paginationEnabled: false,
+        normalizationContext: ['groups' => [Gallery::LIST]],
+        name: 'api_gallery_get_collection',
+    )
+])]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['publicationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
 class Gallery implements ViewableInterface
 {
     final const STATUS_ONLINE = 0;
     final const STATUS_DRAFT = 1;
     final const STATUS_PENDING = 2;
+
+    final const LIST = 'GALLERY_LIST';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -27,6 +45,7 @@ class Gallery implements ViewableInterface
     #[Assert\NotBlank]
     #[Assert\Length(max: 200)]
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups([Gallery::LIST])]
     private $title;
 
     #[Assert\NotBlank(message: 'Vous devez spécifier une description pour votre galerie', groups: ['publish'])]
@@ -34,12 +53,13 @@ class Gallery implements ViewableInterface
     private $description;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private $updateDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups([Gallery::LIST])]
     private $publicationDatetime;
 
     #[ORM\Column(type: Types::SMALLINT)]
@@ -48,6 +68,7 @@ class Gallery implements ViewableInterface
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([Gallery::LIST])]
     private $author;
 
     #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryImage::class)]
@@ -56,17 +77,23 @@ class Gallery implements ViewableInterface
 
     #[Assert\NotNull(message: 'Vous devez spécifier une image de couverture', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: GalleryImage::class, cascade: ['persist', 'remove'])]
+    #[Groups([Gallery::LIST])]
     private $coverImage;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups([Gallery::LIST])]
     private $slug;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
+    #[Groups([Gallery::LIST])]
     private $viewCache;
+
+    #[Groups([Gallery::LIST])]
+    private int $imageCount = 0;
 
     public function __construct()
     {
-        $this->creationDatetime = new \DateTime();
+        $this->creationDatetime = new DateTime();
         $this->images = new ArrayCollection();
     }
 
@@ -87,24 +114,24 @@ class Gallery implements ViewableInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?\DateTimeInterface
+    public function getCreationDatetime(): ?DateTimeInterface
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(\DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
         return $this;
     }
 
-    public function getUpdateDatetime(): ?\DateTimeInterface
+    public function getUpdateDatetime(): ?DateTimeInterface
     {
         return $this->updateDatetime;
     }
 
-    public function setUpdateDatetime(\DateTimeInterface $updateDatetime): self
+    public function setUpdateDatetime(DateTimeInterface $updateDatetime): self
     {
         $this->updateDatetime = $updateDatetime;
 
@@ -123,12 +150,12 @@ class Gallery implements ViewableInterface
         return $this;
     }
 
-    public function getPublicationDatetime(): ?\DateTimeInterface
+    public function getPublicationDatetime(): ?DateTimeInterface
     {
         return $this->publicationDatetime;
     }
 
-    public function setPublicationDatetime(?\DateTimeInterface $publicationDatetime): self
+    public function setPublicationDatetime(?DateTimeInterface $publicationDatetime): self
     {
         $this->publicationDatetime = $publicationDatetime;
 
@@ -222,6 +249,18 @@ class Gallery implements ViewableInterface
     public function setViewCache(?ViewCache $viewCache): self
     {
         $this->viewCache = $viewCache;
+
+        return $this;
+    }
+
+    public function getImageCount(): int
+    {
+        return count($this->images);
+    }
+
+    public function setImageCount(int $imageCount): Gallery
+    {
+        $this->imageCount = $imageCount;
 
         return $this;
     }

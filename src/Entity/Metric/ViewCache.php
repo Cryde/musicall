@@ -2,11 +2,13 @@
 
 namespace App\Entity\Metric;
 
+use App\Entity\Gallery;
 use DateTime;
 use App\Repository\Metric\ViewCacheRepository;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ViewCacheRepository::class)]
 class ViewCache
@@ -17,6 +19,7 @@ class ViewCache
     private int $id;
 
     #[ORM\Column(type: Types::INTEGER)]
+    #[Groups([Gallery::LIST])]
     private int $count = 0;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
