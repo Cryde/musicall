@@ -88,9 +88,6 @@ class Gallery implements ViewableInterface
     #[Groups([Gallery::LIST])]
     private $viewCache;
 
-    #[Groups([Gallery::LIST])]
-    private int $imageCount = 0;
-
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
@@ -253,15 +250,9 @@ class Gallery implements ViewableInterface
         return $this;
     }
 
+    #[Groups([Gallery::LIST])]
     public function getImageCount(): int
     {
         return count($this->images);
-    }
-
-    public function setImageCount(int $imageCount): Gallery
-    {
-        $this->imageCount = $imageCount;
-
-        return $this;
     }
 }
