@@ -6,7 +6,7 @@ when@dev:
     framework:
         profiler:
             only_exceptions: false
-            collect_serializer_data: false # once reworked serializer i should enable it
+            collect_serializer_data: true
 
 when@test:
     web_profiler:
