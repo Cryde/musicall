@@ -5,6 +5,9 @@ on:
     push:
         branches:
             - master
+    pull_request:
+        branches:
+            - master
 jobs:
     symfony:
         name: Symfony 6.1 (PHP ${{ matrix.php-versions }})
