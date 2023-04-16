@@ -69,6 +69,24 @@ final class StyleFactory extends ModelFactory
         ];
     }
 
+    public function asRock()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'name' => 'Rock',
+            'slug' => 'rock',
+        ]);
+    }
+
+    public function asPop()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'name' => 'Pop',
+            'slug' => 'pop',
+        ]);
+    }
+
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
