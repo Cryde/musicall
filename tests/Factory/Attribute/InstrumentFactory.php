@@ -70,6 +70,26 @@ final class InstrumentFactory extends ModelFactory
         ];
     }
 
+    public function asDrum()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'musicianName' => 'Batteur',
+            'name' => 'Batterie',
+            'slug' => 'batterie',
+        ]);
+    }
+
+    public function asGuitar()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'musicianName' => 'Guitariste',
+            'name' => 'Guitare',
+            'slug' => 'guitare',
+        ]);
+    }
+
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
