@@ -15,3 +15,4 @@ fos_js_routing:
         - api_users_(.*)
         - api_notifications_(.*)
         - api_gallery_(.*)
+        - api_musician_announces_(.*)
