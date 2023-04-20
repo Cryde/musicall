@@ -4,6 +4,8 @@ namespace App\Entity\Musician;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\Processor\Musician\MusicianAnnouncePostProcessor;
 use DateTime;
 use DateTimeInterface;
 use App\Entity\Attribute\Instrument;
@@ -28,12 +30,20 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => [MusicianAnnounce::ITEM_SELF]],
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_musician_announces_get_self_collection'
+        ),
+        new Post(
+            normalizationContext: ['groups' => [MusicianAnnounce::ITEM_SELF]],
+            denormalizationContext: ['groups' => [MusicianAnnounce::POST]],
+            security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
+            name: 'api_musician_announces_post',
+            processor: MusicianAnnouncePostProcessor::class
         )
     ]
 )]
 class MusicianAnnounce
 {
     const ITEM_SELF = 'MUSICIAN_ANNOUNCE_SELF';
+    const POST = 'MUSICIAN_ANNOUNCE_POST';
 
     final const TYPE_MUSICIAN = 1;
     final const TYPE_BAND = 2;
@@ -50,42 +60,43 @@ class MusicianAnnounce
     #[Groups([MusicianAnnounce::ITEM_SELF])]
     private $creationDatetime;
 
-    #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $author;
 
     #[Assert\Choice(choices: MusicianAnnounce::TYPES)]
     #[ORM\Column(type: Types::SMALLINT)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
     private $type;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: Instrument::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
     private $instrument;
 
     #[Assert\Length(min: 1)]
     #[ORM\ManyToMany(targetEntity: Style::class)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
     private $styles;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
     private $locationName;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups(MusicianAnnounce::POST)]
     private $longitude;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
+    #[Groups(MusicianAnnounce::POST)]
     private $latitude;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
     private $note;
 
     public function __construct()

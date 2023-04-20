@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default {
   add({type, note, styles, instrument, locationName, longitude, latitude}) {
-    return axios.post(Routing.generate('api_musician_announce_add'), {
+    return axios.post(Routing.generate('api_musician_announces_post'), {
       type,
       note,
       styles,
