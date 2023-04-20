@@ -87,6 +87,15 @@ final class StyleFactory extends ModelFactory
         ]);
     }
 
+    public function asMetal()
+    {
+        return $this->addState([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'name' => 'Metal',
+            'slug' => 'metal',
+        ]);
+    }
+
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
