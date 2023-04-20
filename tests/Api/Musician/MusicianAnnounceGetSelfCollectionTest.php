@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
-class MusicianAnnounceGetSelfCollection extends ApiTestCase
+class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
 {
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
