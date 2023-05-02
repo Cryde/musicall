@@ -120,6 +120,12 @@ export default {
       },
       content: this.content,
     })
+  },
+  methods: {
+    reset() {
+      this.content = '';
+      this.editor.commands.clearContent(true);
+    }
   }
 }
 </script>

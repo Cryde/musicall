@@ -32,6 +32,7 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
             ->where('message_thread_meta.user = :user')
             ->andWhere('message_thread_meta.isDeleted = 0')
             ->orderBy('last_message.creationDatetime', 'DESC')
+            ->addOrderBy('participant.username', 'ASC')
             ->setParameter('user', $user)
             ->getQuery()
             ->getResult();

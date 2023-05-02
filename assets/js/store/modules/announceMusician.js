@@ -123,11 +123,11 @@ const actions = {
       await announceApi.add({
         type: state.type === TYPES_ANNOUNCE_BAND_LABEL ? TYPES_ANNOUNCE_BAND : TYPES_ANNOUNCE_MUSICIAN,
         note: state.note,
-        styles: state.styles.map(style => style.id),
-        instrument: state.instrument.id,
+        styles: state.styles.map(style => `/api/styles/${style.id}`),
+        instrument: `/api/instruments/${state.instrument.id}`,
         locationName: state.location.name,
-        longitude: state.location.longitude,
-        latitude: state.location.latitude,
+        longitude: '' + state.location.longitude,
+        latitude: '' + state.location.latitude,
       });
       commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {

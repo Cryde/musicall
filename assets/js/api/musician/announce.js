@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default {
   add({type, note, styles, instrument, locationName, longitude, latitude}) {
-    return axios.post(Routing.generate('api_musician_announce_add'), {
+    return axios.post(Routing.generate('api_musician_announces_post'), {
       type,
       note,
       styles,
@@ -16,7 +16,7 @@ export default {
     .then(resp => resp.data);
   },
   getByCurrentUser() {
-    return axios.get(Routing.generate('api_user_announce_musician_list'))
+    return axios.get(Routing.generate('api_musician_announces_get_self_collection'))
     .then(resp => resp.data);
   }
 }

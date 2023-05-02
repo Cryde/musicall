@@ -2,9 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use App\Entity\Message\Message;
+use App\Entity\Message\MessageThreadMeta;
+use App\Provider\User\UserSelfProvider;
 use DateTimeInterface;
 use DateTime;
-use ApiPlatform\Metadata\Get;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
@@ -25,22 +29,38 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'fos_user')]
 #[UniqueEntity(fields: ['username'], message: 'Ce login est déjà pris')]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé')]
+#[ApiResource(
+    operations: [
+        new Get(
+            uriTemplate: '/users/self',
+            normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM]],
+            name: 'api_users_get_self',
+            provider: UserSelfProvider::class,
+        ),
+        new Get(normalizationContext: ['groups' => [User::ITEM]], name: 'api_users_get_item',),
+    ]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    const ITEM = 'USER_ITEM';
+    const ITEM_SELF = 'USER_ITEM_SELF';
+
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM])]
     private $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
     #[Assert\Email(message: 'Email invalide')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
+    #[Groups(User::ITEM_SELF)]
     private $email;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
@@ -75,7 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $resetRequestDatetime;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM])]
     private $profilePicture;
 
     public function __construct()

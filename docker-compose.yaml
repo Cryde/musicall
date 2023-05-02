@@ -27,7 +27,7 @@ services:
         ipv4_address: 10.10.100.3
 
   node:
-    image: node:latest
+    image: node:16
     container_name: node
     command: /bin/true
     working_dir: /var/www
@@ -46,6 +46,17 @@ services:
     networks:
       musicall:
         ipv4_address: 10.10.100.5
+    volumes:
+      - .:/var/www:cached
+
+  php-musicall-coverage:
+    build: .docker/cli-musicall-coverage
+    container_name: php-musicall-coverage
+    working_dir: /var/www
+    command: /bin/true
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.7
     volumes:
       - .:/var/www:cached
 

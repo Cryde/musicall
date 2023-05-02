@@ -20,7 +20,7 @@ class PublicationNormalizer implements NormalizerInterface, SerializerAwareInter
     {
         /** @var Publication $object */
         $normalizedData = $this->decorated->normalize($object, $format, $context);
-        if (in_array(Publication::ITEM, $context['groups'])) {
+        if (in_array(Publication::ITEM, $context['groups'] ?? [])) {
             $normalizedData['content'] = $this->appPublicationSanitizer->sanitize($object->getContent());
         }
 

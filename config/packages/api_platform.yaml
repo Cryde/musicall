@@ -1,9 +1,24 @@
 api_platform:
     mapping:
-        paths: ['%kernel.project_dir%/src/Entity']
+        paths:
+            - '%kernel.project_dir%/src/Entity'
+            - '%kernel.project_dir%/src/Model'
     patch_formats:
         json: ['application/merge-patch+json']
     swagger:
         versions: [3]
     show_webby: false
     metadata_backward_compatibility_layer: false
+
+    exception_to_status:
+        # Symfony
+        Symfony\Component\Serializer\Exception\ExceptionInterface: 400
+        Symfony\Component\Security\Core\Exception\AccessDeniedException: 401
+        # Api platform specific
+        ApiPlatform\Exception\InvalidArgumentException: 400
+        ApiPlatform\Exception\FilterValidationException: 400
+        # Doctrine specific
+        Doctrine\ORM\OptimisticLockException: 409
+        # APP:
+        # Publication
+        App\Exception\PublicationNotFoundException: 404

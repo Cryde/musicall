@@ -6,7 +6,7 @@ class MessageReceivedMail
 {
     final const TEMPLATE_ID = 1_474_537;
 
-    public function __construct(private readonly Mailer $mailer, private readonly ArrayMailBuilder $arrayMailBuilder)
+    public function __construct(private readonly SenderMailerInterface $mailer, private readonly ArrayMailBuilder $arrayMailBuilder)
     {
     }
 

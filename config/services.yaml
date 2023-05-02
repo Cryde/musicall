@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: 'fr'
-    file_publication_cover_destination: '%kernel.project_dir%/public/images/publication/cover'
+    file_publication_cover_destination: 'images/publication/cover'
 
 services:
     # default configuration for services in *this* file
@@ -29,18 +29,14 @@ services:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
 
-    Doctrine\Migrations\Version\DbalMigrationFactory: ~
-    App\Migrations\Factory\MigrationFactoryDecorator:
-        decorates: Doctrine\Migrations\Version\DbalMigrationFactory
-        arguments: ['@App\Migrations\Factory\MigrationFactoryDecorator.inner', '@service_container']
-
-
     Mailjet\Client:
         arguments:
             $key: '%env(MAILER_KEY)%'
             $secret: '%env(MAILER_SECRET)%'
             $call: true
             $settings: { version: v3.1 }
+
+    App\Service\Mail\SenderMailerInterface: '@App\Service\Mail\Mailer'
 
     App\Service\Identifier\RequestIdentifier:
         arguments:
@@ -68,3 +64,21 @@ services:
             $options:
                 ignore_exceptions:
                     - RuntimeException
+
+    App\Serializer\ContextBuilder\Notification\NotificationContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        arguments: [ '@App\Serializer\ContextBuilder\Notification\NotificationContextBuilder.inner' ]
+        autoconfigure: false
+
+    App\Service\DirectoryNamer\StaticDirectoryNamer:
+        public: true # mandatory for vich bundle
+
+    musicall.s3_client:
+        class: Aws\S3\S3Client
+        arguments:
+            -
+                version: '2006-03-01'
+                region: "eu-central-1"
+                credentials:
+                    key: "%env(AWS_KEY)%"
+                    secret: "%env(AWS_SECRET)%"

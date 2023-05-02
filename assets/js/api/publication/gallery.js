@@ -8,7 +8,7 @@ export default {
     .then(resp => resp.data)
   },
   getGalleries() {
-    return axios.get(Routing.generate('api_gallery_list'))
+    return axios.get(Routing.generate('api_gallery_get_collection', {order: {'publication_datetime': 'desc'}}))
     .then(resp => resp.data)
   },
   getGalleryImages(slug) {

@@ -4,18 +4,18 @@
       <perfect-scrollbar>
         <div class="card is-shadowless is-clickable is-radiusless is-thread-container"
              v-for="thread in orderedThreads" :key="thread.thread.id"
-             :class="{'has-background-info-light': !thread.meta.is_read, 'has-background-light': currentThreadId === thread.thread.id}"
-             @click="selectCurrentThread(thread.thread)"
+             :class="{'has-background-info-light': !thread.is_read, 'has-background-light': currentThreadId === thread.thread.id}"
+             @click="selectCurrentThread(thread)"
         >
           <div class="card-content">
             <div class="columns">
               <div class="column">
-                <avatar :user="participantWithoutCurrentUser(thread.participants)"
+                <avatar :user="participantWithoutCurrentUser(thread.thread.message_participants)"
                         size="32"
                         class="thread-avatar"/>
               </div>
               <div class="column">
-                <small>{{ participantWithoutCurrentUser(thread.participants).username }} <b-tag v-if="!thread.meta.is_read" type="is-info">new</b-tag></small>
+                <small>{{ participantWithoutCurrentUser(thread.thread.message_participants).username }} <b-tag v-if="!thread.is_read" type="is-info">new</b-tag></small>
                 <span class="msg-timestamp is-block">{{
                     thread.thread.last_message.creation_datetime | relativeDate
                   }}</span>
@@ -59,11 +59,13 @@ export default {
     }
   },
   methods: {
-    async selectCurrentThread(thread) {
-      await this.$store.dispatch('messages/loadThread', {threadId: thread.id});
+    async selectCurrentThread(meta) {
+      await this.$store.dispatch('messages/loadThread', {meta});
     },
     participantWithoutCurrentUser(participants) {
-      const results = participants.filter(p => this.user.username !== p.user.username).map(item => item.user);
+
+      console.log()
+      const results = participants.filter(p => this.user.username !== p.participant.username).map(item => item.participant);
 
       if (results.length === 1) {
         return results[0];

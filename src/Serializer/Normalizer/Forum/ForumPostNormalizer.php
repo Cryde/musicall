@@ -5,19 +5,24 @@ namespace App\Serializer\Normalizer\Forum;
 use App\Entity\Forum\ForumPost;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-class ForumPostNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterface, CacheableSupportsMethodInterface
 {
+    use NormalizerAwareTrait;
+
+    private const ALREADY_CALLED = 'FORUM_POST_NORMALIZER_ALREADY_CALLED';
+
     public function __construct(
-        private readonly ObjectNormalizer       $normalizer,
         private readonly HtmlSanitizerInterface $appForumSanitizer
     ) {
     }
 
     public function normalize(mixed $forumPost, string $format = null, array $context = [])
     {
+        $context[self::ALREADY_CALLED] = true;
         /** @var ForumPost $forumPost */
         $forumPostArray = $this->normalizer->normalize($forumPost, $format, $context);
         // we only modify the "content" key in the ForumPost List context
@@ -28,13 +33,17 @@ class ForumPostNormalizer implements NormalizerInterface, CacheableSupportsMetho
         return $forumPostArray;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
+        if (isset($context[self::ALREADY_CALLED])) {
+            return false;
+        }
+
         return $data instanceof ForumPost;
     }
 
     public function hasCacheableSupportsMethod(): bool
     {
-        return true;
+        return false;
     }
 }

@@ -19,7 +19,7 @@
         <div class="column is-3">Photo de profil</div>
         <div class="column is-9">
           <b-button @click="$refs.file.click()" type="is-info" icon-left="image">
-            <span v-if="!user.picture">Ajouter une photo de profile</span>
+            <span v-if="!user.profile_picture">Ajouter une photo de profile</span>
             <span v-else>Modifier ma photo de profile</span>
             <input type="file" class="is-hidden" ref="file" @change="uploadImage($event)" accept="image/*">
           </b-button>

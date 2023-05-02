@@ -40,12 +40,12 @@ const mutations = {
 
 const actions = {
   async loadNotifications({commit}) {
-    const {messages, admin = null} = await notificationsApi.getNotifications();
-    commit(UPDATE_MESSAGE_COUNT, messages);
+    const notifications = await notificationsApi.getNotifications();
+    commit(UPDATE_MESSAGE_COUNT, notifications.unread_messages);
 
-    if (admin) {
-      commit(UPDATE_ADMIN_PENDING_GALLERIES_COUNT, admin.pending_gallery);
-      commit(UPDATE_ADMIN_PENDING_PUBLICATIONS_COUNT, admin.pending_publication);
+    if (notifications.hasOwnProperty('pending_galleries') && notifications.hasOwnProperty('pending_publications')) {
+      commit(UPDATE_ADMIN_PENDING_GALLERIES_COUNT, notifications.pending_galleries);
+      commit(UPDATE_ADMIN_PENDING_PUBLICATIONS_COUNT, notifications.pending_publications);
     }
   },
   decrementMessageCount({commit, state}) {

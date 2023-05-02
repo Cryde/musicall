@@ -2,22 +2,32 @@
 
 namespace App\Entity\Message;
 
-use DateTimeInterface;
-use DateTime;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\Message\MessageThreadRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageThreadRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => [MessageThread::ITEM]])
+    ]
+)]
 class MessageThread
 {
+    const ITEM = 'MESSAGE_THREAD_ITEM';
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups([MessageThreadMeta::LIST, Message::ITEM])]
     private $id;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
@@ -27,9 +37,11 @@ class MessageThread
     private DateTimeInterface $creationDatetime;
 
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
+    #[Groups([MessageThreadMeta::LIST])]
     private Collection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
+    #[Groups([MessageThreadMeta::LIST])]
     private Message $lastMessage;
 
     public function __construct()

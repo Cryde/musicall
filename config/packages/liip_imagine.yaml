@@ -9,17 +9,13 @@ liip_imagine:
             filesystem:
                 data_root:
                     - "%kernel.project_dir%/public"
+        flysystem_loader:
+            flysystem:
+                filesystem_service: oneup_flysystem.musicall_filesystem
 
     filter_sets:
         publication_image_filter:
-            filters:
-                downscale:
-                    max: [800, 800]
-            post_processors:
-                jpegoptim: { strip_all: true, max: 85, progressive: true }
-                optipng: { strip_all: true, level: 5 }
-
-        publication_cover_800x800:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [800, 800]
@@ -28,6 +24,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         publication_cover_300x300:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [300, 300]
@@ -35,15 +32,8 @@ liip_imagine:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
                 optipng: { strip_all: true, level: 5 }
 
-        publication_cover_100x100:
-            filters:
-                downscale:
-                    max: [100, 100]
-            post_processors:
-                jpegoptim: { strip_all: true, max: 85, progressive: true }
-                optipng: { strip_all: true, level: 5 }
-
         gallery_image_filter_full:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [1500, 1500]
@@ -52,6 +42,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_medium:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [500, 500]
@@ -60,6 +51,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         gallery_image_filter_small:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [200, 200]
@@ -68,6 +60,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         featured_cover_filter:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [1500, 1500]
@@ -76,6 +69,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         wiki_artist_cover_filter:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [1500, 1500]
@@ -84,6 +78,7 @@ liip_imagine:
                 optipng: { strip_all: true, level: 5 }
 
         user_profile_picture_small:
+            data_loader: flysystem_loader
             filters:
                 downscale:
                     max: [ 150, 150 ]

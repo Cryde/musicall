@@ -29,7 +29,7 @@ const actions = {
   async loadGalleries({commit}, slug) {
     commit(IS_LOADING, true);
     const galleries = await galleryApi.getGalleries();
-    commit(UPDATE_GALLERIES, galleries);
+    commit(UPDATE_GALLERIES, galleries['hydra:member']);
     commit(IS_LOADING, false);
   },
 };

@@ -2,6 +2,11 @@
 
 namespace App\Entity\Message;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use App\Processor\Message\MessageThreadMetaPatchProcessor;
+use App\Provider\Message\MessageThreadMetaCollectionProvider;
 use DateTimeInterface;
 use DateTime;
 use App\Entity\User;
@@ -9,19 +14,41 @@ use App\Repository\Message\MessageThreadMetaRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageThreadMetaRepository::class)]
 #[ORM\UniqueConstraint(name: 'message_thread_meta_unique', columns: ['thread_id', 'user_id'])]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => [MessageThreadMeta::LIST]],
+            name: 'api_message_thread_meta_get_collection',
+            provider: MessageThreadMetaCollectionProvider::class
+        ),
+        new Patch(
+            normalizationContext: ['groups' => [MessageThreadMeta::ITEM]],
+            denormalizationContext: ['groups' => [MessageThreadMeta::PATCH]],
+            name: 'api_message_thread_meta_patch',
+            processor: MessageThreadMetaPatchProcessor::class
+        ),
+    ]
+)]
 class MessageThreadMeta
 {
+    const PATCH = 'MESSAGE_THREAT_PATCH';
+    const LIST = 'MESSAGE_THREAT_META_LIST';
+    const ITEM = 'MESSAGE_THREAT_META_ITEM';
+
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups([MessageThreadMeta::LIST, MessageThreadMeta::ITEM])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([MessageThreadMeta::LIST])]
     private MessageThread $thread;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -32,6 +59,7 @@ class MessageThreadMeta
     private DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::BOOLEAN)]
+    #[Groups([MessageThreadMeta::LIST, MessageThreadMeta::PATCH])]
     private bool $isRead;
 
     #[ORM\Column(type: Types::BOOLEAN)]

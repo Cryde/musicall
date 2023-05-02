@@ -22,6 +22,6 @@ class ForumTopicMessage
     #[Assert\Length(min: 3, max: 200)]
     public string $title;
     #[Assert\NotBlank]
-    #[Assert\Length(min: 10)]
+    #[Assert\Length(min: ForumPost::MIN_MESSAGE_LENGTH)]
     public string $message;
 }

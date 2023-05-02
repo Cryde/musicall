@@ -10,3 +10,9 @@ fos_js_routing:
         - api_forum_(.*)
         - api_forums_(.*)
         - _api_/users/change_password_post
+        - api_user_profile_picture_post
+        - api_message_(.*)
+        - api_users_(.*)
+        - api_notifications_(.*)
+        - api_gallery_(.*)
+        - api_musician_announces_(.*)
