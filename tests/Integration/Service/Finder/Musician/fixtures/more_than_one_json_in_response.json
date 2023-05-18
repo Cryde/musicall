@@ -1,0 +1,21 @@
+{
+  "id": "chatcmpl-7IZ4hwbJDsIsGZ4SslusG5KfHHy7n",
+  "object": "chat.completion",
+  "created": 1684659087,
+  "model": "gpt-3.5-turbo-0301",
+  "usage": {
+    "prompt_tokens": 624,
+    "completion_tokens": 49,
+    "total_tokens": 673
+  },
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "{\n    \"type\": 1,\n    \"instrument\": \"batterie\",\n    \"styles\": [\"pop\", \"rock\"],\n    \"latitude\": 48.856614,\n    \"longitude\": 2.3522219\n}\nNam mollis sapien et eros laoreet auctor. Suspendisse potenti. Nunc ullamcorper orci tellus, ac vestibulum dolor pharetra eget. Etiam pellentesque, libero nec sagittis accumsan, quam ante posuere. {\n    \"type\": 1,\n    \"instrument\": \"batterie\",\n    \"styles\": [\"pop\", \"rock\"]}"
+      },
+      "finish_reason": "stop",
+      "index": 0
+    }
+  ]
+}
