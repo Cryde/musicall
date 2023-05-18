@@ -9,10 +9,12 @@ class Musician
 {
     #[Assert\Choice(choices: [MusicianAnnounce::TYPE_MUSICIAN => MusicianAnnounce::TYPE_MUSICIAN, MusicianAnnounce::TYPE_BAND => MusicianAnnounce::TYPE_BAND])]
     private ?int $type = null;
+    #[Assert\NotNull]
     private ?string $instrument = null;
     /**
      * @var string[]
      */
+    #[Assert\NotNull]
     private ?array $styles = null;
     private ?float $latitude = null;
     private ?float $longitude = null;

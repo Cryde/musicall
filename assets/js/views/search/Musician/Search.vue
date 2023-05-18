@@ -93,7 +93,7 @@
       </div>
     </div>
 
-    <results/>
+    <results :is-searching="isSearching" :is-success="isSuccess" :results="results"/>
   </div>
 </template>
 
@@ -116,7 +116,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching']),
+    ...mapGetters('searchMusician', ['selectedTypeName', 'selectedInstrument', 'isSearching', 'isSuccess', 'results']),
     ...mapGetters('instruments', ['instruments']),
     ...mapGetters('styles', ['styles']),
     ...mapGetters('security', ['isAuthenticated']),
