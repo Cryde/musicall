@@ -56,13 +56,26 @@ import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnoun
 
 export default {
   components: {ResultItem, Avatar, SendMessageModal},
+  props: {
+    isSearching: {
+      type: Boolean,
+      default: false,
+    },
+    isSuccess: {
+      type: Boolean,
+      default: false,
+    },
+    results: {
+      type: Array,
+      default: []
+    }
+  },
   data() {
     return {
       selectedRecipient: null,
     }
   },
   computed: {
-    ...mapGetters('searchMusician', ['isSearching', 'isSuccess', 'results']),
     ...mapGetters('security', ['isAuthenticated']),
   },
   methods: {
