@@ -2,13 +2,13 @@ export default [
   {
     name: "publication",
     path: "/publications",
-    component: () => import("../views/publication/list/List"),
+    component: () => import("../views/publication/list/Grid.vue"),
     meta: {isAuthRequired: false}
   },
   {
     name: "publications_by_category",
     path: "/publications/category/:slug",
-    component: () => import("../views/publication/list/List"),
+    component: () => import("../views/publication/list/Grid.vue"),
     meta: {isAuthRequired: false}
   },
   {

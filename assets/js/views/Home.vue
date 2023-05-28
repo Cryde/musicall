@@ -24,7 +24,7 @@
 <script>
 import {mapGetters} from 'vuex';
 import FeaturedList from "./home/FeaturedList";
-import List from "./publication/list/List";
+import List from "./publication/list/Grid.vue";
 import AddVideoModal from "./user/Publication/add/video/AddVideoModal";
 import Spinner from "../components/global/misc/Spinner";
 
