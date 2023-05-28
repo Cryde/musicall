@@ -36,7 +36,7 @@ class Style implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
     private $name;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]

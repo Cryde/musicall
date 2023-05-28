@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThreadMeta;
+use App\Entity\Musician\MusicianAnnounce;
 use App\Provider\User\UserSelfProvider;
 use DateTimeInterface;
 use DateTime;
@@ -54,7 +55,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST, MusicianAnnounce::LIST_LAST])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
