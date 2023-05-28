@@ -40,7 +40,7 @@ class Instrument implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
     private $musicianName;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]

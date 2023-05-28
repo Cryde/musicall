@@ -3,9 +3,11 @@
 namespace App\Entity\Musician;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Processor\Musician\MusicianAnnouncePostProcessor;
+use App\Provider\Musician\MusicianAnnounceLastProvider;
 use DateTime;
 use DateTimeInterface;
 use App\Entity\Attribute\Instrument;
@@ -24,6 +26,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
+            uriTemplate: 'musician_announces/last',
+            paginationEnabled: false,
+            order: ['creationDatetime' => 'DESC'],
+            normalizationContext: ['groups' => [MusicianAnnounce::LIST_LAST]],
+            name: 'api_musician_announces_get_last_collection',
+            provider: MusicianAnnounceLastProvider::class
+        ),
+        new GetCollection(
             uriTemplate: 'musician_announces/self',
             paginationEnabled: false, // No need to paginate for now, user won't have tons of announce
             order: ['creationDatetime' => 'DESC'],
@@ -37,14 +47,18 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_musician_announces_post',
             processor: MusicianAnnouncePostProcessor::class
-        )
+        ),
+        new Get(normalizationContext: ['groups' => [MusicianAnnounce::ITEM]],),
     ]
 )]
 class MusicianAnnounce
 {
+    const ITEM = 'MUSICIAN_ANNOUNCE_ITEM';
     const ITEM_SELF = 'MUSICIAN_ANNOUNCE_SELF';
+    const LIST_LAST = 'MUSICIAN_ANNOUNCE_LIST_LAST';
     const POST = 'MUSICIAN_ANNOUNCE_POST';
 
+    final const LIMIT_LAST_ANNOUNCES = 10;
     final const TYPE_MUSICIAN = 1;
     final const TYPE_BAND = 2;
     final const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
@@ -62,27 +76,28 @@ class MusicianAnnounce
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups([MusicianAnnounce::LIST_LAST])]
     private $author;
 
     #[Assert\Choice(choices: MusicianAnnounce::TYPES)]
     #[ORM\Column(type: Types::SMALLINT)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
     private $type;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: Instrument::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
     private $instrument;
 
     #[Assert\Length(min: 1)]
     #[ORM\ManyToMany(targetEntity: Style::class)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
     private $styles;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
     private $locationName;
 
     #[Assert\NotBlank]
