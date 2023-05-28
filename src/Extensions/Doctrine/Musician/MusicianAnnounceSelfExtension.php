@@ -24,7 +24,7 @@ class MusicianAnnounceSelfExtension implements QueryCollectionExtensionInterface
         array                       $context = []
     ): void {
         if (MusicianAnnounce::class !== $resourceClass
-            && $operation->getName() !== 'api_musician_announces_get_self_collection') {
+            || $operation->getName() !== 'api_musician_announces_get_self_collection') {
             return;
         }
         /** @var User $user */
