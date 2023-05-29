@@ -54,6 +54,7 @@
         backend-sorting
         :default-sort-direction="defaultSortOrder"
         :default-sort="[sortField, sortOrder]"
+        :loading="isBusy"
         @sort="onSort"
     >
       <template #empty>
