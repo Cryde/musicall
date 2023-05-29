@@ -39,7 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new GetCollection(
             // "PublicationOnlineExtension" add automatic filter on status of the publication
-            paginationItemsPerPage: 16,
+            paginationItemsPerPage: Publication::LIST_ITEMS_PER_PAGE,
             normalizationContext: ['groups' => [Publication::LIST]],
             name: 'api_publication_get_collection'
         ),
@@ -49,6 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT])]
 class Publication implements ViewableInterface, SluggableEntityInterface
 {
+    final const LIST_ITEMS_PER_PAGE = 12;
     final const ITEM = 'PUBLICATION_ITEM';
     final const LIST = 'PUBLICATION_LIST';
 
