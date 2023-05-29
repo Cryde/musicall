@@ -18,5 +18,9 @@ export default {
   getByCurrentUser() {
     return axios.get(Routing.generate('api_musician_announces_get_self_collection'))
     .then(resp => resp.data);
+  },
+  getLastAnnounces() {
+    return axios.get(Routing.generate('api_musician_announces_get_last_collection'))
+    .then(resp => resp.data);
   }
 }
