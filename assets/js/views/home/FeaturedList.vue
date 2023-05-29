@@ -8,10 +8,10 @@
       </figure>
     </div>
     <header class="card-header is-overlay" v-if="featured1.title">
-      <h2 class="subtitle is-3 mt-3 ml-5" :class="getColor(featured1)">{{ featured1.title }}</h2>
+      <h2 class="subtitle is-3 is-size-6-mobile mt-3 ml-5" :class="getColor(featured1)">{{ featured1.title }}</h2>
     </header>
     <div class="card-content is-overlay mt-5">
-      <div class="content" v-if="featured1.description" :class="getColor(featured1)">
+      <div class="content is-size-7-mobile" v-if="featured1.description" :class="getColor(featured1)">
         {{ featured1.description }}
       </div>
     </div>

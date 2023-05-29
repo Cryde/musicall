@@ -7,11 +7,11 @@
 
     <div class="card-content-container p-5">
       <div class="content-header is-flex is-align-items-baseline">
-        <h3 class="title is-5 mb-2 is-text-overflow">
+        <h3 class="title is-5 is-size-6-mobile has-text-weight-medium mb-2 is-text-overflow">
           <slot name="title"></slot>
         </h3>
       </div>
-      <p class="">
+      <p>
         <slot name="content"></slot>
       </p>
     </div>
