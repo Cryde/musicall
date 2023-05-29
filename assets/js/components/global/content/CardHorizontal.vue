@@ -34,26 +34,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.card-horizontal {
-}
-
-.card-horizontal .card-horizontal-image {
-  display: flex;
-  justify-content: center;
-  flex: 0 0 210px;
-  height: auto;
-  background-size: cover;
-  background-position: center center;
-
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-}
-
-.card-content-container {
-  width: 0;
-  flex: 1 1 auto;
-}
-
-</style>
