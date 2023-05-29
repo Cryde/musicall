@@ -3,7 +3,7 @@
     <Header/>
     <div class="container mt-5 mb-5">
       <div class="columns">
-        <div class="column is-12">
+        <div class="column is-12 p-5">
           <router-view></router-view>
         </div>
       </div>
