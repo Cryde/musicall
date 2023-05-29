@@ -47,6 +47,7 @@ export default {
     await this.$store.dispatch('publicationCategory/getCategories');
     this.isReadyWithMinimal = true;
 
+
     const store = this.$store;
     const router = this.$router;
 
