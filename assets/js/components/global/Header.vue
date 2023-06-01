@@ -24,7 +24,7 @@
 
       <b-navbar-dropdown :to="{ name: 'course_index' }" tag="router-link" exact-active-class="is-active" label="Cours" hoverable>
 
-        <b-navbar-item v-if="isLoading"><spinner size="sm"/></b-navbar-item>
+        <b-navbar-item v-if="isLoading"><b-loading size="sm" active/></b-navbar-item>
         <b-navbar-item v-else
                        v-for="category in courseCategories"
                        :to="{name: 'course_by_category', params: { slug: category.slug}}"
