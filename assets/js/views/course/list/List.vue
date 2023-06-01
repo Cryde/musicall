@@ -157,7 +157,12 @@ export default {
       this.$buefy.modal.open({
         parent: this,
         component: AddVideoForm,
-        props: {displayCategories: true, categories: this.courseCategories, preSelectedCategory: this.currentCategory},
+        props: {
+          displayCategories: true,
+          categories: this.courseCategories,
+          preSelectedCategory: this.currentCategory,
+          isCoursesContext: true
+        },
         hasModalCard: true,
         trapFocus: true
       })
