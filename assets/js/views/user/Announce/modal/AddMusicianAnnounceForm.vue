@@ -13,7 +13,7 @@
           Votre annonce est créée.<br/>
           <div v-if="!isFromAnnounce">
             Vous pouvez
-            <router-link :to="{name: 'user_musician_announce'}">retrouver vos annonces ici</router-link>
+            <span @click="goToMyAnnounceList()" class="has-text-info is-clickable">retrouver vos annonces ici</span>
           </div>
         </div>
       </div>
@@ -123,6 +123,10 @@ export default {
       await this.$store.dispatch('announceMusician/send');
       this.$root.$emit(EVENT_ANNOUNCE_MUSICIAN_CREATED);
     },
+    goToMyAnnounceList() {
+      this.$router.push({name: "user_musician_announce"});
+      this.$emit('close')
+    }
   },
   destroyed() {
     this.$store.dispatch('announceMusician/reset');

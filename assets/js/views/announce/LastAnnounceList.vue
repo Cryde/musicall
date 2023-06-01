@@ -20,6 +20,7 @@
 import {mapGetters} from "vuex";
 import ItemLastAnnounce from "./ItemLastAnnounce.vue";
 import ItemLastAnnounceSkel from "./ItemLastAnnounceSkel.vue";
+import {EVENT_ANNOUNCE_MUSICIAN_CREATED} from "../../constants/events";
 
 export default {
   components: {ItemLastAnnounceSkel, ItemLastAnnounce},
@@ -29,6 +30,10 @@ export default {
   },
   created() {
     this.$store.dispatch('lastAnnounceMusician/loadLastAnnounces');
+
+    this.$root.$on(EVENT_ANNOUNCE_MUSICIAN_CREATED, () => {
+      this.$store.dispatch('lastAnnounceMusician/loadLastAnnounces');
+    });
   }
 }
 </script>

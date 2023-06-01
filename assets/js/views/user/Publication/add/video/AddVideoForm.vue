@@ -1,13 +1,23 @@
 <template>
   <div class="modal-card">
     <header class="modal-card-head">
-      <p class="modal-card-title">Ajouter une video</p>
+      <p class="modal-card-title" v-if="isCoursesContext">Ajouter une cours en vidéo</p>
+      <p class="modal-card-title" v-else>Ajouter une video découverte</p>
       <button
           type="button"
           class="delete"
           @click="$emit('close')"/>
     </header>
     <section class="modal-card-body" :class="{'has-category': displayCategories}">
+
+      <b-message type="is-success is-light" :closable="false"size="is-small" v-if="isCoursesContext">
+        Partagez à la communauté vos cours vidéos préféré ou que vous avez créé.<br/>
+        Pour l'instant seuls les liens Youtube fonctionnent.
+      </b-message>
+      <b-message type="is-success is-light" :closable="false"size="is-small" v-else>
+        Partagez vos découvertes musicales avec la communauté.<br/>
+        Pour l'instant seuls les liens Youtube fonctionnent.
+      </b-message>
 
       <div v-if="displayCategories" class="mb-4 mt-4">
         <v-select
@@ -85,6 +95,10 @@ export default {
     preSelectedCategory: {
       type: Object,
       default: null
+    },
+    isCoursesContext: {
+      type: Boolean,
+      default: false,
     }
   },
   data() {

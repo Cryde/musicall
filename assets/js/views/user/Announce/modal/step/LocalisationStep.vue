@@ -1,9 +1,15 @@
 <template>
   <b-step-item :step="3" label="Localisation" icon="globe-europe">
     <h3 class="subtitle mb-5" >Quelle localisation ?</h3>
-
-    <gmap-autocomplete @place_changed="changePlace"
-                       class="input">
+    <gmap-autocomplete  @place_changed="changePlace">
+      <template v-slot:default="slotProps">
+        <b-input
+            placeholder="Indiquez un lieu"
+            ref="input"
+            v-on:listeners="slotProps.listeners"
+            v-on:attrs="slotProps.attrs"
+        />
+      </template>
     </gmap-autocomplete>
 
     <div class="has-text-info mb-2">Indiquez de préférence une ville ou commune.</div>
