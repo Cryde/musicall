@@ -1,6 +1,5 @@
 import attributes from "./attributes";
 import publications from "./publications";
-import artistes from "./artistes";
 import forum from "./forum";
 
 export default [
@@ -11,7 +10,6 @@ export default [
     meta: {isAuthRequired: true}
   },
   ...attributes,
-  ...artistes,
   ...publications,
   ...forum
 ];
