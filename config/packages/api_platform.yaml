@@ -8,7 +8,6 @@ api_platform:
     swagger:
         versions: [3]
     show_webby: false
-    metadata_backward_compatibility_layer: false
 
     exception_to_status:
         # Symfony

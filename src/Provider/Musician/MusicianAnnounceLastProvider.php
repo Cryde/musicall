@@ -14,7 +14,7 @@ class MusicianAnnounceLastProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = [])
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
         return $this->musicianAnnounceRepository->findBy([], ['creationDatetime' => 'DESC'], MusicianAnnounce::LIMIT_LAST_ANNOUNCES);
     }

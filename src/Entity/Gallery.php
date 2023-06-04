@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(operations: [
     new GetCollection(
         paginationEnabled: false,
-        normalizationContext: ['groups' => [Gallery::LIST]],
+        normalizationContext: ['groups' => [Gallery::LIST], 'skip_null_values' => false],
         name: 'api_gallery_get_collection',
     )
 ])]
