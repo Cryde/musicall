@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\SearchFilterInterface;
+use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use App\Entity\Image\PublicationFeaturedImage;
 use App\Repository\PublicationFeaturedRepository;
 use Doctrine\DBAL\Types\Types;
