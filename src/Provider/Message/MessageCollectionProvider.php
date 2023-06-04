@@ -22,7 +22,7 @@ class MessageCollectionProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = [])
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
         if ($operation instanceof GetCollection) {
             if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {

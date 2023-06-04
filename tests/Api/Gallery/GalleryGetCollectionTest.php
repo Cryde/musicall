@@ -64,7 +64,6 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-2',
                     'view_cache'           => [
-                        '@type' => 'ViewCache',
                         'count' => 20,
                     ],
                     'image_count'          => 0,
