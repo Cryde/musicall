@@ -37,7 +37,7 @@
 
     <h2 class="subtitle is-4">Wiki</h2>
     <div class="mt-2 mb-4">
-      <b-button tag="router-link" :to="{name: 'admin_artists_list'}">Gérer les artistes</b-button>
+      <b-button>Gérer les artistes</b-button>
     </div>
   </div>
 </template>

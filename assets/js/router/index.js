@@ -9,7 +9,6 @@ import user from './user';
 import userPublication from './user-publication';
 import gallery from './gallery';
 import message from './message';
-import artist from './artist';
 import userAnnounce from './user-announce';
 
 Vue.use(Router);
@@ -38,7 +37,6 @@ export default new Router({
     ...search,
     ...forum,
     ...message,
-    ...artist,
     ...userAnnounce,
   ]
 });
