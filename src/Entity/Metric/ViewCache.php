@@ -2,6 +2,7 @@
 
 namespace App\Entity\Metric;
 
+use ApiPlatform\Metadata\Get;
 use App\Entity\Gallery;
 use DateTime;
 use App\Repository\Metric\ViewCacheRepository;
@@ -11,8 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ViewCacheRepository::class)]
+#[Get(normalizationContext: ['groups' => ViewCache::ITEM])]
 class ViewCache
 {
+    final const ITEM = 'VIEW_CACHE_ITEM';
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]

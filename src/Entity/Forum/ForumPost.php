@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     new Get(normalizationContext: ['groups' => [ForumPost::ITEM]]),
     new GetCollection(normalizationContext: ['groups' => [ForumPost::LIST]], name: 'api_forum_posts_get_collection'),
     new Post(
-        normalizationContext: ['groups' => [ForumPost::ITEM]],
+        normalizationContext: ['groups' => [ForumPost::ITEM], 'skip_null_values' => false],
         denormalizationContext: ['groups' => [ForumPost::POST]],
         security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
         name: 'api_forum_posts_post',

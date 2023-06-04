@@ -34,11 +34,11 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Get(
             uriTemplate: '/users/self',
-            normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM]],
+            normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM], 'skip_null_values' => false],
             name: 'api_users_get_self',
             provider: UserSelfProvider::class,
         ),
-        new Get(normalizationContext: ['groups' => [User::ITEM]], name: 'api_users_get_item',),
+        new Get(normalizationContext: ['groups' => [User::ITEM], 'skip_null_values' => false], name: 'api_users_get_item',),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
