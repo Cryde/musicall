@@ -37,12 +37,12 @@ Add `musicall.localhost` to your `/etc/hosts`
 
 Install PHP vendor
 ```
-docker compose run --rm php-musical composer install
+docker compose run --rm php-musicall composer install
 ```
 
 You will have to initialize your JWT configuration.   
 Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys  
-**Note**: you will have to run some php command inside docker (eg: `docker compose run --rm php-musical bin/console lexik:jwt:generate-keypair`)
+**Note**: you will have to run some php command inside docker (eg: `docker compose run --rm php-musicall bin/console lexik:jwt:generate-keypair`)
 
 Configure you ```.env.local``` file (I only put important values here) :
 ```
@@ -61,7 +61,7 @@ docker compose run --rm node npm ci
 
 Run the migrations
 ```
-docker compose run --rm php-musical bin/console doctrine:migration:migrate
+docker compose run --rm php-musicall bin/console doctrine:migration:migrate
 ```
 
 Start the assets watcher
