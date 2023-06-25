@@ -75,7 +75,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([
             'title'       => 'Ceci est titre gallery',
             'description' => 'Petite description de la gallery 1',
-            'cover'       => '//images/gallery/1/cover-gallery',
+            'cover'       => '//images/gallery/' . $gallery->object()->getId() . '/cover-gallery',
         ], $result);
     }
 }
