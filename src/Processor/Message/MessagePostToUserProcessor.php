@@ -3,7 +3,6 @@
 namespace App\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
 use App\Model\Message\MessageUser;
@@ -22,15 +21,12 @@ class MessagePostToUserProcessor implements ProcessorInterface
     public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         /** @var MessageUser $data */
-        if ($operation instanceof Post) {
-            if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-                throw new AccessDeniedException('Vous n\'êtes pas connecté.');
-            }
-            /** @var User $currentUser */
-            $currentUser = $this->security->getUser();
-
-            return $this->messageSenderProcedure->process($currentUser, $data->getRecipient(), $data->getContent());
+        if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
+            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        throw new \InvalidArgumentException('Operation not supported by the provider');
+        /** @var User $currentUser */
+        $currentUser = $this->security->getUser();
+
+        return $this->messageSenderProcedure->process($currentUser, $data->getRecipient(), $data->getContent());
     }
 }
