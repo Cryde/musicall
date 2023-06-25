@@ -4,8 +4,6 @@ namespace App\Controller;
 
 use App\Repository\PublicationRepository;
 use App\Service\Bot\BotDetector;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
