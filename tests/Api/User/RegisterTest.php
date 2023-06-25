@@ -62,12 +62,14 @@ plain_password: Le mot de passe doit au moins contenir 3 caractères',
                     'title'        => 'Ce login est déjà pris',
                     'parameters'   => ['{{ value }}' => '"base_admin"'],
                     'type'         => 'urn:uuid:23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
+                    'template' => 'Ce login est déjà pris',
                 ],
                 [
                     'propertyPath' => 'email',
                     'title'        => 'Cet email est déjà utilisé',
                     'parameters'   => ['{{ value }}' => '"base_user@email.com"'],
                     'type'         => 'urn:uuid:23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
+                    'template' => 'Cet email est déjà utilisé',
                 ],
                 [
                     'propertyPath' => 'plain_password',
@@ -75,8 +77,10 @@ plain_password: Le mot de passe doit au moins contenir 3 caractères',
                     'parameters'   => [
                         '{{ value }}' => '"pa"',
                         '{{ limit }}' => '3',
+                        '{{ value_length }}' => '2'
                     ],
                     'type'         => 'urn:uuid:9ff3fdc4-b214-49db-8718-39c315e33d45',
+                    'template' => 'Le mot de passe doit au moins contenir 3 caractères',
                 ],
             ],
         ]);
