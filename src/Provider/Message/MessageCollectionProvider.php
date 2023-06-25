@@ -3,7 +3,6 @@
 namespace App\Provider\Message;
 
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\User;
@@ -24,19 +23,16 @@ class MessageCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
-        if ($operation instanceof GetCollection) {
-            if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-                throw new AccessDeniedException('Vous n\'êtes pas connecté.');
-            }
-            /** @var User $user */
-            $user = $this->security->getUser();
-            $thread = $this->messageThreadRepository->find($uriVariables['threadId']);
-            if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-                throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
-            }
-
-            return $this->collectionProvider->provide($operation, $uriVariables, $context);
+        if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
+            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        throw new \InvalidArgumentException('Operation not supported by the provider');
+        /** @var User $user */
+        $user = $this->security->getUser();
+        $thread = $this->messageThreadRepository->find($uriVariables['threadId']);
+        if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
+            throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
+        }
+
+        return $this->collectionProvider->provide($operation, $uriVariables, $context);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Message\Message;
 use App\Entity\User;
@@ -24,19 +23,16 @@ class MessagePostProcessor implements ProcessorInterface
     public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         /** @var Message $data */
-        if ($operation instanceof Post) {
-            if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-                throw new AccessDeniedException('Vous n\'êtes pas connecté.');
-            }
-            /** @var User $user */
-            $user = $this->security->getUser();
-            $thread = $data->getThread();
-            if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-                throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
-            }
-
-            return $this->messageSenderProcedure->processByThread($thread, $user, $data->getContent());
+        if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
+            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        throw new \InvalidArgumentException('Operation not supported by the provider');
+        /** @var User $user */
+        $user = $this->security->getUser();
+        $thread = $data->getThread();
+        if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
+            throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
+        }
+
+        return $this->messageSenderProcedure->processByThread($thread, $user, $data->getContent());
     }
 }

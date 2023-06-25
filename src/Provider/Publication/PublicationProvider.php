@@ -2,7 +2,6 @@
 
 namespace App\Provider\Publication;
 
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Publication;
@@ -25,20 +24,16 @@ class PublicationProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
-        if ($operation instanceof Get) {
-            $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
-            if (!$publication) {
-                throw new PublicationNotFoundException('Publication inexistante');
-            }
-
-            if ($publication->getStatus() === Publication::STATUS_ONLINE) {
-                /** @var User $user */
-                $user = $this->security->getUser();
-                $this->viewProcedure->process($publication, $this->requestStack->getCurrentRequest(), $user);
-            }
-
-            return $publication;
+        $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
+        if (!$publication) {
+            throw new PublicationNotFoundException('Publication inexistante');
         }
-        throw new \InvalidArgumentException('Operation not supported by the provider');
+        if ($publication->getStatus() === Publication::STATUS_ONLINE) {
+            /** @var User $user */
+            $user = $this->security->getUser();
+            $this->viewProcedure->process($publication, $this->requestStack->getCurrentRequest(), $user);
+        }
+
+        return $publication;
     }
 }

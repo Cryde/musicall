@@ -2,7 +2,6 @@
 
 namespace App\Provider\Message;
 
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\User;
@@ -20,15 +19,12 @@ class MessageThreadMetaCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
-        if ($operation instanceof GetCollection) {
-            if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-                throw new AccessDeniedException('Vous n\'êtes pas connecté.');
-            }
-            /** @var User $user */
-            $user = $this->security->getUser();
-
-            return $this->messageThreadMetaRepository->findByUserAndNotDeleted($user);
+        if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
+            throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        throw new \InvalidArgumentException('Operation not supported by the provider');
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        return $this->messageThreadMetaRepository->findByUserAndNotDeleted($user);
     }
 }

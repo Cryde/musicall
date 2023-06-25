@@ -3,7 +3,6 @@
 namespace App\Processor\Forum;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Forum\ForumTopicMessage;
 use App\Service\Procedure\Forum\TopicCreationProcedure;
@@ -19,8 +18,6 @@ class ForumTopicMessageProcessor implements ProcessorInterface
      */
     public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if ($operation instanceof Post) {
-            return $this->topicCreationProcedure->process($data->forum, $data->title, $data->message);
-        }
+        return $this->topicCreationProcedure->process($data->forum, $data->title, $data->message);
     }
 }
