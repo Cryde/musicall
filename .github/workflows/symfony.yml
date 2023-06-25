@@ -10,7 +10,7 @@ on:
             - master
 jobs:
     symfony:
-        name: Symfony 6.1 (PHP ${{ matrix.php-versions }})
+        name: Symfony 6.3 (PHP ${{ matrix.php-versions }})
         # https://hub.docker.com/_/ubuntu/
         runs-on: ubuntu-22.04
         services:
