@@ -54,7 +54,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([
             'title'       => 'Ceci est titre1 publication',
             'description' => 'Petite description de la publication 1',
-            'cover'       => '//images/publication/cover/cover-publication',
+            'cover'       => 'http://localhost/media/cache/resolve/publication_image_filter/images/publication/cover/cover-publication',
         ], $result);
     }
 
@@ -75,7 +75,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([
             'title'       => 'Ceci est titre gallery',
             'description' => 'Petite description de la gallery 1',
-            'cover'       => '//images/gallery/' . $gallery->object()->getId() . '/cover-gallery',
+            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->object()->getId() . '/cover-gallery',
         ], $result);
     }
 }
