@@ -6,6 +6,7 @@ use App\Entity\Gallery;
 use App\Entity\Publication;
 use App\Repository\GalleryRepository;
 use App\Repository\PublicationRepository;
+use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 class BotMetaDataGenerator
@@ -13,6 +14,7 @@ class BotMetaDataGenerator
     public function __construct(
         private readonly PublicationRepository $publicationRepository,
         private readonly UploaderHelper        $uploaderHelper,
+        private readonly CacheManager          $cacheManager,
         private readonly GalleryRepository     $galleryRepository
     ) {
     }
@@ -40,25 +42,28 @@ class BotMetaDataGenerator
             return [];
         }
 
+        $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile');
+        $cover = $this->cacheManager->getBrowserPath($path, 'publication_image_filter');
         return [
             'title'       => $publication->getTitle(),
             'description' => $publication->getShortDescription(),
-            'cover'       => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
+            'cover'       => $cover,
         ];
     }
 
     public function getForGallery(string $slug): array
     {
         $gallery = $this->galleryRepository->findOneBy(['slug' => $slug, 'status' => Gallery::STATUS_ONLINE]);
-
         if (!$gallery) {
             return [];
         }
 
+        $path = $this->uploaderHelper->asset($gallery->getCoverImage(), 'imageFile');
+        $cover = $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_full');
         return [
             'title'       => $gallery->getTitle(),
             'description' => $gallery->getDescription(),
-            'cover'       => $this->uploaderHelper->asset($gallery->getCoverImage(), 'imageFile'),
+            'cover'       => $cover,
         ];
     }
 }
