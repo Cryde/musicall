@@ -74,13 +74,13 @@ const actions = {
         search: state.search
       });
 
-      commit(UPDATE_RESULTS, results.data);
+      commit(UPDATE_RESULTS, results['hydra:member']);
       commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {
       if (e.response.data.hasOwnProperty('violations')) {
         commit(UPDATE_ERRORS, e.response.data.violations.map(violation => violation.title));
       } else {
-        commit(UPDATE_ERRORS, ['Il n\'y a pas de résulat répondant à votre recherche.Pourriez vous reformuler votre recherche ?'])
+        commit(UPDATE_ERRORS, ['Il n\'y a pas de résulat répondant à votre recherche. Pourriez vous reformuler votre recherche ?'])
       }
       commit(UPDATE_IS_SUCCESS, false);
       commit(UPDATE_RESULTS, []);

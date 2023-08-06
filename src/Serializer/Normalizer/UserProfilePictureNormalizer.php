@@ -8,7 +8,7 @@ use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class UserProfilePictureNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class UserProfilePictureNormalizer implements NormalizerInterface
 {
     public function __construct(
         private readonly UploaderHelper $uploaderHelper,
@@ -33,8 +33,10 @@ class UserProfilePictureNormalizer implements NormalizerInterface, CacheableSupp
         return $data instanceof UserProfilePicture;
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function getSupportedTypes(?string $format): array
     {
-        return true;
+        return [
+            UserProfilePicture::class => true
+        ];
     }
 }
