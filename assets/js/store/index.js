@@ -23,7 +23,6 @@ import instruments from './modules/instruments';
 import announceMusician from './modules/announceMusician';
 import lastAnnounceMusician from './modules/lastAnnounceMusician';
 import userMusicianAnnounces from './modules/userMusicianAnnounces';
-import searchMusician from './modules/searchMusician';
 import searchMusicianText from './modules/searchMusicianText';
 import user from './modules/user';
 
@@ -56,7 +55,6 @@ export default new Vuex.Store({
     announceMusician,
     lastAnnounceMusician,
     userMusicianAnnounces,
-    searchMusician,
     searchMusicianText,
     user,
   },
