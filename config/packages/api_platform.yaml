@@ -21,3 +21,7 @@ api_platform:
         # APP:
         # Publication
         App\Exception\PublicationNotFoundException: 404
+        # Search
+        App\Exception\Musician\InvalidSearchException: 400
+        App\Exception\Musician\NoResultException: 404
+        App\Exception\Musician\InvalidResultException: 404

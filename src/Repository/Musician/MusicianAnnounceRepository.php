@@ -42,7 +42,6 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
         if ($styles = $musician->getStyles()) {
             $qb->leftJoin('musician_announce.styles', 'styles')
                 ->andWhere('styles IN (:styles)')
-                ->addSelect('styles')
                 ->setParameter('styles', $styles);
         }
 

@@ -3,6 +3,7 @@
 namespace App\Entity\Attribute;
 
 use App\Entity\Musician\MusicianAnnounce;
+use App\Model\Search\MusicianSearchResult;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\ApiResource;
@@ -40,7 +41,7 @@ class Instrument implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST, MusicianSearchResult::LIST])]
     private $musicianName;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
