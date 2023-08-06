@@ -31,7 +31,7 @@ class MusicianSearchProvider implements ProviderInterface
         $musicianText->search = $search;
         $errors = $this->validator->validate($musicianText);
         if (count($errors) > 0) {
-            throw new InvalidSearchException($errors);
+            throw new InvalidSearchException();
         }
         /** @var User|null $user */
         $user = $this->security->getUser();
