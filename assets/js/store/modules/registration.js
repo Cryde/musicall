@@ -47,7 +47,7 @@ const actions = {
       commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {
       console.log(e.response);
-      commit(UPDATE_ERRORS, e.response.data.violations.map(violation => violation.title));
+      commit(UPDATE_ERRORS, e.response.data.map(violation => violation.message));
     }
 
     commit(UPDATE_IS_LOADING, false);
