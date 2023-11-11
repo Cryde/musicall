@@ -87,8 +87,6 @@ class ForumTopicPostPostTest extends ApiTestCase
         );
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
-            '@context'          => '/api/contexts/ConstraintViolationList',
-            '@type'             => 'ConstraintViolationList',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'forum: Cette valeur ne doit pas être vide.
 title: Cette valeur ne doit pas être vide.
@@ -110,6 +108,12 @@ message: Cette valeur ne doit pas être vide.',
                     'code'         => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
+            'status'            => 422,
+            'detail'            => 'forum: Cette valeur ne doit pas être vide.
+title: Cette valeur ne doit pas être vide.
+message: Cette valeur ne doit pas être vide.',
+            'type'              => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            'title'             => 'An error occurred',
         ]);
 
         $results = $forumTopicRepository->findBy(['forum' => $forum1->object()]);

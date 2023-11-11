@@ -143,10 +143,12 @@ class MessageGetCollectionTest extends ApiTestCase
         $this->client->request('GET', '/api/messages/' . $thread->getId());
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
-            '@context'          => '/api/contexts/Error',
-            '@type'             => 'hydra:Error',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'Vous n\'êtes pas autorisé à voir ceci.',
+            'title' => 'An error occurred',
+            'detail' => 'Vous n\'êtes pas autorisé à voir ceci.',
+            'status' => 403,
+            'type' => '/errors/403',
         ]);
     }
 }

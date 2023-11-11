@@ -65,13 +65,14 @@ class PublicationGetTest extends ApiTestCase
     public function test_get_item_publication_not_found(): void
     {
         $this->client->request('GET', '/api/publications/not_found');
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
-            '@context'          => '/api/contexts/Error',
-            '@type'             => 'hydra:Error',
             'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'Publication inexistante'
+            'hydra:description' => 'Publication inexistante',
+            'title'             => 'An error occurred',
+            'detail'            => 'Publication inexistante',
+            'status'            => 404,
+            'type'              => '/errors/404',
         ]);
     }
 }

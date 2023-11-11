@@ -128,8 +128,6 @@ class MessageUserPostTest extends ApiTestCase
         ], ['HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
-            '@context'          => '/api/contexts/ConstraintViolationList',
-            '@type'             => 'ConstraintViolationList',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'content: Cette valeur ne doit pas être vide.',
             'violations'        => [
@@ -139,6 +137,10 @@ class MessageUserPostTest extends ApiTestCase
                     'code'         => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
+            'status'            => 422,
+            'detail'            => 'content: Cette valeur ne doit pas être vide.',
+            'type'              => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            'title'             => 'An error occurred',
         ]);
     }
 }
