@@ -21,7 +21,7 @@ class ForumTopicPostPostTest extends ApiTestCase
 
     public function test_post_topic_not_logged()
     {
-        $this->client->jsonRequest('POST', '/api/forum/topic/post', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->jsonRequest('POST', '/api/forum/topic/post', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code'    => 401,
@@ -49,7 +49,7 @@ class ForumTopicPostPostTest extends ApiTestCase
                 "message" => "test content for new topic",
                 "forum"   => '/api/forums/' . $forum1->getSlug(),
             ],
-            ['HTTP_ACCEPT' => 'application/ld+json']
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseIsSuccessful();
         $results = $forumTopicRepository->findBy(['forum' => $forum1->object()]);
@@ -83,7 +83,7 @@ class ForumTopicPostPostTest extends ApiTestCase
         $this->client->loginUser($user1->object());
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [],
-            ['HTTP_ACCEPT' => 'application/ld+json']
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
