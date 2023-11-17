@@ -24,7 +24,7 @@ class MessagePostInThreadTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages', [
             'thread'  => '/api/message_threads/' . $thread->object()->getId(),
             'content' => 'content',
-        ]);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -47,7 +47,7 @@ class MessagePostInThreadTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages', [
             'thread'  => '/api/message_threads/' . $thread->getId(),
             'content' => 'new content from user1',
-        ]);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $messages = $messageRepository->findBy(['thread' => $thread]);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
@@ -83,7 +83,7 @@ class MessagePostInThreadTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages', [
             'thread'  => '/api/message_threads/' . $thread->getId(),
             'content' => 'new content from user1',
-        ], ['HTTP_ACCEPT' => 'application/ld+json']);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
             'hydra:title'       => 'An error occurred',
@@ -101,7 +101,7 @@ class MessagePostInThreadTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages', [
             'thread'  => '/api/message_threads/' . $thread->object()->getId(),
             'content' => '',
-        ], ['HTTP_ACCEPT' => 'application/ld+json']);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             'hydra:title'       => 'An error occurred',

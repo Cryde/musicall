@@ -15,7 +15,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => [Forum::ITEM]], name: 'api_forums_get_item'),
+    new Get(
+        uriTemplate: 'forums/{slug}',
+        normalizationContext: ['groups' => [Forum::ITEM]],
+        name: 'api_forums_get_item'
+    ),
 ])]
 class Forum implements SluggableEntityInterface
 {
