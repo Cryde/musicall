@@ -6,14 +6,13 @@ when@prod:
             integrations:
                 - 'Sentry\Integration\IgnoreErrorsIntegration'
 
-#        If you are using Monolog, you also need this additional configuration to log the errors correctly:
-#        https://docs.sentry.io/platforms/php/guides/symfony/#monolog-integration
-#        register_error_listener: false
-#        register_error_handler: false
+            # Specify a fixed sample rate:
+            traces_sample_rate: 1.0
 
-#    monolog:
-#        handlers:
-#            sentry:
-#                type: sentry
-#                level: !php/const Monolog\Logger::ERROR
-#                hub_id: Sentry\State\HubInterface
+when@test:
+    sentry:
+        dsn: ~
+
+when@dev:
+    sentry:
+        dsn: ~
