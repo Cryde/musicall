@@ -9,10 +9,3 @@ when@prod:
             # Specify a fixed sample rate:
             traces_sample_rate: 1.0
 
-when@test:
-    sentry:
-        dsn: ~
-
-when@dev:
-    sentry:
-        dsn: ~
