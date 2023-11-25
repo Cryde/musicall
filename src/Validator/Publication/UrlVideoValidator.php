@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class UrlVideoValidator extends ConstraintValidator
 {
+    const ERROR_CODE_URL_VIDEO = 'music_all_f03dc5f4-8ba0-11ee-b9d1-0242ac120002';
     public function __construct(
         private readonly YoutubeUrlHelper $youtubeUrlHelper,
     ) {
@@ -33,6 +34,7 @@ class UrlVideoValidator extends ConstraintValidator
         }
         // the argument must be a string or an object implementing __toString()
         $this->context->buildViolation($constraint->message)
+            ->setCode(self::ERROR_CODE_URL_VIDEO)
             ->addViolation();
     }
 }

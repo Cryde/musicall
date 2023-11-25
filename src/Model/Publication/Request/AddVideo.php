@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
     uriTemplate: '/publications/video/add',
+    security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
     name: 'api_publication_video_add',
     processor: VideoPostProcessor::class,
 )]

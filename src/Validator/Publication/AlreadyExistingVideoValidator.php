@@ -12,6 +12,8 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class AlreadyExistingVideoValidator extends ConstraintValidator
 {
+    const ERROR_CODE_EXISTING_VIDEO = 'music_all_99153e73-dd44-4557-90aa-3c0e354fce62';
+
     public function __construct(
         private readonly YoutubeUrlHelper      $youtubeUrlHelper,
         private readonly PublicationRepository $publicationRepository,
@@ -37,6 +39,7 @@ class AlreadyExistingVideoValidator extends ConstraintValidator
         }
         // the argument must be a string or an object implementing __toString()
         $this->context->buildViolation($constraint->message)
+            ->setCode(self::ERROR_CODE_EXISTING_VIDEO)
             ->addViolation();
     }
 }
