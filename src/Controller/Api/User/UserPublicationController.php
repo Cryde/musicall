@@ -104,53 +104,6 @@ class UserPublicationController extends AbstractController
     }
 
     /**
-     * @throws CorruptedFileException
-     * @throws YoutubeAlreadyExistingVideoException
-     * @throws YoutubeVideoNotFoundException
-     */
-    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
-    #[Route(path: '/api/users/publications/add/video', name: 'api_user_publication_add_video', options: ['expose' => true], defaults: ['_format' => 'json'], methods: ['POST'])]
-    public function addVideo(
-        Request                        $request,
-        Jsonizer                       $jsonizer,
-        Youtube                        $youtube,
-        YoutubeUrlHelper               $youtubeUrlHelper,
-        PublicationCoverDirector       $publicationCoverDirector,
-        PublicationDirector            $publicationDirector,
-        PublicationRepository          $publicationRepository,
-        UserPublicationArraySerializer $userPublicationArraySerializer,
-        RemoteFileDownloader           $remoteFileDownloader,
-        ParameterBagInterface          $containerBag,
-        CommentThreadDirector          $commentThreadDirector,
-        ViewCacheDirector $viewCacheDirector,
-        #[CurrentUser]                 $user
-    ): JsonResponse {
-        $data = $jsonizer->decodeRequest($request);
-        $videoUrl = $data['videoUrl'];
-        $videoId = $youtubeUrlHelper->getVideoId($videoUrl);
-        if ($publicationRepository->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO])) {
-            throw new YoutubeAlreadyExistingVideoException('This video is already sent');
-        }
-        // @todo : emit handle exceptions
-        $youtube->getVideoInfo($videoUrl);
-        // this to be sure the video still exist
-        [$path, $size] = $remoteFileDownloader->download($data['imageUrl'], $containerBag->get('file_publication_cover_destination'));
-        $thread = $commentThreadDirector->create();
-        $viewCache = $viewCacheDirector->build();
-        $this->entityManager->persist($thread);
-        $cover = $publicationCoverDirector->build($path, $size);
-        $publication = $publicationDirector->buildVideo($data, $user);
-        $cover->setPublication($publication);
-        $publication->setCover($cover);
-        $publication->setThread($thread);
-        $publication->setViewCache($viewCache);
-        $this->entityManager->persist($publication);
-        $this->entityManager->flush();
-
-        return $this->json(['data' => $userPublicationArraySerializer->toArray($publication)]);
-    }
-
-    /**
      * @throws YoutubeVideoNotFoundException
      */
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]

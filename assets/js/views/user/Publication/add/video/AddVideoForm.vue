@@ -158,7 +158,6 @@ export default {
           title: this.videoTitle,
           description: this.videoDescription,
           videoUrl: this.videoUrl,
-          imageUrl: this.videoImage,
           categoryId: this.displayCategories ? this.selectedCategory.id : null,
         });
         // todo : handle error
