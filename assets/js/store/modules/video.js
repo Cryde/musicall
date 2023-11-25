@@ -87,10 +87,19 @@ const actions = {
       commit(FETCHING_ERROR, err);
     }
   },
-  async addVideo({commit}, {title, description, videoUrl, imageUrl, categoryId = null}) {
+  async addVideo({commit}, {title, description, videoUrl, categoryId = null}) {
     commit(ADDING);
     try {
-      const resp = await apiPublication.addVideo({title, description, videoUrl, imageUrl, categoryId});
+      let categoryObject = {};
+      if (categoryId) {
+        categoryObject = {category: `/api/publication_sub_categories/${categoryId}`};
+      }
+      const resp = await apiPublication.addVideo({
+        title,
+        description,
+        url: videoUrl,
+        ...categoryObject
+      });
       commit(ADDING_SUCCESS, {video: resp.data});
     } catch (err) {
       commit(FETCHING_ERROR, err);

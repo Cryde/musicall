@@ -6,7 +6,7 @@ fos_js_routing:
         - api_comment_threads_(.*)
         - api_comments_(.*)
         - api_publication_featureds_(.*)
-        - api_publication_get_(.*)
+        - api_publication_(.*)
         - api_forum_(.*)
         - api_forums_(.*)
         - _api_/users/change_password_post
