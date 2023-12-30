@@ -8,7 +8,12 @@ export default {
     .then(resp => resp.data)
   },
   getPreviewVideo(videoUrl) {
-    return axios.post(Routing.generate('api_publications_video_preview'), {videoUrl})
+    return axios.post(Routing.generate('api_publications_video_preview'), {videoUrl},
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data)
   },
   addVideo(payload) {

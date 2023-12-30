@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import EditCoverForm from "./EditCoverForm";
+import EditCoverForm from "./EditCoverForm.vue";
 
 export default {
   components: {EditCoverForm},

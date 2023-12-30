@@ -70,8 +70,8 @@
 
 <script>
 import forum from "../../../api/forum/forum";
-import Breadcrumb from "../../../components/global/Breadcrumb";
-import TopicPost from "./TopicPost";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
+import TopicPost from "./TopicPost.vue";
 import {FORUM_MAX_TOPIC_POST_PER_PAGE} from "../../../constants/forum";
 import AddMessageForm from "./Add/AddMessageForm.vue";
 import {EVENT_MESSAGE_CREATED} from "../../../constants/events";

@@ -52,7 +52,7 @@
 <script>
 import {mapGetters} from 'vuex';
 import vueDropzone from "vue2-dropzone";
-import EditGalleryPropertiesModal from './modal/EditGalleryPropertiesModal';
+import EditGalleryPropertiesModal from './modal/EditGalleryPropertiesModal.vue';
 
 export default {
   components: {vueDropzone, EditGalleryPropertiesModal},

@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import Spinner from "../global/misc/Spinner";
+import Spinner from "../global/misc/Spinner.vue";
 
 export default {
   components: {Spinner},

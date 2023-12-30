@@ -71,10 +71,10 @@
 
 <script>
 import forum from "../../../api/forum/forum";
-import Breadcrumb from "../../../components/global/Breadcrumb";
-import TopicListItem from "./TopicListItem";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
+import TopicListItem from "./TopicListItem.vue";
 import {FORUM_MAX_TOPIC_PER_PAGE} from "../../../constants/forum";
-import AddTopicForm from "./Add/AddTopicForm";
+import AddTopicForm from "./Add/AddTopicForm.vue";
 import {EVENT_TOPIC_CREATED} from "../../../constants/events";
 
 export default {

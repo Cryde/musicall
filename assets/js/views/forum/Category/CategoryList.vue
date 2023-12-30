@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import Category from "./Category";
+import Category from "./Category.vue";
 
 export default {
   components: {Category},

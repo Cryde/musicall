@@ -90,7 +90,7 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Avatar from "../user/Avatar";
+import Avatar from "../user/Avatar.vue";
 
 export default {
   components: {Avatar},

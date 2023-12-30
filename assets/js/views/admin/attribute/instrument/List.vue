@@ -23,7 +23,7 @@
 
 <script>
   import instrumentApi from "../../../../api/attribute/instrument";
-  import AddModal from './AddModal';
+  import AddModal from './AddModal.vue';
   import {EVENT_ADMIN_ADD_INSTRUMENT} from '../../../../constants/events';
 
   export default {

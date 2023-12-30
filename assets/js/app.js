@@ -1,4 +1,3 @@
-
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -8,7 +7,6 @@ import relativeDateFilter from "./filters/relative-date-filter";
 import prettyDateFilter from "./filters/pretty-date-filter";
 import VueGtag from "vue-gtag";
 import * as Sentry from "@sentry/vue";
-import { BrowserTracing } from "@sentry/tracing";
 import GmapVue from 'gmap-vue';
 import Buefy from 'buefy'
 import PerfectScrollbar from 'vue2-perfect-scrollbar'
@@ -19,20 +17,29 @@ Vue.use(Buefy, {
   defaultProgrammaticPromise: true
 });
 
-if (process.env.SENTRY_DSN) {
+if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     Vue,
-    dsn: process.env.SENTRY_DSN,
+    dsn: import.meta.env.VITE_SENTRY_DSN,
     integrations: [
-      new BrowserTracing({
+      new Sentry.BrowserTracing({
         routingInstrumentation: Sentry.vueRouterInstrumentation(router),
-        tracingOrigins: ["127.0.0.1", "www.musicall.com", /^\//],
       }),
+      new Sentry.Replay(),
     ],
+
     // Set tracesSampleRate to 1.0 to capture 100%
     // of transactions for performance monitoring.
     // We recommend adjusting this value in production
     tracesSampleRate: 1.0,
+
+    // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
+    tracePropagationTargets: ["127.0.0.1", "www.musicall.com", /^\//],
+
+    // Capture Replay for 10% of all sessions,
+    // plus for 100% of sessions with an error
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
   });
 }
 
@@ -51,7 +58,7 @@ Vue.use(VueGtag, {
 
 Vue.use(GmapVue, {
   load: {
-    key: process.env.GOOGLE_API_KEY_FRONT,
+    key: import.meta.env.VITE_GOOGLE_API_KEY_FRONT,
     libraries: 'places',
   },
   installComponents: true
@@ -78,3 +85,8 @@ new Vue({
     ]
   })
 }).$mount("#app");
+
+// this  is a special export for images we reference in twig
+import.meta.glob([
+  '../images/**',
+]);

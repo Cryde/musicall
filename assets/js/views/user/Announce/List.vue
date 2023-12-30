@@ -53,7 +53,7 @@
 import {mapGetters} from 'vuex';
 import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
 import {EVENT_ANNOUNCE_MUSICIAN_CREATED} from "../../../constants/events";
-import AddMusicianAnnounceForm from "./modal/AddMusicianAnnounceForm";
+import AddMusicianAnnounceForm from "./modal/AddMusicianAnnounceForm.vue";
 
 export default {
   computed: {

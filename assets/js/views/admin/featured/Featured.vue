@@ -24,11 +24,11 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import AddFeaturedModal from "./modal/AddFeaturedModal";
-import EditFeaturedModal from "./modal/EditFeaturedModal";
-import EditCoverModal from "./modal/EditCoverModal";
-import FeaturedCard from "./FeaturedCard";
-import Breadcrumb from "../../../components/global/Breadcrumb";
+import AddFeaturedModal from "./modal/AddFeaturedModal.vue";
+import EditFeaturedModal from "./modal/EditFeaturedModal.vue";
+import EditCoverModal from "./modal/EditCoverModal.vue";
+import FeaturedCard from "./FeaturedCard.vue";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
 
 export default {
   components: {Breadcrumb, FeaturedCard, EditCoverModal, EditFeaturedModal, AddFeaturedModal},

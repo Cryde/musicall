@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import EditFeaturedForm from "./EditFeaturedForm";
+import EditFeaturedForm from "./EditFeaturedForm.vue";
 
 export default {
   components: {EditFeaturedForm},

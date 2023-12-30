@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import FormChangePicture from "./FormChangePicture";
+import FormChangePicture from "./FormChangePicture.vue";
 
 export default {
   components: {FormChangePicture},

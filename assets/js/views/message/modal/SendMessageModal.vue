@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import FormSendMessage from "./FormSendMessage";
+import FormSendMessage from "./FormSendMessage.vue";
 
 export default {
   components: {FormSendMessage},

@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import Forum from "../Forum/Forum";
+import Forum from "../Forum/Forum.vue";
 
 export default {
   components: {Forum},

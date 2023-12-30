@@ -73,7 +73,7 @@
 </template>
 <script>
 import {mapGetters} from 'vuex';
-import FeaturedList from "./home/FeaturedList";
+import FeaturedList from "./home/FeaturedList.vue";
 import PublicationList from "./publication/list/List.vue";
 import LastAnnounceList from "./announce/LastAnnounceList.vue";
 import AddMusicianAnnounceForm from "./user/Announce/modal/AddMusicianAnnounceForm.vue";

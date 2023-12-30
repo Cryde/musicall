@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import Avatar from "../../../components/user/Avatar";
+import Avatar from "../../../components/user/Avatar.vue";
 import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
 import {mapGetters} from "vuex";
 

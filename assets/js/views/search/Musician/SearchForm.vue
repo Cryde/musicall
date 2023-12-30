@@ -62,10 +62,10 @@
 </template>
 <script>
 import {mapGetters} from 'vuex';
-import Results from './Results';
-import Spinner from "../../../components/global/misc/Spinner";
-import Breadcrumb from "../../../components/global/Breadcrumb";
-import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnounceForm";
+import Results from './Results.vue';
+import Spinner from "../../../components/global/misc/Spinner.vue";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
+import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnounceForm.vue";
 
 export default {
   components: {Breadcrumb, Spinner, Results},

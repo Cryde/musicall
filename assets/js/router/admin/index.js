@@ -6,7 +6,7 @@ export default [
   {
     path: "/admin/",
     name: "admin_dashboard",
-    component: () => import("../../views/admin/Dashboard"),
+    component: () => import("../../views/admin/Dashboard.vue"),
     meta: {isAuthRequired: true}
   },
   ...attributes,

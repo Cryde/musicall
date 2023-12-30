@@ -48,8 +48,8 @@
 <script>
 import {mapGetters} from 'vuex';
 import {format, parseISO} from 'date-fns';
-import Comment from "../../comment/Thread";
-import Breadcrumb from "../../../components/global/Breadcrumb";
+import Comment from "../../comment/Thread.vue";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
 
 export default {
   components: {Breadcrumb, Comment},

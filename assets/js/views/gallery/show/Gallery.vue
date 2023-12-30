@@ -51,8 +51,8 @@
 import {mapGetters} from 'vuex';
 import MasonryWall from '@yeger/vue2-masonry-wall'
 import {format, parseISO} from 'date-fns';
-import Spinner from "../../../components/global/misc/Spinner";
-import Breadcrumb from "../../../components/global/Breadcrumb";
+import Spinner from "../../../components/global/misc/Spinner.vue";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
 
 export default {
   components: {Breadcrumb, Spinner, MasonryWall},

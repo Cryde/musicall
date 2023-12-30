@@ -45,12 +45,12 @@
 </template>
 
 <script>
-import SearchTypeStep from "./step/SearchTypeStep";
-import InstrumentChoiceStep from "./step/InstrumentChoiceStep";
-import StyleChoiceStep from "./step/StyleChoiceStep";
-import LocalisationStep from "./step/LocalisationStep";
-import NoteStep from "./step/NoteStep";
-import SummaryStep from "./step/SummaryStep";
+import SearchTypeStep from "./step/SearchTypeStep.vue";
+import InstrumentChoiceStep from "./step/InstrumentChoiceStep.vue";
+import StyleChoiceStep from "./step/StyleChoiceStep.vue";
+import LocalisationStep from "./step/LocalisationStep.vue";
+import NoteStep from "./step/NoteStep.vue";
+import SummaryStep from "./step/SummaryStep.vue";
 import {mapGetters} from "vuex";
 import {EVENT_ANNOUNCE_MUSICIAN_CREATED} from "../../../../constants/events";
 

@@ -30,10 +30,10 @@
 </template>
 
 <script>
-import SendMessageModal from './modal/SendMessageModal'
+import SendMessageModal from './modal/SendMessageModal.vue'
 import {mapGetters} from "vuex";
-import ThreadList from "./ThreadList";
-import Thread from "./Thread";
+import ThreadList from "./ThreadList.vue";
+import Thread from "./Thread.vue";
 
 export default {
   components: {ThreadList, SendMessageModal, Thread},

@@ -34,8 +34,8 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Breadcrumb from "../../components/global/Breadcrumb";
-import AddVideoForm from "../user/Publication/add/video/AddVideoForm";
+import Breadcrumb from "../../components/global/Breadcrumb.vue";
+import AddVideoForm from "../user/Publication/add/video/AddVideoForm.vue";
 
 export default {
   components: {AddVideoForm, Breadcrumb},

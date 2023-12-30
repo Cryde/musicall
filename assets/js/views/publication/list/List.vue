@@ -70,9 +70,9 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import PublicationType from "../../../components/publication/PublicationType";
+import PublicationType from "../../../components/publication/PublicationType.vue";
 import CardHorizontal from "../../../components/global/content/CardHorizontal.vue";
-import Spinner from "../../../components/global/misc/Spinner";
+import Spinner from "../../../components/global/misc/Spinner.vue";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 import {PUBLICATION_MAX_ITEMS_ON_LIST_PER_PAGE} from "../../../constants/publication";
 import CardHorizontalSkel from "../../../components/global/content/CardHorizontalSkel.vue";

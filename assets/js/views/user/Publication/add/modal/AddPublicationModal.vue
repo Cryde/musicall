@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import AddPublicationForm from "./AddPublicationForm";
+import AddPublicationForm from "./AddPublicationForm.vue";
 
 export default {
   components: {AddPublicationForm},

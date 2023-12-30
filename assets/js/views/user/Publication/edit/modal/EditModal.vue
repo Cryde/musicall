@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import PublicationSettingsEditForm from "./PublicationSettingsEditForm";
+import PublicationSettingsEditForm from "./PublicationSettingsEditForm.vue";
 
 export default {
   components: {PublicationSettingsEditForm},

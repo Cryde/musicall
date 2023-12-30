@@ -77,7 +77,7 @@
 <script>
 
 import {mapGetters} from 'vuex';
-import Spinner from "../../../../../components/global/misc/Spinner";
+import Spinner from "../../../../../components/global/misc/Spinner.vue";
 import {EVENT_PUBLICATION_CREATED} from "../../../../../constants/events";
 import VSelect from 'vue-select';
 

@@ -14,7 +14,7 @@ export default [
   {
     name: "publication_show",
     path: "/publications/:slug",
-    component: () => import("../views/publication/show/Publication"),
+    component: () => import("../views/publication/show/Publication.vue"),
     meta: {isAuthRequired: false}
   },
 ];
