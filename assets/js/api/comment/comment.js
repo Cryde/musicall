@@ -4,7 +4,12 @@ import axios from 'axios';
 
 export default {
   postComment(data) {
-    return axios.post(Routing.generate('api_comments_post_collection'), data)
+    return axios.post(Routing.generate('api_comments_post_collection'), data,
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data);
   },
   getComments(filters) {

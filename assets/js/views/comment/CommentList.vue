@@ -17,8 +17,8 @@
 
 <script>
 import {mapGetters} from "vuex";
-import Comment from "./Comment";
-import Spinner from "../../components/global/misc/Spinner";
+import Comment from "./Comment.vue";
+import Spinner from "../../components/global/misc/Spinner.vue";
 
 export default {
   components: {Spinner, Comment},

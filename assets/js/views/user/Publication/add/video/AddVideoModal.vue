@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import AddVideoForm from "./AddVideoForm";
+import AddVideoForm from "./AddVideoForm.vue";
 
 export default {
   components: {AddVideoForm},

@@ -49,10 +49,10 @@
 
 <script>
 import {mapGetters} from "vuex";
-import SendMessageModal from "../../message/modal/SendMessageModal";
-import Avatar from "../../../components/user/Avatar";
-import ResultItem from "./ResultItem";
-import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnounceForm";
+import SendMessageModal from "../../message/modal/SendMessageModal.vue";
+import Avatar from "../../../components/user/Avatar.vue";
+import ResultItem from "./ResultItem.vue";
+import AddMusicianAnnounceForm from "../../user/Announce/modal/AddMusicianAnnounceForm.vue";
 
 export default {
   components: {ResultItem, Avatar, SendMessageModal},

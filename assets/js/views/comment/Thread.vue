@@ -16,8 +16,8 @@
 </template>
 
 <script>
-import Form from "./Form";
-import CommentList from "./CommentList";
+import Form from "./Form.vue";
+import CommentList from "./CommentList.vue";
 
 export default {
   props: ['threadId'],

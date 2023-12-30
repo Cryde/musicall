@@ -108,12 +108,12 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import PublicationType from "../../../components/publication/PublicationType";
+import PublicationType from "../../../components/publication/PublicationType.vue";
 import MasonryWall from '@yeger/vue2-masonry-wall'
-import Card from "../../../components/global/content/Card";
-import Spinner from "../../../components/global/misc/Spinner";
+import Card from "../../../components/global/content/Card.vue";
+import Spinner from "../../../components/global/misc/Spinner.vue";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
-import Breadcrumb from "../../../components/global/Breadcrumb";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
 import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
 
 export default {

@@ -34,8 +34,8 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Breadcrumb from "../../../components/global/Breadcrumb";
-import Card from "../../../components/global/content/Card";
+import Breadcrumb from "../../../components/global/Breadcrumb.vue";
+import Card from "../../../components/global/content/Card.vue";
 import MasonryWall from '@yeger/vue2-masonry-wall'
 
 export default {

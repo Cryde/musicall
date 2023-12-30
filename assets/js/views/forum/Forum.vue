@@ -12,9 +12,9 @@
   </div>
 </template>
 <script>
-import Breadcrumb from "../../components/global/Breadcrumb";
+import Breadcrumb from "../../components/global/Breadcrumb.vue";
 import forum from "../../api/forum/forum";
-import CategoryList from "./Category/CategoryList";
+import CategoryList from "./Category/CategoryList.vue";
 import CategoryListSkel from "./Category/CategoryListSkel.vue";
 
 export default {

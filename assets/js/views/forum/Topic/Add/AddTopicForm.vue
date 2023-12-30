@@ -47,7 +47,7 @@
 
 <script>
 
-import MessageEditor from "./MessageEditor";
+import MessageEditor from "./MessageEditor.vue";
 import forum from "../../../../api/forum/forum";
 import {EVENT_TOPIC_CREATED} from "../../../../constants/events";
 import {FORUM_MIN_LENGTH_MESSAGE, FORUM_MIN_LENGTH_TITLE} from "../../../../constants/forum";

@@ -157,13 +157,13 @@
 </template>
 
 <script>
-  import Sticky from 'vue-sticky-directive';
+import Sticky from 'vue-sticky-directive';
 import axios from 'axios';
 import {mapGetters} from 'vuex';
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import {Editor, EditorContent} from '@tiptap/vue-2'
-import EditModal from './modal/EditModal';
+import EditModal from './modal/EditModal.vue';
 import Image from '@tiptap/extension-image'
 import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
 import {youtubeParser} from '../../../../helper/youtube-parser-url';

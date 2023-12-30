@@ -32,7 +32,7 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import ProfilePictureModal from "./Picture/ProfilePictureModal";
+import ProfilePictureModal from "./Picture/ProfilePictureModal.vue";
 import {EVENT_PROFILE_PICTURE_MODAL_CLOSE, EVENT_PROFILE_PICTURE_SUCCESS} from "../../../constants/events";
 
 export default {

@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import AddGalleryForm from "./AddGalleryForm";
+import AddGalleryForm from "./AddGalleryForm.vue";
 
 export default {
   components: {AddGalleryForm},

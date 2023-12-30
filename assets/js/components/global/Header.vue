@@ -90,8 +90,8 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Dropdown from './Dropdown';
-import PublicationType from "../publication/PublicationType";
+import Dropdown from './Dropdown.vue';
+import PublicationType from "../publication/PublicationType.vue";
 import searchApi from "../../api/search";
 import {EVENT_TOGGLE_MENU} from '../../constants/events';
 import {debounce} from 'lodash';

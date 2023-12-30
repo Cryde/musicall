@@ -14,8 +14,8 @@
 </template>
 
 <script>
-import Header from './components/global/Header';
-import Footer from './components/global/Footer';
+import Header from './components/global/Header.vue';
+import Footer from './components/global/Footer.vue';
 import axios from 'axios';
 import {mapGetters} from 'vuex';
 

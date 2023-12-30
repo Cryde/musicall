@@ -61,8 +61,8 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import ErrorsModal from "./modal/ErrorsModal";
-import AddGalleryModal from "./modal/AddGalleryModal";
+import ErrorsModal from "./modal/ErrorsModal.vue";
+import AddGalleryModal from "./modal/AddGalleryModal.vue";
 
 export default {
   components: {ErrorsModal, AddGalleryModal},

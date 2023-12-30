@@ -1,31 +1,18 @@
-{% set display_menu = display_menu is not defined ? true : display_menu %}
 <!DOCTYPE html>
 <html lang="fr" class="fontawesome-i2svg-pending">
 <head>
-    {% set css_files_app = encore_entry_css_files('app') %}
-    {% set css_files = css_files_app | merge(encore_entry_css_files('css')) %}
-    {% set js_files = encore_entry_js_files('app') | merge(encore_entry_js_files('css'))  %}
-    {% for css in css_files %}
-        <link rel="preload" href="{{ preload(asset(css), { as: 'style' }) }}" as="style">
-    {% endfor %}
-    {% for js in js_files %}
-        <link rel="preload" href="{{ preload(asset(js), { as: 'script' }) }}" as="script">
-    {% endfor %}
-    <link rel="preload" href="{{ preload(asset('bundles/fosjsrouting/js/router.min.js'), { as: 'script' }) }}" as="script">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name='keywords'
           content='musicien cherche musicien, chercher musicien, chercher chanteuse, chercher guitariste, chercher batteur, chercher groupe, groupe cherche musicien, musicien cherche groupe, groupe cherche musicien, chercher chanteur, chercher bassiste, groups de rock, cherche pianiste, tutoriel de batterie, tutoriel de guitare, tutoriel de basse, forum, forum de musiciens'/>
     <meta name='robots' content='index, follow'/>
 
     <meta name="verify-v1" content="dKTCUOuzn9n0Y5rkFus+08eZunNMKBKj7sqURPF4KIs="/>
-    <link rel="shortcut icon" href="{{ asset('build/images/favicon.ico') }}"/>
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico', 'vite') }}"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
-    {% for css in css_files %}
-        <link rel="stylesheet" href="{{ asset(css) }}">
-    {% endfor %}
+    {{ vite_entry_link_tags('styles') }}
+    {{ vite_entry_link_tags('app') }}
 
     <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
     <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
@@ -37,8 +24,6 @@
 <div id="app"></div>
 
 <script defer src="https://kit.fontawesome.com/bb0b374c35.js" crossorigin="anonymous"></script>
-{% for js in js_files %}
-    <script src="{{ asset(js) }}" defer="defer"></script>
-{% endfor %}
+{{ vite_entry_script_tags('app') }}
 </body>
 </html>

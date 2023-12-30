@@ -4,7 +4,11 @@ import axios from 'axios';
 
 export default {
   changePassword({oldPassword, newPassword}) {
-    return axios.post(Routing.generate('_api_/users/change_password_post'), {oldPassword, newPassword})
+    return axios.post(Routing.generate('_api_/users/change_password_post'), {oldPassword, newPassword},{
+      headers: {
+        'Content-Type': 'application/ld+json'
+      }
+    })
     .then(resp => resp.data);
   },
   requestResetPassword(login) {

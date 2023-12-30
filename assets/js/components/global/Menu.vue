@@ -54,7 +54,7 @@
 <script>
 import {mapGetters} from 'vuex';
 import {EVENT_TOGGLE_MENU} from "../../constants/events";
-import Spinner from '../global/misc/Spinner';
+import Spinner from '../global/misc/Spinner.vue';
 
 export default {
   components: {Spinner},

@@ -8,11 +8,21 @@ export default {
       level,
       title,
       description
-    })
+    },
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data);
   },
   editFeatured({featuredId, title, description}) {
-    return axios.post(Routing.generate('api_admin_publication_featured_edit', {id: featuredId}), {title, description})
+    return axios.post(Routing.generate('api_admin_publication_featured_edit', {id: featuredId}), {title, description},
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data);
   },
   removeFeatured(featuredId) {

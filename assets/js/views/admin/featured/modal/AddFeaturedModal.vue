@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import AddFeatureForm from "./AddFeatureForm";
+import AddFeatureForm from "./AddFeatureForm.vue";
 
 export default {
   components: {AddFeatureForm},
