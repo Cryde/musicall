@@ -9,10 +9,10 @@ MusicAll is a platform where people can share videos, articles, courses, search 
 These instructions will get you a copy of the project up and running on your local machine for development.
 
 This project use: 
-- PHP 8.1
-- Symfony 6.2
+- PHP 8.2
+- Symfony 6.4
 - MariaDB version 10.6
-- node 16
+- node 20
 - VueJS 2.7
 
 ### Installing
@@ -27,6 +27,11 @@ Once it's done, go in the project root and run
 docker compose up -d
 ```
 It will pull and build all the required images to run MusicAll
+
+If you need to rebuild image (after an update for instance)
+``` 
+docker-compose up --build
+```
 
 #### Setup the project
 

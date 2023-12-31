@@ -1,4 +1,4 @@
-FROM php:8.1-cli-alpine3.17
+FROM php:8.2-cli-alpine3.18
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

@@ -1,4 +1,4 @@
-FROM php:8.1-fpm-alpine3.16
+FROM php:8.2-fpm-alpine3.18
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -19,7 +19,7 @@ RUN apk add --update --no-cache \
 
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
-RUN docker-php-ext-install mysqli pdo_mysql gd intl
+RUN docker-php-ext-install opcache mysqli pdo_mysql gd intl
 
 COPY --chown=www-data:www-data . /var/www/musicall
 WORKDIR /var/www/musicall
