@@ -24,7 +24,7 @@
           v-for="category in courseCategories"
           :key="category.order"
           class="column has-text-centered mb-3 is-clickable has-text-dark">
-        <b-image :src="`/build/images/cours/${category.slug}.png`" responsive/>
+        <b-image :src="imagesByInstrument(category.slug)" responsive/>
         <span class="is-block mt-3 is-uppercase">{{ category.title }}</span>
       </router-link>
     </div>
@@ -36,6 +36,13 @@
 import {mapGetters} from 'vuex';
 import Breadcrumb from "../../components/global/Breadcrumb.vue";
 import AddVideoForm from "../user/Publication/add/video/AddVideoForm.vue";
+
+import basse from '../../../images/cours/basse.png';
+import batterie from '../../../images/cours/batterie.png';
+import mao from '../../../images/cours/mao.png';
+import divers from '../../../images/cours/divers.png';
+import guitare from '../../../images/cours/guitare.png';
+const instrumentsImages = {basse, batterie, mao, divers, guitare};
 
 export default {
   components: {AddVideoForm, Breadcrumb},
@@ -52,6 +59,9 @@ export default {
     this.$store.dispatch('publicationCategory/getCategories');
   },
   methods: {
+    imagesByInstrument(instrument) {
+      return instrumentsImages[instrument];
+    },
     openAddVideoModal() {
       this.$buefy.modal.open({
         parent: this,
