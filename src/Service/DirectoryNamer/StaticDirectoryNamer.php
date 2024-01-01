@@ -40,7 +40,7 @@ class StaticDirectoryNamer implements DirectoryNamerInterface, ConfigurableInter
         return $this->path;
     }
 
-    public function configure(array $options)
+    public function configure(array $options): void
     {
         $this->path = $options['path'] ?? '';
         $this->propertyPath = $options['property'] ?? '';

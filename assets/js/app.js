@@ -8,51 +8,14 @@ import prettyDateFilter from "./filters/pretty-date-filter";
 import VueGtag from "vue-gtag";
 import * as Sentry from "@sentry/vue";
 import GmapVue from 'gmap-vue';
-import {
-  ConfigProgrammatic,
-  Input,
-  Navbar,
-  Loading,
-  Autocomplete,
-  Dropdown,
-  Icon,
-  Button,
-  Tag,
-  Skeleton,
-  Tooltip,
-  Pagination,
-  Message,
-  Image,
-  Modal,
-  Field,
-  Steps,
-  Table
-} from 'buefy'
+import Buefy from 'buefy'
 import PerfectScrollbar from 'vue2-perfect-scrollbar'
 import VueProgressBar from 'vue-progressbar'
 
-Vue.use(Input);
-Vue.use(Navbar);
-Vue.use(Loading);
-Vue.use(Autocomplete);
-Vue.use(Dropdown);
-Vue.use(Icon);
-Vue.use(Button);
-Vue.use(Tag);
-Vue.use(Skeleton);
-Vue.use(Tooltip);
-Vue.use(Pagination);
-Vue.use(Message);
-Vue.use(Image);
-Vue.use(Modal);
-Vue.use(Field);
-Vue.use(Steps);
-Vue.use(Table);
-
-ConfigProgrammatic.setOptions({
+Vue.use(Buefy, {
   defaultIconPack: 'fas',
   defaultProgrammaticPromise: true
-})
+});
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
