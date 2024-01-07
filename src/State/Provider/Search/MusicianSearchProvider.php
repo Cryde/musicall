@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Provider\Search;
+namespace App\State\Provider\Search;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;

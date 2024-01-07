@@ -3,7 +3,7 @@
 namespace App\ApiResource\Contact;
 
 use ApiPlatform\Metadata\Post;
-use App\Processor\Contact\ContactProcessor;
+use App\State\Processor\Contact\ContactProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(

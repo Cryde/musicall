@@ -6,7 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Message\Message;
 use App\Entity\User;
-use App\Processor\Message\MessagePostToUserProcessor;
+use App\State\Processor\Message\MessagePostToUserProcessor;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 

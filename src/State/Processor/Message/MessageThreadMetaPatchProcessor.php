@@ -1,38 +1,36 @@
 <?php
 
-namespace App\Processor\Message;
+namespace App\State\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Message\Message;
+use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
-use App\Service\Access\ThreadAccess;
-use App\Service\Procedure\Message\MessageSenderProcedure;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-class MessagePostProcessor implements ProcessorInterface
+class MessageThreadMetaPatchProcessor implements ProcessorInterface
 {
     public function __construct(
         private readonly Security               $security,
-        private readonly ThreadAccess           $threadAccess,
-        private readonly MessageSenderProcedure $messageSenderProcedure
+        private readonly EntityManagerInterface $entityManager
     ) {
     }
 
     public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        /** @var Message $data */
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
+        /** @var MessageThreadMeta $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $thread = $data->getThread();
-        if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-            throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
+        if ($user->getId() !== $data->getUser()->getId()) {
+            throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
         }
+        $this->entityManager->flush();
 
-        return $this->messageSenderProcedure->processByThread($thread, $user, $data->getContent());
+        return $data;
     }
 }

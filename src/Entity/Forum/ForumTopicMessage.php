@@ -3,7 +3,7 @@
 namespace App\Entity\Forum;
 
 use ApiPlatform\Metadata\Post;
-use App\Processor\Forum\ForumTopicMessageProcessor;
+use App\State\Processor\Forum\ForumTopicMessageProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(

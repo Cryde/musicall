@@ -3,7 +3,7 @@
 namespace App\ApiResource\Search;
 
 use ApiPlatform\Metadata\GetCollection;
-use App\Provider\Search\MusicianSearchProvider;
+use App\State\Provider\Search\MusicianSearchProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[GetCollection(

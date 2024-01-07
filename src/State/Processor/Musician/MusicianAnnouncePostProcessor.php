@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Processor\Musician;
+namespace App\State\Processor\Musician;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;

@@ -4,7 +4,7 @@ namespace App\ApiResource\Publication\Video;
 
 use ApiPlatform\Metadata\Post;
 use App\Entity\PublicationSubCategory;
-use App\Processor\Publication\VideoPostProcessor;
+use App\State\Processor\Publication\VideoPostProcessor;
 use App\Validator\Publication\AlreadyExistingVideo;
 use App\Validator\Publication\UrlVideo;
 use Symfony\Component\Validator\Constraints as Assert;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Processor\Forum;
+namespace App\State\Processor\Forum;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
