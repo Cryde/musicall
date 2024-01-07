@@ -7,6 +7,7 @@ api_platform:
             - '%kernel.project_dir%/src/Entity'
     resource_class_directories:
         - '%kernel.project_dir%/src/Model'
+        - '%kernel.project_dir%/src/ApiResource'
     patch_formats:
         json: ['application/merge-patch+json']
     formats:
