@@ -2,15 +2,15 @@
 
 namespace App\Entity\Attribute;
 
-use App\Entity\Musician\MusicianAnnounce;
-use App\Model\Search\MusicianSearchResult;
-use DateTimeInterface;
-use DateTime;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use App\ApiResource\Search\MusicianSearchResult;
 use App\Contracts\SluggableEntityInterface;
+use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\Attribute\StyleRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;

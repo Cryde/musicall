@@ -4,9 +4,9 @@ namespace App\Provider\Search;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Search\MusicianText;
 use App\Entity\User;
 use App\Exception\Musician\InvalidSearchException;
-use App\Model\Search\MusicianText;
 use App\Service\Builder\Search\MusicianSearchResultBuilder;
 use App\Service\Finder\Musician\MusicianAIFinder;
 use Symfony\Bundle\SecurityBundle\Security;

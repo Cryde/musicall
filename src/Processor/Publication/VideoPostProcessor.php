@@ -4,8 +4,8 @@ namespace App\Processor\Publication;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\ApiResource\Publication\Video\AddVideo;
 use App\Entity\User;
-use App\Model\Publication\Request\AddVideo;
 use App\Procedure\Publication\PublicationVideoCreationProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 

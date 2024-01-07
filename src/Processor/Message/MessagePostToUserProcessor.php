@@ -4,8 +4,8 @@ namespace App\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\ApiResource\Message\MessageUser;
 use App\Entity\User;
-use App\Model\Message\MessageUser;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;

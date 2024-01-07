@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Publication\Request;
+namespace App\ApiResource\Publication\Video;
 
 use ApiPlatform\Metadata\Post;
 use App\Entity\PublicationSubCategory;

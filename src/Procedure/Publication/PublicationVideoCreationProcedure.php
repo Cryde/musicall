@@ -2,9 +2,9 @@
 
 namespace App\Procedure\Publication;
 
+use App\ApiResource\Publication\Video\AddVideo;
 use App\Entity\Publication;
 use App\Entity\User;
-use App\Model\Publication\Request\AddVideo;
 use App\Service\Builder\CommentThreadDirector;
 use App\Service\Builder\Metric\ViewCacheDirector;
 use App\Service\Builder\PublicationCoverDirector;

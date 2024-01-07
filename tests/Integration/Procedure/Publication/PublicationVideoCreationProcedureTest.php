@@ -2,8 +2,7 @@
 
 namespace App\Tests\Integration\Procedure\Publication;
 
-use App\Entity\Publication;
-use App\Model\Publication\Request\AddVideo;
+use App\ApiResource\Publication\Video\AddVideo;
 use App\Procedure\Publication\PublicationVideoCreationProcedure;
 use App\Service\Builder\CommentThreadDirector;
 use App\Service\Builder\Metric\ViewCacheDirector;
@@ -16,7 +15,6 @@ use App\Service\Google\YoutubeUrlHelper;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Google\Client;
 use Google\Service\YouTube as GoogleYouTube;
 use Google\Service\YouTube\Thumbnail;
 use Google\Service\YouTube\ThumbnailDetails;
