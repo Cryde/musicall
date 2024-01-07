@@ -29,15 +29,6 @@ services:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
 
-    Mailjet\Client:
-        arguments:
-            $key: '%env(MAILER_KEY)%'
-            $secret: '%env(MAILER_SECRET)%'
-            $call: true
-            $settings: { version: v3.1 }
-
-    App\Service\Mail\SenderMailerInterface: '@App\Service\Mail\Mailer'
-
     App\Service\Identifier\RequestIdentifier:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'
@@ -45,11 +36,6 @@ services:
     App\Service\Mail\Brevo\Contact\ContactUsEmail:
         arguments:
             $email:  '%env(MAIL_CONTACT_EMAIL)%'
-
-    App\Service\Mail\ArrayMailBuilder:
-        arguments:
-            $email: '%env(MAIL_NO_REPLY_EMAIL)%'
-            $name: '%env(MAIL_NO_REPLY_NAME)%'
 
     gesdinet.jwtrefreshtoken.refresh_token_manager:
         class: App\Doctrine\RefreshTokenManager
