@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Model\Contact\ContactModel;
-use App\Service\Mail\Contact\ContactMail;
+use App\Service\Mail\Brevo\Contact\ContactUsEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +19,7 @@ class ContactController extends AbstractController
         Request             $request,
         SerializerInterface $serializer,
         ValidatorInterface  $validator,
-        ContactMail         $contactMail
+        ContactUsEmail $contactUsEmail
     ): JsonResponse {
         /** @var ContactModel $contact */
         $contact = $serializer->deserialize($request->getContent(), ContactModel::class, 'json');
@@ -27,7 +27,7 @@ class ContactController extends AbstractController
         if (count($errors) > 0) {
             return $this->json($errors, Response::HTTP_BAD_REQUEST);
         }
-        $contactMail->send($contact->getName(), $contact->getEmail(), $contact->getMessage());
+        $contactUsEmail->send($contact->getName(), $contact->getEmail(), $contact->getMessage());
 
         return $this->json([]);
     }
