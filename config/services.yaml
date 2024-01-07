@@ -42,7 +42,7 @@ services:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'
 
-    App\Service\Mail\Contact\ContactMail:
+    App\Service\Mail\Brevo\Contact\ContactUsEmail:
         arguments:
             $email:  '%env(MAIL_CONTACT_EMAIL)%'
 
