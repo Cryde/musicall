@@ -38,6 +38,11 @@ class RegisterTest extends ApiTestCase
         $this->assertSame('super_username', $results[0]->getUsername());
         $this->assertSame('super_email@mail.com', $results[0]->getEmail());
         $this->assertNotSame('password', $results[0]->getPassword()); // we assert that we don't record plain text password in db
+        $this->assertEmailCount(1);
+
+        $email = $this->getMailerMessage();
+
+        $this->assertEmailTextBodyContains($email, 'Confirmer votre email');
     }
 
     public function test_register_with_errors()
@@ -67,6 +72,7 @@ class RegisterTest extends ApiTestCase
                 'code'         => '9ff3fdc4-b214-49db-8718-39c315e33d45',
             ],
         ]);
+        $this->assertEmailCount(0);
     }
 
     public function test_register_already_have_account()
@@ -79,5 +85,6 @@ class RegisterTest extends ApiTestCase
         $this->assertJsonEquals([
             'errors' => 'you already have an account',
         ]);
+        $this->assertEmailCount(0);
     }
 }
