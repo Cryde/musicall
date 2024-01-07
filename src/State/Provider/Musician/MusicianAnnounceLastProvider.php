@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Provider\Musician;
+namespace App\State\Provider\Musician;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;

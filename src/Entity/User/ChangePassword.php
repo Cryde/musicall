@@ -3,7 +3,7 @@
 namespace App\Entity\User;
 
 use ApiPlatform\Metadata\Post;
-use App\Processor\User\ChangePasswordProcessor;
+use App\State\Processor\User\ChangePasswordProcessor;
 use Symfony\Component\Security\Core\Validator\Constraints as SecurityAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 

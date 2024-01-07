@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Provider\Notification;
+namespace App\State\Provider\Notification;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;

@@ -4,7 +4,7 @@ namespace App\ApiResource\Notification;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use App\Provider\Notification\NotificationProvider;
+use App\State\Provider\Notification\NotificationProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(

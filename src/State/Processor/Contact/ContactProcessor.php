@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Processor\Contact;
+namespace App\State\Processor\Contact;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
