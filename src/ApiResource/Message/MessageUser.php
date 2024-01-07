@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Message;
+namespace App\ApiResource\Message;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Notification;
+namespace App\ApiResource\Notification;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;

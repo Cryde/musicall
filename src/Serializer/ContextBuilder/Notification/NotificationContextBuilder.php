@@ -3,7 +3,7 @@
 namespace App\Serializer\ContextBuilder\Notification;
 
 use ApiPlatform\Serializer\SerializerContextBuilderInterface;
-use App\Model\Notification\Notification;
+use App\ApiResource\Notification\Notification;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 

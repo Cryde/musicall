@@ -2,8 +2,8 @@
 
 namespace App\Service\Builder\Search;
 
+use App\ApiResource\Search\MusicianSearchResult;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Model\Search\MusicianSearchResult;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class MusicianSearchResultBuilder

@@ -4,12 +4,12 @@ namespace App\Entity\Image;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
+use App\ApiResource\Search\MusicianSearchResult;
 use App\Controller\Api\Media\User\CreateUserProfilePictureAction;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
-use App\Model\Search\MusicianSearchResult;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;

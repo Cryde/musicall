@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Search;
+namespace App\ApiResource\Search;
 
 use App\Entity\Attribute\Instrument;
 use App\Entity\Attribute\Style;

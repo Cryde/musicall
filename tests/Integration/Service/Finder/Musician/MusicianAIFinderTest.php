@@ -2,9 +2,9 @@
 
 namespace App\Tests\Integration\Service\Finder\Musician;
 
+use App\ApiResource\Search\MusicianText;
 use App\Exception\Musician\InvalidResultException;
 use App\Exception\Musician\NoResultException;
-use App\Model\Search\MusicianText;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Client\OpenAI\OpenAIClient;
 use App\Service\Factory\JsonTextExtractorFactory;

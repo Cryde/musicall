@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Search;
+namespace App\ApiResource\Search;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\Provider\Search\MusicianSearchProvider;

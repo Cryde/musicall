@@ -4,9 +4,9 @@ namespace App\Provider\Notification;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Notification\Notification;
 use App\Entity\Gallery;
 use App\Entity\Publication;
-use App\Model\Notification\Notification;
 use App\Repository\GalleryRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Repository\PublicationRepository;

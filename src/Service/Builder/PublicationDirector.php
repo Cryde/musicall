@@ -2,10 +2,10 @@
 
 namespace App\Service\Builder;
 
+use App\ApiResource\Publication\Video\AddVideo;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
-use App\Model\Publication\Request\AddVideo;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Service\Google\YoutubeUrlHelper;
 use App\Service\Publication\PublicationSlug;
