@@ -4,6 +4,7 @@ namespace App\Service\User;
 
 use App\Exception\NoMatchedUserAccountException;
 use App\Repository\UserRepository;
+use App\Service\Mail\Brevo\User\ResetPasswordEmail;
 use App\Service\Mail\ResetPasswordMail;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -14,7 +15,7 @@ class ResetPassword
     public function __construct(
         private readonly UserRepository     $userRepository,
         private readonly UserTokenGenerator $userTokenGenerator,
-        private readonly ResetPasswordMail  $resetPasswordMail,
+        private readonly ResetPasswordEmail $resetPasswordEmail,
         private readonly RouterInterface    $router
     ) {
     }
@@ -34,7 +35,7 @@ class ResetPassword
         $this->userTokenGenerator->generate($user);
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $this->resetPasswordMail->send(
+        $this->resetPasswordEmail->send(
             $user->getEmail(),
             $user->getUsername(),
             $baseUrl . 'lost-password/' . $user->getToken()
