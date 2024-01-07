@@ -62,7 +62,7 @@ export default {
         await contactApi.send({name: this.name, message: this.message, email: this.email});
         this.isSent = true;
       } catch (e) {
-        this.errors = e.response.data.violations.map(item => item.title);
+        this.errors = e.response.data.violations.map(item => item.message);
       }
       this.isSending = false;
     }
