@@ -30,14 +30,14 @@ It will pull and build all the required images to run MusicAll
 
 If you need to rebuild image (after an update for instance)
 ``` 
-docker-compose up --build
+docker compose up --build
 ```
 
 #### Setup the project
 
-Add `musicall.localhost` to your `/etc/hosts`
+Add `musicall.localhost` and `musicall.test` to your `/etc/hosts`
 ```
-127.0.0.1 	musicall.localhost
+127.0.0.1 	musicall.localhost musicall.test
 ```
 
 Install PHP vendor
@@ -79,3 +79,4 @@ You can now access http://musicall.localhost
 ## TODO
 
 - [ ] Create fixtures
+- [ ] Https
