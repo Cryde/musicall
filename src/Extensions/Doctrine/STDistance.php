@@ -24,7 +24,7 @@ class STDistance extends FunctionNode
 
         $lexer = $parser->getLexer();
 
-        if ($lexer->lookahead['type'] === Lexer::T_COMMA) {
+        if ($lexer->lookahead->type === Lexer::T_COMMA) {
             $parser->match(Lexer::T_COMMA);
             $this->expressions[] = $parser->ArithmeticFactor();
         }

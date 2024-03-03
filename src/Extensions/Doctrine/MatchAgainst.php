@@ -36,19 +36,17 @@ class MatchAgainst extends FunctionNode
 
         $parser->match(Lexer::T_CLOSE_PARENTHESIS);
         // against
-        if (strtolower($lexer->lookahead['value']) !== 'against') {
+        if (strtolower($lexer->lookahead->value) !== 'against') {
             $parser->syntaxError('against');
         }
         $parser->match(Lexer::T_IDENTIFIER);
         $parser->match(Lexer::T_OPEN_PARENTHESIS);
         $this->against = $parser->StringPrimary();
-        // @phpstan-ignore-next-line
-        if (strtolower($lexer->lookahead['value']) === 'boolean') {
+        if (strtolower($lexer->lookahead->value) === 'boolean') {
             $parser->match(Lexer::T_IDENTIFIER);
             $this->booleanMode = true;
         }
-        // @phpstan-ignore-next-line
-        if (strtolower($lexer->lookahead['value']) === 'expand') {
+        if (strtolower($lexer->lookahead->value) === 'expand') {
             $parser->match(Lexer::T_IDENTIFIER);
             $this->queryExpansion = true;
         }
