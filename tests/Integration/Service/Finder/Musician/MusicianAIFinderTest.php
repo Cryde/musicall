@@ -18,9 +18,13 @@ use App\Tests\Factory\User\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Zenstruck\Foundry\Test\Factories;
+use Zenstruck\Foundry\Test\ResetDatabase;
 
 class MusicianAIFinderTest extends KernelTestCase
 {
+    use ResetDatabase, Factories;
+
     protected function setUp(): void
     {
         self::bootKernel();
