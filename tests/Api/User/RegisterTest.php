@@ -56,26 +56,47 @@ class RegisterTest extends ApiTestCase
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
         $this->assertJsonEquals([
-            [
-                'propertyPath' => 'username',
-                'message'      => 'Ce login est déjà pris',
-                'code'         => '23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
-            ],
-            [
-                'propertyPath' => 'email',
-                'message'      => 'Cet email est déjà utilisé',
-                'code'         => '23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
-            ],
-            [
-                'propertyPath' => 'plain_password',
-                'message' => 'Le mot de passe doit au moins contenir 3 caractères',
-                'code'         => '9ff3fdc4-b214-49db-8718-39c315e33d45',
+            'type'       => 'https://symfony.com/errors/validation',
+            'title'      => 'Validation Failed',
+            'detail'     => 'username: Ce login est déjà pris
+email: Cet email est déjà utilisé
+plain_password: Le mot de passe doit au moins contenir 3 caractères',
+            'violations' => [
+                [
+                    'propertyPath' => 'username',
+                    'title'        => 'Ce login est déjà pris',
+                    'template'     => 'Ce login est déjà pris',
+                    'parameters'   => [
+                        '{{ value }}' => '"base_admin"',
+                    ],
+                    'type'         => 'urn:uuid:23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
+                ],
+                [
+                    'propertyPath' => 'email',
+                    'title'        => 'Cet email est déjà utilisé',
+                    'template'     => 'Cet email est déjà utilisé',
+                    'parameters'   => [
+                        '{{ value }}' => '"base_user@email.com"',
+                    ],
+                    'type'         => 'urn:uuid:23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
+                ],
+                [
+                    'propertyPath' => 'plain_password',
+                    'title'        => 'Le mot de passe doit au moins contenir 3 caractères',
+                    'template'     => 'Le mot de passe doit au moins contenir 3 caractères',
+                    'parameters'   => [
+                        '{{ value }}'        => '"pa"',
+                        '{{ limit }}'        => '3',
+                        '{{ value_length }}' => '2',
+                    ],
+                    'type'         => 'urn:uuid:9ff3fdc4-b214-49db-8718-39c315e33d45',
+                ],
             ],
         ]);
         $this->assertEmailCount(0);
     }
 
-    public function test_register_already_have_account()
+    public function test_register_already_have_account(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->object();
 
