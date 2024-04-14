@@ -38,13 +38,8 @@ class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
         return $data instanceof Message;
     }
 
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return false;
-    }
-
     public function getSupportedTypes(?string $format): array
     {
-        return [Message::class => true];
+        return [Message::class => false];
     }
 }

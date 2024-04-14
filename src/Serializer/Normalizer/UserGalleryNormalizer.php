@@ -48,6 +48,6 @@ class UserGalleryNormalizer implements NormalizerInterface, NormalizerAwareInter
 
     public function getSupportedTypes(?string $format): array
     {
-        return [Gallery::class => true];
+        return [Gallery::class => false];
     }
 }

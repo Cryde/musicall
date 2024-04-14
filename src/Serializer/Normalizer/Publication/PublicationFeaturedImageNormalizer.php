@@ -39,6 +39,6 @@ class PublicationFeaturedImageNormalizer implements NormalizerInterface
 
     public function getSupportedTypes(?string $format): array
     {
-        return [PublicationFeaturedImage::class => true];
+        return [PublicationFeaturedImage::class => false];
     }
 }
