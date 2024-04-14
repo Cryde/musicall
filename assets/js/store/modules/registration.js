@@ -46,8 +46,8 @@ const actions = {
       await registerApi.register({username, password, email});
       commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {
-      console.log(e.response);
-      commit(UPDATE_ERRORS, e.response.data.map(violation => violation.message));
+      console.log(e.response.data);
+      commit(UPDATE_ERRORS, e.response.data.violations.map(violation => violation.title));
     }
 
     commit(UPDATE_IS_LOADING, false);
