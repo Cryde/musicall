@@ -4,12 +4,11 @@ namespace App\Serializer\Normalizer;
 
 use App\Entity\Comment\Comment;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface, CacheableSupportsMethodInterface
+class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -19,7 +18,7 @@ class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface
     {
     }
 
-    public function normalize(mixed $comment, string $format = null, array $context = [])
+    public function normalize(mixed $comment, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;
         /** @var Comment $comment */
@@ -38,8 +37,8 @@ class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface
         return $data instanceof Comment;
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function getSupportedTypes(?string $format): array
     {
-        return false;
+        return [Comment::class => true];
     }
 }

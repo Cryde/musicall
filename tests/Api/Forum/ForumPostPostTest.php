@@ -29,7 +29,7 @@ class ForumPostPostTest extends ApiTestCase
         ]);
     }
 
-    public function test_post()
+    public function test_post(): void
     {
         $forumPostRepository =  static::getContainer()->get(ForumPostRepository::class);
         $user1 = UserFactory::new()->asBaseUser()->create();
