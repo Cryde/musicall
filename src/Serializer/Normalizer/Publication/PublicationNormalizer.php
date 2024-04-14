@@ -16,7 +16,7 @@ class PublicationNormalizer implements NormalizerInterface, SerializerAwareInter
     ) {
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = [])
+    public function normalize(mixed $object, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         /** @var Publication $object */
         $normalizedData = $this->decorated->normalize($object, $format, $context);
@@ -27,15 +27,20 @@ class PublicationNormalizer implements NormalizerInterface, SerializerAwareInter
         return $normalizedData;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null)
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $data instanceof Publication;
     }
 
-    public function setSerializer(SerializerInterface $serializer)
+    public function setSerializer(SerializerInterface $serializer): void
     {
         if ($this->decorated instanceof SerializerAwareInterface) {
             $this->decorated->setSerializer($serializer);
         }
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [Publication::class => true];
     }
 }

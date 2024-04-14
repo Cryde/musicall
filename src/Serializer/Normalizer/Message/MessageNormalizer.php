@@ -4,12 +4,11 @@ namespace App\Serializer\Normalizer\Message;
 
 use App\Entity\Message\Message;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface, CacheableSupportsMethodInterface
+class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -20,7 +19,7 @@ class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
     ) {
     }
 
-    public function normalize(mixed $message, string $format = null, array $context = [])
+    public function normalize(mixed $message, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;
         /** @var Message $message */
@@ -42,5 +41,10 @@ class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
     public function hasCacheableSupportsMethod(): bool
     {
         return false;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [Message::class => true];
     }
 }
