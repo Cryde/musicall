@@ -41,6 +41,6 @@ class PublicationNormalizer implements NormalizerInterface, SerializerAwareInter
 
     public function getSupportedTypes(?string $format): array
     {
-        return [Publication::class => true];
+        return [Publication::class => false];
     }
 }

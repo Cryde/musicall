@@ -48,6 +48,6 @@ class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterfa
 
     public function getSupportedTypes(?string $format): array
     {
-        return [ForumPost::class => true];
+        return [ForumPost::class => false];
     }
 }

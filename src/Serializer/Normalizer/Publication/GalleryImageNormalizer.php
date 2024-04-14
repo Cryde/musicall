@@ -34,6 +34,6 @@ class GalleryImageNormalizer implements NormalizerInterface
 
     public function getSupportedTypes(?string $format): array
     {
-        return [GalleryImage::class => true];
+        return [GalleryImage::class => false];
     }
 }

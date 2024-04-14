@@ -35,7 +35,7 @@ class UserProfilePictureNormalizer implements NormalizerInterface
     public function getSupportedTypes(?string $format): array
     {
         return [
-            UserProfilePicture::class => true
+            UserProfilePicture::class => false
         ];
     }
 }

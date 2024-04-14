@@ -52,7 +52,7 @@ class UserCheckerTest extends TestCase
                 return [];
             }
 
-            public function eraseCredentials()
+            public function eraseCredentials(): void
             {
             }
 

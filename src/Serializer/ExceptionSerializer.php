@@ -22,6 +22,6 @@ class ExceptionSerializer implements NormalizerInterface
 
     public function getSupportedTypes(?string $format): array
     {
-        return [FlattenException::class => true];
+        return [FlattenException::class => false];
     }
 }

@@ -19,9 +19,4 @@ class ApiTestCase extends WebTestCase
     {
         return self::HTTP_HOST;
     }
-
-    protected function jsonRequest()
-    {
-
-    }
 }

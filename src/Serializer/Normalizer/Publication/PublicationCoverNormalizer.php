@@ -34,6 +34,6 @@ class PublicationCoverNormalizer implements NormalizerInterface
 
     public function getSupportedTypes(?string $format): array
     {
-        return [PublicationCover::class => true];
+        return [PublicationCover::class => false];
     }
 }

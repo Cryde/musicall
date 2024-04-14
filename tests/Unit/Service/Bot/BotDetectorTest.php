@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Service\Bot;
 
 use App\Service\Bot\BotDetector;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class BotDetectorTest extends TestCase
@@ -19,16 +20,14 @@ class BotDetectorTest extends TestCase
         $this->assertTrue($detector->isBot('facebookexternalhit/1.1; kakaotalk-scrap/1.0; +https://devtalk.kakao.com/t/scrap/33984'));
     }
 
-    /**
-     * @dataProvider mobileAgentProvider
-     */
-    public function test_is_bot_on_mobile_agent($userAgent)
+    #[DataProvider('mobileAgentProvider')]
+    public function test_is_bot_on_mobile_agent($userAgent): void
     {
         $detector = new BotDetector();
         $this->assertFalse($detector->isBot($userAgent));
     }
 
-    public function mobileAgentProvider(): array
+    public static function mobileAgentProvider(): array
     {
         $result = json_decode(file_get_contents(__DIR__ . '/fixtures/navigator_agent_strings.json'), true);
 
