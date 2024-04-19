@@ -10,13 +10,13 @@ on:
             - master
 jobs:
     symfony:
-        name: Symfony 6.4 (PHP ${{ matrix.php-versions }})
+        name: Symfony 7.0 (PHP ${{ matrix.php-versions }})
         # https://hub.docker.com/_/ubuntu/
         runs-on: ubuntu-22.04
         services:
             # https://docs.docker.com/samples/library/mysql/
             mysql:
-                image: mariadb:10.6
+                image: mariadb:10.11
                 env:
                     MYSQL_ROOT_PASSWORD: toor
                 ports:
@@ -81,7 +81,7 @@ jobs:
               uses: php-actions/phpunit@v3
               with:
                   memory_limit: 400M
-                  version: 9.5
+                  version: 10.5
                   php_extensions: xdebug pdo_mysql mysqli intl json
                   php_version: ${{ matrix.php-versions }}
                   args: tests --coverage-clover ./coverage.xml
