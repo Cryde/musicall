@@ -9,13 +9,14 @@
     />
 
     <h1 class="subtitle is-3">Photos</h1>
-
-    <masonry-wall :items="galleries" :column-width="300"  :gap="12" class="mt-4">
-      <template #default="{ item: gallery, index }">
+    <div class="columns is-multiline">
+      <div class="column is-3" v-for="gallery in galleries">
         <card
             :key="gallery.id"
             :top-image="gallery.cover_image"
-            :to="{name: 'gallery_show', params: {slug: gallery.slug}}">
+            :to="{name: 'gallery_show', params: {slug: gallery.slug}}"
+            style="min-height: 330px"
+        >
           <template #top-content>
             {{ gallery.title.toUpperCase() }}
           </template>
@@ -27,8 +28,8 @@
             </span>
           </template>
         </card>
-      </template>
-    </masonry-wall>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -36,10 +37,9 @@
 import {mapGetters} from 'vuex';
 import Breadcrumb from "../../../components/global/Breadcrumb.vue";
 import Card from "../../../components/global/content/Card.vue";
-import MasonryWall from '@yeger/vue2-masonry-wall'
 
 export default {
-  components: {Card, Breadcrumb, MasonryWall},
+  components: {Card, Breadcrumb},
   metaInfo() {
     return {
       title: 'Photos'
