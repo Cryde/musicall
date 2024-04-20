@@ -25,7 +25,7 @@
         "@tiptap/extension-text-align": "^2.0.0-beta.202",
         "@tiptap/starter-kit": "^2.0.0-beta.202",
         "@tiptap/vue-2": "^2.0.0-beta.202",
-        "@yeger/vue2-masonry-wall": "^2.0.60",
+        "@yeger/vue2-masonry-wall": "^4.0.0",
         "autolinker": "^4.0.0",
         "axios": "^1.1.2",
         "buefy": "^0.9.8",
