@@ -14,8 +14,9 @@
         <card
             :key="gallery.id"
             :top-image="gallery.cover_image"
+            top-image-class="photo-gallery"
             :to="{name: 'gallery_show', params: {slug: gallery.slug}}"
-            style="min-height: 330px"
+            card-content-class="photo-content-class"
         >
           <template #top-content>
             {{ gallery.title.toUpperCase() }}

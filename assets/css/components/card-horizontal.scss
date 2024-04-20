@@ -13,10 +13,22 @@
   border-bottom-left-radius: 6px;
 }
 
+
 .card-content-container {
   width: 0;
   flex: 1 1 auto;
 }
+
+// specific to photo gallery
+.photo-gallery {
+  min-height: 350px;
+  object-fit: cover;
+}
+
+.photo-content-class {
+  min-height: 125px;
+}
+
 
 @media only screen and (max-width: 600px) {
   .card-horizontal .card-horizontal-image {
