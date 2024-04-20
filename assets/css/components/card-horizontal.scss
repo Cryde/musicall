@@ -23,10 +23,11 @@
 .photo-gallery {
   min-height: 350px;
   object-fit: cover;
+  max-height: 350px;
 }
 
 .photo-content-class {
-  min-height: 125px;
+  min-height: 165px;
 }
 
 
