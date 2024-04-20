@@ -14,62 +14,59 @@
         :current="{label: 'Publications'}"
     />
 
-    <h1 class="subtitle is-3" v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h1>
-    <h1 class="subtitle is-3" v-else-if="!this.isHome">Publications</h1>
-    <masonry-wall :items="publications" :gap="10" :column-width="250" class="mt-4">
-      <template v-slot:default="{item: publication}">
-        <card
-            :key="publication.id"
-            v-if="publication.sub_category.slug !== 'news'"
-            :top-image="publication.cover"
-            :to="{ name: publication.sub_category.is_course ? 'course_show' : 'publication_show', params: { slug: publication.slug }}">
+    <div class="columns">
+      <div class="column is-8">
+        <div class="columns mb-0">
+          <div class="column is-12 pb-0">
+              <h2 class="subtitle is-4" v-if="currentCategory && !this.isHome">{{ currentCategory.title }}</h2>
+              <h2 class="subtitle is-4" v-else-if="!this.isHome">Publications</h2>
+          </div>
+        </div>
 
-          <template #top-content>
+        <div class="has-text-right mt-2 mb-2">
+          <b-tooltip label="Ajouter une publication" type="is-dark">
+            <b-button size="is-small" rounded icon-left="pen" icon-pack="fas"
+                      @click="openAddPublicationModal()">
+              Ajouter un publication
+            </b-button>
+          </b-tooltip>
+        </div>
+
+        <div v-for="publication in publications">
+          <card-horizontal
+              :key="publication.id"
+              :image="publication.cover"
+              :to="{ name: publication.sub_category.is_course ? 'course_show' : 'publication_show', params: { slug: publication.slug }}">
+            <template #title>
+              {{ publication.title }}
+            </template>
+            <template #content>
+            <span v-if="publication.type_label === 'text'" class="is-block description is-size-7">
+              {{ publication.description }}
+            </span>
+              <span class="publication-date is-block mt-2 is-size-7">
+              par {{ publication.author.username }} le
+            {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
+            <span class="is-inline-block ml-3 mr-3 is-size-7">•</span>
             <publication-type
-                v-if="isHome"
                 :type="publication.type_label"
                 :label="publication.sub_category.title"
                 :icon="publication.type_label === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
-                class="mt-1 mb-2 "/>
-            <publication-type
-                v-else
-                :type="publication.type_label"
-                :label="publication.type_label === 'video' ? 'Vidéo': 'Article'"
-                :icon="publication.type_label === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
-                class="mt-1 mb-2 "/>
-            {{ publication.title }}
-          </template>
-          <template #content>
-            <span v-if="publication.type_label === 'text'" class="is-block description">
-              {{ publication.description }}
-            </span>
-            <span class="publication-date is-block mt-1">
-              {{ publication.author.username }} •
-              {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
-            </span>
-          </template>
-        </card>
-        <card v-else :to="{ name: 'publication_show', params: { slug: publication.slug }}">
-          <template #top-content>
-            <publication-type
-                type="news"
-                label="News"
-                icon="fab fa-hotjar"
-                class="mb-3"/>
-            {{ publication.title }}
-          </template>
-          <template #content>
-            <span class="description is-block">
-              {{ publication.description }}
-            </span>
-            <span class="publication-date is-block mt-1">
-              {{ publication.author.username }} •
-              {{ publication.publication_datetime | relativeDate({differenceLimit: 12, showHours: false}) }}
-            </span>
-          </template>
-        </card>
-      </template>
-    </masonry-wall>
+                class="is-inline-block is-size-7"/>
+          </span>
+            </template>
+          </card-horizontal>
+        </div>
+      </div>
+
+      <div class="column is-4">
+        <div class="columns mb-0">
+          <div class="column is-12 pb-0">
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="overflow-auto mt-3" v-if="displayPagination">
       <b-pagination
           :total="total"
@@ -109,15 +106,15 @@
 <script>
 import {mapGetters} from 'vuex';
 import PublicationType from "../../../components/publication/PublicationType.vue";
-import MasonryWall from '@yeger/vue2-masonry-wall'
 import Card from "../../../components/global/content/Card.vue";
 import Spinner from "../../../components/global/misc/Spinner.vue";
 import {EVENT_PUBLICATION_CREATED} from "../../../constants/events";
 import Breadcrumb from "../../../components/global/Breadcrumb.vue";
 import {PUBLICATION_MAX_ITEMS_PER_PAGE} from "../../../constants/publication";
+import CardHorizontal from "../../../components/global/content/CardHorizontal.vue";
 
 export default {
-  components: {Breadcrumb, Spinner, PublicationType, MasonryWall, Card},
+  components: {CardHorizontal, Breadcrumb, Spinner, PublicationType, Card},
   data() {
     return {
       macy: null,
@@ -132,6 +129,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters('security', ['isAuthenticated']),
     ...mapGetters('publications', [
       'publications',
       'isLoading',
@@ -182,6 +180,16 @@ export default {
       } else {
         await this.$store.dispatch('publications/getPublications', {page});
       }
+    },
+    openAddPublicationModal() {
+      if (!this.isAuthenticated) {
+        this.openRegisterOrLoginModal(`
+        Si vous souhaitez ajouter une publication, vous devez vous connecter.<br/>
+        Si vous ne disposez pas de compte, vous pouvez vous inscrire gratuitement sur le site.`);
+        return;
+      }
+
+      this.$router.push({name: 'user_publications'})
     },
   },
   beforeDestroy() {
