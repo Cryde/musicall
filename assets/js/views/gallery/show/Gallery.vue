@@ -20,7 +20,7 @@
         <spinner/>
       </div>
       <div v-else>
-        <masonry-wall :items="images" :column-width="250" :gap="15" class="mt-lg-4 mt-3 image-container">
+        <masonry-wall :items="images" :column-width="250" :gap="2" class="mt-lg-4 mt-3 image-container">
           <template v-slot:default="{item: image, index}">
             <img
                 :src="image.sizes.medium"
@@ -247,9 +247,7 @@ export default {
 .lightbox-container.displayed .l-prev {
   visibility: visible;
 }
-</style>
 
-<style>
 .image-container {
   max-width: 100%;
 }
