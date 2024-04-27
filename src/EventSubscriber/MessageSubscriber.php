@@ -4,12 +4,11 @@ namespace App\EventSubscriber;
 
 use App\Event\MessageSentEvent;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
-use App\Service\Mail\MessageReceivedMail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class MessageSubscriber implements EventSubscriberInterface
+readonly class MessageSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private readonly MessageReceivedEmail $messageReceivedEmail)
+    public function __construct(private MessageReceivedEmail $messageReceivedEmail)
     {
     }
 

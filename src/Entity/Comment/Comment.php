@@ -10,7 +10,6 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use App\Contracts\AuthorableEntityInterface;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
 use Doctrine\DBAL\Types\Types;
@@ -24,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     new GetCollection(normalizationContext: ['groups' => [Comment::LIST]], name: 'api_comments_get_collection'),
 ])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
-class Comment implements AuthorableEntityInterface
+class Comment
 {
     const LIST = 'COMMENT_LIST';
     const ITEM = 'COMMENT_ITEM';
