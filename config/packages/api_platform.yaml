@@ -2,6 +2,11 @@ api_platform:
     title: MusicAll API
     version: 1.0.0
     show_webby: false
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
     mapping:
         paths:
             - '%kernel.project_dir%/src/Entity'
