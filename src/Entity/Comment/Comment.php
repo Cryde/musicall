@@ -10,7 +10,6 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use App\Contracts\AuthorableEntityInterface;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
@@ -23,18 +22,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(operations: [
     new Get(normalizationContext: ['groups' => [Comment::ITEM]]),
     new GetCollection(normalizationContext: ['groups' => [Comment::LIST]], name: 'api_comments_get_collection'),
-    new Post(
-        normalizationContext: ['groups' => [Comment::ITEM]],
-        denormalizationContext: ['groups' => [Comment::POST]],
-        name: 'api_comments_post_collection'
-    )
 ])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
 class Comment implements AuthorableEntityInterface
 {
     const LIST = 'COMMENT_LIST';
     const ITEM = 'COMMENT_ITEM';
-    const POST = 'COMMENT_POST';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -45,7 +38,6 @@ class Comment implements AuthorableEntityInterface
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: CommentThread::class, inversedBy: "comments")]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([Comment::POST])]
     private CommentThread $thread;
 
     #[Assert\NotNull]
@@ -60,7 +52,7 @@ class Comment implements AuthorableEntityInterface
 
     #[Assert\NotBlank(message: 'Le commentaire est vide')]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([Comment::ITEM, Comment::POST, Comment::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST])]
     private string $content;
 
     public function __construct()
