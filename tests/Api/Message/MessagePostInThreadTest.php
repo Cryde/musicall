@@ -18,7 +18,7 @@ class MessagePostInThreadTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_not_logged()
+    public function test_not_logged(): void
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -28,7 +28,7 @@ class MessagePostInThreadTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
-    public function test_post_message_in_thread()
+    public function test_post_message_in_thread(): void
     {
         $messageRepository = static::getContainer()->get(MessageRepository::class);
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
@@ -64,7 +64,7 @@ class MessagePostInThreadTest extends ApiTestCase
         ]);
     }
 
-    public function test_post_message_in_thread_but_not_in_participants()
+    public function test_post_message_in_thread_but_not_in_participants(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
@@ -95,7 +95,7 @@ class MessagePostInThreadTest extends ApiTestCase
         ]);
     }
 
-    public function test_with_invalid_values()
+    public function test_with_invalid_values(): void
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
