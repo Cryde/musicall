@@ -88,9 +88,7 @@ jobs:
               env:
                   XDEBUG_MODE: coverage
                   APP_ENV: test
-            - name: Upload to Codecov
-              uses: codecov/codecov-action@v2
+            - name: Upload coverage reports to Codecov
+              uses: codecov/codecov-action@v4.0.1
               with:
-                  token: ${{ secrets.CODE_COV_TOKEN }}
-                  files: ./coverage.xml
-                  verbose: true
+                  token: ${{ secrets.CODECOV_TOKEN }}
