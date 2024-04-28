@@ -31,7 +31,7 @@ jobs:
             # —— Setup Github actions 🐙 —————————————————————————————————————————————
             # https://github.com/actions/checkout (official)
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             # https://github.com/shivammathur/setup-php (community)
             - name: Setup PHP, extensions and composer with shivammathur/setup-php
@@ -47,7 +47,7 @@ jobs:
 
             # —— Composer 🧙‍️ —————————————————————————————————————————————————————————
             - name: Cache Composer dependencies
-              uses: actions/cache@v2
+              uses: actions/cache@v4
               with:
                   path: /tmp/composer-cache
                   key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
