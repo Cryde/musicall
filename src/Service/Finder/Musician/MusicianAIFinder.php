@@ -12,14 +12,14 @@ use App\Service\Factory\JsonTextExtractorFactory;
 use App\Service\Finder\Musician\Builder\SearchModelBuilder;
 use App\Service\Finder\Musician\Formatter\PromptFormatter;
 
-class MusicianAIFinder
+readonly class MusicianAIFinder
 {
     public function __construct(
-        private readonly OpenAIClient               $openAIClient,
-        private readonly PromptFormatter            $promptFormatter,
-        private readonly MusicianAnnounceRepository $musicianAnnounceRepository,
-        private readonly JsonTextExtractorFactory   $jsonTextExtractorFactory,
-        private readonly SearchModelBuilder         $searchModelBuilder
+        private OpenAIClient               $openAIClient,
+        private PromptFormatter            $promptFormatter,
+        private MusicianAnnounceRepository $musicianAnnounceRepository,
+        private JsonTextExtractorFactory   $jsonTextExtractorFactory,
+        private SearchModelBuilder         $searchModelBuilder
     ) {
     }
 
