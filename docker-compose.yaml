@@ -74,6 +74,24 @@ services:
         ipv4_address: 10.10.100.6
         aliases:
           - db.musicall
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
+    container_name: musicall-es
+    mem_limit: 512mb
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    ports:
+      - 10.10.100.1:9200:9200
+      - 10.10.100.1:9300:9300
+    networks:
+      musicall:
+        ipv4_address: 10.10.100.8
+        aliases:
+          - elasticsearch.musicall
+    volumes:
+      - es_files:/usr/share/elasticsearch/data:cached
 networks:
   musicall:
     name: musicall
@@ -84,4 +102,6 @@ networks:
 
 volumes:
   db_files:
+    driver: local
+  es_files:
     driver: local

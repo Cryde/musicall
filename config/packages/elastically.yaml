@@ -1,0 +1,14 @@
+elastically:
+    connections:
+        default:
+            client:
+                host:                '%env(ELASTICSEARCH_HOST)%'
+                # If you want to use the Symfony HttpClient (you MUST create this service)
+                #transport:           'JoliCode\Elastically\Transport\HttpClientTransport'
+
+            mapping_directory:       '%kernel.project_dir%/config/elasticsearch'
+            bulk_size:               100
+
+            # Mapping between an index name and a FQCN
+            index_class_mapping:
+                publication:     App\ElasticSearch\Publication\Publication

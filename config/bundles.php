@@ -22,4 +22,5 @@ return [
     DAMA\DoctrineTestBundle\DAMADoctrineTestBundle::class => ['test' => true],
     Oneup\FlysystemBundle\OneupFlysystemBundle::class => ['all' => true],
     Pentatrion\ViteBundle\PentatrionViteBundle::class => ['all' => true],
+    JoliCode\Elastically\Bridge\Symfony\ElasticallyBundle::class => ['all' => true],
 ];
