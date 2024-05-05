@@ -1,0 +1,46 @@
+settings:
+    number_of_replicas: 0
+    number_of_shards: 1
+    refresh_interval: 60s
+mappings:
+    dynamic: false
+    properties:
+        id:
+            type: keyword
+        title:
+            type: text
+            fields:
+                keyword:
+                    type: keyword
+        publication_type:
+            type: keyword
+        slug:
+            type: keyword
+        is_video:
+            type: boolean
+        content:
+            type: text
+            fields:
+                keyword:
+                    type: keyword
+        short_description:
+            type: text
+        publication_datetime:
+            type: date
+        media:
+            type: object
+            properties:
+                cover_image_url:
+                    type: keyword
+        author:
+            type: object
+            properties:
+                id:
+                    type: keyword
+        category:
+            type: object
+            properties:
+                id:
+                    type: keyword
+                label:
+                    type: keyword
