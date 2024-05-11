@@ -2,8 +2,6 @@
 
 namespace App\Entity;
 
-use DateTimeInterface;
-use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -19,8 +17,10 @@ use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Metric\ViewCache;
-use App\Provider\Publication\PublicationProvider;
 use App\Repository\PublicationRepository;
+use App\State\Provider\Publication\PublicationProvider;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -39,8 +39,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new GetCollection(
             // "PublicationOnlineExtension" add automatic filter on status of the publication
-            paginationItemsPerPage: 16,
-            normalizationContext: ['groups' => [Publication::LIST]],
+            paginationItemsPerPage: Publication::LIST_ITEMS_PER_PAGE,
+            normalizationContext: ['groups' => [Publication::LIST], 'skip_null_values' => false],
             name: 'api_publication_get_collection'
         ),
     ]
@@ -49,6 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT])]
 class Publication implements ViewableInterface, SluggableEntityInterface
 {
+    final const LIST_ITEMS_PER_PAGE = 12;
     final const ITEM = 'PUBLICATION_ITEM';
     final const LIST = 'PUBLICATION_LIST';
 

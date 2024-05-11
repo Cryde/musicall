@@ -11,7 +11,12 @@ export default {
     .then(resp => resp.data);
   },
   postMessageInThread({threadId, content}) {
-    return axios.post(Routing.generate('api_message_post'), {content, thread: `/api/message_threads/${threadId}`})
+    return axios.post(Routing.generate('api_message_post'), {content, thread: `/api/message_threads/${threadId}`},
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data);
   },
   getThreads() {

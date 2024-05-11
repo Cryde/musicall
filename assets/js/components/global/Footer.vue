@@ -89,7 +89,7 @@
 
 <script>
 import {mapGetters} from 'vuex';
-import Spinner from "./misc/Spinner";
+import Spinner from "./misc/Spinner.vue";
 
 export default {
   components: {Spinner},

@@ -1,17 +1,15 @@
 import attributes from "./attributes";
 import publications from "./publications";
-import artistes from "./artistes";
 import forum from "./forum";
 
 export default [
   {
     path: "/admin/",
     name: "admin_dashboard",
-    component: () => import("../../views/admin/Dashboard"),
+    component: () => import("../../views/admin/Dashboard.vue"),
     meta: {isAuthRequired: true}
   },
   ...attributes,
-  ...artistes,
   ...publications,
   ...forum
 ];

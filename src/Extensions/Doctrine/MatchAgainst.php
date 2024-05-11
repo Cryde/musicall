@@ -8,6 +8,7 @@ use Doctrine\ORM\Query\Lexer;
 use Doctrine\ORM\Query\Parser;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
+use Doctrine\ORM\Query\TokenType;
 
 class MatchAgainst extends FunctionNode
 {
@@ -22,37 +23,35 @@ class MatchAgainst extends FunctionNode
     public function parse(Parser $parser): void
     {
         // match
-        $parser->match(Lexer::T_IDENTIFIER);
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);
+        $parser->match(TokenType::T_IDENTIFIER);
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);
         // first Path Expression is mandatory
         $this->pathExp = [];
         $this->pathExp[] = $parser->StateFieldPathExpression();
         // Subsequent Path Expressions are optional
         $lexer = $parser->getLexer();
-        while ($lexer->isNextToken(Lexer::T_COMMA)) {
-            $parser->match(Lexer::T_COMMA);
+        while ($lexer->isNextToken(TokenType::T_COMMA)) {
+            $parser->match(TokenType::T_COMMA);
             $this->pathExp[] = $parser->StateFieldPathExpression();
         }
 
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);
         // against
-        if (strtolower($lexer->lookahead['value']) !== 'against') {
+        if (strtolower($lexer->lookahead->value) !== 'against') {
             $parser->syntaxError('against');
         }
-        $parser->match(Lexer::T_IDENTIFIER);
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);
+        $parser->match(TokenType::T_IDENTIFIER);
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);
         $this->against = $parser->StringPrimary();
-        // @phpstan-ignore-next-line
-        if (strtolower($lexer->lookahead['value']) === 'boolean') {
-            $parser->match(Lexer::T_IDENTIFIER);
+        if (strtolower($lexer->lookahead->value) === 'boolean') {
+            $parser->match(TokenType::T_IDENTIFIER);
             $this->booleanMode = true;
         }
-        // @phpstan-ignore-next-line
-        if (strtolower($lexer->lookahead['value']) === 'expand') {
-            $parser->match(Lexer::T_IDENTIFIER);
+        if (strtolower($lexer->lookahead->value) === 'expand') {
+            $parser->match(TokenType::T_IDENTIFIER);
             $this->queryExpansion = true;
         }
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);
     }
 
     public function getSql(SqlWalker $walker): string

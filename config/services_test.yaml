@@ -1,2 +1,1 @@
 services:
-    App\Service\Mail\SenderMailerInterface: '@App\Service\Mail\DummyMailer'

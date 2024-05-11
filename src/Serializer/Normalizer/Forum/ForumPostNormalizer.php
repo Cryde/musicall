@@ -4,12 +4,11 @@ namespace App\Serializer\Normalizer\Forum;
 
 use App\Entity\Forum\ForumPost;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterface, CacheableSupportsMethodInterface
+class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -20,7 +19,7 @@ class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterfa
     ) {
     }
 
-    public function normalize(mixed $forumPost, string $format = null, array $context = [])
+    public function normalize(mixed $forumPost, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;
         /** @var ForumPost $forumPost */
@@ -45,5 +44,10 @@ class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterfa
     public function hasCacheableSupportsMethod(): bool
     {
         return false;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [ForumPost::class => false];
     }
 }

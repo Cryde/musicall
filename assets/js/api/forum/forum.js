@@ -28,11 +28,21 @@ export default {
     .then(resp => resp.data);
   },
   postTopicMessage(data) {
-    return axios.post(Routing.generate('api_forum_topic_post_post'), data)
+    return axios.post(Routing.generate('api_forum_topic_post_post'), data,
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data)
   },
   postPostMessage(data) {
-    return axios.post(Routing.generate('api_forum_posts_post'), data)
+    return axios.post(Routing.generate('api_forum_posts_post'), data,
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data)
   }
 }

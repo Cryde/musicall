@@ -4,11 +4,10 @@ namespace App\Serializer\Normalizer\Publication;
 
 use App\Entity\Image\GalleryImage;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class GalleryImageNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class GalleryImageNormalizer implements NormalizerInterface
 {
     public function __construct(
         private readonly UploaderHelper $uploaderHelper,
@@ -16,7 +15,7 @@ class GalleryImageNormalizer implements NormalizerInterface, CacheableSupportsMe
     ) {
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = [])
+    public function normalize(mixed $object, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         /** @var ?GalleryImage $object */
         if ($object) {
@@ -28,13 +27,13 @@ class GalleryImageNormalizer implements NormalizerInterface, CacheableSupportsMe
         return null;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $data instanceof GalleryImage;
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function getSupportedTypes(?string $format): array
     {
-        return true;
+        return [GalleryImage::class => false];
     }
 }

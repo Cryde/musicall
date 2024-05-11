@@ -20,7 +20,7 @@
 
 <script>
   import styleApi from "../../../../api/attribute/style";
-  import AddModal from './AddModal';
+  import AddModal from './AddModal.vue';
   import {EVENT_ADMIN_ADD_STYLE} from '../../../../constants/events';
 
   export default {

@@ -2,14 +2,15 @@
 
 namespace App\Entity\Attribute;
 
-use App\Entity\Musician\MusicianAnnounce;
-use DateTimeInterface;
-use DateTime;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use App\ApiResource\Search\MusicianSearchResult;
 use App\Contracts\SluggableEntityInterface;
+use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\Attribute\InstrumentRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
@@ -40,7 +41,7 @@ class Instrument implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST, MusicianSearchResult::LIST])]
     private $musicianName;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]

@@ -26,7 +26,7 @@ class MessageUserPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages/user', [
             'recipient' => '/api/users/' . $user1->getId(),
             'content'   => 'content',
-        ]);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -46,7 +46,7 @@ class MessageUserPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages/user', [
             'recipient' => '/api/users/' . $user2->getId(),
             'content' => 'new content from user1',
-        ]);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $resultUser1 = $messageThreadMetaRepository->findBy(['user' => $user1]);
         $resultUser2 = $messageThreadMetaRepository->findBy(['user' => $user2]);
         // check we have message meta thread items for both user
@@ -93,7 +93,7 @@ class MessageUserPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages/user', [
             'recipient' => '/api/users/' . $user2->getId(),
             'content' => 'new content from user1',
-        ]);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $resultUser1 = $messageThreadMetaRepository->findBy(['user' => $user1]);
         $resultUser2 = $messageThreadMetaRepository->findBy(['user' => $user2]);
         // check we still have only 1 message meta thread per user
@@ -125,11 +125,9 @@ class MessageUserPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/messages/user', [
             'recipient' => '/api/users/' . $user1->getId(),
             'content' => '',
-        ], ['HTTP_ACCEPT' => 'application/ld+json']);
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
-            '@context'          => '/api/contexts/ConstraintViolationList',
-            '@type'             => 'ConstraintViolationList',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'content: Cette valeur ne doit pas être vide.',
             'violations'        => [
@@ -139,6 +137,10 @@ class MessageUserPostTest extends ApiTestCase
                     'code'         => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
+            'status'            => 422,
+            'detail'            => 'content: Cette valeur ne doit pas être vide.',
+            'type'              => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            'title'             => 'An error occurred',
         ]);
     }
 }

@@ -9,10 +9,10 @@ MusicAll is a platform where people can share videos, articles, courses, search 
 These instructions will get you a copy of the project up and running on your local machine for development.
 
 This project use: 
-- PHP 8.1
-- Symfony 6.2
+- PHP 8.2
+- Symfony 6.4
 - MariaDB version 10.6
-- node 16
+- node 20
 - VueJS 2.7
 
 ### Installing
@@ -28,21 +28,26 @@ docker compose up -d
 ```
 It will pull and build all the required images to run MusicAll
 
+If you need to rebuild image (after an update for instance)
+``` 
+docker compose up --build
+```
+
 #### Setup the project
 
-Add `musicall.localhost` to your `/etc/hosts`
+Add `musicall.localhost` and `musicall.test` to your `/etc/hosts`
 ```
-127.0.0.1 	musicall.localhost
+127.0.0.1 	musicall.localhost musicall.test
 ```
 
 Install PHP vendor
 ```
-docker compose run --rm php-musical composer install
+docker compose run --rm php-musicall composer install
 ```
 
 You will have to initialize your JWT configuration.   
 Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys  
-**Note**: you will have to run some php command inside docker (eg: `docker compose run --rm php-musical bin/console lexik:jwt:generate-keypair`)
+**Note**: you will have to run some php command inside docker (eg: `docker compose run --rm php-musicall bin/console lexik:jwt:generate-keypair`)
 
 Configure you ```.env.local``` file (I only put important values here) :
 ```
@@ -61,7 +66,7 @@ docker compose run --rm node npm ci
 
 Run the migrations
 ```
-docker compose run --rm php-musical bin/console doctrine:migration:migrate
+docker compose run --rm php-musicall bin/console doctrine:migration:migrate
 ```
 
 Start the assets watcher
@@ -74,3 +79,4 @@ You can now access http://musicall.localhost
 ## TODO
 
 - [ ] Create fixtures
+- [ ] Https

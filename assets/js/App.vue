@@ -3,7 +3,7 @@
     <Header/>
     <div class="container mt-5 mb-5">
       <div class="columns">
-        <div class="column is-12" v-if="isReadyWithMinimal">
+        <div class="column is-12 p-5">
           <router-view></router-view>
         </div>
       </div>
@@ -14,17 +14,12 @@
 </template>
 
 <script>
-import Header from './components/global/Header';
-import Footer from './components/global/Footer';
+import Header from './components/global/Header.vue';
+import Footer from './components/global/Footer.vue';
 import axios from 'axios';
 import {mapGetters} from 'vuex';
 
 export default {
-  data() {
-    return {
-      isReadyWithMinimal: false
-    }
-  },
   name: 'app',
   components: {
     Header, Footer
@@ -44,8 +39,7 @@ export default {
       }
     }
 
-    await this.$store.dispatch('publicationCategory/getCategories');
-    this.isReadyWithMinimal = true;
+    this.$store.dispatch('publicationCategory/getCategories');
 
     const store = this.$store;
     const router = this.$router;

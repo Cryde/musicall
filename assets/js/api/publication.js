@@ -8,11 +8,20 @@ export default {
     .then(resp => resp.data)
   },
   getPreviewVideo(videoUrl) {
-    return axios.post(Routing.generate('api_publications_video_preview'), {videoUrl})
+    return axios.post(Routing.generate('api_publications_video_preview'), {videoUrl},
+        {
+          headers: {
+            'Content-Type': 'application/ld+json'
+          }
+        })
     .then(resp => resp.data)
   },
   addVideo(payload) {
-    return axios.post(Routing.generate('api_user_publication_add_video'), {...payload})
+    return axios.post(Routing.generate('api_publication_video_add'), {...payload}, {
+      headers: {
+        'Content-Type': 'application/ld+json',
+      }
+    })
     .then(resp => resp.data)
   }
 }

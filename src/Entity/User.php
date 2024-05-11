@@ -4,16 +4,18 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use App\Entity\Message\Message;
-use App\Entity\Message\MessageThreadMeta;
-use App\Provider\User\UserSelfProvider;
-use DateTimeInterface;
-use DateTime;
+use App\ApiResource\Search\MusicianSearchResult;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
+use App\Entity\Message\Message;
+use App\Entity\Message\MessageThreadMeta;
+use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\UserRepository;
+use App\State\Provider\User\UserSelfProvider;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -33,11 +35,11 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Get(
             uriTemplate: '/users/self',
-            normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM]],
+            normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM], 'skip_null_values' => false],
             name: 'api_users_get_self',
             provider: UserSelfProvider::class,
         ),
-        new Get(normalizationContext: ['groups' => [User::ITEM]], name: 'api_users_get_item',),
+        new Get(normalizationContext: ['groups' => [User::ITEM], 'skip_null_values' => false], name: 'api_users_get_item',),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -49,12 +51,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM])]
+    #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM, MusicianSearchResult::LIST])]
     private $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST, MusicianAnnounce::LIST_LAST, MusicianSearchResult::LIST])]
     private $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
@@ -95,7 +97,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $resetRequestDatetime;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, MusicianSearchResult::LIST])]
     private $profilePicture;
 
     public function __construct()
@@ -172,7 +174,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 

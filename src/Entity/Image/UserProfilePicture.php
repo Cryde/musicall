@@ -4,6 +4,7 @@ namespace App\Entity\Image;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
+use App\ApiResource\Search\MusicianSearchResult;
 use App\Controller\Api\Media\User\CreateUserProfilePictureAction;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
@@ -60,7 +61,7 @@ class UserProfilePicture
     #[Assert\NotNull]
     #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true)]
     #[Vich\UploadableField(mapping: 'user_profile_picture', fileNameProperty: 'imageName', size: 'imageSize')]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, MusicianSearchResult::LIST])]
     private $imageFile;
 
     #[ORM\Column(type: Types::STRING, length: 255)]

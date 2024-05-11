@@ -4,11 +4,10 @@ namespace App\Serializer\Normalizer;
 
 use App\Entity\Image\UserProfilePicture;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class UserProfilePictureNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class UserProfilePictureNormalizer implements NormalizerInterface
 {
     public function __construct(
         private readonly UploaderHelper $uploaderHelper,
@@ -16,7 +15,7 @@ class UserProfilePictureNormalizer implements NormalizerInterface, CacheableSupp
     ) {
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = [])
+    public function normalize(mixed $object, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         /** @var ?UserProfilePicture $object */
         if ($object) {
@@ -28,13 +27,15 @@ class UserProfilePictureNormalizer implements NormalizerInterface, CacheableSupp
         return null;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $data instanceof UserProfilePicture;
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function getSupportedTypes(?string $format): array
     {
-        return true;
+        return [
+            UserProfilePicture::class => false
+        ];
     }
 }

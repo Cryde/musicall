@@ -5,13 +5,11 @@ namespace App\Serializer\Normalizer;
 use App\Entity\Gallery;
 use App\Serializer\GalleryImageSerializer;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-class UserGalleryNormalizer implements NormalizerInterface, NormalizerAwareInterface, CacheableSupportsMethodInterface
+class UserGalleryNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
     final public const CONTEXT_USER_GALLERY = 'user_gallery';
@@ -48,8 +46,8 @@ class UserGalleryNormalizer implements NormalizerInterface, NormalizerAwareInter
         return $data instanceof Gallery && $isContext;
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function getSupportedTypes(?string $format): array
     {
-        return false;
+        return [Gallery::class => false];
     }
 }

@@ -1,15 +1,34 @@
 api_platform:
+    title: MusicAll API
+    version: 1.0.0
+    show_webby: false
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
     mapping:
         paths:
             - '%kernel.project_dir%/src/Entity'
-            - '%kernel.project_dir%/src/Model'
+    resource_class_directories:
+        - '%kernel.project_dir%/src/ApiResource'
     patch_formats:
         json: ['application/merge-patch+json']
-    swagger:
-        versions: [3]
-    show_webby: false
-    metadata_backward_compatibility_layer: false
-
+    formats:
+        jsonld: ['application/ld+json']
+    docs_formats:
+        jsonld: ['application/ld+json']
+        jsonopenapi: ['application/vnd.openapi+json']
+        html: ['text/html']
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+        extra_properties:
+            standard_put: true
+            rfc_7807_compliant_errors: true
+    event_listeners_backward_compatibility_layer: false
+    keep_legacy_inflector: false
     exception_to_status:
         # Symfony
         Symfony\Component\Serializer\Exception\ExceptionInterface: 400
@@ -22,3 +41,7 @@ api_platform:
         # APP:
         # Publication
         App\Exception\PublicationNotFoundException: 404
+        # Search
+        App\Exception\Musician\InvalidSearchException: 400
+        App\Exception\Musician\NoResultException: 404
+        App\Exception\Musician\InvalidResultException: 404

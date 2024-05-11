@@ -9,7 +9,6 @@ import user from './user';
 import userPublication from './user-publication';
 import gallery from './gallery';
 import message from './message';
-import artist from './artist';
 import userAnnounce from './user-announce';
 
 Vue.use(Router);
@@ -20,13 +19,13 @@ export default new Router({
     {
       path: "/",
       name: 'home',
-      component: () => import("../views/Home"),
+      component: () => import("../views/Home.vue"),
       meta: {isAuthRequired: false}
     },
     {
       path: "/contact",
       name: 'contact',
-      component: () => import("../views/contact/Contact"),
+      component: () => import("../views/contact/Contact.vue"),
       meta: {isAuthRequired: false}
     },
     ...publication,
@@ -38,7 +37,6 @@ export default new Router({
     ...search,
     ...forum,
     ...message,
-    ...artist,
     ...userAnnounce,
   ]
 });

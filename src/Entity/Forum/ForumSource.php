@@ -4,7 +4,7 @@ namespace App\Entity\Forum;
 
 use DateTimeInterface;
 use DateTime;
-use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Metadata\ApiProperty;
 use App\Repository\Forum\ForumSourceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

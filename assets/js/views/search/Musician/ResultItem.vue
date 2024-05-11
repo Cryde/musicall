@@ -12,8 +12,8 @@
             <strong>Localisation:</strong> {{ announce.location_name }}<br/>
             <strong v-if="announce.distance">Distance:</strong>
             <span v-if="announce.distance">{{ announce.distance | formatDistance }}<br/></span>
-            <strong>{{ announce.type | instrumentLabel }}:</strong> {{ announce.instrument }}<br/>
-            <strong>Styles:</strong> {{ announce.styles }}<br/>
+            <strong>{{ announce.type | instrumentLabel }}:</strong> {{ announce.instrument.musician_name }}<br/>
+            <strong>Styles:</strong> {{ announce.styles | formatStyles }}<br/>
           </p>
         </div>
         <nav class="level is-mobile">
@@ -24,7 +24,8 @@
                       @click="openSendMessageModal(announce.user)">
               Contacter
             </b-button>
-            <b-tooltip v-else label="Vous devez être inscrit ou connecté pour contacter un utilisateur" multilined type="is-info">
+            <b-tooltip v-else label="Vous devez être inscrit ou connecté pour contacter un utilisateur" multilined
+                       type="is-info">
               <b-button class="mt-auto is-pulled-right" size="is-small">
                 Contacter
               </b-button>
@@ -40,7 +41,7 @@
 </template>
 
 <script>
-import Avatar from "../../../components/user/Avatar";
+import Avatar from "../../../components/user/Avatar.vue";
 import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../../constants/types";
 import {mapGetters} from "vuex";
 
@@ -68,6 +69,9 @@ export default {
       if (type === TYPES_ANNOUNCE_BAND) {
         return 'Instrument joué';
       }
+    },
+    formatStyles(styles) {
+      return styles.map((style) => style.name).join(', ');
     }
   },
   methods: {

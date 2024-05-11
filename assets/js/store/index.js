@@ -18,12 +18,12 @@ import featured from './modules/featured';
 import thread from './modules/thread';
 import messages from './modules/messages';
 import notifications from './modules/notifications';
-import artist from './modules/artist';
 import styles from './modules/styles';
 import instruments from './modules/instruments';
 import announceMusician from './modules/announceMusician';
+import lastAnnounceMusician from './modules/lastAnnounceMusician';
 import userMusicianAnnounces from './modules/userMusicianAnnounces';
-import searchMusician from './modules/searchMusician';
+import searchMusicianText from './modules/searchMusicianText';
 import user from './modules/user';
 
 Vue.use(Vuex);
@@ -50,12 +50,12 @@ export default new Vuex.Store({
     thread,
     messages,
     notifications,
-    artist,
     styles,
     instruments,
     announceMusician,
+    lastAnnounceMusician,
     userMusicianAnnounces,
-    searchMusician,
+    searchMusicianText,
     user,
   },
   strict: debug,

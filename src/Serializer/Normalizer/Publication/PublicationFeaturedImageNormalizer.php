@@ -4,11 +4,10 @@ namespace App\Serializer\Normalizer\Publication;
 
 use App\Entity\Image\PublicationFeaturedImage;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
-class PublicationFeaturedImageNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class PublicationFeaturedImageNormalizer implements NormalizerInterface
 {
     public function __construct(
         private readonly UploaderHelper $uploaderHelper,
@@ -16,7 +15,7 @@ class PublicationFeaturedImageNormalizer implements NormalizerInterface, Cacheab
     ) {
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = [])
+    public function normalize(mixed $object, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         /** @var ?PublicationFeaturedImage $object */
         if ($object) {
@@ -28,7 +27,7 @@ class PublicationFeaturedImageNormalizer implements NormalizerInterface, Cacheab
         return null;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $data instanceof PublicationFeaturedImage;
     }
@@ -36,5 +35,10 @@ class PublicationFeaturedImageNormalizer implements NormalizerInterface, Cacheab
     public function hasCacheableSupportsMethod(): bool
     {
         return true;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [PublicationFeaturedImage::class => false];
     }
 }

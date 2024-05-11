@@ -12,7 +12,7 @@
       {{ title }}
     </h1>
     <div class="box content is-shadowless p-lg-3 p-3" v-if="editor">
-      <div>
+      <div class="editor-sticky" v-sticky sticky-offset="offset" sticky-side="top" :sticky-z-index="39">
         <div class="menubar buttons">
           <div class="buttons has-addons mr-2 mb-0">
             <b-tooltip label="Gras" type="is-black">
@@ -163,7 +163,7 @@ import {mapGetters} from 'vuex';
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import {Editor, EditorContent} from '@tiptap/vue-2'
-import EditModal from './modal/EditModal';
+import EditModal from './modal/EditModal.vue';
 import Image from '@tiptap/extension-image'
 import YoutubeIframe from "../../../../tiptap/YoutubeIframe";
 import {youtubeParser} from '../../../../helper/youtube-parser-url';

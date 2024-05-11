@@ -54,6 +54,7 @@
         backend-sorting
         :default-sort-direction="defaultSortOrder"
         :default-sort="[sortField, sortOrder]"
+        :loading="isBusy"
         @sort="onSort"
     >
       <template #empty>
@@ -127,8 +128,8 @@
 <script>
 import vSelect from 'vue-select';
 import userPublicationApi from "../../../../api/userPublication";
-import AddPublicationModal from '../add/modal/AddPublicationModal';
-import AddVideoModal from '../add/video/AddVideoModal';
+import AddPublicationModal from '../add/modal/AddPublicationModal.vue';
+import AddVideoModal from '../add/video/AddVideoModal.vue';
 import {mapGetters} from 'vuex';
 import {EVENT_PUBLICATION_CREATED} from "../../../../constants/events";
 

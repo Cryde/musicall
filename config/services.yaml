@@ -2,7 +2,7 @@
 # Files in the packages/ subdirectory configure your dependencies.
 
 # Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     locale: 'fr'
     file_publication_cover_destination: 'images/publication/cover'
@@ -29,27 +29,13 @@ services:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
 
-    Mailjet\Client:
-        arguments:
-            $key: '%env(MAILER_KEY)%'
-            $secret: '%env(MAILER_SECRET)%'
-            $call: true
-            $settings: { version: v3.1 }
-
-    App\Service\Mail\SenderMailerInterface: '@App\Service\Mail\Mailer'
-
     App\Service\Identifier\RequestIdentifier:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'
 
-    App\Service\Mail\Contact\ContactMail:
+    App\Service\Mail\Brevo\Contact\ContactUsEmail:
         arguments:
             $email:  '%env(MAIL_CONTACT_EMAIL)%'
-
-    App\Service\Mail\ArrayMailBuilder:
-        arguments:
-            $email: '%env(MAIL_NO_REPLY_EMAIL)%'
-            $name: '%env(MAIL_NO_REPLY_NAME)%'
 
     gesdinet.jwtrefreshtoken.refresh_token_manager:
         class: App\Doctrine\RefreshTokenManager

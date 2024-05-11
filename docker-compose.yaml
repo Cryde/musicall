@@ -1,4 +1,3 @@
-version: "3.1"
 services:
   webserver:
     image: nginx:stable
@@ -22,12 +21,13 @@ services:
     volumes:
       - ./volumes/php-fpm:/var/log/php:cached
       - $PWD:/var/www/musicall:cached
+      - ./.docker/fpm/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
     networks:
       musicall:
         ipv4_address: 10.10.100.3
 
   node:
-    image: node:16
+    image: node:20
     container_name: node
     command: /bin/true
     working_dir: /var/www

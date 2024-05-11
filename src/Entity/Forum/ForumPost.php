@@ -2,10 +2,6 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Metadata\Post;
-use App\Processor\Forum\ForumPostPostProcessor;
-use DateTimeInterface;
-use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -14,8 +10,12 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\Entity\User;
 use App\Repository\Forum\ForumPostRepository;
+use App\State\Processor\Forum\ForumPostPostProcessor;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     new Get(normalizationContext: ['groups' => [ForumPost::ITEM]]),
     new GetCollection(normalizationContext: ['groups' => [ForumPost::LIST]], name: 'api_forum_posts_get_collection'),
     new Post(
-        normalizationContext: ['groups' => [ForumPost::ITEM]],
+        normalizationContext: ['groups' => [ForumPost::ITEM], 'skip_null_values' => false],
         denormalizationContext: ['groups' => [ForumPost::POST]],
         security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
         name: 'api_forum_posts_post',

@@ -2,19 +2,19 @@
 
 namespace App\Entity\Message;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
-use App\Processor\Message\MessagePostProcessor;
-use App\Provider\Message\MessageCollectionProvider;
-use DateTimeInterface;
-use DateTime;
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
+use App\State\Processor\Message\MessagePostProcessor;
+use App\State\Provider\Message\MessageCollectionProvider;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;

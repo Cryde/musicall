@@ -38,6 +38,11 @@ class RegisterTest extends ApiTestCase
         $this->assertSame('super_username', $results[0]->getUsername());
         $this->assertSame('super_email@mail.com', $results[0]->getEmail());
         $this->assertNotSame('password', $results[0]->getPassword()); // we assert that we don't record plain text password in db
+        $this->assertEmailCount(1);
+
+        $email = $this->getMailerMessage();
+
+        $this->assertEmailTextBodyContains($email, 'Confirmer votre email');
     }
 
     public function test_register_with_errors()
@@ -60,29 +65,38 @@ plain_password: Le mot de passe doit au moins contenir 3 caractères',
                 [
                     'propertyPath' => 'username',
                     'title'        => 'Ce login est déjà pris',
-                    'parameters'   => ['{{ value }}' => '"base_admin"'],
+                    'template'     => 'Ce login est déjà pris',
+                    'parameters'   => [
+                        '{{ value }}' => '"base_admin"',
+                    ],
                     'type'         => 'urn:uuid:23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
                 ],
                 [
                     'propertyPath' => 'email',
                     'title'        => 'Cet email est déjà utilisé',
-                    'parameters'   => ['{{ value }}' => '"base_user@email.com"'],
+                    'template'     => 'Cet email est déjà utilisé',
+                    'parameters'   => [
+                        '{{ value }}' => '"base_user@email.com"',
+                    ],
                     'type'         => 'urn:uuid:23bd9dbf-6b9b-41cd-a99e-4844bcf3077f',
                 ],
                 [
                     'propertyPath' => 'plain_password',
                     'title'        => 'Le mot de passe doit au moins contenir 3 caractères',
+                    'template'     => 'Le mot de passe doit au moins contenir 3 caractères',
                     'parameters'   => [
-                        '{{ value }}' => '"pa"',
-                        '{{ limit }}' => '3',
+                        '{{ value }}'        => '"pa"',
+                        '{{ limit }}'        => '3',
+                        '{{ value_length }}' => '2',
                     ],
                     'type'         => 'urn:uuid:9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
         ]);
+        $this->assertEmailCount(0);
     }
 
-    public function test_register_already_have_account()
+    public function test_register_already_have_account(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->object();
 
@@ -92,5 +106,6 @@ plain_password: Le mot de passe doit au moins contenir 3 caractères',
         $this->assertJsonEquals([
             'errors' => 'you already have an account',
         ]);
+        $this->assertEmailCount(0);
     }
 }

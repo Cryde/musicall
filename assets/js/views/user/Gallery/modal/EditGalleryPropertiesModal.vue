@@ -7,7 +7,7 @@
 
 </template>
 <script>
-import EditGalleryPropertiesForm from "./EditGalleryPropertiesForm";
+import EditGalleryPropertiesForm from "./EditGalleryPropertiesForm.vue";
 
 export default {
   components: {EditGalleryPropertiesForm},

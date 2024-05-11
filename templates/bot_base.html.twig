@@ -1,4 +1,3 @@
-{% set display_menu = display_menu is not defined ? true : display_menu %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -25,8 +24,8 @@
     <meta property="og:description"
           content="{{ description is defined ? description : 'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...' }}"/>
     <meta property="og:url" content="{{ app.request.uri() }}"/>
-    {% set imageUrl = cover is defined ? cover : '/build/images/facebook-logo.jpg' %}
-    <meta property="og:image" content="{{ app.request.schemeAndHttpHost() ~ imageUrl }}"/>
+    {% set imageUrl = cover is defined ? cover : (app.request.schemeAndHttpHost() ~ asset('assets/images/facebook-logo.jpg', 'vite')) %}
+    <meta property="og:image" content="{{ imageUrl }}"/>
     <meta property="og:locale" content="fr_FR"/>
 </head>
 <body>

@@ -49,7 +49,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
             "longitude"     => "4.3517103",
             "latitude"      => "50.8503396",
             "note"          => "This is a note for the announce",
-        ], ['HTTP_ACCEPT' => 'application/ld+json']
+        ] , ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseIsSuccessful();
 
@@ -72,7 +72,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
 
     public function test_post_not_logged_in(): void
     {
-        $this->client->request('POST', '/api/musician_announces');
+        $this->client->request('POST', '/api/musician_announces', [], [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 }
