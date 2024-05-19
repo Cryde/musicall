@@ -84,6 +84,8 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'id'                   => $pub2->getId(),
                     'title'                => 'Titre de la publication 2',
                     'sub_category'         => [
+                        '@id' => '/api/publication_sub_categories/' . $sub->object()->getId(),
+                        '@type' => 'PublicationSubCategory',
                         'id'         => $sub->object()->getId(),
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -91,6 +93,8 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
                         'username' => 'user_admin',
                     ],
                     'slug'                 => 'titre-de-la-publication-2',
@@ -105,6 +109,8 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'id'                   => $pub1->getId(),
                     'title'                => 'Titre de la publication 1',
                     'sub_category'         => [
+                        '@id' => '/api/publication_sub_categories/' . $sub->object()->getId(),
+                        '@type' => 'PublicationSubCategory',
                         'id'         => $sub->object()->getId(),
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -112,6 +118,8 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
                         'username' => 'user_admin',
                     ],
                     'slug'                 => 'titre-de-la-publication-1',

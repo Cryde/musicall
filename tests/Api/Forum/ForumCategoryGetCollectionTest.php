@@ -38,16 +38,22 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
+                    '@id' => '/api/forum_categories/' . $forumCategory2->getId(),
+                    '@type' => 'ForumCategory',
                     'id'     => $forumCategory2->getId(),
                     'title'  => 'Forum 2 category title',
                     'forums' => [
                         [
+                            '@id' => '/api/forums/' . $forum5->getSlug(),
+                            '@type' => 'Forum',
                             'id'          => $forum5->getId(),
                             'title'       => $forum5->getTitle(),
                             'slug'        => $forum5->getSlug(),
                             'description' => $forum5->getDescription(),
                         ],
                         [
+                            '@id' => '/api/forums/' . $forum4->getSlug(),
+                            '@type' => 'Forum',
                             'id'          => $forum4->getId(),
                             'title'       => $forum4->getTitle(),
                             'slug'        => $forum4->getSlug(),
@@ -56,22 +62,30 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
+                    '@id' => '/api/forum_categories/' . $forumCategory1->getId(),
+                    '@type' => 'ForumCategory',
                     'id'     => $forumCategory1->getId(),
                     'title'  => 'Forum 1 category title',
                     'forums' => [
                         [
+                            '@id' => '/api/forums/' . $forum3->getSlug(),
+                            '@type' => 'Forum',
                             'id'          => $forum3->getId(),
                             'title'       => $forum3->getTitle(),
                             'slug'        => $forum3->getSlug(),
                             'description' => $forum3->getDescription(),
                         ],
                         [
+                            '@id' => '/api/forums/' . $forum1->getSlug(),
+                            '@type' => 'Forum',
                             'id'          => $forum1->getId(),
                             'title'       => $forum1->getTitle(),
                             'slug'        => $forum1->getSlug(),
                             'description' => $forum1->getDescription(),
                         ],
                         [
+                            '@id' => '/api/forums/' . $forum2->getSlug(),
+                            '@type' => 'Forum',
                             'id'          => $forum2->getId(),
                             'title'       => $forum2->getTitle(),
                             'slug'        => $forum2->getSlug(),
@@ -80,6 +94,8 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
+                    '@id' => '/api/forum_categories/' . $forumCategory3->getId(),
+                    '@type' => 'ForumCategory',
                     'id'     => $forumCategory3->getId(),
                     'title'  => 'Forum 3 category title',
                     'forums' => [],

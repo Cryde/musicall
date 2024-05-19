@@ -32,11 +32,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => [Publication::ITEM]],
-            name: 'api_publication_get_item',
-            provider: PublicationProvider::class
-        ),
         new GetCollection(
             // "PublicationOnlineExtension" add automatic filter on status of the publication
             paginationItemsPerPage: Publication::LIST_ITEMS_PER_PAGE,

@@ -42,9 +42,6 @@ services:
         public: true
         arguments: [ '@doctrine.orm.default_entity_manager', 'Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken']
 
-    App\Serializer\Normalizer\Publication\PublicationNormalizer:
-        decorates: 'api_platform.jsonld.normalizer.item'
-
     Sentry\Integration\IgnoreErrorsIntegration:
         arguments:
             $options:

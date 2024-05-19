@@ -55,18 +55,54 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
-                    'type'              => 2,
-                    'instrument'        => ['musician_name' => 'Guitariste'],
-                    'styles'            => [['name' => 'Rock'],[ 'name' => 'Pop']],
-                    'location_name'     => 'Paris',
-                    'author' => ['username' => 'base_user_1']
+                    '@id'           => '/api/musician_announces/' . $user1Announce2->object()->getId(),
+                    '@type'         => 'MusicianAnnounce',
+                    'type'          => 2,
+                    'instrument'    => [
+                        '@id'           => '/api/instruments/' . $instrument2->getId(),
+                        '@type'         => 'Instrument',
+                        'musician_name' => 'Guitariste',
+                    ],
+                    'styles'        => [
+                        [
+                            '@id'   => '/api/styles/' . $style1->getId(),
+                            '@type' => 'Style',
+                            'name'  => 'Rock',
+                        ], [
+                            '@id'   => '/api/styles/' . $style2->getId(),
+                            '@type' => 'Style',
+                            'name'  => 'Pop',
+                        ],
+                    ],
+                    'location_name' => 'Paris',
+                    'author'        => [
+                        '@id'      => '/api/users/self',
+                        '@type'    => 'User',
+                        'username' => 'base_user_1',
+                    ],
                 ],
                 [
-                    'type'              => 1,
-                    'instrument'        => ['musician_name' => 'Batteur'],
-                    'styles'            => [['name' => 'Rock']],
-                    'location_name'     => 'Mons',
-                    'author' => ['username' => 'base_user_1']
+                    '@id'           => '/api/musician_announces/' . $user1Announce1->object()->getId(),
+                    '@type'         => 'MusicianAnnounce',
+                    'type'          => 1,
+                    'instrument'    => [
+                        '@id'           => '/api/instruments/' . $instrument1->getId(),
+                        '@type'         => 'Instrument',
+                        'musician_name' => 'Batteur',
+                    ],
+                    'styles'        => [
+                        [
+                            '@id'   => '/api/styles/' . $style1->getId(),
+                            '@type' => 'Style',
+                            'name'  => 'Rock',
+                        ],
+                    ],
+                    'location_name' => 'Mons',
+                    'author'        => [
+                        '@id'      => '/api/users/self',
+                        '@type'    => 'User',
+                        'username' => 'base_user_1',
+                    ],
                 ],
             ],
             'hydra:totalItems' => 2,

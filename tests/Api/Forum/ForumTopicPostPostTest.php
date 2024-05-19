@@ -56,8 +56,13 @@ class ForumTopicPostPostTest extends ApiTestCase
         $this->assertCount(1, $results);
         $this->assertCount(1, $forumPostRepository->findBy(['topic' => $results[0]]));
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumTopic',
+            '@id' => '/api/forum_topics/' . $results[0]->getSlug(),
+            '@type' => 'ForumTopic',
             'id'                => $results[0]->getId(),
             'forum'             => [
+                '@id' => '/api/forums/' . $forum1->object()->getSlug(),
+                '@type' => 'Forum',
                 'id'    => $forum1->object()->getId(),
                 'title' => $forum1->object()->getTitle(),
                 'slug'  => $forum1->object()->getSlug(),
@@ -87,6 +92,8 @@ class ForumTopicPostPostTest extends ApiTestCase
         );
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolationList',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'forum: Cette valeur ne doit pas être vide.
 title: Cette valeur ne doit pas être vide.

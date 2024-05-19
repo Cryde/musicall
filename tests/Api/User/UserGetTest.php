@@ -32,6 +32,9 @@ class UserGetTest extends ApiTestCase
         $this->client->request('GET', '/api/users/self');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/User',
+            '@id' => '/api/users/self',
+            '@type' => 'User',
             'id'              => $user1->getId(),
             'username'        => $user1->getUsername(),
             'email'           => $user1->getEmail(),
@@ -46,6 +49,9 @@ class UserGetTest extends ApiTestCase
         $this->client->request('GET', '/api/users/' . $user1->getId());
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/User',
+            '@id' => '/api/users/' . $user1->getId(),
+            '@type' => 'User',
             'id'              => $user1->getId(),
             'username'        => $user1->getUsername(),
             'profile_picture' => null,

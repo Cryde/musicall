@@ -48,6 +48,9 @@ class NotificationGetTest extends ApiTestCase
         $this->client->request('GET', '/api/notifications');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Notification',
+            '@id' => '/api/notifications',
+            '@type' => 'Notification',
             'unread_messages' => 2
         ]);
     }
@@ -69,6 +72,9 @@ class NotificationGetTest extends ApiTestCase
         $this->client->request('GET', '/api/notifications');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Notification',
+            '@id' => '/api/notifications',
+            '@type' => 'Notification',
             'unread_messages'      => 1,
             'pending_galleries'    => 1,
             'pending_publications' => 1,

@@ -1,12 +1,12 @@
 <template>
   <div>
     <b-loading v-if="isLoading" active/>
-    <div v-else-if="publication.type_label === 'text'">
+    <div v-else-if="publication.type.label === 'text'">
 
       <breadcrumb
           :root="{to: {name: 'home'}, label: 'Home'}"
           :level1="{to: {name: 'publication'}, label: 'Publications'}"
-          :level2="{to: {name: 'publications_by_category', params:{slug: publication.sub_category.slug}}, label: publication.sub_category.title}"
+          :level2="{to: {name: 'publications_by_category', params:{slug: publication.category.slug}}, label: publication.category.title}"
           :current="{label: publication.title}"
       />
 
@@ -20,12 +20,11 @@
       <div class="box content is-shadowless p-3 p-lg-3 mt-lg-4 mt-3 publication-container"
            v-html="publication.content"></div>
     </div>
-    <div v-else-if="publication.type_label === 'video'">
-
+    <div v-else-if="publication.type.label === 'video'">
       <breadcrumb
           :root="{to: {name: 'home'}, label: 'Home'}"
           :level1="{to: {name: 'publication'}, label: 'Publications'}"
-          :level2="{to: {name: 'publications_by_category', params:{slug: publication.sub_category.slug}}, label: publication.sub_category.title}"
+          :level2="{to: {name: 'publications_by_category', params:{slug: publication.category.slug}}, label: publication.category.title}"
           :current="{label: publication.title}"
       />
 

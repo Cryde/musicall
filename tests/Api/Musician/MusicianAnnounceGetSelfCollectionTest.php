@@ -63,20 +63,48 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
+                    '@id' => '/api/musician_announces/' . $user1Announce2->object()->getId(),
+                    '@type' => 'MusicianAnnounce',
                     'id'                => $user1Announce2->object()->getId(),
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'type'              => 2,
-                    'instrument'        => ['musician_name' => 'Guitariste'],
-                    'styles'            => [['name' => 'Rock'],[ 'name' => 'Pop']],
+                    'instrument'        => [
+                        '@id' => '/api/instruments/' . $instrument2->getId(),
+                        '@type' => 'Instrument',
+                        'musician_name' => 'Guitariste'
+                    ],
+                    'styles' => [
+                        [
+                            '@id'   => '/api/styles/' . $style1->getId(),
+                            '@type' => 'Style',
+                            'name'  => 'Rock',
+                        ],
+                        [
+                            '@id'   => '/api/styles/' . $style2->getId(),
+                            '@type' => 'Style',
+                            'name'  => 'Pop',
+                        ],
+                    ],
                     'location_name'     => 'Paris',
                     'note'              => 'note announce 2',
                 ],
                 [
+                    '@id' => '/api/musician_announces/' . $user1Announce1->object()->getId(),
+                    '@type' => 'MusicianAnnounce',
                     'id'                => $user1Announce1->object()->getId(),
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'type'              => 1,
-                    'instrument'        => ['musician_name' => 'Batteur'],
-                    'styles'            => [['name' => 'Rock']],
+                    'instrument'        => [
+                        '@id' => '/api/instruments/' . $instrument1->getId(),
+                        '@type' => 'Instrument',
+                        'musician_name' => 'Batteur'
+                    ],
+                    'styles' => [
+                        [
+                            '@id'   => '/api/styles/' . $style1->getId(),
+                            '@type' => 'Style', 'name' => 'Rock',
+                        ],
+                    ],
                     'location_name'     => 'Mons',
                     'note'              => 'note announce 1',
                 ],

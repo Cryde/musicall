@@ -55,9 +55,6 @@ class PublicationPendingListTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             [
-                '@context'             => '/api/contexts/Publication',
-                '@id'                  => '/api/publications/titre-de-la-publication',
-                '@type'                => 'Publication',
                 'id'                   => $publication->object()->getId(),
                 'title'                => 'Titre de la publication',
                 'sub_category'         => [

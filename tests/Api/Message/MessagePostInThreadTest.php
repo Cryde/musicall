@@ -51,13 +51,20 @@ class MessagePostInThreadTest extends ApiTestCase
         $messages = $messageRepository->findBy(['thread' => $thread]);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $messages[0]->getId(),
+            '@type' => 'Message',
             'id'                => $messages[0]->getId(),
             'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
             'author'            => [
+                '@id' => '/api/users/self',
+                '@type' => 'User',
                 'id'       => $user1->getId(),
                 'username' => 'base_user_1',
             ],
             'thread'            => [
+                '@id' => '/api/message_threads/' . $thread->getId(),
+                '@type' => 'MessageThread',
                 'id' => $thread->getId(),
             ],
             'content'           => 'new content from user1',
@@ -86,6 +93,8 @@ class MessagePostInThreadTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
+            '@id' => '/api/errors/403',
+            '@type' => 'hydra:Error',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'Vous n\'êtes pas autorisé à voir ceci.',
             'title' => 'An error occurred',
@@ -104,6 +113,8 @@ class MessagePostInThreadTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolationList',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'content: Cette valeur ne doit pas être vide.',
             'violations'        => [

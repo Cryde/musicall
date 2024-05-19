@@ -36,8 +36,15 @@ with multiline",
         $this->assertCount(1, $comments);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Comment',
+            '@id' => '/api/comments/' . $comments[0]->getId(),
+            '@type' => 'Comment',
             'id' => $comments[0]->getId(),
-            'author' => ['username' => 'base_user_1'],
+            'author' => [
+                '@id' => '/api/users/self',
+                '@type' => 'User',
+                'username' => 'base_user_1',
+            ],
             'creation_datetime' => $comments[0]->getCreationDatetime()->format('c'),
             'content' => "This is a comment<br />\nwith multiline",
         ]);
@@ -62,6 +69,8 @@ with multiline",
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolationList',
             'status' => 422,
             'violations' => [
                 [
