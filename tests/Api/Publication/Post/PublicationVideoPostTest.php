@@ -19,7 +19,7 @@ class PublicationVideoPostTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function testEmptyValues()
+    public function test_empty_values(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
@@ -29,6 +29,8 @@ class PublicationVideoPostTest extends ApiTestCase
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolationList',
             'status'            => 422,
             'violations'        => [
                 [
@@ -59,7 +61,7 @@ description: Cette valeur ne doit pas être vide.',
         ]);
     }
 
-    public function testWrongUrl()
+    public function test_wrong_url(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
@@ -73,6 +75,8 @@ description: Cette valeur ne doit pas être vide.',
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/57c2f299-1154-4870-89bb-ef3b1f5ad229',
+            '@type' => 'ConstraintViolationList',
             'status'            => 422,
             'violations'        => [
                 [
@@ -89,7 +93,7 @@ description: Cette valeur ne doit pas être vide.',
         ]);
     }
 
-    public function testNotYoutubeUrl()
+    public function test_not_youtube_url(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
@@ -103,6 +107,8 @@ description: Cette valeur ne doit pas être vide.',
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/music_all_f03dc5f4-8ba0-11ee-b9d1-0242ac120002',
+            '@type' => 'ConstraintViolationList',
             'status'            => 422,
             'violations'        => [
                 [
@@ -119,7 +125,7 @@ description: Cette valeur ne doit pas être vide.',
         ]);
     }
 
-    public function testExistingVideo()
+    public function test_existing_video(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
         $sub = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
@@ -149,6 +155,8 @@ description: Cette valeur ne doit pas être vide.',
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/music_all_99153e73-dd44-4557-90aa-3c0e354fce62',
+            '@type' => 'ConstraintViolationList',
             'status'            => 422,
             'violations'        => [
                 [
@@ -165,7 +173,7 @@ description: Cette valeur ne doit pas être vide.',
         ]);
     }
 
-    public function test_post_without_logged_in()
+    public function test_post_without_logged_in(): void
     {
         $this->client->jsonRequest('POST', '/api/publications/video/add', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);

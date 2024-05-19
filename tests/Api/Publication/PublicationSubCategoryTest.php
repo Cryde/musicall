@@ -20,7 +20,11 @@ class PublicationSubCategoryTest extends ApiTestCase
         $this->client->request('GET', '/api/publication_sub_categories/' . $sub->getId());
         $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([]); // empty for now
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/PublicationSubCategory',
+            '@id' => '/api/publication_sub_categories/' . $sub->getId(),
+            '@type' => 'PublicationSubCategory',
+        ]); // empty for now (no data)
     }
 
     public function test_get_publication_sub_category(): void
@@ -41,6 +45,8 @@ class PublicationSubCategoryTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
+                    '@id' => '/api/publication_sub_categories/' . $sub1->getId(),
+                    '@type' => 'PublicationSubCategory',
                     'id'       => $sub1->getId(),
                     'title'    => 'News',
                     'slug'     => 'news',
@@ -48,6 +54,8 @@ class PublicationSubCategoryTest extends ApiTestCase
                     'type'     => 1,
                 ],
                 [
+                    '@id' => '/api/publication_sub_categories/' . $sub2->getId(),
+                    '@type' => 'PublicationSubCategory',
                     'id'       => $sub2->getId(),
                     'title'    => 'Chroniques',
                     'slug'     => 'chroniques',
@@ -55,6 +63,8 @@ class PublicationSubCategoryTest extends ApiTestCase
                     'type'     => 1,
                 ],
                 [
+                    '@id' => '/api/publication_sub_categories/' . $sub6->getId(),
+                    '@type' => 'PublicationSubCategory',
                     'id'       => $sub6->getId(),
                     'title'    => 'Interviews',
                     'slug'     => 'interviews',
@@ -62,6 +72,8 @@ class PublicationSubCategoryTest extends ApiTestCase
                     'type'     => 1,
                 ],
                 [
+                    '@id' => '/api/publication_sub_categories/' . $sub3->getId(),
+                    '@type' => 'PublicationSubCategory',
                     'id'       => $sub3->getId(),
                     'title'    => 'Live-reports',
                     'slug'     => 'live-reports',
@@ -69,6 +81,8 @@ class PublicationSubCategoryTest extends ApiTestCase
                     'type'     => 1,
                 ],
                 [
+                    '@id' => '/api/publication_sub_categories/' . $sub4->getId(),
+                    '@type' => 'PublicationSubCategory',
                     'id'       => $sub4->getId(),
                     'title'    => 'Articles',
                     'slug'     => 'articles',
@@ -76,6 +90,8 @@ class PublicationSubCategoryTest extends ApiTestCase
                     'type'     => 1,
                 ],
                 [
+                    '@id' => '/api/publication_sub_categories/' . $sub5->getId(),
+                    '@type' => 'PublicationSubCategory',
                     'id'       => $sub5->getId(),
                     'title'    => 'Découvertes',
                     'slug'     => 'decouvertes',

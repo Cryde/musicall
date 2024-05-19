@@ -56,14 +56,33 @@ class MusicianAnnouncePostTest extends ApiTestCase
         $result = $musicianAnnounceRepository->findBy(['author' => $user1]);
         $this->assertCount(1, $result);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianAnnounce',
+            '@id' => '/api/musician_announces/' . $result[0]->getId(),
+            '@type' => 'MusicianAnnounce',
             'id'                => $result[0]->getId(),
             'creation_datetime' => $result[0]->getCreationDatetime()->format('c'),
             'type'              => 1,
-            'instrument'        => ['musician_name' => 'Batteur'],
-            'styles'            => [
-                ['name' => 'Rock'],
-                ['name' => 'Pop'],
-                ['name' => 'Metal'],
+            'instrument'        => [
+                '@id' => '/api/instruments/' . $instrument1->getId(),
+                '@type' => 'Instrument',
+                'musician_name' => 'Batteur'
+            ],
+            'styles' => [
+                [
+                    '@id'   => '/api/styles/' . $style1->getId(),
+                    '@type' => 'Style',
+                    'name'  => 'Rock',
+                ],
+                [
+                    '@id'   => '/api/styles/' . $style2->getId(),
+                    '@type' => 'Style',
+                    'name'  => 'Pop',
+                ],
+                [
+                    '@id'   => '/api/styles/' . $style3->getId(),
+                    '@type' => 'Style',
+                    'name'  => 'Metal',
+                ],
             ],
             'location_name'     => 'Brussels',
             'note'              => 'This is a note for the announce',

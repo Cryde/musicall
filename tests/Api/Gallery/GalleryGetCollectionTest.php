@@ -19,7 +19,7 @@ class GalleryGetCollectionTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_publications(): void
+    public function test_get_galleries(): void
     {
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         $sub2 = PublicationSubCategoryFactory::new()->asNews()->create();
@@ -58,20 +58,34 @@ class GalleryGetCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
+                    '@id' => '/api/galleries/' . $gallery2->getId(),
+                    '@type' => 'Gallery',
                     'title'                => 'Title gallery 2',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
-                    'author'               => ['username' => 'user_admin'],
+                    'author'               => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
+                        'username' => 'user_admin'
+                    ],
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-2',
                     'view_cache'           => [
+                        '@id' => '/api/view_caches/' . $gallery2->getViewCache()->getId(),
+                        '@type' => 'ViewCache',
                         'count' => 20,
                     ],
                     'image_count'          => 0,
                 ],
                 [
+                    '@id' => '/api/galleries/' . $gallery1->getId(),
+                    '@type' => 'Gallery',
                     'title'                => 'Title gallery 1',
                     'publication_datetime' => '2020-01-02T02:03:04+00:00',
-                    'author'               => ['username' => 'user_admin'],
+                    'author'               => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
+                        'username' => 'user_admin'
+                    ],
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-1',
                     'view_cache'           => null,

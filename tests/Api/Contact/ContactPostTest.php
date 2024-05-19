@@ -10,7 +10,7 @@ class ContactPostTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
-    public function test_not_logged()
+    public function test_not_logged(): void
     {
         $this->client->jsonRequest('POST', '/api/contact', [
             'name'    => 'Name test',
@@ -19,6 +19,9 @@ class ContactPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Contact',
+            '@id' => '/api/contacts',
+            '@type' => 'Contact',
             'name'    => 'Name test',
             'email'   => 'test@email.com',
             'message' => 'this is the message',
@@ -29,7 +32,7 @@ class ContactPostTest extends ApiTestCase
         $this->assertEmailTextBodyContains($email, '[ADMIN] Contact reçu depuis MusicAll');
     }
 
-    public function test_with_errors()
+    public function test_with_errors(): void
     {
         $this->client->jsonRequest('POST', '/api/contact', [
             'name'    => 'na',
@@ -38,6 +41,8 @@ class ContactPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/0=bd79c0ab-ddba-46cc-a703-a7a4b08de310;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
+            '@type' => 'ConstraintViolationList',
             'status'            => 422,
             'violations'        => [
                 [

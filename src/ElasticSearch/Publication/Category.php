@@ -5,4 +5,5 @@ class Category
 {
     public string $id;
     public string $label;
+    public string $slug;
 }
