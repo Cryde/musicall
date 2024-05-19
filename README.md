@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 This project use: 
 - PHP 8.2
-- Symfony 6.4
+- Symfony 7.0
 - MariaDB version 10.6
 - node 20
 - VueJS 2.7
@@ -59,20 +59,38 @@ JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 JWT_PASSPHRASE=thepassphrase
 ```
 
-Install JS deps
-```
-docker compose run --rm node npm ci
-```
+### Migrations
+Run the migrations to have the latest database schema change. Do it every time before working on a MR.
 
 Run the migrations
 ```
 docker compose run --rm php-musicall bin/console doctrine:migration:migrate
 ```
 
+### Assets 
+
+You can either run everything through the docker or in your local by installation node via NVM
+Install JS deps
+```
+docker compose run --rm node npm ci 
+# or 
+npm ci
+```
+
+
 Start the assets watcher
 ```
-npm run dev-server
+docker compose run --rm node npm run dev
+# or
+npm run dev
 ```
+Or simply build 
+```
+docker compose run --rm node npm run build
+# or
+npm run build
+```
+
 
 You can now access http://musicall.localhost
 
