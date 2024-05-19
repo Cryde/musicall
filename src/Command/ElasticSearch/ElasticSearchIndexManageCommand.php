@@ -65,6 +65,7 @@ class ElasticSearchIndexManageCommand extends Command
 
     private function displayIndexList(OutputInterface $output): void
     {
+        /** @var array<int, array> $data */
         $data = $this->client->request('_cat/indices/?format=json', 'GET')->getData();
         if (!$data) {
             return;
