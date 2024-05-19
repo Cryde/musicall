@@ -38,7 +38,7 @@ class PublicationBuilder
         $publication->publicationDatetime = $gallery->getPublicationDatetime();
         $publication->media = $this->buildMedia($cover);
         $publication->author = $this->buildAuthor($gallery->getAuthor()?->getId() ?? '');
-        $publication->category = $this->buildCategory('gallery', 'Gallery', 'gallery');
+        $publication->category = $this->buildCategory(10000, 'Gallery', 'gallery');
 
         return $publication;
     }
@@ -54,7 +54,7 @@ class PublicationBuilder
         $publication->publicationType = PublicationCategoryType::Publication;
         $publication->slug = $entityPublication->getSlug();
         $publication->isVideo = $entityPublication->getType() === PublicationEntity::TYPE_VIDEO;
-        $publication->content = $entityPublication->getDescription() ?? '';
+        $publication->content = $this->appPublicationSanitizer->sanitize(nl2br($entityPublication->getContent() ?? ''));
         $publication->shortDescription = $entityPublication->getDescription() ?? '';
         $publication->publicationDatetime = $entityPublication->getPublicationDatetime();
         $publication->media = $this->buildMedia($cover);
@@ -84,7 +84,7 @@ class PublicationBuilder
         return $media;
     }
 
-    private function buildCategory(string $id, string $label, string $slug): Category
+    private function buildCategory(int $id, string $label, string $slug): Category
     {
         $category = new Category();
         $category->id = $id;
