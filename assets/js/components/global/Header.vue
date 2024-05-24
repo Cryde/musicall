@@ -57,14 +57,19 @@
           @select="go"
       >
         <template #empty><span v-if="!isLoadingSearch">Il n'y a pas de résultats</span></template>
-        <template slot-scope="props">
+        <template v-slot="props">
           <div class="media">
             <div class="media-content">
               {{ props.option.title }}
               <br>
               <span>
                 {{ props.option.publication_datetime | relativeDate }}
-                <publication-type :type="props.option.type" class="ml-3 is-inline-block"/>
+
+                   <publication-type
+                       :type="props.option.type.label"
+                       :label="props.option.category.title"
+                       :icon="props.option.type.label === 'video' ? 'fab fa-youtube' : 'far fa-file-alt'"
+                       class="ml-3 is-inline-block"/>
               </span>
             </div>
           </div>

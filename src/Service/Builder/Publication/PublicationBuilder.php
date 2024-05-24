@@ -22,6 +22,11 @@ readonly class PublicationBuilder
     ) {
     }
 
+    public function buildFromEntities(array $publicationEntities): array
+    {
+        return array_map(fn (PublicationEntity $publicationEntity) => $this->buildFromEntity($publicationEntity), $publicationEntities);
+    }
+
     public function buildFromEntity(PublicationEntity $publicationEntity): Publication
     {
         $publication = new Publication();

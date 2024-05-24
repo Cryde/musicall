@@ -74,6 +74,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->andWhere('publication.cover IS NOT NULL')
             ->setParameter('term', $term)
             ->setParameter('status', Publication::STATUS_ONLINE)
+            ->orderBy('publication.publicationDatetime', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
