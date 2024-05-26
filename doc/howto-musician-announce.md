@@ -10,17 +10,17 @@ _Note: right now it not possible to edit or remove announce_
 To access the list you have to be logged in.  
 Then you click on your profile menu (top right) and then click on "Mes annonces"  :   
 
-![Access to the announces list](musician-announce/profile-announce-access.png)
+![Access to the announces list](images/musician-announce/profile-announce-access.png)
 
 Once there you will see a list of your announces :  
 
-![The announces list](musician-announce/announce-list.png)
+![The announces list](images/musician-announce/announce-list.png)
 
 
 From there you create a new one by clicking on "Ajouter une nouvelle annonce" 
 This will open a modal that will guide you to create an announce.
 
-![Add announce modal](musician-announce/add-announce-modal.png)
+![Add announce modal](images/musician-announce/add-announce-modal.png)
 
 For this particular part here are the interesting endpoints : 
 - `api_instruments_get_collection` to get the list of instruments
@@ -32,7 +32,7 @@ For this particular part here are the interesting endpoints :
 
 Visitor can see last announce the other user have created.  
 This part is available in the homepage :  
-![Last announce](musician-announce/last-announce-homepage.png)
+![Last announce](images/musician-announce/last-announce-homepage.png)
 
 You will note that there is buttons to create an announce (we have seen that in the previous point) and search for an announce.
 
