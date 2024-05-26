@@ -5,7 +5,7 @@ It will be split by "sections" related to the website.
 You should have MusicAll up and running as requirement (of course you can read this just for fun!)
 
 
-- [How to use the musician announce](howto-musician-announce)
+- [How to use the musician announce](howto-musician-announce.md)
 
 
 _Note: this is an in progress doc, more to come_
