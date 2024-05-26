@@ -12,13 +12,15 @@ Then you click on your profile menu (top right) and then click on "Mes annonces"
 
 ![Access to the announces list](musician-announce/profile-announce-access.png)
 
-Once the there you will see a list of your announces :  
+Once there you will see a list of your announces :  
 
 ![The announces list](musician-announce/announce-list.png)
 
 
 From there you create a new one by clicking on "Ajouter une nouvelle annonce" 
 This will open a modal that will guide you to create an announce.
+
+![Add announce modal](musician-announce/add-announce-modal.png)
 
 For this particular part here are the interesting endpoints : 
 - `api_instruments_get_collection` to get the list of instruments
