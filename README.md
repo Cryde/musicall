@@ -94,6 +94,8 @@ npm run build
 
 You can now access http://musicall.localhost
 
+[Learn how to use the application](doc/index.MD).
+
 ## TODO
 
 - [ ] Create fixtures
