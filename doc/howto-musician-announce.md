@@ -30,7 +30,7 @@ For this particular part here are the interesting endpoints :
 
 ## Last announces in the homepage
 
-Visitor can see last announce the other user have created.  
+Visitor can see last announces the other users have created.  
 This part is available in the homepage :  
 ![Last announce](images/musician-announce/last-announce-homepage.png)
 
