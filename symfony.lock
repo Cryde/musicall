@@ -13,9 +13,6 @@
             "src/ApiResource/.gitignore"
         ]
     },
-    "clue/stream-filter": {
-        "version": "v1.4.1"
-    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.1"
     },
@@ -166,9 +163,6 @@
     "hamcrest/hamcrest-php": {
         "version": "v2.0.1"
     },
-    "http-interop/http-factory-guzzle": {
-        "version": "1.0.0"
-    },
     "imagine/imagine": {
         "version": "v0.7.1"
     },
@@ -286,24 +280,6 @@
     },
     "phar-io/version": {
         "version": "3.1.0"
-    },
-    "php-http/client-common": {
-        "version": "2.1.0"
-    },
-    "php-http/discovery": {
-        "version": "1.8.0"
-    },
-    "php-http/httplug": {
-        "version": "2.1.0"
-    },
-    "php-http/message": {
-        "version": "1.8.0"
-    },
-    "php-http/message-factory": {
-        "version": "v1.0.2"
-    },
-    "php-http/promise": {
-        "version": "v1.0.0"
     },
     "phpdocumentor/reflection-common": {
         "version": "1.0.1"

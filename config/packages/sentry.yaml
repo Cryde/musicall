@@ -8,8 +8,9 @@ when@prod:
             enabled: false
         options:
             environment: '%kernel.environment%'
-            integrations:
-                - 'Sentry\Integration\IgnoreErrorsIntegration'
+            ignore_exceptions:
+                - 'Symfony\Component\ErrorHandler\Error\FatalError'
+                - 'Symfony\Component\Debug\Exception\FatalErrorException'
 
             # Specify a fixed sample rate:
             traces_sample_rate: 1.0
