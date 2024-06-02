@@ -42,12 +42,6 @@ services:
         public: true
         arguments: [ '@doctrine.orm.default_entity_manager', 'Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken']
 
-    Sentry\Integration\IgnoreErrorsIntegration:
-        arguments:
-            $options:
-                ignore_exceptions:
-                    - RuntimeException
-
     App\Serializer\ContextBuilder\Notification\NotificationContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         arguments: [ '@App\Serializer\ContextBuilder\Notification\NotificationContextBuilder.inner' ]
