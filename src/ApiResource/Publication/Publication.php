@@ -37,7 +37,6 @@ use App\State\Provider\Publication\PublicationSearchProvider;
 )]
 class Publication
 {
-    final const ITEM = 'PUBLICATION_ITEM';
     public string $title;
     #[ApiProperty(genId: false)]
     public Category $category;
