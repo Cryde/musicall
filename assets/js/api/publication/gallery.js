@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default {
   getGallery(slug) {
-    return axios.get(Routing.generate('api_gallery_show', {slug}))
+    return axios.get(Routing.generate('api_gallery_get_item', {slug}))
     .then(resp => resp.data)
   },
   getGalleries() {
