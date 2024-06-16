@@ -22,9 +22,7 @@ class GalleryGetTest extends ApiTestCase
     {
         $author = UserFactory::new()->asAdminUser()->create();
         $viewCache = ViewCacheFactory::new(['count' => 123])->create();
-        $cover = GalleryImageFactory::new(['image_name' => 'test.jpg'])->create();
-
-        GalleryFactory::new([
+        $gallery = GalleryFactory::new([
             'author'              => $author,
             'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
             'updateDatetime'     => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2021-01-02T02:03:04+00:00'),
@@ -34,8 +32,11 @@ class GalleryGetTest extends ApiTestCase
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Titre de la gallery',
             'viewCache'           => $viewCache,
-            'coverImage'          => $cover->object(),
         ])->create();
+        $cover = GalleryImageFactory::new(['image_name' => 'test.jpg', 'gallery' => $gallery])->create();
+        $gallery->setCoverImage($cover->_real());
+        $gallery->_save();
+
         $this->client->request('GET', '/api/galleries/titre-de-la-gallery');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -58,7 +59,7 @@ class GalleryGetTest extends ApiTestCase
             'description'          => 'Petite description de la gallery',
             'cover'                => [
                 '@type'     => 'Cover',
-                'cover_url' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/1/test.jpg',
+                'cover_url' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/test.jpg',
             ],
         ]);
     }
