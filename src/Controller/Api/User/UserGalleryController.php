@@ -54,9 +54,7 @@ class UserGalleryController extends AbstractController
         $this->entityManager->persist($gallery);
         $this->entityManager->flush();
 
-        return $this->json($gallery, Response::HTTP_CREATED, [], [
-            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
-        ]);
+        return $this->json($gallery, Response::HTTP_CREATED, []);
     }
 
     /**
@@ -85,9 +83,7 @@ class UserGalleryController extends AbstractController
         $gallery->setUpdateDatetime(new \DateTime());
         $this->entityManager->flush();
 
-        return $this->json($gallery, Response::HTTP_OK, [], [
-            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
-        ]);
+        return $this->json($gallery, Response::HTTP_OK, []);
     }
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
@@ -98,9 +94,7 @@ class UserGalleryController extends AbstractController
             return $this->json(['data' => ['success' => 0, 'message' => 'Cette galerie ne vous appartient pas']], Response::HTTP_FORBIDDEN);
         }
 
-        return $this->json($gallery, Response::HTTP_OK, [], [
-            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
-        ]);
+        return $this->json($gallery, Response::HTTP_OK, []);
     }
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
@@ -134,9 +128,7 @@ class UserGalleryController extends AbstractController
         $gallery->setStatus(Gallery::STATUS_PENDING);
         $this->entityManager->flush();
 
-        return $this->json($gallery, Response::HTTP_OK, [], [
-            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
-        ]);
+        return $this->json($gallery, Response::HTTP_OK, []);
     }
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
@@ -207,8 +199,6 @@ class UserGalleryController extends AbstractController
         $gallery->setUpdateDatetime(new \DateTime());
         $this->entityManager->flush();
 
-        return $this->json($gallery, Response::HTTP_OK, [], [
-            UserGalleryNormalizer::CONTEXT_USER_GALLERY => true,
-        ]);
+        return $this->json($gallery, Response::HTTP_OK, []);
     }
 }
