@@ -5,11 +5,12 @@ namespace App\Entity\Image;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use App\ApiResource\Search\MusicianSearchResult;
-use App\Controller\Api\Media\User\CreateUserProfilePictureAction;
+use ApiPlatform\OpenApi\Model;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\State\Processor\User\UserProfilePictureProcessor;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -25,27 +26,27 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ApiResource(
     operations: [
         new Post(
-            controller: CreateUserProfilePictureAction::class,
-            openapiContext: [
-                'requestBody' => [
-                    'content' => [
+            inputFormats: ['multipart' => ['multipart/form-data']],
+            openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
                                 'type' => 'object',
                                 'properties' => [
-                                    'file' => [
+                                    'imageFile' => [
                                         'type' => 'string',
                                         'format' => 'binary'
                                     ]
                                 ]
                             ]
                         ]
-                    ]
-                ]
-            ],
+                    ])
+                )
+            ),
             security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
-            deserialize: false,
-            name: 'api_user_profile_picture_post'
+            name: 'api_user_profile_picture_post',
+            processor: UserProfilePictureProcessor::class
         )
     ],
 )]
