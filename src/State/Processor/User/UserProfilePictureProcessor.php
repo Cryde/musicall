@@ -22,7 +22,6 @@ class UserProfilePictureProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        dump($data);
         /** @var User $user */
         $user = $this->security->getUser();
         $previousProfilePicture = $user->getProfilePicture() ?: null;
