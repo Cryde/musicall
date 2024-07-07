@@ -14,7 +14,7 @@ class UserGetTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_self_not_logged()
+    public function test_get_self_not_logged(): void
     {
         $this->client->request('GET', '/api/users/self');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -24,7 +24,7 @@ class UserGetTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_self()
+    public function test_get_self(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->object();
 

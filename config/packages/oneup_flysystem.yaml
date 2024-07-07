@@ -21,3 +21,9 @@ when@dev:
             musicall.flysystem_adapter:
                 local:
                     location: "%kernel.project_dir%/public/"
+when@test:
+    # for dev env we use the local adapter (to not upload on the S3)
+    oneup_flysystem:
+        adapters:
+            musicall.flysystem_adapter:
+                memory: ~
