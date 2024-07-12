@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [ -z $(which echo) ]; then
+    echo "You have to have the program certutil installed on your system."
+    echo "On debian, type:"
+    echo "    sudo apt install libnss3-tools"
+    exit 1
+fi
+
+dest=$(realpath $(dirname $0)/../volumes/nginx/conf/ssl)
+
+ca_name="SDu development CA"
+u=$(echo $(whoami)'@'$(hostname))
+
+function usage {
+    echo "Usage: $0 domain"
+    echo "    Will create a certificate for domain given, by using the CA '$ca_name' ($dest/ca.cert.pem)"
+}
+
+domain="$1"
+if [ -z "$domain" ]; then
+    usage
+    exit 1
+fi
+
+echo "Destination: $dest"
+
+echo
+echo "--- Making $domain key..."
+openssl genrsa -out $dest/$domain.key.pem 4096
+
+echo
+echo "--- Making $domain CSR..."
+openssl req -new -sha256 -nodes -out $dest/$domain.csr.pem -key $dest/$domain.key.pem -config <(
+cat <<-EOF
+[req]
+default_bits = 4096
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+C=BE
+ST=Brussels
+L=Brussels
+CN=$domain
+emailAddress=$u
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = $domain
+DNS.2 = www.$domain
+EOF
+)
+
+echo
+echo "--- Making $domain certificate..."
+openssl x509 -req -in $dest/$domain.csr.pem -CAcreateserial -CA $dest/ca.cert.pem -CAkey $dest/ca.key.pem -passin pass:$password -out $dest/$domain.cert.pem -days 3650 -sha256
+
+echo
+echo "--- Remove pkcs11.txt just created..."
+rm -f pkcs11.txt
+
+echo
+echo "--- Congrats !"
+echo " Now, start, or restart, the nginx container, and go on https://$domain!"
+
