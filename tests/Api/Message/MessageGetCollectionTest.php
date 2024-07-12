@@ -74,32 +74,48 @@ class MessageGetCollectionTest extends ApiTestCase
             '@type'            => 'hydra:Collection',
             'hydra:member'     => [
                 [
+                    '@id' => '/api/messages/' . $message2->object()->getId(),
+                    '@type' => 'Message',
                     'creation_datetime' => '2023-01-02T02:03:04+00:00',
                     'author'            => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
                         'id'       => $user1->getId(),
                         'username' => 'base_user_1',
                     ],
                     'content'           => 'first message from user 1',
                 ],
                 [
+                    '@id' => '/api/messages/' . $message3->object()->getId(),
+                    '@type' => 'Message',
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'            => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
                         'id'       => $user2->getId(),
                         'username' => 'base_user_2',
                     ],
                     'content'           => 'second message from user 2',
                 ],
                 [
+                    '@id' => '/api/messages/' . $message4->object()->getId(),
+                    '@type' => 'Message',
                     'creation_datetime' => '2021-01-02T02:03:04+00:00',
                     'author'            => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
                         'id'       => $user1->getId(),
                         'username' => 'base_user_1',
                     ],
                     'content'           => 'third message from user 1',
                 ],
                 [
+                    '@id' => '/api/messages/' . $message1->object()->getId(),
+                    '@type' => 'Message',
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'            => [
+                        '@id' => '/api/users/self',
+                        '@type' => 'User',
                         'id'       => $user1->getId(),
                         'username' => 'base_user_1',
                     ],
@@ -143,6 +159,8 @@ class MessageGetCollectionTest extends ApiTestCase
         $this->client->request('GET', '/api/messages/' . $thread->getId());
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
+            '@id' => '/api/errors/403',
+            '@type' => 'hydra:Error',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'Vous n\'êtes pas autorisé à voir ceci.',
             'title' => 'An error occurred',

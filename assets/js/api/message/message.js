@@ -7,6 +7,10 @@ export default {
     return axios.post(Routing.generate('api_message_post_to_user'), {
       recipient: `/api/users/${recipientId}`,
       content
+    }, {
+      headers: {
+        'Content-Type': 'application/ld+json'
+      }
     })
     .then(resp => resp.data);
   },

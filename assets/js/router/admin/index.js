@@ -1,4 +1,3 @@
-import attributes from "./attributes";
 import publications from "./publications";
 import forum from "./forum";
 
@@ -9,7 +8,6 @@ export default [
     component: () => import("../../views/admin/Dashboard.vue"),
     meta: {isAuthRequired: true}
   },
-  ...attributes,
   ...publications,
   ...forum
 ];

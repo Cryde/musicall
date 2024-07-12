@@ -2,15 +2,19 @@
 
 namespace App\ApiResource\Contact;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\State\Processor\Contact\ContactProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
     uriTemplate: '/contact',
+    openapi: false,
     name: '_api_contact_us',
     processor: ContactProcessor::class
 )]
+#[Get(openapi: false)]
 class Contact
 {
     #[Assert\NotBlank]

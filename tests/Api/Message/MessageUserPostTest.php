@@ -20,7 +20,7 @@ class MessageUserPostTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_not_logged()
+    public function test_not_logged(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->object();
         $this->client->jsonRequest('POST', '/api/messages/user', [
@@ -58,13 +58,22 @@ class MessageUserPostTest extends ApiTestCase
         $this->assertCount(1, $messages);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $messages[0]->getId(),
+            '@type' => 'Message',
             'id'                => $messages[0]->getId(),
             'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
             'author'            => [
+                '@id' => '/api/users/self',
+                '@type' => 'User',
                 'id'       => $user1->getId(),
                 'username' => 'base_user_1',
             ],
-            'thread'            => ['id' => $resultUser1[0]->getThread()->getId()],
+            'thread'            => [
+                '@id' => '/api/message_threads/' . $resultUser1[0]->getThread()->getId(),
+                '@type' => 'MessageThread',
+                'id' => $resultUser1[0]->getThread()->getId(),
+            ],
             'content'           => 'new content from user1',
         ]);
     }
@@ -106,13 +115,22 @@ class MessageUserPostTest extends ApiTestCase
         $this->assertCount(1, $messages);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $messages[0]->getId(),
+            '@type' => 'Message',
             'id'                => $messages[0]->getId(),
             'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
             'author'            => [
                 'id'       => $user1->getId(),
                 'username' => 'base_user_1',
+                '@id' => '/api/users/self',
+                '@type' => 'User',
             ],
-            'thread'            => ['id' => $resultUser1[0]->getThread()->getId()],
+            'thread'            => [
+                '@id' => '/api/message_threads/' . $resultUser1[0]->getThread()->getId(),
+                '@type' => 'MessageThread',
+                'id' => $resultUser1[0]->getThread()->getId()
+            ],
             'content'           => 'new content from user1',
         ]);
     }
@@ -128,6 +146,8 @@ class MessageUserPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolationList',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'content: Cette valeur ne doit pas être vide.',
             'violations'        => [

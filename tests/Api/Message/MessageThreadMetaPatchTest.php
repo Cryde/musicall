@@ -48,6 +48,9 @@ class MessageThreadMetaPatchTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT'=>'application/ld+json']);
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/MessageThreadMeta',
+            '@id' => '/api/message_thread_metas/' . $meta->object()->getId(),
+            '@type' => 'MessageThreadMeta',
             'id' => $meta->object()->getId()
         ]);
 

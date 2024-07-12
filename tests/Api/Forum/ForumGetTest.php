@@ -32,11 +32,16 @@ class ForumGetTest extends ApiTestCase
         $this->client->request('GET', '/api/forums/forum-title');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Forum',
+            '@id' => '/api/forums/forum-title',
+            '@type' => 'Forum',
             'id'             => $forum->getId(),
             'title'          => 'Forum title',
             'forum_category' => [
                 'id'    => $forumCategory->getId(),
                 'title' => 'forum category title',
+                '@id' => '/api/forum_categories/' . $forumCategory->getId(),
+                '@type' => 'ForumCategory'
             ],
         ]);
     }
@@ -46,6 +51,8 @@ class ForumGetTest extends ApiTestCase
         $this->client->request('GET', '/api/forums/not-found');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
+            '@id' => '/api/errors/404',
+            '@type' => 'hydra:Error',
             'hydra:title'       => 'An error occurred',
             'hydra:description' => 'Not Found',
             'title'             => 'An error occurred',

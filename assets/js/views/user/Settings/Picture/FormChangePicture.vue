@@ -77,7 +77,7 @@ export default {
       if (canvas) {
         const form = new FormData();
         canvas.toBlob(async blob => {
-          form.append('file', blob);
+          form.append('imageFile', blob);
           try {
             await userApi.changePicture(form);
             this.$root.$emit(EVENT_PROFILE_PICTURE_SUCCESS)
@@ -85,7 +85,7 @@ export default {
             this.$root.$emit(EVENT_PROFILE_PICTURE_MODAL_CLOSE);
             this.$emit('close');
           } catch (e) {
-            this.errors = e.response.data.map(error => error.message);
+            this.errors = e.response.data.violations.map(error => error.message);
           }
         }, 'image/jpeg');
       }

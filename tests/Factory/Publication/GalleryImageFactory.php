@@ -63,7 +63,6 @@ final class GalleryImageFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'gallery' => GalleryFactory::new(),
             'imageName' => self::faker()->text(255),
             'imageSize' => self::faker()->randomNumber(),
             'updatedAt' => self::faker()->dateTime(),
