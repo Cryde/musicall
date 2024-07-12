@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ -z $(which echo) ]; then
+	echo "You have to have the program certutil installed on your system."
+	echo "On debian, type:"
+	echo "    sudo apt install libnss3-tools"
+	exit 1
+fi
+
+dest=$(realpath $(dirname $0)/../volumes/nginx/conf/ssl)
+echo "Destination: $dest"
+
+ca_name="MusicAll development CA"
+u=$(echo $(whoami)'@'$(hostname))
+
+echo
+echo "--- Making CA key..."
+openssl genrsa -out $dest/ca.key.pem 4096
+
+echo
+echo "--- Making CA certificate..."
+openssl req -x509 -new -nodes -key $dest/ca.key.pem -sha256 -days 3650 -out $dest/ca.cert.pem -subj "/O=$ca_name/OU=$u/CN=$u"
+
+echo
+echo "--- Install CA certificate on your system..."
+escaped_ca_name=${ca_name//[-.\ ]/_}
+
+echo ".... I will need to sudo to update trust certificates on your system"
+cat $dest/ca.cert.pem | sudo tee /usr/local/share/ca-certificates/$escaped_ca_name.crt && sudo update-ca-certificates
+
+echo
+echo "--- Remove pkcs11.txt just created..."
+rm -f pkcs11.txt
+
+echo
+echo "--- Congrats !"
+echo " Now, start, or restart, the nginx container, and go on https://$domain!"
+
