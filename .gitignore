@@ -35,4 +35,4 @@ hosts.yml
 /public/build/
 ###< pentatrion/vite-bundle ###
 
-
+.idea

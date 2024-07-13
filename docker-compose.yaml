@@ -11,7 +11,7 @@ services:
       - ./volumes/nginx/conf:/etc/nginx/conf.d
     networks:
       musicall:
-        ipv4_address: 10.10.100.2
+        ipv4_address: 10.200.200.2
 
   php-fpm:
     build: .docker/fpm
@@ -24,7 +24,7 @@ services:
       - ./.docker/fpm/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
     networks:
       musicall:
-        ipv4_address: 10.10.100.3
+        ipv4_address: 10.200.200.3
 
   node:
     image: node:20
@@ -35,7 +35,7 @@ services:
       - .:/var/www:cached
     networks:
       musicall:
-        ipv4_address: 10.10.100.4
+        ipv4_address: 10.200.200.4
 
   php-musicall:
     build: .docker/cli-musicall
@@ -45,7 +45,7 @@ services:
     command: /bin/true
     networks:
       musicall:
-        ipv4_address: 10.10.100.5
+        ipv4_address: 10.200.200.5
     volumes:
       - .:/var/www:cached
 
@@ -56,7 +56,7 @@ services:
     command: /bin/true
     networks:
       musicall:
-        ipv4_address: 10.10.100.7
+        ipv4_address: 10.200.200.7
     volumes:
       - .:/var/www:cached
 
@@ -71,7 +71,7 @@ services:
       - ./volumes/db/logs:/var/log/mysql:cached
     networks:
       musicall:
-        ipv4_address: 10.10.100.6
+        ipv4_address: 10.200.200.6
         aliases:
           - db.musicall
 
@@ -83,11 +83,11 @@ services:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     ports:
-      - 10.10.100.1:9200:9200
-      - 10.10.100.1:9300:9300
+      - 10.200.200.1:9200:9200
+      - 10.200.200.1:9300:9300
     networks:
       musicall:
-        ipv4_address: 10.10.100.8
+        ipv4_address: 10.200.200.8
         aliases:
           - elasticsearch.musicall
     volumes:
@@ -98,7 +98,7 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 10.10.100.0/28
+        - subnet: 10.200.200.0/26
 
 volumes:
   db_files:
