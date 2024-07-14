@@ -35,4 +35,7 @@ hosts.yml
 /public/build/
 ###< pentatrion/vite-bundle ###
 
+!/volumes/nginx/conf/ssl/.gitkeep
+/volumes/nginx/conf/ssl/*
+
 .idea

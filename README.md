@@ -17,12 +17,22 @@ This project use:
 
 ### Installing
 
+#### Setup local https
+
+The application need to be run in HTTPS (for Facebook logins for instance)
+Go to the root project, then launch :  
+```
+./bin/create_ssl_ca
+./bin/create_ssl_cert musicall.local
+```
+You will only need to run this once
+
 #### Setup Docker
 
 You will need Docker to run this project.
 Follow the Docker installation guide (https://docs.docker.com/get-docker/) to have it on your environment.
 
-Once it's done, go in the project root and run 
+Go in the project root and run 
 ```
 docker compose up -d
 ```
@@ -35,9 +45,9 @@ docker compose up --build
 
 #### Setup the project
 
-Add `musicall.localhost` and `musicall.test` to your `/etc/hosts`
+Add `musicall.local` and `musicall.test` to your `/etc/hosts`
 ```
-127.0.0.1 	musicall.localhost musicall.test
+10.200.200.2 	musicall.local musicall.test
 ```
 
 Install PHP vendor
@@ -92,7 +102,7 @@ npm run build
 ```
 
 
-You can now access http://musicall.localhost
+You can now access https://musicall.local
 
 [Learn how to use the application](doc/README).
 
