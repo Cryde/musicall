@@ -12,7 +12,7 @@ export default {
     .then(resp => resp.data)
   },
   getGalleryImages(slug) {
-    return axios.get(Routing.generate('api_gallery_images_show', {slug}))
+    return axios.get(Routing.generate('api_gallery_get_images', {slug}))
     .then(resp => resp.data)
   },
   addGallery({title}) {

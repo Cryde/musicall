@@ -23,9 +23,9 @@
         <masonry-wall :items="images" :column-width="250" :gap="2" class="mt-lg-4 mt-3 image-container">
           <template v-slot:default="{item: image, index}">
             <img
-                :src="image.sizes.medium"
+                :src="image.format.medium"
                 :ref="`image-${index}`"
-                :data-full-image="image.sizes.full"
+                :data-full-image="image.format.full"
                 @click="openLightBox(index)"
             />
           </template>

@@ -61,7 +61,7 @@ const actions = {
   async loadImages({commit}, slug) {
     commit(IS_LOADING_IMAGES, true);
     const images = await galleryApi.getGalleryImages(slug);
-    commit(UPDATE_IMAGES, images);
+    commit(UPDATE_IMAGES, images['hydra:member']);
     commit(IS_LOADING_IMAGES, false);
   },
   resetState({commit}) {

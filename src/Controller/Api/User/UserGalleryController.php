@@ -7,7 +7,6 @@ use App\Entity\Image\GalleryImage;
 use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
 use App\Serializer\GalleryImageSerializer;
-use App\Serializer\Normalizer\UserGalleryNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
