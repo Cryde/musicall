@@ -2,8 +2,8 @@
     "devDependencies": {
         "@vitejs/plugin-vue2": "^2.3.0",
         "sass": "^1.69.6",
-        "vite": "^5.0",
-        "vite-plugin-symfony": "^6.3"
+        "vite": "^6.3.3",
+        "vite-plugin-symfony": "^8.0.2"
     },
     "type": "module",
     "license": "UNLICENSED",
@@ -14,7 +14,7 @@
     },
     "dependencies": {
         "@creativebulma/bulma-badge": "^1.0.1",
-        "@sentry/vue": "^7.7.0",
+        "@sentry/vue": "^9.14.0",
         "@tiptap/extension-bubble-menu": "^2.0.0-beta.202",
         "@tiptap/extension-document": "^2.0.0-beta.202",
         "@tiptap/extension-heading": "^2.0.0-beta.202",
