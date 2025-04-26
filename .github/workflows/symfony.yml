@@ -12,7 +12,7 @@ jobs:
     symfony:
         name: Symfony 7.0 (PHP ${{ matrix.php-versions }})
         # https://hub.docker.com/_/ubuntu/
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         services:
             # https://docs.docker.com/samples/library/mysql/
             mysql:
@@ -38,7 +38,9 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php-versions }}
-                  extensions: mbstring, xml, ctype, intl, pdo, pdo_mysql, mysql, dom, filter, gd, json
+                  extensions: mbstring, xml, ctype, intl, pdo, pdo_mysql, mysql, dom, filter, gd, json, opcache
+                  coverage: pcov
+                  tools: phpstan
               env:
                   update: true
 
@@ -46,14 +48,18 @@ jobs:
               run: php -v
 
             # —— Composer 🧙‍️ —————————————————————————————————————————————————————————
-            - name: Cache Composer dependencies
-              uses: actions/cache@v4
+            -   name: Get Composer Cache Directory
+                id: composer-cache
+                run: |
+                    echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            - uses: actions/cache@v4
               with:
-                  path: /tmp/composer-cache
-                  key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-composer-
             - name: Install dependencies
-              run: composer install --prefer-dist
+              run: composer install --no-progress --prefer-dist --optimize-autoloader
 
 
             # —— Symfony 🎵 ——————————————————————————————————————————————————————————
@@ -61,11 +67,8 @@ jobs:
               run: |
                   bin/console about
             ## —— Static analysis ✨ —————————————————————————————————————————————————
-            - name: PHPStan Static Analysis
-              uses: php-actions/phpstan@v2
-              with:
-                  memory_limit: 256M
-                  php_version: ${{ matrix.php-versions }}
+            - name: Static Analysis using PHPStan
+              run: phpstan analyse --no-progress
 
             - name: Create test database
               run: |
@@ -77,18 +80,12 @@ jobs:
               env:
                   APP_ENV: test
 
-            - name: PHPUnit Tests
-              uses: php-actions/phpunit@v3
-              with:
-                  memory_limit: 400M
-                  version: 10.5
-                  php_extensions: xdebug pdo_mysql mysqli intl json
-                  php_version: ${{ matrix.php-versions }}
-                  args: tests --coverage-clover ./coverage.xml
+            - name: Run tests and collect coverage
+              run: vendor/bin/phpunit --coverage-clover ./coverage.xml
               env:
-                  XDEBUG_MODE: coverage
                   APP_ENV: test
+
             - name: Upload coverage reports to Codecov
-              uses: codecov/codecov-action@v4.0.1
+              uses: codecov/codecov-action@v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
