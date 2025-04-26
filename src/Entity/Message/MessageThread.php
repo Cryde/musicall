@@ -30,17 +30,23 @@ class MessageThread
     #[Groups([MessageThreadMeta::LIST, Message::ITEM])]
     private $id;
 
+    /**
+     * @var Collection<int, Message>
+     */
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
     private Collection $messages;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
-
+    /**
+     * @var Collection<int, MessageParticipant>
+     */
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
     #[Groups([MessageThreadMeta::LIST])]
     private Collection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
+    #[ORM\JoinColumn(nullable: false)]
     #[Groups([MessageThreadMeta::LIST])]
     private Message $lastMessage;
 
@@ -56,9 +62,6 @@ class MessageThread
         return $this->id;
     }
 
-    /**
-     * @return Collection|Message[]
-     */
     public function getMessages(): Collection
     {
         return $this->messages;
@@ -99,9 +102,6 @@ class MessageThread
         return $this;
     }
 
-    /**
-     * @return Collection|MessageParticipant[]
-     */
     public function getMessageParticipants(): Collection
     {
         return $this->messageParticipants;
@@ -130,12 +130,12 @@ class MessageThread
         return $this;
     }
 
-    public function getLastMessage(): ?Message
+    public function getLastMessage(): Message
     {
         return $this->lastMessage;
     }
 
-    public function setLastMessage(?Message $lastMessage): self
+    public function setLastMessage(Message $lastMessage): self
     {
         $this->lastMessage = $lastMessage;
 

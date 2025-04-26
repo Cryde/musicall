@@ -25,6 +25,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\JoinColumn;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -133,8 +134,9 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     private ?int $oldPublicationId = null;
 
     #[ORM\ManyToOne(targetEntity: CommentThread::class)]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups([Publication::ITEM])]
-    private CommentThread $thread;
+    private ?CommentThread $thread = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     private ?ViewCache $viewCache = null;

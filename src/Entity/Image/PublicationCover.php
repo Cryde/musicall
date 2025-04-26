@@ -52,10 +52,9 @@ class PublicationCover
      * during Doctrine hydration.
      *
      *
-     * @throws Exception
      * @return $this
      */
-    public function setImageFile(?File $image = null)
+    public function setImageFile(?File $image = null): static
     {
         $this->imageFile = $image;
         if (null !== $image) {

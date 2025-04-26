@@ -89,8 +89,6 @@ class UserProfilePicture
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
      *
-     *
-     * @throws Exception
      * @return $this
      */
     public function setImageFile(?File $image = null)
