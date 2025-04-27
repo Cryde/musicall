@@ -18,7 +18,7 @@ class SearchControllerTest extends ApiTestCase
 
     public function test_search_publication()
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->object();
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
         // not taken because status pending
         PublicationFactory::new([
@@ -26,14 +26,14 @@ class SearchControllerTest extends ApiTestCase
             'status'              => Publication::STATUS_PENDING,
             'title'               => 'Ceci est titre1 publication',
             'type'                => Publication::TYPE_TEXT,
-        ])->create()->object();
+        ])->create()->_real();
         // not taken because not good type
         PublicationFactory::new([
             'author'              => $admin,
             'status'              => Publication::STATUS_ONLINE,
             'title'               => 'Ceci est titre1 publication',
             'type'                => Publication::TYPE_VIDEO,
-        ])->create()->object();
+        ])->create()->_real();
 
         $publication1 = PublicationFactory::new([
             'author'              => $admin,
@@ -45,7 +45,7 @@ class SearchControllerTest extends ApiTestCase
         ])->create();
 
         $cover1 = PublicationCoverFactory::createOne(['imageName' => 'cover1', 'imageSize' => 10, 'publication' => $publication1]);
-        $publication1->object()->setCover($cover1->object());
+        $publication1->_real()->setCover($cover1->_real());
         $publication1->save();
 
         $publication2 = PublicationFactory::new([
@@ -57,12 +57,12 @@ class SearchControllerTest extends ApiTestCase
             'type'                => Publication::TYPE_TEXT,
         ])->create();
 
-        $cover2 = PublicationCoverFactory::createOne(['imageName' => 'cover2', 'imageSize' => 10, 'publication' => $publication2->object()]);
-        $publication2->object()->setCover($cover2->object());
+        $cover2 = PublicationCoverFactory::createOne(['imageName' => 'cover2', 'imageSize' => 10, 'publication' => $publication2->_real()]);
+        $publication2->_real()->setCover($cover2->_real());
         $publication2->save();
 
-        $publication1 = $publication1->object();
-        $publication2 = $publication2->object();
+        $publication1 = $publication1->_real();
+        $publication2 = $publication2->_real();
 
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/search/publication?query=titre1');

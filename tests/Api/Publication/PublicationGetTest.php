@@ -40,7 +40,7 @@ class PublicationGetTest extends ApiTestCase
             'title'               => 'Titre de la publication',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => $viewCache,
-            'cover'               => $cover->object(),
+            'cover'               => $cover->_real(),
             'thread'              => $thread,
         ])->create();
         $this->client->request('GET', '/api/publications/titre-de-la-publication');
@@ -59,7 +59,7 @@ class PublicationGetTest extends ApiTestCase
             'publication_datetime' => '2022-01-02T02:03:04+00:00',
             'category'             => [
                 '@type'    => 'Category',
-                'id'       => $sub->object()->getId(),
+                'id'       => $sub->_real()->getId(),
                 'title'    => 'Chroniques',
                 'slug'     => 'chroniques',
             ],
@@ -70,7 +70,7 @@ class PublicationGetTest extends ApiTestCase
             ],
             'thread'               => [
                 '@type'    => 'Thread',
-                'id'       => $thread->object()->getId(),
+                'id'       => $thread->_real()->getId(),
             ],
             'type'                 => [
                 '@type'    => 'Type',
@@ -86,13 +86,13 @@ class PublicationGetTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
             '@id' => '/api/errors/404',
-            '@type' => 'hydra:Error',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'Publication inexistante',
-            'title'             => 'An error occurred',
+            '@type' => 'Error',
+            'title'       => 'An error occurred',
+            'description' => 'Publication inexistante',
             'detail'            => 'Publication inexistante',
             'status'            => 404,
             'type'              => '/errors/404',
+            '@context' => '/api/contexts/Error',
         ]);
     }
 }

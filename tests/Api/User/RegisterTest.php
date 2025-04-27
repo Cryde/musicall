@@ -47,7 +47,7 @@ class RegisterTest extends ApiTestCase
 
     public function test_register_with_errors()
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->object();
+        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
         $this->client->jsonRequest('POST', '/api/register', [
             'username' => $user1->getUsername(),
@@ -98,7 +98,7 @@ plain_password: Le mot de passe doit au moins contenir 3 caractères',
 
     public function test_register_already_have_account(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->object();
+        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
         $this->client->loginUser($user1);
         $this->client->request('POST', '/api/register');

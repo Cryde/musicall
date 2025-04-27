@@ -8,7 +8,7 @@
         "php": "^8.2.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "api-platform/core": "^3.1",
+        "api-platform/core": "^4.1",
         "composer/package-versions-deprecated": "1.11.99.1",
         "cryde/json-text-extractor": "^0.0.3",
         "doctrine/annotations": "^2.0",

@@ -53,8 +53,8 @@ const actions = {
     commit(UPDATE_ERROR, null);
     try {
       const data = await apiPublications.getPublications({page});
-      commit(UPDATE_PUBLICATIONS, data['hydra:member']);
-      commit(UPDATE_META, data['hydra:totalItems']);
+      commit(UPDATE_PUBLICATIONS, data['member']);
+      commit(UPDATE_META, data['totalItems']);
     } catch (err) {
       commit(UPDATE_ERROR, err);
     }
@@ -65,8 +65,8 @@ const actions = {
     commit(UPDATE_ERROR, null);
     try {
       const data = await apiPublications.getPublicationsByCategory({slug, page});
-      commit(UPDATE_PUBLICATIONS, data['hydra:member']);
-      commit(UPDATE_META, data['hydra:totalItems']);
+      commit(UPDATE_PUBLICATIONS, data['member']);
+      commit(UPDATE_META, data['totalItems']);
     } catch (err) {
       commit(UPDATE_ERROR, err);
     }

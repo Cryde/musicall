@@ -59,8 +59,8 @@ const actions = {
     const thread = await commentApi.getThread({threadId});
     const commentsResponse = await commentApi.getComments({thread: threadId});
 
-    commit(UPDATE_COMMENTS, commentsResponse['hydra:member']);
-    commit(UPDATE_TOTAL_COMMENTS, commentsResponse['hydra:totalItems']);
+    commit(UPDATE_COMMENTS, commentsResponse['member']);
+    commit(UPDATE_TOTAL_COMMENTS, commentsResponse['totalItems']);
 
     commit(UPDATE_THREAD, thread);
 

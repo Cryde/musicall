@@ -42,7 +42,7 @@ class ContactPostTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/0=bd79c0ab-ddba-46cc-a703-a7a4b08de310;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
-            '@type' => 'ConstraintViolationList',
+            '@type' => 'ConstraintViolation',
             'status'            => 422,
             'violations'        => [
                 [
@@ -58,11 +58,11 @@ class ContactPostTest extends ApiTestCase
             ],
             'detail'            => 'email: L\'email est invalide
 message: Votre message doit être de minimum 10 caractères.',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'email: L\'email est invalide
-message: Votre message doit être de minimum 10 caractères.',
             'type'              => '/validation_errors/0=bd79c0ab-ddba-46cc-a703-a7a4b08de310;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'description' => 'email: L\'email est invalide
+message: Votre message doit être de minimum 10 caractères.',
         ]);
 
         $this->assertEmailCount(0);

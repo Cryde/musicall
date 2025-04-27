@@ -139,8 +139,8 @@ export default {
         order: {'creationDatetime': 'asc'},
         page: this.current
       });
-      this.posts = metaPosts['hydra:member']
-      this.totalItems = metaPosts['hydra:totalItems']
+      this.posts = metaPosts['member']
+      this.totalItems = metaPosts['totalItems']
     },
     getDefaultPage(pageNumber) {
       return {

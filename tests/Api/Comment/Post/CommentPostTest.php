@@ -21,8 +21,8 @@ class CommentPostTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $commentThread = CommentThreadFactory::new()->create();
 
-        $user1 = $user1->object();
-        $commentThread = $commentThread->object();
+        $user1 = $user1->_real();
+        $commentThread = $commentThread->_real();
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/comments', [
@@ -54,7 +54,7 @@ with multiline",
     {
         $commentThread = CommentThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->object()->getId(),
+            'thread'  => '/api/comment_threads/' . $commentThread->_real()->getId(),
             'content' => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -64,13 +64,13 @@ with multiline",
     {
         $commentThread = CommentThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->object()->getId(),
+            'thread'  => '/api/comment_threads/' . $commentThread->_real()->getId(),
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            '@type' => 'ConstraintViolationList',
+            '@type' => 'ConstraintViolation',
             'status' => 422,
             'violations' => [
                 [
@@ -80,10 +80,10 @@ with multiline",
                 ]
             ],
             'detail' => 'content: Le commentaire est vide',
-            'hydra:title' => 'An error occurred',
-            'hydra:description' => 'content: Le commentaire est vide',
             'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            'title' => 'An error occurred'
+            'title' => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'description' => 'content: Le commentaire est vide',
         ]);
     }
 }

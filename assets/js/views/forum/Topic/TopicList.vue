@@ -146,8 +146,8 @@ export default {
         order: {'creationDatetime': 'desc'},
         page: this.current
       });
-      this.topics = metaTopics['hydra:member']
-      this.totalItems = metaTopics['hydra:totalItems']
+      this.topics = metaTopics['member']
+      this.totalItems = metaTopics['totalItems']
     },
     openAddTopicModal() {
       this.$buefy.modal.open({

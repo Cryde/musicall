@@ -2,6 +2,7 @@
 
 namespace Api\User;
 
+use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -9,6 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserChangePictureTest extends ApiTestCase
 {
+    use ApiTestAssertionsTrait;
+
     public function test_change_picture(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
@@ -34,7 +37,23 @@ class UserChangePictureTest extends ApiTestCase
             'CONTENT_TYPE' => 'multipart/form-data',
         ], );
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertSame('{"@id":"\/api\/validation_errors\/7f87163d-878f-47f5-99ba-a8eb723a1ab2","@type":"ConstraintViolationList","status":422,"violations":[{"propertyPath":"image_file","message":"La largeur de l\u0027image est trop grande (4100px). La largeur maximale autorisée est de 4000px.","code":"7f87163d-878f-47f5-99ba-a8eb723a1ab2"}],"detail":"image_file: La largeur de l\u0027image est trop grande (4100px). La largeur maximale autorisée est de 4000px.","hydra:title":"An error occurred","hydra:description":"image_file: La largeur de l\u0027image est trop grande (4100px). La largeur maximale autorisée est de 4000px.","type":"\/validation_errors\/7f87163d-878f-47f5-99ba-a8eb723a1ab2","title":"An error occurred"}', $this->client->getResponse()->getContent());
+        $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/7f87163d-878f-47f5-99ba-a8eb723a1ab2',
+            '@type' => 'ConstraintViolation',
+            'title' => 'An error occurred',
+            'description' => 'image_file: La largeur de l\'image est trop grande (4100px). La largeur maximale autorisée est de 4000px.',
+            'detail' => 'image_file: La largeur de l\'image est trop grande (4100px). La largeur maximale autorisée est de 4000px.',
+            'status' => 422,
+            'type' => '/validation_errors/7f87163d-878f-47f5-99ba-a8eb723a1ab2',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'violations' => [
+                [
+                    'propertyPath' => 'image_file',
+                    'message' => 'La largeur de l\'image est trop grande (4100px). La largeur maximale autorisée est de 4000px.',
+                    'code' => '7f87163d-878f-47f5-99ba-a8eb723a1ab2',
+                ]
+            ]
+        ]);
     }
 
     public function test_change_picture_too_small(): void
@@ -47,7 +66,23 @@ class UserChangePictureTest extends ApiTestCase
             'CONTENT_TYPE' => 'multipart/form-data',
         ], );
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertSame('{"@id":"\/api\/validation_errors\/9afbd561-4f90-4a27-be62-1780fc43604a","@type":"ConstraintViolationList","status":422,"violations":[{"propertyPath":"image_file","message":"La largeur de l\u0027image est trop petite (200px). La largeur minimale attendue est de 450px.","code":"9afbd561-4f90-4a27-be62-1780fc43604a"}],"detail":"image_file: La largeur de l\u0027image est trop petite (200px). La largeur minimale attendue est de 450px.","hydra:title":"An error occurred","hydra:description":"image_file: La largeur de l\u0027image est trop petite (200px). La largeur minimale attendue est de 450px.","type":"\/validation_errors\/9afbd561-4f90-4a27-be62-1780fc43604a","title":"An error occurred"}', $this->client->getResponse()->getContent());
+        $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/9afbd561-4f90-4a27-be62-1780fc43604a',
+            '@type' => 'ConstraintViolation',
+            'title' => 'An error occurred',
+            'description' => 'image_file: La largeur de l\'image est trop petite (200px). La largeur minimale attendue est de 450px.',
+            'detail' => 'image_file: La largeur de l\'image est trop petite (200px). La largeur minimale attendue est de 450px.',
+            'status' => 422,
+            'type' => '/validation_errors/9afbd561-4f90-4a27-be62-1780fc43604a',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'violations' => [
+                [
+                    'propertyPath' => 'image_file',
+                    'message' => 'La largeur de l\'image est trop petite (200px). La largeur minimale attendue est de 450px.',
+                    'code' => '9afbd561-4f90-4a27-be62-1780fc43604a',
+                ]
+            ]
+        ]);
     }
 
     public function test_change_picture_not_logged(): void
@@ -57,6 +92,9 @@ class UserChangePictureTest extends ApiTestCase
             'CONTENT_TYPE' => 'multipart/form-data',
         ], );
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-        $this->assertSame('{"code":401,"message":"JWT Token not found"}', $this->client->getResponse()->getContent());
+        $this->assertJsonEquals([
+            'code' => 401,
+            'message' => 'JWT Token not found',
+        ]);
     }
 }

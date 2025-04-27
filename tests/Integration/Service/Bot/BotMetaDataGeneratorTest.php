@@ -47,7 +47,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'type'                => Publication::TYPE_TEXT,
         ])->create();
         $cover = PublicationCoverFactory::createOne(['imageName' => 'cover-publication', 'imageSize' => 10, 'publication' => $publication1]);
-        $publication1->object()->setCover($cover->object());
+        $publication1->_real()->setCover($cover->_real());
         $publication1->save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/publications/cool-slug-for-publication');
@@ -68,14 +68,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'slug'                => 'cool-slug-for-gallery',
         ])->create();
         $cover = GalleryImageFactory::createOne(['imageName' => 'cover-gallery', 'imageSize' => 10, 'gallery' => $gallery]);
-        $gallery->object()->setCoverImage($cover->object());
+        $gallery->_real()->setCoverImage($cover->_real());
         $gallery->save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/gallery/cool-slug-for-gallery');
         $this->assertSame([
             'title'       => 'Ceci est titre gallery',
             'description' => 'Petite description de la gallery 1',
-            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->object()->getId() . '/cover-gallery',
+            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->getId() . '/cover-gallery',
         ], $result);
     }
 }

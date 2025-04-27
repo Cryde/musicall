@@ -9,7 +9,7 @@ export default {
       forum_slug: 'root'
     }))
     .then(resp => resp.data)
-    .then(resp => resp['hydra:member']);
+    .then(resp => resp['member']);
   },
   getForum(slug) {
     return axios.get(Routing.generate('api_forums_get_item', {slug}))

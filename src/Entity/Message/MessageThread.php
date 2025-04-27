@@ -46,7 +46,7 @@ class MessageThread
     private Collection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups([MessageThreadMeta::LIST])]
     private Message $lastMessage;
 

@@ -41,10 +41,10 @@ class SearchModelBuilderTest extends KernelTestCase
         $this->assertSame(1, $result->getType());
         $this->assertSame(48.856614, $result->getLatitude());
         $this->assertSame(2.3522219, $result->getLongitude());
-        $this->assertSame($instrument1->object()->getId(), $result->getInstrument());
+        $this->assertSame($instrument1->_real()->getId(), $result->getInstrument());
         $this->assertCount(2, $result->getStyles());
-        $this->assertSame($style2->object()->getId(), $result->getStyles()[0]);
-        $this->assertSame($style1->object()->getId(), $result->getStyles()[1]);
+        $this->assertSame($style2->_real()->getId(), $result->getStyles()[0]);
+        $this->assertSame($style1->_real()->getId(), $result->getStyles()[1]);
     }
 
     public function test_build_with_no_valid_data()

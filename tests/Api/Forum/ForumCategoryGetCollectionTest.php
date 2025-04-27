@@ -35,8 +35,8 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/ForumCategory',
             '@id'              => '/api/forum_categories',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
                     '@id' => '/api/forum_categories/' . $forumCategory2->getId(),
                     '@type' => 'ForumCategory',
@@ -101,16 +101,16 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     'forums' => [],
                 ],
             ],
-            'hydra:totalItems' => 3,
-            'hydra:view'       => [
+            'totalItems' => 3,
+            'view'       => [
                 '@id'   => '/api/forum_categories?forumSource.slug=root&order%5Bposition%5D=asc&order%5Bforums.position%5D=asc',
-                '@type' => 'hydra:PartialCollectionView',
+                '@type' => 'PartialCollectionView',
             ],
-            'hydra:search'     => [
-                '@type'                        => 'hydra:IriTemplate',
-                'hydra:template'               => '/api/forum_categories{?order[position],order[forums.position],forum_source.slug,forum_source.slug[]}',
-                'hydra:variableRepresentation' => 'BasicRepresentation',
-                'hydra:mapping'                => [
+            'search'     => [
+                '@type'                        => 'IriTemplate',
+                'template'               => '/api/forum_categories{?order[position],order[forums.position],forum_source.slug,forum_source.slug[]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[position]',

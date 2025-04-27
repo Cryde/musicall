@@ -51,7 +51,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->object(),
+            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->_real(),
             'thread'              => $thread,
         ])->create();
 
@@ -68,7 +68,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 2',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
-            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->object(),
+            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->_real(),
             'thread'              => $thread,
         ])->create();
 
@@ -76,21 +76,21 @@ class PublicationSearchCollectionTest extends ApiTestCase
         $pub3 = PublicationFactory::new([
             'title' => 'find me 3',
             'author' => $author, 'status' => Publication::STATUS_DRAFT, 'subCategory' => $sub,
-            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->object(),
+            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->_real(),
             'thread'              => $thread,
         ])->create();
         // not taken (status):
         $pub4 = PublicationFactory::new([
             'title' => 'find me 4',
             'author' => $author, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub,
-            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->object(),
+            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->_real(),
             'thread'              => $thread,
         ])->create();
         // not taken (wrong title):
         $pub5 = PublicationFactory::new([
             'title' => 'hello world',
             'author' => $author, 'status' => Publication::STATUS_ONLINE, 'subCategory' => $sub2,
-            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->object(),
+            'cover'               => PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create()->_real(),
             'thread'              => $thread,
         ])->create();
 
@@ -101,8 +101,8 @@ class PublicationSearchCollectionTest extends ApiTestCase
             'term' => 'find me'
         ]);
 
-        $subCatId = $sub->object()->getId();
-        $threadId = $thread->object()->getId();
+        $subCatId = $sub->_real()->getId();
+        $threadId = $thread->_real()->getId();
         $this->assertResponseIsSuccessful();
         foreach ($objectToDelete as $item) {
             $item->remove();
@@ -111,8 +111,8 @@ class PublicationSearchCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Publication',
             '@id'              => '/api/publications/search',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-2',
                     '@type'                => 'Publication',
@@ -178,10 +178,10 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     ],
                 ],
             ],
-            'hydra:totalItems' => 2,
-            'hydra:view'       => [
+            'totalItems' => 2,
+            'view'       => [
                 '@id'   => '/api/publications/search?term=find%20me',
-                '@type' => 'hydra:PartialCollectionView',
+                '@type' => 'PartialCollectionView',
             ],
         ]);
     }
