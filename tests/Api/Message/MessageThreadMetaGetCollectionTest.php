@@ -39,7 +39,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             'content' => 'basic_content with <b>html</b> in it'
         ])->create();
         $thread->_real()->setLastMessage($message->_real());
-        $thread->save();
+        $thread->_save();
         $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
         // thread between user2 & user3 : shouldn't appear in the response
@@ -48,7 +48,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user3])->create();
         $message2 = MessageFactory::new(['author' => $user2, 'thread' => $otherThread, 'content' => ''])->create();
         $otherThread->_real()->setLastMessage($message2->_real());
-        $otherThread->save();
+        $otherThread->_save();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $otherThread])->create();
 
         $this->client->loginUser($user1->_real());

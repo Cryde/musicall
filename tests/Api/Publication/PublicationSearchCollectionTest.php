@@ -105,7 +105,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
         $threadId = $thread->_real()->getId();
         $this->assertResponseIsSuccessful();
         foreach ($objectToDelete as $item) {
-            $item->remove();
+            $item->_delete();
         }
 
         $this->assertJsonEquals([

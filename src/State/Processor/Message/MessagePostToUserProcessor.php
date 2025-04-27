@@ -27,6 +27,6 @@ class MessagePostToUserProcessor implements ProcessorInterface
         /** @var User $currentUser */
         $currentUser = $this->security->getUser();
 
-        return $this->messageSenderProcedure->process($currentUser, $data->getRecipient(), $data->getContent());
+        return $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content);
     }
 }
