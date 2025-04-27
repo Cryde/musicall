@@ -48,7 +48,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         ])->create();
         $cover = PublicationCoverFactory::createOne(['imageName' => 'cover-publication', 'imageSize' => 10, 'publication' => $publication1]);
         $publication1->_real()->setCover($cover->_real());
-        $publication1->save();
+        $publication1->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/publications/cool-slug-for-publication');
         $this->assertSame([
@@ -69,7 +69,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         ])->create();
         $cover = GalleryImageFactory::createOne(['imageName' => 'cover-gallery', 'imageSize' => 10, 'gallery' => $gallery]);
         $gallery->_real()->setCoverImage($cover->_real());
-        $gallery->save();
+        $gallery->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/gallery/cool-slug-for-gallery');
         $this->assertSame([

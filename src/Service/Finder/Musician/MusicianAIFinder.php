@@ -27,7 +27,7 @@ readonly class MusicianAIFinder
     {
         $response = $this->openAIClient->getChatCompletions([
             $this->promptFormatter->formatSystemMessage(),
-            $this->promptFormatter->formatUserMessage($musicianText->getSearch()),
+            $this->promptFormatter->formatUserMessage($musicianText->search),
         ]);
         if (!$content = ($response->toArray()['choices'][0]['message']['content'] ?? null)) {
             throw new NoResultException('One the key on the response is missing');

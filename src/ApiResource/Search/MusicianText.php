@@ -25,11 +25,6 @@ class MusicianText
     )]
     public string $search;
 
-    public function getSearch(): string
-    {
-        return $this->search;
-    }
-
     public function setSearch(string $search): MusicianText
     {
         $this->search = $search;

@@ -46,7 +46,7 @@ class SearchControllerTest extends ApiTestCase
 
         $cover1 = PublicationCoverFactory::createOne(['imageName' => 'cover1', 'imageSize' => 10, 'publication' => $publication1]);
         $publication1->_real()->setCover($cover1->_real());
-        $publication1->save();
+        $publication1->_save();
 
         $publication2 = PublicationFactory::new([
             'author'              => $admin,
@@ -59,7 +59,7 @@ class SearchControllerTest extends ApiTestCase
 
         $cover2 = PublicationCoverFactory::createOne(['imageName' => 'cover2', 'imageSize' => 10, 'publication' => $publication2->_real()]);
         $publication2->_real()->setCover($cover2->_real());
-        $publication2->save();
+        $publication2->_save();
 
         $publication1 = $publication1->_real();
         $publication2 = $publication2->_real();
