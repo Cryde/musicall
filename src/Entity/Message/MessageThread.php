@@ -48,7 +48,7 @@ class MessageThread
     #[ORM\ManyToOne(targetEntity: Message::class)]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups([MessageThreadMeta::LIST])]
-    private Message $lastMessage;
+    private ?Message $lastMessage = null;
 
     public function __construct()
     {
@@ -130,12 +130,12 @@ class MessageThread
         return $this;
     }
 
-    public function getLastMessage(): Message
+    public function getLastMessage(): ?Message
     {
         return $this->lastMessage;
     }
 
-    public function setLastMessage(Message $lastMessage): self
+    public function setLastMessage(?Message $lastMessage): self
     {
         $this->lastMessage = $lastMessage;
 
