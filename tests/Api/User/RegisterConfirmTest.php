@@ -19,7 +19,7 @@ class RegisterConfirmTest extends ApiTestCase
     {
         $userRepository = static::getContainer()->get(UserRepository::class);
 
-        $user1 = UserFactory::new()->asBaseUser()->create(['token' => 'abc'])->object();
+        $user1 = UserFactory::new()->asBaseUser()->create(['token' => 'abc'])->_real();
 
         // pre-test double check that we have user with that token
         $this->assertCount(1, $userRepository->findBy(['token' => 'abc']));

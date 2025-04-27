@@ -17,29 +17,26 @@ class MessageGetCollectionTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_not_logged()
+    public function test_not_logged(): void
     {
         $this->client->request('GET', '/api/messages/123',);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
-    public function test_get_collection()
+    public function test_get_collection(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
         $thread = MessageThreadFactory::new()->create();
         $thread2 = MessageThreadFactory::new()->create();
-        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
-        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
-        //this is other thread participant
-        MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user1])->create();
-        MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user2])->create();
         $message1 = MessageFactory::new([
             'author'           => $user1, 'thread' => $thread,
             'content'          => 'last message from user 1',
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
         ])->create(); // should be the last message in the order
+        $thread->setLastMessage($message1->_real());
+        $thread->_save();
         $message2 = MessageFactory::new([
             'author'           => $user1, 'thread' => $thread,
             'content'          => 'first message from user 1',
@@ -60,10 +57,15 @@ class MessageGetCollectionTest extends ApiTestCase
             'content'          => 'other message',
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2021-01-02T02:03:04+00:00'),
         ])->create(); // this message is in another thread
-
-        $thread = $thread->object();
-        $user1 = $user1->object();
-        $user2 = $user2->object();
+        $thread2->setLastMessage($otherMessage->_real());
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
+        //this is other thread participant
+        MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user1])->create();
+        MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user2])->create();
+        $thread = $thread->_real();
+        $user1 = $user1->_real();
+        $user2 = $user2->_real();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/messages/' . $thread->getId() . '?order[creation_datetime]=desc');
@@ -71,10 +73,10 @@ class MessageGetCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Message',
             '@id'              => '/api/messages/' . $thread->getId(),
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
-                    '@id' => '/api/messages/' . $message2->object()->getId(),
+                    '@id' => '/api/messages/' . $message2->_real()->getId(),
                     '@type' => 'Message',
                     'creation_datetime' => '2023-01-02T02:03:04+00:00',
                     'author'            => [
@@ -86,7 +88,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'first message from user 1',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message3->object()->getId(),
+                    '@id' => '/api/messages/' . $message3->_real()->getId(),
                     '@type' => 'Message',
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'            => [
@@ -98,7 +100,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'second message from user 2',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message4->object()->getId(),
+                    '@id' => '/api/messages/' . $message4->_real()->getId(),
                     '@type' => 'Message',
                     'creation_datetime' => '2021-01-02T02:03:04+00:00',
                     'author'            => [
@@ -110,7 +112,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'third message from user 1',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message1->object()->getId(),
+                    '@id' => '/api/messages/' . $message1->_real()->getId(),
                     '@type' => 'Message',
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'            => [
@@ -122,16 +124,16 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'last message from user 1',
                 ],
             ],
-            'hydra:totalItems' => 4,
-            'hydra:view'       => [
+            'totalItems' => 4,
+            'view'       => [
                 '@id'   => '/api/messages/' . $thread->getId() . '?order%5Bcreation_datetime%5D=desc',
-                '@type' => 'hydra:PartialCollectionView',
+                '@type' => 'PartialCollectionView',
             ],
-            'hydra:search'     => [
-                '@type'                        => 'hydra:IriTemplate',
-                'hydra:template'               => '/api/messages/' . $thread->getId() . '{?order[creation_datetime]}',
-                'hydra:variableRepresentation' => 'BasicRepresentation',
-                'hydra:mapping'                => [
+            'search'     => [
+                '@type'                        => 'IriTemplate',
+                'template'               => '/api/messages/' . $thread->getId() . '{?order[creation_datetime]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[creation_datetime]',
@@ -143,7 +145,7 @@ class MessageGetCollectionTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_collection_but_not_participant()
+    public function test_get_collection_but_not_participant(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
@@ -153,20 +155,20 @@ class MessageGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
 
-        $thread = $thread->object();
+        $thread = $thread->_real();
 
-        $this->client->loginUser($user3->object()); // user3 is not part of this thread
+        $this->client->loginUser($user3->_real()); // user3 is not part of this thread
         $this->client->request('GET', '/api/messages/' . $thread->getId());
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
             '@id' => '/api/errors/403',
-            '@type' => 'hydra:Error',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'Vous n\'êtes pas autorisé à voir ceci.',
-            'title' => 'An error occurred',
+            '@type' => 'Error',
+            'title'       => 'An error occurred',
+            'description' => 'Vous n\'êtes pas autorisé à voir ceci.',
             'detail' => 'Vous n\'êtes pas autorisé à voir ceci.',
             'status' => 403,
             'type' => '/errors/403',
+            '@context' => '/api/contexts/Error',
         ]);
     }
 }

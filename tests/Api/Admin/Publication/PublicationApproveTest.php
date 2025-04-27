@@ -20,7 +20,7 @@ class PublicationApproveTest extends ApiTestCase
 
     public function test_approve_publication()
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->object();
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         // this one should be kept as DRAFT :
@@ -40,7 +40,7 @@ class PublicationApproveTest extends ApiTestCase
             'title'               => 'Titre de la publication',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => $viewCache,
-        ])->create()->object();
+        ])->create()->_real();
 
         $this->assertSame(2, $publication->getStatus());
         $this->assertNull($publication->getPublicationDatetime());
@@ -57,7 +57,7 @@ class PublicationApproveTest extends ApiTestCase
 
     public function test_approve_publication_with_no_admin()
     {
-        $user = UserFactory::new()->asBaseUser()->create()->object();
+        $user = UserFactory::new()->asBaseUser()->create()->_real();
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         // this one should be kept as DRAFT :

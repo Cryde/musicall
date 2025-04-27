@@ -38,7 +38,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             'thread' => $thread,
             'content' => 'basic_content with <b>html</b> in it'
         ])->create();
-        $thread->object()->setLastMessage($message->object());
+        $thread->_real()->setLastMessage($message->_real());
         $thread->save();
         $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
@@ -47,64 +47,64 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user2])->create();
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user3])->create();
         $message2 = MessageFactory::new(['author' => $user2, 'thread' => $otherThread, 'content' => ''])->create();
-        $otherThread->object()->setLastMessage($message2->object());
+        $otherThread->_real()->setLastMessage($message2->_real());
         $otherThread->save();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $otherThread])->create();
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->request('GET', '/api/message_thread_metas', );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/MessageThreadMeta',
             '@id'              => '/api/message_thread_metas',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
-                    '@id' => '/api/message_thread_metas/' . $meta->object()->getId(),
+                    '@id' => '/api/message_thread_metas/' . $meta->_real()->getId(),
                     '@type' => 'MessageThreadMeta',
-                    'id'      => $meta->object()->getId(),
+                    'id'      => $meta->_real()->getId(),
                     'is_read' => false,
                     'thread'  => [
-                        '@id' => '/api/message_threads/' . $thread->object()->getId(),
+                        '@id' => '/api/message_threads/' . $thread->_real()->getId(),
                         '@type' => 'MessageThread',
-                        'id'                   => $thread->object()->getId(),
+                        'id'                   => $thread->_real()->getId(),
                         'message_participants' => [
                             [
-                                '@id' => '/api/message_participants/' . $mp1->object()->getId(),
+                                '@id' => '/api/message_participants/' . $mp1->_real()->getId(),
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
                                     '@id' => '/api/users/self',
                                     '@type' => 'User',
                                     'username' => 'base_user_1',
-                                    'id'       => $user1->object()->getId(),
+                                    'id'       => $user1->_real()->getId(),
                                 ],
                             ], [
-                                '@id' => '/api/message_participants/' . $mp2->object()->getId(),
+                                '@id' => '/api/message_participants/' . $mp2->_real()->getId(),
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
                                     '@id' => '/api/users/self',
                                     '@type' => 'User',
                                     'username' => 'base_user_2',
-                                    'id'       => $user2->object()->getId(),
+                                    'id'       => $user2->_real()->getId(),
                                 ],
                             ],
                         ],
                         'last_message'         => [
-                            '@id' => '/api/messages/' . $message->object()->getId(),
+                            '@id' => '/api/messages/' . $message->_real()->getId(),
                             '@type' => 'Message',
-                            'creation_datetime' => $message->object()->getCreationDatetime()->format('c'),
+                            'creation_datetime' => $message->_real()->getCreationDatetime()->format('c'),
                             'author'            => [
                                 '@id' => '/api/users/self',
                                 '@type' => 'User',
                                 'username' => 'base_user_1',
-                                'id'       => $user1->object()->getId(),
+                                'id'       => $user1->_real()->getId(),
                             ],
                             'content'           => 'basic_content with  in it',
                         ],
                     ],
                 ],
             ],
-            'hydra:totalItems' => 1,
+            'totalItems' => 1,
         ]);
     }
 }

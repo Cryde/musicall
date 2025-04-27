@@ -74,7 +74,7 @@ const actions = {
         search: state.search
       });
 
-      commit(UPDATE_RESULTS, results['hydra:member']);
+      commit(UPDATE_RESULTS, results['member']);
       commit(UPDATE_IS_SUCCESS, true);
     } catch (e) {
       if (e.response.data.hasOwnProperty('violations')) {

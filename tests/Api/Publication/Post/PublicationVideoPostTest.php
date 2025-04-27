@@ -23,14 +23,14 @@ class PublicationVideoPostTest extends ApiTestCase
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            '@type' => 'ConstraintViolationList',
+            '@type' => 'ConstraintViolation',
             'status'            => 422,
             'violations'        => [
                 [
@@ -52,12 +52,12 @@ class PublicationVideoPostTest extends ApiTestCase
             'detail'            => 'url: Cette valeur ne doit pas être vide.
 title: Cette valeur ne doit pas être vide.
 description: Cette valeur ne doit pas être vide.',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'url: Cette valeur ne doit pas être vide.
+            'title'       => 'An error occurred',
+            'description' => 'url: Cette valeur ne doit pas être vide.
 title: Cette valeur ne doit pas être vide.
 description: Cette valeur ne doit pas être vide.',
             'type'              => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
     }
 
@@ -65,7 +65,7 @@ description: Cette valeur ne doit pas être vide.',
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [
                 'url' => 'wrong_url',
@@ -76,7 +76,7 @@ description: Cette valeur ne doit pas être vide.',
         );
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/57c2f299-1154-4870-89bb-ef3b1f5ad229',
-            '@type' => 'ConstraintViolationList',
+            '@type' => 'ConstraintViolation',
             'status'            => 422,
             'violations'        => [
                 [
@@ -86,10 +86,10 @@ description: Cette valeur ne doit pas être vide.',
                 ],
             ],
             'detail'            => 'url: Cette valeur n\'est pas une URL valide.',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'url: Cette valeur n\'est pas une URL valide.',
+            'title'       => 'An error occurred',
+            'description' => 'url: Cette valeur n\'est pas une URL valide.',
             'type'              => '/validation_errors/57c2f299-1154-4870-89bb-ef3b1f5ad229',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
     }
 
@@ -97,7 +97,7 @@ description: Cette valeur ne doit pas être vide.',
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [
                 'url' => 'https://musicall.com',
@@ -108,7 +108,7 @@ description: Cette valeur ne doit pas être vide.',
         );
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/music_all_f03dc5f4-8ba0-11ee-b9d1-0242ac120002',
-            '@type' => 'ConstraintViolationList',
+            '@type' => 'ConstraintViolation',
             'status'            => 422,
             'violations'        => [
                 [
@@ -118,10 +118,10 @@ description: Cette valeur ne doit pas être vide.',
                 ],
             ],
             'detail'            => 'url: L\'url de cette vidéo n\'est pas supportée',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'url: L\'url de cette vidéo n\'est pas supportée',
+            'title'       => 'An error occurred',
+            'description' => 'url: L\'url de cette vidéo n\'est pas supportée',
             'type'              => '/validation_errors/music_all_f03dc5f4-8ba0-11ee-b9d1-0242ac120002',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
     }
 
@@ -143,9 +143,9 @@ description: Cette valeur ne doit pas être vide.',
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_VIDEO,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-        ])->create()->object();
+        ])->create()->_real();
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [
                 'url' => 'https://www.youtube.com/watch?v=kcelgrGY1h8',
@@ -156,7 +156,7 @@ description: Cette valeur ne doit pas être vide.',
         );
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/music_all_99153e73-dd44-4557-90aa-3c0e354fce62',
-            '@type' => 'ConstraintViolationList',
+            '@type' => 'ConstraintViolation',
             'status'            => 422,
             'violations'        => [
                 [
@@ -166,10 +166,10 @@ description: Cette valeur ne doit pas être vide.',
                 ],
             ],
             'detail'            => 'url: Cette vidéo existe déjà sur MusicAll',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'url: Cette vidéo existe déjà sur MusicAll',
+            'title'       => 'An error occurred',
+            'description' => 'url: Cette vidéo existe déjà sur MusicAll',
             'type'              => '/validation_errors/music_all_99153e73-dd44-4557-90aa-3c0e354fce62',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
     }
 

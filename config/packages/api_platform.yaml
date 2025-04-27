@@ -28,7 +28,6 @@ api_platform:
             standard_put: true
             rfc_7807_compliant_errors: true
     use_symfony_listeners: false
-    keep_legacy_inflector: false
     exception_to_status:
         # Symfony
         Symfony\Component\Serializer\Exception\ExceptionInterface: 400

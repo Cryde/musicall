@@ -22,7 +22,7 @@ class MessageUserPostTest extends ApiTestCase
 
     public function test_not_logged(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->object();
+        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
         $this->client->jsonRequest('POST', '/api/messages/user', [
             'recipient' => '/api/users/' . $user1->getId(),
             'content'   => 'content',
@@ -37,8 +37,8 @@ class MessageUserPostTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
-        $user1 = $user1->object();
-        $user2 = $user2->object();
+        $user1 = $user1->_real();
+        $user2 = $user2->_real();
 
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user1]));
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user2]));
@@ -91,9 +91,9 @@ class MessageUserPostTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user1 = $user1->object();
-        $user2 = $user2->object();
-        $thread = $thread->object();
+        $user1 = $user1->_real();
+        $user2 = $user2->_real();
+        $thread = $thread->_real();
 
         // we already have meta thread per user
         $this->assertCount(1, $messageThreadMetaRepository->findBy(['user' => $user1]));
@@ -137,7 +137,7 @@ class MessageUserPostTest extends ApiTestCase
 
     public function test_with_invalid_values()
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->object();
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->_real();
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
@@ -147,9 +147,9 @@ class MessageUserPostTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            '@type' => 'ConstraintViolationList',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'content: Cette valeur ne doit pas être vide.',
+            '@type' => 'ConstraintViolation',
+            'title'       => 'An error occurred',
+            'description' => 'content: Cette valeur ne doit pas être vide.',
             'violations'        => [
                 [
                     'propertyPath' => 'content',
@@ -160,7 +160,7 @@ class MessageUserPostTest extends ApiTestCase
             'status'            => 422,
             'detail'            => 'content: Cette valeur ne doit pas être vide.',
             'type'              => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
     }
 }

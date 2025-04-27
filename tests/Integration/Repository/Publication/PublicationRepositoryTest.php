@@ -21,6 +21,6 @@ class PublicationRepositoryTest extends KernelTestCase
         PublicationFactory::createOne(['content' => 'content-id', 'type' => Publication::TYPE_TEXT]);
 
         $result = $repo->findOneVideo('content-id');
-        $this->assertSame($video->object(), $result);
+        $this->assertSame($video->_real(), $result);
     }
 }

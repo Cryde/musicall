@@ -30,7 +30,7 @@ const actions = {
   async loadLastAnnounces({commit}) {
     commit(IS_LOADING, true);
     const announces = await announceApi.getLastAnnounces();
-    commit(UPDATE_ANNOUNCES, announces['hydra:member']);
+    commit(UPDATE_ANNOUNCES, announces['member']);
     commit(IS_LOADING, false);
   }
 };

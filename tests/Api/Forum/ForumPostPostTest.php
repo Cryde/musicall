@@ -45,9 +45,9 @@ class ForumPostPostTest extends ApiTestCase
         ])->create();
 
         //pretest
-        $this->assertCount(0, $forumPostRepository->findBy(['topic' => $topic->object()]));
+        $this->assertCount(0, $forumPostRepository->findBy(['topic' => $topic->_real()]));
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum_posts',
             [
                 "content" => "test content for new message",
@@ -56,7 +56,7 @@ class ForumPostPostTest extends ApiTestCase
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseIsSuccessful();
-        $results = $forumPostRepository->findBy(['topic' => $topic->object()]);
+        $results = $forumPostRepository->findBy(['topic' => $topic->_real()]);
         $this->assertCount(1, $results);
         $this->assertJsonEquals([
             'id'                => $results[0]->getId(),

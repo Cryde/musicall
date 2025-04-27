@@ -42,8 +42,8 @@ class PublicationSubCategoryTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/PublicationSubCategory',
             '@id'              => '/api/publication_sub_categories',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
                     '@id' => '/api/publication_sub_categories/' . $sub1->getId(),
                     '@type' => 'PublicationSubCategory',
@@ -99,12 +99,12 @@ class PublicationSubCategoryTest extends ApiTestCase
                     'type'     => 1,
                 ],
             ],
-            'hydra:totalItems' => 6,
-            'hydra:search'     => [
-                '@type'                        => 'hydra:IriTemplate',
-                'hydra:template'               => '/api/publication_sub_categories{?order[position]}',
-                'hydra:variableRepresentation' => 'BasicRepresentation',
-                'hydra:mapping'                => [
+            'totalItems' => 6,
+            'search'     => [
+                '@type'                        => 'IriTemplate',
+                'template'               => '/api/publication_sub_categories{?order[position]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[position]',
@@ -113,9 +113,9 @@ class PublicationSubCategoryTest extends ApiTestCase
                     ],
                 ],
             ],
-            'hydra:view'       => [
+            'view'       => [
                 '@id'   => '/api/publication_sub_categories?order%5Bposition%5D=asc',
-                '@type' => 'hydra:PartialCollectionView',
+                '@type' => 'PartialCollectionView',
             ],
         ]);
     }

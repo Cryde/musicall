@@ -39,10 +39,10 @@ class ForumTopicPostPostTest extends ApiTestCase
         $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
 
         //pretest
-        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->object()]));
+        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->_real()]));
         $this->assertCount(0, $forumPostRepository->findAll());
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [
                 "title" => "Title for this new topic",
@@ -52,7 +52,7 @@ class ForumTopicPostPostTest extends ApiTestCase
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseIsSuccessful();
-        $results = $forumTopicRepository->findBy(['forum' => $forum1->object()]);
+        $results = $forumTopicRepository->findBy(['forum' => $forum1->_real()]);
         $this->assertCount(1, $results);
         $this->assertCount(1, $forumPostRepository->findBy(['topic' => $results[0]]));
         $this->assertJsonEquals([
@@ -61,11 +61,11 @@ class ForumTopicPostPostTest extends ApiTestCase
             '@type' => 'ForumTopic',
             'id'                => $results[0]->getId(),
             'forum'             => [
-                '@id' => '/api/forums/' . $forum1->object()->getSlug(),
+                '@id' => '/api/forums/' . $forum1->_real()->getSlug(),
                 '@type' => 'Forum',
-                'id'    => $forum1->object()->getId(),
-                'title' => $forum1->object()->getTitle(),
-                'slug'  => $forum1->object()->getSlug(),
+                'id'    => $forum1->_real()->getId(),
+                'title' => $forum1->_real()->getTitle(),
+                'slug'  => $forum1->_real()->getSlug(),
             ],
             'title'             => 'Title for this new topic',
             'slug'              => 'title-for-this-new-topic',
@@ -82,10 +82,10 @@ class ForumTopicPostPostTest extends ApiTestCase
         $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
 
         //pretest
-        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->object()]));
+        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->_real()]));
         $this->assertCount(0, $forumPostRepository->findAll());
 
-        $this->client->loginUser($user1->object());
+        $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -93,9 +93,9 @@ class ForumTopicPostPostTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            '@type' => 'ConstraintViolationList',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'forum: Cette valeur ne doit pas être vide.
+            '@type' => 'ConstraintViolation',
+            'title'       => 'An error occurred',
+            'description' => 'forum: Cette valeur ne doit pas être vide.
 title: Cette valeur ne doit pas être vide.
 message: Cette valeur ne doit pas être vide.',
             'violations'        => [
@@ -120,10 +120,10 @@ message: Cette valeur ne doit pas être vide.',
 title: Cette valeur ne doit pas être vide.
 message: Cette valeur ne doit pas être vide.',
             'type'              => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=c1051bb4-d103-4f74-8988-acbcafc7fdc3;2=c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
 
-        $results = $forumTopicRepository->findBy(['forum' => $forum1->object()]);
+        $results = $forumTopicRepository->findBy(['forum' => $forum1->_real()]);
         $this->assertCount(0, $results);
         $this->assertCount(0, $forumPostRepository->findAll());
     }

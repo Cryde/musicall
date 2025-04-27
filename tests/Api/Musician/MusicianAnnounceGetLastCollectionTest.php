@@ -52,10 +52,10 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/MusicianAnnounce',
             '@id'              => '/api/musician_announces/last',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
-                    '@id'           => '/api/musician_announces/' . $user1Announce2->object()->getId(),
+                    '@id'           => '/api/musician_announces/' . $user1Announce2->_real()->getId(),
                     '@type'         => 'MusicianAnnounce',
                     'type'          => 2,
                     'instrument'    => [
@@ -82,7 +82,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id'           => '/api/musician_announces/' . $user1Announce1->object()->getId(),
+                    '@id'           => '/api/musician_announces/' . $user1Announce1->_real()->getId(),
                     '@type'         => 'MusicianAnnounce',
                     'type'          => 1,
                     'instrument'    => [
@@ -105,7 +105,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     ],
                 ],
             ],
-            'hydra:totalItems' => 2,
+            'totalItems' => 2,
         ]);
     }
 }

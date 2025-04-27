@@ -51,7 +51,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
         $user2Announce1 = MusicianAnnounceFactory::new()->create(['author' => $user2,]);
         $user2Announce2 = MusicianAnnounceFactory::new()->create(['author' => $user2,]);
 
-        $user1 = $user1->object();
+        $user1 = $user1->_real();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/musician_announces/self');
@@ -60,12 +60,12 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/MusicianAnnounce',
             '@id'              => '/api/musician_announces/self',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce2->object()->getId(),
+                    '@id' => '/api/musician_announces/' . $user1Announce2->_real()->getId(),
                     '@type' => 'MusicianAnnounce',
-                    'id'                => $user1Announce2->object()->getId(),
+                    'id'                => $user1Announce2->_real()->getId(),
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'type'              => 2,
                     'instrument'        => [
@@ -89,9 +89,9 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     'note'              => 'note announce 2',
                 ],
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce1->object()->getId(),
+                    '@id' => '/api/musician_announces/' . $user1Announce1->_real()->getId(),
                     '@type' => 'MusicianAnnounce',
-                    'id'                => $user1Announce1->object()->getId(),
+                    'id'                => $user1Announce1->_real()->getId(),
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'type'              => 1,
                     'instrument'        => [
@@ -109,7 +109,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     'note'              => 'note announce 1',
                 ],
             ],
-            'hydra:totalItems' => 2,
+            'totalItems' => 2,
         ]);
     }
 

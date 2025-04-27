@@ -31,7 +31,7 @@ class GalleryGetCollectionTest extends ApiTestCase
             'slug'                => 'gallery-slug-1',
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 1',
-        ])->create()->object();
+        ])->create()->_real();
         $image = GalleryImageFactory::new(['gallery' => $gallery1])->create();
         $gallery2 = GalleryFactory::new([
             'author'              => $author,
@@ -41,11 +41,11 @@ class GalleryGetCollectionTest extends ApiTestCase
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 2',
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
-        ])->create()->object();
+        ])->create()->_real();
 
         // not taken (status) :
-        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_PENDING,])->create()->object();
-        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_DRAFT,])->create()->object();
+        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_PENDING,])->create()->_real();
+        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_DRAFT,])->create()->_real();
 
         $this->client->request('GET', '/api/galleries', [
             'order' => ['publication_datetime' => 'asc'],
@@ -55,8 +55,8 @@ class GalleryGetCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Gallery',
             '@id'              => '/api/galleries',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
                     '@id' => '/api/galleries/' . $gallery2->getId(),
                     '@type' => 'Gallery',
@@ -92,16 +92,16 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'image_count'          => 1,
                 ],
             ],
-            'hydra:totalItems' => 2,
-            'hydra:view'       => [
+            'totalItems' => 2,
+            'view'       => [
                 '@id'   => '/api/galleries?order%5Bpublication_datetime%5D=asc',
-                '@type' => 'hydra:PartialCollectionView',
+                '@type' => 'PartialCollectionView',
             ],
-            'hydra:search'     => [
-                '@type'                        => 'hydra:IriTemplate',
-                'hydra:template'               => '/api/galleries{?order[publication_datetime]}',
-                'hydra:variableRepresentation' => 'BasicRepresentation',
-                'hydra:mapping'                => [
+            'search'     => [
+                '@type'                        => 'IriTemplate',
+                'template'               => '/api/galleries{?order[publication_datetime]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[publication_datetime]',

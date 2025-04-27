@@ -13,13 +13,13 @@ use App\Repository\PublicationRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-class NotificationProvider implements ProviderInterface
+readonly class NotificationProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly Security                    $security,
-        private readonly MessageThreadMetaRepository $messageThreadMetaRepository,
-        private readonly GalleryRepository           $galleryRepository,
-        private readonly PublicationRepository       $publicationRepository
+        private Security                    $security,
+        private MessageThreadMetaRepository $messageThreadMetaRepository,
+        private GalleryRepository           $galleryRepository,
+        private PublicationRepository       $publicationRepository
     ) {
     }
 
@@ -30,14 +30,13 @@ class NotificationProvider implements ProviderInterface
         }
         $user = $this->security->getUser();
         $unreadMessagesCount = $this->messageThreadMetaRepository->count(['user' => $user, 'isRead' => 0]);
-        $notification = (new Notification())->setUnreadMessages($unreadMessagesCount);
+        $notification = new Notification();
+        $notification->unreadMessages = $unreadMessagesCount;
         if ($this->security->isGranted('ROLE_ADMIN')) {
-            $pendingGalleriesCount = $this->galleryRepository->count(['status' => Gallery::STATUS_PENDING]);
-            $pendingPublicationCount = $this->publicationRepository->count(['status' => Publication::STATUS_PENDING]);
+            $notification->pendingGalleries = $this->galleryRepository->count(['status' => Gallery::STATUS_PENDING]);
+            $notification->pendingPublications = $this->publicationRepository->count(['status' => Publication::STATUS_PENDING]);
 
-            return $notification
-                ->setPendingGalleries($pendingGalleriesCount)
-                ->setPendingPublications($pendingPublicationCount);
+            return $notification;
         }
 
         return $notification;

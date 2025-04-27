@@ -22,7 +22,7 @@ class MessagePostInThreadTest extends ApiTestCase
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->object()->getId(),
+            'thread'  => '/api/message_threads/' . $thread->_real()->getId(),
             'content' => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -40,8 +40,8 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user1 = $user1->object();
-        $thread = $thread->object();
+        $user1 = $user1->_real();
+        $thread = $thread->_real();
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -83,8 +83,8 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user3 = $user3->object();
-        $thread = $thread->object();
+        $user3 = $user3->_real();
+        $thread = $thread->_real();
 
         $this->client->loginUser($user3);
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -94,13 +94,13 @@ class MessagePostInThreadTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
             '@id' => '/api/errors/403',
-            '@type' => 'hydra:Error',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'Vous n\'êtes pas autorisé à voir ceci.',
-            'title' => 'An error occurred',
+            '@type' => 'Error',
+            'title'       => 'An error occurred',
+            'description' => 'Vous n\'êtes pas autorisé à voir ceci.',
             'detail' => 'Vous n\'êtes pas autorisé à voir ceci.',
             'status' => 403,
             'type' => '/errors/403',
+            '@context' => '/api/contexts/Error',
         ]);
     }
 
@@ -108,15 +108,15 @@ class MessagePostInThreadTest extends ApiTestCase
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->object()->getId(),
+            'thread'  => '/api/message_threads/' . $thread->_real()->getId(),
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            '@type' => 'ConstraintViolationList',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'content: Cette valeur ne doit pas être vide.',
+            '@type' => 'ConstraintViolation',
+            'title'       => 'An error occurred',
+            'description' => 'content: Cette valeur ne doit pas être vide.',
             'violations'        => [
                 [
                     'propertyPath' => 'content',
@@ -127,7 +127,7 @@ class MessagePostInThreadTest extends ApiTestCase
             'status'            => 422,
             'detail'            => 'content: Cette valeur ne doit pas être vide.',
             'type'              => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-            'title'             => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
         ]);
     }
 }

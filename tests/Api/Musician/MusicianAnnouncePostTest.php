@@ -27,11 +27,11 @@ class MusicianAnnouncePostTest extends ApiTestCase
         $style3 = StyleFactory::new()->asMetal()->create();
         $instrument1 = InstrumentFactory::new()->asDrum()->create();
 
-        $user1 = $user1->object();
-        $instrument1 = $instrument1->object();
-        $style1 = $style1->object();
-        $style2 = $style2->object();
-        $style3 = $style3->object();
+        $user1 = $user1->_real();
+        $instrument1 = $instrument1->_real();
+        $style1 = $style1->_real();
+        $style2 = $style2->_real();
+        $style3 = $style3->_real();
 
         $result = $musicianAnnounceRepository->findBy(['author' => $user1]);
         $this->assertCount(0, $result);

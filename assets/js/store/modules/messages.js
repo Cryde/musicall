@@ -86,14 +86,14 @@ const actions = {
   async loadThreads({commit}) {
     commit(IS_LOADING, true);
     const threads = await messageApi.getThreads();
-    commit(UPDATE_THREADS, threads['hydra:member']);
+    commit(UPDATE_THREADS, threads['member']);
     commit(IS_LOADING, false);
   },
   async loadThread({commit, dispatch}, {meta}) {
     commit(IS_LOADING_MESSAGES, true);
     commit(UPDATE_CURRENT_THREAD_ID, meta.thread.id);
     const messages = await messageApi.getMessages({threadId: meta.thread.id});
-    commit(UPDATE_MESSAGES, messages['hydra:member'].reverse());
+    commit(UPDATE_MESSAGES, messages['member'].reverse());
 
     commit(UPDATE_THREAD_IS_READ, {metaThreadId: meta.id, isRead: true});
     dispatch('notifications/decrementMessageCount', {}, {root: true});
@@ -103,7 +103,7 @@ const actions = {
   async postMessage({commit, state}, {recipientId, content}) {
     const message = await messageApi.postMessage({recipientId, content});
     const threads = await messageApi.getThreads(); // todo : improve this (only load thread meta related to this thead/user)
-    commit(UPDATE_THREADS, threads['hydra:member']);
+    commit(UPDATE_THREADS, threads['member']);
 
     if (state.currentThreadId && state.currentThreadId === message.thread.id) {
       // we only add message if the thread is open
@@ -115,7 +115,7 @@ const actions = {
     const message = await messageApi.postMessageInThread({threadId, content});
     const threads = await messageApi.getThreads(); // todo : improve this (only load thread meta related to this thead/user)
     commit(ADD_MESSAGE_TO_MESSAGES, message);
-    commit(UPDATE_THREADS, threads['hydra:member']);
+    commit(UPDATE_THREADS, threads['member']);
     commit(IS_ADDING_MESSAGE, false);
   }
 };

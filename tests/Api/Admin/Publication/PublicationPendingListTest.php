@@ -20,7 +20,7 @@ class PublicationPendingListTest extends ApiTestCase
 
     public function test_get_pending_publications_as_admin()
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->object();
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         PublicationFactory::new([
@@ -55,10 +55,10 @@ class PublicationPendingListTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             [
-                'id'                   => $publication->object()->getId(),
+                'id'                   => $publication->_real()->getId(),
                 'title'                => 'Titre de la publication',
                 'sub_category'         => [
-                    'id'         => $sub->object()->getId(),
+                    'id'         => $sub->_real()->getId(),
                     'title'      => 'Chroniques',
                     'slug'       => 'chroniques',
                     'type_label' => 'publication',
@@ -86,7 +86,7 @@ class PublicationPendingListTest extends ApiTestCase
 
     public function test_get_pending_publications_as_normal_user()
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->object();
+        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/admin/publications/pending');

@@ -37,7 +37,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-        ])->create()->object();
+        ])->create()->_real();
 
         $pub2 = PublicationFactory::new([
             'author'              => $author,
@@ -52,7 +52,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 2',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
-        ])->create()->object();
+        ])->create()->_real();
 
         // not taken (status) :
         PublicationFactory::new([
@@ -76,17 +76,17 @@ class PublicationGetCollectionTest extends ApiTestCase
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Publication',
             '@id'              => '/api/publications',
-            '@type'            => 'hydra:Collection',
-            'hydra:member'     => [
+            '@type'            => 'Collection',
+            'member'     => [
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-2',
                     '@type'                => 'Publication',
                     'id'                   => $pub2->getId(),
                     'title'                => 'Titre de la publication 2',
                     'sub_category'         => [
-                        '@id' => '/api/publication_sub_categories/' . $sub->object()->getId(),
+                        '@id' => '/api/publication_sub_categories/' . $sub->_real()->getId(),
                         '@type' => 'PublicationSubCategory',
-                        'id'         => $sub->object()->getId(),
+                        'id'         => $sub->_real()->getId(),
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
@@ -109,9 +109,9 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'id'                   => $pub1->getId(),
                     'title'                => 'Titre de la publication 1',
                     'sub_category'         => [
-                        '@id' => '/api/publication_sub_categories/' . $sub->object()->getId(),
+                        '@id' => '/api/publication_sub_categories/' . $sub->_real()->getId(),
                         '@type' => 'PublicationSubCategory',
-                        'id'         => $sub->object()->getId(),
+                        'id'         => $sub->_real()->getId(),
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
@@ -129,16 +129,16 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'description'          => 'Petite description de la publication 1',
                 ],
             ],
-            'hydra:totalItems' => 2,
-            'hydra:view'       => [
+            'totalItems' => 2,
+            'view'       => [
                 '@id'   => '/api/publications?order%5Bpublication_datetime%5D=asc&sub_category.slug=chroniques',
-                '@type' => 'hydra:PartialCollectionView',
+                '@type' => 'PartialCollectionView',
             ],
-            'hydra:search'     => [
-                '@type'                        => 'hydra:IriTemplate',
-                'hydra:template'               => '/api/publications{?order[publication_datetime],sub_category.slug,sub_category.slug[]}',
-                'hydra:variableRepresentation' => 'BasicRepresentation',
-                'hydra:mapping'                => [
+            'search'     => [
+                '@type'                        => 'IriTemplate',
+                'template'               => '/api/publications{?order[publication_datetime],sub_category.slug,sub_category.slug[]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[publication_datetime]',

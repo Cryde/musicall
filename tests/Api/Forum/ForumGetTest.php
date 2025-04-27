@@ -52,13 +52,13 @@ class ForumGetTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
             '@id' => '/api/errors/404',
-            '@type' => 'hydra:Error',
-            'hydra:title'       => 'An error occurred',
-            'hydra:description' => 'Not Found',
-            'title'             => 'An error occurred',
+            '@type' => 'Error',
+            'title'       => 'An error occurred',
+            'description' => 'Not Found',
             'detail'            => 'Not Found',
             'status'            => 404,
             'type'              => '/errors/404',
+            '@context' => '/api/contexts/Error',
         ]);
     }
 }

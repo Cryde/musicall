@@ -61,9 +61,9 @@ class MusicianAIFinderTest extends KernelTestCase
         $finder = $this->buildMusicianAIFinderOk();
         $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
 
-        $result = $finder->find($musicianText, $user1->object());
+        $result = $finder->find($musicianText, $user1->_real());
         $this->assertCount(1, $result);
-        $this->assertSame($announce->object(), $result[0][0]);
+        $this->assertSame($announce->_real(), $result[0][0]);
     }
 
     public function test_find_no_content()
