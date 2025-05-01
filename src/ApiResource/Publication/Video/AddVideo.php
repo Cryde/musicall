@@ -19,7 +19,7 @@ class AddVideo
 {
     #[Assert\Sequentially([
         new Assert\NotBlank,
-        new Assert\Url,
+        new Assert\Url(requireTld: true),
         new UrlVideo,
         new AlreadyExistingVideo,
     ])]

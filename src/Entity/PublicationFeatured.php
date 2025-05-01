@@ -61,7 +61,7 @@ class PublicationFeatured
     #[ORM\ManyToOne(targetEntity: Publication::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
-    private ?Publication $publication = null;
+    private Publication $publication;
 
     #[Assert\NotNull(message: 'Vous devez spécifier une image de cover', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: PublicationFeaturedImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -154,12 +154,12 @@ class PublicationFeatured
         return $this;
     }
 
-    public function getPublication(): ?Publication
+    public function getPublication(): Publication
     {
         return $this->publication;
     }
 
-    public function setPublication(?Publication $publication): self
+    public function setPublication(Publication $publication): self
     {
         $this->publication = $publication;
 

@@ -50,17 +50,17 @@ class Gallery implements ViewableInterface
 
     #[Assert\NotBlank(message: 'Vous devez spécifier une description pour votre galerie', groups: ['publish'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private $description;
+    private ?string $description = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private $updateDatetime;
+    private ?DateTimeInterface $updateDatetime = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups([Gallery::LIST])]
-    private $publicationDatetime;
+    private ?DateTimeInterface $publicationDatetime = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
     private int $status = self::STATUS_DRAFT;
@@ -69,7 +69,7 @@ class Gallery implements ViewableInterface
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Gallery::LIST])]
-    private ?User $author = null;
+    private User $author;
 
     /**
      * @var Collection<int, GalleryImage>
@@ -85,7 +85,7 @@ class Gallery implements ViewableInterface
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     #[Groups([Gallery::LIST])]
-    private $slug;
+    private ?string $slug = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     #[Groups([Gallery::LIST])]
@@ -162,12 +162,12 @@ class Gallery implements ViewableInterface
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): User
     {
         return $this->author;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthor(User $author): self
     {
         $this->author = $author;
 
@@ -196,10 +196,6 @@ class Gallery implements ViewableInterface
     {
         if ($this->images->contains($image)) {
             $this->images->removeElement($image);
-            // set the owning side to null (unless already changed)
-            if ($image->getGallery() === $this) {
-                $image->setGallery(null);
-            }
         }
 
         return $this;

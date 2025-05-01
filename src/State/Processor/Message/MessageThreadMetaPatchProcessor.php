@@ -4,6 +4,7 @@ namespace App\State\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -25,7 +26,7 @@ class MessageThreadMetaPatchProcessor implements ProcessorInterface
         /** @var MessageThreadMeta $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        if ($user->getId() !== $data->getUser()->getId()) {
+        if ($user->getId() !== $data->getUser()?->getId()) {
             throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
         }
         $this->entityManager->flush();
