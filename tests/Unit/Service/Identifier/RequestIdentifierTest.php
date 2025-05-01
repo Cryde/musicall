@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RequestIdentifierTest extends TestCase
 {
-    public function testFromRequest()
+    public function testFromRequest(): void
     {
         $requestIdentifier = new RequestIdentifier('secret');
 

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Factory\Publication;
 
+use Zenstruck\Foundry\Factory;
 use App\Entity\PublicationSubCategory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
@@ -17,32 +18,32 @@ final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asNews()
+    public function asNews(): Factory
     {
         return $this->with(['title' => 'News', 'slug' => 'news', 'position' => 1]);
     }
 
-    public function asChronique()
+    public function asChronique(): Factory
     {
         return $this->with(['title' => 'Chroniques', 'slug' => 'chroniques', 'position' => 2]);
     }
 
-    public function asInterview()
+    public function asInterview(): Factory
     {
         return $this->with(['title' => 'Interviews', 'slug' => 'interviews', 'position' => 3]);
     }
 
-    public function asLiveReports()
+    public function asLiveReports(): Factory
     {
         return $this->with(['title' => 'Live-reports', 'slug' => 'live-reports', 'position' => 4]);
     }
 
-    public function asArticle()
+    public function asArticle(): Factory
     {
         return $this->with(['title' => 'Articles', 'slug' => 'articles', 'position' => 5]);
     }
 
-    public function asDecouvertes()
+    public function asDecouvertes(): Factory
     {
         return $this->with(['title' => 'Découvertes', 'slug' => 'decouvertes', 'position' => 6]);
     }

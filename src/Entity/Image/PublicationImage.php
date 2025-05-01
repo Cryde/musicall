@@ -24,19 +24,19 @@ class PublicationImage
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
     #[Vich\UploadableField(mapping: 'publication_image', fileNameProperty: 'imageName', size: 'imageSize')]
-    private $imageFile;
+    private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private $imageName;
+    private ?string $imageName = null;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private $imageSize;
+    private ?int $imageSize = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'images')]
-    private $publication;
+    private ?Publication $publication = null;
 
     public function getImageFile(): ?File
     {
@@ -49,8 +49,6 @@ class PublicationImage
      * bundle's configuration parameter 'inject_on_load' is set to 'true' this setter
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
-     *
-     * @param File|UploadedFile $image
      */
     public function setImageFile(File|UploadedFile $image = null): void
     {

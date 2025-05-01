@@ -5,7 +5,6 @@ namespace App\Service\User;
 use App\Exception\NoMatchedUserAccountException;
 use App\Repository\UserRepository;
 use App\Service\Mail\Brevo\User\ResetPasswordEmail;
-use App\Service\Mail\ResetPasswordMail;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;

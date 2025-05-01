@@ -17,7 +17,7 @@ class MessageThreadMetaPatchTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_not_logged()
+    public function test_not_logged(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $meta = MessageThreadMetaFactory::new(['user' => $user1])->create();
@@ -29,7 +29,7 @@ class MessageThreadMetaPatchTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
-    public function test_patch_message_thread_meta()
+    public function test_patch_message_thread_meta(): void
     {
         $messageMetaRepository = static::getContainer()->get(MessageThreadMetaRepository::class);
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);

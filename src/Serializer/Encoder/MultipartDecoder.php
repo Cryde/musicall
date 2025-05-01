@@ -20,7 +20,7 @@ final class MultipartDecoder implements DecoderInterface
             return null;
         }
 
-        return array_map(static function (string $element) {
+        return array_map(static function (string $element): string|array {
                 // Multipart form values will be encoded in JSON.
                 $decoded = json_decode($element, true);
 

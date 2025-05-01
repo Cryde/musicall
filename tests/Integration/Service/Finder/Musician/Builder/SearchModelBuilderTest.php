@@ -23,7 +23,7 @@ class SearchModelBuilderTest extends KernelTestCase
         parent::setUp();
     }
 
-    public function test_build()
+    public function test_build(): void
     {
         $style1 = StyleFactory::new()->asRock()->create();
         $style2 = StyleFactory::new()->asPop()->create();
@@ -47,7 +47,7 @@ class SearchModelBuilderTest extends KernelTestCase
         $this->assertSame($style1->_real()->getId(), $result->getStyles()[1]);
     }
 
-    public function test_build_with_no_valid_data()
+    public function test_build_with_no_valid_data(): void
     {
         $this->expectException(InvalidFormatReturnedException::class);
         $this->searchModelBuilder->build('{}');

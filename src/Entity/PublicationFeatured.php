@@ -61,12 +61,12 @@ class PublicationFeatured
     #[ORM\ManyToOne(targetEntity: Publication::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
-    private $publication;
+    private ?Publication $publication = null;
 
     #[Assert\NotNull(message: 'Vous devez spécifier une image de cover', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: PublicationFeaturedImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
-    private $cover;
+    private ?PublicationFeaturedImage $cover = null;
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
     #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]

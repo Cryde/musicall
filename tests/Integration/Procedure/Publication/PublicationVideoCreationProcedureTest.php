@@ -2,6 +2,7 @@
 
 namespace App\Tests\Integration\Procedure\Publication;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use App\ApiResource\Publication\Video\AddVideo;
 use App\Procedure\Publication\PublicationVideoCreationProcedure;
 use App\Service\Builder\CommentThreadDirector;
@@ -49,7 +50,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         );
     }
 
-    public function testProcess()
+    public function testProcess(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
         $category = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
@@ -74,7 +75,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertNotNull($result->getThread());
     }
 
-    public function testProcessWithNonCourseCategory()
+    public function testProcessWithNonCourseCategory(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
         $category = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
@@ -101,7 +102,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertNotNull($result->getThread());
     }
 
-    private function buildRemoteFileDownloader()
+    private function buildRemoteFileDownloader(): MockObject
     {
         $mock = $this->createMock(RemoteFileDownloader::class);
 
@@ -116,7 +117,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         return $mock;
     }
 
-    private function buildGoogleClientApiMock()
+    private function buildGoogleClientApiMock(): MockObject
     {
         // todo refactor the code (not this test yet) to avoid so many mock
         $youtubeMock = $this->createMock(GoogleYouTube::class);

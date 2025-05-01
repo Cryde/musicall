@@ -18,7 +18,7 @@ class PublicationPendingListTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_pending_publications_as_admin()
+    public function test_get_pending_publications_as_admin(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
@@ -74,7 +74,7 @@ class PublicationPendingListTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_pending_publications_not_logged()
+    public function test_get_pending_publications_not_logged(): void
     {
         $this->client->request('GET', '/api/admin/publications/pending');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -84,7 +84,7 @@ class PublicationPendingListTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_pending_publications_as_normal_user()
+    public function test_get_pending_publications_as_normal_user(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 

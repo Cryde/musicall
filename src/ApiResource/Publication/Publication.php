@@ -2,6 +2,8 @@
 
 namespace App\ApiResource\Publication;
 
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
@@ -12,7 +14,6 @@ use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Thread;
 use App\ApiResource\Publication\Publication\Type;
 use App\State\Provider\Publication\PublicationProvider;
-use ApiPlatform\OpenApi\Model;
 use App\State\Provider\Publication\PublicationSearchProvider;
 
 #[ApiResource(
@@ -25,8 +26,8 @@ use App\State\Provider\Publication\PublicationSearchProvider;
         ),
         new GetCollection(
             uriTemplate: '/publications/search',
-            openapi: new Model\Operation(
-                parameters: [new Model\Parameter(name: 'term', in: 'query', description: "The query string you want to search", required: true, allowEmptyValue: false, example: "My search title")]
+            openapi: new Operation(
+                parameters: [new Parameter(name: 'term', in: 'query', description: "The query string you want to search", required: true, allowEmptyValue: false, example: "My search title")]
             ),
             paginationEnabled: false,
             priority: 1,

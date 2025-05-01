@@ -4,7 +4,6 @@ namespace App\Service;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Serializer\Exception\UnsupportedException;
 
 class Jsonizer
 {

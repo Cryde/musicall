@@ -26,13 +26,13 @@ class GalleryImage
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxWidth: 4000, maxHeight: 4000)]
     #[Vich\UploadableField(mapping: 'gallery_image', fileNameProperty: 'imageName', size: 'imageSize')]
-    private $imageFile;
+    private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private $imageName;
+    private ?string $imageName = null;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private $imageSize;
+    private ?int $imageSize = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private DateTimeInterface $creationDatetime;
@@ -42,7 +42,7 @@ class GalleryImage
 
     #[ORM\ManyToOne(targetEntity: Gallery::class, inversedBy: "images")]
     #[ORM\JoinColumn(nullable: false)]
-    private $gallery;
+    private ?Gallery $gallery = null;
 
     public function __construct()
     {

@@ -8,7 +8,6 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
-use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 

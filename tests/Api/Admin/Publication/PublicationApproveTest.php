@@ -18,7 +18,7 @@ class PublicationApproveTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_approve_publication()
+    public function test_approve_publication(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
@@ -55,7 +55,7 @@ class PublicationApproveTest extends ApiTestCase
         $this->assertNotNull($publication->getPublicationDatetime());
     }
 
-    public function test_approve_publication_with_no_admin()
+    public function test_approve_publication_with_no_admin(): void
     {
         $user = UserFactory::new()->asBaseUser()->create()->_real();
 

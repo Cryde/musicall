@@ -2,10 +2,11 @@
 
 namespace App\Entity\Image;
 
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use App\ApiResource\Search\MusicianSearchResult;
-use ApiPlatform\OpenApi\Model;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Message\MessageThreadMeta;
@@ -15,7 +16,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -27,8 +27,8 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     operations: [
         new Post(
             inputFormats: ['multipart' => ['multipart/form-data']],
-            openapi: new Model\Operation(
-                requestBody: new Model\RequestBody(
+            openapi: new Operation(
+                requestBody: new RequestBody(
                     content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
@@ -63,7 +63,7 @@ class UserProfilePicture
     #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true)]
     #[Vich\UploadableField(mapping: 'user_profile_picture', fileNameProperty: 'imageName', size: 'imageSize')]
     #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, MusicianSearchResult::LIST])]
-    private $imageFile;
+    private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
@@ -75,7 +75,7 @@ class UserProfilePicture
     private $updatedAt;
 
     #[ORM\OneToOne(targetEntity: User::class)]
-    private $user;
+    private ?User $user = null;
 
     public function getImageFile(): ?File
     {
@@ -91,7 +91,7 @@ class UserProfilePicture
      *
      * @return $this
      */
-    public function setImageFile(?File $image = null)
+    public function setImageFile(?File $image = null): static
     {
         $this->imageFile = $image;
         if (null !== $image) {
@@ -106,7 +106,7 @@ class UserProfilePicture
     /**
      * @return $this
      */
-    public function setImageName(?string $imageName)
+    public function setImageName(?string $imageName): static
     {
         $this->imageName = $imageName;
 
@@ -118,7 +118,7 @@ class UserProfilePicture
         return $this->imageName;
     }
 
-    public function setImageSize(?int $imageSize)
+    public function setImageSize(?int $imageSize): static
     {
         $this->imageSize = $imageSize;
 

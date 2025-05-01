@@ -13,7 +13,7 @@ class PublicationRepositoryTest extends KernelTestCase
 {
     use ResetDatabase, Factories;
 
-    public function test_find_one_video()
+    public function test_find_one_video(): void
     {
         $repo = static::getContainer()->get(PublicationRepository::class);
 

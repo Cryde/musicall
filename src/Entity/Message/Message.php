@@ -5,7 +5,6 @@ namespace App\Entity\Message;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;

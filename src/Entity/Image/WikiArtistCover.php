@@ -2,14 +2,12 @@
 
 namespace App\Entity\Image;
 
-use Exception;
 use DateTimeImmutable;
 use DateTimeInterface;
 use App\Entity\Wiki\Artist;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -25,7 +23,7 @@ class WikiArtistCover
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: "4Mi", minWidth: 1000, maxWidth: 4000, maxHeight: 4000, minHeight: 300, allowLandscape: true, allowPortrait: false)]
     #[Vich\UploadableField(mapping: 'wiki_artist_cover_image', fileNameProperty: 'imageName', size: 'imageSize')]
-    private $imageFile;
+    private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
@@ -37,7 +35,7 @@ class WikiArtistCover
     private $updatedAt;
 
     #[ORM\OneToOne(targetEntity: Artist::class)]
-    private $artist;
+    private ?Artist $artist = null;
 
     public function getImageFile(): ?File
     {
@@ -53,7 +51,7 @@ class WikiArtistCover
      *
      * @return $this
      */
-    public function setImageFile(?File $image = null)
+    public function setImageFile(?File $image = null): static
     {
         $this->imageFile = $image;
         if (null !== $image) {
@@ -68,7 +66,7 @@ class WikiArtistCover
     /**
      * @return $this
      */
-    public function setImageName(?string $imageName)
+    public function setImageName(?string $imageName): static
     {
         $this->imageName = $imageName;
 
@@ -80,7 +78,7 @@ class WikiArtistCover
         return $this->imageName;
     }
 
-    public function setImageSize(?int $imageSize)
+    public function setImageSize(?int $imageSize): static
     {
         $this->imageSize = $imageSize;
 

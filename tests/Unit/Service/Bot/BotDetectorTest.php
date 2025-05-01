@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class BotDetectorTest extends TestCase
 {
-    public function test_is_bot()
+    public function test_is_bot(): void
     {
         $detector = new BotDetector();
         $this->assertFalse($detector->isBot(''));
@@ -21,7 +21,7 @@ class BotDetectorTest extends TestCase
     }
 
     #[DataProvider('mobileAgentProvider')]
-    public function test_is_bot_on_mobile_agent($userAgent): void
+    public function test_is_bot_on_mobile_agent(string $userAgent): void
     {
         $detector = new BotDetector();
         $this->assertFalse($detector->isBot($userAgent));
@@ -31,6 +31,6 @@ class BotDetectorTest extends TestCase
     {
         $result = json_decode(file_get_contents(__DIR__ . '/fixtures/navigator_agent_strings.json'), true);
 
-        return array_map(fn($a) => [$a], array_column($result, 'ua'));
+        return array_map(fn($a): array => [$a], array_column($result, 'ua'));
     }
 }

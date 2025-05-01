@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
@@ -50,15 +51,15 @@ class ForumPost
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([ForumPost::LIST, ForumTopic::LIST, ForumPost::ITEM])]
     private $id;
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups([ForumPost::LIST, ForumTopic::LIST, ForumPost::ITEM])]
     private DateTimeInterface $creationDatetime;
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups([ForumPost::LIST])]
     private ?DateTimeInterface $updateDatetime = null;
     #[Assert\NotBlank]
     #[Assert\Length(min: ForumPost::MIN_MESSAGE_LENGTH)]
-    #[ORM\Column(type: 'text')]
+    #[ORM\Column(type: Types::TEXT)]
     #[Groups([ForumPost::LIST, ForumPost::POST, ForumPost::ITEM])]
     private string $content;
     #[Assert\NotBlank]

@@ -24,7 +24,7 @@ class View
     private string $identifier;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    private ?User $user;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: ViewCache::class)]
     #[ORM\JoinColumn(nullable: false)]

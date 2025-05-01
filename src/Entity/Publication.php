@@ -9,7 +9,6 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\Metric\ViewableInterface;
 use App\Contracts\SluggableEntityInterface;
@@ -18,14 +17,12 @@ use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Metric\ViewCache;
 use App\Repository\PublicationRepository;
-use App\State\Provider\Publication\PublicationProvider;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinColumn;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -119,8 +116,11 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[ORM\Column(type: Types::SMALLINT)]
     private int $status = self::STATUS_DRAFT;
 
+    /**
+     * @var Collection<int, PublicationImage>
+     */
     #[ORM\OneToMany(mappedBy: "publication", targetEntity: PublicationImage::class)]
-    private $images;
+    private Collection $images;
 
     #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]
     #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]

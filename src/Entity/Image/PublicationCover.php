@@ -2,14 +2,12 @@
 
 namespace App\Entity\Image;
 
-use Exception;
 use DateTimeImmutable;
 use DateTimeInterface;
 use App\Entity\Publication;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -25,7 +23,7 @@ class PublicationCover
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
     #[Vich\UploadableField(mapping: 'publication_image_cover', fileNameProperty: 'imageName', size: 'imageSize')]
-    private $imageFile;
+    private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private $imageName;
@@ -37,7 +35,7 @@ class PublicationCover
     private $updatedAt;
 
     #[ORM\OneToOne(targetEntity: Publication::class)]
-    private $publication;
+    private ?Publication $publication = null;
 
     public function getImageFile(): ?File
     {
@@ -69,7 +67,7 @@ class PublicationCover
     /**
      * @return $this
      */
-    public function setImageName(?string $imageName)
+    public function setImageName(?string $imageName): static
     {
         $this->imageName = $imageName;
 
@@ -81,7 +79,7 @@ class PublicationCover
         return $this->imageName;
     }
 
-    public function setImageSize(?int $imageSize)
+    public function setImageSize(?int $imageSize): static
     {
         $this->imageSize = $imageSize;
 

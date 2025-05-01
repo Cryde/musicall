@@ -15,7 +15,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_collection()
+    public function test_get_collection(): void
     {
         $forumSource = ForumSourceFactory::new()->asRoot()->create();
         $forumSource2 = ForumSourceFactory::new(['slug' => 'private'])->create();
@@ -28,7 +28,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
         $forum5 = ForumFactory::new(['forumCategory' => $forumCategory2, 'position' => 1])->create();
         $forumCategory3 = ForumCategoryFactory::new(['position' => 3, 'title' => 'Forum 3 category title', 'forumSource' => $forumSource])->create();
         // should appear in the result :
-        $forumCategory4 = ForumCategoryFactory::new(['position' => 1, 'title' => 'Forum 4 category title', 'forumSource' => $forumSource2])->create();
+        ForumCategoryFactory::new(['position' => 1, 'title' => 'Forum 4 category title', 'forumSource' => $forumSource2])->create();
 
         $this->client->request('GET', '/api/forum_categories?forumSource.slug=root&order[position]=asc&order[forums.position]=asc');
         $this->assertResponseIsSuccessful();

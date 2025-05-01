@@ -2,8 +2,6 @@
 
 namespace App\Enum\Publication;
 
-use phpDocumentor\Reflection\Types\Self_;
-
 enum PublicationType: int
 {
     case Text = 1;

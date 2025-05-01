@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\ApiProperty;
@@ -20,14 +21,17 @@ class ForumSource
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ApiProperty(identifier: false)]
     private $id;
+    /**
+     * @var Collection<int, ForumCategory>
+     */
     #[ORM\OneToMany(mappedBy: 'forumSource', targetEntity: ForumCategory::class)]
-    private $forumCategories;
-    #[ORM\Column(type: 'string', length: 255)]
+    private Collection $forumCategories;
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[ApiProperty(identifier: true)]
     private string $slug;
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $description = null;
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
 
     public function __construct()
@@ -61,11 +65,9 @@ class ForumSource
 
     public function removeForumCategory(ForumCategory $forumCategory): self
     {
-        if ($this->forumCategories->removeElement($forumCategory)) {
-            // set the owning side to null (unless already changed)
-            if ($forumCategory->getForumSource() === $this) {
-                $forumCategory->setForumSource(null);
-            }
+        // set the owning side to null (unless already changed)
+        if ($this->forumCategories->removeElement($forumCategory) && $forumCategory->getForumSource() === $this) {
+            $forumCategory->setForumSource(null);
         }
 
         return $this;

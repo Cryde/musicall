@@ -12,7 +12,6 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;
-use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 

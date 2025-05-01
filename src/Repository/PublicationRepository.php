@@ -26,7 +26,7 @@ class PublicationRepository extends ServiceEntityRepository
      *
      * @return int|mixed|string
      */
-    public function findByTitleAndStatusAndType(string $title, int $status, int $type, int $limit = 10)
+    public function findByTitleAndStatusAndType(string $title, int $status, int $type, int $limit = 10): mixed
     {
         return $this->createQueryBuilder('publication')
             ->where('publication.status = :status')
@@ -54,7 +54,7 @@ class PublicationRepository extends ServiceEntityRepository
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function findOldCourseByOldId(int $oldId)
+    public function findOldCourseByOldId(int $oldId): mixed
     {
         return $this->createQueryBuilder('publication')
             ->join('publication.subCategory', 'sub_category')

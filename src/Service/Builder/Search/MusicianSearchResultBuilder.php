@@ -16,11 +16,7 @@ class MusicianSearchResultBuilder
     {
         $result = [];
         foreach ($list as $item) {
-            if (is_array($item)) {
-                $result[] = $this->build($item[0], $item['distance']);
-            } else {
-                $result[] = $this->build($item);
-            }
+            $result[] = is_array($item) ? $this->build($item[0], $item['distance']) : $this->build($item);
         }
 
         return $result;

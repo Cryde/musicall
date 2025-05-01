@@ -48,8 +48,8 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
         ]);
 
         // shouldn't be in the results
-        $user2Announce1 = MusicianAnnounceFactory::new()->create(['author' => $user2,]);
-        $user2Announce2 = MusicianAnnounceFactory::new()->create(['author' => $user2,]);
+        MusicianAnnounceFactory::new()->create(['author' => $user2,]);
+        MusicianAnnounceFactory::new()->create(['author' => $user2,]);
 
         $user1 = $user1->_real();
 

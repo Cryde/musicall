@@ -55,7 +55,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
      *
      * @return int|mixed|string
      */
-    public function searchByUserName(string $username, int $limit = 15)
+    public function searchByUserName(string $username, int $limit = 15): mixed
     {
         return $this->createQueryBuilder('user')
             ->where('user.username LIKE :search')

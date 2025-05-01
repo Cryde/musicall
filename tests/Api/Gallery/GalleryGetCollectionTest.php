@@ -3,7 +3,6 @@
 namespace App\Tests\Api\Gallery;
 
 use App\Entity\Gallery;
-use App\Entity\Image\GalleryImage;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Metric\ViewCacheFactory;
@@ -21,8 +20,8 @@ class GalleryGetCollectionTest extends ApiTestCase
 
     public function test_get_galleries(): void
     {
-        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
-        $sub2 = PublicationSubCategoryFactory::new()->asNews()->create();
+        PublicationSubCategoryFactory::new()->asChronique()->create();
+        PublicationSubCategoryFactory::new()->asNews()->create();
         $author = UserFactory::new()->asAdminUser()->create();
         $gallery1 = GalleryFactory::new([
             'author'              => $author,
@@ -32,7 +31,7 @@ class GalleryGetCollectionTest extends ApiTestCase
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 1',
         ])->create()->_real();
-        $image = GalleryImageFactory::new(['gallery' => $gallery1])->create();
+        GalleryImageFactory::new(['gallery' => $gallery1])->create();
         $gallery2 = GalleryFactory::new([
             'author'              => $author,
             'description'         => 'Description gallery 2',

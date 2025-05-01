@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
@@ -48,39 +49,37 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumTopic::ITEM])]
     private Forum $forum;
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
     private string $title;
-    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
     #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
     private string $slug;
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: Types::INTEGER)]
     #[Groups([ForumTopic::LIST])]
-    private int $type;
-    #[ORM\Column(type: 'boolean')]
+    private int $type = self::TYPE_TOPIC_DEFAULT;
+    #[ORM\Column(type: Types::BOOLEAN)]
     #[Groups([ForumTopic::LIST])]
-    private bool $isLocked;
+    private bool $isLocked = false;
     #[ORM\ManyToOne(targetEntity: ForumPost::class)]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups([ForumTopic::LIST])]
     private ?ForumPost $lastPost = null;
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups([ForumTopic::LIST])]
     private DateTimeInterface $creationDatetime;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumTopic::LIST])]
     private User $author;
-    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     #[Groups([ForumTopic::LIST])]
     private int $postNumber = 0;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-        $this->isLocked = false;
-        $this->type = self::TYPE_TOPIC_DEFAULT;
     }
 
     public function getId(): ?string

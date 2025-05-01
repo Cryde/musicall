@@ -2,9 +2,7 @@
 
 namespace App\Serializer;
 
-use App\Entity\Image\GalleryImage;
 use App\Entity\PublicationFeatured;
-use Doctrine\Common\Collections\Collection;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 

@@ -3,9 +3,7 @@
 namespace App\ApiResource\Search;
 
 use App\Entity\Attribute\Instrument;
-use App\Entity\Attribute\Style;
 use App\Entity\User;
-use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 class MusicianSearchResult

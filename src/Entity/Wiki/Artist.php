@@ -40,15 +40,18 @@ class Artist implements SluggableEntityInterface
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private $labelName;
 
+    /**
+     * @var Collection<int, ArtistSocial>
+     */
     #[Assert\Valid]
     #[ORM\OneToMany(mappedBy: 'artist', targetEntity: ArtistSocial::class, cascade: ['persist', 'remove'])]
-    private $socials;
+    private Collection $socials;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private $slug;
 
     #[ORM\OneToOne(targetEntity: WikiArtistCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private $cover;
+    private ?WikiArtistCover $cover = null;
 
     /**
      * @Assert\AtLeastOneOf({

@@ -20,7 +20,7 @@ class AlreadyExistingVideoValidator extends ConstraintValidator
     ) {
     }
 
-    public function validate(mixed $value, Constraint $constraint)
+    public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof AlreadyExistingVideo) {
             throw new UnexpectedTypeException($constraint, AlreadyExistingVideo::class);

@@ -14,7 +14,7 @@ class MessageReceivedEmail
     {
     }
 
-    public function send(string $recipientEmail, string $username)
+    public function send(string $recipientEmail, string $username): void
     {
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))

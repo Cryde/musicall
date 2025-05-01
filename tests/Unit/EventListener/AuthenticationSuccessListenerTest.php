@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class AuthenticationSuccessListenerTest extends TestCase
 {
-    public function test_on_authentication_success_response()
+    public function test_on_authentication_success_response(): void
     {
         $listener = new AuthenticationSuccessListener();
 
@@ -24,7 +24,7 @@ class AuthenticationSuccessListenerTest extends TestCase
 
         // this is a fake user representation
         $user1 = new class() implements UserInterface {
-            private $lastLoginDatetime = null;
+            private $lastLoginDatetime;
 
             public function getRoles(): array
             {

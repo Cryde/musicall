@@ -2,6 +2,7 @@
 
 namespace App\Tests\Factory\Attribute;
 
+use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Instrument;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
@@ -17,7 +18,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asDrum()
+    public function asDrum(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -27,7 +28,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asGuitar()
+    public function asGuitar(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),

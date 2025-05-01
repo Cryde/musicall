@@ -2,6 +2,7 @@
 
 namespace App\Tests\Factory\Forum;
 
+use Zenstruck\Foundry\Factory;
 use App\Entity\Forum\ForumSource;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
@@ -16,7 +17,7 @@ final class ForumSourceFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asRoot()
+    public function asRoot(): Factory
     {
         return $this->with(['description' => 'Root source forum', 'slug' => 'root']);
     }

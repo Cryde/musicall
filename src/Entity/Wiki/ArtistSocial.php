@@ -44,7 +44,7 @@ class ArtistSocial
 
     #[ORM\ManyToOne(targetEntity: Artist::class, inversedBy: "socials")]
     #[ORM\JoinColumn(nullable: false)]
-    private $artist;
+    private ?Artist $artist = null;
 
     public function __construct()
     {

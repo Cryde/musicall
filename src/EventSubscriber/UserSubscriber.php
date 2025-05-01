@@ -22,7 +22,7 @@ class UserSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onUserRegistered(UserRegisteredEvent $event)
+    public function onUserRegistered(UserRegisteredEvent $event): void
     {
         $user = $event->getUser();
         $this->generateConfirmationToken->generate($user);

@@ -24,7 +24,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
     /**
      * @return int|mixed|string
      */
-    public function findByCriteria(Musician $musician, ?User $currentUser, int $limit = 10)
+    public function findByCriteria(Musician $musician, ?User $currentUser, int $limit = 10): mixed
     {
         $qb = $this->createQueryBuilder('musician_announce')
             ->select('musician_announce')

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api\User;
 
+use App\Entity\User;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Publication;
@@ -9,13 +10,6 @@ use App\Form\ImageUploaderType;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Serializer\UserPublicationArraySerializer;
-use App\Service\Builder\CommentThreadDirector;
-use App\Service\Builder\Metric\ViewCacheDirector;
-use App\Service\Builder\PublicationCoverDirector;
-use App\Service\Builder\PublicationDirector;
-use App\Service\File\Exception\CorruptedFileException;
-use App\Service\File\RemoteFileDownloader;
-use App\Service\Google\Exception\YoutubeAlreadyExistingVideoException;
 use App\Service\Google\Exception\YoutubeVideoNotFoundException;
 use App\Service\Google\Youtube;
 use App\Service\Google\YoutubeUrlHelper;
@@ -25,7 +19,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -80,7 +73,7 @@ class UserPublicationController extends AbstractController
         Jsonizer                         $jsonizer,
         ValidatorInterface               $validator,
         UserPublicationArraySerializer   $userPublicationArraySerializer,
-        #[CurrentUser]                   $user
+        #[CurrentUser]                   ?User $user
     ): JsonResponse {
         $data = $jsonizer->decodeRequest($request);
         $publicationSubCategory = $data['category_id'] ? $publicationSubCategoryRepository->find($data['category_id']) : null;

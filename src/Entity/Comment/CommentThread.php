@@ -35,9 +35,12 @@ class CommentThread
     #[Groups([CommentThread::ITEM])]
     private bool $isActive = true;
 
+    /**
+     * @var Collection<int, Comment>
+     */
     #[ORM\OneToMany(mappedBy: "thread", targetEntity: Comment::class)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
-    private $comments;
+    private Collection $comments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $creationDatetime;

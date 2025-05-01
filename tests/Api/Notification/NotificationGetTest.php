@@ -20,7 +20,7 @@ class NotificationGetTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_notification_not_logged()
+    public function test_get_notification_not_logged(): void
     {
         $this->client->request('GET', '/api/notifications');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -30,7 +30,7 @@ class NotificationGetTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_notification()
+    public function test_get_notification(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
@@ -55,7 +55,7 @@ class NotificationGetTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_notification_with_role_admin()
+    public function test_get_notification_with_role_admin(): void
     {
         $user1 = UserFactory::new()->asAdminUser()->create()->_real();
 

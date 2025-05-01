@@ -16,7 +16,7 @@ class RegisterTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_register()
+    public function test_register(): void
     {
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -45,7 +45,7 @@ class RegisterTest extends ApiTestCase
         $this->assertEmailTextBodyContains($email, 'Confirmer votre email');
     }
 
-    public function test_register_with_errors()
+    public function test_register_with_errors(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
