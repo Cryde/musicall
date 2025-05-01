@@ -77,7 +77,7 @@ class MusicianAnnounce
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MusicianAnnounce::LIST_LAST])]
-    private ?User $author = null;
+    private User $author;
 
     #[Assert\Choice(choices: MusicianAnnounce::TYPES)]
     #[ORM\Column(type: Types::SMALLINT)]
@@ -88,7 +88,7 @@ class MusicianAnnounce
     #[ORM\ManyToOne(targetEntity: Instrument::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
-    private ?Instrument $instrument = null;
+    private Instrument $instrument;
 
     /**
      * @var Collection<int, Style>
@@ -101,21 +101,21 @@ class MusicianAnnounce
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
-    private $locationName;
+    private string $locationName;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups(MusicianAnnounce::POST)]
-    private $longitude;
+    private string $longitude;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups(MusicianAnnounce::POST)]
-    private $latitude;
+    private string $latitude;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST])]
-    private $note;
+    private ?string $note = null;
 
     public function __construct()
     {
@@ -140,12 +140,12 @@ class MusicianAnnounce
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): User
     {
         return $this->author;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthor(User $author): self
     {
         $this->author = $author;
 
@@ -176,9 +176,6 @@ class MusicianAnnounce
         return $this;
     }
 
-    /**
-     * @return Collection|Style[]
-     */
     public function getStyles(): Collection
     {
         return $this->styles;

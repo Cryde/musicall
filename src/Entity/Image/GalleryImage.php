@@ -29,10 +29,10 @@ class GalleryImage
     private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private ?string $imageName = null;
+    private string $imageName;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $imageSize = null;
+    private int $imageSize;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private DateTimeInterface $creationDatetime;
@@ -42,7 +42,7 @@ class GalleryImage
 
     #[ORM\ManyToOne(targetEntity: Gallery::class, inversedBy: "images")]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Gallery $gallery = null;
+    private Gallery $gallery;
 
     public function __construct()
     {
@@ -110,12 +110,12 @@ class GalleryImage
         return $this;
     }
 
-    public function getGallery(): ?Gallery
+    public function getGallery(): Gallery
     {
         return $this->gallery;
     }
 
-    public function setGallery(?Gallery $gallery): self
+    public function setGallery(Gallery $gallery): self
     {
         $this->gallery = $gallery;
 

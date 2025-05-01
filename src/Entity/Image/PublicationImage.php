@@ -27,10 +27,10 @@ class PublicationImage
     private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private ?string $imageName = null;
+    private string $imageName;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $imageSize = null;
+    private int $imageSize;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
