@@ -15,7 +15,7 @@ class PublicationFeaturedImageNormalizer implements NormalizerInterface
     ) {
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
+    public function normalize(mixed $object, ?string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         /** @var ?PublicationFeaturedImage $object */
         if ($object) {
@@ -27,7 +27,7 @@ class PublicationFeaturedImageNormalizer implements NormalizerInterface
         return null;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof PublicationFeaturedImage;
     }

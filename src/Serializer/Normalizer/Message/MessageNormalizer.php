@@ -19,7 +19,7 @@ class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
     ) {
     }
 
-    public function normalize(mixed $message, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
+    public function normalize(mixed $message, ?string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;
         /** @var Message $message */
@@ -29,7 +29,7 @@ class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
         return $messageArray;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;

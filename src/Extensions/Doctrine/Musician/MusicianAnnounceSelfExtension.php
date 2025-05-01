@@ -20,11 +20,11 @@ class MusicianAnnounceSelfExtension implements QueryCollectionExtensionInterface
         QueryBuilder                $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string                      $resourceClass,
-        Operation                   $operation = null,
+        ?Operation                   $operation = null,
         array                       $context = []
     ): void {
         if (MusicianAnnounce::class !== $resourceClass
-            || $operation->getName() !== 'api_musician_announces_get_self_collection') {
+            || ($operation && $operation->getName() !== 'api_musician_announces_get_self_collection')) {
             return;
         }
         /** @var User $user */
