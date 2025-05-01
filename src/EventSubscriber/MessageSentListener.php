@@ -4,24 +4,18 @@ namespace App\EventSubscriber;
 
 use App\Event\MessageSentEvent;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-readonly class MessageSubscriber implements EventSubscriberInterface
+#[AsEventListener]
+readonly class MessageSentListener
 {
     public function __construct(private MessageReceivedEmail $messageReceivedEmail)
     {
     }
 
-    public static function getSubscribedEvents(): array
+    public function __invoke(MessageSentEvent $event): void
     {
-        return [
-            MessageSentEvent::NAME => 'onMessageSent',
-        ];
-    }
-
-    public function onMessageSent(MessageSentEvent $event): void
-    {
-        $recipient = $event->getRecipient();
+        $recipient = $event->recipient;
         // @todo : for now we will only send directly the mail
         // later we will have to check last notifications
 

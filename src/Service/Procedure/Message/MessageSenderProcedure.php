@@ -50,7 +50,7 @@ class MessageSenderProcedure
             $this->entityManager->persist($participantSender);
             $this->entityManager->persist($participantRecipient);
 
-            $this->eventDispatcher->dispatch(new MessageSentEvent($recipient), MessageSentEvent::NAME);
+            $this->eventDispatcher->dispatch(new MessageSentEvent($recipient));
         } else {
             $this->handleReadMessage($thread, $sender);
         }
@@ -82,7 +82,7 @@ class MessageSenderProcedure
             if ($recipient->getId() !== $sender->getId()) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
                 $threadMetaRecipient->setIsRead(false);
-                $this->eventDispatcher->dispatch(new MessageSentEvent($recipient), MessageSentEvent::NAME);
+                $this->eventDispatcher->dispatch(new MessageSentEvent($recipient));
             }
         }
 

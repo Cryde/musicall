@@ -48,7 +48,7 @@ class RegistrationController extends AbstractController
         );
         $entityManager->persist($user);
         $entityManager->flush();
-        $eventDispatcher->dispatch(new UserRegisteredEvent($user), UserRegisteredEvent::NAME);
+        $eventDispatcher->dispatch(new UserRegisteredEvent($user));
 
         return $this->json(['data' => ['success' => 1]]);
     }
