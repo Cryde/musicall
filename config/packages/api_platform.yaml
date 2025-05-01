@@ -24,9 +24,6 @@ api_platform:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
-        extra_properties:
-            standard_put: true
-            rfc_7807_compliant_errors: true
     use_symfony_listeners: false
     exception_to_status:
         # Symfony
