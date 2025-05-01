@@ -25,18 +25,18 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         parent::setUp();
     }
 
-    public function test_get_metadata_with_wrong_uri()
+    public function test_get_metadata_with_wrong_uri(): void
     {
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('wrong-url'));
     }
 
-    public function test_get_metadata_with_no_result()
+    public function test_get_metadata_with_no_result(): void
     {
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/publications/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/gallery/dont-exists'));
     }
 
-    public function test_get_metadata_for_publications()
+    public function test_get_metadata_for_publications(): void
     {
         $publication1 = PublicationFactory::new([
             'status'              => Publication::STATUS_ONLINE,
@@ -58,7 +58,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         ], $result);
     }
 
-    public function test_get_metadata_for_galleries()
+    public function test_get_metadata_for_galleries(): void
     {
         $gallery = GalleryFactory::new([
             'status'              => Gallery::STATUS_ONLINE,

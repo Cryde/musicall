@@ -2,6 +2,7 @@
 
 namespace App\Tests\Factory\User;
 
+use Zenstruck\Foundry\Factory;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
@@ -22,24 +23,24 @@ final class MusicianAnnounceFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function withInstrument($instrument)
+    public function withInstrument($instrument): Factory
     {
         return $this->with(['instrument' => $instrument]);
     }
 
-    public function withStyles(iterable $styles)
+    public function withStyles(iterable $styles): Factory
     {
         return $this->with([
             'styles' => $styles,
         ]);
     }
 
-    public function asBand()
+    public function asBand(): Factory
     {
         return $this->with(['type' => MusicianAnnounce::TYPE_BAND]);
     }
 
-    public function asMusician()
+    public function asMusician(): Factory
     {
         return $this->with(['type' => MusicianAnnounce::TYPE_MUSICIAN]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
@@ -36,19 +37,22 @@ class ForumCategory
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([ForumCategory::LIST, Forum::ITEM])]
     private $id;
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([ForumCategory::LIST, Forum::ITEM])]
     private string $title;
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: Types::INTEGER)]
     private int $position;
     #[ORM\ManyToOne(targetEntity: ForumSource::class, inversedBy: 'forumCategories')]
     #[ORM\JoinColumn(nullable: false)]
     private ForumSource $forumSource;
+    /**
+     * @var Collection<int, Forum>
+     */
     #[ORM\OneToMany(mappedBy: 'forumCategory', targetEntity: Forum::class)]
     #[Groups([ForumCategory::LIST])]
-    private $forums;
+    private Collection $forums;
 
     public function __construct()
     {
@@ -129,11 +133,9 @@ class ForumCategory
 
     public function removeForum(Forum $forum): self
     {
-        if ($this->forums->removeElement($forum)) {
-            // set the owning side to null (unless already changed)
-            if ($forum->getForumCategory() === $this) {
-                $forum->setForumCategory(null);
-            }
+        // set the owning side to null (unless already changed)
+        if ($this->forums->removeElement($forum) && $forum->getForumCategory() === $this) {
+            $forum->setForumCategory(null);
         }
 
         return $this;

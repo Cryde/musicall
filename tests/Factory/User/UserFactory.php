@@ -2,6 +2,7 @@
 
 namespace App\Tests\Factory\User;
 
+use Zenstruck\Foundry\Factory;
 use App\Entity\User;
 use DateTime;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
@@ -25,7 +26,7 @@ final class UserFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asAdminUser()
+    public function asAdminUser(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -36,7 +37,7 @@ final class UserFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asBaseUser()
+    public function asBaseUser(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),

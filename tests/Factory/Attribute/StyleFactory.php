@@ -2,6 +2,7 @@
 
 namespace App\Tests\Factory\Attribute;
 
+use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Style;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
@@ -16,7 +17,7 @@ final class StyleFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asRock()
+    public function asRock(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -25,7 +26,7 @@ final class StyleFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asPop()
+    public function asPop(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -34,7 +35,7 @@ final class StyleFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asMetal()
+    public function asMetal(): Factory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),

@@ -20,7 +20,7 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
         parent::__construct($registry, MessageThreadMeta::class);
     }
 
-    public function findByUserAndNotDeleted(User $user)
+    public function findByUserAndNotDeleted(User $user): mixed
     {
         return $this->createQueryBuilder('message_thread_meta')
             ->select('message_thread_meta, thread, last_message, author, message_participants, participant')

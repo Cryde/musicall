@@ -16,7 +16,7 @@ class SearchControllerTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_search_publication()
+    public function test_search_publication(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
 

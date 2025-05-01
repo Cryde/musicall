@@ -18,7 +18,7 @@ class ContactUsEmail
     ) {
     }
 
-    public function send(string $name, string $emailAddress, string $message)
+    public function send(string $name, string $emailAddress, string $message): void
     {
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))

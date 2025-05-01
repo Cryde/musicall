@@ -23,7 +23,7 @@ readonly class MusicianAIFinder
     ) {
     }
 
-    public function find(MusicianText $musicianText, ?User $user)
+    public function find(MusicianText $musicianText, ?User $user): mixed
     {
         $response = $this->openAIClient->getChatCompletions([
             $this->promptFormatter->formatSystemMessage(),

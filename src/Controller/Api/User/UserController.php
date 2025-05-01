@@ -4,7 +4,6 @@ namespace App\Controller\Api\User;
 
 use App\Entity\Image\UserProfilePicture;
 use App\Form\ImageUploaderType;
-use App\Model\ChangePasswordModel;
 use App\Model\ResetPasswordModel;
 use App\Repository\UserRepository;
 use App\Serializer\User\UserArraySerializer;

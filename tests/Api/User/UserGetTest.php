@@ -42,7 +42,7 @@ class UserGetTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_item()
+    public function test_get_item(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 

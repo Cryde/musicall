@@ -31,7 +31,7 @@ class MusicianAIFinderTest extends KernelTestCase
         parent::setUp();
     }
 
-    public function test_find()
+    public function test_find(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
@@ -66,7 +66,7 @@ class MusicianAIFinderTest extends KernelTestCase
         $this->assertSame($announce->_real(), $result[0][0]);
     }
 
-    public function test_find_no_content()
+    public function test_find_no_content(): void
     {
         $finder = $this->buildMusicianAIFinderNoContent();
         $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
@@ -76,7 +76,7 @@ class MusicianAIFinderTest extends KernelTestCase
         $finder->find($musicianText, null);
     }
 
-    public function test_find_no_json_in_response()
+    public function test_find_no_json_in_response(): void
     {
         $finder = $this->buildMusicianAIFinderNoJsonInContent();
         $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
@@ -86,7 +86,7 @@ class MusicianAIFinderTest extends KernelTestCase
         $finder->find($musicianText, null);
     }
 
-    public function test_find_too_much_json_in_response()
+    public function test_find_too_much_json_in_response(): void
     {
         $finder = $this->buildMusicianAIFinderTooMuchJsonInResponse();
         $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
@@ -146,9 +146,7 @@ class MusicianAIFinderTest extends KernelTestCase
 
     private function buildOpenAIClient(string $filename): OpenAIClient
     {
-        $callback = function ($method, $url, $options) use ($filename) {
-            return new MockResponse(file_get_contents(__DIR__ . '/fixtures/' . $filename));
-        };
+        $callback = (fn($method, $url, $options): MockResponse => new MockResponse(file_get_contents(__DIR__ . '/fixtures/' . $filename)));
 
         return new OpenAIClient(new MockHttpClient($callback));
     }

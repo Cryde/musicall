@@ -15,7 +15,7 @@ class ForumGetTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_item()
+    public function test_get_item(): void
     {
         $forumCategory = ForumCategoryFactory::new(['position' => 1, 'title' => 'forum category title'])->create();
         $forum = ForumFactory::new([
@@ -46,7 +46,7 @@ class ForumGetTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_item_not_found()
+    public function test_get_item_not_found(): void
     {
         $this->client->request('GET', '/api/forums/not-found');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

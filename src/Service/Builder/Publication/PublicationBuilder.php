@@ -2,6 +2,11 @@
 
 namespace App\Service\Builder\Publication;
 
+use App\ApiResource\Publication\Publication\Author;
+use App\ApiResource\Publication\Publication\Cover;
+use App\ApiResource\Publication\Publication\Category;
+use App\ApiResource\Publication\Publication\Thread;
+use App\ApiResource\Publication\Publication\Type;
 use App\ApiResource\Publication\Publication;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
@@ -24,7 +29,7 @@ readonly class PublicationBuilder
 
     public function buildFromEntities(array $publicationEntities): array
     {
-        return array_map(fn (PublicationEntity $publicationEntity) => $this->buildFromEntity($publicationEntity), $publicationEntities);
+        return array_map(fn (PublicationEntity $publicationEntity): Publication => $this->buildFromEntity($publicationEntity), $publicationEntities);
     }
 
     public function buildFromEntity(PublicationEntity $publicationEntity): Publication
@@ -44,26 +49,26 @@ readonly class PublicationBuilder
         return $publication;
     }
 
-    private function buildAuthor(User $user): Publication\Author
+    private function buildAuthor(User $user): Author
     {
-        $author = new Publication\Author();
+        $author = new Author();
         $author->username = $user->getUsername();
 
         return $author;
     }
 
-    private function buildCover(PublicationCover $publicationCover): Publication\Cover
+    private function buildCover(PublicationCover $publicationCover): Cover
     {
         $path = $this->uploaderHelper->asset($publicationCover, 'imageFile');
-        $cover = new Publication\Cover();
+        $cover = new Cover();
         $cover->coverUrl = $this->cacheManager->getBrowserPath($path, 'publication_cover_300x300');
 
         return $cover;
     }
 
-    private function buildCategory(PublicationSubCategory $publicationSubCategory): Publication\Category
+    private function buildCategory(PublicationSubCategory $publicationSubCategory): Category
     {
-        $category = new Publication\Category();
+        $category = new Category();
         $category->id = $publicationSubCategory->getId();
         $category->slug = $publicationSubCategory->getSlug();
         $category->title = $publicationSubCategory->getTitle();
@@ -71,18 +76,18 @@ readonly class PublicationBuilder
         return $category;
     }
 
-    private function buildThread(CommentThread $commentThreadEntity): Publication\Thread
+    private function buildThread(CommentThread $commentThreadEntity): Thread
     {
-        $thread = new Publication\Thread();
+        $thread = new Thread();
         $thread->id = $commentThreadEntity->getId();
 
         return $thread;
     }
 
-    public function buildType(int $typeValue): Publication\Type
+    public function buildType(int $typeValue): Type
     {
         $publicationType = PublicationType::tryFrom($typeValue) ?: PublicationType::Text;
-        $type = new Publication\Type();
+        $type = new Type();
         $type->id = $publicationType->value;
         $type->label = $publicationType->label();
 

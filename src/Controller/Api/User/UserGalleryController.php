@@ -2,12 +2,12 @@
 
 namespace App\Controller\Api\User;
 
+use App\Entity\User;
 use App\Entity\Gallery;
 use App\Entity\Image\GalleryImage;
 use App\Form\ImageUploaderType;
 use App\Repository\GalleryRepository;
 use App\Serializer\GalleryImageSerializer;
-use App\Serializer\Normalizer\UserGalleryNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,7 +41,7 @@ class UserGalleryController extends AbstractController
 
     #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
     #[Route(path: '/api/user/gallery', name: 'api_user_gallery_add', options: ['expose' => true], methods: ['POST'])]
-    public function add(Request $request, SerializerInterface $serializer, #[CurrentUser] $author): JsonResponse
+    public function add(Request $request, SerializerInterface $serializer, #[CurrentUser] ?User $author): JsonResponse
     {
         /** @var Gallery $gallery */
         $gallery = $serializer->deserialize($request->getContent(), Gallery::class, 'json');

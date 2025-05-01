@@ -3,7 +3,6 @@
 namespace App\Tests\Factory\Comment;
 
 use App\Entity\Comment\CommentThread;
-use App\Repository\Comment\CommentThreadRepository;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 final class CommentThreadFactory extends PersistentProxyObjectFactory

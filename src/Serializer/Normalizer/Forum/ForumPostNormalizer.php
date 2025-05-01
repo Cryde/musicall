@@ -26,7 +26,7 @@ class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterfa
         $forumPostArray = $this->normalizer->normalize($forumPost, $format, $context);
         // we only modify the "content" key in the ForumPost List context
         if (in_array(ForumPost::LIST, $context['groups'])) {
-            $forumPostArray['content'] = $this->appForumSanitizer->sanitize(nl2br($forumPost->getContent()));
+            $forumPostArray['content'] = $this->appForumSanitizer->sanitize(nl2br((string) $forumPost->getContent()));
         }
 
         return $forumPostArray;

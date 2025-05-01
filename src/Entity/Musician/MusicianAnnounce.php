@@ -77,7 +77,7 @@ class MusicianAnnounce
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MusicianAnnounce::LIST_LAST])]
-    private $author;
+    private ?User $author = null;
 
     #[Assert\Choice(choices: MusicianAnnounce::TYPES)]
     #[ORM\Column(type: Types::SMALLINT)]
@@ -88,12 +88,15 @@ class MusicianAnnounce
     #[ORM\ManyToOne(targetEntity: Instrument::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
-    private $instrument;
+    private ?Instrument $instrument = null;
 
+    /**
+     * @var Collection<int, Style>
+     */
     #[Assert\Length(min: 1)]
     #[ORM\ManyToMany(targetEntity: Style::class)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::POST, MusicianAnnounce::LIST_LAST])]
-    private $styles;
+    private Collection $styles;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255)]

@@ -39,7 +39,7 @@ class SearchModelBuilder
 
     private function formatStylesSlug(array $slugs): array
     {
-        return array_map(fn(Style $s) => $s->getId(), $this->styleRepository->findBy(['slug' => $slugs]));
+        return array_map(fn(Style $s): ?string => $s->getId(), $this->styleRepository->findBy(['slug' => $slugs]));
     }
 
     private function formatInstrumentSlug(string $slug): string

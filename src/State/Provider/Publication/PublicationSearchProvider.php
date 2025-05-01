@@ -18,7 +18,7 @@ readonly class PublicationSearchProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
         $term = $context['filters']['term'] ?? '';
-        if (!$term || strlen($term) < 3) {
+        if (!$term || strlen((string) $term) < 3) {
             return null;
         }
         $publicationEntities = $this->publicationRepository->getBySearchTerm($term);

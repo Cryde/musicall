@@ -19,7 +19,7 @@ class ForumTopicPostPostTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_post_topic_not_logged()
+    public function test_post_topic_not_logged(): void
     {
         $this->client->jsonRequest('POST', '/api/forum/topic/post', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -29,7 +29,7 @@ class ForumTopicPostPostTest extends ApiTestCase
         ]);
     }
 
-    public function test_post_topic()
+    public function test_post_topic(): void
     {
         $forumTopicRepository =  static::getContainer()->get(ForumTopicRepository::class);
         $forumPostRepository =  static::getContainer()->get(ForumPostRepository::class);
@@ -72,7 +72,7 @@ class ForumTopicPostPostTest extends ApiTestCase
         ]);
     }
 
-    public function test_post_topic_validation()
+    public function test_post_topic_validation(): void
     {
         $forumTopicRepository =  static::getContainer()->get(ForumTopicRepository::class);
         $forumPostRepository =  static::getContainer()->get(ForumPostRepository::class);

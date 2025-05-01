@@ -75,8 +75,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::STRING)]
     private $password;
 
+    /**
+     * @var Collection<int, Publication>
+     */
     #[ORM\OneToMany(mappedBy: "author", targetEntity: Publication::class, orphanRemoval: true)]
-    private $publications;
+    private Collection $publications;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $creationDatetime;
@@ -98,7 +101,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, MusicianSearchResult::LIST])]
-    private $profilePicture;
+    private ?UserProfilePicture $profilePicture = null;
 
     public function __construct()
     {

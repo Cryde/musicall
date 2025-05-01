@@ -22,7 +22,7 @@ class ChangePasswordProcessor implements ProcessorInterface
     /**
      * @param ChangePassword $data
      */
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         /** @var User $user */
         $user = $this->security->getUser();

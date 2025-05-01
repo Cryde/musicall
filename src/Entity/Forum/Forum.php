@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\ApiProperty;
@@ -32,29 +33,29 @@ class Forum implements SluggableEntityInterface
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
     #[ApiProperty(identifier: false)]
     private $id;
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
     private string $title;
-    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
     #[ApiProperty(identifier: true)]
     private string $slug;
-    #[ORM\Column(type: 'text')]
+    #[ORM\Column(type: Types::TEXT)]
     #[Groups([ForumCategory::LIST])]
     private string $description;
     #[ORM\ManyToOne(targetEntity: ForumCategory::class, inversedBy: 'forums')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Forum::ITEM])]
     private ForumCategory $forumCategory;
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $updateDatetime = null;
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: Types::INTEGER)]
     private int $position;
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: Types::INTEGER)]
     private int $topicNumber;
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: Types::INTEGER)]
     private int $postNumber;
 
     public function __construct()
@@ -84,7 +85,7 @@ class Forum implements SluggableEntityInterface
         return $this->slug;
     }
 
-    public function setSlug(string $slug)
+    public function setSlug(string $slug): static
     {
         $this->slug = $slug;
 

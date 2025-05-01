@@ -2,12 +2,12 @@
 
 namespace App\Service\File;
 
+use League\Flysystem\FilesystemException;
 use App\Service\File\Exception\CorruptedFileException;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class RemoteFileDownloader
 {
@@ -21,7 +21,7 @@ class RemoteFileDownloader
     /**
      * @return array{string, int}
      * @throws CorruptedFileException
-     * @throws \League\Flysystem\FilesystemException
+     * @throws FilesystemException
      */
     public function download(string $path, string $destinationDir): array
     {

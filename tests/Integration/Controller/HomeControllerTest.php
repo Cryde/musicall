@@ -14,7 +14,7 @@ class HomeControllerTest extends WebTestCase
 {
     use ResetDatabase, Factories;
 
-    public function test_old_publication_redirect()
+    public function test_old_publication_redirect(): void
     {
         $client = static::createClient();
         $client->request('GET', '/publication/my-super-slug');
@@ -23,7 +23,7 @@ class HomeControllerTest extends WebTestCase
         $this->assertResponseRedirects('http://localhost/publications/my-super-slug');
     }
 
-    public function test_old_course_redirect()
+    public function test_old_course_redirect(): void
     {
         $client = static::createClient();
 

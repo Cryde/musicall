@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -46,8 +45,11 @@ class PublicationSubCategory
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
     private $slug;
 
+    /**
+     * @var Collection<int, Publication>
+     */
     #[ORM\OneToMany(mappedBy: "subCategory", targetEntity: Publication::class, orphanRemoval: true)]
-    private $publications;
+    private Collection $publications;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups([PublicationSubCategory::LIST])]

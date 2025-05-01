@@ -6,7 +6,6 @@ use App\Entity\Image\PublicationFeaturedImage;
 use App\Entity\Publication;
 use App\Entity\PublicationFeatured;
 use App\Form\ImageUploaderType;
-use App\Repository\PublicationFeaturedRepository;
 use App\Serializer\PublicationFeaturedSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;

@@ -19,7 +19,7 @@ class ForumPostPostTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_post_not_logged()
+    public function test_post_not_logged(): void
     {
         $this->client->jsonRequest('POST', '/api/forum_posts', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);

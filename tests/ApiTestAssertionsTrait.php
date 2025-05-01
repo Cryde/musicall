@@ -41,7 +41,7 @@ trait ApiTestAssertionsTrait
         static::assertThat($array, $constraint, $message);
     }
 
-    private function getResponseAsArray()
+    private function getResponseAsArray(): mixed
     {
         return json_decode($this->getHttpResponse()->getContent(), true);
     }

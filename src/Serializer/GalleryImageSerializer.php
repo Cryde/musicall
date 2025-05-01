@@ -16,7 +16,7 @@ class GalleryImageSerializer
     /**
      * @param Collection|GalleryImage[] $images
      */
-    public function toList(\Doctrine\Common\Collections\Collection|array $images): array
+    public function toList(Collection|array $images): array
     {
         $list = [];
         foreach ($images as $image) {

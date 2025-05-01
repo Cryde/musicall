@@ -24,19 +24,19 @@ class PublicationFeaturedImage
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: '4Mi', minWidth: 1500, maxWidth: 1500, maxHeight: 360, minHeight: 360)]
     #[Vich\UploadableField(mapping: 'featured_image', fileNameProperty: 'imageName', size: 'imageSize')]
-    private $imageFile;
+    private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private $imageName;
+    private ?string $imageName = null;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private $imageSize;
+    private ?int $imageSize = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private $updatedAt;
 
     #[ORM\OneToOne(targetEntity: PublicationFeatured::class)]
-    private $publicationFeatured;
+    private ?PublicationFeatured $publicationFeatured = null;
 
     public function getImageFile(): ?File
     {

@@ -2,10 +2,12 @@
 
 namespace App\Repository\Message;
 
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\NonUniqueResultException;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\Expr;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -25,17 +27,17 @@ class MessageThreadRepository extends ServiceEntityRepository
      * @param mixed|User[] ...$participants
      *
      * @return int|mixed|string
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function findByParticipants(...$participants)
+    public function findByParticipants(...$participants): mixed
     {
         return $this->createQueryBuilder('message_thread')
             ->join(
                 'message_thread.messageParticipants', 'message_participants_with',
-                Expr\Join::WITH, 'message_participants_with.participant IN (:participants)')
+                Join::WITH, 'message_participants_with.participant IN (:participants)')
             ->leftJoin('message_thread.messageParticipants', 'message_participants_without',
-                Expr\Join::WITH, 'message_participants_without.participant NOT IN (:participants)')
+                Join::WITH, 'message_participants_without.participant NOT IN (:participants)')
             ->where('message_participants_without.id IS NULL')
             ->groupBy('message_thread.id')
             ->having('count(message_participants_with) = :number_participant')

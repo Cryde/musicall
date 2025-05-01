@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class ViewDirectorTest extends TestCase
 {
-    public function test_build()
+    public function test_build(): void
     {
         $builder = new ViewDirector();
 

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class ForumTopicBuilderTest extends TestCase
 {
-    public function testBuild()
+    public function testBuild(): void
     {
         $builder = new ForumTopicBuilder();
 

@@ -2,7 +2,6 @@
 
 namespace App\ApiResource\Contact;
 
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\State\Processor\Contact\ContactProcessor;

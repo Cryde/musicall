@@ -13,7 +13,7 @@ class ResetPasswordEmail
     {
     }
 
-    public function send(string $recipientEmail, string $username, string $changePasswordLink)
+    public function send(string $recipientEmail, string $username, string $changePasswordLink): void
     {
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))

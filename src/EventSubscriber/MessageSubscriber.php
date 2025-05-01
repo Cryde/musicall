@@ -19,7 +19,7 @@ readonly class MessageSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onMessageSent(MessageSentEvent $event)
+    public function onMessageSent(MessageSentEvent $event): void
     {
         $recipient = $event->getRecipient();
         // @todo : for now we will only send directly the mail

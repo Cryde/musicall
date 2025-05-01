@@ -28,7 +28,7 @@ class SmallPublicationSerializer
     {
         return [
             'id'          => $publication->getId(),
-            'title'       => mb_strtoupper($publication->getTitle()),
+            'title'       => mb_strtoupper((string) $publication->getTitle()),
             'description' => $publication->getShortDescription(),
             'cover_image' => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
         ];

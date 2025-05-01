@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserCheckerTest extends TestCase
 {
-    public function test_check_pre_auth()
+    public function test_check_pre_auth(): void
     {
         $checker = new UserChecker();
 
@@ -28,7 +28,7 @@ class UserCheckerTest extends TestCase
         $checker->checkPreAuth($user);
     }
 
-    public function test_check_post_auth()
+    public function test_check_post_auth(): void
     {
         // i don't know if this test is useful
         $checker = new UserChecker();

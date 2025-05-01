@@ -2,8 +2,10 @@
 
 namespace App\Service\Builder\Publication;
 
+use App\ApiResource\Publication\Publication\Author;
+use App\ApiResource\Publication\Publication\Cover;
+use App\ApiResource\Publication\Publication\Category;
 use App\ApiResource\Publication\Gallery;
-use App\ApiResource\Publication\Publication;
 use App\Entity\Gallery as GalleryEntity;
 use App\Entity\Image\GalleryImage;
 use App\Entity\User;
@@ -32,26 +34,26 @@ readonly class GalleryBuilder
         return $gallery;
     }
 
-    private function buildAuthor(User $user): Publication\Author
+    private function buildAuthor(User $user): Author
     {
-        $author = new Publication\Author();
+        $author = new Author();
         $author->username = $user->getUsername();
 
         return $author;
     }
 
-    private function buildCover(GalleryImage $galleryCover): Publication\Cover
+    private function buildCover(GalleryImage $galleryCover): Cover
     {
         $path = $this->uploaderHelper->asset($galleryCover, 'imageFile');
-        $cover = new Publication\Cover();
+        $cover = new Cover();
         $cover->coverUrl = $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_medium');
 
         return $cover;
     }
 
-    private function buildCategory(): Publication\Category
+    private function buildCategory(): Category
     {
-        $category = new Publication\Category();
+        $category = new Category();
         $category->id = 0;
         $category->slug = 'gallery';
         $category->title = 'gallery';

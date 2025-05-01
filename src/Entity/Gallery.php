@@ -69,16 +69,19 @@ class Gallery implements ViewableInterface
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Gallery::LIST])]
-    private $author;
+    private ?User $author = null;
 
+    /**
+     * @var Collection<int, GalleryImage>
+     */
     #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryImage::class)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
-    private $images;
+    private Collection $images;
 
     #[Assert\NotNull(message: 'Vous devez spécifier une image de couverture', groups: ['publish'])]
     #[ORM\OneToOne(targetEntity: GalleryImage::class, cascade: ['persist', 'remove'])]
     #[Groups([Gallery::LIST])]
-    private $coverImage;
+    private ?GalleryImage $coverImage = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     #[Groups([Gallery::LIST])]
@@ -86,7 +89,7 @@ class Gallery implements ViewableInterface
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     #[Groups([Gallery::LIST])]
-    private $viewCache;
+    private ?ViewCache $viewCache = null;
 
     public function __construct()
     {

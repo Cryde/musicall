@@ -14,7 +14,7 @@ class ConfirmRegistrationEmail
     {
     }
 
-    public function send(string $recipientEmail, string $username, string $confirmEmail)
+    public function send(string $recipientEmail, string $username, string $confirmEmail): void
     {
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))

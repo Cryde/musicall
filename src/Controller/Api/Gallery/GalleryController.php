@@ -5,13 +5,9 @@ namespace App\Controller\Api\Gallery;
 use App\Entity\Gallery;
 use App\Entity\User;
 use App\Serializer\GalleryImageSerializer;
-use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /** @method User getUser() */
 class GalleryController extends AbstractController

@@ -23,7 +23,7 @@ class NotificationContextBuilder implements SerializerContextBuilderInterface
         if ($resourceClass === Notification::class // target notification class only
             && isset($context['groups']) // if we have groups
             && $this->authorizationChecker->isGranted('ROLE_ADMIN') // user is admin
-            && true === $normalization // normalization (false is for denormalization)
+            && $normalization // normalization (false is for denormalization)
         ) {
             $context['groups'][] = Notification::ITEM_ADMIN;
         }

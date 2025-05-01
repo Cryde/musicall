@@ -2,9 +2,7 @@
 
 namespace App\Repository\Forum;
 
-use App\Entity\Forum\Forum;
 use App\Entity\Forum\ForumPost;
-use App\Entity\Forum\ForumTopic;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

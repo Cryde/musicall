@@ -15,7 +15,7 @@ class RegisterConfirmTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_register_confirm()
+    public function test_register_confirm(): void
     {
         $userRepository = static::getContainer()->get(UserRepository::class);
 
@@ -31,7 +31,7 @@ class RegisterConfirmTest extends ApiTestCase
         $this->assertNull($user1->getToken());
     }
 
-    public function test_register_confirm_with_not_existing_token()
+    public function test_register_confirm_with_not_existing_token(): void
     {
         $this->client->request('GET', '/register/confirm/not_existing');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

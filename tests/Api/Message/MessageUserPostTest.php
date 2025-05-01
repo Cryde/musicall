@@ -4,7 +4,6 @@ namespace App\Tests\Api\Message;
 
 use App\Repository\Message\MessageRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
-use App\Repository\Message\MessageThreadRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Message\MessageParticipantFactory;
@@ -30,7 +29,7 @@ class MessageUserPostTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
-    public function test_post_message()
+    public function test_post_message(): void
     {
         $messageRepository = static::getContainer()->get(MessageRepository::class);
         $messageThreadMetaRepository = static::getContainer()->get(MessageThreadMetaRepository::class);
@@ -78,7 +77,7 @@ class MessageUserPostTest extends ApiTestCase
         ]);
     }
 
-    public function test_post_message_but_a_thread_exist()
+    public function test_post_message_but_a_thread_exist(): void
     {
         $messageRepository = static::getContainer()->get(MessageRepository::class);
         $messageThreadMetaRepository = static::getContainer()->get(MessageThreadMetaRepository::class);
@@ -135,7 +134,7 @@ class MessageUserPostTest extends ApiTestCase
         ]);
     }
 
-    public function test_with_invalid_values()
+    public function test_with_invalid_values(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->_real();
 
