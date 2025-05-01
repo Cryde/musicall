@@ -218,9 +218,6 @@
     "myclabs/deep-copy": {
         "version": "1.10.2"
     },
-    "namshi/jose": {
-        "version": "7.2.3"
-    },
     "nelmio/cors-bundle": {
         "version": "2.2",
         "recipe": {

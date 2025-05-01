@@ -19,7 +19,7 @@ class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterfa
     ) {
     }
 
-    public function normalize(mixed $forumPost, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
+    public function normalize(mixed $forumPost, ?string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;
         /** @var ForumPost $forumPost */
@@ -32,7 +32,7 @@ class ForumPostNormalizer implements NormalizerInterface, NormalizerAwareInterfa
         return $forumPostArray;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;

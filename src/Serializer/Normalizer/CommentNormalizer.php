@@ -18,7 +18,7 @@ class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface
     {
     }
 
-    public function normalize(mixed $comment, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
+    public function normalize(mixed $comment, ?string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;
         /** @var Comment $comment */
@@ -28,7 +28,7 @@ class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface
         return $arrayComment;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;

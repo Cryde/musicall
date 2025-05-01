@@ -15,7 +15,7 @@ class PublicationOnlineExtension implements QueryCollectionExtensionInterface
         QueryBuilder                $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string                      $resourceClass,
-        Operation                   $operation = null,
+        ?Operation                   $operation = null,
         array                       $context = []
     ): void {
         if (Publication::class !== $resourceClass && $operation instanceof GetCollection) {

@@ -50,7 +50,7 @@ class PublicationImage
      * must be able to accept an instance of 'File' as the bundle will inject one here
      * during Doctrine hydration.
      */
-    public function setImageFile(File|UploadedFile $image = null): void
+    public function setImageFile(File|UploadedFile|null $image = null): void
     {
         $this->imageFile = $image;
         if (null !== $image) {
@@ -61,7 +61,7 @@ class PublicationImage
     }
 
 
-    public function setImageName(?string $imageName): void
+    public function setImageName(?string $imageName = null): void
     {
         $this->imageName = $imageName;
     }
