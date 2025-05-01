@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine3.21
+FROM php:8.4-fpm-alpine3.21
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -15,7 +15,6 @@ RUN apk add --update --no-cache \
     icu-data-full \
     jpegoptim \
     optipng
-
 
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
