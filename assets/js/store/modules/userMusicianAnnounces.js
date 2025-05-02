@@ -36,6 +36,13 @@ const actions = {
   async refresh({commit}) {
     const announces = await announceApi.getByCurrentUser();
     commit(UPDATE_ANNOUNCES, announces['member']);
+  },
+  async delete({commit}, id) {
+    commit(UPDATE_IS_LOADING, true);
+    await announceApi.delete(id);
+    const announces = await announceApi.getByCurrentUser();
+    commit(UPDATE_ANNOUNCES, announces['member']);
+    commit(UPDATE_IS_LOADING, false);
   }
 };
 

@@ -45,6 +45,12 @@
       <b-table-column field="note" label="Note" v-slot="props">
         {{ props.row.note }}
       </b-table-column>
+
+      <b-table-column v-slot="props">
+        <b-button type="is-danger" size="is-small" icon-left="times" icon-pack="fas"
+          @click="openAreYouSureDelete(props.row.id)"
+        />
+      </b-table-column>
     </b-table>
   </div>
 </template>
@@ -74,6 +80,21 @@ export default {
         hasModalCard: true,
         trapFocus: true
       })
+    },
+    async openAreYouSureDelete(id) {
+      const { result, dialog } = await this.$buefy.dialog.confirm({
+        title: 'Êtes vous sur ?',
+        closeOnConfirm: false,
+        cancelText: 'Annuler',
+        confirmText: 'Oui',
+      });
+
+      if (!result) {
+        return;
+      }
+
+      dialog.close();
+      await this.$store.dispatch('userMusicianAnnounces/delete', id);
     }
   },
   filters: {

@@ -27,5 +27,9 @@ export default {
   getLastAnnounces() {
     return axios.get(Routing.generate('api_musician_announces_get_last_collection'))
     .then(resp => resp.data);
+  },
+  delete(id) {
+    return axios.delete(Routing.generate('api_musician_announces_delete', {id}))
+    .then(resp => resp.data)
   }
 }
