@@ -9,8 +9,8 @@ MusicAll is a platform where people can share videos, articles, courses, search 
 These instructions will get you a copy of the project up and running on your local machine for development.
 
 This project use: 
-- PHP 8.2
-- Symfony 7.0
+- PHP 8.4
+- Symfony 7.2
 - MariaDB version 10.6
 - node 20
 - VueJS 2.7
@@ -105,6 +105,13 @@ npm run build
 You can now access https://musicall.local
 
 [Learn how to use the application](doc/README).
+
+### Tests
+
+To run tests on your local : 
+```
+docker compose run --rm php-cli bin/phpunit
+```
 
 ## TODO
 
