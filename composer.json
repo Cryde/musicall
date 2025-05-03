@@ -5,11 +5,10 @@
     "version": "2.0.0",
     "license": "proprietary",
     "require": {
-        "php": "^8.2.0",
+        "php": ">=8.4.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "api-platform/core": "^4.1",
-        "composer/package-versions-deprecated": "1.11.99.1",
         "cryde/json-text-extractor": "^0.0.3",
         "doctrine/annotations": "^2.0",
         "doctrine/dbal": "^3.0",
@@ -91,7 +90,6 @@
         },
         "sort-packages": true,
         "allow-plugins": {
-            "composer/package-versions-deprecated": true,
             "phpstan/extension-installer": true,
             "symfony/flex": true,
             "symfony/runtime": true,
