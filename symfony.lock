@@ -13,9 +13,6 @@
             "src/ApiResource/.gitignore"
         ]
     },
-    "composer/package-versions-deprecated": {
-        "version": "1.11.99.1"
-    },
     "dama/doctrine-test-bundle": {
         "version": "8.0",
         "recipe": {
