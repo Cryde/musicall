@@ -10,19 +10,6 @@ class UserArraySerializer
     {
     }
 
-    /**
-     * @param User[] $list
-     */
-    public function listToArray($list): array
-    {
-        $result = [];
-        foreach ($list as $user) {
-            $result[] = $this->toArray($user);
-        }
-
-        return $result;
-    }
-
     public function toArray(User $user, bool $self = false): array
     {
         $profilePicture = $user->getProfilePicture();
