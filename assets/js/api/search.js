@@ -9,7 +9,8 @@ export default {
     .then(resp => resp['member']);
   },
   searchUsers(search) {
-    return axios.get(Routing.generate('api_user_search', {search}))
-    .then(resp => resp.data);
+    return axios.get(Routing.generate('api_users_search', {search}))
+    .then(resp => resp.data)
+    .then(resp => resp['member']);
   }
 }
