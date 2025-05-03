@@ -50,7 +50,7 @@ services:
       - .:/var/www:cached
 
   db:
-    image: mariadb:10.6
+    image: mariadb:10.11
     container_name: musicall-db
     environment:
       MYSQL_ROOT_PASSWORD: toor
