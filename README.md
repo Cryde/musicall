@@ -11,7 +11,7 @@ These instructions will get you a copy of the project up and running on your loc
 This project use: 
 - PHP 8.4
 - Symfony 7.2
-- MariaDB version 10.6
+- MariaDB version 10.11
 - node 20
 - VueJS 2.7
 
