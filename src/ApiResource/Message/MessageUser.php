@@ -4,6 +4,7 @@ namespace App\ApiResource\Message;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Message\Message;
 use App\Entity\User;
 use App\State\Processor\Message\MessagePostToUserProcessor;
@@ -14,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Post(
             uriTemplate: '/messages/user',
+            openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [Message::ITEM]],
             denormalizationContext: ['groups' => [MessageUser::POST]],
             output: Message::class,

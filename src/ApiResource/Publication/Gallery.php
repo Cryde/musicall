@@ -5,6 +5,7 @@ namespace App\ApiResource\Publication;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Publication\Publication\Author;
 use App\ApiResource\Publication\Publication\Category;
 use App\ApiResource\Publication\Publication\Cover;
@@ -16,6 +17,7 @@ use App\State\Provider\Publication\GalleryProvider;
     operations: [
         new Get(
             uriTemplate: '/galleries/{slug}',
+            openapi: new Operation(tags: ['Publications']),
             priority: 10,
             name: 'api_gallery_get_item',
             provider: GalleryProvider::class,

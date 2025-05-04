@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Entity\User;
+namespace App\ApiResource\User;
 
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\User\ChangePasswordProcessor;
 use Symfony\Component\Security\Core\Validator\Constraints as SecurityAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
     uriTemplate: '/users/change_password',
+    openapi: new Operation(tags: ['Users']),
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
     processor: ChangePasswordProcessor::class
 )]

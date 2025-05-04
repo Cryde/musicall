@@ -2,6 +2,7 @@
 
 namespace App\Entity\Comment;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
@@ -19,8 +20,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => [Comment::ITEM]]),
-    new GetCollection(normalizationContext: ['groups' => [Comment::LIST]], name: 'api_comments_get_collection'),
+    new Get(
+        openapi: new Operation(tags: ['Comment']),
+        normalizationContext: ['groups' => [Comment::ITEM]]
+    ),
+    new GetCollection(
+        openapi: new Operation(tags: ['Comment']),
+        normalizationContext: ['groups' => [Comment::LIST]],
+        name: 'api_comments_get_collection'
+    ),
 ])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
 class Comment

@@ -28,6 +28,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
         new Post(
             inputFormats: ['multipart' => ['multipart/form-data']],
             openapi: new Operation(
+                tags: ['Publications'],
                 requestBody: new RequestBody(
                     content: new \ArrayObject([
                         'multipart/form-data' => [

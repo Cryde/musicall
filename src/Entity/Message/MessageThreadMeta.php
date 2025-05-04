@@ -5,6 +5,7 @@ namespace App\Entity\Message;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\User;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\State\Processor\Message\MessageThreadMetaPatchProcessor;
@@ -21,11 +22,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(
+            openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [MessageThreadMeta::LIST]],
             name: 'api_message_thread_meta_get_collection',
             provider: MessageThreadMetaCollectionProvider::class
         ),
         new Patch(
+            openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [MessageThreadMeta::ITEM]],
             denormalizationContext: ['groups' => [MessageThreadMeta::PATCH]],
             name: 'api_message_thread_meta_patch',

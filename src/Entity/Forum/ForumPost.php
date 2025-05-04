@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
@@ -24,9 +25,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ForumPostRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => [ForumPost::ITEM]]),
-    new GetCollection(normalizationContext: ['groups' => [ForumPost::LIST]], name: 'api_forum_posts_get_collection'),
+    new Get(
+        openapi: new Operation(tags: ['Forum']),
+        normalizationContext: ['groups' => [ForumPost::ITEM]],
+    ),
+    new GetCollection(
+        openapi: new Operation(tags: ['Forum']),
+        normalizationContext: ['groups' => [ForumPost::LIST]],
+        name: 'api_forum_posts_get_collection',
+    ),
     new Post(
+        openapi: new Operation(tags: ['Forum']),
         normalizationContext: ['groups' => [ForumPost::ITEM], 'skip_null_values' => false],
         denormalizationContext: ['groups' => [ForumPost::POST]],
         security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",

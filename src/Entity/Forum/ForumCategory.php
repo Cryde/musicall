@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
@@ -22,8 +23,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumCategoryRepository::class)]
 #[ApiResource(operations: [
-    new Get(),
-    new GetCollection(normalizationContext: ['groups' => [ForumCategory::LIST]], name: 'api_forum_categories_get_collection')
+    new Get(openapi: new Operation(tags: ['Forum']),),
+    new GetCollection(
+        openapi: new Operation(tags: ['Forum']),
+        normalizationContext: ['groups' => [ForumCategory::LIST]],
+        name: 'api_forum_categories_get_collection',
+    )
 ])]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['position' => OrderFilterInterface::DIRECTION_ASC, 'forums.position' => OrderFilterInterface::DIRECTION_ASC])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['forumSource.slug' => SearchFilterInterface::STRATEGY_EXACT])]

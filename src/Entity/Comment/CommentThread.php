@@ -2,6 +2,7 @@
 
 namespace App\Entity\Comment;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\Get;
@@ -16,7 +17,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentThreadRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => [CommentThread::ITEM]], name: 'api_comment_threads_get_item')
+    new Get(
+        openapi: new Operation(tags: ['Comment']),
+        normalizationContext: ['groups' => [CommentThread::ITEM]],
+        name: 'api_comment_threads_get_item',
+    )
 ])]
 class CommentThread
 {

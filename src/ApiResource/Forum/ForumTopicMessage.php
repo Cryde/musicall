@@ -1,13 +1,18 @@
 <?php
 
-namespace App\Entity\Forum;
+namespace App\ApiResource\Forum;
 
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use App\Entity\Forum\Forum;
+use App\Entity\Forum\ForumPost;
+use App\Entity\Forum\ForumTopic;
 use App\State\Processor\Forum\ForumTopicMessageProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
     uriTemplate: '/forum/topic/post',
+    openapi: new Operation(tags: ['Forum']),
     normalizationContext: ['groups' => [ForumTopic::ITEM]],
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
     output: ForumTopic::class,

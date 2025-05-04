@@ -4,7 +4,7 @@ namespace App\State\Processor\Forum;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Forum\ForumTopicMessage;
+use App\ApiResource\Forum\ForumTopicMessage;
 use App\Service\Procedure\Forum\TopicCreationProcedure;
 
 class ForumTopicMessageProcessor implements ProcessorInterface

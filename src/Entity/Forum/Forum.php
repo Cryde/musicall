@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
@@ -18,6 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(operations: [
     new Get(
         uriTemplate: 'forums/{slug}',
+        openapi: new Operation(tags: ['Forum']),
         normalizationContext: ['groups' => [Forum::ITEM]],
         name: 'api_forums_get_item'
     ),

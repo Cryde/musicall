@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Contracts\Metric\ViewableInterface;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Comment\CommentThread;
@@ -31,6 +32,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
+            openapi: new Operation(tags: ['Publications']),
             // "PublicationOnlineExtension" add automatic filter on status of the publication
             paginationItemsPerPage: Publication::LIST_ITEMS_PER_PAGE,
             normalizationContext: ['groups' => [Publication::LIST], 'skip_null_values' => false],
