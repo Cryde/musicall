@@ -4,6 +4,7 @@ namespace App\Entity\Message;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Repository\Message\MessageThreadRepository;
 use DateTime;
 use DateTimeInterface;
@@ -17,7 +18,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: MessageThreadRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => [MessageThread::ITEM]])
+        new Get(
+            openapi: new Operation(tags: ['Message']),
+            normalizationContext: ['groups' => [MessageThread::ITEM]],
+        )
     ]
 )]
 class MessageThread

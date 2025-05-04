@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Search\MusicianSearchResult;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
@@ -35,11 +36,16 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Get(
             uriTemplate: '/users/self',
+            openapi: new Operation(tags: ['Users']),
             normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM], 'skip_null_values' => false],
             name: 'api_users_get_self',
             provider: UserSelfProvider::class,
         ),
-        new Get(normalizationContext: ['groups' => [User::ITEM], 'skip_null_values' => false], name: 'api_users_get_item',),
+        new Get(
+            openapi: new Operation(tags: ['Users']),
+            normalizationContext: ['groups' => [User::ITEM], 'skip_null_values' => false],
+            name: 'api_users_get_item',
+        ),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface

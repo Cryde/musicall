@@ -3,6 +3,7 @@
 namespace App\ApiResource\Publication\Video;
 
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\PublicationSubCategory;
 use App\State\Processor\Publication\VideoPostProcessor;
 use App\Validator\Publication\AlreadyExistingVideo;
@@ -11,6 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
     uriTemplate: '/publications/video/add',
+    openapi: new Operation(tags: ['Publications']),
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
     name: 'api_publication_video_add',
     processor: VideoPostProcessor::class,

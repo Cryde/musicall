@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\GetCollection;
@@ -19,8 +20,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationFeaturedRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => [PublicationFeatured::ITEM]]),
-    new GetCollection(normalizationContext: ['groups' => [PublicationFeatured::LIST]], name: 'api_publication_featureds_get_collection')
+    new Get(
+        openapi: new Operation(tags: ['Publications']),
+        normalizationContext: ['groups' => [PublicationFeatured::ITEM]]
+    ),
+    new GetCollection(
+        openapi: new Operation(tags: ['Publications']),
+        normalizationContext: ['groups' => [PublicationFeatured::LIST]], name: 'api_publication_featureds_get_collection'
+    )
 ])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['status' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationFeatured

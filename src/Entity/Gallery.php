@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\OpenApi\Model\Operation;
 use DateTimeInterface;
 use DateTime;
 use ApiPlatform\Metadata\ApiResource;
@@ -23,6 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: GalleryRepository::class)]
 #[ApiResource(operations: [
     new GetCollection(
+        openapi: new Operation(tags: ['Publications']),
         paginationEnabled: false,
         normalizationContext: ['groups' => [Gallery::LIST], 'skip_null_values' => false],
         name: 'api_gallery_get_collection',

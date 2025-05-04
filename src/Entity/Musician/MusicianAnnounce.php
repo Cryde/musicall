@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Attribute\Instrument;
 use App\Entity\Attribute\Style;
 use App\Entity\User;
@@ -27,6 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(
             uriTemplate: 'musician_announces/last',
+            openapi: new Operation(tags: ['Musician announce']),
             paginationEnabled: false,
             order: ['creationDatetime' => 'DESC'],
             normalizationContext: ['groups' => [MusicianAnnounce::LIST_LAST]],
@@ -35,20 +37,25 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new GetCollection(
             uriTemplate: 'musician_announces/self',
-            paginationEnabled: false, // No need to paginate for now, user won't have tons of announce
+            openapi: new Operation(tags: ['Musician announce']), // No need to paginate for now, user won't have tons of announce
+            paginationEnabled: false,
             order: ['creationDatetime' => 'DESC'],
             normalizationContext: ['groups' => [MusicianAnnounce::ITEM_SELF]],
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_musician_announces_get_self_collection'
         ),
         new Post(
+            openapi: new Operation(tags: ['Musician announce']),
             normalizationContext: ['groups' => [MusicianAnnounce::ITEM_SELF]],
             denormalizationContext: ['groups' => [MusicianAnnounce::POST]],
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_musician_announces_post',
             processor: MusicianAnnouncePostProcessor::class
         ),
-        new Get(normalizationContext: ['groups' => [MusicianAnnounce::ITEM]],),
+        new Get(
+            openapi: new Operation(tags: ['Musician announce']),
+            normalizationContext: ['groups' => [MusicianAnnounce::ITEM]],
+        ),
     ]
 )]
 class MusicianAnnounce

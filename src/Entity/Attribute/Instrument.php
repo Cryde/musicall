@@ -5,6 +5,7 @@ namespace App\Entity\Attribute;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Search\MusicianSearchResult;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Musician\MusicianAnnounce;
@@ -24,8 +25,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: InstrumentRepository::class)]
 #[ORM\Table(name: 'attribute_instrument')]
 #[ApiResource(operations: [
-    new Get(),
-    new GetCollection(paginationItemsPerPage: 100,name: 'api_instruments_get_collection'),
+    new Get(openapi: new Operation(tags: ['Attributes']),),
+    new GetCollection(
+        openapi: new Operation(tags: ['Attributes']),
+        paginationItemsPerPage: 100,
+        name: 'api_instruments_get_collection',
+    ),
 ])]
 class Instrument implements SluggableEntityInterface
 {

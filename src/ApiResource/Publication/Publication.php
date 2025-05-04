@@ -20,6 +20,7 @@ use App\State\Provider\Publication\PublicationSearchProvider;
     operations: [
         new Get(
             uriTemplate: '/publications/{slug}',
+            openapi: new Operation(tags: ['Publications']),
             priority: 10,
             name: 'api_publication_get_item',
             provider: PublicationProvider::class
@@ -27,6 +28,7 @@ use App\State\Provider\Publication\PublicationSearchProvider;
         new GetCollection(
             uriTemplate: '/publications/search',
             openapi: new Operation(
+                tags: ['Publications'],
                 parameters: [new Parameter(name: 'term', in: 'query', description: "The query string you want to search", required: true, allowEmptyValue: false, example: "My search title")]
             ),
             paginationEnabled: false,

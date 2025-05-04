@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\OpenApi\Model\Operation;
 use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
@@ -22,8 +23,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
 #[ApiResource(operations: [
-    new Get(normalizationContext: ['groups' => [ForumTopic::ITEM]], name: 'api_forum_topics_get_item'),
-    new GetCollection(normalizationContext: ['groups' => [ForumTopic::LIST]], name: 'api_forum_topics_get_collection')
+    new Get(
+        openapi: new Operation(tags: ['Forum']),
+        normalizationContext: ['groups' => [ForumTopic::ITEM]],
+        name: 'api_forum_topics_get_item',
+    ),
+    new GetCollection(
+        openapi: new Operation(tags: ['Forum']),
+        normalizationContext: ['groups' => [ForumTopic::LIST]],
+        name: 'api_forum_topics_get_collection'
+    )
 ],
     paginationClientEnabled: true,
     paginationItemsPerPage: 15

@@ -3,12 +3,13 @@
 namespace App\ApiResource\Search;
 
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\Search\MusicianSearchProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[GetCollection(
     uriTemplate: 'musicians/search',
-    shortName: 'MusicianAnnounce',
+    openapi: new Operation(tags: ['Musician announce']),
     paginationEnabled: false,
     normalizationContext: ['groups' => MusicianSearchResult::LIST],
     output: MusicianSearchResult::class,

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
 use App\State\Processor\Message\MessagePostProcessor;
@@ -27,11 +28,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(
             uriTemplate: '/messages/{threadId}',
             uriVariables: ['threadId' => new Link(toProperty: 'thread', fromClass: MessageThread::class)],
+            openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [Message::LIST]],
             name: 'api_message_get_collection',
             provider: MessageCollectionProvider::class
         ),
         new Post(
+            openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [Message::ITEM]],
             denormalizationContext: ['groups' => [Message::POST]],
             name: 'api_message_post',
