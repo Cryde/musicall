@@ -16,7 +16,9 @@ export default {
     .then(resp => resp.data);
   },
   resetPassword({token, password}) {
-    return axios.post(Routing.generate('api_users_reset_password', {token}), {password})
+    return axios.post(Routing.generate('api_users_reset_password', {token}), {password},{
+      headers: {'Content-Type': 'application/ld+json'}
+    })
     .then(resp => resp.data);
   },
   me() {
