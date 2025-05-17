@@ -2,7 +2,6 @@
 
 namespace App\Service\User;
 
-use App\Exception\NoMatchedUserAccountException;
 use App\Repository\UserRepository;
 use App\Service\Mail\Brevo\User\ResetPasswordEmail;
 use Doctrine\ORM\NonUniqueResultException;
