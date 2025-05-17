@@ -9,8 +9,6 @@ fos_js_routing:
         - api_publication_(.*)
         - api_forum_(.*)
         - api_forums_(.*)
-        - api_user_request_reset_password
-        - api_users_change_password_post
         - api_user_profile_picture_post
         - api_message_(.*)
         - api_users_(.*)

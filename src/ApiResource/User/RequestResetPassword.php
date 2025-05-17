@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Post(
     uriTemplate: '/users/request-reset-password',
     openapi: new Operation(tags: ['Users']),
-    name: 'api_user_request_reset_password',
+    name: 'api_users_request_reset_password',
     processor: RequestResetPasswordProcessor::class,
 )]
 class RequestResetPassword

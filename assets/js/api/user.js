@@ -10,13 +10,13 @@ export default {
     .then(resp => resp.data);
   },
   requestResetPassword(login) {
-    return axios.post(Routing.generate('api_user_request_reset_password'), {login},{
+    return axios.post(Routing.generate('api_users_request_reset_password'), {login},{
       headers: {'Content-Type': 'application/ld+json'}
     })
     .then(resp => resp.data);
   },
   resetPassword({token, password}) {
-    return axios.post(Routing.generate('api_user_reset_password', {token}), {password})
+    return axios.post(Routing.generate('api_users_reset_password', {token}), {password})
     .then(resp => resp.data);
   },
   me() {
