@@ -4,15 +4,15 @@ import axios from 'axios';
 
 export default {
   changePassword({oldPassword, newPassword}) {
-    return axios.post(Routing.generate('_api_/users/change_password_post'), {oldPassword, newPassword},{
-      headers: {
-        'Content-Type': 'application/ld+json'
-      }
+    return axios.post(Routing.generate('api_users_change_password_post'), {oldPassword, newPassword},{
+      headers: {'Content-Type': 'application/ld+json'}
     })
     .then(resp => resp.data);
   },
   requestResetPassword(login) {
-    return axios.post(Routing.generate('api_user_request_reset_password'), {login})
+    return axios.post(Routing.generate('api_user_request_reset_password'), {login},{
+      headers: {'Content-Type': 'application/ld+json'}
+    })
     .then(resp => resp.data);
   },
   resetPassword({token, password}) {

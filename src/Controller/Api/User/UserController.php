@@ -27,21 +27,6 @@ class UserController extends AbstractController
     ) {
     }
 
-    /**
-     * @throws NonUniqueResultException
-     */
-    #[Route(path: '/api/users/request-reset-password', name: 'api_user_request_reset_password', options: ['expose' => true], methods: ['POST'], format: 'json')]
-    public function requestResetPassword(
-        Request       $request,
-        Jsonizer      $jsonizer,
-        ResetPassword $resetPassword
-    ): JsonResponse {
-        $data = $jsonizer->decodeRequest($request);
-        $resetPassword->resetPasswordByLogin($data['login']);
-
-        return $this->json(['data' => ['success' => 1]]);
-    }
-
     #[Route(path: '/api/users/reset-password/{token}', name: 'api_user_reset_password', options: ['expose' => true], defaults: ['_format' => 'json'], methods: ['POST'])]
     public function resetTokenPassword(string $token, Request $request, UserRepository $userRepository): JsonResponse
     {

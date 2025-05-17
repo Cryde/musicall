@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     uriTemplate: '/users/change_password',
     openapi: new Operation(tags: ['Users']),
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
+    name: 'api_users_change_password_post',
     processor: ChangePasswordProcessor::class
 )]
 class ChangePassword

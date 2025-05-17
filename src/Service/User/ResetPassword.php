@@ -9,25 +9,24 @@ use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-class ResetPassword
+readonly class ResetPassword
 {
     public function __construct(
-        private readonly UserRepository     $userRepository,
-        private readonly UserTokenGenerator $userTokenGenerator,
-        private readonly ResetPasswordEmail $resetPasswordEmail,
-        private readonly RouterInterface    $router
+        private UserRepository     $userRepository,
+        private UserTokenGenerator $userTokenGenerator,
+        private ResetPasswordEmail $resetPasswordEmail,
+        private RouterInterface    $router
     ) {
     }
 
     /**
-     * @throws NoMatchedUserAccountException
      * @throws NonUniqueResultException
      */
     public function resetPasswordByLogin(string $login): void
     {
-        $user = $this->userRepository->findOneByEmailOrLogin($login);
-        if (!$user) {
-            throw new NoMatchedUserAccountException('Aucun compte associé à ce login ou email n\'a été trouvé.');
+        if (!$user = $this->userRepository->findOneByEmailOrLogin($login)) {
+            // we just do nothing no need to send exception
+            return;
         }
 
         $user->setResetRequestDatetime(new \DateTime());
