@@ -6,9 +6,9 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\RequestResetPassword;
 use App\Service\User\ResetPassword;
 
-class RequestResetPasswordProcessor implements ProcessorInterface
+readonly class RequestResetPasswordProcessor implements ProcessorInterface
 {
-    public function __construct(private ResetPassword  $resetPassword)
+    public function __construct(private ResetPassword $resetPassword)
     {
     }
 
