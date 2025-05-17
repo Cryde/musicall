@@ -41,3 +41,5 @@ api_platform:
         App\Exception\Musician\InvalidSearchException: 400
         App\Exception\Musician\NoResultException: 404
         App\Exception\Musician\InvalidResultException: 404
+        # User
+        App\Exception\User\ResetPasswordInvalidTokenException: 404

@@ -21,6 +21,20 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         parent::__construct($registry, User::class);
     }
 
+    public function findByTokenAndLimitDatetime(
+        string $token,
+        \DateTime $limitDatetime = new \DateTime('15 minutes ago')
+    ): ?User
+    {
+        return $this->createQueryBuilder('user')
+            ->where('user.token = :token')
+            ->andWhere('user.resetRequestDatetime > :limit_datetime')
+            ->setParameter('token', $token)
+            ->setParameter('limit_datetime', $limitDatetime)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * Will be deprecated in the future, the correct method is "loadUserByIdentifier"
      * @throws NonUniqueResultException
