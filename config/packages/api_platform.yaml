@@ -43,3 +43,4 @@ api_platform:
         App\Exception\Musician\InvalidResultException: 404
         # User
         App\Exception\User\ResetPasswordInvalidTokenException: 404
+        App\Exception\User\UserAlreadyLoggedException: 400
