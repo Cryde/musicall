@@ -11,6 +11,6 @@ class PublicationCoverDirector
         return (new PublicationCover())
             ->setImageSize($size)
             ->setImageName($path)
-            ->setUpdatedAt(new \DateTimeImmutable());
+            ->setUpdatedAt(new \DateTime());
     }
 }
