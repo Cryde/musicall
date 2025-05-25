@@ -75,7 +75,7 @@ class PublicationFeatured
     #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private ?PublicationFeaturedImage $cover = null;
 
-    #[ORM\Column(type: Types::ARRAY, nullable: true)]
+    #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups([PublicationFeatured::LIST, PublicationFeatured::ITEM])]
     private ?array $options = ['color' => 'dark'];
 

@@ -35,9 +35,6 @@
         },
         "files": []
     },
-    "doctrine/cache": {
-        "version": "v1.8.0"
-    },
     "doctrine/collections": {
         "version": "v1.5.0"
     },
@@ -811,12 +808,12 @@
         "version": "3.1.0"
     },
     "zenstruck/foundry": {
-        "version": "2.4",
+        "version": "2.5",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "2.0",
-            "ref": "56bc588a1b6d5d218319f70c64c2f0fbebe30ec7"
+            "version": "2.5",
+            "ref": "8390abe263fa9b68f55c2799c44af5fec2912c5d"
         },
         "files": [
             "config/packages/zenstruck_foundry.yaml"
