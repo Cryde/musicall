@@ -1,4 +1,0 @@
-export const FORUM_MAX_TOPIC_PER_PAGE = 15;
-export const FORUM_MAX_TOPIC_POST_PER_PAGE = 10;
-export const FORUM_MIN_LENGTH_MESSAGE = 10;
-export const FORUM_MIN_LENGTH_TITLE = 3;

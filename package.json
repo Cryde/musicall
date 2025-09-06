@@ -1,9 +1,6 @@
 {
     "devDependencies": {
-        "@vitejs/plugin-vue2": "^2.3.0",
-        "sass": "^1.69.6",
-        "vite": "^6.3.3",
-        "vite-plugin-symfony": "^8.0.2"
+
     },
     "type": "module",
     "license": "UNLICENSED",
@@ -13,36 +10,6 @@
         "build": "vite build"
     },
     "dependencies": {
-        "@creativebulma/bulma-badge": "^1.0.1",
-        "@sentry/vue": "^9.14.0",
-        "@tiptap/extension-bubble-menu": "^2.0.0-beta.202",
-        "@tiptap/extension-document": "^2.0.0-beta.202",
-        "@tiptap/extension-heading": "^2.0.0-beta.202",
-        "@tiptap/extension-image": "^2.0.0-beta.202",
-        "@tiptap/extension-link": "^2.0.0-beta.202",
-        "@tiptap/extension-paragraph": "^2.0.0-beta.202",
-        "@tiptap/extension-text": "^2.0.0-beta.202",
-        "@tiptap/extension-text-align": "^2.0.0-beta.202",
-        "@tiptap/starter-kit": "^2.0.0-beta.202",
-        "@tiptap/vue-2": "^2.0.0-beta.202",
-        "@yeger/vue2-masonry-wall": "^5.0.10",
-        "autolinker": "^4.0.0",
-        "axios": "^1.1.2",
-        "buefy": "^0.9.8",
-        "date-fns": "^3.6.0",
-        "gmap-vue": "^3.5.4",
-        "jwt-decode": "^3.1.2",
-        "lodash": "^4.17.21",
-        "vue": "^2.6.14",
-        "vue-advanced-cropper": "^0.19.3",
-        "vue-gtag": "^1.16.1",
-        "vue-meta": "^2.4.0",
-        "vue-progressbar": "^0.7.5",
-        "vue-router": "^3.5.2",
-        "vue-select": "^3.12.2",
-        "vue-sticky-directive": "0.0.8",
-        "vue2-dropzone": "^3.6.0",
-        "vue2-perfect-scrollbar": "^1.2.0",
-        "vuex": "^3.6.2"
+
     }
 }
