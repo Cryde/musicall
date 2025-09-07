@@ -41,7 +41,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     ]
 )]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['publicationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: [
+    'subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT,
+    'subCategory.type' => SearchFilterInterface::STRATEGY_EXACT
+])]
 class Publication implements ViewableInterface, SluggableEntityInterface
 {
     final const LIST_ITEMS_PER_PAGE = 12;
