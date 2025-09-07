@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+@import 'primeicons/primeicons.css';
+
+@custom-variant dark (&:where(.app-mode, .app-mode *));
+
+html {
+    font-family: "Open Sans", serif;
+}

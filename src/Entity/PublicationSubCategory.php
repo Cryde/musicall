@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
@@ -28,6 +30,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     )
 ])]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['position' => 'ASC'])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['type' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationSubCategory
 {
     final const TYPE_PUBLICATION = 1;
