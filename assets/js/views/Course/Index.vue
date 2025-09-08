@@ -125,16 +125,16 @@ const sortOptions = ref([
     label: 'Nouveau',
     icon: 'pi pi-calendar-plus',
     command: async () => {
-      await coursesStore.loadCourses({page: 1, slug: selectCategoryFilter.value.slug, orientation: 'desc'})
       sortMenu.value.hide();
+      await coursesStore.loadCourses({page: 1, slug: selectCategoryFilter.value.slug, orientation: 'desc'})
     }
   },
   {
     label: 'Ancien',
     icon: 'pi pi-calendar-minus',
     command: async () => {
-      await coursesStore.loadCourses({page: 1, slug: selectCategoryFilter.value.slug, orientation: 'asc'})
       sortMenu.value.hide();
+      await coursesStore.loadCourses({page: 1, slug: selectCategoryFilter.value.slug, orientation: 'asc'})
     }
   },
 ]);
