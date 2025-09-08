@@ -4,19 +4,9 @@ import axios from 'axios';
 
 export default {
   getCourses({page, slug = null, orientation = 'desc'}) {
-    console.log(page, slug, orientation);
     return axios.get(Routing.generate('api_publication_get_collection', {
       page,
       'sub_category.type': '2',
-      order: {publication_datetime: orientation},
-      'sub_category.slug': slug
-    }))
-    .then(resp => resp.data);
-  },
-  getPublicationsByCategory({page, slug, orientation = 'desc'}) {
-
-    return axios.get(Routing.generate('api_publication_get_collection', {
-      page,
       order: {publication_datetime: orientation},
       'sub_category.slug': slug
     }))
