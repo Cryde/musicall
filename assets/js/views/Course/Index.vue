@@ -1,7 +1,7 @@
 <template>
 
   <div class="flex justify-end">
-    <breadcrumb :items="[{'label':  'Cours'}]" />
+    <breadcrumb :items="[{'label':  'Cours'}]"/>
   </div>
 
   <div class="flex md:items-center justify-between gap-4 md:flex-row flex-col">
@@ -28,30 +28,30 @@
 
   <div class="flex flex-row">
     <div class="basis-3/4">
-        <div class="flex flex-wrap items-center gap-4 mb-5">
-          <div class="flex justify-start items-center gap-4">
-            <Button
-                ref="sortButton"
-                outlined
-                severity="secondary"
-                icon="pi pi-sort-alt"
-                icon-pos="right"
-                label="Trier par"
-                class="px-3 py-2 border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400"
-                @click="toggleSortMenu"
-            />
-            <Menu ref="sortMenu" :popup="true" :model="sortOptions" />
-          </div>
-
-          <Chip
-              v-if="selectCategoryFilter"
-              :label="selectCategoryFilter.title"
-              removable
-              class="h-auto px-6 rounded-full"
-              remove-icon="pi pi-times"
-              @remove="removeFilter()"
+      <div class="flex flex-wrap items-center gap-4 mb-5">
+        <div class="flex justify-start items-center gap-4">
+          <Button
+              ref="sortButton"
+              outlined
+              severity="secondary"
+              icon="pi pi-sort-alt"
+              icon-pos="right"
+              label="Trier par"
+              class="px-3 py-2 border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400"
+              @click="toggleSortMenu"
           />
+          <Menu ref="sortMenu" :popup="true" :model="sortOptions"/>
         </div>
+
+        <Chip
+            v-if="selectCategoryFilter"
+            :label="selectCategoryFilter.title"
+            removable
+            class="h-auto px-6 rounded-full"
+            remove-icon="pi pi-times"
+            @remove="removeFilter()"
+        />
+      </div>
 
       <div class="self-stretch flex flex-col gap-8">
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
@@ -102,6 +102,10 @@ const mapInstrumentImage = {
 const selectCategoryFilter = ref('');
 
 async function changeCategoryFilter(selectedValue) {
+  if (selectCategoryFilter.value === selectedValue) {
+    await removeFilter();
+    return;
+  }
   selectCategoryFilter.value = selectedValue;
   await coursesStore.loadCourses({page: 1, slug: selectedValue.slug})
 }
