@@ -18,23 +18,24 @@
   <div class="flex flex-row gap-8">
     <div class="basis-7/12">
       <div class="flex flex-col gap-4">
-      <Textarea v-model="value3" fluid maxlength="200" rows="5" size="large"
+      <Textarea v-model="search" fluid maxlength="200" rows="5" size="large"
                 placeholder="Taper votre recherche ici, exemple: Je recherche un guitariste qui joue du rock"/>
 
         <div class="flex justify-end">
-          <Button label="Rechercher" icon="pi pi-search" severity="info" />
+          <Button label="Rechercher" icon="pi pi-search" severity="info"/>
         </div>
       </div>
     </div>
     <div class="basis-5/12">
       <div class="flex flex-col gap-4">
-        <Card class="cursor-pointer">
+        Voici une liste d'exemple que vous pouvez utiliser.
+        <Card class="cursor-pointer" @click="insertExample">
           <template #content>Je cherche un groupe de pop et rock qui a besoin d'un batteur</template>
         </Card>
-        <Card class="cursor-pointer">
+        <Card class="cursor-pointer" @click="insertExample">
           <template #content>Je recherche un guitariste pour mon groupe de funk</template>
         </Card>
-        <Card class="cursor-pointer">
+        <Card class="cursor-pointer" @click="insertExample">
           <template #content>Je recherche un chanteur pour mon groupe de stoner et métal</template>
         </Card>
       </div>
@@ -49,5 +50,9 @@ import Textarea from "primevue/textarea";
 import {ref} from "vue";
 import Card from 'primevue/card';
 
-const value3 = ref('');
+const search = ref('');
+
+function insertExample(e) {
+  search.value = e.target.textContent;
+}
 </script>
