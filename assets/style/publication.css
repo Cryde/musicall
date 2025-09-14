@@ -1,0 +1,9 @@
+.publication-container {
+    font-size: 1.1rem;
+}
+
+.publication-container img {
+    margin: 20px auto;
+    display: block;
+    width: auto;
+}

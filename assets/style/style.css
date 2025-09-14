@@ -3,8 +3,11 @@
 
 @import 'primeicons/primeicons.css';
 
+@import "./publication.css";
+
 @custom-variant dark (&:where(.app-mode, .app-mode *));
 
 html {
     font-family: "Open Sans", serif;
 }
+
