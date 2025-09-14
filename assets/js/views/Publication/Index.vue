@@ -56,6 +56,7 @@
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
           <PublicationListItem
               v-for="publication in publicationsStore.publications"
+              :to-route="{name: 'app_publication_show', params: {slug: publication.slug}}"
               :key="publication.id"
               :cover="publication.cover"
               :title="publication.title"
@@ -81,7 +82,6 @@ import Breadcrumb from "../Global/Breadcrumb.vue";
 const publicationsStore = usePublicationsStore();
 publicationsStore.loadPublications({page: 1})
 publicationsStore.loadCategories()
-
 
 const sortMenu = ref();
 const selectCategoryFilter = ref(null);
