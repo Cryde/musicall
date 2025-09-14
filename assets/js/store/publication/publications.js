@@ -2,7 +2,7 @@ import {defineStore} from 'pinia'
 import {readonly, ref} from 'vue';
 import publicationsApi from '../../api/publication/publications.js';
 
-export const usePublicationsStore = defineStore('publicaton', () => {
+export const usePublicationsStore = defineStore('publications', () => {
 
   const publications = ref([]);
   const publicationCategories = ref([]);

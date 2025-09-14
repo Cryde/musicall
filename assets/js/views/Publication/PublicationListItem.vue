@@ -1,7 +1,14 @@
 <template>
 
-  <div
-      class="h-auto md:h-[160px] p-2 bg-white dark:bg-surface-900 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4">
+  <RouterLink
+      :to="toRoute"
+      custom
+      v-slot="{ isActive, href, navigate }"
+  >
+  <a
+      @click="navigate"
+      :href="href"
+      class="h-auto md:h-[160px] p-2 bg-white dark:bg-surface-900 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 cursor-pointer">
     <img :src="cover" :alt="title" class="h-auto w-3/12 rounded-lg object-cover"/>
     <div class="p-4 flex flex-col gap-4 w-9/12">
       <div class="flex flex-col gap-4 flex-1">
@@ -20,12 +27,14 @@
         <Tag severity="secondary" :value="category.title" class="ml-3"></Tag>
       </div>
     </div>
-  </div>
+  </a>
+  </RouterLink>
 </template>
 
 <script setup>
 import relativeDateFilter from "../../../../assets-legacy/js/filters/relative-date-filter.js";
 defineProps([
+  'toRoute',
   'cover',
   'title',
   'description',

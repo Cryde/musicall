@@ -16,6 +16,7 @@
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
           <PublicationListItem
               v-for="publication in publicationsStore.publications"
+              :to-route="{name: 'app_publication_show', params: {slug: publication.slug}}"
               :key="publication.id"
               :cover="publication.cover"
               :title="publication.title"
