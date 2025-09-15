@@ -1,3 +1,3 @@
 <template>
-  forum
+  Reviens bientôt
 </template>
