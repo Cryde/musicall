@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-surface-0 dark:bg-surface-950">
-    <ul class="list-none m-0 bg-surface-0 dark:bg-surface-950 flex items-center gap-2 font-medium overflow-x-auto">
+  <div class="bg-transparent dark:bg-surface-950">
+    <ul class="list-none m-0 bg-transparent dark:bg-surface-950 flex items-center gap-2 font-medium overflow-x-auto">
       <li>
         <a class="cursor-pointer transition-all">
           <i class="pi pi-home text-base! leading-normal! text-surface-500 dark:text-surface-300"/>
