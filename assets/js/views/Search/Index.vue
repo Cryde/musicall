@@ -29,13 +29,13 @@
     <div class="basis-5/12">
       <div class="flex flex-col gap-4">
         Voici une liste d'exemple que vous pouvez utiliser.
-        <Card class="cursor-pointer" @click="insertExample">
+        <Card v-ripple class="cursor-pointer" @click="insertExample">
           <template #content>Je cherche un groupe de pop et rock qui a besoin d'un batteur</template>
         </Card>
-        <Card class="cursor-pointer" @click="insertExample">
+        <Card v-ripple class="cursor-pointer" @click="insertExample">
           <template #content>Je recherche un guitariste pour mon groupe de funk</template>
         </Card>
-        <Card class="cursor-pointer" @click="insertExample">
+        <Card v-ripple class="cursor-pointer" @click="insertExample">
           <template #content>Je recherche un chanteur pour mon groupe de stoner et métal</template>
         </Card>
       </div>
