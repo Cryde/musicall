@@ -15,7 +15,7 @@
   </div>
 
 
-  <div class="flex flex-row gap-8">
+  <div class="flex flex-row gap-8 pb-20">
     <div class="basis-7/12">
       <div class="flex flex-col gap-4">
       <Textarea v-model="search" fluid maxlength="200" rows="5" size="large"
