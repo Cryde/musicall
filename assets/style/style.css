@@ -5,7 +5,7 @@
 
 @import "./publication.css";
 
-@custom-variant dark (&:where(.app-mode, .app-mode *));
+@custom-variant dark (&:where(.dark-mode, .dark-mode *));
 
 html {
     font-family: "Open Sans", serif;
