@@ -50,7 +50,7 @@
       </div>
       <div>
         <Button
-            :icon="{'pi pi-moon': !isDarkMode, 'pi pi-sun': isDarkMode}"
+            :icon="iconClass"
             size="small"
             severity="secondary"
             outlined
@@ -65,6 +65,13 @@ import {ref} from 'vue';
 import * as Cookies from 'es-cookie';
 
 const isDarkMode = ref(Cookies.get('is_dark_mode') === '1');
+const iconClass = ref('');
+
+if (isDarkMode.value) {
+  iconClass.value = 'pi pi-sun'
+} else {
+  iconClass.value = 'pi pi-moon'
+}
 
 const navs = ref([
   {
@@ -95,10 +102,12 @@ function switchDarkMode() {
     Cookies.set('is_dark_mode', 0);
     html.classList.remove('dark-mode');
     isDarkMode.value = false;
+    iconClass.value = 'pi pi-moon'
   } else {
     html.classList.add('dark-mode');
     Cookies.set('is_dark_mode', 1);
     isDarkMode.value = true;
+    iconClass.value = 'pi pi-sun'
   }
 }
 </script>
