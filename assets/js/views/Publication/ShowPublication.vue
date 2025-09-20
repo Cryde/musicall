@@ -19,7 +19,7 @@
         </div>
       </div>
 
-      <div class="box content is-shadowless publication-container"
+      <div class="box content is-shadowless publication-container p-3 bg-surface-0 dark:bg-surface-800 rounded-md"
            v-html="publication.content"></div>
     </template>
 
