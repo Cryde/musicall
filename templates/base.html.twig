@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="fontawesome-i2svg-pending">
+<html lang="fr" class="{{ is_dark_mode_on ? 'dark-mode' : '' }}">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name='keywords'
@@ -7,7 +7,6 @@
     <meta name='robots' content='index, follow'/>
 
     <meta name="verify-v1" content="dKTCUOuzn9n0Y5rkFus+08eZunNMKBKj7sqURPF4KIs="/>
-    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico', 'vite') }}"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
@@ -23,7 +22,6 @@
 
 <div id="app"></div>
 
-<script defer src="https://kit.fontawesome.com/bb0b374c35.js" crossorigin="anonymous"></script>
 {{ vite_entry_script_tags('app') }}
 </body>
 </html>

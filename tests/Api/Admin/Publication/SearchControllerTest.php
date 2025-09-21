@@ -18,7 +18,7 @@ class SearchControllerTest extends ApiTestCase
 
     public function test_search_publication(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         // not taken because status pending
         PublicationFactory::new([
@@ -64,7 +64,7 @@ class SearchControllerTest extends ApiTestCase
         $publication1 = $publication1->_real();
         $publication2 = $publication2->_real();
 
-        $this->client->loginUser($admin);
+        $this->client->loginUser($admin->_real());
         $this->client->request('GET', '/api/admin/search/publication?query=titre1');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([

@@ -1,42 +1,23 @@
-import Vue from "vue";
-import Router from "vue-router";
-import admin from './admin';
-import course from './course';
-import search from './search';
-import forum from './forum';
-import publication from './publication';
-import user from './user';
-import userPublication from './user-publication';
-import gallery from './gallery';
-import message from './message';
-import userAnnounce from './user-announce';
+import {createWebHistory, createRouter} from 'vue-router'
 
-Vue.use(Router);
+import publication from "./publication";
+import course from './course.js';
+import search from './search.js';
+import forum from './forum.js';
 
-export default new Router({
-  mode: 'history',
-  routes: [
-    {
-      path: "/",
-      name: 'home',
-      component: () => import("../views/Home.vue"),
-      meta: {isAuthRequired: false}
-    },
-    {
-      path: "/contact",
-      name: 'contact',
-      component: () => import("../views/contact/Contact.vue"),
-      meta: {isAuthRequired: false}
-    },
-    ...publication,
-    ...userPublication,
-    ...gallery,
-    ...user,
-    ...admin,
-    ...course,
-    ...search,
-    ...forum,
-    ...message,
-    ...userAnnounce,
-  ]
-});
+const routes = [
+  {
+    name: 'app_home',
+    path: '/',
+    component: () => import("../views/Home/Home.vue")
+  },
+  ...publication,
+  ...course,
+  ...search,
+  ...forum,
+]
+
+export default createRouter({
+  history: createWebHistory(),
+  routes,
+})

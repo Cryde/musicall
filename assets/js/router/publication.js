@@ -1,20 +1,20 @@
 export default [
   {
-    name: "publication",
+    name: "app_publications",
     path: "/publications",
-    component: () => import("../views/publication/list/Grid.vue"),
+    component: () => import("../views/Publication/Index.vue"),
     meta: {isAuthRequired: false}
   },
   {
-    name: "publications_by_category",
+    name: "app_publications_by_category",
     path: "/publications/category/:slug",
-    component: () => import("../views/publication/list/Grid.vue"),
+    component: () => import("../views/Publication/Index.vue"),
     meta: {isAuthRequired: false}
   },
   {
-    name: "publication_show",
+    name: "app_publication_show",
     path: "/publications/:slug",
-    component: () => import("../views/publication/show/Publication.vue"),
+    component: () => import("../views/Publication/ShowPublication.vue"),
     meta: {isAuthRequired: false}
   },
 ];

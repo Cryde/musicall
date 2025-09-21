@@ -6,8 +6,16 @@ use Zenstruck\Foundry\Factory;
 use App\Entity\PublicationSubCategory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
+/**
+ * @extends PersistentProxyObjectFactory<PublicationSubCategory>
+ */
 final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
 {
+    public static function class(): string
+    {
+        return PublicationSubCategory::class;
+    }
+
     protected function defaults(): array
     {
         return [
@@ -46,10 +54,5 @@ final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
     public function asDecouvertes(): Factory
     {
         return $this->with(['title' => 'Découvertes', 'slug' => 'decouvertes', 'position' => 6]);
-    }
-
-    public static function class(): string
-    {
-        return PublicationSubCategory::class;
     }
 }
