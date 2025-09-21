@@ -3,7 +3,9 @@
 namespace App\ApiResource\Search;
 
 use App\Entity\Attribute\Instrument;
+use App\Entity\Attribute\Style;
 use App\Entity\User;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 class MusicianSearchResult
@@ -22,7 +24,7 @@ class MusicianSearchResult
     #[Groups([MusicianSearchResult::LIST])]
     public int $type;
     #[Groups([MusicianSearchResult::LIST])]
-    /** @var Style[]|Collection */
+    /** @var Style[] */
     public $styles;
     #[Groups([MusicianSearchResult::LIST])]
     public ?float $distance = null;

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95a1baa2e832809846850a2147d9b6b1",
+    "content-hash": "7add4c57d2f8fd88faf96aa74eaa0edd",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2194,20 +2194,20 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.396.0",
+            "version": "v0.412.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "ceb2e432e4326c6775d24f62d554395a1a9ad3dd"
+                "reference": "212b51a11caa98e71c97f08041cc58e3425b2e15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/ceb2e432e4326c6775d24f62d554395a1a9ad3dd",
-                "reference": "ceb2e432e4326c6775d24f62d554395a1a9ad3dd",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/212b51a11caa98e71c97f08041cc58e3425b2e15",
+                "reference": "212b51a11caa98e71c97f08041cc58e3425b2e15",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.0"
+                "php": "^8.1"
             },
             "require-dev": {
                 "phpunit/phpunit": "^9.6"
@@ -2232,9 +2232,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.396.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.412.0"
             },
-            "time": "2025-02-24T01:10:27+00:00"
+            "time": "2025-09-15T00:56:22+00:00"
         },
         {
             "name": "google/auth",
@@ -14865,28 +14865,31 @@
         },
         {
             "name": "zenstruck/foundry",
-            "version": "v2.4.2",
+            "version": "v2.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zenstruck/foundry.git",
-                "reference": "277472cc5f938fd98c2a5cf0a317b8283d897be6"
+                "reference": "883cbb424e9a7f96e85f638ab3a0f2cc158aec95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zenstruck/foundry/zipball/277472cc5f938fd98c2a5cf0a317b8283d897be6",
-                "reference": "277472cc5f938fd98c2a5cf0a317b8283d897be6",
+                "url": "https://api.github.com/repos/zenstruck/foundry/zipball/883cbb424e9a7f96e85f638ab3a0f2cc158aec95",
+                "reference": "883cbb424e9a7f96e85f638ab3a0f2cc158aec95",
                 "shasum": ""
             },
             "require": {
-                "doctrine/persistence": "^2.0|^3.0|^4.0",
                 "fakerphp/faker": "^1.23",
                 "php": ">=8.1",
                 "symfony/deprecation-contracts": "^2.2|^3.0",
-                "symfony/framework-bundle": "^6.4|^7.0",
-                "symfony/property-access": "^6.4|^7.0",
-                "symfony/property-info": "^6.4|^7.0",
-                "symfony/var-exporter": "^6.4.9|~7.0.9|^7.1.2",
+                "symfony/polyfill-php84": "^1.32",
+                "symfony/property-access": "^6.4|^7.0|^8.0",
+                "symfony/property-info": "^6.4|^7.0|^8.0",
+                "symfony/var-exporter": "^6.4.9|~7.0.9|^7.1.2|^8.0",
                 "zenstruck/assert": "^1.4"
+            },
+            "conflict": {
+                "doctrine/persistence": "<2.0",
+                "symfony/framework-bundle": "<6.4"
             },
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8",
@@ -14899,16 +14902,21 @@
                 "doctrine/mongodb-odm": "^2.4",
                 "doctrine/mongodb-odm-bundle": "^4.6|^5.0",
                 "doctrine/orm": "^2.16|^3.0",
+                "doctrine/persistence": "^2.0|^3.0|^4.0",
                 "phpunit/phpunit": "^9.5.0 || ^10.0 || ^11.0 || ^12.0",
-                "symfony/console": "^6.4|^7.0",
-                "symfony/dotenv": "^6.4|^7.0",
+                "symfony/browser-kit": "^6.4|^7.0|^8.0",
+                "symfony/console": "^6.4|^7.0|^8.0",
+                "symfony/dotenv": "^6.4|^7.0|^8.0",
+                "symfony/framework-bundle": "^6.4|^7.0|^8.0",
                 "symfony/maker-bundle": "^1.55",
-                "symfony/phpunit-bridge": "^6.4|^7.0",
-                "symfony/runtime": "^6.4|^7.0",
+                "symfony/phpunit-bridge": "^6.4|^7.0|^8.0",
+                "symfony/routing": "^6.4|^7.0|^8.0",
+                "symfony/runtime": "^6.4|^7.0|^8.0",
                 "symfony/translation-contracts": "^3.4",
-                "symfony/uid": "^6.4|^7.0",
-                "symfony/var-dumper": "^6.4|^7.0",
-                "symfony/yaml": "^6.4|^7.0"
+                "symfony/uid": "^6.4|^7.0|^8.0",
+                "symfony/var-dumper": "^6.4|^7.0|^8.0",
+                "symfony/yaml": "^6.4|^7.0|^8.0",
+                "webmozart/assert": "^1.11"
             },
             "type": "library",
             "extra": {
@@ -14929,7 +14937,8 @@
                 ],
                 "psr-4": {
                     "Zenstruck\\Foundry\\": "src/",
-                    "Zenstruck\\Foundry\\Psalm\\": "utils/psalm"
+                    "Zenstruck\\Foundry\\Psalm\\": "utils/psalm",
+                    "Zenstruck\\Foundry\\Utils\\Rector\\": "utils/rector/src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -14959,15 +14968,19 @@
             ],
             "support": {
                 "issues": "https://github.com/zenstruck/foundry/issues",
-                "source": "https://github.com/zenstruck/foundry/tree/v2.4.2"
+                "source": "https://github.com/zenstruck/foundry/tree/v2.7.0"
             },
             "funding": [
                 {
                     "url": "https://github.com/kbond",
                     "type": "github"
+                },
+                {
+                    "url": "https://github.com/nikophil",
+                    "type": "github"
                 }
             ],
-            "time": "2025-04-17T06:26:28+00:00"
+            "time": "2025-09-17T15:34:40+00:00"
         }
     ],
     "aliases": [],
