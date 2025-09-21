@@ -49,6 +49,11 @@ import Button from "primevue/button";
 import Textarea from "primevue/textarea";
 import {ref} from "vue";
 import Card from 'primevue/card';
+import {useHead} from "@unhead/vue";
+
+useHead({
+  title: 'Rechercher un musicien ou un groupe - MusicAll',
+})
 
 const search = ref('');
 

@@ -15,6 +15,7 @@
   "dependencies": {
     "@primeuix/themes": "^1.1.1",
     "@tailwindcss/vite": "^4.1.8",
+    "@unhead/vue": "^2.0.17",
     "@vitejs/plugin-vue": "^5.2.4",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
