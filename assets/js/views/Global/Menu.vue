@@ -2,10 +2,10 @@
     <nav class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
       <div class="flex items-center gap-4">
         <div class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
-          <img src="../../../image/logo.png" alt="Logo" class="h-5 w-auto"/>
+          <img src="../../../image/logo.png" alt="Logo" class="h-4 w-auto"/>
         </div>
       </div>
-      <a
+      <span
           v-styleclass="{
                     selector: '@next',
                     enterFromClass: 'hidden',
@@ -17,7 +17,7 @@
           class="cursor-pointer block lg:hidden text-surface-100"
       >
         <i class="pi pi-bars text-xl! leading-normal!"/>
-      </a>
+      </span>
 
       <div
           class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full dark:bg-surface-900 left-0 top-full z-10 shadow lg:shadow-none border lg:border-0 border-surface-800"
