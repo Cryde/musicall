@@ -18,7 +18,7 @@
         "friendsofsymfony/jsrouting-bundle": "^3.2.1",
         "gesdinet/jwt-refresh-token-bundle": "^1.1.1",
         "google/apiclient": "^2.12.6",
-        "google/apiclient-services": "^0.396.0",
+        "google/apiclient-services": "^0.412.0",
         "jolicode/elastically": "^1.9",
         "league/flysystem-aws-s3-v3": "^3.12",
         "lexik/jwt-authentication-bundle": "^3.1",
@@ -82,7 +82,7 @@
         "symfony/stopwatch": "^7.0.0",
         "symfony/var-dumper": "^7.0.0",
         "symfony/web-profiler-bundle": "^7.0.0",
-        "zenstruck/foundry": "v2.4.2"
+        "zenstruck/foundry": "^2.7"
     },
     "config": {
         "preferred-install": {
