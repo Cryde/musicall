@@ -67,6 +67,11 @@ import {usePublicationsStore} from "../../store/publication/publications.js";
 import {useMusicianAnnounceStore} from "../../store/announce/musician.js";
 import PublicationListItem from "../Publication/PublicationListItem.vue";
 import {TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN} from "../../constants/types.js";
+import { useHead } from '@unhead/vue'
+
+useHead({
+  title: 'MusicAll, le site de référence au service de la musique',
+})
 
 const publicationsStore = usePublicationsStore();
 const musicianAnnounceStore = useMusicianAnnounceStore();

@@ -87,6 +87,11 @@ import maoImg from "../../../image/course/mao.png";
 import miscImage from "../../../image/course/divers.png";
 import {useCoursesStore} from "../../store/course/course.js";
 import CourseListItem from "./CourseListItem.vue";
+import {useHead} from "@unhead/vue";
+
+useHead({
+  title: 'Liste des catégories de cours - MusicAll',
+})
 
 const coursesStore = useCoursesStore();
 coursesStore.loadCourses({page: 1})

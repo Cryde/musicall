@@ -78,6 +78,11 @@ import Menu from 'primevue/menu';
 import {usePublicationsStore} from "../../store/publication/publications.js";
 import PublicationListItem from "./PublicationListItem.vue";
 import Breadcrumb from "../Global/Breadcrumb.vue";
+import {useHead} from "@unhead/vue";
+
+useHead({
+  title: 'Toutes les publications relatives à la musique - MusicAll',
+})
 
 const publicationsStore = usePublicationsStore();
 publicationsStore.loadPublications({page: 1})
