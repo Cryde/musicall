@@ -1,0 +1,3 @@
+<template>
+  Reviens bientôt
+</template>

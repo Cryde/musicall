@@ -102,7 +102,7 @@ class PublicationSubCategoryTest extends ApiTestCase
             'totalItems' => 6,
             'search'     => [
                 '@type'                        => 'IriTemplate',
-                'template'               => '/api/publication_sub_categories{?order[position]}',
+                'template'               => '/api/publication_sub_categories{?order[position],type,type[]}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping'                => [
                     [
@@ -111,6 +111,18 @@ class PublicationSubCategoryTest extends ApiTestCase
                         'property' => 'position',
                         'required' => false,
                     ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'type',
+                        'property' => 'type',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'type[]',
+                        'property' => 'type',
+                        'required' => false,
+                    ]
                 ],
             ],
             'view'       => [

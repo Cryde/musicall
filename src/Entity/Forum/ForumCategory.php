@@ -2,7 +2,10 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\Doctrine\Orm\State\Options;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\OpenApi\Model\Operation;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use DateTimeInterface;
 use DateTime;
