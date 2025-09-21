@@ -1,5 +1,8 @@
 when@dev: &dev
     # See full configuration: https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#full-default-bundle-configuration
     zenstruck_foundry:
+        enable_auto_refresh_with_lazy_objects: true
+        persistence:
+            flush_once: true
 
 when@test: *dev
