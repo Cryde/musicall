@@ -34,7 +34,7 @@ final class PublicationFactory extends PersistentProxyObjectFactory
         $title = self::faker()->sentence();
 
         return $this->with([
-            'content' => self::faker()->paragraphs(6, true),
+            'content' => nl2br(self::faker()->paragraphs(random_int(5, 20), true)),
             'creationDatetime' => self::faker()->dateTime(),
             'editionDatetime' => self::faker()->dateTime(),
             'publicationDatetime' => self::faker()->dateTimeBetween('-3 years', 'now'),

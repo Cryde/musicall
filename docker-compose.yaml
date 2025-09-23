@@ -48,6 +48,7 @@ services:
         ipv4_address: 10.200.200.5
     volumes:
       - .:/var/www:cached
+      - ./.docker/cli-musicall/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
 
   db:
     image: mariadb:10.11
