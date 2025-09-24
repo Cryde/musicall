@@ -19,7 +19,7 @@ This project use:
 
 #### Setup local https
 
-The application need to be run in HTTPS (for Facebook logins for instance)
+The application need to be run in HTTPS (for Facebook logins for instance)  
 Go to the root project, then launch :  
 ```
 ./bin/create_ssl_ca
@@ -29,7 +29,7 @@ You will only need to run this once
 
 #### Setup Docker
 
-You will need Docker to run this project.
+You will need Docker to run this project.  
 Follow the Docker installation guide (https://docs.docker.com/get-docker/) to have it on your environment.
 
 Go in the project root and run 
@@ -71,8 +71,8 @@ docker compose run --rm php-cli bin/console foundry:load-fixtures app
 Run it every time before working on a MR or when you want to start from scratch.
 
 ### Migrations
-If you applied the fixtures, you can skip this step.
-Run the migrations to have the latest database schema change. Do it every time before working on a MR.
+If you applied the fixtures, you can skip this step.  
+Run the migrations to have the latest database schema change. Do it every time before working on a MR.  
 Do this step if you want to populate the database yourself.
 
 Run the migrations
@@ -82,7 +82,7 @@ docker compose run --rm php-musicall bin/console doctrine:migration:migrate
 
 ### Assets 
 
-You can either run everything through the docker or in your local by installation node via NVM
+You can either run everything through the docker or in your local by installation node via NVM  
 Install JS deps
 ```
 docker compose run --rm node npm ci 
