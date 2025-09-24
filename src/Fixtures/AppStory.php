@@ -2,6 +2,9 @@
 
 namespace App\Fixtures;
 
+use App\Fixtures\Announce\MusicianAnnounceStory;
+use App\Fixtures\Attribute\InstrumentStory;
+use App\Fixtures\Attribute\StyleStory;
 use App\Fixtures\Publication\FakeImageGeneratorStory;
 use App\Fixtures\Publication\PublicationCategoryStory;
 use App\Fixtures\Publication\PublicationStory;
@@ -21,5 +24,10 @@ final class AppStory extends Story
         FakeImageGeneratorStory::load();
         PublicationCategoryStory::load();
         PublicationStory::load();
+
+        // musician announces
+        InstrumentStory::load();
+        StyleStory::load();
+        MusicianAnnounceStory::load();
     }
 }
