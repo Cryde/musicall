@@ -10,10 +10,10 @@ These instructions will get you a copy of the project up and running on your loc
 
 This project use: 
 - PHP 8.4
-- Symfony 7.2
+- Symfony 7.3
 - MariaDB version 10.11
 - node 20
-- VueJS 2.7
+- VueJS 3
 
 ### Installing
 
@@ -55,22 +55,25 @@ Install PHP vendor
 docker compose run --rm php-musicall composer install
 ```
 
-You will have to initialize your JWT configuration.   
-Follow the instructions here (only "Generate the SSH keys" part) : https://github.com/lexik/LexikJWTAuthenticationBundle/blob/2.x/Resources/doc/index.rst#generate-the-ssl-keys  
-**Note**: you will have to run some php command inside docker (eg: `docker compose run --rm php-musicall bin/console lexik:jwt:generate-keypair`)
-
 Configure you ```.env.local``` file (I only put important values here) :
 ```
 APP_ENV=dev
 APP_SECRET=thisissecretchangeit
 DATABASE_URL=mysql://user:password@db.musicall:3306/musicall
-JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
-JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
-JWT_PASSPHRASE=thepassphrase
 ```
 
+### Apply the fixtures
+This will create the database schema and populate it with some random data.  
+It will erase all the previous data in the database you had.
+```
+docker compose run --rm php-cli bin/console foundry:load-fixtures app
+```
+Run it every time before working on a MR or when you want to start from scratch.
+
 ### Migrations
+If you applied the fixtures, you can skip this step.
 Run the migrations to have the latest database schema change. Do it every time before working on a MR.
+Do this step if you want to populate the database yourself.
 
 Run the migrations
 ```
@@ -115,5 +118,4 @@ docker compose run --rm php-cli bin/phpunit
 
 ## TODO
 
-- [ ] Create fixtures
 - [ ] Https
