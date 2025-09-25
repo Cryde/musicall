@@ -6,7 +6,10 @@
           <i class="pi pi-home text-base! leading-normal! text-surface-500 dark:text-surface-300"/>
         </a>
       </li>
-      <template v-for="(item, i) in items" :key="i">
+      <template
+        v-for="(item, i) in items"
+        :key="i"
+      >
         <li>
           <i class="pi pi-angle-right text-base! leading-normal! text-surface-500 dark:text-surface-300"/>
         </li>
@@ -19,6 +22,7 @@
     </ul>
   </div>
 </template>
+
 <script setup>
 defineProps(['items'])
 </script>

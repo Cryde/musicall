@@ -1,9 +1,9 @@
-import { defineConfig } from "vite";
-import symfonyPlugin from "vite-plugin-symfony";
-import vuePlugin from "@vitejs/plugin-vue";
+import { PrimeVueResolver } from '@primevue/auto-import-resolver'
 import tailwindcss from '@tailwindcss/vite'
-import Components from 'unplugin-vue-components/vite';
-import {PrimeVueResolver} from '@primevue/auto-import-resolver';
+import vuePlugin from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite'
+import symfonyPlugin from 'vite-plugin-symfony'
 
 export default defineConfig({
   plugins: [
@@ -11,17 +11,15 @@ export default defineConfig({
     symfonyPlugin(),
     tailwindcss(),
     Components({
-      resolvers: [
-        PrimeVueResolver()
-      ]
+      resolvers: [PrimeVueResolver()]
     })
   ],
   build: {
     assetsInlineLimit: 0,
     rollupOptions: {
       input: {
-        app: "./assets/js/app.js",
-        styles: "./assets/style/style.css"
+        app: './assets/js/app.js',
+        styles: './assets/style/style.css'
       },
       output: {
         manualChunks: {
@@ -30,7 +28,7 @@ export default defineConfig({
       }
     }
   },
-  server : {
+  server: {
     cors: true
   }
-});
+})

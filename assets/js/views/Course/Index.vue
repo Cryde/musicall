@@ -1,17 +1,24 @@
 <template>
-
   <div class="flex justify-end">
     <breadcrumb :items="[{'label':  'Cours'}]"/>
   </div>
 
   <div class="flex md:items-center justify-between gap-4 md:flex-row flex-col">
     <div class="flex flex-col gap-2">
-      <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">Cours</h1>
-      <div class="text-base leading-tight text-surface-500 dark:text-surface-300">Découvrez les cours publié sur
-        MusicAll.
+      <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
+        Cours
+      </h1>
+      <div class="text-base leading-tight text-surface-500 dark:text-surface-300">
+        Découvrez les cours publié sur MusicAll.
       </div>
     </div>
-    <Button label="Poster un cours" icon="pi pi-plus" severity="info" size="small" class="whitespace-nowrap"/>
+    <Button
+      label="Poster un cours"
+      icon="pi pi-plus"
+      severity="info"
+      size="small"
+      class="whitespace-nowrap"
+    />
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-2 mb-6">
@@ -32,16 +39,20 @@
       <div class="flex flex-wrap items-center gap-4 mb-5">
         <div class="flex justify-start items-center gap-4">
           <Button
-              ref="sortButton"
-              outlined
-              severity="secondary"
-              icon="pi pi-sort-alt"
-              icon-pos="right"
-              label="Trier par"
-              class="px-3 py-2 border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400"
-              @click="toggleSortMenu"
+            ref="sortButton"
+            outlined
+            severity="secondary"
+            icon="pi pi-sort-alt"
+            icon-pos="right"
+            label="Trier par"
+            class="px-3 py-2 border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400"
+            @click="toggleSortMenu"
           />
-          <Menu ref="sortMenu" :popup="true" :model="sortOptions"/>
+          <Menu
+            ref="sortMenu"
+            :popup="true"
+            :model="sortOptions"
+          />
         </div>
 
         <Chip
@@ -68,86 +79,95 @@
         </div>
       </div>
     </div>
-    <div class="basis-1/4">
-    </div>
+    <div class="basis-1/4" />
   </div>
 </template>
-<script setup>
-import {onUnmounted, ref} from "vue";
-import Button from 'primevue/button';
-import Chip from 'primevue/chip';
-import Menu from 'primevue/menu';
-import Breadcrumb from '../Global/Breadcrumb.vue';
 
-import ColumnCardRadio from "../../components/RadioGroup/ColumnCardRadio.vue";
-import guitarImg from "../../../image/course/guitare.png";
-import bassImg from "../../../image/course/basse.png";
-import drumImg from "../../../image/course/batterie.png";
-import maoImg from "../../../image/course/mao.png";
-import miscImage from "../../../image/course/divers.png";
-import {useCoursesStore} from "../../store/course/course.js";
-import CourseListItem from "./CourseListItem.vue";
-import {useHead} from "@unhead/vue";
+<script setup>
+import { useHead } from '@unhead/vue'
+import Button from 'primevue/button'
+import Chip from 'primevue/chip'
+import Menu from 'primevue/menu'
+import { onMounted, onUnmounted, ref } from 'vue'
+import bassImg from '../../../image/course/basse.png'
+import drumImg from '../../../image/course/batterie.png'
+import miscImage from '../../../image/course/divers.png'
+import guitarImg from '../../../image/course/guitare.png'
+import maoImg from '../../../image/course/mao.png'
+import ColumnCardRadio from '../../components/RadioGroup/ColumnCardRadio.vue'
+import { useCoursesStore } from '../../store/course/course.js'
+import Breadcrumb from '../Global/Breadcrumb.vue'
+import CourseListItem from './CourseListItem.vue'
 
 useHead({
-  title: 'Liste des catégories de cours - MusicAll',
+  title: 'Liste des catégories de cours - MusicAll'
 })
 
-const coursesStore = useCoursesStore();
-coursesStore.loadCourses({page: 1})
-coursesStore.loadCategories()
+const coursesStore = useCoursesStore()
+
+onMounted(async () => {
+  await coursesStore.loadCourses({ page: 1 })
+  await coursesStore.loadCategories()
+})
 
 const mapInstrumentImage = {
   guitare: guitarImg,
   basse: bassImg,
   batterie: drumImg,
   mao: maoImg,
-  divers: miscImage,
-};
+  divers: miscImage
+}
 
-const selectCategoryFilter = ref('');
+const selectCategoryFilter = ref('')
 
 async function changeCategoryFilter(selectedValue) {
   if (selectCategoryFilter.value === selectedValue) {
-    await removeFilter();
-    return;
+    await removeFilter()
+    return
   }
-  selectCategoryFilter.value = selectedValue;
-  await coursesStore.loadCourses({page: 1, slug: selectedValue.slug})
+  selectCategoryFilter.value = selectedValue
+  await coursesStore.loadCourses({ page: 1, slug: selectedValue.slug })
 }
 
 const removeFilter = async () => {
-  selectCategoryFilter.value = '';
-  await coursesStore.loadCourses({page: 1, orientation: 'desc'})
-};
+  selectCategoryFilter.value = ''
+  await coursesStore.loadCourses({ page: 1, orientation: 'desc' })
+}
 
 onUnmounted(() => {
-  coursesStore.clear();
+  coursesStore.clear()
 })
 
-
-const sortMenu = ref();
+const sortMenu = ref()
 
 const toggleSortMenu = (event) => {
-  sortMenu.value.toggle(event);
-};
+  sortMenu.value.toggle(event)
+}
 
 const sortOptions = ref([
   {
     label: 'Nouveau',
     icon: 'pi pi-calendar-plus',
     command: async () => {
-      sortMenu.value.hide();
-      await coursesStore.loadCourses({page: 1, slug: selectCategoryFilter.value.slug, orientation: 'desc'})
+      sortMenu.value.hide()
+      await coursesStore.loadCourses({
+        page: 1,
+        slug: selectCategoryFilter.value.slug,
+        orientation: 'desc'
+      })
     }
   },
   {
     label: 'Ancien',
     icon: 'pi pi-calendar-minus',
     command: async () => {
-      sortMenu.value.hide();
-      await coursesStore.loadCourses({page: 1, slug: selectCategoryFilter.value.slug, orientation: 'asc'})
+      sortMenu.value.hide()
+      await coursesStore.loadCourses({
+        page: 1,
+        slug: selectCategoryFilter.value.slug,
+        orientation: 'asc'
+      })
     }
-  },
-]);
+  }
+])
 </script>
