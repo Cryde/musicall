@@ -17,6 +17,6 @@ class UserStory extends Story
     {
         $this->addState(self::ADMIN_USER, UserFactory::new()->asAdminUser());
         $this->addState(self::BASE_USER, UserFactory::new()->asBaseUser());
-        $this->addToPool(self::POOL_USERS, UserFactory::new()->many(10));
+        $this->addToPool(self::POOL_USERS, UserFactory::new()->many(20));
     }
 }

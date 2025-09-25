@@ -39,7 +39,7 @@ final class PublicationFactory extends PersistentProxyObjectFactory
             'editionDatetime' => self::faker()->dateTime(),
             'publicationDatetime' => self::faker()->dateTimeBetween('-3 years', 'now'),
             'shortDescription' => self::faker()->sentence(),
-            'slug' => new AsciiSlugger()->slug($title),
+            'slug' => u(new AsciiSlugger()->slug($title))->lower(),
             'status' => Publication::STATUS_ONLINE,
             'title' => $title,
             'type' => Publication::TYPE_TEXT,
