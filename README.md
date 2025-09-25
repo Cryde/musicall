@@ -52,7 +52,7 @@ Add `musicall.local` and `musicall.test` to your `/etc/hosts`
 
 Install PHP vendor
 ```
-docker compose run --rm php-musicall composer install
+docker compose run --rm php-cli composer install
 ```
 
 Configure you ```.env.local``` file (I only put important values here) :
@@ -77,7 +77,7 @@ Do this step if you want to populate the database yourself.
 
 Run the migrations
 ```
-docker compose run --rm php-musicall bin/console doctrine:migration:migrate
+docker compose run --rm php-cli bin/console doctrine:migration:migrate
 ```
 
 ### Assets 
