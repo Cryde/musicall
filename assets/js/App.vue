@@ -11,6 +11,6 @@
 </template>
 
 <script setup>
-import Menu from './views/Global/Menu.vue';
-import Footer from './views/Global/Footer.vue';
+import Footer from './views/Global/Footer.vue'
+import Menu from './views/Global/Menu.vue'
 </script>

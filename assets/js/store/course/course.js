@@ -1,25 +1,24 @@
-import {defineStore} from 'pinia'
-import {computed, readonly, ref} from 'vue';
-import courseApi from '../../api/course/course.js';
+import { defineStore } from 'pinia'
+import { readonly, ref } from 'vue'
+import courseApi from '../../api/course/course.js'
 
 export const useCoursesStore = defineStore('courses', () => {
+  const courses = ref([])
+  const courseCategories = ref([])
 
-  const courses = ref([]);
-  const courseCategories = ref([]);
+  async function loadCourses({ page = 1, slug = null, orientation = 'desc' }) {
+    const { member } = await courseApi.getCourses({ page, slug, orientation })
 
-  async function loadCourses({page = 1, slug = null, orientation = 'desc'}) {
-    const coursesResponse = await courseApi.getCourses({page, slug, orientation});
-
-    courses.value = coursesResponse.member;
+    courses.value = member
   }
 
   async function loadCategories() {
-    courseCategories.value = await courseApi.getCourseCategories();
+    courseCategories.value = await courseApi.getCourseCategories()
   }
 
   function clear() {
-    courses.value = [];
-    courseCategories.value = [];
+    courses.value = []
+    courseCategories.value = []
   }
 
   return {
@@ -29,4 +28,4 @@ export const useCoursesStore = defineStore('courses', () => {
     courses: readonly(courses),
     courseCategories: readonly(courseCategories)
   }
-});
+})

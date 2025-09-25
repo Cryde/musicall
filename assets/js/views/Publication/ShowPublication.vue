@@ -1,8 +1,9 @@
 <template>
-
-  <div class="flex justify-end" v-if="publication">
-    <Breadcrumb
-        :items="[{'label':  'Publications'}, {'label':  publication.category.title}, {'label':  publication.title}]"/>
+  <div
+    v-if="publication"
+    class="flex justify-end"
+  >
+    <Breadcrumb :items="breadCrumbs"/>
   </div>
 
   <template v-if="publication">
@@ -19,8 +20,10 @@
         </div>
       </div>
 
-      <div class="box content is-shadowless publication-container p-3 bg-surface-0 dark:bg-surface-800 rounded-md"
-           v-html="publication.content"></div>
+      <div
+        class="box content is-shadowless publication-container p-3 bg-surface-0 dark:bg-surface-800 rounded-md"
+        v-html="publication.content"
+      />
     </template>
 
     <template v-if="publication.type.label === 'video'">
@@ -37,23 +40,37 @@
       </div>
 
       <figure class="mt-7 w-full">
-        <iframe class="has-ratio aspect-video w-full"
-                :src="`https://www.youtube.com/embed/${publication.content}?showinfo=0`" frameborder="0"
-                allowfullscreen></iframe>
+        <iframe
+          class="has-ratio aspect-video w-full border-0"
+          :src="`https://www.youtube.com/embed/${publication.content}?showinfo=0`"
+          allowfullscreen
+        />
       </figure>
     </template>
   </template>
 </template>
 
 <script setup>
-import {usePublicationStore} from "../../store/publication/publication.js";
-import {useRoute} from 'vue-router'
-import relativeDate from "../../helper/date/relative-date.js";
-import Breadcrumb from "../Global/Breadcrumb.vue";
-import {storeToRefs} from "pinia";
+import { storeToRefs } from 'pinia'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import relativeDate from '../../helper/date/relative-date.js'
+import { usePublicationStore } from '../../store/publication/publication.js'
+import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const route = useRoute()
-const publicationStore = usePublicationStore();
-const {publication} = storeToRefs(publicationStore);
-publicationStore.loadPublication(route.params.slug);
+const publicationStore = usePublicationStore()
+const { publication } = storeToRefs(publicationStore)
+
+onMounted(async () => {
+  await publicationStore.loadPublication(route.params.slug)
+})
+
+const breadCrumbs = computed(() => {
+  return [
+    { label: 'Publications' },
+    { label: publication.value.category.title },
+    { label: publication.value.title }
+  ]
+})
 </script>

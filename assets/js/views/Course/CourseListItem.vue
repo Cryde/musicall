@@ -2,7 +2,11 @@
 
   <div
       class="h-auto md:h-[160px] p-2 bg-white dark:bg-surface-900 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4">
-    <img :src="cover" :alt="title" class="h-auto w-3/12 rounded-lg object-cover"/>
+    <img
+      :src="cover"
+      :alt="title"
+      class="h-auto w-3/12 rounded-lg object-cover"
+    />
     <div class="p-4 flex flex-col gap-4 w-9/12">
       <div class="flex flex-col gap-4 flex-1">
         <div class="self-stretch h-[51px] flex flex-col gap-2">
@@ -17,20 +21,18 @@
 
       <div class="text-surface-500 dark:text-surface-300 text-sm leading-normal">
         par {{ author.username }} {{ relativeDateFilter(date) }}
-        <Tag severity="secondary" :value="category.title" class="ml-3"></Tag>
+        <Tag
+          severity="secondary"
+          :value="category.title"
+          class="ml-3"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import relativeDateFilter from "../../helper/date/relative-date.js";
-defineProps([
-  'cover',
-  'title',
-  'description',
-  'category',
-  'author',
-  'date'
-])
+import relativeDateFilter from '../../helper/date/relative-date.js'
+
+defineProps(['cover', 'title', 'description', 'category', 'author', 'date'])
 </script>
