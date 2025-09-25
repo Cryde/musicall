@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import relativeDateFilter from "../../../../assets-legacy/js/filters/relative-date-filter.js";
+import relativeDateFilter from "../../helper/date/relative-date.js";
 defineProps([
   'toRoute',
   'cover',
