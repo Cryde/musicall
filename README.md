@@ -55,6 +55,14 @@ Install PHP vendor
 docker compose run --rm php-cli composer install
 ```
 
+### Chmod the storage directory
+
+This will allow you to have files in your local environment. 
+```
+chmod 777 -R public/images/
+chmod 777 -R public/media/
+```
+
 ### Apply the fixtures
 This will create the database schema and populate it with some random data.  
 It will erase all the previous data in the database you had.
