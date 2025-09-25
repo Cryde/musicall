@@ -55,13 +55,6 @@ Install PHP vendor
 docker compose run --rm php-cli composer install
 ```
 
-Configure you ```.env.local``` file (I only put important values here) :
-```
-APP_ENV=dev
-APP_SECRET=thisissecretchangeit
-DATABASE_URL=mysql://user:password@db.musicall:3306/musicall
-```
-
 ### Apply the fixtures
 This will create the database schema and populate it with some random data.  
 It will erase all the previous data in the database you had.
