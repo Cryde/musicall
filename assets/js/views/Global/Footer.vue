@@ -3,30 +3,34 @@
     <div class="flex flex-col lg:flex-row justify-between px-6 md:px-12 lg:px-20 py-16 gap-16 w-full overflow-hidden -mt-3 z-10 relative">
       <div class="flex items-center gap-4">
         <RouterLink
-            :to="{name: 'app_home'}"
-            class="text-lg text-surface-900 dark:text-surface-0 font-semibold leading-normal">
+          :to="{name: 'app_home'}"
+          class="text-lg text-surface-900 dark:text-surface-0 font-semibold leading-normal"
+        >
           MusicAll
         </RouterLink>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-5 gap-6 w-full max-w-5xl">
         <div class="flex flex-col gap-4">
           <RouterLink
-              :to="{name: 'app_publications'}"
-              class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal">
+            :to="{name: 'app_publications'}"
+            class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal"
+          >
             Publications
           </RouterLink>
         </div>
         <div class="flex flex-col gap-4">
           <RouterLink
-              :to="{name: 'app_course'}"
-              class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal">
+            :to="{name: 'app_course'}"
+            class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal"
+          >
             Cours
           </RouterLink>
         </div>
         <div class="flex flex-col gap-4">
           <RouterLink
-              :to="{name: 'app_search_musician'}"
-              class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal">
+            :to="{name: 'app_search_musician'}"
+            class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal"
+          >
             Recherche
           </RouterLink>
         </div>
@@ -55,5 +59,6 @@
     </div>
   </div>
 </template>
+
 <script setup>
 </script>
