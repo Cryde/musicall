@@ -85,24 +85,40 @@
   </div>
 </template>
 <script setup>
-import { useHead } from '@unhead/vue'
+import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import PublicationListItem from '../Publication/PublicationListItem.vue'
 
-useHead({
-  title: 'MusicAll, le site de référence au service de la musique'
-})
+useTitle('MusicAll, le site de référence au service de la musique')
 
 const publicationsStore = usePublicationsStore()
 const musicianAnnounceStore = useMusicianAnnounceStore()
 
+const currentPage = ref(1)
+const fetchedItems = ref()
+
 onMounted(async () => {
-  await publicationsStore.loadPublications({ page: 1 })
   await musicianAnnounceStore.loadLastAnnounces()
+})
+
+const infiniteHandler = async () => {
+  fetchedItems.value = await publicationsStore.loadPublications({
+    page: currentPage.value
+  })
+  currentPage.value++
+}
+
+const canLoadMore = () => {
+  return !fetchedItems.value || !!fetchedItems.value.length
+}
+
+useInfiniteScroll(document, infiniteHandler, {
+  distance: 1000,
+  canLoadMore
 })
 
 function isTypeBand(type) {
@@ -114,6 +130,7 @@ function isTypeMusician(type) {
 }
 
 onUnmounted(() => {
+  fetchedItems.value = undefined
   publicationsStore.clear()
   musicianAnnounceStore.clear()
 })

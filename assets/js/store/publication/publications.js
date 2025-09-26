@@ -9,7 +9,8 @@ export const usePublicationsStore = defineStore('publications', () => {
   async function loadPublications({ page = 1, slug = null, orientation = 'desc' }) {
     const { member } = await publicationsApi.getPublications({ page, slug, orientation })
 
-    publications.value = member
+    publications.value = [...publications.value, ...member]
+    return member
   }
 
   async function loadCategories() {
@@ -21,10 +22,15 @@ export const usePublicationsStore = defineStore('publications', () => {
     publicationCategories.value = []
   }
 
+  function resetPublications() {
+    publications.value = []
+  }
+
   return {
     loadPublications,
     loadCategories,
     clear,
+    resetPublications,
     publications: readonly(publications),
     publicationCategories: readonly(publicationCategories)
   }
