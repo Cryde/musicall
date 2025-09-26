@@ -76,16 +76,14 @@
   </div>
 </template>
 <script setup>
-import { useHead } from '@unhead/vue'
+import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Textarea from 'primevue/textarea'
 import { ref } from 'vue'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
-useHead({
-  title: 'Rechercher un musicien ou un groupe - MusicAll'
-})
+useTitle('Rechercher un musicien ou un groupe - MusicAll')
 
 const search = ref('')
 

@@ -1,5 +1,4 @@
 <template>
-
   <div class="flex justify-end">
     <breadcrumb :items="[{'label':  'Publications'}]" />
   </div>
@@ -61,7 +60,7 @@
           placeholder="Selectionnez une catégorie"
           resetFilterOnHide
           emptyFilterMessage="Cette catégorie n'existe pas"
-          @change="changeCategoryFilter"
+          @change="resetList"
           class="w-full md:w-70"
         >
           <template #option="slotProps">
@@ -93,39 +92,54 @@
 </template>
 
 <script setup>
-import { useHead } from '@unhead/vue'
+import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import PublicationListItem from './PublicationListItem.vue'
 
-useHead({
-  title: 'Toutes les publications relatives à la musique - MusicAll'
-})
+useTitle('Toutes les publications relatives à la musique - MusicAll')
 
 const publicationsStore = usePublicationsStore()
 
 const sortMenu = ref()
 const selectCategoryFilter = ref(null)
+const currentPage = ref(1)
+const orientation = ref('desc')
+const fetchedItems = ref()
 
 onMounted(async () => {
-  await publicationsStore.loadPublications({ page: 1 })
   await publicationsStore.loadCategories()
 })
 
-async function changeCategoryFilter(selectedValue) {
-  await publicationsStore.loadPublications({
-    page: 1,
-    slug: selectedValue.value?.slug
+const infiniteHandler = async () => {
+  fetchedItems.value = await publicationsStore.loadPublications({
+    page: currentPage.value,
+    slug: selectCategoryFilter.value?.slug,
+    orientation: orientation.value
   })
+  currentPage.value++
 }
 
-onUnmounted(() => {
-  publicationsStore.clear()
+const canLoadMore = () => {
+  return !fetchedItems.value || !!fetchedItems.value.length
+}
+
+const { reset } = useInfiniteScroll(document, infiniteHandler, {
+  distance: 1000,
+  canLoadMore
 })
+
+const resetList = async () => {
+  currentPage.value = 1
+  fetchedItems.value = undefined
+  publicationsStore.resetPublications()
+  await nextTick()
+  reset()
+}
 
 const toggleSortMenu = (event) => {
   sortMenu.value.toggle(event)
@@ -137,11 +151,8 @@ const sortOptions = ref([
     icon: 'pi pi-calendar-plus',
     command: async () => {
       sortMenu.value.hide()
-      await publicationsStore.loadPublications({
-        page: 1,
-        slug: selectCategoryFilter.value?.slug,
-        orientation: 'desc'
-      })
+      orientation.value = 'desc'
+      await resetList()
     }
   },
   {
@@ -149,12 +160,14 @@ const sortOptions = ref([
     icon: 'pi pi-calendar-minus',
     command: async () => {
       sortMenu.value.hide()
-      await publicationsStore.loadPublications({
-        page: 1,
-        slug: selectCategoryFilter.value?.slug,
-        orientation: 'asc'
-      })
+      orientation.value = 'asc'
+      await resetList()
     }
   }
 ])
+
+onUnmounted(() => {
+  fetchedItems.value = undefined
+  publicationsStore.clear()
+})
 </script>

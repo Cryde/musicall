@@ -9,7 +9,8 @@ export const useCoursesStore = defineStore('courses', () => {
   async function loadCourses({ page = 1, slug = null, orientation = 'desc' }) {
     const { member } = await courseApi.getCourses({ page, slug, orientation })
 
-    courses.value = member
+    courses.value = [...courses.value, ...member]
+    return member
   }
 
   async function loadCategories() {
@@ -21,8 +22,13 @@ export const useCoursesStore = defineStore('courses', () => {
     courseCategories.value = []
   }
 
+  function resetCourses() {
+    courses.value = []
+  }
+
   return {
     loadCourses,
+    resetCourses,
     loadCategories,
     clear,
     courses: readonly(courses),

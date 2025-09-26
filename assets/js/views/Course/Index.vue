@@ -23,14 +23,14 @@
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-2 mb-6">
     <ColumnCardRadio
-        v-for="(category, index) in coursesStore.courseCategories"
-        v-ripple
-        :key="index"
-        :title="category.title"
-        :slug="category.slug"
-        :current-selected-slug="selectCategoryFilter.slug"
-        :imageSrc="mapInstrumentImage[category.slug]"
-        @select-item="changeCategoryFilter(category)"
+      v-for="(category, index) in coursesStore.courseCategories"
+      v-ripple
+      :key="index"
+      :title="category.title"
+      :slug="category.slug"
+      :current-selected-slug="selectCategoryFilter.slug"
+      :imageSrc="mapInstrumentImage[category.slug]"
+      @select-item="changeCategoryFilter(category)"
     />
   </div>
 
@@ -84,11 +84,11 @@
 </template>
 
 <script setup>
-import { useHead } from '@unhead/vue'
+import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Menu from 'primevue/menu'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import bassImg from '../../../image/course/basse.png'
 import drumImg from '../../../image/course/batterie.png'
 import miscImage from '../../../image/course/divers.png'
@@ -99,17 +99,15 @@ import { useCoursesStore } from '../../store/course/course.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import CourseListItem from './CourseListItem.vue'
 
-useHead({
-  title: 'Liste des catégories de cours - MusicAll'
-})
+useTitle('Liste des catégories de cours - MusicAll')
 
 const coursesStore = useCoursesStore()
 
-onMounted(async () => {
-  await coursesStore.loadCourses({ page: 1 })
-  await coursesStore.loadCategories()
-})
-
+const currentPage = ref(1)
+const orientation = ref('desc')
+const fetchedItems = ref()
+const selectCategoryFilter = ref('')
+const sortMenu = ref()
 const mapInstrumentImage = {
   guitare: guitarImg,
   basse: bassImg,
@@ -118,27 +116,49 @@ const mapInstrumentImage = {
   divers: miscImage
 }
 
-const selectCategoryFilter = ref('')
+onMounted(async () => {
+  await coursesStore.loadCategories()
+})
+
+const infiniteHandler = async () => {
+  fetchedItems.value = await coursesStore.loadCourses({
+    page: currentPage.value,
+    slug: selectCategoryFilter.value?.slug,
+    orientation: orientation.value
+  })
+  currentPage.value++
+}
+
+const canLoadMore = () => {
+  return !fetchedItems.value || !!fetchedItems.value.length
+}
+
+const { reset } = useInfiniteScroll(document, infiniteHandler, {
+  distance: 1000,
+  canLoadMore
+})
+
+const resetList = async () => {
+  currentPage.value = 1
+  fetchedItems.value = undefined
+  coursesStore.resetCourses()
+  await nextTick()
+  reset()
+}
 
 async function changeCategoryFilter(selectedValue) {
   if (selectCategoryFilter.value === selectedValue) {
     await removeFilter()
-    return
+  } else {
+    selectCategoryFilter.value = selectedValue
+    await resetList()
   }
-  selectCategoryFilter.value = selectedValue
-  await coursesStore.loadCourses({ page: 1, slug: selectedValue.slug })
 }
 
 const removeFilter = async () => {
   selectCategoryFilter.value = ''
-  await coursesStore.loadCourses({ page: 1, orientation: 'desc' })
+  await resetList()
 }
-
-onUnmounted(() => {
-  coursesStore.clear()
-})
-
-const sortMenu = ref()
 
 const toggleSortMenu = (event) => {
   sortMenu.value.toggle(event)
@@ -150,11 +170,8 @@ const sortOptions = ref([
     icon: 'pi pi-calendar-plus',
     command: async () => {
       sortMenu.value.hide()
-      await coursesStore.loadCourses({
-        page: 1,
-        slug: selectCategoryFilter.value.slug,
-        orientation: 'desc'
-      })
+      orientation.value = 'desc'
+      await resetList()
     }
   },
   {
@@ -162,12 +179,14 @@ const sortOptions = ref([
     icon: 'pi pi-calendar-minus',
     command: async () => {
       sortMenu.value.hide()
-      await coursesStore.loadCourses({
-        page: 1,
-        slug: selectCategoryFilter.value.slug,
-        orientation: 'asc'
-      })
+      orientation.value = 'asc'
+      await resetList()
     }
   }
 ])
+
+onUnmounted(() => {
+  fetchedItems.value = undefined
+  coursesStore.clear()
+})
 </script>
