@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Musician;
+namespace App\Tests\Api\Musician;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;

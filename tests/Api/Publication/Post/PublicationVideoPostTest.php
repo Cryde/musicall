@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Publication\Post;
+namespace App\Tests\Api\Publication\Post;
 
 use App\Entity\Publication;
 use App\Tests\ApiTestAssertionsTrait;

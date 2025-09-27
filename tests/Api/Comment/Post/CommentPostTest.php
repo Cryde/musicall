@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Comment\Post;
+namespace App\Tests\Api\Comment\Post;
 
 use App\Repository\Comment\CommentRepository;
 use App\Tests\ApiTestAssertionsTrait;

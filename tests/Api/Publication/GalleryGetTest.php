@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Publication;
+namespace App\Tests\Api\Publication;
 
 use App\Entity\Gallery;
 use App\Tests\ApiTestAssertionsTrait;
