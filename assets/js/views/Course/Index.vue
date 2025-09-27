@@ -69,6 +69,7 @@
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
           <CourseListItem
               v-for="course in coursesStore.courses"
+              :to-route="{name: 'app_course_show', params: {slug: course.slug}}"
               :key="course.id"
               :cover="course.cover"
               :title="course.title"

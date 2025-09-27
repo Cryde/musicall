@@ -14,7 +14,7 @@ export default [
   {
     name: 'app_course_show',
     path: '/cours/:slug',
-    component: () => import('../views/Course/Index.vue'),
+    component: () => import('../views/Course/ShowCourse.vue'),
     meta: { isAuthRequired: false }
   }
 ]
