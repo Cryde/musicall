@@ -8,7 +8,7 @@ use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
  * @codeCoverageIgnore
- *                    
+ *
  * @extends PersistentProxyObjectFactory<User>
  */
 final class UserFactory extends PersistentProxyObjectFactory

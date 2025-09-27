@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\User;
+namespace App\Tests\Api\User;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
