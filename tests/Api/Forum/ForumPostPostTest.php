@@ -29,7 +29,7 @@ class ForumPostPostTest extends ApiTestCase
         ]);
     }
 
-    public function atest_post(): void
+    public function test_post(): void
     {
         $forumPostRepository =  static::getContainer()->get(ForumPostRepository::class);
         $user1 = UserFactory::new()->asBaseUser()->create();
@@ -59,10 +59,14 @@ class ForumPostPostTest extends ApiTestCase
         $results = $forumPostRepository->findBy(['topic' => $topic->_real()]);
         $this->assertCount(1, $results);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumPost',
+            '@id' => '/api/forum_posts/' . $results[0]->getId(),
+            '@type' => 'ForumPost',
             'id'                => $results[0]->getId(),
             'creation_datetime' => $results[0]->getCreationDatetime()->format('c'),
             'content'           => 'test content for new message',
             'creator'           => [
+                '@type' => 'User',
                 'username'        => 'base_admin',
                 'profile_picture' => null,
             ],
