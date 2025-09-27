@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-row gap-5">
-    <div class="basis-8/12">
+  <div class="flex flex-col md:flex-row gap-5">
+    <div class="basis-12/12 md:basis-8/12">
       <div class="flex justify-between">
-        <h2 class="text-xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
+        <h2 class="text-xl font-semibold leading-tight text-surface-900 dark:text-surface-0 mb-4 md:mb-0">
           Dernières publications
         </h2>
       </div>
-      <div class="flex flex-wrap justify-end-safe gap-4 mb-10">
+      <div class="hidden md:flex md:flex-wrap justify-end-safe gap-4 mb-10">
         <Button
           label="Poster une découverte"
           icon="pi pi-plus"
@@ -37,7 +37,7 @@
         </div>
       </div>
     </div>
-    <div class="basis-4/12">
+    <div class="hidden md:block md:basis-4/12">
       <h2 class="text-xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
         Dernières annonces
       </h2>

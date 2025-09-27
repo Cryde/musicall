@@ -18,13 +18,13 @@
             leaveActiveClass: 'animate-fadeout',
             hideOnOutsideClick: true
           }"
-        class="cursor-pointer block lg:hidden text-surface-100"
+        class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100"
       >
         <i class="pi pi-bars text-xl! leading-normal!"/>
       </span>
 
       <div
-          class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full dark:bg-surface-900 left-0 top-full z-10 shadow lg:shadow-none border lg:border-0 border-surface-800"
+          class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-100 dark:bg-surface-900 left-0 top-full z-10 shadow lg:shadow-none border lg:border-0 border-surface-800"
       >
         <div class="flex-1 flex items-start gap-4 px-6 lg:px-0 py-4 lg:py-0 flex-col lg:flex-row">
           <RouterLink
