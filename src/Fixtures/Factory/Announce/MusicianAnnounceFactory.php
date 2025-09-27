@@ -8,6 +8,7 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
+/** @codeCoverageIgnore */
 final class MusicianAnnounceFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array

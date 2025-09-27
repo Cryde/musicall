@@ -3,9 +3,9 @@
 namespace App\Fixtures\Publication;
 
 use App\Fixtures\Factory\Publication\PublicationSubCategoryFactory;
-use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class PublicationCategoryStory extends Story
 {
     const string WRITEABLE_CATEGORIES = 'writeable_categories';

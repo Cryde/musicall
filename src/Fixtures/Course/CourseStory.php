@@ -10,6 +10,7 @@ use App\Fixtures\User\UserStory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class CourseStory extends Story
 {
     public function build(): void

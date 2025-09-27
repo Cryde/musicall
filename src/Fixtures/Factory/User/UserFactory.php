@@ -3,11 +3,12 @@
 namespace App\Fixtures\Factory\User;
 
 use App\Entity\User;
-use DateTime;
 use Zenstruck\Foundry\Factory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
+ * @codeCoverageIgnore
+ *                    
  * @extends PersistentProxyObjectFactory<User>
  */
 final class UserFactory extends PersistentProxyObjectFactory

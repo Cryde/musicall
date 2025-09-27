@@ -15,6 +15,7 @@ use App\Fixtures\User\UserStory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 #[AsFixture(name: 'app')]
 final class AppStory extends Story
 {

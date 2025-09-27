@@ -6,6 +6,7 @@ use App\Service\File\RemoteFileDownloader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class FakeImageGeneratorStory extends Story
 {
     const string RANDOM_PUBLICATION_COVER = 'random_publication_cover';

@@ -6,6 +6,7 @@ use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Instrument;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
+/** @codeCoverageIgnore */
 final class InstrumentFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array

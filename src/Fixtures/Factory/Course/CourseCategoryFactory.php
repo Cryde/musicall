@@ -7,6 +7,8 @@ use Zenstruck\Foundry\Factory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
+ * @codeCoverageIgnore
+ *
  * @extends PersistentProxyObjectFactory<PublicationSubCategory>
  */
 final class CourseCategoryFactory extends PersistentProxyObjectFactory
