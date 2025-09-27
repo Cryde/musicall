@@ -2,6 +2,7 @@
 
 namespace App\Entity\Forum;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\OpenApi\Model\Operation;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
@@ -79,6 +80,7 @@ class ForumPost
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([ForumPost::LIST, ForumTopic::LIST, ForumPost::ITEM])]
+    #[ApiProperty(genId: false)]
     private User $creator;
 
     public function __construct()
