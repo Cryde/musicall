@@ -5,6 +5,7 @@ namespace App\Fixtures\Attribute;
 use App\Fixtures\Factory\Attribute\StyleFactory;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class StyleStory extends Story
 {
     public const string ATTRIBUTES_STYLES = 'attributes_styles';

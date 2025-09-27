@@ -8,6 +8,7 @@ use App\Fixtures\Factory\Announce\MusicianAnnounceFactory;
 use App\Fixtures\User\UserStory;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class MusicianAnnounceStory extends Story
 {
     public function build(): void

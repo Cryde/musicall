@@ -5,6 +5,7 @@ namespace App\Fixtures\Attribute;
 use App\Fixtures\Factory\Attribute\InstrumentFactory;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class InstrumentStory extends Story
 {
     const string ATTRIBUTES_INSTRUMENTS = 'attributes_instruments';

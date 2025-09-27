@@ -6,6 +6,7 @@ use App\Fixtures\Factory\User\UserFactory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 #[AsFixture(name: 'user')]
 class UserStory extends Story
 {

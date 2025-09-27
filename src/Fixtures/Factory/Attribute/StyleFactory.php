@@ -6,6 +6,7 @@ use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Style;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
+/** @codeCoverageIgnore */
 final class StyleFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array

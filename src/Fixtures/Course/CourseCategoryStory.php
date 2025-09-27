@@ -5,6 +5,7 @@ namespace App\Fixtures\Course;
 use App\Fixtures\Factory\Course\CourseCategoryFactory;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class CourseCategoryStory extends Story
 {
     const string COURSE_WRITEABLE_CATEGORIES = 'course_writeable_categories';

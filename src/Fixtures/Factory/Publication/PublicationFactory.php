@@ -10,6 +10,7 @@ use Zenstruck\Foundry\Factory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 use function Symfony\Component\String\u;
 
+/** @codeCoverageIgnore */
 final class PublicationFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array

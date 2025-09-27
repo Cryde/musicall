@@ -6,9 +6,9 @@ use App\Fixtures\Factory\Comment\CommentFactory;
 use App\Fixtures\Factory\Comment\CommentThreadFactory;
 use App\Fixtures\Factory\Publication\PublicationFactory;
 use App\Fixtures\User\UserStory;
-use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
+/** @codeCoverageIgnore */
 class PublicationStory extends Story
 {
     public function build(): void
