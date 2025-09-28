@@ -30,8 +30,8 @@
     </div>
   </div>
 
-  <div class="flex flex-row">
-    <div class="basis-3/4">
+    <div class="flex flex-col md:flex-row gap-5">
+        <div class="basis-12/12 md:basis-8/12">
       <div class="flex flex-wrap items-center gap-4 mb-5">
         <div class="flex justify-start items-center gap-4">
           <Button
@@ -87,7 +87,7 @@
         </div>
       </div>
     </div>
-    <div class="basis-1/4" />
+    <div class="hidden md:block md:basis-4/12" />
   </div>
 </template>
 

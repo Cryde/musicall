@@ -21,7 +21,7 @@
     />
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-2 mb-6">
+  <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mt-2 mb-6">
     <ColumnCardRadio
       v-for="(category, index) in coursesStore.courseCategories"
       v-ripple
@@ -34,8 +34,8 @@
     />
   </div>
 
-  <div class="flex flex-row">
-    <div class="basis-3/4">
+    <div class="flex flex-col md:flex-row gap-5">
+        <div class="basis-12/12 md:basis-8/12">
       <div class="flex flex-wrap items-center gap-4 mb-5">
         <div class="flex justify-start items-center gap-4">
           <Button
