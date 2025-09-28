@@ -1,97 +1,98 @@
 services:
-  webserver:
-    image: nginx:stable
-    container_name: musicall-webserver
-    ports:
-      - "127.0.0.1:80:80"
-      - "127.0.0.1:8080:8080"
-    restart: always
-    volumes:
-      - $PWD:/var/www/musicall/
-      - ./volumes/nginx/conf:/etc/nginx/conf.d
-    networks:
-      musicall:
-        ipv4_address: 10.200.200.2
+    php-web:
+        build: .docker/frankenphp
+        container_name: php-web
+        # uncomment the following line if you want to use a custom Dockerfile
+        #build: .
+        # uncomment the following line if you want to run this in a production environment
+        # restart: always
+        ports:
+            - "80:80" # HTTP
+            - "443:443" # HTTPS
+            - "443:443/udp" # HTTP/3
+        volumes:
+            - $PWD:/var/www/musicall
+            - caddy_data:/data
+            - caddy_config:/config
+            - ./.docker/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile
+        environment:
+            APP_ENV: 'dev'
+            SERVER_NAME: 'musicall.local'
+            APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
+            # comment the following line in production, it allows to have nice human-readable logs in dev
+        tty: true
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.7
 
-  php-fpm:
-    build: .docker/fpm
-    # image: musicall-fpm
-    container_name: php-fpm
-    working_dir: /var/www/musicall
-    volumes:
-      - ./volumes/php-fpm:/var/log/php:cached
-      - $PWD:/var/www/musicall:cached
-      - ./.docker/fpm/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
-    networks:
-      musicall:
-        ipv4_address: 10.200.200.3
+    node:
+        image: node:20
+        container_name: node
+        command: /bin/true
+        working_dir: /var/www
+        volumes:
+            - .:/var/www:cached
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.4
 
-  node:
-    image: node:20
-    container_name: node
-    command: /bin/true
-    working_dir: /var/www
-    volumes:
-      - .:/var/www:cached
-    networks:
-      musicall:
-        ipv4_address: 10.200.200.4
+    php-cli:
+        build: .docker/cli-musicall
+        # image: php-musicall
+        container_name: php-cli
+        working_dir: /var/www
+        command: /bin/true
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.5
+        volumes:
+            - .:/var/www:cached
+            - ./.docker/cli-musicall/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
 
-  php-cli:
-    build: .docker/cli-musicall
-    # image: php-musicall
-    container_name: php-cli
-    working_dir: /var/www
-    command: /bin/true
-    networks:
-      musicall:
-        ipv4_address: 10.200.200.5
-    volumes:
-      - .:/var/www:cached
-      - ./.docker/cli-musicall/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
+    db:
+        image: mariadb:10.11
+        container_name: musicall-db
+        environment:
+            MYSQL_ROOT_PASSWORD: toor
+            MYSQL_DATABASE: musicall
+        volumes:
+            - db_files:/var/lib/mysql:cached
+            - ./volumes/db/logs:/var/log/mysql:cached
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.6
+                aliases:
+                    - db.musicall
 
-  db:
-    image: mariadb:10.11
-    container_name: musicall-db
-    environment:
-      MYSQL_ROOT_PASSWORD: toor
-      MYSQL_DATABASE: musicall
-    volumes:
-      - db_files:/var/lib/mysql:cached
-      - ./volumes/db/logs:/var/log/mysql:cached
-    networks:
-      musicall:
-        ipv4_address: 10.200.200.6
-        aliases:
-          - db.musicall
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
-    container_name: musicall-es
-    mem_limit: 512mb
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
-    ports:
-      - 10.200.200.1:9200:9200
-      - 10.200.200.1:9300:9300
-    networks:
-      musicall:
-        ipv4_address: 10.200.200.8
-        aliases:
-          - elasticsearch.musicall
-    volumes:
-      - es_files:/usr/share/elasticsearch/data:cached
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
+        container_name: musicall-es
+        mem_limit: 512mb
+        environment:
+            - discovery.type=single-node
+            - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+        ports:
+            - 10.200.200.1:9200:9200
+            - 10.200.200.1:9300:9300
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.8
+                aliases:
+                    - elasticsearch.musicall
+        volumes:
+            - es_files:/usr/share/elasticsearch/data:cached
 networks:
-  musicall:
-    name: musicall
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.200.200.0/26
+    musicall:
+        name: musicall
+        ipam:
+            driver: default
+            config:
+                -   subnet: 10.200.200.0/26
 
 volumes:
-  db_files:
-    driver: local
-  es_files:
-    driver: local
+    db_files:
+        driver: local
+    es_files:
+        driver: local
+    caddy_data:
+    caddy_config:
