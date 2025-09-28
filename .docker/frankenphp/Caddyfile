@@ -33,7 +33,7 @@
 	php_server {
 		worker  {
 		    file ./public/index.php
-		    watch
+		    watch ./**/*.{php,yaml,yml,twig,env,vue,js}
 		}
 	}
 }
