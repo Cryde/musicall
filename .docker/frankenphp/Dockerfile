@@ -3,14 +3,30 @@ FROM dunglas/frankenphp:1.9-php8.4-alpine
 RUN apk add --update --no-cache \
     libpq-dev \
     libzip-dev \
-    shadow
+    shadow \
+    libgd  \
+    libpng \
+    libpng-dev  \
+    libwebp-dev \
+    libjpeg-turbo \
+    libjpeg-turbo-dev \
+    freetype \
+    freetype-dev \
+    icu-dev  \
+    icu-data-full \
+    jpegoptim \
+    optipng
+
+RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
 
 RUN docker-php-ext-install \
     opcache  \
     bcmath  \
     zip  \
     pdo  \
-    pdo_mysql
+    pdo_mysql \
+    gd  \
+    intl
 
 ARG USER=www-data
 ARG UID=1000
