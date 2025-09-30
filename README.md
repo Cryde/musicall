@@ -45,14 +45,6 @@ Install PHP vendor
 docker compose run --rm php-cli composer install
 ```
 
-### Chmod the storage directory
-
-This will allow you to have files in your local environment. 
-```
-chmod 777 -R public/images/
-chmod 777 -R public/media/
-```
-
 ### Apply the fixtures
 This will create the database schema and populate it with some random data.  
 It will erase all the previous data in the database you had.
@@ -60,6 +52,14 @@ It will erase all the previous data in the database you had.
 docker compose run --rm php-cli bin/console foundry:load-fixtures app
 ```
 Run it every time before working on a MR or when you want to start from scratch.
+
+### Chmod the storage directory
+
+This will allow you to have files in your local environment.
+```
+chmod 777 -R public/images/
+chmod 777 -R public/media/
+```
 
 ### Migrations
 If you applied the fixtures, you can skip this step.  
@@ -109,4 +109,4 @@ docker compose run --rm php-cli bin/phpunit
 
 ## TODO
 
-- [ ] Https
+- [ ] More modules fixtures (forums, messages, etc.)
