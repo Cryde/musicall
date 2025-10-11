@@ -67,7 +67,9 @@ class MusicianAnnounce
 
     final const LIMIT_LAST_ANNOUNCES = 10;
     final const TYPE_MUSICIAN = 1;
+    final const string TYPE_MUSICIAN_STR = '1';
     final const TYPE_BAND = 2;
+    final const string TYPE_BAND_STR = '2';
     final const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
 
     #[ORM\Id]
@@ -186,6 +188,13 @@ class MusicianAnnounce
     public function getStyles(): Collection
     {
         return $this->styles;
+    }
+
+    public function setStyles(Collection $styles): static
+    {
+        $this->styles = $styles;
+
+        return $this;
     }
 
     public function addStyle(Style $style): self

@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\ApiResource\Search\AnnounceMusician;
 use App\ApiResource\Search\MusicianSearchResult;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Musician\MusicianAnnounce;
@@ -42,7 +43,7 @@ class Style implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST, MusicianSearchResult::LIST])]
+    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
     private $name;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]

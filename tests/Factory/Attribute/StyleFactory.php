@@ -35,6 +35,14 @@ final class StyleFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    public function asJazz(): Factory
+    {
+        return $this->with([
+            'name' => 'Jazz',
+            'slug' => 'jazz',
+        ]);
+    }
+
     public function asMetal(): Factory
     {
         return $this->with([

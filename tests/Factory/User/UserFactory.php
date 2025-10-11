@@ -22,7 +22,7 @@ final class UserFactory extends PersistentProxyObjectFactory
             'lastLoginDatetime' => new DateTime(),
             'password' => self::faker()->text(),
             'roles' => [],
-            'username' => self::faker()->text(180),
+            'username' => self::faker()->userName(),
         ];
     }
 
