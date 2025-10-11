@@ -7,15 +7,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\Search\MusicianSearchProvider;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[GetCollection(
-    uriTemplate: 'musicians/search',
-    openapi: new Operation(tags: ['Musician announce']),
-    paginationEnabled: false,
-    normalizationContext: ['groups' => MusicianSearchResult::LIST],
-    output: MusicianSearchResult::class,
-    name: 'api_musician_announces_search_collection',
-    provider: MusicianSearchProvider::class
-)]
+
 class MusicianText
 {
     #[Assert\Length(

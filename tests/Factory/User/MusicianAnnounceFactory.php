@@ -16,7 +16,7 @@ final class MusicianAnnounceFactory extends PersistentProxyObjectFactory
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
             'instrument' => InstrumentFactory::new(),
             'latitude' => self::faker()->text(255),
-            'locationName' => self::faker()->text(255),
+            'locationName' => self::faker()->city(),
             'longitude' => self::faker()->text(255),
             'note' => self::faker()->text(),
             'type' => self::faker()->numberBetween(1, 32767),

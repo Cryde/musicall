@@ -28,9 +28,10 @@ doctrine:
         dql:
             string_functions:
                 MATCH_AGAINST: App\Extensions\Doctrine\MatchAgainst
-                ST_Distance: App\Extensions\Doctrine\STDistance
-                ST_GeomFromText: App\Extensions\Doctrine\STGeomFromText
-                ST_Point: App\Extensions\Doctrine\STPoint
+                ST_GeomFromText: LongitudeOne\Spatial\ORM\Query\AST\Functions\Standard\StGeomFromText
+                ST_Point: LongitudeOne\Spatial\ORM\Query\AST\Functions\MariaDB\SpPoint
+            numeric_functions:
+                ST_Distance_Sphere: LongitudeOne\Spatial\ORM\Query\AST\Functions\MariaDB\SpDistanceSphere
 
 when@test:
     doctrine:

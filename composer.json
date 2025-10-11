@@ -23,6 +23,7 @@
         "league/flysystem-aws-s3-v3": "^3.12",
         "lexik/jwt-authentication-bundle": "^3.1",
         "liip/imagine-bundle": "^2.12",
+        "longitude-one/doctrine-spatial": "^5.0",
         "mailjet/mailjet-apiv3-php": "^1.5.7",
         "nelmio/cors-bundle": "^2.2",
         "nyholm/psr7": "^1.5.1",
