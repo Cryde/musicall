@@ -10,7 +10,7 @@ use App\Service\Client\OpenAI\OpenAIClient;
 use App\Service\Factory\JsonTextExtractorFactory;
 use App\Service\Finder\Musician\Builder\SearchModelBuilder;
 use App\Service\Finder\Musician\Formatter\PromptFormatter;
-use App\Service\Finder\Musician\MusicianAIFinder;
+use App\Service\Finder\Musician\MusicianFilterGenerator;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
@@ -96,10 +96,10 @@ class MusicianAIFinderTest extends KernelTestCase
         $finder->find($musicianText, null);
     }
 
-    private function buildMusicianAIFinderOk(): MusicianAIFinder
+    private function buildMusicianAIFinderOk(): MusicianFilterGenerator
     {
         // This is the "happy case"
-        return new MusicianAIFinder(
+        return new MusicianFilterGenerator(
             $this->buildOpenAIClient('ok.json'),
             static::getContainer()->get(PromptFormatter::class),
             static::getContainer()->get(MusicianAnnounceRepository::class),
@@ -108,10 +108,10 @@ class MusicianAIFinderTest extends KernelTestCase
         );
     }
 
-    private function buildMusicianAIFinderNoContent(): MusicianAIFinder
+    private function buildMusicianAIFinderNoContent(): MusicianFilterGenerator
     {
         // This is an error path where on the key in the response is missing
-        return new MusicianAIFinder(
+        return new MusicianFilterGenerator(
             $this->buildOpenAIClient('no_content.json'),
             static::getContainer()->get(PromptFormatter::class),
             static::getContainer()->get(MusicianAnnounceRepository::class),
@@ -120,10 +120,10 @@ class MusicianAIFinderTest extends KernelTestCase
         );
     }
 
-    private function buildMusicianAIFinderNoJsonInContent(): MusicianAIFinder
+    private function buildMusicianAIFinderNoJsonInContent(): MusicianFilterGenerator
     {
         // This is an error path where there is no json in the response.
-        return new MusicianAIFinder(
+        return new MusicianFilterGenerator(
             $this->buildOpenAIClient('no_json_in_content.json'),
             static::getContainer()->get(PromptFormatter::class),
             static::getContainer()->get(MusicianAnnounceRepository::class),
@@ -132,10 +132,10 @@ class MusicianAIFinderTest extends KernelTestCase
         );
     }
 
-    private function buildMusicianAIFinderTooMuchJsonInResponse(): MusicianAIFinder
+    private function buildMusicianAIFinderTooMuchJsonInResponse(): MusicianFilterGenerator
     {
         // This is an error path where there is too much JSON in the response.
-        return new MusicianAIFinder(
+        return new MusicianFilterGenerator(
             $this->buildOpenAIClient('more_than_one_json_in_response.json'),
             static::getContainer()->get(PromptFormatter::class),
             static::getContainer()->get(MusicianAnnounceRepository::class),

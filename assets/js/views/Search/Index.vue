@@ -1,6 +1,6 @@
 <template>
     <div class="flex justify-end">
-        <breadcrumb :items="[{'label':  'Rechercher un musicien'}]"/>
+        <breadcrumb :items="[{'label': 'Rechercher un musicien'}]"/>
     </div>
 
     <div class="flex justify-between mb-10">
@@ -20,20 +20,27 @@
     </div>
 
     <div class="flex flex-wrap w-full gap-4 items-center">
-        <InputGroup class="md:w-80">
+        <Message severity="error" v-if="quickSearchErrors.length">
+            <span v-for="error in quickSearchErrors">{{error}}</span>
+        </Message>
+        <div class="flex flex-wrap w-full gap-4 items-center">
             <InputText
                 v-model="quickSearch"
                 fluid
                 size="large"
+                class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 mr-0 lg:mr-6"
                 placeholder="Taper votre recherche ici, exemple: Je recherche un guitariste qui joue du rock"
             />
             <Button
                 label="Recherche rapide"
+                @click="generateQuickSearchFilters"
+                :loading="isFilterGenerating"
                 icon="pi pi-search"
                 severity="info"
-                :disabled="isSearching"
+                class="text-surface-500 dark:text-surface-400 shrink-0"
+                :disabled="isSearching || isFilterGenerating || !isQuickSearchParamEnough"
             />
-        </InputGroup>
+        </div>
 
         <Message size="small" severity="secondary" variant="simple">
             exemples :
@@ -43,7 +50,7 @@
         </Message>
     </div>
 
-    <Divider class="w-full my-0!" />
+    <Divider class="w-full my-0!"/>
 
     <div class="flex flex-wrap gap-4 items-center">
         <SelectButton
@@ -57,7 +64,7 @@
             filter
             optionLabel="musician_name"
             placeholder="Sélectionnez un instrument"
-            class="w-full md:w-70" />
+            class="w-full md:w-70"/>
         <MultiSelect
             v-model="selectedStyles"
             :options="styleStore.styles"
@@ -70,7 +77,7 @@
         <Button
             severity="secondary"
             icon="pi pi-search"
-            :disabled="!isSearchParamEnough || isSearching"
+            :disabled="!isSearchParamEnough || isSearching || isFilterGenerating"
             label="Rechercher"
             class="text-surface-500 dark:text-surface-400 shrink-0"
             @click="search"
@@ -85,11 +92,12 @@
         />
     </div>
 
-    <div v-if="!isSearchMade.value && musicianSearchStore.announces.length === 0" class="flex content-center justify-center items-center h-50">
+    <div v-if="!isSearchMade.value && musicianSearchStore.announces.length === 0"
+         class="flex content-center justify-center items-center h-50">
         <Message size="large" icon="pi pi-filter">
             <div class="ml-4">
                 Cherchez parmis + de 2000 annonces des musiciens ou groupes. <br/>
-            Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
+                Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
             </div>
         </Message>
     </div>
@@ -107,16 +115,16 @@
     </div>
 </template>
 <script setup>
-import { useTitle } from '@vueuse/core'
+import {useTitle} from '@vueuse/core'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
 import InputGroup from 'primevue/inputgroup'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useInstrumentStore } from '../../store/attribute/instrument.js'
-import { useStyleStore } from '../../store/attribute/style.js'
-import { useMusicianSearchStore } from '../../store/search/musician.js'
+import {computed, onMounted, onUnmounted, ref} from 'vue'
+import {useInstrumentStore} from '../../store/attribute/instrument.js'
+import {useStyleStore} from '../../store/attribute/style.js'
+import {useMusicianSearchStore} from '../../store/search/musician.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
@@ -127,56 +135,89 @@ const instrumentStore = useInstrumentStore()
 const musicianSearchStore = useMusicianSearchStore()
 
 onMounted(async () => {
-  await instrumentStore.loadInstruments()
-  await styleStore.loadStyles()
+    await instrumentStore.loadInstruments()
+    await styleStore.loadStyles()
 })
 
 const quickSearch = ref('')
+const quickSearchErrors = ref([])
 const isSearching = ref(false)
+const isFilterGenerating = ref(false)
 const isSearchMade = ref(false)
 const selectedInstrument = ref(null)
 const selectedStyles = ref([])
-const selectSearchType = ref({ key: 1, name: 'Musiciens' })
+const selectSearchType = ref({key: 1, name: 'Musiciens'})
 const selectSearchTypeOption = [
-  { key: 1, name: 'Musiciens' },
-  { key: 2, name: 'Groupe' }
+    {key: 1, name: 'Musiciens'},
+    {key: 2, name: 'Groupe'}
 ]
 
 const isSearchParamEnough = computed(() => {
-  return selectedInstrument.value !== null && selectSearchType.value !== null
+    return selectedInstrument.value !== null && selectSearchType.value !== null
+})
+
+const isQuickSearchParamEnough = computed(() => {
+    return quickSearch.value !== '' && quickSearch.value.length > 4;
 })
 
 function insertExample(e) {
-  search.value = e.target.textContent
+    quickSearch.value = e.target.textContent
 }
 
 async function search() {
-  isSearching.value = true
-  await musicianSearchStore.searchAnnounces({
-    type: selectSearchType.value.key,
-    instrument: selectedInstrument.value.id,
-    styles: selectedStyles?.value.map((style) => style.id)
-  })
-  isSearching.value = false
+    quickSearchErrors.value = []
+    isSearching.value = true
+    await musicianSearchStore.searchAnnounces({
+        type: selectSearchType.value.key,
+        instrument: selectedInstrument.value.id,
+        styles: selectedStyles?.value.map((style) => style.id)
+    })
+    isSearching.value = false
+}
+
+async function generateQuickSearchFilters() {
+    const searchTxt = quickSearch.value;
+    clearAllFilters();
+    quickSearch.value = searchTxt;
+    quickSearchErrors.value = [];
+    isFilterGenerating.value = true
+    try {
+        await musicianSearchStore.getSearchAnnouncesFilters({search: searchTxt});
+        selectSearchType.value = selectSearchTypeOption.find((type) => type.key === musicianSearchStore.filters.type);
+        selectedInstrument.value = instrumentStore.instruments.find((i) => i.id === musicianSearchStore.filters.instrument);
+        if (musicianSearchStore.filters.styles.length) {
+            selectedStyles.value = styleStore.styles.filter((style) => musicianSearchStore.filters.styles.includes(style.id));
+        }
+        await search();
+    } catch (e) {
+        if (e?.response?.status === 422) {
+            quickSearchErrors.value = e.response.data.violations.map((violation) => violation.message);
+        } else {
+            quickSearchErrors.value = ['Nous ne pouvons pas répondre à cette demande. Reformulez votre recherche.'];
+        }
+    }
+    isFilterGenerating.value = false
 }
 
 function clearAllFilters() {
-  selectedInstrument.value = null
-  selectedStyles.value = []
-  search.value = ''
-  selectSearchType.value = { key: 1, name: 'Musiciens' }
+    quickSearchErrors.value = [];
+    selectedInstrument.value = null
+    selectedStyles.value = []
+    quickSearch.value = ''
+    selectSearchType.value = {key: 1, name: 'Musiciens'}
 }
 
 onUnmounted(() => {
-  musicianSearchStore.clear()
-  instrumentStore.clear()
-  styleStore.clear()
-  isSearching.value = false
-  isSearchMade.value = false
-  quickSearch.value = ''
-  isSearching.value = false
-  selectedInstrument.value = null
-  selectedStyles.value = []
-  selectSearchType.value = { key: 1, name: 'Musiciens' }
+    musicianSearchStore.clear()
+    instrumentStore.clear()
+    styleStore.clear()
+    isSearching.value = false
+    isSearchMade.value = false
+    quickSearch.value = ''
+    isSearching.value = false
+    selectedInstrument.value = null
+    selectedStyles.value = []
+    quickSearchErrors.value = []
+    selectSearchType.value = {key: 1, name: 'Musiciens'}
 })
 </script>
