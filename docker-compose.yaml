@@ -15,6 +15,7 @@ services:
             - caddy_data:/data
             - caddy_config:/config
             - ./.docker/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile
+            - ./.docker/frankenphp/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
         environment:
             APP_ENV: 'dev'
             SERVER_NAME: 'musicall.local'
