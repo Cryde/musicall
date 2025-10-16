@@ -2,6 +2,7 @@
 
 namespace App\Service\Finder\Musician;
 
+use App\ApiResource\Search\AnnounceMusicianFilter;
 use App\Exception\Musician\InvalidResultException;
 use App\Exception\Musician\NoResultException;
 use App\Repository\Attribute\InstrumentRepository;
@@ -24,7 +25,7 @@ readonly class MusicianFilterGenerator
     ) {
     }
 
-    public function find(string $search): mixed
+    public function find(string $search): ?AnnounceMusicianFilter
     {
         $messages = $this->getSystemPrompt();
         $messages->add(Message::ofUser($search));

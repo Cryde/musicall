@@ -252,13 +252,13 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
             ->withInstrument($guitar)
             ->withStyles([$metal, $pop])
             ->asMusician()
-            ->create();
+            ->create(['creationDatetime' => new \DateTime('2022-01-01')]);
 
         $announce2 = MusicianAnnounceFactory::new()
             ->withInstrument($guitar)
             ->withStyles([$rock])
             ->asMusician()
-            ->create();
+            ->create(['creationDatetime' => new \DateTime('2020-01-01')]);
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;

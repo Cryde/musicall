@@ -2,34 +2,29 @@
 
 namespace App\Tests\Integration\Service\Finder\Musician;
 
-use App\ApiResource\Search\MusicianText;
-use App\Exception\Musician\InvalidResultException;
-use App\Exception\Musician\NoResultException;
-use App\Repository\Musician\MusicianAnnounceRepository;
-use App\Service\Client\OpenAI\OpenAIClient;
-use App\Service\Factory\JsonTextExtractorFactory;
-use App\Service\Finder\Musician\Builder\SearchModelBuilder;
-use App\Service\Finder\Musician\Formatter\PromptFormatter;
+use App\Entity\Attribute\Instrument;
+use App\Entity\Attribute\Style;
+use App\Repository\Attribute\InstrumentRepository;
+use App\Repository\Attribute\StyleRepository;
+use App\Service\Finder\Musician\Builder\AnnounceMusicianFilterBuilder;
 use App\Service\Finder\Musician\MusicianFilterGenerator;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
-use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
+use Symfony\AI\Agent\Agent;
+use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Platform\Model;
+use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Result\ToolCall;
+use Symfony\AI\Platform\Result\ToolCallResult;
+use Symfony\AI\Platform\Test\InMemoryPlatform;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
 class MusicianAIFinderTest extends KernelTestCase
 {
     use ResetDatabase, Factories;
-
-    protected function setUp(): void
-    {
-        self::bootKernel();
-        parent::setUp();
-    }
 
     public function test_find(): void
     {
@@ -42,112 +37,44 @@ class MusicianAIFinderTest extends KernelTestCase
         $drum = InstrumentFactory::new()->asDrum()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
-        MusicianAnnounceFactory::new()
-            ->withStyles([$metal])->withInstrument($drum)->asMusician()
-            ->create(['author' => $user2]); // not taken (not good style)
-        MusicianAnnounceFactory::new()
-            ->withStyles([$pop])->withInstrument($guitar)->asMusician()
-            ->create(['author' => $user2]); // not taken (not good instrument)
-        $announce = MusicianAnnounceFactory::new()
-            ->withStyles([$pop, $rock])->withInstrument($drum)->asMusician()
-            ->create(['author' => $user2]); // ok
-        MusicianAnnounceFactory::new()
-            ->withStyles([$pop, $rock])->withInstrument($drum)->asMusician()
-            ->create(['author' => $user1]); // ok (but not taken because filtered on user)
-        MusicianAnnounceFactory::new()
-            ->withStyles([$pop, $rock])->withInstrument($drum)->asBand()
-            ->create(['author' => $user2]); // not taken (not good type)
+        $finder = $this->buildMusicianFilterGeneratorOk($drum, [$rock]);
 
-        $finder = $this->buildMusicianAIFinderOk();
-        $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
-
-        $result = $finder->find($musicianText, $user1->_real());
-        $this->assertCount(1, $result);
-        $this->assertSame($announce->_real(), $result[0][0]);
+        $result = $finder->find('Je recherche un batteur pour mon groupe de pop rock à Paris');
+        $this->assertSame(1, $result->type);
+        $this->assertSame($drum->getId(), $result->instrument);
+        $this->assertCount(1, $result->styles);
+        $this->assertSame($rock->getId(), $result->styles[0]);
+        $this->assertSame(48.856614, $result->latitude);
+        $this->assertSame(2.3522219, $result->longitude);
     }
 
-    public function test_find_no_content(): void
-    {
-        $finder = $this->buildMusicianAIFinderNoContent();
-        $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
-
-        $this->expectException(NoResultException::class);
-        $this->expectExceptionMessage('One the key on the response is missing');
-        $finder->find($musicianText, null);
-    }
-
-    public function test_find_no_json_in_response(): void
-    {
-        $finder = $this->buildMusicianAIFinderNoJsonInContent();
-        $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
-
-        $this->expectException(NoResultException::class);
-        $this->expectExceptionMessage('There is no JSON in the response');
-        $finder->find($musicianText, null);
-    }
-
-    public function test_find_too_much_json_in_response(): void
-    {
-        $finder = $this->buildMusicianAIFinderTooMuchJsonInResponse();
-        $musicianText = (new MusicianText())->setSearch('Je recherche un batteur pour mon groupe de pop rock à Paris');
-
-        $this->expectException(InvalidResultException::class);
-        $this->expectExceptionMessage('Too much JSON in the response');
-        $finder->find($musicianText, null);
-    }
-
-    private function buildMusicianAIFinderOk(): MusicianFilterGenerator
+    private function buildMusicianFilterGeneratorOk(Instrument $instrument, array $styles): MusicianFilterGenerator
     {
         // This is the "happy case"
         return new MusicianFilterGenerator(
-            $this->buildOpenAIClient('ok.json'),
-            static::getContainer()->get(PromptFormatter::class),
-            static::getContainer()->get(MusicianAnnounceRepository::class),
-            static::getContainer()->get(JsonTextExtractorFactory::class),
-            static::getContainer()->get(SearchModelBuilder::class),
+            static::getContainer()->get(InstrumentRepository::class),
+            static::getContainer()->get(StyleRepository::class),
+            new Agent(
+                new InMemoryPlatform(fn(Model $model, MessageBag $input, array $options) => $this->callableResult($model, $input, $options, $instrument, $styles)),
+                'gpt-4o-mini',
+            ),
+            static::getContainer()->get(AnnounceMusicianFilterBuilder::class),
         );
     }
 
-    private function buildMusicianAIFinderNoContent(): MusicianFilterGenerator
+    /**
+     * @param Style[]      $styles
+     */
+    private function callableResult(Model $model, MessageBag $input, array $options, Instrument $instrument, array $styles): ResultInterface
     {
-        // This is an error path where on the key in the response is missing
-        return new MusicianFilterGenerator(
-            $this->buildOpenAIClient('no_content.json'),
-            static::getContainer()->get(PromptFormatter::class),
-            static::getContainer()->get(MusicianAnnounceRepository::class),
-            static::getContainer()->get(JsonTextExtractorFactory::class),
-            static::getContainer()->get(SearchModelBuilder::class),
-        );
-    }
-
-    private function buildMusicianAIFinderNoJsonInContent(): MusicianFilterGenerator
-    {
-        // This is an error path where there is no json in the response.
-        return new MusicianFilterGenerator(
-            $this->buildOpenAIClient('no_json_in_content.json'),
-            static::getContainer()->get(PromptFormatter::class),
-            static::getContainer()->get(MusicianAnnounceRepository::class),
-            static::getContainer()->get(JsonTextExtractorFactory::class),
-            static::getContainer()->get(SearchModelBuilder::class),
-        );
-    }
-
-    private function buildMusicianAIFinderTooMuchJsonInResponse(): MusicianFilterGenerator
-    {
-        // This is an error path where there is too much JSON in the response.
-        return new MusicianFilterGenerator(
-            $this->buildOpenAIClient('more_than_one_json_in_response.json'),
-            static::getContainer()->get(PromptFormatter::class),
-            static::getContainer()->get(MusicianAnnounceRepository::class),
-            static::getContainer()->get(JsonTextExtractorFactory::class),
-            static::getContainer()->get(SearchModelBuilder::class),
-        );
-    }
-
-    private function buildOpenAIClient(string $filename): OpenAIClient
-    {
-        $callback = (fn($method, $url, $options): MockResponse => new MockResponse(file_get_contents(__DIR__ . '/fixtures/' . $filename)));
-
-        return new OpenAIClient(new MockHttpClient($callback));
+        return new ToolCallResult(new ToolCall('id', 'extract_data', [
+            'type' => 1,
+            'instrument' => $instrument->getId(),
+            'styles' => array_map(fn(Style $style) => $style->getId(), $styles),
+            'coordinates' => [
+                'latitude' => 48.856614,
+                'longitude' => 2.3522219,
+            ]
+        ]));
     }
 }
