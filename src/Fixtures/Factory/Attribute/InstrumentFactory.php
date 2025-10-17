@@ -6,7 +6,11 @@ use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Instrument;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
-/** @codeCoverageIgnore */
+/**
+ * @codeCoverageIgnore
+ *
+ * @extends PersistentProxyObjectFactory<Instrument>
+ */
 final class InstrumentFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array
@@ -19,7 +23,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asGuitar(): Factory
+    public function asGuitar(): self
     {
         return $this->with([
             'musicianName' => 'Guitariste',
@@ -28,7 +32,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asUkulele(): Factory
+    public function asUkulele(): self
     {
         return $this->with([
             'musicianName' => 'Joueur / Joueuse de Ukulélé',
@@ -37,7 +41,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asFlute(): Factory
+    public function asFlute(): self
     {
         return $this->with([
             'musicianName' => 'Flûtiste',
@@ -46,7 +50,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asSaxophone(): Factory
+    public function asSaxophone(): self
     {
         return $this->with([
             'musicianName' => 'Saxophoniste',
@@ -55,7 +59,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asTrumpet(): Factory
+    public function asTrumpet(): self
     {
         return $this->with([
             'musicianName' => 'Trompettiste',
@@ -64,7 +68,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asDidgeridoo(): Factory
+    public function asDidgeridoo(): self
     {
         return $this->with([
             'musicianName' => 'Joueur / Joueuse de Didjeridoo',
@@ -73,7 +77,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asDjembe(): Factory
+    public function asDjembe(): self
     {
         return $this->with([
             'musicianName' => 'Joueur / Joueuse de Djembé',
@@ -82,7 +86,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asDJ(): Factory
+    public function asDJ(): self
     {
         return $this->with([
             'musicianName' => 'DJ',
@@ -91,7 +95,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asDoubleBass(): Factory
+    public function asDoubleBass(): self
     {
         return $this->with([
             'musicianName' => 'Contre-Bassiste',
@@ -100,7 +104,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asViolin(): Factory
+    public function asViolin(): self
     {
         return $this->with([
             'musicianName' => 'Violoniste',
@@ -109,7 +113,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asCello(): Factory
+    public function asCello(): self
     {
         return $this->with([
             'musicianName' => 'Violoncelliste',
@@ -118,7 +122,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asPiano(): Factory
+    public function asPiano(): self
     {
         return $this->with([
             'musicianName' => 'Pianiste',
@@ -127,7 +131,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asBass(): Factory
+    public function asBass(): self
     {
         return $this->with([
             'musicianName' => 'Bassiste',
@@ -136,7 +140,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asDrums(): Factory
+    public function asDrums(): self
     {
         return $this->with([
             'musicianName' => 'Batteur / Batteuse',
@@ -145,7 +149,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asVocals(): Factory
+    public function asVocals(): self
     {
         return $this->with([
             'musicianName' => 'Chanteur / Chanteuse',
@@ -154,7 +158,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asKeyboard(): Factory
+    public function asKeyboard(): self
     {
         return $this->with([
             'musicianName' => 'Claviériste',
@@ -163,7 +167,7 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asBanjo(): Factory
+    public function asBanjo(): self
     {
         return $this->with([
             'musicianName' => 'Joueur / Joueuse de Banjo',

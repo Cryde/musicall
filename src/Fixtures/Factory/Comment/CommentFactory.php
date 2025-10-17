@@ -6,7 +6,11 @@ use App\Entity\Comment\Comment;
 use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
-/** @codeCoverageIgnore */
+/**
+ * @codeCoverageIgnore
+ *
+ * @extends PersistentProxyObjectFactory<Comment>
+ */
 final class CommentFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array

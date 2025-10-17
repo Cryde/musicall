@@ -27,7 +27,7 @@ final class UserFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asAdminUser(): Factory
+    public function asAdminUser(): static
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -38,7 +38,7 @@ final class UserFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    public function asBaseUser(): Factory
+    public function asBaseUser(): static
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),

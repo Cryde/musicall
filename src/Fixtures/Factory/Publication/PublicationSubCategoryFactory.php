@@ -28,32 +28,32 @@ final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asNews(): Factory
+    public function asNews(): static
     {
         return $this->with(['title' => 'News', 'slug' => 'news', 'position' => 1]);
     }
 
-    public function asChronique(): Factory
+    public function asChronique(): static
     {
         return $this->with(['title' => 'Chroniques', 'slug' => 'chroniques', 'position' => 2]);
     }
 
-    public function asInterview(): Factory
+    public function asInterview(): static
     {
         return $this->with(['title' => 'Interviews', 'slug' => 'interviews', 'position' => 3]);
     }
 
-    public function asLiveReports(): Factory
+    public function asLiveReports(): static
     {
         return $this->with(['title' => 'Live-reports', 'slug' => 'live-reports', 'position' => 4]);
     }
 
-    public function asArticle(): Factory
+    public function asArticle(): static
     {
         return $this->with(['title' => 'Articles', 'slug' => 'articles', 'position' => 5]);
     }
 
-    public function asDecouvertes(): Factory
+    public function asDecouvertes(): static
     {
         return $this->with(['title' => 'Découvertes', 'slug' => 'decouvertes', 'position' => 6]);
     }

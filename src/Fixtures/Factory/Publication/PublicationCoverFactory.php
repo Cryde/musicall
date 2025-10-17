@@ -6,7 +6,11 @@ use App\Entity\Image\PublicationCover;
 use App\Fixtures\Publication\FakeImageGeneratorStory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
-/** @codeCoverageIgnore */
+/**
+ * @codeCoverageIgnore
+ *
+ * @extends PersistentProxyObjectFactory<PublicationCover>
+ */
 final class PublicationCoverFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array

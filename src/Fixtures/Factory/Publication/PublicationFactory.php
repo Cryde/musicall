@@ -10,7 +10,11 @@ use Zenstruck\Foundry\Factory;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 use function Symfony\Component\String\u;
 
-/** @codeCoverageIgnore */
+/**
+ * @codeCoverageIgnore
+ *
+ * @extends PersistentProxyObjectFactory<Publication>
+ */
 final class PublicationFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array
@@ -30,7 +34,7 @@ final class PublicationFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asBaseTextPublicationOnline(): Factory
+    public function asBaseTextPublicationOnline(): static
     {
         $title = self::faker()->sentence();
 

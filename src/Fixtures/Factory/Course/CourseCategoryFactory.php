@@ -28,27 +28,27 @@ final class CourseCategoryFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    public function asGuitare(): Factory
+    public function asGuitare(): self
     {
         return $this->with(['title' => 'Guitare', 'slug' => 'guitare', 'position' => 1]);
     }
 
-    public function asBasse(): Factory
+    public function asBasse(): self
     {
         return $this->with(['title' => 'Basse', 'slug' => 'basse', 'position' => 2]);
     }
 
-    public function asBatterie(): Factory
+    public function asBatterie(): self
     {
         return $this->with(['title' => 'Batterie', 'slug' => 'batterie', 'position' => 3]);
     }
 
-    public function asMAO(): Factory
+    public function asMAO(): self
     {
         return $this->with(['title' => 'MAO', 'slug' => 'mao', 'position' => 4]);
     }
 
-    public function asDivers(): Factory
+    public function asDivers(): self
     {
         return $this->with(['title' => 'Divers', 'slug' => 'divers', 'position' => 5]);
     }
