@@ -7,10 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method CommentThread|null find($id, $lockMode = null, $lockVersion = null)
- * @method CommentThread|null findOneBy(array $criteria, array $orderBy = null)
- * @method CommentThread[]    findAll()
- * @method CommentThread[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<CommentThread>
  */
 class CommentThreadRepository extends ServiceEntityRepository
 {

@@ -7,10 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method GalleryImage|null find($id, $lockMode = null, $lockVersion = null)
- * @method GalleryImage|null findOneBy(array $criteria, array $orderBy = null)
- * @method GalleryImage[]    findAll()
- * @method GalleryImage[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<GalleryImage>
  */
 class GalleryImageRepository extends ServiceEntityRepository
 {

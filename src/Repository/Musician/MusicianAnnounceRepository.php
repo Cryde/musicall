@@ -9,10 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method MusicianAnnounce|null find($id, $lockMode = null, $lockVersion = null)
- * @method MusicianAnnounce|null findOneBy(array $criteria, array $orderBy = null)
- * @method MusicianAnnounce[]    findAll()
- * @method MusicianAnnounce[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<MusicianAnnounce>
  */
 class MusicianAnnounceRepository extends ServiceEntityRepository
 {
