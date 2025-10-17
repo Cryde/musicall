@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Service\Finder\Musician\Builder;
 
@@ -23,7 +23,7 @@ class AnnounceMusicianFilterBuilder
             return null;
         }
         $filter = new AnnounceMusicianFilter();
-        $filter->type = $data['type'];
+        $filter->type = (int)$data['type'];
         $filter->instrument = $instrumentId;
         $filter->styles = $this->getStyleIds($data['styles'] ?? []);
         if (isset($data['coordinates']['latitude'], $data['coordinates']['longitude'])) {

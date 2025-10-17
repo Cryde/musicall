@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\State\Provider\Search;
 
@@ -27,6 +27,10 @@ readonly class MusicianSearchProvider implements ProviderInterface
             return [];
         }
 
+        if(!$instrument = $params->get('instrument')?->getValue()) {
+            return [];
+        }
+
         $styles = $params->get('styles')?->getValue();
         $longitude = $params->get('longitude')?->getValue();
         $latitude = $params->get('latitude')?->getValue();
@@ -34,11 +38,11 @@ readonly class MusicianSearchProvider implements ProviderInterface
         /** @var User|null $user */
         $user = $this->security->getUser();
         $searchModel = $this->searchModelBuilder->build(
-            $params->get('type')?->getValue(),
-            $params->get('instrument')?->getValue(),
+            (int)$params->get('type')?->getValue(),
+            $instrument,
             $styles instanceof ParameterNotFound ? [] : $styles,
-            $longitude instanceof ParameterNotFound ? null : $longitude,
-            $latitude instanceof ParameterNotFound ? null : $latitude,
+            $longitude instanceof ParameterNotFound ? null : (float)$longitude,
+            $latitude instanceof ParameterNotFound ? null : (float)$latitude,
         );
         $results = $this->musicianAnnounceRepository->findByCriteria($searchModel, $user);
 
