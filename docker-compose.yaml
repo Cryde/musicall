@@ -2,10 +2,6 @@ services:
     php-web:
         build: .docker/frankenphp
         container_name: php-web
-        # uncomment the following line if you want to use a custom Dockerfile
-        #build: .
-        # uncomment the following line if you want to run this in a production environment
-        # restart: always
         ports:
             - "80:80" # HTTP
             - "443:443" # HTTPS
@@ -39,7 +35,6 @@ services:
 
     php-cli:
         build: .docker/cli-musicall
-        # image: php-musicall
         container_name: php-cli
         working_dir: /var/www
         command: /bin/true
