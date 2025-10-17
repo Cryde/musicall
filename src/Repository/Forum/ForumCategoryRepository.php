@@ -7,10 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method ForumCategory|null find($id, $lockMode = null, $lockVersion = null)
- * @method ForumCategory|null findOneBy(array $criteria, array $orderBy = null)
- * @method ForumCategory[]    findAll()
- * @method ForumCategory[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<ForumCategory>
  */
 class ForumCategoryRepository extends ServiceEntityRepository
 {

@@ -11,10 +11,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method MessageThread|null find($id, $lockMode = null, $lockVersion = null)
- * @method MessageThread|null findOneBy(array $criteria, array $orderBy = null)
- * @method MessageThread[]    findAll()
- * @method MessageThread[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<MessageThread>
  */
 class MessageThreadRepository extends ServiceEntityRepository
 {

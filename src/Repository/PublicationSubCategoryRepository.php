@@ -7,10 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method PublicationSubCategory|null find($id, $lockMode = null, $lockVersion = null)
- * @method PublicationSubCategory|null findOneBy(array $criteria, array $orderBy = null)
- * @method PublicationSubCategory[]    findAll()
- * @method PublicationSubCategory[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<PublicationSubCategory>
  */
 class PublicationSubCategoryRepository extends ServiceEntityRepository
 {

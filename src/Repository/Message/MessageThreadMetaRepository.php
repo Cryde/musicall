@@ -8,10 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method MessageThreadMeta|null find($id, $lockMode = null, $lockVersion = null)
- * @method MessageThreadMeta|null findOneBy(array $criteria, array $orderBy = null)
- * @method MessageThreadMeta[]    findAll()
- * @method MessageThreadMeta[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<MessageThreadMeta>
  */
 class MessageThreadMetaRepository extends ServiceEntityRepository
 {
