@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Service\Publication;
 
@@ -13,7 +13,7 @@ class PublicationSlug
 
     public function create(string $slugCandidate): string
     {
-        $slug = $this->slugger->slug($slugCandidate)->lower();
+        $slug = (string) $this->slugger->slug($slugCandidate)->lower();
         $i = 1;
         $initialSlug = $slug;
         while ($this->publicationRepository->count(['slug' => $slug]) > 0) {

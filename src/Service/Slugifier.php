@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Service;
 
@@ -33,6 +33,6 @@ class Slugifier
             $slug = $initialSlug . '-' . $i++;
         }
 
-        return $slug;
+        return $slug->toString();
     }
 }
