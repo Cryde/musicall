@@ -33,28 +33,28 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['type' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationSubCategory
 {
-    final const TYPE_PUBLICATION = 1;
-    final const TYPE_COURSE = 2;
+    final const int TYPE_PUBLICATION = 1;
+    final const int TYPE_COURSE = 2;
 
-    final const TYPE_PUBLICATION_LABEL = 'publication';
-    final const TYPE_COURSE_LABEL = 'course';
+    final const string TYPE_PUBLICATION_LABEL = 'publication';
+    final const string TYPE_COURSE_LABEL = 'course';
 
-    final const LIST = 'PUBLICATION_CATEGORY_LIST';
-    final const ITEM = 'PUBLICATION_CATEGORY_ITEM';
+    final const string LIST = 'PUBLICATION_CATEGORY_LIST';
+    final const string ITEM = 'PUBLICATION_CATEGORY_ITEM';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
-    private $id;
+    private ?int $id;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
-    private $title;
+    private string $title;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
-    private $slug;
+    private string $slug;
 
     /**
      * @var Collection<int, Publication>
@@ -64,11 +64,11 @@ class PublicationSubCategory
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups([PublicationSubCategory::LIST])]
-    private $position;
+    private ?int $position;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     #[Groups([PublicationSubCategory::LIST])]
-    private $type;
+    private ?int $type;
 
     public function __construct()
     {
@@ -117,7 +117,7 @@ class PublicationSubCategory
     }
 
     /**
-     * @return Collection|Publication[]
+     * @return Collection<int, Publication>
      */
     public function getPublications(): Collection
     {
