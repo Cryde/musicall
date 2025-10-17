@@ -1,112 +1,245 @@
 # [MusicAll](https://www.musicall.com)
 
 [![codecov](https://codecov.io/gh/Cryde/musicall/branch/master/graph/badge.svg?token=7RK8UIL2RH)](https://codecov.io/gh/Cryde/musicall)
+[![PHP Version](https://img.shields.io/badge/php-8.4-blue)](https://php.net)
+[![Symfony](https://img.shields.io/badge/symfony-7.3-black)](https://symfony.com)
+[![Node](https://img.shields.io/badge/node-20-green)](https://nodejs.org)
 
-MusicAll is a platform where people can share videos, articles, courses, search musicians or band and talk with them.
+## About
+
+MusicAll is a platform where people can share videos, articles, and courses, search for musicians or bands to collaborate with, and chat directly with them.
+
+## Table of Contents
+
+- [About](#about)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Getting Started](#getting-started)
+- [Development](#development)
+- [Testing](#testing)
+- [Contributing](#contributing)
+
+## Tech Stack
+
+This project uses:
+- PHP 8.4
+- Symfony 7.3
+- MariaDB version 10.11
+- Node 20
+- Vue.js 3
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+- Docker & Docker Compose ([Installation Guide](https://docs.docker.com/get-docker/))
+- Git
+- (Optional) Node 20+ via NVM for local asset development
+
+## Quick Start
+
+For experienced developers, here's the condensed setup:
+
+```bash
+# Add to /etc/hosts
+echo "10.200.200.7 musicall.local musicall.test" | sudo tee -a /etc/hosts
+
+# Start services
+docker compose up -d
+
+# Install dependencies
+docker compose run --rm php-cli composer install
+docker compose run --rm node npm ci
+
+# Setup database with fixtures
+docker compose run --rm php-cli bin/console foundry:load-fixtures app
+
+# Fix storage permissions
+chmod 775 -R public/images/ public/media/
+
+# Build assets
+docker compose run --rm node npm run dev
+
+# Visit https://musicall.local
+```
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development.
 
-This project use: 
-- PHP 8.4
-- Symfony 7.3
-- MariaDB version 10.11
-- node 20
-- VueJS 3
-
 ### Installing
 
-#### Setup Docker
+#### 1. Setup Docker
 
-You will need Docker to run this project.  
-Follow the Docker installation guide (https://docs.docker.com/get-docker/) to have it on your environment.
+Start Docker services:
 
-Go in the project root and run 
-```
+```bash
 docker compose up -d
 ```
-It will pull and build all the required images to run MusicAll
 
-If you need to rebuild image (after an update for instance)
-``` 
+This will pull and build all required images to run MusicAll.
+
+If you need to rebuild images (after an update, for instance):
+
+```bash
 docker compose up --build
 ```
 
-#### Setup the project
+#### 2. Configure Hosts
 
-Add `musicall.local` and `musicall.test` to your `/etc/hosts`
-```
-10.200.200.7 	musicall.local musicall.test
+Add `musicall.local` and `musicall.test` to your `/etc/hosts`:
+
+```bash
+10.200.200.7    musicall.local musicall.test
 ```
 
-Install PHP vendor
-```
+#### 3. Install Dependencies
+
+Install PHP dependencies:
+
+```bash
 docker compose run --rm php-cli composer install
 ```
 
-### Apply the fixtures
-This will create the database schema and populate it with some random data.  
-It will erase all the previous data in the database you had.
-```
-docker compose run --rm php-cli bin/console foundry:load-fixtures app
-```
-Run it every time before working on a MR or when you want to start from scratch.
+Install JavaScript dependencies:
 
-### Chmod the storage directory
-
-This will allow you to have files in your local environment.
-```
-chmod 777 -R public/images/
-chmod 777 -R public/media/
-```
-
-### Migrations
-If you applied the fixtures, you can skip this step.  
-Run the migrations to have the latest database schema change. Do it every time before working on a MR.  
-Do this step if you want to populate the database yourself.
-
-Run the migrations
-```
-docker compose run --rm php-cli bin/console doctrine:migration:migrate
-```
-
-### Assets 
-
-You can either run everything through the docker or in your local by installation node via NVM  
-Install JS deps
-```
-docker compose run --rm node npm ci 
-# or 
+```bash
+docker compose run --rm node npm ci
+# or locally if you have Node installed:
 npm ci
 ```
 
+#### 4. Setup Database
 
-Start the assets watcher
+**Option A: Load Fixtures (Recommended for Development)**
+
+This will create the database schema and populate it with random data. It will erase all previous data.
+
+```bash
+docker compose run --rm php-cli bin/console foundry:load-fixtures app
 ```
+
+Run this every time before working on a merge request or when you want to start from scratch.
+
+**Option B: Run Migrations **
+
+If you want to populate the database yourself, run migrations instead:
+
+```bash
+docker compose run --rm php-cli bin/console doctrine:migration:migrate
+```
+
+#### 5. Setup Storage Permissions
+
+Configure permissions for file storage:
+
+```bash
+chmod 775 -R public/images/ public/media/
+```
+
+If you encounter permission issues, adjust ownership:
+
+```bash
+sudo chown -R $USER:www-data public/images/ public/media/
+```
+
+#### 6. Build Assets
+
+**Development Mode** (auto-rebuild on changes):
+
+```bash
 docker compose run --rm node npm run dev
-# or
+# or locally:
 npm run dev
 ```
-Or simply build 
-```
+
+**Production Build**:
+
+```bash
 docker compose run --rm node npm run build
-# or
+# or locally:
 npm run build
 ```
 
+#### 7. Access the Application
 
-You can now access https://musicall.local
+You can now access the application at: **https://musicall.local**
 
-[Learn how to use the application](doc/README).
+[Learn how to use the application](doc/README)
 
-### Tests
+## Development
 
-To run tests on your local : 
+### Database Management
+
+**Reset database with fresh fixtures**:
+
+```bash
+docker compose run --rm php-cli bin/console foundry:load-fixtures app
 ```
+
+**Run pending migrations**:
+
+```bash
+docker compose run --rm php-cli bin/console doctrine:migration:migrate
+```
+
+**Create a new migration**:
+
+```bash
+docker compose run --rm php-cli bin/console doctrine:migrations:diff
+```
+
+### Asset Development
+
+You can run asset commands either through Docker or locally (if you have Node installed via NVM).
+
+**Watch mode** (recommended during development):
+
+```bash
+docker compose run --rm node npm run dev
+# or locally:
+npm run dev
+```
+
+**Production build**:
+
+```bash
+docker compose run --rm node npm run build
+# or locally:
+npm run build
+```
+
+## Testing
+
+### Run PHP Tests
+
+```bash
 docker compose run --rm php-cli bin/phpunit
 ```
 
-## TODO
+### Generate Code Coverage Report
 
-- [ ] More modules fixtures (forums, messages, etc.)
+```bash
+docker compose run --rm php-cli bin/phpunit --coverage-html coverage/
+```
+
+Then open `coverage/index.html` in your browser.
+
+### Run Specific Test Suite
+
+```bash
+docker compose run --rm php-cli bin/phpunit tests/Unit
+docker compose run --rm php-cli bin/phpunit tests/Functional
+```
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests to ensure nothing breaks
+5. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/)
+6. Push to your branch
+7. Open a Pull Request
