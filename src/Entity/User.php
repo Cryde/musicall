@@ -58,28 +58,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM])]
-    private $id;
+    private ?string $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST, MusicianAnnounce::LIST_LAST])]
-    private $username;
+    private string $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
     #[Assert\Email(message: 'Email invalide')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Groups(User::ITEM_SELF)]
-    private $email;
+    private string $email;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
     #[Assert\Length(min: 3, minMessage: 'Le mot de passe doit au moins contenir 3 caractères')]
-    private $plainPassword;
+    private string $plainPassword;
 
+    /** @var string[] */
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
     #[ORM\Column(type: Types::STRING)]
-    private $password;
+    private string $password;
 
     /**
      * @var Collection<int, Publication>
@@ -88,13 +89,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $publications;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private $creationDatetime;
+    private DateTime $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private $lastLoginDatetime;
+    private ?DateTimeInterface $lastLoginDatetime;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private $oldId;
+    private ?int $oldId;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $confirmationDatetime = null;
@@ -103,7 +104,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $token = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private $resetRequestDatetime;
+    private ?DateTimeInterface $resetRequestDatetime;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, ForumPost::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM])]
@@ -156,6 +157,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param string[] $roles
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
@@ -200,7 +204,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection|Publication[]
+     * @return Collection<int, Publication>
      */
     public function getPublications(): Collection
     {
@@ -230,12 +234,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?DateTimeInterface
+    public function getCreationDatetime(): ?DateTime
     {
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTime $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
