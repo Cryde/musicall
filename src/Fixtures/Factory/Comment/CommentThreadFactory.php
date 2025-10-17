@@ -5,7 +5,11 @@ namespace App\Fixtures\Factory\Comment;
 use App\Entity\Comment\CommentThread;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
-/** @codeCoverageIgnore */
+/**
+ * @codeCoverageIgnore
+ *
+ * @extends PersistentProxyObjectFactory<CommentThread>
+ */
 final class CommentThreadFactory extends PersistentProxyObjectFactory
 {
     protected function defaults(): array
