@@ -93,7 +93,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
-    #[Groups([PublicationFeatured::LIST, Publication::ITEM, Publication::LIST])]
+    #[Groups([Publication::ITEM, Publication::LIST])]
     private string $slug;
 
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]

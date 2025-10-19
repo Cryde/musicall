@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\ApiResource\Search\MusicianSearchResult;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\Attribute\InstrumentRepository;
@@ -42,15 +41,15 @@ class Instrument implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private $name;
+    private string $name;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
-    private $musicianName;
+    private string $musicianName;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private $slug;
+    private string $slug;
 
     #[Ignore]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

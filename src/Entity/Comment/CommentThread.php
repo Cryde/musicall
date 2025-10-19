@@ -31,7 +31,7 @@ class CommentThread
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[Groups([Publication::ITEM])]
-    private $id;
+    private int $id;
 
     #[ORM\Column(type: Types::INTEGER)]
     private int $commentNumber = 0;
