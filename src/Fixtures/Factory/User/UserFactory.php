@@ -13,7 +13,7 @@ use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
  */
 final class UserFactory extends PersistentProxyObjectFactory
 {
-    const DEFAULT_PASSWORD = '\$2y\$04\$v1LqXePkM/bTdPJSmZnbNuNM3ogkQoUJvQpVvoxT7VF1PItj1c8HO'; // it's 'password'
+    const string DEFAULT_PASSWORD = '$2y$04$v1LqXePkM/bTdPJSmZnbNuNM3ogkQoUJvQpVvoxT7VF1PItj1c8HO'; // it's 'password'
 
     protected function defaults(): array
     {
@@ -45,7 +45,7 @@ final class UserFactory extends PersistentProxyObjectFactory
             'email' => 'base_user@email.com',
             'password' => self::DEFAULT_PASSWORD,
             'roles' => [],
-            'username' => 'base_admin',
+            'username' => 'base_user',
         ]);
     }
 

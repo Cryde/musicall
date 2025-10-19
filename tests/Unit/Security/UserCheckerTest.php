@@ -3,9 +3,9 @@
 namespace App\Tests\Unit\Security;
 
 use App\Entity\User;
-use App\Exception\NotConfirmedAccountException;
 use App\Security\UserChecker;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserCheckerTest extends TestCase
@@ -23,7 +23,7 @@ class UserCheckerTest extends TestCase
         $checker->checkPreAuth($user);
 
         $user->setConfirmationDatetime(null);
-        $this->expectException(NotConfirmedAccountException::class);
+        $this->expectException(CustomUserMessageAccountStatusException::class);
         $this->expectExceptionMessage('Vous devez confirmer votre compte pour pouvoir vous connecter');
         $checker->checkPreAuth($user);
     }

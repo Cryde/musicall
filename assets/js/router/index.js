@@ -3,6 +3,7 @@ import course from './course.js'
 import forum from './forum.js'
 import publication from './publication'
 import search from './search.js'
+import user from './user.js'
 
 const routes = [
   {
@@ -13,7 +14,8 @@ const routes = [
   ...publication,
   ...course,
   ...search,
-  ...forum
+  ...forum,
+  ...user,
 ]
 
 export default createRouter({
