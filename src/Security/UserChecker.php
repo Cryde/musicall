@@ -3,14 +3,15 @@
 namespace App\Security;
 
 use App\Entity\User;
-use App\Exception\NotConfirmedAccountException;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserChecker implements UserCheckerInterface
 {
     /**
-     * @throws NotConfirmedAccountException
+     * @throws CustomUserMessageAccountStatusException
      */
     public function checkPreAuth(UserInterface $user): void
     {
@@ -19,11 +20,11 @@ class UserChecker implements UserCheckerInterface
         }
 
         if (!$user->getConfirmationDatetime()) {
-            throw new NotConfirmedAccountException('Vous devez confirmer votre compte pour pouvoir vous connecter');
+            throw new CustomUserMessageAccountStatusException('Vous devez confirmer votre compte pour pouvoir vous connecter');
         }
     }
 
-    public function checkPostAuth(UserInterface $user): void
+    public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void
     {
         if (!$user instanceof User) {
             return;

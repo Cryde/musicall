@@ -12,7 +12,7 @@ use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
  */
 final class UserFactory extends PersistentProxyObjectFactory
 {
-    const DEFAULT_PASSWORD = '\$2y\$04\$v1LqXePkM/bTdPJSmZnbNuNM3ogkQoUJvQpVvoxT7VF1PItj1c8HO'; // it's 'password'
+    const string DEFAULT_PASSWORD = '$2y$04$v1LqXePkM/bTdPJSmZnbNuNM3ogkQoUJvQpVvoxT7VF1PItj1c8HO'; // it's 'password'
 
     protected function defaults(): array
     {
@@ -34,6 +34,7 @@ final class UserFactory extends PersistentProxyObjectFactory
             'password' => self::DEFAULT_PASSWORD,
             'roles' => ['ROLE_ADMIN'],
             'username' => 'user_admin',
+            'confirmationDatetime' => new DateTime('1990-01-02T02:03:04+00:00')
         ]);
     }
 
@@ -45,6 +46,7 @@ final class UserFactory extends PersistentProxyObjectFactory
             'password' => self::DEFAULT_PASSWORD,
             'roles' => [],
             'username' => 'base_admin',
+            'confirmationDatetime' => new DateTime('1990-01-02T02:03:04+00:00')
         ]);
     }
 

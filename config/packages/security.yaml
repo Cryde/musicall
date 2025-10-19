@@ -6,7 +6,7 @@ security:
 
     providers:
         # used to reload user from session & other features (e.g. switch_user)
-        users:
+        app_user_provider:
             entity:
                 class: App\Entity\User
 
@@ -26,25 +26,31 @@ security:
             refresh_jwt: ~
 
         login:
-            pattern:  ^/api/login_check
+            pattern: ^/api/login
             stateless: true
             user_checker: App\Security\UserChecker
             json_login:
-                check_path:      api_login_check
+                check_path: /api/login_check
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-
-        main:
-            pattern: ^/api
+        api:
+            pattern: ^/api/
             lazy: true
-            stateless: true
             entry_point: jwt
+            stateless: true
+            provider: app_user_provider
             jwt: ~
             refresh_jwt:
-                check_path: api_refresh_token
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+                check_path: /api/token/refresh
+            logout:
+                path: api_token_invalidate
+                delete_cookies:
+                    jwt_hp: null
+                    jwt_s: null
+                clear_site_data:
+                    - cookies
+                    - storage
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used

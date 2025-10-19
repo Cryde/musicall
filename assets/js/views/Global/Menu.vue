@@ -49,31 +49,66 @@
             </a>
           </RouterLink>
         </div>
-      </div>
-      <div>
-        <Button
-          :icon="iconClass"
-          size="small"
-          severity="secondary"
-          outlined
-          class="text-sm! leading-normal! w-9 h-9 p-0! shrink-0 rounded-md"
-          @click="switchDarkMode"
-        />
+          <template v-if="!userSecurityStore.isAuthenticatedLoading">
+          <div v-if="userSecurityStore.isAuthenticated">
+              <Avatar :label="userSecurityStore.user.username.charAt(0)" class="mr-2 cursor-pointer" shape="circle"  @click="$refs.userMenu.toggle($event)" />
+              <Menu ref="userMenu" :popup="true" :model="menuItems" />
+          </div>
+          <div v-else class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-4">
+              <Button asChild v-slot="slotProps" severity="info" text>
+                  <RouterLink :to="{name: 'app_login'}" :class="slotProps.class">Se connecter</RouterLink>
+              </Button>
+              <Button label="Register" severity="info" />
+
+              <Button
+                  :icon="iconClass"
+                  size="small"
+                  severity="secondary"
+                  outlined
+                  class="text-sm! ml-2 leading-normal! w-9 h-9 p-0! shrink-0 rounded-md"
+                  @click="switchDarkMode"
+              />
+          </div>
+          </template>
       </div>
     </nav>
 </template>
 <script setup>
 import * as Cookies from 'es-cookie'
-import { ref } from 'vue'
+import Menu from 'primevue/menu'
+import {nextTick, onMounted, ref} from 'vue'
+import {useUserSecurityStore} from "../../store/user/security.js";
+
+const userSecurityStore = useUserSecurityStore();
 
 const isDarkMode = ref(Cookies.get('is_dark_mode') === '1')
 const iconClass = ref('')
+const menuItems = ref([]);
 
 if (isDarkMode.value) {
   iconClass.value = 'pi pi-sun'
 } else {
   iconClass.value = 'pi pi-moon'
 }
+
+onMounted(() => {
+    nextTick(() => {
+        menuItems.value = [
+            {
+                label: userSecurityStore?.user?.username,
+                items: [
+                    {
+                        label: 'Se déconnecter',
+                        icon: 'pi pi-sign-out',
+                        command: () => {
+                            userSecurityStore.logout()
+                        }
+                    }
+                ]
+            }
+        ];
+    });
+})
 
 const navs = ref([
   {
