@@ -44,10 +44,10 @@ class Style implements SluggableEntityInterface
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
-    private $name;
+    private string $name;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private $slug;
+    private string $slug;
 
     #[Ignore]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
