@@ -403,19 +403,19 @@ class AnnounceSearchTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'type',
-                    'message' => 'The parameter "type" is required.',
+                    'message' => 'Cette valeur ne doit pas être nulle.',
                     'code' => 'ad32d13f-c3d4-423b-909a-857b961eb720',
                 ],
                 [
                     'propertyPath' => 'instrument',
-                    'message' => 'The parameter "instrument" is required.',
+                    'message' => 'Cette valeur ne doit pas être nulle.',
                     'code' => 'ad32d13f-c3d4-423b-909a-857b961eb720',
                 ],
             ],
-            'detail' => 'type: The parameter "type" is required.
-instrument: The parameter "instrument" is required.',
-            'description' => 'type: The parameter "type" is required.
-instrument: The parameter "instrument" is required.',
+            'detail' => 'type: Cette valeur ne doit pas être nulle.
+instrument: Cette valeur ne doit pas être nulle.',
+            'description' => 'type: Cette valeur ne doit pas être nulle.
+instrument: Cette valeur ne doit pas être nulle.',
             'type' => '/validation_errors/0=ad32d13f-c3d4-423b-909a-857b961eb720;1=ad32d13f-c3d4-423b-909a-857b961eb720',
             'title' => 'An error occurred',
         ]);
