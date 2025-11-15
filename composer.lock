@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.2.3",
+            "version": "v4.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "1a395325500af3abf304ab8a894aee54c73ee72a"
+                "reference": "baa66e404e3de37bd455915367298d937a49468e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/1a395325500af3abf304ab8a894aee54c73ee72a",
-                "reference": "1a395325500af3abf304ab8a894aee54c73ee72a",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/baa66e404e3de37bd455915367298d937a49468e",
+                "reference": "baa66e404e3de37bd455915367298d937a49468e",
                 "shasum": ""
             },
             "require": {
@@ -26,14 +26,14 @@
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
                 "psr/container": "^1.0 || ^2.0",
                 "symfony/deprecation-contracts": "^3.1",
-                "symfony/http-foundation": "^6.4 || ^7.0",
+                "symfony/http-foundation": "^6.4.14 || ^7.0",
                 "symfony/http-kernel": "^6.4 || ^7.0",
                 "symfony/property-access": "^6.4 || ^7.0",
                 "symfony/property-info": "^6.4 || ^7.1",
                 "symfony/serializer": "^6.4 || ^7.0",
                 "symfony/translation-contracts": "^3.3",
                 "symfony/type-info": "^7.3 || 7.4.x-dev",
-                "symfony/validator": "^6.4 || ^7.1",
+                "symfony/validator": "^6.4.11 || ^7.1",
                 "symfony/web-link": "^6.4 || ^7.1",
                 "willdurand/negotiation": "^3.1"
             },
@@ -46,6 +46,7 @@
                 "phpspec/prophecy": "<1.15",
                 "phpunit/phpunit": "<9.5",
                 "symfony/framework-bundle": "6.4.6 || 7.0.6",
+                "symfony/object-mapper": "<7.3.4",
                 "symfony/var-exporter": "<6.1.1"
             },
             "replace": {
@@ -133,7 +134,7 @@
                 "symfony/maker-bundle": "^1.24",
                 "symfony/mercure-bundle": "*",
                 "symfony/messenger": "^6.4 || ^7.0",
-                "symfony/object-mapper": "7.4.x-dev",
+                "symfony/object-mapper": "^7.3 || 7.4.x-dev",
                 "symfony/routing": "^6.4 || ^7.0",
                 "symfony/security-bundle": "^6.4 || ^7.0",
                 "symfony/security-core": "^6.4 || ^7.0",
@@ -141,7 +142,7 @@
                 "symfony/string": "^6.4 || ^7.0",
                 "symfony/twig-bundle": "^6.4 || ^7.0",
                 "symfony/uid": "^6.4 || ^7.0",
-                "symfony/validator": "^6.4 || ^7.0",
+                "symfony/var-exporter": "^7.3 || ^7.4.x-dev",
                 "symfony/web-profiler-bundle": "^6.4 || ^7.0",
                 "symfony/yaml": "^6.4 || ^7.0",
                 "twig/twig": "^1.42.3 || ^2.12 || ^3.0",
@@ -223,9 +224,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.2.3"
+                "source": "https://github.com/api-platform/core/tree/v4.2.4"
             },
-            "time": "2025-10-31T15:07:56+00:00"
+            "time": "2025-11-13T15:53:15+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -283,16 +284,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.359.11",
+            "version": "3.359.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c04a8b3c40bca26da591a8ff14bcc390d26c1644"
+                "reference": "c3b6f1fcba1b5da263e701354638a7086dbb09ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c04a8b3c40bca26da591a8ff14bcc390d26c1644",
-                "reference": "c04a8b3c40bca26da591a8ff14bcc390d26c1644",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c3b6f1fcba1b5da263e701354638a7086dbb09ec",
+                "reference": "c3b6f1fcba1b5da263e701354638a7086dbb09ec",
                 "shasum": ""
             },
             "require": {
@@ -374,9 +375,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.359.11"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.359.13"
             },
-            "time": "2025-11-12T19:18:02+00:00"
+            "time": "2025-11-14T19:13:12+00:00"
         },
         {
             "name": "brick/math",
@@ -6185,12 +6186,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/ai-agent.git",
-                "reference": "d5249de5dfa26b4f492a5ff67281482a422636f5"
+                "reference": "b1c61c8f0af9a7b02e033b950348271153da598d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/ai-agent/zipball/d5249de5dfa26b4f492a5ff67281482a422636f5",
-                "reference": "d5249de5dfa26b4f492a5ff67281482a422636f5",
+                "url": "https://api.github.com/repos/symfony/ai-agent/zipball/b1c61c8f0af9a7b02e033b950348271153da598d",
+                "reference": "b1c61c8f0af9a7b02e033b950348271153da598d",
                 "shasum": ""
             },
             "require": {
@@ -6275,7 +6276,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-01T00:06:06+00:00"
+            "time": "2025-11-14T20:25:09+00:00"
         },
         {
             "name": "symfony/ai-platform",
@@ -6283,12 +6284,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/ai-platform.git",
-                "reference": "64c7a4e9ba4a2ccedb8e3e4f94225a5125f3b78e"
+                "reference": "95c14c280d0d0aa98308505eef87e888b386eeff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/ai-platform/zipball/64c7a4e9ba4a2ccedb8e3e4f94225a5125f3b78e",
-                "reference": "64c7a4e9ba4a2ccedb8e3e4f94225a5125f3b78e",
+                "url": "https://api.github.com/repos/symfony/ai-platform/zipball/95c14c280d0d0aa98308505eef87e888b386eeff",
+                "reference": "95c14c280d0d0aa98308505eef87e888b386eeff",
                 "shasum": ""
             },
             "require": {
@@ -6398,7 +6399,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-12T23:52:30+00:00"
+            "time": "2025-11-14T20:25:09+00:00"
         },
         {
             "name": "symfony/asset",
@@ -13504,16 +13505,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.4.2",
+            "version": "12.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "a94ea4d26d865875803b23aaf78c3c2c670ea2ea"
+                "reference": "d8f644d8d9bb904867f7a0aeb1bd306e0d966949"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a94ea4d26d865875803b23aaf78c3c2c670ea2ea",
-                "reference": "a94ea4d26d865875803b23aaf78c3c2c670ea2ea",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d8f644d8d9bb904867f7a0aeb1bd306e0d966949",
+                "reference": "d8f644d8d9bb904867f7a0aeb1bd306e0d966949",
                 "shasum": ""
             },
             "require": {
@@ -13581,7 +13582,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.4.2"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.4.3"
             },
             "funding": [
                 {
@@ -13605,7 +13606,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-30T08:41:39+00:00"
+            "time": "2025-11-13T07:20:26+00:00"
         },
         {
             "name": "rector/rector",
@@ -15256,16 +15257,16 @@
         },
         {
             "name": "theseer/tokenizer",
-            "version": "1.2.3",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/theseer/tokenizer.git",
-                "reference": "737eda637ed5e28c3413cb1ebe8bb52cbf1ca7a2"
+                "reference": "d74205c497bfbca49f34d4bc4c19c17e22db4ebb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/theseer/tokenizer/zipball/737eda637ed5e28c3413cb1ebe8bb52cbf1ca7a2",
-                "reference": "737eda637ed5e28c3413cb1ebe8bb52cbf1ca7a2",
+                "url": "https://api.github.com/repos/theseer/tokenizer/zipball/d74205c497bfbca49f34d4bc4c19c17e22db4ebb",
+                "reference": "d74205c497bfbca49f34d4bc4c19c17e22db4ebb",
                 "shasum": ""
             },
             "require": {
@@ -15294,7 +15295,7 @@
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",
             "support": {
                 "issues": "https://github.com/theseer/tokenizer/issues",
-                "source": "https://github.com/theseer/tokenizer/tree/1.2.3"
+                "source": "https://github.com/theseer/tokenizer/tree/1.3.0"
             },
             "funding": [
                 {
@@ -15302,7 +15303,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-03T12:36:25+00:00"
+            "time": "2025-11-13T13:44:09+00:00"
         },
         {
             "name": "zenstruck/assert",
