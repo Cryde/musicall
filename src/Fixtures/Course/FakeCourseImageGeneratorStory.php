@@ -2,7 +2,7 @@
 
 namespace App\Fixtures\Course;
 
-use App\Service\File\RemoteFileDownloader;
+use League\Flysystem\FilesystemOperator;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Zenstruck\Foundry\Story;
 
@@ -13,15 +13,20 @@ class FakeCourseImageGeneratorStory extends Story
 
     public function __construct(
         private readonly ParameterBagInterface $containerBag,
-        private readonly RemoteFileDownloader  $remoteFileDownloader,
+        private readonly FilesystemOperator $musicallFilesystem,
     ) {
     }
 
     public function build(): void
     {
         $fileInfo = [];
-        for ($i = 0; $i < 30; $i++) {
-            $fileInfo[] = $this->remoteFileDownloader->download('https://picsum.photos/seed/picsum_' . $i . '/400/400', $this->containerBag->get('file_publication_cover_destination'));
+        for ($i = 1; $i <= 12; $i++) {
+            $fileName = $i . '.jpg';
+            $localFilePath = __DIR__ . '/images/' . $fileName;
+            $fullPath = $this->containerBag->get('file_publication_cover_destination') . DIRECTORY_SEPARATOR . $fileName;
+            $this->musicallFilesystem->write($fullPath, file_get_contents($localFilePath));
+
+            $fileInfo[] = [$fileName, $this->musicallFilesystem->fileSize($fullPath)];
         }
         $this->addToPool(self::RANDOM_COURSE_COVER, $fileInfo);
     }
