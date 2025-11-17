@@ -24,6 +24,7 @@ final class UserFactory extends PersistentProxyObjectFactory
             'password' => self::DEFAULT_PASSWORD,
             'roles' => [],
             'username' => self::faker()->userName(),
+            'confirmationDatetime' => self::faker()->dateTime('-1 year'),
         ];
     }
 
@@ -42,10 +43,10 @@ final class UserFactory extends PersistentProxyObjectFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
-            'email' => 'base_user@email.com',
+            'email' => 'user_base@email.com',
             'password' => self::DEFAULT_PASSWORD,
             'roles' => [],
-            'username' => 'base_user',
+            'username' => 'user_base',
         ]);
     }
 
