@@ -48,22 +48,21 @@
     </div>
 </template>
 <script setup>
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Password from 'primevue/password';
-import {ref} from 'vue';
-import {useUserSecurityStore} from "../../store/user/security.js";
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import { ref } from 'vue'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
-const userSecurity = useUserSecurityStore();
+const userSecurity = useUserSecurityStore()
 
-const email = ref('');
-const password = ref('');
-const isLoginSubmitting = ref(false);
+const email = ref('')
+const password = ref('')
+const isLoginSubmitting = ref(false)
 
 async function sendLogin() {
-    isLoginSubmitting.value = true;
-    await userSecurity.login(email.value, password.value);
-    isLoginSubmitting.value = false;
+  isLoginSubmitting.value = true
+  await userSecurity.login(email.value, password.value)
+  isLoginSubmitting.value = false
 }
-
 </script>

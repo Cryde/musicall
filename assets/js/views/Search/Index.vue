@@ -115,16 +115,15 @@
     </div>
 </template>
 <script setup>
-import {useTitle} from '@vueuse/core'
+import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
-import InputGroup from 'primevue/inputgroup'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
-import {computed, onMounted, onUnmounted, ref} from 'vue'
-import {useInstrumentStore} from '../../store/attribute/instrument.js'
-import {useStyleStore} from '../../store/attribute/style.js'
-import {useMusicianSearchStore} from '../../store/search/musician.js'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useInstrumentStore } from '../../store/attribute/instrument.js'
+import { useStyleStore } from '../../store/attribute/style.js'
+import { useMusicianSearchStore } from '../../store/search/musician.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
@@ -135,8 +134,8 @@ const instrumentStore = useInstrumentStore()
 const musicianSearchStore = useMusicianSearchStore()
 
 onMounted(async () => {
-    await instrumentStore.loadInstruments()
-    await styleStore.loadStyles()
+  await instrumentStore.loadInstruments()
+  await styleStore.loadStyles()
 })
 
 const quickSearch = ref('')
@@ -146,78 +145,86 @@ const isFilterGenerating = ref(false)
 const isSearchMade = ref(false)
 const selectedInstrument = ref(null)
 const selectedStyles = ref([])
-const selectSearchType = ref({key: 1, name: 'Musiciens'})
+const selectSearchType = ref({ key: 1, name: 'Musiciens' })
 const selectSearchTypeOption = [
-    {key: 1, name: 'Musiciens'},
-    {key: 2, name: 'Groupe'}
+  { key: 1, name: 'Musiciens' },
+  { key: 2, name: 'Groupe' }
 ]
 
 const isSearchParamEnough = computed(() => {
-    return selectedInstrument.value !== null && selectSearchType.value !== null
+  return selectedInstrument.value !== null && selectSearchType.value !== null
 })
 
 const isQuickSearchParamEnough = computed(() => {
-    return quickSearch.value !== '' && quickSearch.value.length > 4;
+  return quickSearch.value !== '' && quickSearch.value.length > 4
 })
 
 function insertExample(e) {
-    quickSearch.value = e.target.textContent
+  quickSearch.value = e.target.textContent
 }
 
 async function search() {
-    quickSearchErrors.value = []
-    isSearching.value = true
-    await musicianSearchStore.searchAnnounces({
-        type: selectSearchType.value.key,
-        instrument: selectedInstrument.value.id,
-        styles: selectedStyles?.value.map((style) => style.id)
-    })
-    isSearching.value = false
+  quickSearchErrors.value = []
+  isSearching.value = true
+  await musicianSearchStore.searchAnnounces({
+    type: selectSearchType.value.key,
+    instrument: selectedInstrument.value.id,
+    styles: selectedStyles?.value.map((style) => style.id)
+  })
+  isSearching.value = false
 }
 
 async function generateQuickSearchFilters() {
-    const searchTxt = quickSearch.value;
-    clearAllFilters();
-    quickSearch.value = searchTxt;
-    quickSearchErrors.value = [];
-    isFilterGenerating.value = true
-    try {
-        await musicianSearchStore.getSearchAnnouncesFilters({search: searchTxt});
-        selectSearchType.value = selectSearchTypeOption.find((type) => type.key === musicianSearchStore.filters.type);
-        selectedInstrument.value = instrumentStore.instruments.find((i) => i.id === musicianSearchStore.filters.instrument);
-        if (musicianSearchStore.filters.styles.length) {
-            selectedStyles.value = styleStore.styles.filter((style) => musicianSearchStore.filters.styles.includes(style.id));
-        }
-        await search();
-    } catch (e) {
-        if (e?.response?.status === 422) {
-            quickSearchErrors.value = e.response.data.violations.map((violation) => violation.message);
-        } else {
-            quickSearchErrors.value = ['Nous ne pouvons pas répondre à cette demande. Reformulez votre recherche.'];
-        }
+  const searchTxt = quickSearch.value
+  clearAllFilters()
+  quickSearch.value = searchTxt
+  quickSearchErrors.value = []
+  isFilterGenerating.value = true
+  try {
+    await musicianSearchStore.getSearchAnnouncesFilters({ search: searchTxt })
+    selectSearchType.value = selectSearchTypeOption.find(
+      (type) => type.key === musicianSearchStore.filters.type
+    )
+    selectedInstrument.value = instrumentStore.instruments.find(
+      (i) => i.id === musicianSearchStore.filters.instrument
+    )
+    if (musicianSearchStore.filters.styles.length) {
+      selectedStyles.value = styleStore.styles.filter((style) =>
+        musicianSearchStore.filters.styles.includes(style.id)
+      )
     }
-    isFilterGenerating.value = false
+    await search()
+  } catch (e) {
+    if (e?.response?.status === 422) {
+      quickSearchErrors.value = e.response.data.violations.map((violation) => violation.message)
+    } else {
+      quickSearchErrors.value = [
+        'Nous ne pouvons pas répondre à cette demande. Reformulez votre recherche.'
+      ]
+    }
+  }
+  isFilterGenerating.value = false
 }
 
 function clearAllFilters() {
-    quickSearchErrors.value = [];
-    selectedInstrument.value = null
-    selectedStyles.value = []
-    quickSearch.value = ''
-    selectSearchType.value = {key: 1, name: 'Musiciens'}
+  quickSearchErrors.value = []
+  selectedInstrument.value = null
+  selectedStyles.value = []
+  quickSearch.value = ''
+  selectSearchType.value = { key: 1, name: 'Musiciens' }
 }
 
 onUnmounted(() => {
-    musicianSearchStore.clear()
-    instrumentStore.clear()
-    styleStore.clear()
-    isSearching.value = false
-    isSearchMade.value = false
-    quickSearch.value = ''
-    isSearching.value = false
-    selectedInstrument.value = null
-    selectedStyles.value = []
-    quickSearchErrors.value = []
-    selectSearchType.value = {key: 1, name: 'Musiciens'}
+  musicianSearchStore.clear()
+  instrumentStore.clear()
+  styleStore.clear()
+  isSearching.value = false
+  isSearchMade.value = false
+  quickSearch.value = ''
+  isSearching.value = false
+  selectedInstrument.value = null
+  selectedStyles.value = []
+  quickSearchErrors.value = []
+  selectSearchType.value = { key: 1, name: 'Musiciens' }
 })
 </script>

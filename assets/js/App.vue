@@ -11,34 +11,35 @@
 </template>
 
 <script setup>
+import axios from 'axios'
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserSecurityStore } from './store/user/security.js'
 import Footer from './views/Global/Footer.vue'
 import Menu from './views/Global/Menu.vue'
-import axios from "axios";
-import {useRouter, useRoute} from 'vue-router'
-import {useUserSecurityStore} from "./store/user/security.js";
-import {onMounted} from "vue";
 
-const userSecurityStore = useUserSecurityStore();
+const userSecurityStore = useUserSecurityStore()
 const router = useRouter()
 const route = useRoute()
 
 onMounted(async () => {
-    await userSecurityStore.checkAuthInfo();
+  await userSecurityStore.checkAuthInfo()
 
-    // check before each route if auth required and check if user is auth
-    axios.interceptors.request.use(async function (config) {
-        const url = config.url;
-        if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
-            await userSecurityStore.checkAuthInfo();
+  // check before each route if auth required and check if user is auth
+  axios.interceptors.request.use(
+    async (config) => {
+      const url = config.url
+      if (!url.includes('login') && !url.includes('refresh') && !url.includes('registration')) {
+        await userSecurityStore.checkAuthInfo()
 
-            if (!userSecurityStore.isAuthenticated.value && route.meta.isAuthRequired) {
-                await router.replace({name: 'app_home'});
-            }
+        if (!userSecurityStore.isAuthenticated.value && route.meta.isAuthRequired) {
+          await router.replace({ name: 'app_home' })
         }
+      }
 
-        return config;
-    }, function (error) {
-        return Promise.reject(error);
-    });
+      return config
+    },
+    (error) => Promise.reject(error)
+  )
 })
 </script>
