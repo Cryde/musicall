@@ -76,14 +76,14 @@
 <script setup>
 import * as Cookies from 'es-cookie'
 import Menu from 'primevue/menu'
-import {nextTick, onMounted, ref} from 'vue'
-import {useUserSecurityStore} from "../../store/user/security.js";
+import { nextTick, onMounted, ref } from 'vue'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
-const userSecurityStore = useUserSecurityStore();
+const userSecurityStore = useUserSecurityStore()
 
 const isDarkMode = ref(Cookies.get('is_dark_mode') === '1')
 const iconClass = ref('')
-const menuItems = ref([]);
+const menuItems = ref([])
 
 if (isDarkMode.value) {
   iconClass.value = 'pi pi-sun'
@@ -92,22 +92,22 @@ if (isDarkMode.value) {
 }
 
 onMounted(() => {
-    nextTick(() => {
-        menuItems.value = [
-            {
-                label: userSecurityStore?.user?.username,
-                items: [
-                    {
-                        label: 'Se déconnecter',
-                        icon: 'pi pi-sign-out',
-                        command: () => {
-                            userSecurityStore.logout()
-                        }
-                    }
-                ]
+  nextTick(() => {
+    menuItems.value = [
+      {
+        label: userSecurityStore?.user?.username,
+        items: [
+          {
+            label: 'Se déconnecter',
+            icon: 'pi pi-sign-out',
+            command: () => {
+              userSecurityStore.logout()
             }
-        ];
-    });
+          }
+        ]
+      }
+    ]
+  })
 })
 
 const navs = ref([

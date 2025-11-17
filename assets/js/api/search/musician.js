@@ -14,9 +14,9 @@ export default {
       )
       .then((resp) => resp.data)
   },
-    getSearchAnnouncesFilters({search}) {
-        return axios
-        .get(Routing.generate('api_musician_announces_filters', {search}))
-        .then((resp) => resp.data)
-    }
+  getSearchAnnouncesFilters({ search }) {
+    return axios
+      .get(Routing.generate('api_musician_announces_filters', { search }))
+      .then((resp) => resp.data)
+  }
 }

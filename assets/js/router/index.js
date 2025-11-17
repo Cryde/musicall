@@ -15,10 +15,14 @@ const routes = [
   ...course,
   ...search,
   ...forum,
-  ...user,
+  ...user
 ]
 
 export default createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior() {
+    // always scroll to top
+    return { top: 0 }
+  }
 })
