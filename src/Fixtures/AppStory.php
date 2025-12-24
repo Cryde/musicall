@@ -5,6 +5,7 @@ namespace App\Fixtures;
 use App\Fixtures\Announce\MusicianAnnounceStory;
 use App\Fixtures\Attribute\InstrumentStory;
 use App\Fixtures\Attribute\StyleStory;
+use App\Fixtures\BandSpace\BandSpaceStory;
 use App\Fixtures\Course\CourseCategoryStory;
 use App\Fixtures\Course\CourseStory;
 use App\Fixtures\Course\FakeCourseImageGeneratorStory;
@@ -38,5 +39,8 @@ final class AppStory extends Story
         InstrumentStory::load();
         StyleStory::load();
         MusicianAnnounceStory::load();
+
+        // band spaces
+        BandSpaceStory::load();
     }
 }
