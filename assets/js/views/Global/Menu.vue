@@ -32,7 +32,7 @@
             :key="i"
             :to="{name: item.to}"
             custom
-            v-slot="{ isActive, href, navigate }"
+            v-slot="{ isExactActive, href, navigate }"
           >
             <a
               v-bind="$attrs"
@@ -40,7 +40,7 @@
               @click="navigate"
               :class="[
                 'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border w-full lg:w-auto',
-                isActive
+                isExactActive
                 ? 'bg-surface-100 dark:bg-surface-800 border-surface-200 dark:border-surface-700'
                 : 'border-transparent hover:bg-surface-50 dark:hover:bg-surface-800 hover:border-surface-200 dark:hover:border-surface-700'
               ]"
