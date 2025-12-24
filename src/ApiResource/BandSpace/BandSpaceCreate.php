@@ -19,7 +19,7 @@ class BandSpaceCreate
 {
     #[Assert\NotBlank(message: 'Veuillez spécifier un nom')]
     #[Assert\Length(
-        min: 1,
+        min: 3,
         max: 255,
         minMessage: 'Band space name must be at least {{ limit }} characters long',
         maxMessage: 'Band space name cannot be longer than {{ limit }} characters'

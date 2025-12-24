@@ -96,14 +96,19 @@ async function handleSubmit() {
     })
     emit('created', newSpace)
   } catch (e) {
-    const message = e.response?.data?.detail || e.response?.data?.['hydra:description'] || 'Une erreur est survenue'
-    error.value = message
-    toast.add({
-      severity: 'error',
-      summary: 'Erreur',
-      detail: message,
-      life: 5000
-    })
+    // Use field-specific error if available, otherwise use aggregated message
+    const fieldError = e.violationsByField?.name?.[0]
+    error.value = fieldError || e.message
+
+    // Only show toast for non-validation errors (validation errors are shown inline)
+    if (!e.isValidationError) {
+      toast.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: e.message,
+        life: 5000
+      })
+    }
   }
 }
 </script>
