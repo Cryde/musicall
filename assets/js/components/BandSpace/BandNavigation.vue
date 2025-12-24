@@ -1,9 +1,9 @@
 <template>
   <template v-if="currentSpaceId">
     <RouterLink
-      v-for="(item, i) in navigationItems"
-      :key="i"
-      :to="item.to"
+      v-for="item in NAVIGATION_ITEMS"
+      :key="item.route"
+      :to="{ name: item.route, params: { id: currentSpaceId } }"
       custom
       v-slot="{ isExactActive, href, navigate }"
     >
@@ -27,9 +27,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
-import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
+import { NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
 
 defineProps({
   disabled: {
@@ -39,31 +38,4 @@ defineProps({
 })
 
 const { currentSpaceId } = useBandSpaceNavigation()
-
-const navigationItems = computed(() => [
-  {
-    label: 'Dashboard',
-    to: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: currentSpaceId.value } }
-  },
-  {
-    label: 'Agenda',
-    to: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: currentSpaceId.value } }
-  },
-  {
-    label: 'Notes',
-    to: { name: BAND_SPACE_ROUTES.NOTES, params: { id: currentSpaceId.value } }
-  },
-  {
-    label: 'Social',
-    to: { name: BAND_SPACE_ROUTES.SOCIAL, params: { id: currentSpaceId.value } }
-  },
-  {
-    label: 'Fichiers',
-    to: { name: BAND_SPACE_ROUTES.FILES, params: { id: currentSpaceId.value } }
-  },
-  {
-    label: 'Paramètres',
-    to: { name: BAND_SPACE_ROUTES.PARAMETERS, params: { id: currentSpaceId.value } }
-  }
-])
 </script>

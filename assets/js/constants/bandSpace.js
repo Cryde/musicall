@@ -20,3 +20,12 @@ export const SECTION_NAMES = {
   [BAND_SPACE_ROUTES.PARAMETERS]: 'Paramètres',
   [BAND_SPACE_ROUTES.INDEX]: 'Band Space'
 }
+
+export const NAVIGATION_ITEMS = Object.freeze([
+  { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD },
+  { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA },
+  { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES },
+  { label: 'Social', route: BAND_SPACE_ROUTES.SOCIAL },
+  { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES },
+  { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS }
+])
