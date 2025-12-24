@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { createApp } from 'vue'
 import '../style/style.css'
 import Aura from '@primeuix/themes/aura'
@@ -5,9 +6,35 @@ import { createHead } from '@unhead/vue/client'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Ripple from 'primevue/ripple'
+import ToastService from 'primevue/toastservice'
 import { configure } from 'vue-gtag'
 import App from './App.vue'
 import router from './router/index.js'
+
+// Global axios interceptor for 401 errors
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Don't redirect if already on login page or if it's the login request itself
+      const isLoginRequest = error.config?.url?.includes('login')
+      const isRefreshRequest = error.config?.url?.includes('refresh')
+      const isOnLoginPage = router.currentRoute.value?.name === 'app_login'
+
+      if (!isLoginRequest && !isRefreshRequest && !isOnLoginPage) {
+        // Clear auth state
+        localStorage.removeItem('was_logged_in')
+
+        // Redirect to login
+        await router.push({
+          name: 'app_login',
+          query: { redirect: router.currentRoute.value?.fullPath }
+        })
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -47,6 +74,7 @@ app.use(PrimeVue, {
   }
 })
 app.directive('ripple', Ripple)
+app.use(ToastService)
 app.use(pinia)
 app.use(router)
 app.mount('#app')
