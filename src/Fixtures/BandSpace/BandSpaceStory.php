@@ -16,13 +16,11 @@ class BandSpaceStory extends Story
     const string ADMIN_BAND = 'admin_band';
     const string BASE_USER_BAND = 'base_user_band';
     const string COLLABORATIVE_BAND = 'collaborative_band';
-    const string POOL_BANDS = 'pool_bands';
 
     public function build(): void
     {
         $adminUser = UserStory::get(UserStory::ADMIN_USER);
         $baseUser = UserStory::get(UserStory::BASE_USER);
-        $poolUsers = UserStory::getPool(UserStory::POOL_USERS);
 
         // Admin's band space (admin is creator)
         $adminBand = BandSpaceFactory::new()
@@ -73,55 +71,16 @@ class BandSpaceStory extends Story
             ])
             ->create();
 
-        // Add 3 random users as members
         for ($i = 0; $i < 3; $i++) {
             BandSpaceMembershipFactory::new()
                 ->with([
                     'bandSpace' => $collaborativeBand,
-                    'user' => $poolUsers[$i],
+                    'user' => UserStory::getRandom(UserStory::POOL_USERS),
                     'role' => Role::User
                 ])
                 ->create();
         }
 
         $this->addState(self::COLLABORATIVE_BAND, $collaborativeBand);
-
-        // Create 10 random band spaces with random members
-        $bands = [];
-        for ($i = 0; $i < 10; $i++) {
-            $band = BandSpaceFactory::new()->create();
-
-            // Pick a random user as creator
-            $creator = $poolUsers[array_rand($poolUsers)];
-            BandSpaceMembershipFactory::new()
-                ->with([
-                    'bandSpace' => $band,
-                    'user' => $creator,
-                    'role' => Role::Admin
-                ])
-                ->create();
-
-            // Add 1-5 random members
-            $memberCount = random_int(1, 5);
-            $usedUsers = [$creator->getId()];
-            for ($j = 0; $j < $memberCount; $j++) {
-                $member = $poolUsers[array_rand($poolUsers)];
-                // Avoid duplicates
-                if (!in_array($member->getId(), $usedUsers, true)) {
-                    BandSpaceMembershipFactory::new()
-                        ->with([
-                            'bandSpace' => $band,
-                            'user' => $member,
-                            'role' => Role::User
-                        ])
-                        ->create();
-                    $usedUsers[] = $member->getId();
-                }
-            }
-
-            $bands[] = $band;
-        }
-
-        $this->addToPool(self::POOL_BANDS, $bands);
     }
 }
