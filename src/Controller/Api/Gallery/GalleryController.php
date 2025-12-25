@@ -7,7 +7,7 @@ use App\Entity\User;
 use App\Serializer\GalleryImageSerializer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 /** @method User getUser() */
 class GalleryController extends AbstractController

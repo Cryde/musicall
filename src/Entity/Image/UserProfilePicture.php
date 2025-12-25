@@ -2,24 +2,22 @@
 
 namespace App\Entity\Image;
 
-use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
-use App\ApiResource\Search\MusicianSearchResult;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Entity\Comment\Comment;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\State\Processor\User\UserProfilePictureProcessor;
-use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Entity]
 #[Vich\Uploadable]
