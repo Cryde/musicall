@@ -72,7 +72,7 @@ services:
     Google\Service\YouTube:
         factory: '@App\Service\Google\YoutubeFactory'
 
-    App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Contracts\Google\YoutubeRepository'
+    App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\YoutubeRepository'
 
 when@test:
     services:

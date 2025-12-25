@@ -7,6 +7,7 @@ import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Ripple from 'primevue/ripple'
 import ToastService from 'primevue/toastservice'
+import Tooltip from 'primevue/tooltip'
 import { configure } from 'vue-gtag'
 import App from './App.vue'
 import router from './router/index.js'
@@ -74,6 +75,7 @@ app.use(PrimeVue, {
   }
 })
 app.directive('ripple', Ripple)
+app.directive('tooltip', Tooltip)
 app.use(ToastService)
 app.use(pinia)
 app.use(router)
