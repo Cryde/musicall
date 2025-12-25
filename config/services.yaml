@@ -68,3 +68,12 @@ services:
         arguments:
             - '@Symfony\AI\Platform\Platform'
             - 'gpt-4.1'
+
+    Google\Service\YouTube:
+        factory: '@App\Service\Google\YoutubeFactory'
+
+    App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Contracts\Google\YoutubeRepository'
+
+when@test:
+    services:
+        App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
