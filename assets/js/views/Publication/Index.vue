@@ -14,13 +14,16 @@
     </div>
     <div>
       <Button
+        v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
         label="Poster une découverte"
         icon="pi pi-plus"
         severity="info"
         size="small"
         class="whitespace-nowrap mr-3"
+        @click="handleOpenDiscoverModal"
       />
       <Button
+        v-tooltip.bottom="'Ajouter une publication'"
         label="Poster une publication"
         icon="pi pi-plus"
         severity="info"
@@ -29,6 +32,12 @@
       />
     </div>
   </div>
+
+  <AddDiscoverModal @published="handleDiscoverPublished" />
+  <AuthRequiredModal
+    v-model:visible="showAuthModal"
+    message="Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter."
+  />
 
     <div class="flex flex-col md:flex-row gap-5">
         <div class="basis-12/12 md:basis-8/12">
@@ -97,19 +106,26 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import { usePublicationsStore } from '../../store/publication/publications.js'
+import { useVideoStore } from '../../store/publication/video.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import PublicationListItem from './PublicationListItem.vue'
 
 useTitle('Toutes les publications relatives à la musique - MusicAll')
 
 const publicationsStore = usePublicationsStore()
+const videoStore = useVideoStore()
+const userSecurityStore = useUserSecurityStore()
 
 const sortMenu = ref()
 const selectCategoryFilter = ref(null)
 const currentPage = ref(1)
 const orientation = ref('desc')
 const fetchedItems = ref()
+const showAuthModal = ref(false)
 
 onMounted(async () => {
   await publicationsStore.loadCategories()
@@ -165,6 +181,18 @@ const sortOptions = ref([
     }
   }
 ])
+
+function handleOpenDiscoverModal() {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  videoStore.openModal()
+}
+
+async function handleDiscoverPublished() {
+  await resetList()
+}
 
 onUnmounted(() => {
   fetchedItems.value = undefined

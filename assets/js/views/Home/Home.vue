@@ -8,12 +8,15 @@
       </div>
       <div class="hidden md:flex md:flex-wrap justify-end-safe gap-4 mb-10">
         <Button
+          v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
           label="Poster une découverte"
           icon="pi pi-plus"
           severity="info"
           size="small"
+          @click="handleOpenDiscoverModal"
         />
         <Button
+          v-tooltip.bottom="'Ajouter une publication'"
           label="Poster une publication"
           icon="pi pi-plus"
           severity="info"
@@ -82,24 +85,38 @@
         </Card>
       </div>
     </div>
+
+    <AddDiscoverModal @published="handleDiscoverPublished" />
+    <AuthRequiredModal
+      v-model:visible="showAuthModal"
+      message="Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter."
+    />
   </div>
 </template>
 <script setup>
 import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { onMounted, onUnmounted, ref } from 'vue'
+import Card from 'primevue/card'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
+import { useVideoStore } from '../../store/publication/video.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import PublicationListItem from '../Publication/PublicationListItem.vue'
 
 useTitle('MusicAll, le site de référence au service de la musique')
 
 const publicationsStore = usePublicationsStore()
 const musicianAnnounceStore = useMusicianAnnounceStore()
+const videoStore = useVideoStore()
+const userSecurityStore = useUserSecurityStore()
 
 const currentPage = ref(1)
 const fetchedItems = ref()
+const showAuthModal = ref(false)
 
 onMounted(async () => {
   await musicianAnnounceStore.loadLastAnnounces()
@@ -116,7 +133,7 @@ const canLoadMore = () => {
   return !fetchedItems.value || !!fetchedItems.value.length
 }
 
-useInfiniteScroll(document, infiniteHandler, {
+const { reset } = useInfiniteScroll(document, infiniteHandler, {
   distance: 1000,
   canLoadMore
 })
@@ -127,6 +144,22 @@ function isTypeBand(type) {
 
 function isTypeMusician(type) {
   return type === TYPES_ANNOUNCE_MUSICIAN
+}
+
+function handleOpenDiscoverModal() {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  videoStore.openModal()
+}
+
+async function handleDiscoverPublished() {
+  currentPage.value = 1
+  fetchedItems.value = undefined
+  publicationsStore.resetPublications()
+  await nextTick()
+  reset()
 }
 
 onUnmounted(() => {
