@@ -11,7 +11,7 @@ use App\Service\Builder\PublicationCoverDirector;
 use App\Service\Builder\PublicationDirector;
 use App\Service\File\RemoteFileDownloader;
 use App\Service\Google\GoogleApi;
-use App\Service\Google\Youtube;
+use App\Service\Google\YoutubeVideo;
 use App\Service\Google\YoutubeUrlHelper;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -20,6 +20,7 @@ use Google\Service\YouTube as GoogleYouTube;
 use Google\Service\YouTube\Thumbnail;
 use Google\Service\YouTube\ThumbnailDetails;
 use Google\Service\YouTube\Video;
+use PHPUnit\Framework\MockObject\Stub;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Zenstruck\Foundry\Test\Factories;
@@ -37,9 +38,8 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
 
         $container = static::getContainer();
 
-
         $this->publicationVideoCreationProcedure = new PublicationVideoCreationProcedure(
-            new Youtube($this->buildGoogleClientApiMock(), $container->get(YoutubeUrlHelper::class)),
+            new YoutubeVideo($this->buildGoogleClientApiMock(), $container->get(YoutubeUrlHelper::class)),
             $container->get(PublicationCoverDirector::class),
             $container->get(PublicationDirector::class),
             $this->buildRemoteFileDownloader(),
@@ -102,7 +102,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertNotNull($result->getThread());
     }
 
-    private function buildRemoteFileDownloader(): MockObject
+    private function buildRemoteFileDownloader(): MockObject&RemoteFileDownloader
     {
         $mock = $this->createMock(RemoteFileDownloader::class);
 
@@ -117,11 +117,11 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         return $mock;
     }
 
-    private function buildGoogleClientApiMock(): MockObject
+    private function buildGoogleClientApiMock(): Stub&GoogleYouTube
     {
         // todo refactor the code (not this test yet) to avoid so many mock
-        $youtubeMock = $this->createMock(GoogleYouTube::class);
-        $listVideoMock = $this->createMock(GoogleYouTube\VideoListResponse::class);
+        $youtubeMock = $this->createStub(GoogleYouTube::class);
+        $listVideoMock = $this->createStub(GoogleYouTube\VideoListResponse::class);
 
         $snip = new GoogleYouTube\VideoSnippet();
         $snip->setTitle('titre de la vidéo');
@@ -133,7 +133,9 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $snip->setThumbnails($thumb);
         $youtubeVideo =   new Video();
         $youtubeVideo->setSnippet($snip);
-        $listVideoMock->items = [$youtubeVideo];
+        $listVideoMock
+            ->method('getItems')
+            ->willReturn([$youtubeVideo]);
         $videoMock = $this->createMock(GoogleYouTube\Resource\Videos::class);
 
         $videoMock
@@ -142,12 +144,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
             ->with('snippet', ['id' => "YudHcBIxlYw"])
             ->willReturn($listVideoMock);
         $youtubeMock->videos = $videoMock;
-        $googleApiMock = $this->createMock(GoogleApi::class);
-        $googleApiMock
-            ->expects($this->once())
-            ->method('getYoutube')
-            ->willReturn($youtubeMock);
 
-        return $googleApiMock;
+        return $youtubeMock;
     }
 }

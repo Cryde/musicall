@@ -20,7 +20,7 @@ class SearchController extends AbstractController
         PublicationRepository      $publicationRepository,
         SmallPublicationSerializer $smallPublicationSerializer
     ): JsonResponse {
-        $query = $request->get('query', '');
+        $query = $request->query->get('query', '');
         $publications = $publicationRepository->findByTitleAndStatusAndType(
             $query,
             Publication::STATUS_ONLINE,

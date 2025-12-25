@@ -10,14 +10,14 @@ use App\Service\Builder\Metric\ViewCacheDirector;
 use App\Service\Builder\PublicationCoverDirector;
 use App\Service\Builder\PublicationDirector;
 use App\Service\File\RemoteFileDownloader;
-use App\Service\Google\Youtube;
+use App\Service\Google\YoutubeVideo;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class PublicationVideoCreationProcedure
 {
     public function __construct(
-        private readonly Youtube                  $youtube,
+        private readonly YoutubeVideo             $youtube,
         private readonly PublicationCoverDirector $publicationCoverDirector,
         private readonly PublicationDirector      $publicationDirector,
         private readonly RemoteFileDownloader     $remoteFileDownloader,
@@ -30,8 +30,8 @@ class PublicationVideoCreationProcedure
 
     public function process(AddVideo $addVideo, User $currentUser): Publication
     {
-        $data = $this->youtube->getVideoInfo($addVideo->url);
-        [$path, $size] = $this->remoteFileDownloader->download($data['image_url'], $this->containerBag->get('file_publication_cover_destination'));
+        $videoInfo = $this->youtube->getVideoInfo($addVideo->url);
+        [$path, $size] = $this->remoteFileDownloader->download($videoInfo->imageUrl, $this->containerBag->get('file_publication_cover_destination'));
 
         $thread = $this->commentThreadDirector->create();
         $viewCache = $this->viewCacheDirector->build();
