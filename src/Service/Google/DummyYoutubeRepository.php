@@ -13,6 +13,7 @@ readonly class DummyYoutubeRepository implements YoutubeRepositoryInterface
     public const string VIDEO_ID_RICK_ASTLEY = 'dQw4w9WgXcQ';
     public const string VIDEO_ID_SHORT_VIDEO = 'shortVidId';
     public const string VIDEO_ID_NON_EXISTING = 'nonExistingId';
+    public const string VIDEO_ID_PROCEDURE_TEST = 'YudHcBIxlYw';
 
     /**
      * @var array<string, array{title: string, description: string, thumbnails: array<string, string>}>
@@ -32,6 +33,14 @@ readonly class DummyYoutubeRepository implements YoutubeRepositoryInterface
             'thumbnails' => [
                 'maxres' => 'https://i.ytimg.com/vi/shortVidId/maxresdefault.jpg',
                 'high' => 'https://i.ytimg.com/vi/shortVidId/hqdefault.jpg',
+            ],
+        ],
+        self::VIDEO_ID_PROCEDURE_TEST => [
+            'title' => 'titre de la vidéo',
+            'description' => 'description de la vidéo',
+            'thumbnails' => [
+                'maxres' => 'max_res_url',
+                'high' => 'high_res_url',
             ],
         ],
     ];

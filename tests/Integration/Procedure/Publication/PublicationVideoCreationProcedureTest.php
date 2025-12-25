@@ -1,28 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Integration\Procedure\Publication;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use App\ApiResource\Publication\Video\AddVideo;
+use App\Contracts\Google\Youtube\YoutubeRepositoryInterface;
 use App\Procedure\Publication\PublicationVideoCreationProcedure;
-use App\Service\Builder\CommentThreadDirector;
-use App\Service\Builder\Metric\ViewCacheDirector;
-use App\Service\Builder\PublicationCoverDirector;
-use App\Service\Builder\PublicationDirector;
 use App\Service\File\RemoteFileDownloader;
-use App\Service\Google\GoogleApi;
-use App\Service\Google\YoutubeVideo;
-use App\Service\Google\YoutubeUrlHelper;
+use App\Service\Google\DummyYoutubeRepository;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
-use Doctrine\ORM\EntityManagerInterface;
-use Google\Service\YouTube as GoogleYouTube;
-use Google\Service\YouTube\Thumbnail;
-use Google\Service\YouTube\ThumbnailDetails;
-use Google\Service\YouTube\Video;
-use PHPUnit\Framework\MockObject\Stub;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
@@ -30,37 +19,29 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
 {
     use ResetDatabase, Factories;
 
-    private PublicationVideoCreationProcedure $publicationVideoCreationProcedure;
+    private const string VIDEO_URL = 'https://www.youtube.com/watch?v=' . DummyYoutubeRepository::VIDEO_ID_PROCEDURE_TEST;
+
     protected function setUp(): void
     {
         self::bootKernel();
         parent::setUp();
 
-        $container = static::getContainer();
-
-        $this->publicationVideoCreationProcedure = new PublicationVideoCreationProcedure(
-            new YoutubeVideo($this->buildGoogleClientApiMock(), $container->get(YoutubeUrlHelper::class)),
-            $container->get(PublicationCoverDirector::class),
-            $container->get(PublicationDirector::class),
-            $this->buildRemoteFileDownloader(),
-            $container->get(ParameterBagInterface::class),
-            $container->get(CommentThreadDirector::class),
-            $container->get(ViewCacheDirector::class),
-            $container->get(EntityManagerInterface::class),
-        );
+        self::getContainer()->set(YoutubeRepositoryInterface::class, new DummyYoutubeRepository());
     }
 
-    public function testProcess(): void
+    public function test_process(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $this->mockRemoteFileDownloader();
+
+        $user = UserFactory::new()->asBaseUser()->create()->_real();
         $category = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
 
         $addVideo = new AddVideo();
-        $addVideo->url = 'https://www.youtube.com/watch?v=YudHcBIxlYw';
+        $addVideo->url = self::VIDEO_URL;
         $addVideo->title = 'The video title';
         $addVideo->description = 'The video description';
 
-        $result = $this->publicationVideoCreationProcedure->process($addVideo, $user1);
+        $result = $this->getPublicationVideoCreationProcedure()->process($addVideo, $user);
 
         $this->assertSame('The video title', $result->getTitle());
         $this->assertSame('The video description', $result->getShortDescription());
@@ -75,19 +56,21 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertNotNull($result->getThread());
     }
 
-    public function testProcessWithNonCourseCategory(): void
+    public function test_process_with_non_course_category(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $this->mockRemoteFileDownloader();
+
+        $user = UserFactory::new()->asBaseUser()->create()->_real();
         $category = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
         $news = PublicationSubCategoryFactory::new()->asNews()->create();
 
         $addVideo = new AddVideo();
-        $addVideo->url = 'https://www.youtube.com/watch?v=YudHcBIxlYw';
+        $addVideo->url = self::VIDEO_URL;
         $addVideo->title = 'The video title';
         $addVideo->description = 'The video description';
         $addVideo->category = $news->_real(); // only "course" category are accepted
 
-        $result = $this->publicationVideoCreationProcedure->process($addVideo, $user1);
+        $result = $this->getPublicationVideoCreationProcedure()->process($addVideo, $user);
 
         $this->assertSame('The video title', $result->getTitle());
         $this->assertSame('The video description', $result->getShortDescription());
@@ -102,49 +85,22 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertNotNull($result->getThread());
     }
 
-    private function buildRemoteFileDownloader(): MockObject&RemoteFileDownloader
+    private function mockRemoteFileDownloader(): void
     {
         $mock = $this->createMock(RemoteFileDownloader::class);
-
         $mock->expects($this->once())
             ->method('download')
             ->with('max_res_url', 'images/publication/cover')
             ->willReturn([
                 'images/publication/cover/max_res_url_path',
-                12345
+                12345,
             ]);
 
-        return $mock;
+        self::getContainer()->set(RemoteFileDownloader::class, $mock);
     }
 
-    private function buildGoogleClientApiMock(): Stub&GoogleYouTube
+    private function getPublicationVideoCreationProcedure(): PublicationVideoCreationProcedure
     {
-        // todo refactor the code (not this test yet) to avoid so many mock
-        $youtubeMock = $this->createStub(GoogleYouTube::class);
-        $listVideoMock = $this->createStub(GoogleYouTube\VideoListResponse::class);
-
-        $snip = new GoogleYouTube\VideoSnippet();
-        $snip->setTitle('titre de la vidéo');
-        $snip->setDescription('description de la vidéo');
-        $thumb = new ThumbnailDetails;
-        $res = (new Thumbnail());
-        $res->setUrl('max_res_url');
-        $thumb->setMaxres($res);
-        $snip->setThumbnails($thumb);
-        $youtubeVideo =   new Video();
-        $youtubeVideo->setSnippet($snip);
-        $listVideoMock
-            ->method('getItems')
-            ->willReturn([$youtubeVideo]);
-        $videoMock = $this->createMock(GoogleYouTube\Resource\Videos::class);
-
-        $videoMock
-            ->expects($this->once())
-            ->method('listVideos')
-            ->with('snippet', ['id' => "YudHcBIxlYw"])
-            ->willReturn($listVideoMock);
-        $youtubeMock->videos = $videoMock;
-
-        return $youtubeMock;
+        return self::getContainer()->get(PublicationVideoCreationProcedure::class);
     }
 }
