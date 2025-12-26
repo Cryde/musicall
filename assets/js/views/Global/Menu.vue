@@ -52,7 +52,20 @@
           <template v-if="!userSecurityStore.isAuthenticatedLoading">
           <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-4 px-6 lg:px-0">
               <template v-if="userSecurityStore.isAuthenticated">
-                  <Avatar :label="userSecurityStore.user.username.charAt(0)" class="cursor-pointer" shape="circle" @click="$refs.userMenu.toggle($event)" />
+                  <Avatar
+                    v-if="userSecurityStore.profilePictureUrl"
+                    :image="userSecurityStore.profilePictureUrl"
+                    class="cursor-pointer"
+                    shape="circle"
+                    @click="$refs.userMenu.toggle($event)"
+                  />
+                  <Avatar
+                    v-else
+                    :label="userSecurityStore.user.username.charAt(0).toUpperCase()"
+                    class="cursor-pointer"
+                    shape="circle"
+                    @click="$refs.userMenu.toggle($event)"
+                  />
                   <Menu ref="userMenu" :popup="true" :model="menuItems" />
               </template>
               <template v-else>

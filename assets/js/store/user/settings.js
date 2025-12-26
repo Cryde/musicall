@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
+import { useUserSecurityStore } from './security.js'
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
+  const userSecurityStore = useUserSecurityStore()
+
   const userProfile = ref(null)
   const isLoading = ref(false)
   const isChangingPassword = ref(false)
@@ -31,6 +34,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     try {
       await securityApi.changeProfilePicture(formData)
       await loadUserProfile()
+      // Also refresh the security store's profile so navbar avatar updates
+      await userSecurityStore.refreshUserProfile()
     } finally {
       isChangingPicture.value = false
     }
