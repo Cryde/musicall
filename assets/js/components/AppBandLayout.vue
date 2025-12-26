@@ -26,28 +26,24 @@
 </template>
 
 <script setup>
-import Footer from '../views/Global/Footer.vue'
-import MenuBand from '../views/Global/MenuBand.vue'
-import Toast from 'primevue/toast'
-import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
 import { useHead } from '@unhead/vue'
-import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
-import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
-import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
+import Button from 'primevue/button'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
+import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
+import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
+import Footer from '../views/Global/Footer.vue'
+import MenuBand from '../views/Global/MenuBand.vue'
 
 const bandSpaceStore = useBandSpaceStore()
 const route = useRoute()
 const toast = useToast()
 
-const {
-  currentSpace,
-  setLastSpaceId,
-  handleRedirect,
-  validateCurrentSpace
-} = useBandSpaceNavigation()
+const { currentSpace, setLastSpaceId, handleRedirect, validateCurrentSpace } =
+  useBandSpaceNavigation()
 
 const isLoading = ref(true)
 const hasError = ref(false)
@@ -86,7 +82,7 @@ async function loadSpaces() {
         toast.add({
           severity: 'warn',
           summary: 'Band Space introuvable',
-          detail: 'Ce Band Space n\'existe pas ou vous n\'y avez pas accès',
+          detail: "Ce Band Space n'existe pas ou vous n'y avez pas accès",
           life: 5000
         })
       }
@@ -109,29 +105,36 @@ function retry() {
 }
 
 // Watch for route changes
-watch(() => route.name, (newName) => {
-  if (isLoading.value || hasError.value) return
+watch(
+  () => route.name,
+  (newName) => {
+    if (isLoading.value || hasError.value) return
 
-  if (newName === BAND_SPACE_ROUTES.INDEX) {
-    handleRedirect()
+    if (newName === BAND_SPACE_ROUTES.INDEX) {
+      handleRedirect()
+    }
   }
-})
+)
 
 // Watch for space ID changes in URL and save to localStorage
-watch(() => route.params.id, (newId) => {
-  if (newId) {
-    setLastSpaceId(newId)
-  }
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId) {
+      setLastSpaceId(newId)
+    }
 
-  if (isLoading.value || hasError.value || !newId) return
+    if (isLoading.value || hasError.value || !newId) return
 
-  if (!validateCurrentSpace()) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Band Space introuvable',
-      detail: 'Ce Band Space n\'existe pas ou vous n\'y avez pas accès',
-      life: 5000
-    })
-  }
-}, { immediate: true })
+    if (!validateCurrentSpace()) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Band Space introuvable',
+        detail: "Ce Band Space n'existe pas ou vous n'y avez pas accès",
+        life: 5000
+      })
+    }
+  },
+  { immediate: true }
+)
 </script>

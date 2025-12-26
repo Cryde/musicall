@@ -18,10 +18,7 @@ function handleApiError(error) {
     message = violations.map((v) => v.message).join('. ')
   } else {
     message =
-      data?.['hydra:description'] ||
-      data?.detail ||
-      error.message ||
-      'Une erreur est survenue'
+      data?.['hydra:description'] || data?.detail || error.message || 'Une erreur est survenue'
   }
 
   const violationsByField = violations.reduce((acc, violation) => {
@@ -71,9 +68,7 @@ export default {
       .catch(handleApiError)
   },
   getSelf() {
-    return axios
-      .get(Routing.generate('api_users_get_self'))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_users_get_self')).then((resp) => resp.data)
   },
   changePassword({ oldPassword, newPassword }) {
     return axios

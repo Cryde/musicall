@@ -42,9 +42,9 @@
 </template>
 
 <script setup>
+import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'

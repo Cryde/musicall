@@ -85,22 +85,26 @@ async function handleSave() {
   const { canvas } = cropperRef.value.getResult()
 
   if (canvas) {
-    canvas.toBlob(async (blob) => {
-      const formData = new FormData()
-      formData.append('imageFile', blob, 'profile.jpg')
+    canvas.toBlob(
+      async (blob) => {
+        const formData = new FormData()
+        formData.append('imageFile', blob, 'profile.jpg')
 
-      try {
-        await userSettingsStore.changeProfilePicture(formData)
-        emit('update:visible', false)
-        emit('saved')
-      } catch (e) {
-        if (e.violations?.length) {
-          error.value = e.violations.map(v => v.message).join('. ')
-        } else {
-          error.value = e.message || 'Une erreur est survenue'
+        try {
+          await userSettingsStore.changeProfilePicture(formData)
+          emit('update:visible', false)
+          emit('saved')
+        } catch (e) {
+          if (e.violations?.length) {
+            error.value = e.violations.map((v) => v.message).join('. ')
+          } else {
+            error.value = e.message || 'Une erreur est survenue'
+          }
         }
-      }
-    }, 'image/jpeg', 0.9)
+      },
+      'image/jpeg',
+      0.9
+    )
   }
 }
 </script>

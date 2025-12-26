@@ -35,10 +35,7 @@ function handleApiError(error) {
     message = violations.map((v) => v.message).join('. ')
   } else {
     message =
-      data?.['hydra:description'] ||
-      data?.detail ||
-      error.message ||
-      'Une erreur est survenue'
+      data?.['hydra:description'] || data?.detail || error.message || 'Une erreur est survenue'
   }
 
   const violationsByField = violations.reduce((acc, violation) => {

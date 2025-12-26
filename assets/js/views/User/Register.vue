@@ -210,17 +210,17 @@ function validateUsername() {
   errors.username = ''
 
   if (!form.username.trim()) {
-    errors.username = 'Veuillez saisir un nom d\'utilisateur'
+    errors.username = "Veuillez saisir un nom d'utilisateur"
     return false
   }
 
   if (form.username.length < 3) {
-    errors.username = 'Le nom d\'utilisateur doit au moins contenir 3 caractères'
+    errors.username = "Le nom d'utilisateur doit au moins contenir 3 caractères"
     return false
   }
 
   if (form.username.length > 40) {
-    errors.username = 'Le nom d\'utilisateur doit contenir maximum 40 caractères'
+    errors.username = "Le nom d'utilisateur doit contenir maximum 40 caractères"
     return false
   }
 
@@ -284,7 +284,7 @@ function validateAcceptTerms() {
   errors.acceptTerms = ''
 
   if (!form.acceptTerms) {
-    errors.acceptTerms = 'Vous devez accepter les conditions d\'utilisation'
+    errors.acceptTerms = "Vous devez accepter les conditions d'utilisation"
     return false
   }
 
@@ -298,7 +298,13 @@ function validateForm() {
   const isConfirmPasswordValid = validateConfirmPassword()
   const isAcceptTermsValid = validateAcceptTerms()
 
-  return isUsernameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid && isAcceptTermsValid
+  return (
+    isUsernameValid &&
+    isEmailValid &&
+    isPasswordValid &&
+    isConfirmPasswordValid &&
+    isAcceptTermsValid
+  )
 }
 
 async function handleSubmit() {
