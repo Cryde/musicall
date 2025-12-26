@@ -13,13 +13,25 @@
       </div>
     </div>
     <Button
+      v-tooltip.bottom="'Ajouter un cours vidéo YouTube'"
       label="Poster un cours"
       icon="pi pi-plus"
       severity="info"
       size="small"
       class="whitespace-nowrap"
+      @click="handleOpenCourseModal"
     />
   </div>
+
+  <AddCourseVideoModal
+    v-model:visible="showCourseModal"
+    :categories="coursesStore.courseCategories"
+    @published="handleCoursePublished"
+  />
+  <AuthRequiredModal
+    v-model:visible="showAuthModal"
+    message="Si vous souhaitez partager un cours vidéo avec la communauté, vous devez vous connecter."
+  />
 
   <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mt-2 mb-6">
     <ColumnCardRadio
@@ -95,20 +107,26 @@ import drumImg from '../../../image/course/batterie.png'
 import miscImage from '../../../image/course/divers.png'
 import guitarImg from '../../../image/course/guitare.png'
 import maoImg from '../../../image/course/mao.png'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import AddCourseVideoModal from '../../components/Course/AddCourseVideoModal.vue'
 import ColumnCardRadio from '../../components/RadioGroup/ColumnCardRadio.vue'
 import { useCoursesStore } from '../../store/course/course.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import CourseListItem from './CourseListItem.vue'
 
 useTitle('Liste des catégories de cours - MusicAll')
 
 const coursesStore = useCoursesStore()
+const userSecurityStore = useUserSecurityStore()
 
 const currentPage = ref(1)
 const orientation = ref('desc')
 const fetchedItems = ref()
 const selectCategoryFilter = ref('')
 const sortMenu = ref()
+const showCourseModal = ref(false)
+const showAuthModal = ref(false)
 const mapInstrumentImage = {
   guitare: guitarImg,
   basse: bassImg,
@@ -185,6 +203,18 @@ const sortOptions = ref([
     }
   }
 ])
+
+function handleOpenCourseModal() {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  showCourseModal.value = true
+}
+
+async function handleCoursePublished() {
+  await resetList()
+}
 
 onUnmounted(() => {
   fetchedItems.value = undefined
