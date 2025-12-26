@@ -116,6 +116,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { ERROR_CODES } from '../../constants/errorCodes.js'
 import { useVideoStore } from '../../store/publication/video.js'
 
 const props = defineProps({
@@ -188,9 +189,12 @@ const debouncedFetchPreview = useDebounceFn(async (url) => {
       showPreview.value = true
     }
   } catch (error) {
-    const urlViolation = error.violationsByField?.url?.[0]
+    const urlViolations = error.violationsByField?.url || []
+    const hasExistingVideoError = urlViolations.some(
+      (v) => v.code === ERROR_CODES.EXISTING_VIDEO
+    )
 
-    if (urlViolation && urlViolation.includes('existe déjà')) {
+    if (hasExistingVideoError) {
       isExistingVideo.value = true
     } else {
       hasGenericError.value = true
@@ -260,9 +264,9 @@ async function handlePublish() {
   } catch (error) {
     if (error.isValidationError && error.violationsByField) {
       errors.value = {
-        title: error.violationsByField.title?.[0],
-        description: error.violationsByField.description?.[0],
-        url: error.violationsByField.url?.[0]
+        title: error.violationsByField.title?.[0]?.message,
+        description: error.violationsByField.description?.[0]?.message,
+        url: error.violationsByField.url?.[0]?.message
       }
 
       if (error.violationsByField.url) {

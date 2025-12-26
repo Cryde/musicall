@@ -97,7 +97,7 @@ async function handleSubmit() {
     emit('created', newSpace)
   } catch (e) {
     // Use field-specific error if available, otherwise use aggregated message
-    const fieldError = e.violationsByField?.name?.[0]
+    const fieldError = e.violationsByField?.name?.[0]?.message
     error.value = fieldError || e.message
 
     // Only show toast for non-validation errors (validation errors are shown inline)

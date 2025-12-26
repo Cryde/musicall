@@ -328,13 +328,13 @@ async function handleSubmit() {
   } catch (error) {
     if (error.isValidationError && error.violationsByField) {
       if (error.violationsByField.username) {
-        errors.username = error.violationsByField.username[0]
+        errors.username = error.violationsByField.username[0].message
       }
       if (error.violationsByField.email) {
-        errors.email = error.violationsByField.email[0]
+        errors.email = error.violationsByField.email[0].message
       }
       if (error.violationsByField.password) {
-        errors.password = error.violationsByField.password[0]
+        errors.password = error.violationsByField.password[0].message
       }
     } else {
       globalError.value = error.message
