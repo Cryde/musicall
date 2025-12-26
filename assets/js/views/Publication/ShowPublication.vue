@@ -47,13 +47,19 @@
         />
       </figure>
     </template>
+
+    <CommentThread
+      v-if="publication.thread?.id"
+      :thread-id="publication.thread.id"
+    />
   </template>
 </template>
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import CommentThread from '../../components/Comment/CommentThread.vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { usePublicationStore } from '../../store/publication/publication.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
