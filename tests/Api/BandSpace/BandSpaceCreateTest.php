@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Api\BandSpace;
+namespace App\Tests\Api\BandSpace;
 
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Tests\ApiTestAssertionsTrait;
