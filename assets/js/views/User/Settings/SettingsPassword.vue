@@ -130,9 +130,9 @@ async function handleSubmit() {
     confirmPassword.value = ''
   } catch (e) {
     if (e.violationsByField?.oldPassword) {
-      errors.value.oldPassword = e.violationsByField.oldPassword.join('. ')
+      errors.value.oldPassword = e.violationsByField.oldPassword.map((v) => v.message).join('. ')
     } else if (e.violationsByField?.newPassword) {
-      errors.value.newPassword = e.violationsByField.newPassword.join('. ')
+      errors.value.newPassword = e.violationsByField.newPassword.map((v) => v.message).join('. ')
     } else {
       errorMessage.value = e.message || 'Une erreur est survenue'
     }

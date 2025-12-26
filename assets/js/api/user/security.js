@@ -26,7 +26,10 @@ function handleApiError(error) {
     if (!acc[field]) {
       acc[field] = []
     }
-    acc[field].push(violation.message)
+    acc[field].push({
+      message: violation.message,
+      code: violation.code || null
+    })
     return acc
   }, {})
 
