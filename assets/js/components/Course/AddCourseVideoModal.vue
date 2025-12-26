@@ -190,9 +190,7 @@ const debouncedFetchPreview = useDebounceFn(async (url) => {
     }
   } catch (error) {
     const urlViolations = error.violationsByField?.url || []
-    const hasExistingVideoError = urlViolations.some(
-      (v) => v.code === ERROR_CODES.EXISTING_VIDEO
-    )
+    const hasExistingVideoError = urlViolations.some((v) => v.code === ERROR_CODES.EXISTING_VIDEO)
 
     if (hasExistingVideoError) {
       isExistingVideo.value = true
