@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/Cryde/musicall/branch/master/graph/badge.svg?token=7RK8UIL2RH)](https://codecov.io/gh/Cryde/musicall)
 [![PHP Version](https://img.shields.io/badge/php-8.4-blue)](https://php.net)
-[![Symfony](https://img.shields.io/badge/symfony-7.3-black)](https://symfony.com)
+[![Symfony](https://img.shields.io/badge/symfony-7.4-black)](https://symfony.com)
 [![Node](https://img.shields.io/badge/node-20-green)](https://nodejs.org)
 
 ## About
@@ -24,7 +24,7 @@ MusicAll is a platform where people can share videos, articles, and courses, sea
 
 This project uses:
 - PHP 8.4
-- Symfony 7.3
+- Symfony 7.4
 - MariaDB version 10.11
 - Node 20
 - Vue.js 3
