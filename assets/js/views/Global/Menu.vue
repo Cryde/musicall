@@ -58,7 +58,9 @@
               <Button asChild v-slot="slotProps" severity="info" text>
                   <RouterLink :to="{name: 'app_login'}" :class="slotProps.class">Se connecter</RouterLink>
               </Button>
-              <Button label="Register" severity="info" />
+              <Button asChild v-slot="slotProps" severity="info">
+                  <RouterLink :to="{name: 'app_register'}" :class="slotProps.class">S'inscrire</RouterLink>
+              </Button>
 
               <Button
                   :icon="iconClass"
