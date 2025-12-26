@@ -34,12 +34,10 @@ function handleApiError(error) {
 
   if (isValidationError) {
     // Aggregate all violation messages
-    message = violations.map(v => v.message).join('. ')
+    message = violations.map((v) => v.message).join('. ')
   } else {
-    message = data?.['hydra:description']
-      || data?.detail
-      || error.message
-      || 'Une erreur est survenue'
+    message =
+      data?.['hydra:description'] || data?.detail || error.message || 'Une erreur est survenue'
   }
 
   // Group violations by field for easy access
@@ -88,7 +86,7 @@ export default {
         {
           headers: {
             'Content-Type': 'application/ld+json',
-            'Accept': 'application/ld+json'
+            Accept: 'application/ld+json'
           }
         }
       )

@@ -29,9 +29,9 @@
 <script setup>
 import Select from 'primevue/select'
 import { computed } from 'vue'
-import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
-import { CREATE_ACTION_ID, BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
+import { BAND_SPACE_ROUTES, CREATE_ACTION_ID } from '../../constants/bandSpace.js'
+import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
 const bandSpaceStore = useBandSpaceStore()
 const { currentSpace, navigateToSpace } = useBandSpaceNavigation()
@@ -48,9 +48,7 @@ const selectOptions = computed(() => {
 
   options.push({
     label: '',
-    items: [
-      { id: CREATE_ACTION_ID, name: 'Créer un Band Space', isCreateAction: true }
-    ]
+    items: [{ id: CREATE_ACTION_ID, name: 'Créer un Band Space', isCreateAction: true }]
   })
 
   return options

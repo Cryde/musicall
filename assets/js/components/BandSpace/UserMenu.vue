@@ -30,20 +30,22 @@ const userSecurityStore = useUserSecurityStore()
 
 const menuRef = ref(null)
 
-const userInitial = computed(() =>
-  userSecurityStore.user?.username?.charAt(0)?.toUpperCase() || '?'
+const userInitial = computed(
+  () => userSecurityStore.user?.username?.charAt(0)?.toUpperCase() || '?'
 )
 
-const menuItems = computed(() => [{
-  label: userSecurityStore.user?.username,
-  items: [
-    {
-      label: 'Se déconnecter',
-      icon: 'pi pi-sign-out',
-      command: () => userSecurityStore.logout()
-    }
-  ]
-}])
+const menuItems = computed(() => [
+  {
+    label: userSecurityStore.user?.username,
+    items: [
+      {
+        label: 'Se déconnecter',
+        icon: 'pi pi-sign-out',
+        command: () => userSecurityStore.logout()
+      }
+    ]
+  }
+])
 
 function toggle(event) {
   menuRef.value?.toggle(event)

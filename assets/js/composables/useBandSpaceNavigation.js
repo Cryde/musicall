@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { BAND_SPACE_ROUTES, LAST_BAND_SPACE_KEY } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
-import { LAST_BAND_SPACE_KEY, BAND_SPACE_ROUTES } from '../constants/bandSpace.js'
 
 export function useBandSpaceNavigation() {
   const bandSpaceStore = useBandSpaceStore()

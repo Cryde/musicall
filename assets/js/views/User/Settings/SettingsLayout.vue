@@ -54,19 +54,34 @@ const userSettingsStore = useUserSettingsStore()
 
 const tabs = [
   { value: 'general', label: 'Général', icon: 'pi pi-user', route: 'app_user_settings' },
-  { value: 'password', label: 'Mot de passe', icon: 'pi pi-lock', route: 'app_user_settings_password' },
-  { value: 'notifications', label: 'Notifications', icon: 'pi pi-bell', route: 'app_user_settings_notifications' },
-  { value: 'privacy', label: 'Confidentialité', icon: 'pi pi-shield', route: 'app_user_settings_privacy' }
+  {
+    value: 'password',
+    label: 'Mot de passe',
+    icon: 'pi pi-lock',
+    route: 'app_user_settings_password'
+  },
+  {
+    value: 'notifications',
+    label: 'Notifications',
+    icon: 'pi pi-bell',
+    route: 'app_user_settings_notifications'
+  },
+  {
+    value: 'privacy',
+    label: 'Confidentialité',
+    icon: 'pi pi-shield',
+    route: 'app_user_settings_privacy'
+  }
 ]
 
 const activeTab = computed(() => {
   const currentRoute = route.name
-  const tab = tabs.find(t => t.route === currentRoute)
+  const tab = tabs.find((t) => t.route === currentRoute)
   return tab?.value || 'general'
 })
 
 function handleTabChange(value) {
-  const tab = tabs.find(t => t.value === value)
+  const tab = tabs.find((t) => t.value === value)
   if (tab) {
     router.push({ name: tab.route })
   }

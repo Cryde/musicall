@@ -14,9 +14,7 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
   const spacesCount = computed(() => spaces.value.length)
 
   // Map for O(1) lookup by ID
-  const spacesMap = computed(() =>
-    new Map(spaces.value.map(s => [s.id, s]))
-  )
+  const spacesMap = computed(() => new Map(spaces.value.map((s) => [s.id, s])))
 
   async function loadMyBandSpaces() {
     isLoading.value = true
