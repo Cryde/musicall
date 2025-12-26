@@ -1,47 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
-
-/**
- * Normalizes API Platform errors into a consistent format
- * @param {Error} error - The axios error object
- * @returns {never} - Always throws a normalized error
- */
-function handleApiError(error) {
-  const data = error.response?.data
-  const violations = data?.violations || []
-  const isValidationError = violations.length > 0
-
-  let message
-
-  if (isValidationError) {
-    message = violations.map((v) => v.message).join('. ')
-  } else {
-    message =
-      data?.['hydra:description'] || data?.detail || error.message || 'Une erreur est survenue'
-  }
-
-  const violationsByField = violations.reduce((acc, violation) => {
-    const field = violation.propertyPath || '_global'
-    if (!acc[field]) {
-      acc[field] = []
-    }
-    acc[field].push({
-      message: violation.message,
-      code: violation.code || null
-    })
-    return acc
-  }, {})
-
-  const normalizedError = new Error(message)
-  normalizedError.status = error.response?.status
-  normalizedError.violations = violations
-  normalizedError.violationsByField = violationsByField
-  normalizedError.isValidationError = isValidationError
-  normalizedError.originalError = error
-
-  throw normalizedError
-}
+import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
   login(username, password) {
