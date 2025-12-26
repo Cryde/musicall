@@ -76,22 +76,12 @@
                       <RouterLink :to="{name: 'app_register'}" :class="slotProps.class">S'inscrire</RouterLink>
                   </Button>
               </template>
-
-              <Button
-                  :icon="iconClass"
-                  size="small"
-                  severity="secondary"
-                  outlined
-                  class="text-sm! leading-normal! w-9 h-9 p-0! shrink-0 rounded-md"
-                  @click="switchDarkMode"
-              />
           </div>
           </template>
       </div>
     </nav>
 </template>
 <script setup>
-import * as Cookies from 'es-cookie'
 import Menu from 'primevue/menu'
 import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -100,15 +90,7 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 
-const isDarkMode = ref(Cookies.get('is_dark_mode') === '1')
-const iconClass = ref('')
 const menuItems = ref([])
-
-if (isDarkMode.value) {
-  iconClass.value = 'pi pi-sun'
-} else {
-  iconClass.value = 'pi pi-moon'
-}
 
 onMounted(() => {
   nextTick(() => {
@@ -161,19 +143,4 @@ const navs = ref([
     to: 'app_forum_index'
   }
 ])
-
-function switchDarkMode() {
-  const html = document.querySelector('html')
-  if (html.classList.contains('dark-mode')) {
-    Cookies.set('is_dark_mode', 0)
-    html.classList.remove('dark-mode')
-    isDarkMode.value = false
-    iconClass.value = 'pi pi-moon'
-  } else {
-    html.classList.add('dark-mode')
-    Cookies.set('is_dark_mode', 1)
-    isDarkMode.value = true
-    iconClass.value = 'pi pi-sun'
-  }
-}
 </script>

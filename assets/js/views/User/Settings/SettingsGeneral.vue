@@ -31,7 +31,7 @@
         </div>
 
         <!-- Profile Picture -->
-        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3">
+        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
             Photo de profil
           </div>
@@ -64,6 +64,19 @@
             />
           </div>
         </div>
+
+        <!-- Dark Mode -->
+        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3">
+          <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
+            Mode sombre
+          </div>
+          <div class="md:w-2/3 flex items-center gap-3">
+            <ToggleSwitch v-model="isDarkModeEnabled" />
+            <span class="text-surface-600 dark:text-surface-400 text-sm">
+              {{ isDarkModeEnabled ? 'Activé' : 'Désactivé' }}
+            </span>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -78,17 +91,25 @@
 <script setup>
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
+import ToggleSwitch from 'primevue/toggleswitch'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useDarkMode } from '../../../composables/useDarkMode.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 import ProfilePictureModal from './ProfilePictureModal.vue'
 
 const userSettingsStore = useUserSettingsStore()
 const toast = useToast()
+const { isDarkMode, setDarkMode } = useDarkMode()
 
 const fileInput = ref(null)
 const selectedImage = ref(null)
 const showPictureModal = ref(false)
+
+const isDarkModeEnabled = computed({
+  get: () => isDarkMode.value,
+  set: (value) => setDarkMode(value)
+})
 
 const profilePictureUrl = computed(() => {
   if (userSettingsStore.userProfile?.profile_picture?.small) {

@@ -10,7 +10,12 @@ import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
 import { configure } from 'vue-gtag'
 import App from './App.vue'
+import { useDarkMode } from './composables/useDarkMode.js'
 import router from './router/index.js'
+
+// Initialize dark mode before app mounts (detects system preference or uses saved cookie)
+const { initialize: initDarkMode } = useDarkMode()
+initDarkMode()
 
 // Global axios interceptor for 401 errors
 axios.interceptors.response.use(
