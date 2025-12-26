@@ -10,5 +10,32 @@ export default [
     path: '/register',
     component: () => import('../views/User/Register.vue'),
     meta: { isAuthRequired: false }
+  },
+  {
+    path: '/user/settings',
+    component: () => import('../views/User/Settings/SettingsLayout.vue'),
+    meta: { isAuthRequired: true },
+    children: [
+      {
+        name: 'app_user_settings',
+        path: '',
+        component: () => import('../views/User/Settings/SettingsGeneral.vue')
+      },
+      {
+        name: 'app_user_settings_password',
+        path: 'password',
+        component: () => import('../views/User/Settings/SettingsPassword.vue')
+      },
+      {
+        name: 'app_user_settings_notifications',
+        path: 'notifications',
+        component: () => import('../views/User/Settings/SettingsNotifications.vue')
+      },
+      {
+        name: 'app_user_settings_privacy',
+        path: 'privacy',
+        component: () => import('../views/User/Settings/SettingsPrivacy.vue')
+      }
+    ]
   }
 ]

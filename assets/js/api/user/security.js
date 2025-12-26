@@ -69,5 +69,31 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+  getSelf() {
+    return axios
+      .get(Routing.generate('api_users_get_self'))
+      .then((resp) => resp.data)
+  },
+  changePassword({ oldPassword, newPassword }) {
+    return axios
+      .post(
+        Routing.generate('api_users_change_password_post'),
+        { oldPassword, newPassword },
+        {
+          headers: {
+            'Content-Type': 'application/ld+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+  changeProfilePicture(formData) {
+    return axios
+      .post(Routing.generate('api_user_profile_picture_post'), formData)
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }
