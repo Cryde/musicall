@@ -41,7 +41,12 @@
                 />
                 <div class="text-center w-full">
                     <span class="text-surface-900 dark:text-surface-0 font-medium">Vous n'avez pas de compte ?</span>
-                    <a class="ml-3 text-primary font-medium cursor-pointer hover:text-primary-emphasis">Créer un compte en cliquant ici !</a>
+                    <RouterLink
+                        :to="{ name: 'app_register' }"
+                        class="ml-3 text-primary font-medium cursor-pointer hover:text-primary-emphasis"
+                    >
+                        Créer un compte en cliquant ici !
+                    </RouterLink>
                 </div>
             </div>
         </div>
