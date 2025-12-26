@@ -50,24 +50,26 @@
           </RouterLink>
         </div>
           <template v-if="!userSecurityStore.isAuthenticatedLoading">
-          <div v-if="userSecurityStore.isAuthenticated">
-              <Avatar :label="userSecurityStore.user.username.charAt(0)" class="mr-2 cursor-pointer" shape="circle"  @click="$refs.userMenu.toggle($event)" />
-              <Menu ref="userMenu" :popup="true" :model="menuItems" />
-          </div>
-          <div v-else class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-4">
-              <Button asChild v-slot="slotProps" severity="info" text>
-                  <RouterLink :to="{name: 'app_login'}" :class="slotProps.class">Se connecter</RouterLink>
-              </Button>
-              <Button asChild v-slot="slotProps" severity="info">
-                  <RouterLink :to="{name: 'app_register'}" :class="slotProps.class">S'inscrire</RouterLink>
-              </Button>
+          <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-4 px-6 lg:px-0">
+              <template v-if="userSecurityStore.isAuthenticated">
+                  <Avatar :label="userSecurityStore.user.username.charAt(0)" class="cursor-pointer" shape="circle" @click="$refs.userMenu.toggle($event)" />
+                  <Menu ref="userMenu" :popup="true" :model="menuItems" />
+              </template>
+              <template v-else>
+                  <Button asChild v-slot="slotProps" severity="info" text>
+                      <RouterLink :to="{name: 'app_login'}" :class="slotProps.class">Se connecter</RouterLink>
+                  </Button>
+                  <Button asChild v-slot="slotProps" severity="info">
+                      <RouterLink :to="{name: 'app_register'}" :class="slotProps.class">S'inscrire</RouterLink>
+                  </Button>
+              </template>
 
               <Button
                   :icon="iconClass"
                   size="small"
                   severity="secondary"
                   outlined
-                  class="text-sm! ml-2 leading-normal! w-9 h-9 p-0! shrink-0 rounded-md"
+                  class="text-sm! leading-normal! w-9 h-9 p-0! shrink-0 rounded-md"
                   @click="switchDarkMode"
               />
           </div>
@@ -79,8 +81,10 @@
 import * as Cookies from 'es-cookie'
 import Menu from 'primevue/menu'
 import { nextTick, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
+const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 
 const isDarkMode = ref(Cookies.get('is_dark_mode') === '1')
@@ -99,6 +103,16 @@ onMounted(() => {
       {
         label: userSecurityStore?.user?.username,
         items: [
+          {
+            label: 'Paramètres',
+            icon: 'pi pi-cog',
+            command: () => {
+              router.push({ name: 'app_user_settings' })
+            }
+          },
+          {
+            separator: true
+          },
           {
             label: 'Se déconnecter',
             icon: 'pi pi-sign-out',
