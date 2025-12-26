@@ -83,43 +83,37 @@
 </template>
 <script setup>
 import Menu from 'primevue/menu'
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 
-const menuItems = ref([])
-
-onMounted(() => {
-  nextTick(() => {
-    menuItems.value = [
+const menuItems = computed(() => [
+  {
+    label: userSecurityStore.user?.username,
+    items: [
       {
-        label: userSecurityStore?.user?.username,
-        items: [
-          {
-            label: 'Paramètres',
-            icon: 'pi pi-cog',
-            command: () => {
-              router.push({ name: 'app_user_settings' })
-            }
-          },
-          {
-            separator: true
-          },
-          {
-            label: 'Se déconnecter',
-            icon: 'pi pi-sign-out',
-            command: () => {
-              userSecurityStore.logout()
-            }
-          }
-        ]
+        label: 'Paramètres',
+        icon: 'pi pi-cog',
+        command: () => {
+          router.push({ name: 'app_user_settings' })
+        }
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Se déconnecter',
+        icon: 'pi pi-sign-out',
+        command: () => {
+          userSecurityStore.logout()
+        }
       }
     ]
-  })
-})
+  }
+])
 
 const navs = ref([
   {
