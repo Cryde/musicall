@@ -45,13 +45,47 @@
             </span>
         </div>
         <div class="flex gap-4">
-            <Button type="button" severity="secondary" outlined label="Contacter" class="flex-1 w-full" icon="pi pi-envelope"/>
+            <Button
+              type="button"
+              severity="secondary"
+              outlined
+              label="Contacter"
+              class="flex-1 w-full"
+              icon="pi pi-envelope"
+              @click="handleContact"
+            />
         </div>
+
+        <SendMessageModal
+          v-model:visible="showMessageModal"
+          :selected-recipient="user"
+        />
+        <AuthRequiredModal
+          v-model:visible="showAuthModal"
+          message="Vous devez vous connecter pour envoyer un message a cet utilisateur."
+        />
     </div>
 </template>
 <script setup lang="ts">
+import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import { ref } from 'vue'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import SendMessageModal from '../../components/Message/SendMessageModal.vue'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
 defineProps(['type', 'user', 'instrument', 'styles', 'location_name', 'distance'])
+
+const userSecurityStore = useUserSecurityStore()
+const showMessageModal = ref(false)
+const showAuthModal = ref(false)
+
+function handleContact() {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  showMessageModal.value = true
+}
 </script>

@@ -50,8 +50,15 @@
           </RouterLink>
         </div>
           <template v-if="!userSecurityStore.isAuthenticatedLoading">
-          <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-4 px-6 lg:px-0">
+          <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2 px-6 lg:px-0">
               <template v-if="userSecurityStore.isAuthenticated">
+                  <RouterLink :to="{ name: 'app_messages' }" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
+                      <OverlayBadge v-if="notificationStore.unreadMessages > 0"
+                                    :value="notificationStore.unreadMessages" severity="danger" size="small">
+                          <i class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" />
+                      </OverlayBadge>
+                      <i v-else class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" />
+                  </RouterLink>
                   <Avatar
                     v-if="userSecurityStore.profilePictureUrl"
                     :image="userSecurityStore.profilePictureUrl"
@@ -82,13 +89,22 @@
     </nav>
 </template>
 <script setup>
+import OverlayBadge from 'primevue/overlaybadge'
 import Menu from 'primevue/menu'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
+const notificationStore = useNotificationStore()
+
+onMounted(async () => {
+  if (userSecurityStore.isAuthenticated) {
+    await notificationStore.loadNotifications()
+  }
+})
 
 const menuItems = computed(() => [
   {

@@ -81,15 +81,30 @@
                 }}
               </strong> dans les alentours de {{ announce.location_name }}
             </template>
+
+            <div class="mt-3 flex justify-end">
+              <Button
+                size="small"
+                icon="pi pi-envelope"
+                label="Contacter"
+                severity="secondary"
+                text
+                @click="handleContactAnnounce(announce.author)"
+              />
+            </div>
           </template>
         </Card>
       </div>
     </div>
 
     <AddDiscoverModal @published="handleDiscoverPublished" />
+    <SendMessageModal
+      v-model:visible="showMessageModal"
+      :selected-recipient="selectedRecipient"
+    />
     <AuthRequiredModal
       v-model:visible="showAuthModal"
-      message="Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter."
+      :message="authModalMessage"
     />
   </div>
 </template>
@@ -99,6 +114,7 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
@@ -117,6 +133,9 @@ const userSecurityStore = useUserSecurityStore()
 const currentPage = ref(1)
 const fetchedItems = ref()
 const showAuthModal = ref(false)
+const showMessageModal = ref(false)
+const selectedRecipient = ref(null)
+const authModalMessage = ref('')
 
 onMounted(async () => {
   await musicianAnnounceStore.loadLastAnnounces()
@@ -148,10 +167,21 @@ function isTypeMusician(type) {
 
 function handleOpenDiscoverModal() {
   if (!userSecurityStore.isAuthenticated) {
+    authModalMessage.value = 'Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter.'
     showAuthModal.value = true
     return
   }
   videoStore.openModal()
+}
+
+function handleContactAnnounce(author) {
+  if (!userSecurityStore.isAuthenticated) {
+    authModalMessage.value = 'Vous devez vous connecter pour envoyer un message à cet utilisateur.'
+    showAuthModal.value = true
+    return
+  }
+  selectedRecipient.value = author
+  showMessageModal.value = true
 }
 
 async function handleDiscoverPublished() {
