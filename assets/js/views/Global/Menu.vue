@@ -111,7 +111,14 @@ const menuItems = computed(() => [
     label: userSecurityStore.user?.username,
     items: [
       {
-        label: 'Paramètres',
+        label: 'Mes annonces',
+        icon: 'pi pi-megaphone',
+        command: () => {
+          router.push({ name: 'app_user_announces' })
+        }
+      },
+      {
+        label: 'Parametres',
         icon: 'pi pi-cog',
         command: () => {
           router.push({ name: 'app_user_settings' })
@@ -121,7 +128,7 @@ const menuItems = computed(() => [
         separator: true
       },
       {
-        label: 'Se déconnecter',
+        label: 'Se deconnecter',
         icon: 'pi pi-sign-out',
         command: () => {
           userSecurityStore.logout()
