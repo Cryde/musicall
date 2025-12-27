@@ -121,7 +121,7 @@ docker compose run --rm php-cli bin/console foundry:load-fixtures app
 
 Run this every time before working on a merge request or when you want to start from scratch.
 
-**Option B: Run Migrations **
+**Option B: Run Migrations**
 
 If you want to populate the database yourself, run migrations instead:
 
