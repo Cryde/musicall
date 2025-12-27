@@ -6,6 +6,7 @@ import { createHead } from '@unhead/vue/client'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Ripple from 'primevue/ripple'
+import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
 import { configure } from 'vue-gtag'
@@ -82,6 +83,7 @@ app.use(PrimeVue, {
 app.directive('ripple', Ripple)
 app.directive('tooltip', Tooltip)
 app.use(ToastService)
+app.use(ConfirmationService)
 app.use(pinia)
 app.use(router)
 app.mount('#app')

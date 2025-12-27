@@ -18,6 +18,12 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_user_announces',
+    path: '/user/announces',
+    component: () => import('../views/User/Announce/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/user/settings',
     component: () => import('../views/User/Settings/SettingsLayout.vue'),
     meta: { isAuthRequired: true },
