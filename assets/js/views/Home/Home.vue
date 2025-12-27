@@ -51,6 +51,7 @@
           icon="pi pi-plus"
           severity="info"
           size="small"
+          @click="handleOpenAnnounceModal"
         />
       </div>
 
@@ -106,6 +107,10 @@
       v-model:visible="showAuthModal"
       :message="authModalMessage"
     />
+    <AddAnnounceModal
+      v-model:visible="showAnnounceModal"
+      @created="handleAnnounceCreated"
+    />
   </div>
 </template>
 <script setup>
@@ -116,6 +121,7 @@ import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
@@ -134,6 +140,7 @@ const currentPage = ref(1)
 const fetchedItems = ref()
 const showAuthModal = ref(false)
 const showMessageModal = ref(false)
+const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
 const authModalMessage = ref('')
 
@@ -172,6 +179,19 @@ function handleOpenDiscoverModal() {
     return
   }
   videoStore.openModal()
+}
+
+function handleOpenAnnounceModal() {
+  if (!userSecurityStore.isAuthenticated) {
+    authModalMessage.value = 'Si vous souhaitez poster une annonce, vous devez vous connecter.'
+    showAuthModal.value = true
+    return
+  }
+  showAnnounceModal.value = true
+}
+
+async function handleAnnounceCreated() {
+  await musicianAnnounceStore.loadLastAnnounces()
 }
 
 function handleContactAnnounce(author) {
