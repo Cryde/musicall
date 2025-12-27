@@ -12,6 +12,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_messages',
+    path: '/messages/:threadId?',
+    component: () => import('../views/Message/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/user/settings',
     component: () => import('../views/User/Settings/SettingsLayout.vue'),
     meta: { isAuthRequired: true },
