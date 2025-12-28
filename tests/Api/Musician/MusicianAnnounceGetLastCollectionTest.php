@@ -76,6 +76,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'location_name' => 'Paris',
                     'author'        => [
                         '@id'      => '/api/users/self',
+                        'id'       => $user1->_real()->getId(),
                         '@type'    => 'User',
                         'username' => 'base_user_1',
                     ],
@@ -99,6 +100,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'location_name' => 'Mons',
                     'author'        => [
                         '@id'      => '/api/users/self',
+                        'id'       => $user1->_real()->getId(),
                         '@type'    => 'User',
                         'username' => 'base_user_1',
                     ],
