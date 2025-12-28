@@ -55,37 +55,45 @@ class MusicianAnnouncePostTest extends ApiTestCase
 
         $result = $musicianAnnounceRepository->findBy(['author' => $user1]);
         $this->assertCount(1, $result);
+
+        $createdAnnounce = $result[0];
+
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianAnnounce',
-            '@id' => '/api/musician_announces/' . $result[0]->getId(),
+            '@id' => '/api/musician_announces/' . $createdAnnounce->getId(),
             '@type' => 'MusicianAnnounce',
-            'id'                => $result[0]->getId(),
-            'creation_datetime' => $result[0]->getCreationDatetime()->format('c'),
-            'type'              => 1,
-            'instrument'        => [
-                '@id' => '/api/instruments/' . $instrument1->getId(),
+            'id' => $createdAnnounce->getId(),
+            'creation_datetime' => $createdAnnounce->getCreationDatetime()->format('c'),
+            'type' => 1,
+            'instrument' => [
                 '@type' => 'Instrument',
-                'musician_name' => 'Batteur'
+                'id' => $instrument1->getId(),
+                'musician_name' => 'Batteur',
             ],
             'styles' => [
                 [
-                    '@id'   => '/api/styles/' . $style1->getId(),
                     '@type' => 'Style',
-                    'name'  => 'Rock',
+                    'id' => $style1->getId(),
+                    'name' => 'Rock',
                 ],
                 [
-                    '@id'   => '/api/styles/' . $style2->getId(),
                     '@type' => 'Style',
-                    'name'  => 'Pop',
+                    'id' => $style2->getId(),
+                    'name' => 'Pop',
                 ],
                 [
-                    '@id'   => '/api/styles/' . $style3->getId(),
                     '@type' => 'Style',
-                    'name'  => 'Metal',
+                    'id' => $style3->getId(),
+                    'name' => 'Metal',
                 ],
             ],
-            'location_name'     => 'Brussels',
-            'note'              => 'This is a note for the announce',
+            'location_name' => 'Brussels',
+            'note' => 'This is a note for the announce',
+            'author' => [
+                '@type' => 'Author',
+                'id' => $user1->getId(),
+                'username' => $user1->getUsername(),
+            ],
         ]);
     }
 

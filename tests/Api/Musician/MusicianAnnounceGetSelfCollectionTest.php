@@ -58,55 +58,66 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
         $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'         => '/api/contexts/MusicianAnnounce',
-            '@id'              => '/api/musician_announces/self',
-            '@type'            => 'Collection',
-            'member'     => [
+            '@context' => '/api/contexts/MusicianAnnounce',
+            '@id' => '/api/musician_announces/self',
+            '@type' => 'Collection',
+            'member' => [
                 [
                     '@id' => '/api/musician_announces/' . $user1Announce2->_real()->getId(),
                     '@type' => 'MusicianAnnounce',
-                    'id'                => $user1Announce2->_real()->getId(),
+                    'id' => $user1Announce2->_real()->getId(),
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
-                    'type'              => 2,
-                    'instrument'        => [
-                        '@id' => '/api/instruments/' . $instrument2->getId(),
+                    'type' => 2,
+                    'instrument' => [
                         '@type' => 'Instrument',
-                        'musician_name' => 'Guitariste'
+                        'id' => $instrument2->getId(),
+                        'musician_name' => 'Guitariste',
                     ],
                     'styles' => [
                         [
-                            '@id'   => '/api/styles/' . $style1->getId(),
                             '@type' => 'Style',
-                            'name'  => 'Rock',
+                            'id' => $style1->getId(),
+                            'name' => 'Rock',
                         ],
                         [
-                            '@id'   => '/api/styles/' . $style2->getId(),
                             '@type' => 'Style',
-                            'name'  => 'Pop',
+                            'id' => $style2->getId(),
+                            'name' => 'Pop',
                         ],
                     ],
-                    'location_name'     => 'Paris',
-                    'note'              => 'note announce 2',
+                    'location_name' => 'Paris',
+                    'note' => 'note announce 2',
+                    'author' => [
+                        '@type' => 'Author',
+                        'id' => $user1->getId(),
+                        'username' => 'base_user_1',
+                    ],
                 ],
                 [
                     '@id' => '/api/musician_announces/' . $user1Announce1->_real()->getId(),
                     '@type' => 'MusicianAnnounce',
-                    'id'                => $user1Announce1->_real()->getId(),
+                    'id' => $user1Announce1->_real()->getId(),
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
-                    'type'              => 1,
-                    'instrument'        => [
-                        '@id' => '/api/instruments/' . $instrument1->getId(),
+                    'type' => 1,
+                    'instrument' => [
                         '@type' => 'Instrument',
-                        'musician_name' => 'Batteur'
+                        'id' => $instrument1->getId(),
+                        'musician_name' => 'Batteur',
                     ],
                     'styles' => [
                         [
-                            '@id'   => '/api/styles/' . $style1->getId(),
-                            '@type' => 'Style', 'name' => 'Rock',
+                            '@type' => 'Style',
+                            'id' => $style1->getId(),
+                            'name' => 'Rock',
                         ],
                     ],
-                    'location_name'     => 'Mons',
-                    'note'              => 'note announce 1',
+                    'location_name' => 'Mons',
+                    'note' => 'note announce 1',
+                    'author' => [
+                        '@type' => 'Author',
+                        'id' => $user1->getId(),
+                        'username' => 'base_user_1',
+                    ],
                 ],
             ],
             'totalItems' => 2,
