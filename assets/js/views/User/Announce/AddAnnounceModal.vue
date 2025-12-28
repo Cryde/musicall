@@ -33,7 +33,7 @@
       </p>
     </div>
 
-    <Stepper v-else v-model:value="currentStep" linear>
+    <Stepper v-else v-model:value="currentStep" :linear="!hasInitialValues">
       <StepList>
         <Step value="1">Type</Step>
         <Step value="2">Instrument</Step>
@@ -282,11 +282,18 @@ import StepPanel from 'primevue/steppanel'
 import StepPanels from 'primevue/steppanels'
 import Stepper from 'primevue/stepper'
 import Textarea from 'primevue/textarea'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import geocodingApi from '../../../api/geocoding.js'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'
+
+const props = defineProps({
+  initialType: { type: String, default: null },
+  initialInstrument: { type: Object, default: null },
+  initialStyles: { type: Array, default: () => [] },
+  initialLocation: { type: Object, default: null }
+})
 
 const emit = defineEmits(['created'])
 const visible = defineModel('visible', { type: Boolean, default: false })
@@ -307,12 +314,50 @@ const note = ref('')
 // Location search
 const locationSuggestions = ref([])
 
+const hasInitialValues = computed(() => {
+  return props.initialType || props.initialInstrument || props.initialStyles?.length > 0 || props.initialLocation
+})
+
 onMounted(async () => {
   await Promise.all([
     instrumentStore.loadInstruments(),
     styleStore.loadStyles()
   ])
 })
+
+// Initialize from props when modal opens
+watch(visible, (isVisible) => {
+  if (isVisible) {
+    initializeFromProps()
+  }
+})
+
+function initializeFromProps() {
+  // Set initial values from props
+  if (props.initialType) {
+    selectedType.value = props.initialType
+  }
+  if (props.initialInstrument) {
+    selectedInstrument.value = props.initialInstrument
+  }
+  if (props.initialStyles?.length > 0) {
+    selectedStyles.value = props.initialStyles
+  }
+  if (props.initialLocation) {
+    selectedLocation.value = props.initialLocation
+  }
+
+  // Find the first step with missing data
+  currentStep.value = getFirstMissingStep()
+}
+
+function getFirstMissingStep() {
+  if (!selectedType.value) return '1'
+  if (!selectedInstrument.value) return '2'
+  if (selectedStyles.value.length === 0) return '3'
+  if (!selectedLocation.value) return '4'
+  return '5'
+}
 
 const debouncedSearch = useDebounceFn(async (query) => {
   try {

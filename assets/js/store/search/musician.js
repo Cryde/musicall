@@ -6,9 +6,9 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
   const announces = ref([])
   const filters = ref(null)
 
-  async function searchAnnounces({ type, instrument, styles = null }) {
+  async function searchAnnounces({ type, instrument, styles = null, latitude = null, longitude = null }) {
     announces.value = []
-    const data = await searchApi.searchAnnounces({ instrument, styles, type })
+    const data = await searchApi.searchAnnounces({ instrument, styles, type, latitude, longitude })
 
     announces.value = data.member
   }
