@@ -87,6 +87,11 @@
         fluid
         placeholder="Ecrivez votre message..."
       />
+
+      <!-- Error message -->
+      <Message v-if="errorMessage" severity="error" :closable="false">
+        {{ errorMessage }}
+      </Message>
     </div>
 
     <template #footer>
@@ -116,6 +121,7 @@ import AutoComplete from 'primevue/autocomplete'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -138,6 +144,7 @@ const recipient = ref(null)
 const content = ref('')
 const recipientsOptions = ref([])
 const isSending = ref(false)
+const errorMessage = ref('')
 
 const canSend = computed(() => {
   const hasRecipient = props.selectedRecipient || recipient.value
@@ -172,6 +179,7 @@ async function sendMessage() {
   const targetRecipient = props.selectedRecipient || recipient.value
   if (!targetRecipient || !content.value.trim()) return
 
+  errorMessage.value = ''
   isSending.value = true
   try {
     const threadId = await messageStore.postMessage({
@@ -185,7 +193,7 @@ async function sendMessage() {
       router.push({ name: 'app_messages', params: { threadId } })
     }
   } catch (e) {
-    console.error('Failed to send message:', e)
+    errorMessage.value = e.message || 'Une erreur est survenue lors de l\'envoi du message.'
   } finally {
     isSending.value = false
   }
@@ -196,5 +204,6 @@ function reset() {
   content.value = ''
   recipient.value = null
   recipientsOptions.value = []
+  errorMessage.value = ''
 }
 </script>

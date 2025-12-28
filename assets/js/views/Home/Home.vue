@@ -83,7 +83,7 @@
               </strong> dans les alentours de {{ announce.location_name }}
             </template>
 
-            <div class="mt-3 flex justify-end">
+            <div v-if="!isOwnAnnounce(announce)" class="mt-3 flex justify-end">
               <Button
                 size="small"
                 icon="pi pi-envelope"
@@ -170,6 +170,10 @@ function isTypeBand(type) {
 
 function isTypeMusician(type) {
   return type === TYPES_ANNOUNCE_MUSICIAN
+}
+
+function isOwnAnnounce(announce) {
+  return userSecurityStore.userProfile?.id === announce.author.id
 }
 
 function handleOpenDiscoverModal() {

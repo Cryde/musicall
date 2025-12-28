@@ -44,7 +44,7 @@
                 ({{ distance }}km)
             </span>
         </div>
-        <div class="flex gap-4">
+        <div v-if="!isOwnAnnounce" class="flex gap-4">
             <Button
               type="button"
               severity="secondary"
@@ -70,16 +70,20 @@
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
-defineProps(['type', 'user', 'instrument', 'styles', 'location_name', 'distance'])
+const props = defineProps(['type', 'user', 'instrument', 'styles', 'location_name', 'distance'])
 
 const userSecurityStore = useUserSecurityStore()
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
+
+const isOwnAnnounce = computed(() => {
+  return userSecurityStore.userProfile?.id === props.user.id
+})
 
 function handleContact() {
   if (!userSecurityStore.isAuthenticated) {

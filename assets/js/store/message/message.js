@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import messageApi from '../../api/message/message.js'
+import { handleApiError } from '../../api/utils/handleApiError.js'
 import { useNotificationStore } from '../notification/notification.js'
 import { useUserSecurityStore } from '../user/security.js'
 
@@ -91,6 +92,8 @@ export const useMessageStore = defineStore('message', () => {
       await loadThreads()
       // Return the thread ID so caller can navigate to it
       return newMessage.thread?.id || null
+    } catch (error) {
+      handleApiError(error)
     } finally {
       isAddingMessage.value = false
     }
