@@ -77,9 +77,7 @@ function selectInitialThread() {
 
   if (threadIdFromUrl) {
     // Find thread matching URL
-    const threadMeta = messageStore.orderedThreads.find(
-      t => t.thread.id === threadIdFromUrl
-    )
+    const threadMeta = messageStore.orderedThreads.find((t) => t.thread.id === threadIdFromUrl)
     if (threadMeta) {
       messageStore.selectThread(threadMeta)
       return
@@ -93,21 +91,25 @@ function selectInitialThread() {
 }
 
 // Update URL when thread changes
-watch(() => messageStore.currentThreadId, (newThreadId) => {
-  if (newThreadId && newThreadId !== route.params.threadId) {
-    router.replace({ name: 'app_messages', params: { threadId: newThreadId } })
-  }
-})
-
-// Handle URL changes (browser back/forward)
-watch(() => route.params.threadId, (newThreadId) => {
-  if (newThreadId && newThreadId !== messageStore.currentThreadId) {
-    const threadMeta = messageStore.orderedThreads.find(
-      t => t.thread.id === newThreadId
-    )
-    if (threadMeta) {
-      messageStore.selectThread(threadMeta)
+watch(
+  () => messageStore.currentThreadId,
+  (newThreadId) => {
+    if (newThreadId && newThreadId !== route.params.threadId) {
+      router.replace({ name: 'app_messages', params: { threadId: newThreadId } })
     }
   }
-})
+)
+
+// Handle URL changes (browser back/forward)
+watch(
+  () => route.params.threadId,
+  (newThreadId) => {
+    if (newThreadId && newThreadId !== messageStore.currentThreadId) {
+      const threadMeta = messageStore.orderedThreads.find((t) => t.thread.id === newThreadId)
+      if (threadMeta) {
+        messageStore.selectThread(threadMeta)
+      }
+    }
+  }
+)
 </script>

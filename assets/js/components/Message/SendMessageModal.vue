@@ -144,9 +144,13 @@ const canSend = computed(() => {
   return content.value.trim().length > 0 && hasRecipient && !isSending.value
 })
 
-watch(() => props.selectedRecipient, (newVal) => {
-  recipient.value = newVal
-}, { immediate: true })
+watch(
+  () => props.selectedRecipient,
+  (newVal) => {
+    recipient.value = newVal
+  },
+  { immediate: true }
+)
 
 const debouncedSearch = useDebounceFn(async (query) => {
   try {

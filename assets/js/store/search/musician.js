@@ -6,7 +6,13 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
   const announces = ref([])
   const filters = ref(null)
 
-  async function searchAnnounces({ type, instrument, styles = null, latitude = null, longitude = null }) {
+  async function searchAnnounces({
+    type,
+    instrument,
+    styles = null,
+    latitude = null,
+    longitude = null
+  }) {
     announces.value = []
     const data = await searchApi.searchAnnounces({ instrument, styles, type, latitude, longitude })
 

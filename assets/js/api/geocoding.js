@@ -6,7 +6,7 @@ export default {
       q: query,
       limit: limit.toString(),
       lang: 'fr',
-      'osm_tag': 'place:city'
+      osm_tag: 'place:city'
     })
 
     // Photon doesn't support multiple osm_tag in URLSearchParams, need to append manually
