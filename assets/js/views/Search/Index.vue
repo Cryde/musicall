@@ -72,14 +72,14 @@
             placeholder="Style"
             option-label="name"
             filter showClear
-            class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 mr-0 lg:mr-6 text-surface-900 dark:text-surface-0"
+            class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 text-surface-900 dark:text-surface-0"
         />
         <AutoComplete
             v-model="selectedLocation"
             :suggestions="locationSuggestions"
             optionLabel="name"
             placeholder="Ville (optionnel)"
-            class="w-full md:w-56"
+            class="w-full md:w-56 mr-0 lg:mr-6"
             @complete="searchLocation"
         >
             <template #option="{ option }">
