@@ -8,6 +8,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Message\Message;
 use App\Entity\User;
 use App\State\Processor\Message\MessagePostToUserProcessor;
+use App\Validator\Message\NotSelfRecipient;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -24,6 +25,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
     ]
 )]
+#[NotSelfRecipient]
 class MessageUser
 {
     const POST = 'MESSAGE_USER_POST';
