@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1.9-php8.4-alpine
+FROM dunglas/frankenphp:1.11-php8.4-alpine
 
 RUN apk add --update --no-cache \
     libpq-dev \
