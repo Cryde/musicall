@@ -315,14 +315,16 @@ const note = ref('')
 const locationSuggestions = ref([])
 
 const hasInitialValues = computed(() => {
-  return props.initialType || props.initialInstrument || props.initialStyles?.length > 0 || props.initialLocation
+  return (
+    props.initialType ||
+    props.initialInstrument ||
+    props.initialStyles?.length > 0 ||
+    props.initialLocation
+  )
 })
 
 onMounted(async () => {
-  await Promise.all([
-    instrumentStore.loadInstruments(),
-    styleStore.loadStyles()
-  ])
+  await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
 })
 
 // Initialize from props when modal opens

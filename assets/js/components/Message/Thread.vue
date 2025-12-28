@@ -151,14 +151,21 @@ function scrollToBottom() {
 }
 
 // Scroll to bottom when messages change
-watch(() => messageStore.messages, () => {
-  scrollToBottom()
-}, { deep: true })
+watch(
+  () => messageStore.messages,
+  () => {
+    scrollToBottom()
+  },
+  { deep: true }
+)
 
 // Scroll to bottom when loading finishes
-watch(() => messageStore.isLoadingMessages, (isLoading) => {
-  if (!isLoading) {
-    scrollToBottom()
+watch(
+  () => messageStore.isLoadingMessages,
+  (isLoading) => {
+    if (!isLoading) {
+      scrollToBottom()
+    }
   }
-})
+)
 </script>

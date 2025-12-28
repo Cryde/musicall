@@ -8,8 +8,9 @@ export default {
    * @param {string} search - Search term (min 3 characters)
    */
   searchUsers(search) {
-    return axios.get(Routing.generate('api_users_search', { search }))
-      .then(resp => resp.data)
-      .then(resp => resp.member || [])
+    return axios
+      .get(Routing.generate('api_users_search', { search }))
+      .then((resp) => resp.data)
+      .then((resp) => resp.member || [])
   }
 }

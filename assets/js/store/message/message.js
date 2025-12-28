@@ -22,11 +22,11 @@ export const useMessageStore = defineStore('message', () => {
   })
 
   const currentThread = computed(() => {
-    return threads.value.find(t => t.thread.id === currentThreadId.value)
+    return threads.value.find((t) => t.thread.id === currentThreadId.value)
   })
 
   const unreadCount = computed(() => {
-    return threads.value.filter(t => !t.is_read).length
+    return threads.value.filter((t) => !t.is_read).length
   })
 
   async function loadThreads() {
@@ -71,7 +71,7 @@ export const useMessageStore = defineStore('message', () => {
   async function markAsRead(threadMetaId) {
     try {
       await messageApi.markThreadAsRead({ threadMetaId })
-      const thread = threads.value.find(t => t.id === threadMetaId)
+      const thread = threads.value.find((t) => t.id === threadMetaId)
       if (thread) {
         thread.is_read = true
         // Refresh navbar notification count
@@ -103,7 +103,7 @@ export const useMessageStore = defineStore('message', () => {
       messages.value.push(newMessage)
 
       // Update last message in thread
-      const thread = threads.value.find(t => t.thread.id === threadId)
+      const thread = threads.value.find((t) => t.thread.id === threadId)
       if (thread) {
         thread.thread.last_message = newMessage
       }
@@ -117,7 +117,7 @@ export const useMessageStore = defineStore('message', () => {
     const currentUsername = securityStore.user?.username
 
     const participants = threadMeta.thread.message_participants || []
-    const other = participants.find(p => p.participant.username !== currentUsername)
+    const other = participants.find((p) => p.participant.username !== currentUsername)
 
     return other?.participant || null
   }

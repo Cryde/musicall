@@ -89,8 +89,8 @@
     </nav>
 </template>
 <script setup>
-import OverlayBadge from 'primevue/overlaybadge'
 import Menu from 'primevue/menu'
+import OverlayBadge from 'primevue/overlaybadge'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../../store/notification/notification.js'
