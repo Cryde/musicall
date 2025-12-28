@@ -11,7 +11,6 @@ use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThreadMeta;
-use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\UserRepository;
 use App\State\Provider\User\UserSelfProvider;
 use DateTime;
@@ -56,12 +55,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM, MusicianAnnounce::LIST_LAST])]
+    #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM])]
     private ?string $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST, MusicianAnnounce::LIST_LAST])]
+    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
     private string $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]

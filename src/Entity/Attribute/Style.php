@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Contracts\SluggableEntityInterface;
-use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\Attribute\StyleRepository;
 use DateTime;
 use DateTimeInterface;
@@ -15,7 +14,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -41,7 +39,6 @@ class Style implements SluggableEntityInterface
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([MusicianAnnounce::ITEM_SELF, MusicianAnnounce::LIST_LAST])]
     private string $name;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
