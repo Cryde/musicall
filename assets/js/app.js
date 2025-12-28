@@ -88,11 +88,13 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
-configure({
-  tagId: 'G-1CK1G9W6FX',
-  pageTracker: {
-    router
-  }
-})
+if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
+    configure({
+        tagId: 'G-1CK1G9W6FX',
+        pageTracker: {
+            router
+        }
+    })
+}
 
 import.meta.glob(['../images/**'])
