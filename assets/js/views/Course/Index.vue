@@ -6,10 +6,10 @@
   <div class="flex md:items-center justify-between gap-4 md:flex-row flex-col">
     <div class="flex flex-col gap-2">
       <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
-        Cours
+        {{ pageHeading }}
       </h1>
       <div class="text-base leading-tight text-surface-500 dark:text-surface-300">
-        Découvrez les cours publié sur MusicAll.
+        {{ pageDescription }}
       </div>
     </div>
     <Button
@@ -116,8 +116,6 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import CourseListItem from './CourseListItem.vue'
 
-useTitle('Liste des catégories de cours - MusicAll')
-
 const route = useRoute()
 const router = useRouter()
 const coursesStore = useCoursesStore()
@@ -146,6 +144,29 @@ const breadcrumbItems = computed(() => {
   }
   return items
 })
+
+const pageTitle = computed(() => {
+  if (selectCategoryFilter.value) {
+    return `Cours de ${selectCategoryFilter.value.title} - MusicAll`
+  }
+  return 'Liste des catégories de cours - MusicAll'
+})
+
+const pageHeading = computed(() => {
+  if (selectCategoryFilter.value) {
+    return `Cours de ${selectCategoryFilter.value.title}`
+  }
+  return 'Cours'
+})
+
+const pageDescription = computed(() => {
+  if (selectCategoryFilter.value) {
+    return `Découvrez les cours de ${selectCategoryFilter.value.title.toLowerCase()} publiés sur MusicAll.`
+  }
+  return 'Découvrez les cours publiés sur MusicAll.'
+})
+
+useTitle(pageTitle)
 
 onMounted(async () => {
   await coursesStore.loadCategories()
