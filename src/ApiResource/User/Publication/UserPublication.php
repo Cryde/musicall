@@ -6,8 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\Parameter;
+use App\Entity\Publication;
 use App\State\Processor\User\Publication\UserPublicationDeleteProcessor;
 use App\State\Provider\User\Publication\UserPublicationCollectionProvider;
 use App\State\Provider\User\Publication\UserPublicationDeleteProvider;
@@ -16,23 +17,35 @@ use App\State\Provider\User\Publication\UserPublicationDeleteProvider;
     operations: [
         new GetCollection(
             uriTemplate: '/user/publications',
-            openapi: new Operation(
-                tags: ['User Publications'],
-                parameters: [
-                    new Parameter(name: 'page', in: 'query', description: 'Page number', required: false),
-                    new Parameter(name: 'itemsPerPage', in: 'query', description: 'Number of items per page', required: false),
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status (0=draft, 1=online, 2=pending)', required: false),
-                    new Parameter(name: 'category', in: 'query', description: 'Filter by category ID', required: false),
-                    new Parameter(name: 'sortBy', in: 'query', description: 'Sort field (title, creation_datetime, edition_datetime)', required: false),
-                    new Parameter(name: 'sortOrder', in: 'query', description: 'Sort order (asc, desc)', required: false),
-                ]
-            ),
+            openapi: new Operation(tags: ['User Publications']),
             paginationEnabled: true,
             paginationItemsPerPage: 10,
             paginationClientItemsPerPage: true,
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_user_publications_get_collection',
-            provider: UserPublicationCollectionProvider::class
+            provider: UserPublicationCollectionProvider::class,
+            parameters: [
+                'status' => new QueryParameter(
+                    key: 'status',
+                    schema: ['type' => 'string', 'enum' => Publication::ALL_STATUS_STR],
+                    description: 'Filter by status (0=draft, 1=online, 2=pending)',
+                ),
+                'category' => new QueryParameter(
+                    key: 'category',
+                    schema: ['type' => 'string', 'pattern' => '^\d+$'],
+                    description: 'Filter by category ID',
+                ),
+                'sortBy' => new QueryParameter(
+                    key: 'sortBy',
+                    schema: ['type' => 'string', 'enum' => ['title', 'creation_datetime', 'edition_datetime']],
+                    description: 'Sort field',
+                ),
+                'sortOrder' => new QueryParameter(
+                    key: 'sortOrder',
+                    schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                    description: 'Sort order',
+                ),
+            ],
         ),
         new Delete(
             uriTemplate: '/user/publications/{id}',

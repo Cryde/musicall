@@ -68,6 +68,12 @@ class Publication implements ViewableInterface, SluggableEntityInterface
         self::STATUS_PENDING => 'En validation',
     ];
 
+    final const STATUS_DRAFT_STR = '0';
+    final const STATUS_ONLINE_STR = '1';
+    final const STATUS_PENDING_STR = '2';
+
+    final const ALL_STATUS_STR = [self::STATUS_DRAFT_STR, self::STATUS_ONLINE_STR, self::STATUS_PENDING_STR];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
