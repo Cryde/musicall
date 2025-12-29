@@ -26,7 +26,7 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
         new Post(
             inputFormats: ['multipart' => ['multipart/form-data']],
             openapi: new Operation(
-                tags: ['Publications'],
+                tags: ['Users'],
                 requestBody: new RequestBody(
                     content: new \ArrayObject([
                         'multipart/form-data' => [
