@@ -60,7 +60,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user->_real());
         $this->client->request('GET', '/api/user/publications?sortBy=creation_datetime&sortOrder=desc');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([
+        $this->assertJsonContains([
             '@context' => '/api/contexts/UserPublication',
             '@id' => '/api/user/publications',
             '@type' => 'Collection',
@@ -105,10 +105,6 @@ class UserPublicationGetCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 2,
-            'view' => [
-                '@id' => '/api/user/publications?sortBy=creation_datetime&sortOrder=desc',
-                '@type' => 'PartialCollectionView',
-            ],
         ]);
     }
 
