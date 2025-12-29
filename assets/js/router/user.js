@@ -24,6 +24,12 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_user_publications',
+    path: '/user/publications',
+    component: () => import('../views/User/Publication/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/user/settings',
     component: () => import('../views/User/Settings/SettingsLayout.vue'),
     meta: { isAuthRequired: true },
