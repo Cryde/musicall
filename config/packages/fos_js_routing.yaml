@@ -11,6 +11,7 @@ fos_js_routing:
         - api_forums_(.*)
         - api_user_profile_picture_post
         - api_user_publications_(.*)
+        - api_user_courses_(.*)
         - api_message_(.*)
         - api_users_(.*)
         - api_notifications_(.*)

@@ -55,4 +55,14 @@ final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
     {
         return $this->with(['title' => 'Découvertes', 'slug' => 'decouvertes', 'position' => 6]);
     }
+
+    public function asCourseCategory(): Factory
+    {
+        return $this->with([
+            'title' => 'Guitare',
+            'slug' => 'guitare',
+            'position' => 1,
+            'type' => PublicationSubCategory::TYPE_COURSE,
+        ]);
+    }
 }

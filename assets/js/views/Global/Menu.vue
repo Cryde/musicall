@@ -125,6 +125,13 @@ const menuItems = computed(() => [
         }
       },
       {
+        label: 'Mes cours',
+        icon: 'pi pi-book',
+        command: () => {
+          router.push({ name: 'app_user_courses' })
+        }
+      },
+      {
         label: 'Parametres',
         icon: 'pi pi-cog',
         command: () => {

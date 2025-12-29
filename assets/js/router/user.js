@@ -30,6 +30,12 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_user_courses',
+    path: '/user/courses',
+    component: () => import('../views/User/Course/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/user/settings',
     component: () => import('../views/User/Settings/SettingsLayout.vue'),
     meta: { isAuthRequired: true },
