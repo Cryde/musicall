@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-end">
-    <breadcrumb :items="[{'label':  'Cours'}]"/>
+    <breadcrumb :items="breadcrumbItems"/>
   </div>
 
   <div class="flex md:items-center justify-between gap-4 md:flex-row flex-col">
@@ -101,7 +101,8 @@ import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Menu from 'primevue/menu'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import bassImg from '../../../image/course/basse.png'
 import drumImg from '../../../image/course/batterie.png'
 import miscImage from '../../../image/course/divers.png'
@@ -117,6 +118,8 @@ import CourseListItem from './CourseListItem.vue'
 
 useTitle('Liste des catégories de cours - MusicAll')
 
+const route = useRoute()
+const router = useRouter()
 const coursesStore = useCoursesStore()
 const userSecurityStore = useUserSecurityStore()
 
@@ -127,6 +130,7 @@ const selectCategoryFilter = ref('')
 const sortMenu = ref()
 const showCourseModal = ref(false)
 const showAuthModal = ref(false)
+const isInitialized = ref(false)
 const mapInstrumentImage = {
   guitare: guitarImg,
   basse: bassImg,
@@ -135,11 +139,50 @@ const mapInstrumentImage = {
   divers: miscImage
 }
 
-onMounted(async () => {
-  await coursesStore.loadCategories()
+const breadcrumbItems = computed(() => {
+  const items = [{ label: 'Cours', to: selectCategoryFilter.value ? { name: 'app_course' } : undefined }]
+  if (selectCategoryFilter.value) {
+    items.push({ label: selectCategoryFilter.value.title })
+  }
+  return items
 })
 
+onMounted(async () => {
+  await coursesStore.loadCategories()
+  initCategoryFromRoute()
+  isInitialized.value = true
+})
+
+function initCategoryFromRoute() {
+  const slugFromRoute = route.params.slug
+  if (slugFromRoute) {
+    const category = coursesStore.courseCategories.find((c) => c.slug === slugFromRoute)
+    if (category) {
+      selectCategoryFilter.value = category
+    }
+  }
+}
+
+watch(
+  () => route.params.slug,
+  async (newSlug) => {
+    if (newSlug) {
+      const category = coursesStore.courseCategories.find((c) => c.slug === newSlug)
+      if (category && selectCategoryFilter.value?.slug !== newSlug) {
+        selectCategoryFilter.value = category
+        await resetList()
+      }
+    } else if (selectCategoryFilter.value) {
+      selectCategoryFilter.value = ''
+      await resetList()
+    }
+  }
+)
+
 const infiniteHandler = async () => {
+  if (!isInitialized.value) {
+    return
+  }
   fetchedItems.value = await coursesStore.loadCourses({
     page: currentPage.value,
     slug: selectCategoryFilter.value?.slug,
@@ -149,6 +192,9 @@ const infiniteHandler = async () => {
 }
 
 const canLoadMore = () => {
+  if (!isInitialized.value) {
+    return true
+  }
   return !fetchedItems.value || !!fetchedItems.value.length
 }
 
@@ -166,17 +212,15 @@ const resetList = async () => {
 }
 
 async function changeCategoryFilter(selectedValue) {
-  if (selectCategoryFilter.value === selectedValue) {
+  if (selectCategoryFilter.value?.slug === selectedValue.slug) {
     await removeFilter()
   } else {
-    selectCategoryFilter.value = selectedValue
-    await resetList()
+    await router.push({ name: 'app_course_by_category', params: { slug: selectedValue.slug } })
   }
 }
 
 const removeFilter = async () => {
-  selectCategoryFilter.value = ''
-  await resetList()
+  await router.push({ name: 'app_course' })
 }
 
 const toggleSortMenu = (event) => {
