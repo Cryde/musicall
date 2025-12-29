@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-end">
-    <breadcrumb :items="[{'label':  'Publications'}]" />
+    <breadcrumb :items="breadcrumbItems" />
   </div>
 
   <div class="flex md:items-center justify-between gap-1 md:flex-row flex-col">
@@ -61,7 +61,7 @@
         </div>
 
         <Select
-          v-model="selectCategoryFilter"
+          :model-value="selectCategoryFilter"
           :options="publicationsStore.publicationCategories"
           filter
           optionLabel="title"
@@ -69,7 +69,7 @@
           placeholder="Selectionnez une catégorie"
           resetFilterOnHide
           emptyFilterMessage="Cette catégorie n'existe pas"
-          @change="resetList"
+          @change="handleCategoryChange"
           class="w-full md:w-70"
         >
           <template #option="slotProps">
@@ -105,7 +105,8 @@ import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import { usePublicationsStore } from '../../store/publication/publications.js'
@@ -116,22 +117,73 @@ import PublicationListItem from './PublicationListItem.vue'
 
 useTitle('Toutes les publications relatives à la musique - MusicAll')
 
+const route = useRoute()
+const router = useRouter()
 const publicationsStore = usePublicationsStore()
 const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
 
 const sortMenu = ref()
+const isInitialized = ref(false)
 const selectCategoryFilter = ref(null)
 const currentPage = ref(1)
 const orientation = ref('desc')
 const fetchedItems = ref()
 const showAuthModal = ref(false)
 
-onMounted(async () => {
-  await publicationsStore.loadCategories()
+const breadcrumbItems = computed(() => {
+  const items = [{ label: 'Publications', to: selectCategoryFilter.value ? { name: 'app_publications' } : undefined }]
+  if (selectCategoryFilter.value) {
+    items.push({ label: selectCategoryFilter.value.title })
+  }
+  return items
 })
 
+onMounted(async () => {
+  await publicationsStore.loadCategories()
+  initCategoryFromRoute()
+  isInitialized.value = true
+})
+
+function initCategoryFromRoute() {
+  const slugFromRoute = route.params.slug
+  if (slugFromRoute) {
+    const category = publicationsStore.publicationCategories.find((c) => c.slug === slugFromRoute)
+    if (category) {
+      selectCategoryFilter.value = category
+    }
+  }
+}
+
+watch(
+  () => route.params.slug,
+  async (newSlug) => {
+    if (newSlug) {
+      const category = publicationsStore.publicationCategories.find((c) => c.slug === newSlug)
+      if (category && selectCategoryFilter.value?.slug !== newSlug) {
+        selectCategoryFilter.value = category
+        await resetList()
+      }
+    } else if (selectCategoryFilter.value) {
+      selectCategoryFilter.value = null
+      await resetList()
+    }
+  }
+)
+
+async function handleCategoryChange(event) {
+  const selectedCategory = event.value
+  if (selectedCategory) {
+    await router.push({ name: 'app_publications_by_category', params: { slug: selectedCategory.slug } })
+  } else {
+    await router.push({ name: 'app_publications' })
+  }
+}
+
 const infiniteHandler = async () => {
+  if (!isInitialized.value) {
+    return
+  }
   fetchedItems.value = await publicationsStore.loadPublications({
     page: currentPage.value,
     slug: selectCategoryFilter.value?.slug,
@@ -141,6 +193,9 @@ const infiniteHandler = async () => {
 }
 
 const canLoadMore = () => {
+  if (!isInitialized.value) {
+    return true
+  }
   return !fetchedItems.value || !!fetchedItems.value.length
 }
 
