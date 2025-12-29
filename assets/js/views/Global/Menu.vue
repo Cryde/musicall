@@ -118,6 +118,13 @@ const menuItems = computed(() => [
         }
       },
       {
+        label: 'Mes publications',
+        icon: 'pi pi-file-edit',
+        command: () => {
+          router.push({ name: 'app_user_publications' })
+        }
+      },
+      {
         label: 'Parametres',
         icon: 'pi pi-cog',
         command: () => {
