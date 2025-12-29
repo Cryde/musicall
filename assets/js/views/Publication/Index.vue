@@ -6,10 +6,10 @@
   <div class="flex md:items-center justify-between gap-1 md:flex-row flex-col">
     <div class="flex flex-col gap-2">
       <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
-        Publications
+        {{ pageHeading }}
       </h1>
       <div class="text-base leading-tight text-surface-500 dark:text-surface-300">
-        Découvrez les news, chroniques, découvertes,... postée sur MusicAll.
+        {{ pageDescription }}
       </div>
     </div>
     <div>
@@ -115,8 +115,6 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import PublicationListItem from './PublicationListItem.vue'
 
-useTitle('Toutes les publications relatives à la musique - MusicAll')
-
 const route = useRoute()
 const router = useRouter()
 const publicationsStore = usePublicationsStore()
@@ -138,6 +136,29 @@ const breadcrumbItems = computed(() => {
   }
   return items
 })
+
+const pageTitle = computed(() => {
+  if (selectCategoryFilter.value) {
+    return `${selectCategoryFilter.value.title} - Publications - MusicAll`
+  }
+  return 'Toutes les publications relatives à la musique - MusicAll'
+})
+
+const pageHeading = computed(() => {
+  if (selectCategoryFilter.value) {
+    return `Publications - ${selectCategoryFilter.value.title}`
+  }
+  return 'Publications'
+})
+
+const pageDescription = computed(() => {
+  if (selectCategoryFilter.value) {
+    return `Découvrez les ${selectCategoryFilter.value.title.toLowerCase()} publiées sur MusicAll.`
+  }
+  return 'Découvrez les news, chroniques, découvertes,... postées sur MusicAll.'
+})
+
+useTitle(pageTitle)
 
 onMounted(async () => {
   await publicationsStore.loadCategories()
