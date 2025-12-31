@@ -15,3 +15,16 @@
 .publication-container a {
     @apply font-semibold text-slate-400;
 }
+
+.publication-container [data-youtube-video],
+.publication-container .embed-responsive {
+    margin: 1.5rem auto;
+    max-width: 800px;
+}
+
+.publication-container [data-youtube-video] iframe,
+.publication-container .embed-responsive iframe {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: auto;
+}
