@@ -52,9 +52,9 @@
         <a class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75" href="https://www.facebook.com/MusicAll/  ">
           <i class="pi pi-facebook text-base! leading-normal!" />
         </a>
-        <a class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75">
+        <RouterLink :to="{ name: 'app_contact' }" class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75">
           <i class="pi pi-envelope text-base! leading-normal!" />
-        </a>
+        </RouterLink>
       </div>
     </div>
   </div>
