@@ -12,6 +12,7 @@ use App\Service\Builder\Publication\PublicationBuilder;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 readonly class PublicationProvider implements ProviderInterface
 {
@@ -30,6 +31,16 @@ readonly class PublicationProvider implements ProviderInterface
         if (!$publication) {
             throw new PublicationNotFoundException('Publication inexistante');
         }
+
+        // Check access for non-published publications
+        if ($publication->getStatus() !== Publication::STATUS_ONLINE) {
+            /** @var User|null $user */
+            $user = $this->security->getUser();
+            if (!$user || $publication->getAuthor()->getId() !== $user->getId()) {
+                throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette publication');
+            }
+        }
+
         if ($publication->getStatus() === Publication::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();

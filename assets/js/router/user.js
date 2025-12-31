@@ -30,6 +30,18 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_user_publication_edit',
+    path: '/user/publications/:id/edit',
+    component: () => import('../views/User/Publication/Edit.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
+    name: 'app_user_publication_preview',
+    path: '/user/publications/:id/preview',
+    component: () => import('../views/User/Publication/Preview.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     name: 'app_user_courses',
     path: '/user/courses',
     component: () => import('../views/User/Course/Index.vue'),

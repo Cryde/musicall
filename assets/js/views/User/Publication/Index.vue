@@ -152,7 +152,6 @@
                   text
                   rounded
                   size="small"
-                  :disabled="data.status_id === STATUS_DRAFT"
                   @click="handleView(data)"
                 />
                 <Button
@@ -203,6 +202,7 @@
     </div>
 
     <AddDiscoverModal @published="handleDiscoverPublished" />
+    <AddPublicationModal v-model="showAddPublicationModal" @created="handlePublicationCreated" />
     <ConfirmDialog />
   </div>
 </template>
@@ -222,6 +222,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AddDiscoverModal from '../../../components/Publication/AddDiscoverModal.vue'
+import AddPublicationModal from '../../../components/publication/AddPublicationModal.vue'
 import { usePublicationsStore } from '../../../store/publication/publications.js'
 import { useUserPublicationsStore } from '../../../store/publication/userPublications.js'
 import { useVideoStore } from '../../../store/publication/video.js'
@@ -243,6 +244,7 @@ const selectedCategory = ref(null)
 const selectedStatus = ref(null)
 const sortField = ref('creation_datetime')
 const sortOrder = ref(-1)
+const showAddPublicationModal = ref(false)
 
 const statusOptions = [
   { label: 'Brouillon', id: STATUS_DRAFT },
@@ -333,17 +335,16 @@ async function handleItemsPerPageChange(value) {
 }
 
 function handleView(publication) {
-  router.push({ name: 'app_publication_show', params: { slug: publication.slug } })
+  // Redirect to preview for draft/pending, to public page for online
+  if (publication.status_id === STATUS_ONLINE) {
+    router.push({ name: 'app_publication_show', params: { slug: publication.slug } })
+  } else {
+    router.push({ name: 'app_user_publication_preview', params: { id: publication.id } })
+  }
 }
 
 function handleEdit(publication) {
-  // TODO: Implement edit page
-  toast.add({
-    severity: 'info',
-    summary: 'Information',
-    detail: 'La page d\'édition sera disponible prochainement',
-    life: 3000
-  })
+  router.push({ name: 'app_user_publication_edit', params: { id: publication.id } })
 }
 
 function handleSubmit(publication) {
@@ -390,16 +391,14 @@ function handleOpenDiscoverModal() {
 }
 
 function handleOpenPublicationModal() {
-  // TODO: Implement publication creation modal
-  toast.add({
-    severity: 'info',
-    summary: 'Information',
-    detail: 'La création de publication sera disponible prochainement',
-    life: 3000
-  })
+  showAddPublicationModal.value = true
 }
 
 async function handleDiscoverPublished() {
+  await userPublicationsStore.loadPublications()
+}
+
+async function handlePublicationCreated() {
   await userPublicationsStore.loadPublications()
 }
 </script>

@@ -11,7 +11,7 @@ framework:
                     br: [ ]
             app.publication_sanitizer:
                 allow_elements:
-                    div: ['class']
+                    div: ['class', 'data-youtube-video']
                     span: ['class']
                     a: ['href']
                     blockquote: []
@@ -29,7 +29,7 @@ framework:
                     ol: []
                     ul: []
                     img: ['src']
-                    iframe: ['class', 'src', 'frameborder', 'allow', 'allowfullscreen' ]
+                    iframe: ['class', 'src', 'frameborder', 'allow', 'allowfullscreen', 'modestbranding' ]
 
                 allowed_media_hosts: ['musicall.com', 'youtube.com']
                 allowed_media_schemes: ['http', 'https']
@@ -54,7 +54,7 @@ framework:
                     img: ['src']
                     iframe: ['class', 'src', 'frameborder', 'allow', 'allowfullscreen' ]
 
-                allowed_media_hosts: ['musicall.com', 'youtube.com']
+                allowed_media_hosts: ['musicall.com', 'youtube.com', 'youtube-nocookie.com']
                 allowed_media_schemes: ['http', 'https']
                 allowed_link_schemes: ['http', 'https']
 when@dev:
@@ -62,8 +62,8 @@ when@dev:
         html_sanitizer:
             sanitizers:
                 app.publication_sanitizer:
-                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.localhost' ]
+                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.local', 'youtube-nocookie.com']
                     allowed_media_schemes: ['http', 'https']
                 app.forum_sanitizer:
-                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.localhost' ]
+                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.local' ]
                     allowed_media_schemes: [ 'http', 'https']
