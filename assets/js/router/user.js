@@ -1,5 +1,11 @@
 export default [
   {
+    name: 'app_contact',
+    path: '/contact',
+    component: () => import('../views/Contact/Index.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_login',
     path: '/login',
     component: () => import('../views/User/Login.vue'),
