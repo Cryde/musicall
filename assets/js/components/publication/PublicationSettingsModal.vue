@@ -156,8 +156,8 @@ import { usePublicationsStore } from '../../store/publication/publications.js'
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
@@ -167,7 +167,7 @@ const publicationsStore = usePublicationsStore()
 
 const visible = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
+  set: (value) => emit('update:modelValue', value)
 })
 
 const title = ref('')
@@ -231,7 +231,7 @@ async function handleSave() {
     title: title.value.trim(),
     shortDescription: shortDescription.value.trim(),
     categoryId: selectedCategory.value,
-    content: publicationEditStore.publication.content || '',
+    content: publicationEditStore.publication.content || ''
   })
 
   if (success) {

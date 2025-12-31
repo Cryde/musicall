@@ -51,7 +51,7 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
         title,
         shortDescription,
         categoryId,
-        content,
+        content
       })
       publication.value = result
       return true
@@ -188,6 +188,6 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
     uploadCover,
     removeCover,
     updateContent,
-    clear,
+    clear
   }
 })

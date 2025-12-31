@@ -3,7 +3,14 @@
 import axios from 'axios'
 
 export default {
-  getPublications({ page = 1, itemsPerPage = 10, status = null, category = null, sortBy = 'creation_datetime', sortOrder = 'desc' }) {
+  getPublications({
+    page = 1,
+    itemsPerPage = 10,
+    status = null,
+    category = null,
+    sortBy = 'creation_datetime',
+    sortOrder = 'desc'
+  }) {
     const params = new URLSearchParams()
     params.append('page', page.toString())
     params.append('itemsPerPage', itemsPerPage.toString())
@@ -80,7 +87,7 @@ export default {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
             onProgress(percentCompleted)
           }
-        },
+        }
       })
       .then((resp) => resp.data)
   },
@@ -97,7 +104,7 @@ export default {
             const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
             onProgress(percentCompleted)
           }
-        },
+        }
       })
       .then((resp) => resp.data)
   },
@@ -112,5 +119,5 @@ export default {
     return axios
       .get(Routing.generate('api_user_publications_preview', { id }))
       .then((resp) => resp.data)
-  },
+  }
 }

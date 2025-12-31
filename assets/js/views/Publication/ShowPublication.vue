@@ -75,7 +75,13 @@ onMounted(async () => {
 const breadCrumbs = computed(() => {
   return [
     { label: 'Publications', to: { name: 'app_publications' } },
-    { label: publication.value.category.title, to: { name: 'app_publications_by_category', params: { slug: publication.value.category.slug } } },
+    {
+      label: publication.value.category.title,
+      to: {
+        name: 'app_publications_by_category',
+        params: { slug: publication.value.category.slug }
+      }
+    },
     { label: publication.value.title }
   ]
 })

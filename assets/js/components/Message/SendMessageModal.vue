@@ -193,7 +193,7 @@ async function sendMessage() {
       router.push({ name: 'app_messages', params: { threadId } })
     }
   } catch (e) {
-    errorMessage.value = e.message || 'Une erreur est survenue lors de l\'envoi du message.'
+    errorMessage.value = e.message || "Une erreur est survenue lors de l'envoi du message."
   } finally {
     isSending.value = false
   }

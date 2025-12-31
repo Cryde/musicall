@@ -138,7 +138,9 @@ const mapInstrumentImage = {
 }
 
 const breadcrumbItems = computed(() => {
-  const items = [{ label: 'Cours', to: selectCategoryFilter.value ? { name: 'app_course' } : undefined }]
+  const items = [
+    { label: 'Cours', to: selectCategoryFilter.value ? { name: 'app_course' } : undefined }
+  ]
   if (selectCategoryFilter.value) {
     items.push({ label: selectCategoryFilter.value.title })
   }
