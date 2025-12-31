@@ -132,6 +132,9 @@ const menuItems = computed(() => [
         }
       },
       {
+        separator: true
+      },
+      {
         label: 'Parametres',
         icon: 'pi pi-cog',
         command: () => {
