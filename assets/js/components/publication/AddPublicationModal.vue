@@ -81,8 +81,8 @@ import { usePublicationsStore } from '../../store/publication/publications.js'
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 })
 
 const emit = defineEmits(['update:modelValue', 'created'])
@@ -93,7 +93,7 @@ const publicationEditStore = usePublicationEditStore()
 
 const visible = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
+  set: (value) => emit('update:modelValue', value)
 })
 
 const selectedCategory = ref(null)
@@ -130,7 +130,7 @@ async function handleCreate() {
 
   const result = await publicationEditStore.createPublication({
     title: title.value.trim(),
-    categoryId: selectedCategory.value,
+    categoryId: selectedCategory.value
   })
 
   if (result) {

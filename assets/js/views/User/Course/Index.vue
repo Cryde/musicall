@@ -330,7 +330,7 @@ function handleEdit(course) {
   toast.add({
     severity: 'info',
     summary: 'Information',
-    detail: 'La page d\'édition sera disponible prochainement',
+    detail: "La page d'édition sera disponible prochainement",
     life: 3000
   })
 }

@@ -130,7 +130,12 @@ const fetchedItems = ref()
 const showAuthModal = ref(false)
 
 const breadcrumbItems = computed(() => {
-  const items = [{ label: 'Publications', to: selectCategoryFilter.value ? { name: 'app_publications' } : undefined }]
+  const items = [
+    {
+      label: 'Publications',
+      to: selectCategoryFilter.value ? { name: 'app_publications' } : undefined
+    }
+  ]
   if (selectCategoryFilter.value) {
     items.push({ label: selectCategoryFilter.value.title })
   }
@@ -195,7 +200,10 @@ watch(
 async function handleCategoryChange(event) {
   const selectedCategory = event.value
   if (selectedCategory) {
-    await router.push({ name: 'app_publications_by_category', params: { slug: selectedCategory.slug } })
+    await router.push({
+      name: 'app_publications_by_category',
+      params: { slug: selectedCategory.slug }
+    })
   } else {
     await router.push({ name: 'app_publications' })
   }

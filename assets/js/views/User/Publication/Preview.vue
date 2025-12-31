@@ -102,7 +102,11 @@ const publication = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 
-useTitle(() => publication.value ? `Prévisualisation: ${publication.value.title} - MusicAll` : 'Prévisualisation - MusicAll')
+useTitle(() =>
+  publication.value
+    ? `Prévisualisation: ${publication.value.title} - MusicAll`
+    : 'Prévisualisation - MusicAll'
+)
 
 onMounted(async () => {
   await loadPreview()
@@ -116,7 +120,7 @@ async function loadPreview() {
   } catch (e) {
     console.error('Failed to load preview:', e)
     if (e.response?.status === 403) {
-      error.value = 'Vous n\'avez pas accès à cette publication'
+      error.value = "Vous n'avez pas accès à cette publication"
     } else if (e.response?.status === 404) {
       error.value = 'Publication non trouvée'
     } else {

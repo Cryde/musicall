@@ -1,7 +1,14 @@
 import axios from 'axios'
 
 export default {
-  getCourses({ page = 1, itemsPerPage = 10, status = null, category = null, sortBy = 'creation_datetime', sortOrder = 'desc' }) {
+  getCourses({
+    page = 1,
+    itemsPerPage = 10,
+    status = null,
+    category = null,
+    sortBy = 'creation_datetime',
+    sortOrder = 'desc'
+  }) {
     const params = new URLSearchParams()
     params.append('page', page.toString())
     params.append('itemsPerPage', itemsPerPage.toString())

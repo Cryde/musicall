@@ -89,12 +89,12 @@ app.use(router)
 app.mount('#app')
 
 if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
-    configure({
-        tagId: 'G-1CK1G9W6FX',
-        pageTracker: {
-            router
-        }
-    })
+  configure({
+    tagId: import.meta.env.VITE_GOOGLE_GTAG_ID,
+    pageTracker: {
+      router
+    }
+  })
 }
 
 import.meta.glob(['../images/**'])

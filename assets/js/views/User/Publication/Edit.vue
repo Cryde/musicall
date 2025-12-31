@@ -300,13 +300,14 @@
 </template>
 
 <script setup>
-import { useTitle } from '@vueuse/core'
 import DragHandle from '@tiptap/extension-drag-handle'
-import { EditorContent, useEditor } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
-import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
+import TextAlign from '@tiptap/extension-text-align'
+import Youtube from '@tiptap/extension-youtube'
+import StarterKit from '@tiptap/starter-kit'
+import { EditorContent, useEditor } from '@tiptap/vue-3'
+import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
@@ -317,9 +318,8 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Youtube from '@tiptap/extension-youtube'
-import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 import PublicationSettingsModal from '../../../components/publication/PublicationSettingsModal.vue'
+import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 
 useTitle('Édition - MusicAll')
 
@@ -343,21 +343,21 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: {
-        levels: [2, 3],
-      },
+        levels: [2, 3]
+      }
     }),
     TextAlign.configure({
-      types: ['heading', 'paragraph'],
+      types: ['heading', 'paragraph']
     }),
     Image,
     Youtube.configure({
       controls: true,
       nocookie: true,
       modestBranding: true,
-      allowFullscreen: true,
+      allowFullscreen: true
     }),
     Placeholder.configure({
-      placeholder: 'Commencez à écrire votre publication...',
+      placeholder: 'Commencez à écrire votre publication...'
     }),
     DragHandle.configure({
       render: () => {
@@ -365,13 +365,13 @@ const editor = useEditor({
         el.classList.add('drag-handle')
         el.innerHTML = '⠿'
         return el
-      },
-    }),
+      }
+    })
   ],
   content: '',
   onUpdate: ({ editor }) => {
     publicationEditStore.updateContent(editor.getHTML())
-  },
+  }
 })
 
 onMounted(async () => {
@@ -411,14 +411,14 @@ async function handleImageUpload(event) {
     toast.add({
       severity: 'success',
       summary: 'Image ajoutée',
-      life: 3000,
+      life: 3000
     })
   } else {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
       detail: "Impossible d'ajouter l'image",
-      life: 3000,
+      life: 3000
     })
   }
 
@@ -438,7 +438,7 @@ async function handleSave() {
     title: publicationEditStore.publication.title,
     shortDescription: publicationEditStore.publication.short_description,
     categoryId: publicationEditStore.publication.category?.id,
-    content: editor.value?.getHTML() || '',
+    content: editor.value?.getHTML() || ''
   })
 
   if (success) {
@@ -446,21 +446,22 @@ async function handleSave() {
       severity: 'success',
       summary: 'Enregistré',
       detail: 'Votre publication a été enregistrée',
-      life: 3000,
+      life: 3000
     })
   } else {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
       detail: "Impossible d'enregistrer la publication",
-      life: 3000,
+      life: 3000
     })
   }
 }
 
 function handleSubmit() {
   confirm.require({
-    message: 'Une fois soumise, vous ne pourrez plus modifier la publication. Voulez-vous continuer ?',
+    message:
+      'Une fois soumise, vous ne pourrez plus modifier la publication. Voulez-vous continuer ?',
     header: 'Confirmation',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
@@ -477,7 +478,7 @@ function handleSubmit() {
           severity: 'success',
           summary: 'Publication soumise',
           detail: 'Votre publication a été soumise pour validation',
-          life: 3000,
+          life: 3000
         })
         setTimeout(() => {
           router.push({ name: 'app_user_publications' })
@@ -487,10 +488,10 @@ function handleSubmit() {
           severity: 'error',
           summary: 'Erreur',
           detail: 'Impossible de soumettre la publication',
-          life: 5000,
+          life: 5000
         })
       }
-    },
+    }
   })
 }
 
@@ -498,7 +499,7 @@ function handleSettingsSaved() {
   toast.add({
     severity: 'success',
     summary: 'Paramètres enregistrés',
-    life: 3000,
+    life: 3000
   })
 }
 </script>
