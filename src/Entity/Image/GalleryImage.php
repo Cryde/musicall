@@ -1,12 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity\Image;
 
-use DateTimeInterface;
-use DateTime;
-use DateTimeImmutable;
 use App\Entity\Gallery;
 use App\Repository\GalleryImageRepository;
+use DateTimeInterface;
+use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;

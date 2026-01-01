@@ -76,7 +76,7 @@ class Gallery implements ViewableInterface
     /**
      * @var Collection<int, GalleryImage>
      */
-    #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryImage::class)]
+    #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryImage::class, cascade: ['remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     private Collection $images;
 
@@ -90,7 +90,6 @@ class Gallery implements ViewableInterface
     private ?string $slug = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    #[Groups([Gallery::LIST])]
     private ?ViewCache $viewCache = null;
 
     public function __construct()

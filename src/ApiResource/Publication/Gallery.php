@@ -41,4 +41,7 @@ class Gallery
     public ?Thread $thread = null;
     #[ApiProperty(genId: false)]
     public ?Type $type = null;
+    /** @var GalleryImage[] */
+    #[ApiProperty(genId: false)]
+    public array $images = [];
 }

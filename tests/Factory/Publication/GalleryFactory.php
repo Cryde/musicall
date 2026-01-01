@@ -13,11 +13,11 @@ final class GalleryFactory extends PersistentProxyObjectFactory
         return [
             'author' => UserFactory::new(),
             'creationDatetime' => self::faker()->dateTime(),
-            'description' => self::faker()->text(),
+            'description' => self::faker()->text(200),
             'publicationDatetime' => self::faker()->dateTime(),
-            'slug' => self::faker()->text(255),
-            'status' => self::faker()->numberBetween(1, 32767),
-            'title' => self::faker()->text(255),
+            'slug' => self::faker()->slug(3),
+            'status' => self::faker()->randomElement([Gallery::STATUS_ONLINE, Gallery::STATUS_DRAFT, Gallery::STATUS_PENDING]),
+            'title' => self::faker()->text(100),
             'updateDatetime' => self::faker()->dateTime(),
         ];
     }
