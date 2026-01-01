@@ -6,20 +6,43 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use App\State\Processor\User\Publication\UserPublicationRemoveCoverProcessor;
 use App\State\Processor\User\Publication\UserPublicationUploadCoverProcessor;
 use App\State\Provider\User\Publication\UserPublicationEditProvider;
+use App\State\Provider\User\Publication\UserPublicationUploadCoverProvider;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
+#[Vich\Uploadable]
 #[ApiResource(
     operations: [
         new Post(
             uriTemplate: '/user/publications/{id}/upload-cover',
             inputFormats: ['multipart' => ['multipart/form-data']],
-            openapi: new Operation(tags: ['User Publications']),
+            openapi: new Operation(
+                tags: ['User Publications'],
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'imageFile' => [
+                                        'type' => 'string',
+                                        'format' => 'binary'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ])
+                )
+            ),
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
-            deserialize: false,
+            output: UserPublicationUploadCoverOutput::class,
             name: 'api_user_publications_upload_cover',
-            provider: UserPublicationEditProvider::class,
+            provider: UserPublicationUploadCoverProvider::class,
             processor: UserPublicationUploadCoverProcessor::class,
         ),
         new Delete(
@@ -34,5 +57,9 @@ use App\State\Provider\User\Publication\UserPublicationEditProvider;
 )]
 class UserPublicationUploadCover
 {
-    public string $uri;
+    #[Vich\UploadableField(mapping: 'publication_image_cover', fileNameProperty: 'filePath')]
+    #[Assert\NotNull]
+    #[Assert\Image(maxSize: "4Mi", maxWidth: 4000, maxHeight: 4000)]
+    public ?File $imageFile = null;
+    public ?string $filePath = null;
 }
