@@ -77,7 +77,7 @@ export default {
 
   uploadImage(id, file, onProgress) {
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('imageFile', file)
 
     return axios
       .post(Routing.generate('api_user_publications_upload_image', { id }), formData, {
@@ -94,7 +94,7 @@ export default {
 
   uploadCover(id, file, onProgress) {
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('imageFile', file)
 
     return axios
       .post(Routing.generate('api_user_publications_upload_cover', { id }), formData, {

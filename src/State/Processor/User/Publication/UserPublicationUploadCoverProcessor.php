@@ -5,37 +5,29 @@ namespace App\State\Processor\User\Publication;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Publication\UserPublicationUploadCover;
+use App\ApiResource\User\Publication\UserPublicationUploadCoverOutput;
 use App\Entity\Image\PublicationCover;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 /**
- * @implements ProcessorInterface<mixed, UserPublicationUploadCover>
+ * @implements ProcessorInterface<UserPublicationUploadCover, UserPublicationUploadCoverOutput>
  */
-class UserPublicationUploadCoverProcessor implements ProcessorInterface
+readonly class UserPublicationUploadCoverProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly PublicationRepository $publicationRepository,
-        private readonly RequestStack $requestStack,
-        private readonly UploaderHelper $uploaderHelper,
-        private readonly CacheManager $cacheManager,
+        private EntityManagerInterface $entityManager,
+        private PublicationRepository $publicationRepository,
+        private UploaderHelper $uploaderHelper,
+        private CacheManager $cacheManager,
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserPublicationUploadCover
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserPublicationUploadCoverOutput
     {
-        $request = $this->requestStack->getCurrentRequest();
-        $uploadedFile = $request->files->get('file');
-
-        if (!$uploadedFile) {
-            throw new BadRequestHttpException('No file uploaded');
-        }
-
+        /** @var UserPublicationUploadCover $data */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         // Remove old cover if exists (flush first to avoid unique constraint violation)
@@ -47,7 +39,7 @@ class UserPublicationUploadCoverProcessor implements ProcessorInterface
         }
 
         $publicationCover = new PublicationCover();
-        $publicationCover->setImageFile($uploadedFile);
+        $publicationCover->setImageFile($data->imageFile);
         $publicationCover->setPublication($publication);
 
         $publication->setCover($publicationCover);
@@ -57,7 +49,7 @@ class UserPublicationUploadCoverProcessor implements ProcessorInterface
 
         $path = $this->uploaderHelper->asset($publicationCover, 'imageFile');
 
-        $response = new UserPublicationUploadCover();
+        $response = new UserPublicationUploadCoverOutput();
         $response->uri = $path ? $this->cacheManager->getBrowserPath($path, 'publication_cover_300x300') : '';
 
         return $response;
