@@ -53,5 +53,37 @@ export default {
       .post(Routing.generate('api_user_profile_picture_post'), formData)
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  requestResetPassword(login) {
+    return axios
+      .post(
+        Routing.generate('api_users_request_reset_password'),
+        { login },
+        {
+          headers: {
+            'Content-Type': 'application/ld+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  resetPassword(token, password) {
+    return axios
+      .post(
+        Routing.generate('api_users_reset_password', { token }),
+        { password },
+        {
+          headers: {
+            'Content-Type': 'application/ld+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }
