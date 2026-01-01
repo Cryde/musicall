@@ -18,6 +18,18 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_forgot_password',
+    path: '/forgot-password',
+    component: () => import('../views/User/ForgotPassword.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
+    name: 'app_reset_password',
+    path: '/lost-password/:token',
+    component: () => import('../views/User/ResetPassword.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_messages',
     path: '/messages/:threadId?',
     component: () => import('../views/Message/Index.vue'),

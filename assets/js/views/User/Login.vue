@@ -56,12 +56,12 @@
         </div>
 
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-0">
-          <a
-            href="#"
+          <RouterLink
+            :to="{ name: 'app_forgot_password' }"
             class="text-surface-500 dark:text-surface-400 font-medium cursor-pointer hover:text-surface-600 dark:hover:text-surface-300 text-sm"
           >
             Mot de passe oublie ?
-          </a>
+          </RouterLink>
         </div>
 
         <Button
