@@ -10,9 +10,16 @@ use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce as MusicianAnnounceEntity;
 use App\Entity\User;
+use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class MusicianAnnounceBuilder
 {
+    public function __construct(
+        private UploaderHelper $uploaderHelper,
+        private CacheManager $cacheManager,
+    ) {
+    }
     /**
      * @param MusicianAnnounceEntity[] $entities
      * @return MusicianAnnounceDTO[]
@@ -69,6 +76,11 @@ readonly class MusicianAnnounceBuilder
         $dto = new Author();
         $dto->id = $user->getId();
         $dto->username = $user->getUsername();
+
+        if ($user->getProfilePicture()) {
+            $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
+            $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+        }
 
         return $dto;
     }
