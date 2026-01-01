@@ -54,6 +54,24 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_user_galleries',
+    path: '/user/galleries',
+    component: () => import('../views/User/Gallery/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
+    name: 'app_user_gallery_edit',
+    path: '/user/galleries/:id/edit',
+    component: () => import('../views/User/Gallery/Edit.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
+    name: 'app_user_gallery_preview',
+    path: '/user/galleries/:id/preview',
+    component: () => import('../views/User/Gallery/Preview.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/user/settings',
     component: () => import('../views/User/Settings/SettingsLayout.vue'),
     meta: { isAuthRequired: true },

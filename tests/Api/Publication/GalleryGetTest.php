@@ -5,7 +5,6 @@ namespace App\Tests\Api\Publication;
 use App\Entity\Gallery;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
 use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -21,7 +20,6 @@ class GalleryGetTest extends ApiTestCase
     public function test_get_item_gallery(): void
     {
         $author = UserFactory::new()->asAdminUser()->create();
-        $viewCache = ViewCacheFactory::new(['count' => 123])->create();
         $gallery = GalleryFactory::new([
             'author'              => $author,
             'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
@@ -31,9 +29,9 @@ class GalleryGetTest extends ApiTestCase
             'slug'                => 'titre-de-la-gallery',
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Titre de la gallery',
-            'viewCache'           => $viewCache,
         ])->create();
-        $cover = GalleryImageFactory::new(['image_name' => 'test.jpg', 'gallery' => $gallery])->create();
+        $cover = GalleryImageFactory::new(['imageName' => 'cover.jpg', 'gallery' => $gallery])->create();
+        $image2 = GalleryImageFactory::new(['imageName' => 'image2.jpg', 'gallery' => $gallery])->create();
         $gallery->setCoverImage($cover->_real());
         $gallery->_save();
 
@@ -43,23 +41,41 @@ class GalleryGetTest extends ApiTestCase
             '@context' => '/api/contexts/Gallery',
             '@id' => '/api/galleries/titre-de-la-gallery',
             '@type' => 'Gallery',
-            'title'                => 'Titre de la gallery',
-            'author'               => [
-                '@type'    => 'Author',
+            'title' => 'Titre de la gallery',
+            'author' => [
+                '@type' => 'Author',
                 'username' => 'user_admin',
             ],
-            'slug'                 => 'titre-de-la-gallery',
+            'slug' => 'titre-de-la-gallery',
             'publication_datetime' => '2022-01-02T02:03:04+00:00',
-            'category'             => [
-                '@type'    => 'Category',
-                'id'       => 0,
-                'title'    => 'gallery',
-                'slug'     => 'gallery',
+            'category' => [
+                '@type' => 'Category',
+                'id' => 0,
+                'title' => 'gallery',
+                'slug' => 'gallery',
             ],
-            'description'          => 'Petite description de la gallery',
-            'cover'                => [
-                '@type'     => 'Cover',
-                'cover_url' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/test.jpg',
+            'description' => 'Petite description de la gallery',
+            'cover' => [
+                '@type' => 'Cover',
+                'cover_url' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/cover.jpg',
+            ],
+            'images' => [
+                [
+                    '@type' => 'GalleryImage',
+                    'sizes' => [
+                        'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->getId() . '/cover.jpg',
+                        'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/cover.jpg',
+                        'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->getId() . '/cover.jpg',
+                    ],
+                ],
+                [
+                    '@type' => 'GalleryImage',
+                    'sizes' => [
+                        'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->getId() . '/image2.jpg',
+                        'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/image2.jpg',
+                        'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->getId() . '/image2.jpg',
+                    ],
+                ],
             ],
         ]);
     }

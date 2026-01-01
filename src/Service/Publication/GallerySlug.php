@@ -20,6 +20,6 @@ class GallerySlug
             $slug = $initialSlug . '-' . $i++;
         }
 
-        return $slug;
+        return (string) $slug;
     }
 }

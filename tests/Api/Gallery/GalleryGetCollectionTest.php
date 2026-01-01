@@ -5,7 +5,6 @@ namespace App\Tests\Api\Gallery;
 use App\Entity\Gallery;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
-use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
 use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
@@ -39,7 +38,6 @@ class GalleryGetCollectionTest extends ApiTestCase
             'slug'                => 'gallery-slug-2',
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 2',
-            'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
         ])->create()->_real();
 
         // not taken (status) :
@@ -68,11 +66,6 @@ class GalleryGetCollectionTest extends ApiTestCase
                     ],
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-2',
-                    'view_cache'           => [
-                        '@id' => '/api/view_caches/' . $gallery2->getViewCache()->getId(),
-                        '@type' => 'ViewCache',
-                        'count' => 20,
-                    ],
                     'image_count'          => 0,
                 ],
                 [
@@ -87,7 +80,6 @@ class GalleryGetCollectionTest extends ApiTestCase
                     ],
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-1',
-                    'view_cache'           => null,
                     'image_count'          => 1,
                 ],
             ],

@@ -132,6 +132,13 @@ const menuItems = computed(() => [
         }
       },
       {
+        label: 'Mes photos',
+        icon: 'pi pi-images',
+        command: () => {
+          router.push({ name: 'app_user_galleries' })
+        }
+      },
+      {
         separator: true
       },
       {

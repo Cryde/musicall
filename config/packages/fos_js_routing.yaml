@@ -18,4 +18,7 @@ fos_js_routing:
         - api_gallery_(.*)
         - api_musician_announces_(.*)
         - api_band_spaces_(.*)
+        - api_user_gallery_list
+        - api_user_(.*)
+        - api_gallery_(.*)
         - _api_(.*)
