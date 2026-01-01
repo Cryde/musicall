@@ -210,6 +210,8 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
 
     isAuthenticated.value = false
     isAuthenticatedLoading.value = false
+
+    await router.push({ name: 'app_home' })
   }
 
   async function refreshUserProfile() {
