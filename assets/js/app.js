@@ -97,4 +97,4 @@ if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
   })
 }
 
-import.meta.glob(['../images/**'])
+import.meta.glob(['../image/**'])
