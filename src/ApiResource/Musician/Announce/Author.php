@@ -7,4 +7,6 @@ class Author
     public string $id;
 
     public string $username;
+
+    public ?string $profilePictureUrl = null;
 }

@@ -61,37 +61,51 @@
           :key="announce.id"
         >
           <template #content>
-            <template v-if="isTypeBand(announce.type)">
-              {{ announce.author.username }} est un
-              <strong>
-                {{ announce.instrument.musician_name.toLocaleLowerCase() }}
-              </strong> et cherche un groupe jouant du
-              <strong>
-                {{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}
-              </strong>
-              dans les alentours de {{ announce.location_name }}
-            </template>
-            <template v-if="isTypeMusician(announce.type)">
-              {{ announce.author.username }} cherche pour son groupe un
-              <strong>
-                {{ announce.instrument.musician_name.toLocaleLowerCase() }}
-              </strong> jouant du
-              <strong>
-                {{
-                  announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ')
-                }}
-              </strong> dans les alentours de {{ announce.location_name }}
-            </template>
-
-            <div v-if="!isOwnAnnounce(announce)" class="mt-3 flex justify-end">
-              <Button
-                size="small"
-                icon="pi pi-envelope"
-                label="Contacter"
-                severity="secondary"
-                text
-                @click="handleContactAnnounce(announce.author)"
+            <div class="flex gap-3">
+              <Avatar
+                v-if="announce.author.profile_picture_url"
+                :image="announce.author.profile_picture_url"
+                shape="circle"
+                class="shrink-0"
               />
+              <Avatar
+                v-else
+                :label="announce.author.username.charAt(0).toUpperCase()"
+                shape="circle"
+                class="shrink-0"
+              />
+              <div class="flex-1">
+                <template v-if="isTypeBand(announce.type)">
+                  <span class="font-semibold">{{ announce.author.username }}</span> est un
+                  <strong>
+                    {{ announce.instrument.musician_name.toLocaleLowerCase() }}
+                  </strong> et cherche un groupe jouant du
+                  <strong>
+                    {{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}
+                  </strong>
+                  dans les alentours de {{ announce.location_name }}
+                </template>
+                <template v-if="isTypeMusician(announce.type)">
+                  <span class="font-semibold">{{ announce.author.username }}</span> cherche pour son groupe un
+                  <strong>
+                    {{ announce.instrument.musician_name.toLocaleLowerCase() }}
+                  </strong> jouant du
+                  <strong>
+                    {{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}
+                  </strong> dans les alentours de {{ announce.location_name }}
+                </template>
+
+                <div v-if="!isOwnAnnounce(announce)" class="mt-3 flex justify-end">
+                  <Button
+                    size="small"
+                    icon="pi pi-envelope"
+                    label="Contacter"
+                    severity="secondary"
+                    text
+                    @click="handleContactAnnounce(announce.author)"
+                  />
+                </div>
+              </div>
             </div>
           </template>
         </Card>
@@ -115,6 +129,7 @@
 </template>
 <script setup>
 import { useInfiniteScroll, useTitle } from '@vueuse/core'
+import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
