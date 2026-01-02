@@ -3,21 +3,19 @@
         <breadcrumb :items="[{'label': breadcrumbLabel}]"/>
     </div>
 
-    <div class="flex justify-between mb-10">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
             {{ h1Title }}
         </h1>
 
-        <div class="flex flex-wrap justify-end-safe gap-4">
-            <Button
-                label="Poster une annonce"
-                icon="pi pi-megaphone"
-                severity="info"
-                size="small"
-                class="whitespace-nowrap"
-                @click="handleOpenAnnounceModal"
-            />
-        </div>
+        <Button
+            label="Poster une annonce"
+            icon="pi pi-megaphone"
+            severity="info"
+            size="small"
+            class="w-full sm:w-auto"
+            @click="handleOpenAnnounceModal"
+        />
     </div>
 
     <div class="flex flex-wrap w-full gap-4 items-center">
