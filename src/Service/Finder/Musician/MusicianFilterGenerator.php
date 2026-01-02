@@ -45,10 +45,10 @@ readonly class MusicianFilterGenerator
     {
         return new MessageBag(
             Message::forSystem('Tu es un assistant intelligent francophone qui va permettre de générer des filtres pour permettre aux utilisateurs de trouver des musiciens ou un groupe.'),
-            Message::forSystem('L\'assistant devra retourne le resultat sans aucun commentaire en format JSON RFC8259.'),
+            Message::forSystem('L\'assistant devra retourner le résultat sans aucun commentaire en format JSON RFC8259.'),
             Message::forSystem('Si l\'utilisateur fournit une localisation, recherche ses coordonnées GPS (longitude et latitude). Si tu ne trouves pas la localisation, ne génère ni n\'invente aucune coordonnée.'),
             Message::forSystem('Voici la liste des instruments disponibles (la clé est l\'id et la valeur le slug) : ' . $this->getInstrumentIds()),
-            Message::forSystem('Voici la liste des style disponibles (la clé est l\'id et la valeur le slug) : ' . $this->getStyleIds()),
+            Message::forSystem('Voici la liste des styles disponibles (la clé est l\'id et la valeur le slug) : ' . $this->getStyleIds()),
         );
     }
 
@@ -73,7 +73,7 @@ readonly class MusicianFilterGenerator
                             ],
                             'type' => [
                                 'type' => 'string',
-                                'description' => 'Si l\'utilisateur cherhche un musicien pour son groupe (ou un musicien tout simplemenet) utiliser la valeur 1. Si l\'utilisateur cherche un groupe utiliser la valeur 2.',
+                                'description' => 'Si l\'utilisateur cherche un musicien pour son groupe (ou un musicien tout simplement) utiliser la valeur 1. Si l\'utilisateur cherche un groupe utiliser la valeur 2.',
                                 'enum' => ['1', '2'],
                             ],
                             'styles' => [
