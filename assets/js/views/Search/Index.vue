@@ -112,7 +112,7 @@
     </div>
 
     <!-- Initial state: no search performed yet -->
-    <div v-if="!isSearchMade" class="flex content-center justify-center items-center h-50">
+    <div v-if="!isSearchMade && !isFilterGenerating" class="flex content-center justify-center items-center h-50">
         <Message size="large" icon="pi pi-filter">
             <div class="ml-4">
                 Cherchez parmi + de 2000 annonces de musiciens ou groupes. <br/>
@@ -121,8 +121,43 @@
         </Message>
     </div>
 
-    <!-- Loading state -->
+    <!-- LLM processing state (quick search) -->
+    <div v-else-if="isFilterGenerating" class="mt-8">
+        <div class="flex flex-col items-center justify-center py-16 px-4 bg-surface-50 dark:bg-surface-800 rounded-2xl">
+            <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <i class="pi pi-spin pi-sparkles text-4xl text-primary" />
+            </div>
+            <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                Analyse de votre recherche...
+            </h2>
+            <p class="text-surface-600 dark:text-surface-300 text-center max-w-md mb-4">
+                Notre IA analyse votre demande pour trouver les meilleurs filtres correspondants.
+            </p>
+            <div class="flex items-center gap-3 text-sm text-surface-500 dark:text-surface-400">
+                <div class="flex items-center gap-2">
+                    <i class="pi pi-check-circle text-green-500" />
+                    <span>Lecture de la demande</span>
+                </div>
+                <i class="pi pi-arrow-right" />
+                <div class="flex items-center gap-2">
+                    <i class="pi pi-spin pi-spinner text-primary" />
+                    <span>Identification des critères</span>
+                </div>
+                <i class="pi pi-arrow-right hidden sm:inline" />
+                <div class="hidden sm:flex items-center gap-2 text-surface-400 dark:text-surface-500">
+                    <i class="pi pi-circle" />
+                    <span>Recherche</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading state (direct search) -->
     <div v-else-if="isSearching" class="mt-6">
+        <p class="text-surface-600 dark:text-surface-300 mb-4">
+            <i class="pi pi-spin pi-spinner mr-2" />
+            Recherche en cours...
+        </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div v-for="i in 8" :key="i" class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4">
                 <Skeleton height="8rem" class="mb-4" />
