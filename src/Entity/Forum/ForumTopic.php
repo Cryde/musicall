@@ -2,13 +2,6 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\OpenApi\Model\Operation;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
@@ -17,20 +10,10 @@ use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
-#[Get(
-    uriTemplate: '/forum/topics/{slug}',
-    openapi: new Operation(tags: ['Forum']),
-    normalizationContext: ['groups' => [ForumTopic::ITEM]],
-    name: 'api_forum_topics_get_item',
-)]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['forum' => SearchFilterInterface::STRATEGY_EXACT])]
-#[ApiFilter(filterClass: OrderFilter::class, properties: ['creationDatetime' => 'DESC'])]
 class ForumTopic implements SluggableEntityInterface
 {
-    final const ITEM = 'FORUM_TOPIC_ITEM';
 
     final const TYPE_TOPIC_DEFAULT = 0;
     final const TYPE_TOPIC_PINNED = 1;
@@ -39,19 +22,13 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumTopic::ITEM])]
-    #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\ManyToOne(targetEntity: Forum::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([ForumTopic::ITEM])]
     private Forum $forum;
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([ForumTopic::ITEM])]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[ApiProperty(identifier: true)]
-    #[Groups([ForumTopic::ITEM])]
     private string $slug;
     #[ORM\Column(type: Types::INTEGER)]
     private int $type = self::TYPE_TOPIC_DEFAULT;
