@@ -1,24 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Forum;
 
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\OpenApi\Model\Operation;
-use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\User;
 use App\Repository\Forum\ForumPostRepository;
-use App\State\Processor\Forum\ForumPostPostProcessor;
 use DateTime;
 use DateTimeInterface;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -35,25 +35,15 @@ use Symfony\Component\Validator\Constraints as Assert;
         normalizationContext: ['groups' => [ForumPost::LIST]],
         name: 'api_forum_posts_get_collection',
     ),
-    new Post(
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [ForumPost::ITEM], 'skip_null_values' => false],
-        denormalizationContext: ['groups' => [ForumPost::POST]],
-        security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
-        name: 'api_forum_posts_post',
-        processor: ForumPostPostProcessor::class
-    )
-], paginationItemsPerPage: 10
-)]
+], paginationItemsPerPage: 10)]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['topic' => SearchFilterInterface::STRATEGY_EXACT])]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['creationDatetime' => OrderFilterInterface::DIRECTION_ASC])]
 class ForumPost
 {
-    final const LIST = 'FORUM_POST_LIST';
-    final const ITEM = 'FORUM_POST_ITEM';
-    final const POST = 'FORUM_POST_POST';
+    final public const LIST = 'FORUM_POST_LIST';
+    final public const ITEM = 'FORUM_POST_ITEM';
 
-    final const MIN_MESSAGE_LENGTH = 10;
+    final public const MIN_MESSAGE_LENGTH = 10;
 
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
@@ -70,12 +60,12 @@ class ForumPost
     #[Assert\NotBlank]
     #[Assert\Length(min: ForumPost::MIN_MESSAGE_LENGTH)]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([ForumPost::LIST, ForumPost::POST, ForumPost::ITEM])]
+    #[Groups([ForumPost::LIST, ForumPost::ITEM])]
     private string $content;
+
     #[Assert\NotBlank]
     #[ORM\ManyToOne(targetEntity: ForumTopic::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([ForumPost::POST])]
     private ForumTopic $topic;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -90,7 +80,7 @@ class ForumPost
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id ? (string) $this->id : null;
     }
 
     public function getCreationDatetime(): DateTimeInterface
