@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Forum;
 
@@ -14,5 +16,22 @@ class ForumCategoryRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ForumCategory::class);
+    }
+
+    /**
+     * @return ForumCategory[]
+     */
+    public function findBySourceSlugOrderedByPosition(string $sourceSlug): array
+    {
+        return $this->createQueryBuilder('fc')
+            ->innerJoin('fc.forumSource', 'fs')
+            ->innerJoin('fc.forums', 'f')
+            ->addSelect('f')
+            ->where('fs.slug = :slug')
+            ->setParameter('slug', $sourceSlug)
+            ->orderBy('fc.position', 'ASC')
+            ->addOrderBy('f.position', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

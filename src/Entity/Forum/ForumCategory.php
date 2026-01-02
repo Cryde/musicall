@@ -27,14 +27,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: ForumCategoryRepository::class)]
 #[ApiResource(operations: [
     new Get(openapi: new Operation(tags: ['Forum']),),
-    new GetCollection(
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [ForumCategory::LIST]],
-        name: 'api_forum_categories_get_collection',
-    )
 ])]
-#[ApiFilter(filterClass: OrderFilter::class, properties: ['position' => OrderFilterInterface::DIRECTION_ASC, 'forums.position' => OrderFilterInterface::DIRECTION_ASC])]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['forumSource.slug' => SearchFilterInterface::STRATEGY_EXACT])]
 class ForumCategory
 {
     final const LIST = 'FORUM_CATEGORY_LIST';
@@ -43,10 +36,10 @@ class ForumCategory
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumCategory::LIST, Forum::ITEM])]
+    #[Groups([Forum::ITEM])]
     private $id;
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([ForumCategory::LIST, Forum::ITEM])]
+    #[Groups([Forum::ITEM])]
     private string $title;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
