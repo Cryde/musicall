@@ -14,9 +14,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Post(
     uriTemplate: '/forum/posts',
     openapi: new Operation(tags: ['Forum']),
-    normalizationContext: ['groups' => [ForumPost::ITEM], 'skip_null_values' => false],
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
-    output: ForumPost::class,
+    output: TopicPost::class,
     name: 'api_forum_posts_post',
     processor: ForumPostCreationProcessor::class,
 )]

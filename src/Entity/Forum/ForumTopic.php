@@ -2,41 +2,34 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\OpenApi\Model\Operation;
-use Doctrine\DBAL\Types\Types;
-use DateTimeInterface;
-use DateTime;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
+use DateTime;
+use DateTimeInterface;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
-#[ApiResource(operations: [
-    new Get(
-        uriTemplate: '/forum/topics/{slug}',
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [ForumTopic::ITEM]],
-        name: 'api_forum_topics_get_item',
-    ),
-],
-    paginationClientEnabled: true,
-    paginationItemsPerPage: 15
+#[Get(
+    uriTemplate: '/forum/topics/{slug}',
+    openapi: new Operation(tags: ['Forum']),
+    normalizationContext: ['groups' => [ForumTopic::ITEM]],
+    name: 'api_forum_topics_get_item',
 )]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['forum' => SearchFilterInterface::STRATEGY_EXACT])]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['creationDatetime' => 'DESC'])]
 class ForumTopic implements SluggableEntityInterface
 {
-    final const LIST = 'FORUM_TOPIC_LIST';
     final const ITEM = 'FORUM_TOPIC_ITEM';
 
     final const TYPE_TOPIC_DEFAULT = 0;

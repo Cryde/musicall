@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Service\Builder\Forum;
 
 use App\ApiResource\Forum\Data\ForumPost;
-use App\ApiResource\Forum\Data\User;
 use App\ApiResource\Forum\ForumTopic;
 use App\Entity\Forum\ForumPost as ForumPostEntity;
 use App\Entity\Forum\ForumTopic as ForumTopicEntity;
-use App\Entity\User as UserEntity;
 
 readonly class ForumTopicListBuilder
 {
+    public function __construct(
+        private UserDtoBuilder $userDtoBuilder,
+    ) {
+    }
+
     /**
      * @param ForumTopicEntity[] $topics
      *
@@ -36,7 +39,7 @@ readonly class ForumTopicListBuilder
         $item->isLocked = $topic->getIsLocked();
         $item->lastPost = $topic->getLastPost() ? $this->buildPostSimple($topic->getLastPost()) : null;
         $item->creationDatetime = $topic->getCreationDatetime();
-        $item->author = $this->buildUserSimple($topic->getAuthor());
+        $item->author = $this->userDtoBuilder->buildFromEntity($topic->getAuthor());
         $item->postNumber = $topic->getPostNumber();
 
         return $item;
@@ -47,16 +50,7 @@ readonly class ForumTopicListBuilder
         $item = new ForumPost();
         $item->id = $post->getId();
         $item->creationDatetime = $post->getCreationDatetime();
-        $item->creator = $this->buildUserSimple($post->getCreator());
-
-        return $item;
-    }
-
-    private function buildUserSimple(UserEntity $user): User
-    {
-        $item = new User();
-        $item->id = $user->getId();
-        $item->username = $user->getUsername();
+        $item->creator = $this->userDtoBuilder->buildFromEntity($post->getCreator());
 
         return $item;
     }
