@@ -20,7 +20,7 @@
             Nouvelle annonce
           </h2>
           <p class="text-sm text-surface-500 dark:text-surface-400 m-0">
-            Creez une annonce pour trouver des musiciens ou un groupe
+            Créez une annonce pour trouver des musiciens ou un groupe
           </p>
         </div>
       </div>
@@ -29,7 +29,7 @@
     <div v-if="isSuccess" class="flex flex-col items-center justify-center py-8">
       <i class="pi pi-check-circle text-6xl text-green-500 mb-4" />
       <p class="text-lg font-medium text-surface-900 dark:text-surface-0">
-        Votre annonce a ete creee avec succes !
+        Votre annonce a été créée avec succès !
       </p>
     </div>
 
@@ -59,7 +59,7 @@
                 <i class="pi pi-users text-2xl" :class="selectedType === 'band' ? 'text-primary' : 'text-surface-500'" />
                 <div>
                   <p class="font-semibold text-surface-900 dark:text-surface-0">Je recherche un groupe</p>
-                  <p class="text-sm text-surface-500 dark:text-surface-400">Vous etes musicien et cherchez un groupe</p>
+                  <p class="text-sm text-surface-500 dark:text-surface-400">Vous êtes musicien et cherchez un groupe</p>
                 </div>
               </div>
               <div
@@ -98,13 +98,13 @@
               :options="instrumentStore.instruments"
               filter
               optionLabel="musician_name"
-              placeholder="Selectionnez un instrument"
+              placeholder="Sélectionnez un instrument"
               class="w-full"
             />
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Precedent"
+              label="Précédent"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
@@ -130,14 +130,14 @@
               :options="styleStore.styles"
               optionLabel="name"
               filter
-              placeholder="Selectionnez un ou plusieurs styles"
+              placeholder="Sélectionnez un ou plusieurs styles"
               class="w-full"
               display="chip"
             />
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Precedent"
+              label="Précédent"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
@@ -156,7 +156,7 @@
         <StepPanel v-slot="{ activateCallback }" value="4">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
-              Dans quelle zone geographique ?
+              Dans quelle zone géographique ?
             </p>
 
             <AutoComplete
@@ -186,12 +186,12 @@
             </div>
 
             <Message severity="info" size="small">
-              Indiquez de preference une ville ou commune
+              Indiquez de préférence une ville ou commune
             </Message>
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Precedent"
+              label="Précédent"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
@@ -215,12 +215,12 @@
             <Textarea
               v-model="note"
               rows="4"
-              placeholder="Informations complementaires sur votre recherche..."
+              placeholder="Informations complémentaires sur votre recherche..."
               class="w-full"
             />
 
             <div class="bg-surface-100 dark:bg-surface-800 rounded-xl p-4 mt-2">
-              <p class="font-semibold text-surface-900 dark:text-surface-0 mb-3">Recapitulatif</p>
+              <p class="font-semibold text-surface-900 dark:text-surface-0 mb-3">Récapitulatif</p>
               <div class="flex flex-col gap-2 text-sm">
                 <div class="flex justify-between">
                   <span class="text-surface-500 dark:text-surface-400">Type :</span>
@@ -243,14 +243,14 @@
           </div>
           <div class="flex justify-between pt-4">
             <Button
-              label="Precedent"
+              label="Précédent"
               icon="pi pi-arrow-left"
               severity="secondary"
               text
               @click="activateCallback('4')"
             />
             <Button
-              label="Creer l'annonce"
+              label="Créer l'annonce"
               icon="pi pi-check"
               :loading="userAnnounceStore.isSaving"
               @click="save"

@@ -62,9 +62,9 @@
           filter
           optionLabel="title"
           showClear
-          placeholder="Selectionnez une categorie"
+          placeholder="Sélectionnez une catégorie"
           resetFilterOnHide
-          emptyFilterMessage="Cette categorie n'existe pas"
+          emptyFilterMessage="Cette catégorie n'existe pas"
           @change="handleCategoryChange"
           class="w-full md:w-70"
         >
@@ -168,7 +168,7 @@ const pageTitle = computed(() => {
   if (selectCategoryFilter.value) {
     return `${selectCategoryFilter.value.title} - Publications - MusicAll`
   }
-  return 'Toutes les publications relatives a la musique - MusicAll'
+  return 'Toutes les publications relatives à la musique - MusicAll'
 })
 
 const pageHeading = computed(() => {
@@ -180,12 +180,12 @@ const pageHeading = computed(() => {
 
 const pageDescription = computed(() => {
   if (isPhotosCategory.value) {
-    return 'Decouvrez les galeries photos publiees sur MusicAll.'
+    return 'Découvrez les galeries photos publiées sur MusicAll.'
   }
   if (selectCategoryFilter.value) {
-    return `Decouvrez les ${selectCategoryFilter.value.title.toLowerCase()} publiees sur MusicAll.`
+    return `Découvrez les ${selectCategoryFilter.value.title.toLowerCase()} publiées sur MusicAll.`
   }
-  return 'Decouvrez les news, chroniques, decouvertes,... postees sur MusicAll.'
+  return 'Découvrez les news, chroniques, découvertes... publiées sur MusicAll.'
 })
 
 useTitle(pageTitle)

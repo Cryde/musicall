@@ -105,7 +105,7 @@
             text
             icon="pi pi-times"
             severity="secondary"
-            label="Reset les filtres"
+            label="Effacer les filtres"
             class="text-surface-500 dark:text-surface-400 shrink-0"
             @click="clearAllFilters"
         />
@@ -115,7 +115,7 @@
          class="flex content-center justify-center items-center h-50">
         <Message size="large" icon="pi pi-filter">
             <div class="ml-4">
-                Cherchez parmis + de 2000 annonces des musiciens ou groupes. <br/>
+                Cherchez parmi + de 2000 annonces de musiciens ou groupes. <br/>
                 Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
             </div>
         </Message>
@@ -123,7 +123,7 @@
     <template v-else>
         <div class="flex justify-end mt-6">
             <Button
-                label="Creer une annonce depuis cette recherche"
+                label="Créer une annonce depuis cette recherche"
                 icon="pi pi-plus"
                 severity="success"
                 size="small"

@@ -19,7 +19,7 @@
             Nouveau message
           </h2>
           <p class="text-sm text-surface-500 dark:text-surface-400 m-0">
-            Envoyez un message prive
+            Envoyez un message privé
           </p>
         </div>
       </div>
@@ -85,7 +85,7 @@
         :disabled="isSending"
         rows="5"
         fluid
-        placeholder="Ecrivez votre message..."
+        placeholder="Écrivez votre message..."
       />
 
       <!-- Error message -->
