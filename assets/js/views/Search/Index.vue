@@ -1,11 +1,11 @@
 <template>
     <div class="flex justify-end">
-        <breadcrumb :items="[{'label': 'Rechercher un musicien'}]"/>
+        <breadcrumb :items="[{'label': breadcrumbLabel}]"/>
     </div>
 
     <div class="flex justify-between mb-10">
         <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
-            Rechercher un musicien
+            {{ h1Title }}
         </h1>
 
         <div class="flex flex-wrap justify-end-safe gap-4">
@@ -167,7 +167,8 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
@@ -178,16 +179,71 @@ import Breadcrumb from '../Global/Breadcrumb.vue'
 import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
-useTitle('Rechercher un musicien ou un groupe - MusicAll')
+const route = useRoute()
 
 const styleStore = useStyleStore()
 const instrumentStore = useInstrumentStore()
 const musicianSearchStore = useMusicianSearchStore()
 const userSecurityStore = useUserSecurityStore()
 
+// Instrument name mapping for page titles
+const instrumentTitles = {
+  guitare: 'guitariste',
+  batterie: 'batteur',
+  basse: 'bassiste',
+  chant: 'chanteur',
+  piano: 'pianiste'
+}
+
+const prefilledInstrumentSlug = computed(() => route.meta.instrumentSlug || null)
+
+const pageTitle = computed(() => {
+  if (prefilledInstrumentSlug.value && instrumentTitles[prefilledInstrumentSlug.value]) {
+    return `Rechercher un ${instrumentTitles[prefilledInstrumentSlug.value]} - MusicAll`
+  }
+  return 'Rechercher un musicien ou un groupe - MusicAll'
+})
+
+const h1Title = computed(() => {
+  if (prefilledInstrumentSlug.value && instrumentTitles[prefilledInstrumentSlug.value]) {
+    return `Rechercher un ${instrumentTitles[prefilledInstrumentSlug.value]}`
+  }
+  return 'Rechercher un musicien'
+})
+
+const breadcrumbLabel = computed(() => {
+  if (prefilledInstrumentSlug.value && instrumentTitles[prefilledInstrumentSlug.value]) {
+    return `Rechercher un ${instrumentTitles[prefilledInstrumentSlug.value]}`
+  }
+  return 'Rechercher un musicien'
+})
+
+useTitle(pageTitle)
+
 onMounted(async () => {
   await instrumentStore.loadInstruments()
   await styleStore.loadStyles()
+
+  // Pre-fill instrument if specified in route meta
+  applyPrefilledInstrument()
+})
+
+function applyPrefilledInstrument() {
+  if (prefilledInstrumentSlug.value) {
+    const instrument = instrumentStore.instruments.find(
+      (i) => i.slug === prefilledInstrumentSlug.value
+    )
+    if (instrument) {
+      selectedInstrument.value = instrument
+    }
+  } else {
+    selectedInstrument.value = null
+  }
+}
+
+// Watch for route changes to update pre-filled instrument
+watch(prefilledInstrumentSlug, () => {
+  applyPrefilledInstrument()
 })
 
 const quickSearch = ref('')

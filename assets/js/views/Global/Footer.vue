@@ -33,6 +33,36 @@
           >
             Recherche
           </RouterLink>
+          <RouterLink
+            :to="{name: 'app_search_guitarist'}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Rechercher un guitariste
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_search_drummer'}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Rechercher un batteur
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_search_bassist'}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Rechercher un bassiste
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_search_singer'}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Rechercher un chanteur
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_search_pianist'}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Rechercher un pianiste
+          </RouterLink>
         </div>
         <div class="flex flex-col gap-4">
           <RouterLink
