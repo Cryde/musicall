@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Api\Forum;
 
 use App\Tests\ApiTestAssertionsTrait;
@@ -15,133 +17,225 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
-    public function test_get_collection(): void
+    public function test_get_collection_with_ordering(): void
     {
-        $this->markTestSkipped('This test is ok but order does not work ');
-
         $forumSource = ForumSourceFactory::new()->asRoot()->create();
-        $forumSource2 = ForumSourceFactory::new(['slug' => 'private'])->create();
-        $forumCategory1 = ForumCategoryFactory::new(['position' => 2, 'title' => 'Forum 1 category title', 'forumSource' => $forumSource])->create();
-        $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
-        $forum2 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 30])->create();
-        $forum3 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 10])->create();
-        $forumCategory2 = ForumCategoryFactory::new(['position' => 1, 'title' => 'Forum 2 category title', 'forumSource' => $forumSource])->create();
-        $forum4 = ForumFactory::new(['forumCategory' => $forumCategory2, 'position' => 2])->create();
-        $forum5 = ForumFactory::new(['forumCategory' => $forumCategory2, 'position' => 1])->create();
-        $forumCategory3 = ForumCategoryFactory::new(['position' => 3, 'title' => 'Forum 3 category title', 'forumSource' => $forumSource])->create();
-        // should appear in the result :
-        ForumCategoryFactory::new(['position' => 1, 'title' => 'Forum 4 category title', 'forumSource' => $forumSource2])->create();
 
-        $this->client->request('GET', '/api/forum_categories', [
-            'forumSource.slug' => 'root',
-            'order' => ['position' => 'asc', 'forums.position' => 'asc'],
-        ]);
+        // Create categories in non-sequential order (position 3, then 1, then 2)
+        $category3 = ForumCategoryFactory::new([
+            'position' => 3,
+            'title' => 'Third Category',
+            'forumSource' => $forumSource,
+        ])->create();
+        $category1 = ForumCategoryFactory::new([
+            'position' => 1,
+            'title' => 'First Category',
+            'forumSource' => $forumSource,
+        ])->create();
+        $category2 = ForumCategoryFactory::new([
+            'position' => 2,
+            'title' => 'Second Category',
+            'forumSource' => $forumSource,
+        ])->create();
+
+        // Create forums in non-sequential order for category1 (position 3, 1, 2)
+        $forum1c = ForumFactory::new([
+            'forumCategory' => $category1,
+            'position' => 3,
+            'title' => 'Forum 1C',
+            'slug' => 'forum-1c',
+            'description' => 'Third forum in first category',
+        ])->create();
+        $forum1a = ForumFactory::new([
+            'forumCategory' => $category1,
+            'position' => 1,
+            'title' => 'Forum 1A',
+            'slug' => 'forum-1a',
+            'description' => 'First forum in first category',
+        ])->create();
+        $forum1b = ForumFactory::new([
+            'forumCategory' => $category1,
+            'position' => 2,
+            'title' => 'Forum 1B',
+            'slug' => 'forum-1b',
+            'description' => 'Second forum in first category',
+        ])->create();
+
+        // Create forums in non-sequential order for category2 (position 2, 1)
+        $forum2b = ForumFactory::new([
+            'forumCategory' => $category2,
+            'position' => 2,
+            'title' => 'Forum 2B',
+            'slug' => 'forum-2b',
+            'description' => 'Second forum in second category',
+        ])->create();
+        $forum2a = ForumFactory::new([
+            'forumCategory' => $category2,
+            'position' => 1,
+            'title' => 'Forum 2A',
+            'slug' => 'forum-2a',
+            'description' => 'First forum in second category',
+        ])->create();
+
+        // Create single forum for category3
+        $forum3a = ForumFactory::new([
+            'forumCategory' => $category3,
+            'position' => 1,
+            'title' => 'Forum 3A',
+            'slug' => 'forum-3a',
+            'description' => 'Only forum in third category',
+        ])->create();
+
+        $this->client->request('GET', '/api/forums/categories');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'         => '/api/contexts/ForumCategory',
-            '@id'              => '/api/forum_categories',
-            '@type'            => 'Collection',
-            'member'     => [
+            '@context' => '/api/contexts/ForumCategoryItem',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [
                 [
-                    '@id' => '/api/forum_categories/' . $forumCategory2->getId(),
-                    '@type' => 'ForumCategory',
-                    'id'     => $forumCategory2->getId(),
-                    'title'  => 'Forum 2 category title',
+                    '@id' => '/api/forum_category_items/' . $category1->getId(),
+                    '@type' => 'ForumCategoryItem',
+                    'id' => $category1->getId(),
+                    'title' => 'First Category',
                     'forums' => [
                         [
-                            '@id' => '/api/forums/' . $forum5->getSlug(),
-                            '@type' => 'Forum',
-                            'id'          => $forum5->getId(),
-                            'title'       => $forum5->getTitle(),
-                            'slug'        => $forum5->getSlug(),
-                            'description' => $forum5->getDescription(),
+                            '@type' => 'ForumItem',
+                            'id' => $forum1a->getId(),
+                            'title' => 'Forum 1A',
+                            'slug' => 'forum-1a',
+                            'description' => 'First forum in first category',
                         ],
                         [
-                            '@id' => '/api/forums/' . $forum4->getSlug(),
-                            '@type' => 'Forum',
-                            'id'          => $forum4->getId(),
-                            'title'       => $forum4->getTitle(),
-                            'slug'        => $forum4->getSlug(),
-                            'description' => $forum4->getDescription(),
+                            '@type' => 'ForumItem',
+                            'id' => $forum1b->getId(),
+                            'title' => 'Forum 1B',
+                            'slug' => 'forum-1b',
+                            'description' => 'Second forum in first category',
+                        ],
+                        [
+                            '@type' => 'ForumItem',
+                            'id' => $forum1c->getId(),
+                            'title' => 'Forum 1C',
+                            'slug' => 'forum-1c',
+                            'description' => 'Third forum in first category',
                         ],
                     ],
                 ],
                 [
-                    '@id' => '/api/forum_categories/' . $forumCategory1->getId(),
-                    '@type' => 'ForumCategory',
-                    'id'     => $forumCategory1->getId(),
-                    'title'  => 'Forum 1 category title',
+                    '@id' => '/api/forum_category_items/' . $category2->getId(),
+                    '@type' => 'ForumCategoryItem',
+                    'id' => $category2->getId(),
+                    'title' => 'Second Category',
                     'forums' => [
                         [
-                            '@id' => '/api/forums/' . $forum3->getSlug(),
-                            '@type' => 'Forum',
-                            'id'          => $forum3->getId(),
-                            'title'       => $forum3->getTitle(),
-                            'slug'        => $forum3->getSlug(),
-                            'description' => $forum3->getDescription(),
+                            '@type' => 'ForumItem',
+                            'id' => $forum2a->getId(),
+                            'title' => 'Forum 2A',
+                            'slug' => 'forum-2a',
+                            'description' => 'First forum in second category',
                         ],
                         [
-                            '@id' => '/api/forums/' . $forum1->getSlug(),
-                            '@type' => 'Forum',
-                            'id'          => $forum1->getId(),
-                            'title'       => $forum1->getTitle(),
-                            'slug'        => $forum1->getSlug(),
-                            'description' => $forum1->getDescription(),
-                        ],
-                        [
-                            '@id' => '/api/forums/' . $forum2->getSlug(),
-                            '@type' => 'Forum',
-                            'id'          => $forum2->getId(),
-                            'title'       => $forum2->getTitle(),
-                            'slug'        => $forum2->getSlug(),
-                            'description' => $forum2->getDescription(),
+                            '@type' => 'ForumItem',
+                            'id' => $forum2b->getId(),
+                            'title' => 'Forum 2B',
+                            'slug' => 'forum-2b',
+                            'description' => 'Second forum in second category',
                         ],
                     ],
                 ],
                 [
-                    '@id' => '/api/forum_categories/' . $forumCategory3->getId(),
-                    '@type' => 'ForumCategory',
-                    'id'     => $forumCategory3->getId(),
-                    'title'  => 'Forum 3 category title',
-                    'forums' => [],
+                    '@id' => '/api/forum_category_items/' . $category3->getId(),
+                    '@type' => 'ForumCategoryItem',
+                    'id' => $category3->getId(),
+                    'title' => 'Third Category',
+                    'forums' => [
+                        [
+                            '@type' => 'ForumItem',
+                            'id' => $forum3a->getId(),
+                            'title' => 'Forum 3A',
+                            'slug' => 'forum-3a',
+                            'description' => 'Only forum in third category',
+                        ],
+                    ],
                 ],
             ],
             'totalItems' => 3,
-            'view'       => [
-                '@id'   => '/api/forum_categories?forumSource.slug=root&order%5Bposition%5D=asc&order%5Bforums.position%5D=asc',
-                '@type' => 'PartialCollectionView',
-            ],
-            'search'     => [
-                '@type'                        => 'IriTemplate',
-                'template'               => '/api/forum_categories{?order[position],order[forums.position],forum_source.slug,forum_source.slug[]}',
-                'variableRepresentation' => 'BasicRepresentation',
-                'mapping'                => [
-                    [
-                        '@type'    => 'IriTemplateMapping',
-                        'variable' => 'order[position]',
-                        'property' => 'position',
-                        'required' => false,
-                    ],
-                    [
-                        '@type'    => 'IriTemplateMapping',
-                        'variable' => 'order[forums.position]',
-                        'property' => 'forums.position',
-                        'required' => false,
-                    ],
-                    [
-                        '@type'    => 'IriTemplateMapping',
-                        'variable' => 'forum_source.slug',
-                        'property' => 'forum_source.slug',
-                        'required' => false,
-                    ],
-                    [
-                        '@type'    => 'IriTemplateMapping',
-                        'variable' => 'forum_source.slug[]',
-                        'property' => 'forum_source.slug',
-                        'required' => false,
+        ]);
+    }
+
+    public function test_get_collection_filters_by_root_source(): void
+    {
+        $rootSource = ForumSourceFactory::new()->asRoot()->create();
+        $otherSource = ForumSourceFactory::new(['slug' => 'other'])->create();
+
+        // Create category for root source
+        $rootCategory = ForumCategoryFactory::new([
+            'position' => 1,
+            'title' => 'Root Category',
+            'forumSource' => $rootSource,
+        ])->create();
+        $rootForum = ForumFactory::new([
+            'forumCategory' => $rootCategory,
+            'position' => 1,
+            'title' => 'Root Forum',
+            'slug' => 'root-forum',
+            'description' => 'Forum in root source',
+        ])->create();
+
+        // Create category for other source (should NOT appear)
+        $otherCategory = ForumCategoryFactory::new([
+            'position' => 1,
+            'title' => 'Other Category',
+            'forumSource' => $otherSource,
+        ])->create();
+        ForumFactory::new([
+            'forumCategory' => $otherCategory,
+            'position' => 1,
+            'title' => 'Other Forum',
+            'slug' => 'other-forum',
+            'description' => 'Forum in other source',
+        ])->create();
+
+        $this->client->request('GET', '/api/forums/categories');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategoryItem',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/forum_category_items/' . $rootCategory->getId(),
+                    '@type' => 'ForumCategoryItem',
+                    'id' => $rootCategory->getId(),
+                    'title' => 'Root Category',
+                    'forums' => [
+                        [
+                            '@type' => 'ForumItem',
+                            'id' => $rootForum->getId(),
+                            'title' => 'Root Forum',
+                            'slug' => 'root-forum',
+                            'description' => 'Forum in root source',
+                        ],
                     ],
                 ],
             ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_get_collection_empty_when_no_categories(): void
+    {
+        ForumSourceFactory::new()->asRoot()->create();
+
+        $this->client->request('GET', '/api/forums/categories');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ForumCategoryItem',
+            '@id' => '/api/forums/categories',
+            '@type' => 'Collection',
+            'member' => [],
+            'totalItems' => 0,
         ]);
     }
 }

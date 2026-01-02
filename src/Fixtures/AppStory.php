@@ -9,6 +9,7 @@ use App\Fixtures\BandSpace\BandSpaceStory;
 use App\Fixtures\Course\CourseCategoryStory;
 use App\Fixtures\Course\CourseStory;
 use App\Fixtures\Course\FakeCourseImageGeneratorStory;
+use App\Fixtures\Forum\ForumStory;
 use App\Fixtures\Publication\FakeImageGeneratorStory;
 use App\Fixtures\Publication\PublicationCategoryStory;
 use App\Fixtures\Publication\PublicationStory;
@@ -42,5 +43,8 @@ final class AppStory extends Story
 
         // band spaces
         BandSpaceStory::load();
+
+        // forums
+        ForumStory::load();
     }
 }
