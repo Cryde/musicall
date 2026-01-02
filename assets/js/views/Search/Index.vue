@@ -111,8 +111,8 @@
         />
     </div>
 
-    <div v-if="!isSearchMade.value && musicianSearchStore.announces.length === 0"
-         class="flex content-center justify-center items-center h-50">
+    <!-- Initial state: no search performed yet -->
+    <div v-if="!isSearchMade" class="flex content-center justify-center items-center h-50">
         <Message size="large" icon="pi pi-filter">
             <div class="ml-4">
                 Cherchez parmi + de 2000 annonces de musiciens ou groupes. <br/>
@@ -120,8 +120,52 @@
             </div>
         </Message>
     </div>
+
+    <!-- Loading state -->
+    <div v-else-if="isSearching" class="mt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div v-for="i in 8" :key="i" class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4">
+                <Skeleton height="8rem" class="mb-4" />
+                <Skeleton width="70%" height="1.5rem" class="mb-2" />
+                <Skeleton width="50%" height="1rem" class="mb-2" />
+                <Skeleton width="40%" height="1rem" />
+            </div>
+        </div>
+    </div>
+
+    <!-- No results state -->
+    <div v-else-if="musicianSearchStore.announces.length === 0" class="mt-8">
+        <div class="flex flex-col items-center justify-center py-12 px-4 bg-surface-50 dark:bg-surface-800 rounded-2xl">
+            <div class="w-20 h-20 rounded-full bg-surface-200 dark:bg-surface-700 flex items-center justify-center mb-6">
+                <i class="pi pi-search text-4xl text-surface-500 dark:text-surface-400" />
+            </div>
+            <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                Aucun résultat trouvé
+            </h2>
+            <p class="text-surface-600 dark:text-surface-300 text-center max-w-md mb-6">
+                Aucune annonce ne correspond à vos critères de recherche.
+                Pourquoi ne pas créer la vôtre ?
+            </p>
+            <Button
+                label="Créer une annonce avec ces critères"
+                icon="pi pi-megaphone"
+                severity="success"
+                size="large"
+                @click="handleOpenAnnounceModalFromSearch"
+            />
+            <p class="text-sm text-surface-500 dark:text-surface-400 mt-4">
+                Votre annonce sera visible par tous les musiciens de la communauté
+            </p>
+        </div>
+    </div>
+
+    <!-- Results state -->
     <template v-else>
-        <div class="flex justify-end mt-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 mt-6">
+            <p class="text-surface-600 dark:text-surface-300">
+                <span class="font-semibold text-surface-900 dark:text-surface-0">{{ musicianSearchStore.announces.length }}</span>
+                {{ musicianSearchStore.announces.length > 1 ? 'résultats trouvés' : 'résultat trouvé' }}
+            </p>
             <Button
                 label="Créer une annonce depuis cette recherche"
                 icon="pi pi-plus"
@@ -131,16 +175,16 @@
             />
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-4 mb-9">
-        <MusicianAnnounceBlockItem
-            v-for="announce in musicianSearchStore.announces"
-            :key="announce.id"
-            :type="announce.type"
-            :user="announce.user"
-            :styles="announce.styles"
-            :location_name="announce.location_name"
-            :distance="announce.distance"
-            :instrument="announce.instrument.name"
-        />
+            <MusicianAnnounceBlockItem
+                v-for="announce in musicianSearchStore.announces"
+                :key="announce.id"
+                :type="announce.type"
+                :user="announce.user"
+                :styles="announce.styles"
+                :location_name="announce.location_name"
+                :distance="announce.distance"
+                :instrument="announce.instrument.name"
+            />
         </div>
     </template>
 
@@ -167,6 +211,7 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
+import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
@@ -332,6 +377,7 @@ async function search() {
   }
   await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
+  isSearchMade.value = true
 }
 
 async function generateQuickSearchFilters() {
