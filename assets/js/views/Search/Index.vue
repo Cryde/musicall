@@ -57,40 +57,91 @@
 
     <Divider class="w-full my-0!"/>
 
-    <div class="flex flex-wrap gap-4 items-center">
-        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-            <SelectButton
-                v-model="selectSearchType"
-                :options="selectSearchTypeOption"
-                optionLabel="name"
-            />
+    <!-- Type selector with clear descriptions -->
+    <div class="mb-4">
+        <p class="text-sm text-surface-600 dark:text-surface-400 mb-3">Je recherche :</p>
+        <div :class="['grid grid-cols-2 gap-3 max-w-lg transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+            <div
+                @click="selectSearchType = selectSearchTypeOption[0]"
+                :class="[
+                    'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
+                    selectSearchType?.key === 1
+                        ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                        : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
+                ]"
+            >
+                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 1 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
+                    <i class="pi pi-user text-lg" />
+                </div>
+                <div>
+                    <div class="font-medium text-surface-900 dark:text-surface-0">Un musicien</div>
+                    <div class="text-xs text-surface-500 dark:text-surface-400">Pour mon groupe</div>
+                </div>
+            </div>
+            <div
+                @click="selectSearchType = selectSearchTypeOption[1]"
+                :class="[
+                    'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
+                    selectSearchType?.key === 2
+                        ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                        : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
+                ]"
+            >
+                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 2 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
+                    <i class="pi pi-users text-lg" />
+                </div>
+                <div>
+                    <div class="font-medium text-surface-900 dark:text-surface-0">Un groupe</div>
+                    <div class="text-xs text-surface-500 dark:text-surface-400">Pour rejoindre</div>
+                </div>
+            </div>
         </div>
-        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.instrument ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+    </div>
+
+    <!-- Mobile filter toggle -->
+    <div class="lg:hidden mb-3">
+        <Button
+            :label="showMobileFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
+            :icon="showMobileFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            icon-pos="right"
+            severity="secondary"
+            outlined
+            size="small"
+            class="w-full"
+            @click="showMobileFilters = !showMobileFilters"
+        />
+    </div>
+
+    <!-- Filters section -->
+    <div :class="['flex flex-col lg:flex-row flex-wrap gap-4 items-stretch lg:items-center', { 'hidden': !showMobileFilters && !isLargeScreen }]">
+        <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.instrument ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
             <Select
                 v-model="selectedInstrument"
                 :options="instrumentStore.instruments"
                 filter
                 optionLabel="musician_name"
                 placeholder="Sélectionnez un instrument"
-                class="w-full md:w-70"/>
+                class="w-full lg:w-56"
+            />
         </div>
-        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.styles ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+        <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.styles ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
             <MultiSelect
                 v-model="selectedStyles"
                 :options="styleStore.styles"
-                placeholder="Style"
+                placeholder="Styles musicaux"
                 option-label="name"
-                filter showClear
-                class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 text-surface-900 dark:text-surface-0"
+                filter
+                showClear
+                class="w-full lg:w-64 text-surface-900 dark:text-surface-0"
             />
         </div>
-        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+        <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
             <AutoComplete
                 v-model="selectedLocation"
                 :suggestions="locationSuggestions"
                 optionLabel="name"
                 placeholder="Ville (optionnel)"
-                class="w-full md:w-56 mr-0 lg:mr-6"
+                class="w-full lg:w-48"
                 @complete="searchLocation"
             >
                 <template #option="{ option }">
@@ -105,21 +156,58 @@
             </AutoComplete>
         </div>
 
-        <Button
-            severity="secondary"
-            icon="pi pi-search"
-            :disabled="!isSearchParamEnough || isSearching || isFilterGenerating"
-            label="Rechercher"
-            class="text-surface-500 dark:text-surface-400 shrink-0"
-            @click="search"
+        <div class="flex gap-2 w-full lg:w-auto">
+            <Button
+                severity="info"
+                icon="pi pi-search"
+                :disabled="!isSearchParamEnough || isSearching || isFilterGenerating"
+                label="Rechercher"
+                class="flex-1 lg:flex-none"
+                @click="search"
+            />
+            <Button
+                text
+                icon="pi pi-times"
+                severity="secondary"
+                v-tooltip.bottom="'Effacer les filtres'"
+                class="shrink-0"
+                @click="clearAllFilters"
+            />
+        </div>
+    </div>
+
+    <!-- Active filters summary -->
+    <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 mt-4">
+        <span class="text-sm text-surface-500 dark:text-surface-400">Filtres actifs :</span>
+        <Chip
+            v-if="selectSearchType"
+            :label="selectSearchType.key === 1 ? 'Musicien' : 'Groupe'"
+            removable
+            @remove="selectSearchType = selectSearchTypeOption[0]"
+            class="text-sm"
         />
-        <Button
-            text
-            icon="pi pi-times"
-            severity="secondary"
-            label="Effacer les filtres"
-            class="text-surface-500 dark:text-surface-400 shrink-0"
-            @click="clearAllFilters"
+        <Chip
+            v-if="selectedInstrument"
+            :label="selectedInstrument.musician_name"
+            removable
+            @remove="selectedInstrument = null"
+            class="text-sm"
+        />
+        <Chip
+            v-for="style in selectedStyles"
+            :key="style.id"
+            :label="style.name"
+            removable
+            @remove="removeStyle(style)"
+            class="text-sm"
+        />
+        <Chip
+            v-if="selectedLocation && typeof selectedLocation === 'object'"
+            :label="selectedLocation.name"
+            icon="pi pi-map-marker"
+            removable
+            @remove="selectedLocation = null"
+            class="text-sm"
         />
     </div>
 
@@ -249,15 +337,15 @@
     />
 </template>
 <script setup>
-import { useDebounceFn, useTitle } from '@vueuse/core'
+import { useDebounceFn, useMediaQuery, useTitle } from '@vueuse/core'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
+import Chip from 'primevue/chip'
 import Divider from 'primevue/divider'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
-import SelectButton from 'primevue/selectbutton'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -358,6 +446,10 @@ const createFromSearch = ref(false)
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 
+// Mobile responsive
+const showMobileFilters = ref(false)
+const isLargeScreen = useMediaQuery('(min-width: 1024px)')
+
 // Track which fields were auto-filled from quick search
 const autoFilledFields = ref({
   type: false,
@@ -415,6 +507,17 @@ const hasAutoFilledFields = computed(() => {
   const fields = autoFilledFields.value
   return fields.type || fields.instrument || fields.styles || fields.location
 })
+
+const hasActiveFilters = computed(() => {
+  return selectedInstrument.value !== null ||
+    selectedStyles.value.length > 0 ||
+    (selectedLocation.value && typeof selectedLocation.value === 'object') ||
+    selectSearchType.value?.key === 2
+})
+
+function removeStyle(style) {
+  selectedStyles.value = selectedStyles.value.filter(s => s.id !== style.id)
+}
 
 // Computed values for announce modal initial values (only when creating from search)
 const announceInitialType = computed(() => {
