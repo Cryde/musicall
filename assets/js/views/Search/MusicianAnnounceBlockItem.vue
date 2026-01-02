@@ -40,8 +40,8 @@
         </div>
         <div class="block text-center">
             {{ location_name }}
-            <span v-if="distance">
-                ({{ distance }}km)
+            <span v-if="distance" class="text-surface-500 dark:text-surface-400">
+                ({{ formattedDistance }})
             </span>
         </div>
         <div v-if="!isOwnAnnounce" class="flex gap-4">
@@ -83,6 +83,15 @@ const showAuthModal = ref(false)
 
 const isOwnAnnounce = computed(() => {
   return userSecurityStore.userProfile?.id === props.user.id
+})
+
+const formattedDistance = computed(() => {
+  if (!props.distance) return ''
+  const dist = Number(props.distance)
+  if (dist < 10) {
+    return `${dist.toFixed(1)} km`
+  }
+  return `${Math.round(dist)} km`
 })
 
 function handleContact() {
