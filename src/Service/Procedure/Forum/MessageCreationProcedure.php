@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Service\Procedure\Forum;
 
@@ -9,12 +11,12 @@ use App\Service\Builder\Forum\ForumPostBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
-class MessageCreationProcedure
+readonly class MessageCreationProcedure
 {
     public function __construct(
-        readonly private Security               $security,
-        readonly private ForumPostBuilder       $forumPostBuilder,
-        readonly private EntityManagerInterface $entityManager
+        private Security               $security,
+        private ForumPostBuilder       $forumPostBuilder,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
