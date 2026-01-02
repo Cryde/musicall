@@ -47,51 +47,63 @@
             exemples :
             <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je cherche un groupe de pop et rock qui a besoin d'un batteur</span>,
             <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je recherche un guitariste pour mon groupe de funk</span>,
-            <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je recherche un chanteur pour mon groupe de stoner et métal</span>
+            <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je recherche un bassiste sur Lyon</span>
+        </Message>
+        <Message v-if="hasAutoFilledFields" size="small" severity="warn" variant="simple" class="w-full">
+            <i class="pi pi-exclamation-triangle mr-2" />
+            La recherche rapide utilise l'IA pour interpréter votre demande. Veuillez vérifier les filtres générés et les ajuster si nécessaire.
         </Message>
     </div>
 
     <Divider class="w-full my-0!"/>
 
     <div class="flex flex-wrap gap-4 items-center">
-        <SelectButton
-            v-model="selectSearchType"
-            :options="selectSearchTypeOption"
-            optionLabel="name"
-        />
-        <Select
-            v-model="selectedInstrument"
-            :options="instrumentStore.instruments"
-            filter
-            optionLabel="musician_name"
-            placeholder="Sélectionnez un instrument"
-            class="w-full md:w-70"/>
-        <MultiSelect
-            v-model="selectedStyles"
-            :options="styleStore.styles"
-            placeholder="Style"
-            option-label="name"
-            filter showClear
-            class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 text-surface-900 dark:text-surface-0"
-        />
-        <AutoComplete
-            v-model="selectedLocation"
-            :suggestions="locationSuggestions"
-            optionLabel="name"
-            placeholder="Ville (optionnel)"
-            class="w-full md:w-56 mr-0 lg:mr-6"
-            @complete="searchLocation"
-        >
-            <template #option="{ option }">
-                <div class="flex items-center gap-2">
-                    <i class="pi pi-map-marker text-primary" />
-                    <div>
-                        <div class="font-medium">{{ option.name }}</div>
-                        <div v-if="option.context" class="text-sm text-surface-500">{{ option.context }}</div>
+        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+            <SelectButton
+                v-model="selectSearchType"
+                :options="selectSearchTypeOption"
+                optionLabel="name"
+            />
+        </div>
+        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.instrument ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+            <Select
+                v-model="selectedInstrument"
+                :options="instrumentStore.instruments"
+                filter
+                optionLabel="musician_name"
+                placeholder="Sélectionnez un instrument"
+                class="w-full md:w-70"/>
+        </div>
+        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.styles ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+            <MultiSelect
+                v-model="selectedStyles"
+                :options="styleStore.styles"
+                placeholder="Style"
+                option-label="name"
+                filter showClear
+                class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 text-surface-900 dark:text-surface-0"
+            />
+        </div>
+        <div :class="['transition-all duration-300 rounded-lg', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+            <AutoComplete
+                v-model="selectedLocation"
+                :suggestions="locationSuggestions"
+                optionLabel="name"
+                placeholder="Ville (optionnel)"
+                class="w-full md:w-56 mr-0 lg:mr-6"
+                @complete="searchLocation"
+            >
+                <template #option="{ option }">
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-map-marker text-primary" />
+                        <div>
+                            <div class="font-medium">{{ option.name }}</div>
+                            <div v-if="option.context" class="text-sm text-surface-500">{{ option.context }}</div>
+                        </div>
                     </div>
-                </div>
-            </template>
-        </AutoComplete>
+                </template>
+            </AutoComplete>
+        </div>
 
         <Button
             severity="secondary"
@@ -346,6 +358,36 @@ const createFromSearch = ref(false)
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 
+// Track which fields were auto-filled from quick search
+const autoFilledFields = ref({
+  type: false,
+  instrument: false,
+  styles: false,
+  location: false
+})
+let autoFilledTimeout = null
+
+function clearAutoFilledIndicators() {
+  if (autoFilledTimeout) {
+    clearTimeout(autoFilledTimeout)
+  }
+  autoFilledFields.value = {
+    type: false,
+    instrument: false,
+    styles: false,
+    location: false
+  }
+}
+
+function scheduleAutoFilledClear() {
+  if (autoFilledTimeout) {
+    clearTimeout(autoFilledTimeout)
+  }
+  autoFilledTimeout = setTimeout(() => {
+    clearAutoFilledIndicators()
+  }, 3000)
+}
+
 const debouncedLocationSearch = useDebounceFn(async (query) => {
   try {
     locationSuggestions.value = await geocodingApi.searchCities(query)
@@ -367,6 +409,11 @@ const isSearchParamEnough = computed(() => {
 
 const isQuickSearchParamEnough = computed(() => {
   return quickSearch.value !== '' && quickSearch.value.length > 4
+})
+
+const hasAutoFilledFields = computed(() => {
+  const fields = autoFilledFields.value
+  return fields.type || fields.instrument || fields.styles || fields.location
 })
 
 // Computed values for announce modal initial values (only when creating from search)
@@ -421,19 +468,56 @@ async function generateQuickSearchFilters() {
   quickSearch.value = searchTxt
   quickSearchErrors.value = []
   isFilterGenerating.value = true
+  clearAutoFilledIndicators()
   try {
     await musicianSearchStore.getSearchAnnouncesFilters({ search: searchTxt })
+
+    // Track which fields are being auto-filled
+    const filledFields = { type: false, instrument: false, styles: false, location: false }
+
     selectSearchType.value = selectSearchTypeOption.find(
       (type) => type.key === musicianSearchStore.filters.type
     )
+    if (selectSearchType.value) {
+      filledFields.type = true
+    }
+
     selectedInstrument.value = instrumentStore.instruments.find(
       (i) => i.id === musicianSearchStore.filters.instrument
     )
+    if (selectedInstrument.value) {
+      filledFields.instrument = true
+    }
+
     if (musicianSearchStore.filters.styles.length) {
       selectedStyles.value = styleStore.styles.filter((style) =>
         musicianSearchStore.filters.styles.includes(style.id)
       )
+      if (selectedStyles.value.length) {
+        filledFields.styles = true
+      }
     }
+
+    // Reverse geocode if location coordinates are provided
+    if (musicianSearchStore.filters.latitude && musicianSearchStore.filters.longitude) {
+      try {
+        const location = await geocodingApi.reverseGeocode(
+          musicianSearchStore.filters.latitude,
+          musicianSearchStore.filters.longitude
+        )
+        if (location) {
+          selectedLocation.value = location
+          filledFields.location = true
+        }
+      } catch (e) {
+        console.error('Error reverse geocoding:', e)
+      }
+    }
+
+    // Show auto-filled indicators and schedule their removal
+    autoFilledFields.value = filledFields
+    scheduleAutoFilledClear()
+
     await search()
   } catch (e) {
     if (e?.response?.status === 422) {
