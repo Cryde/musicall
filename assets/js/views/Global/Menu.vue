@@ -142,7 +142,7 @@ const menuItems = computed(() => [
         separator: true
       },
       {
-        label: 'Parametres',
+        label: 'Paramètres',
         icon: 'pi pi-cog',
         command: () => {
           router.push({ name: 'app_user_settings' })
@@ -152,7 +152,7 @@ const menuItems = computed(() => [
         separator: true
       },
       {
-        label: 'Se deconnecter',
+        label: 'Se déconnecter',
         icon: 'pi pi-sign-out',
         command: () => {
           userSecurityStore.logout()
@@ -164,7 +164,7 @@ const menuItems = computed(() => [
 
 const navs = ref([
   {
-    label: 'Home',
+    label: 'Accueil',
     to: 'app_home'
   },
   {

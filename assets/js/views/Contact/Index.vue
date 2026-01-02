@@ -6,10 +6,10 @@
       <div v-if="isSent" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-8 text-center">
         <i class="pi pi-check-circle text-6xl text-green-500 mb-4" />
         <p class="text-xl text-surface-700 dark:text-surface-300">
-          Votre message a bien ete envoye !
+          Votre message a bien été envoyé !
         </p>
         <Button
-          label="Retour a l'accueil"
+          label="Retour à l'accueil"
           icon="pi pi-home"
           class="mt-6"
           @click="router.push({ name: 'app_home' })"
@@ -65,7 +65,7 @@
               placeholder="Entrez votre message"
               :invalid="submitted && !message.trim()"
             />
-            <small class="text-surface-500">Minimum 10 caracteres</small>
+            <small class="text-surface-500">Minimum 10 caractères</small>
           </div>
 
           <Button
@@ -125,7 +125,7 @@ async function send() {
     if (e.response?.data?.violations) {
       errors.value = e.response.data.violations.map((item) => item.message)
     } else {
-      errors.value = ['Une erreur est survenue. Veuillez reessayer.']
+      errors.value = ['Une erreur est survenue. Veuillez réessayer.']
     }
   } finally {
     isSending.value = false

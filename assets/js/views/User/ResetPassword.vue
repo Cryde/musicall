@@ -8,10 +8,10 @@
             <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Mot de passe modifie !
+            Mot de passe modifié !
           </h1>
           <p class="text-surface-600 dark:text-surface-300">
-            Votre mot de passe a ete reinitialise avec succes.
+            Votre mot de passe a été réinitialisé avec succès.
             Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
           </p>
           <Button
@@ -29,10 +29,10 @@
             <i class="pi pi-times text-4xl text-red-600 dark:text-red-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Lien invalide ou expire
+            Lien invalide ou expiré
           </h1>
           <p class="text-surface-600 dark:text-surface-300">
-            Ce lien de reinitialisation n'est plus valide. Il a peut-etre expire ou a deja ete utilise.
+            Ce lien de réinitialisation n'est plus valide. Il a peut-être expiré ou a déjà été utilisé.
           </p>
           <div class="flex flex-col sm:flex-row gap-4 mt-4">
             <Button
@@ -40,7 +40,7 @@
               @click="goToForgotPassword"
             />
             <Button
-              label="Retour a la connexion"
+              label="Retour à la connexion"
               severity="secondary"
               outlined
               @click="goToLogin"
@@ -87,7 +87,7 @@
               @input="clearFieldError('password')"
             />
             <small v-if="errors.password" class="text-red-500">{{ errors.password }}</small>
-            <small v-else class="text-surface-500">Minimum 6 caracteres</small>
+            <small v-else class="text-surface-500">Minimum 6 caractères</small>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -110,7 +110,7 @@
 
           <Button
             type="submit"
-            label="Reinitialiser le mot de passe"
+            label="Réinitialiser le mot de passe"
             class="w-full"
             :loading="isSubmitting"
             :disabled="isSubmitting"
@@ -122,7 +122,7 @@
               class="text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
               <i class="pi pi-arrow-left mr-2"></i>
-              Retour a la connexion
+              Retour à la connexion
             </RouterLink>
           </div>
         </form>
@@ -140,7 +140,7 @@ import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
 
-useTitle('Reinitialiser le mot de passe - MusicAll')
+useTitle('Réinitialiser le mot de passe - MusicAll')
 
 const route = useRoute()
 const router = useRouter()
@@ -169,7 +169,7 @@ function validatePassword() {
     return false
   }
   if (form.password.length < 6) {
-    errors.password = 'Le mot de passe doit contenir au moins 6 caracteres'
+    errors.password = 'Le mot de passe doit contenir au moins 6 caractères'
     return false
   }
   return true
@@ -216,7 +216,7 @@ async function handleSubmit() {
     } else if (error.isValidationError && error.violationsByField?.password) {
       errors.password = error.violationsByField.password[0].message
     } else {
-      globalError.value = error.message || 'Une erreur est survenue. Veuillez reessayer.'
+      globalError.value = error.message || 'Une erreur est survenue. Veuillez réessayer.'
     }
   } finally {
     isSubmitting.value = false

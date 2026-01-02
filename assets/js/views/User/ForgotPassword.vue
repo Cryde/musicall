@@ -8,24 +8,24 @@
             <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Email envoye !
+            Email envoyé !
           </h1>
           <div class="flex flex-col gap-4 text-surface-600 dark:text-surface-300">
             <p>
-              Si un compte existe avec cette adresse, vous recevrez un email avec les instructions pour reinitialiser votre mot de passe.
+              Si un compte existe avec cette adresse, vous recevrez un email avec les instructions pour réinitialiser votre mot de passe.
             </p>
             <Message severity="info" :closable="false" class="text-left">
               <div class="flex flex-col gap-2">
-                <span class="font-semibold">Verifiez votre boite mail</span>
+                <span class="font-semibold">Vérifiez votre boîte mail</span>
                 <span>
-                  Le lien de reinitialisation est valable pendant 24 heures.
-                  Si vous ne recevez pas l'email, verifiez vos spams.
+                  Le lien de réinitialisation est valable pendant 24 heures.
+                  Si vous ne recevez pas l'email, vérifiez vos spams.
                 </span>
               </div>
             </Message>
           </div>
           <Button
-            label="Retour a la connexion"
+            label="Retour à la connexion"
             class="mt-4"
             @click="goToLogin"
           />
@@ -39,10 +39,10 @@
             <i class="pi pi-lock text-3xl text-primary-600 dark:text-primary-400"></i>
           </div>
           <h1 class="text-center text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight w-full">
-            Mot de passe oublie ?
+            Mot de passe oublié ?
           </h1>
           <p class="text-center text-surface-500 dark:text-surface-400">
-            Entrez votre email ou nom d'utilisateur et nous vous enverrons un lien pour reinitialiser votre mot de passe.
+            Entrez votre email ou nom d'utilisateur et nous vous enverrons un lien pour réinitialiser votre mot de passe.
           </p>
         </div>
 
@@ -85,7 +85,7 @@
               class="text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
               <i class="pi pi-arrow-left mr-2"></i>
-              Retour a la connexion
+              Retour à la connexion
             </RouterLink>
           </div>
         </form>
@@ -105,7 +105,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
 
-useTitle('Mot de passe oublie - MusicAll')
+useTitle('Mot de passe oublié - MusicAll')
 
 const router = useRouter()
 

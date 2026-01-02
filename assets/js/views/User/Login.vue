@@ -6,7 +6,7 @@
           Bon retour parmi nous !
         </h1>
         <p class="text-center text-surface-500 dark:text-surface-400">
-          Connectez-vous pour acceder a votre compte
+          Connectez-vous pour accéder à votre compte
         </p>
       </div>
 
@@ -60,7 +60,7 @@
             :to="{ name: 'app_forgot_password' }"
             class="text-surface-500 dark:text-surface-400 font-medium cursor-pointer hover:text-surface-600 dark:hover:text-surface-300 text-sm"
           >
-            Mot de passe oublie ?
+            Mot de passe oublié ?
           </RouterLink>
         </div>
 
@@ -78,7 +78,7 @@
             :to="{ name: 'app_register' }"
             class="ml-2 text-primary font-medium cursor-pointer hover:text-primary-emphasis"
           >
-            Creer un compte
+            Créer un compte
           </RouterLink>
         </div>
       </form>
