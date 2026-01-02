@@ -15,4 +15,9 @@ class ForumRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Forum::class);
     }
+
+    public function findBySlug(string $slug): ?Forum
+    {
+        return $this->findOneBy(['slug' => $slug]);
+    }
 }

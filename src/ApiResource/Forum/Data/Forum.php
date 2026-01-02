@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\ApiResource\Forum;
+namespace App\ApiResource\Forum\Data;
 
-class ForumItem
+class Forum
 {
     public string $id;
     public string $title;

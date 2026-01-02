@@ -2,11 +2,13 @@
 
 namespace App\Service\Procedure\Forum;
 
-use App\Entity\Forum\Forum;
-use App\Entity\Forum\ForumTopic;
+use App\ApiResource\Forum\Forum;
+use App\ApiResource\Forum\ForumTopic;
 use App\Entity\User;
+use App\Repository\Forum\ForumRepository;
 use App\Service\Builder\Forum\ForumPostBuilder;
 use App\Service\Builder\Forum\ForumTopicBuilder;
+use App\Service\Builder\Forum\ForumTopicListBuilder;
 use App\Service\Slugifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -17,13 +19,16 @@ class TopicCreationProcedure
         readonly private Security               $security,
         readonly private ForumTopicBuilder      $forumTopicBuilder,
         readonly private ForumPostBuilder       $forumPostBuilder,
+        readonly private ForumTopicListBuilder  $forumTopicListBuilder,
         readonly private Slugifier              $slugifier,
+        readonly private ForumRepository        $forumRepository,
         readonly private EntityManagerInterface $entityManager
     ) {
     }
 
-    public function process(Forum $forum, string $title, string $message): ForumTopic
+    public function process(Forum $forumDto, string $title, string $message): ForumTopic
     {
+        $forum = $this->forumRepository->find($forumDto->id);
         /** @var User $user */
         $user = $this->security->getUser();
         // Create the topic
@@ -37,6 +42,6 @@ class TopicCreationProcedure
         $topic->setLastPost($post);
         $this->entityManager->flush();
 
-        return $topic;
+        return $this->forumTopicListBuilder->buildFromEntity($topic);
     }
 }

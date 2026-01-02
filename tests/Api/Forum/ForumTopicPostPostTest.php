@@ -42,12 +42,13 @@ class ForumTopicPostPostTest extends ApiTestCase
         $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->_real()]));
         $this->assertCount(0, $forumPostRepository->findAll());
 
+        $userId = $user1->getId();
         $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [
                 "title" => "Title for this new topic",
                 "message" => "test content for new topic",
-                "forum"   => '/api/forums/' . $forum1->getSlug(),
+                "forum"   => '/api/forum/' . $forum1->getSlug(),
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -55,20 +56,33 @@ class ForumTopicPostPostTest extends ApiTestCase
         $results = $forumTopicRepository->findBy(['forum' => $forum1->_real()]);
         $this->assertCount(1, $results);
         $this->assertCount(1, $forumPostRepository->findBy(['topic' => $results[0]]));
+        $posts = $forumPostRepository->findBy(['topic' => $results[0]]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumTopic',
             '@id' => '/api/forum_topics/' . $results[0]->getSlug(),
             '@type' => 'ForumTopic',
-            'id'                => $results[0]->getId(),
-            'forum'             => [
-                '@id' => '/api/forums/' . $forum1->_real()->getSlug(),
-                '@type' => 'Forum',
-                'id'    => $forum1->_real()->getId(),
-                'title' => $forum1->_real()->getTitle(),
-                'slug'  => $forum1->_real()->getSlug(),
+            'id' => $results[0]->getId(),
+            'title' => 'Title for this new topic',
+            'slug' => 'title-for-this-new-topic',
+            'type' => 0,
+            'is_locked' => false,
+            'last_post' => [
+                '@type' => 'ForumPost',
+                'id' => $posts[0]->getId(),
+                'creation_datetime' => $posts[0]->getCreationDatetime()->format('c'),
+                'creator' => [
+                    '@type' => 'User',
+                    'id' => $userId,
+                    'username' => 'base_admin',
+                ],
             ],
-            'title'             => 'Title for this new topic',
-            'slug'              => 'title-for-this-new-topic',
+            'creation_datetime' => $results[0]->getCreationDatetime()->format('c'),
+            'author' => [
+                '@type' => 'User',
+                'id' => $userId,
+                'username' => 'base_admin',
+            ],
+            'post_number' => 1,
         ]);
     }
 

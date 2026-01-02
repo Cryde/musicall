@@ -2,41 +2,28 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\OpenApi\Model\Operation;
-use Doctrine\DBAL\Types\Types;
-use DateTimeInterface;
-use DateTime;
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use App\Contracts\SluggableEntityInterface;
 use App\Repository\Forum\ForumRepository;
+use DateTime;
+use DateTimeInterface;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
-#[ApiResource(operations: [
-    new Get(
-        uriTemplate: 'forums/{slug}',
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [Forum::ITEM]],
-        name: 'api_forums_get_item'
-    ),
-])]
 class Forum implements SluggableEntityInterface
 {
-    final const ITEM = 'FORUM_ITEM';
-
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
+    #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
     #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([ForumCategory::LIST, Forum::ITEM, ForumTopic::ITEM])]
+    #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
@@ -47,7 +34,6 @@ class Forum implements SluggableEntityInterface
     private string $description;
     #[ORM\ManyToOne(targetEntity: ForumCategory::class, inversedBy: 'forums')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([Forum::ITEM])]
     private ForumCategory $forumCategory;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
