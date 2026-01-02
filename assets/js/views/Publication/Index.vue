@@ -79,7 +79,10 @@
 
       <div class="self-stretch flex flex-col gap-8">
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
-          <template v-if="isPhotosCategory">
+          <template v-if="!hasItems && !fetchedItems">
+            <PublicationListItemSkeleton v-for="i in 5" :key="i" />
+          </template>
+          <template v-else-if="isPhotosCategory">
             <GalleryListItem
               v-for="gallery in galleriesStore.galleries"
               :key="gallery.slug"
@@ -124,6 +127,7 @@ import { useGalleriesStore } from '../../store/gallery/galleries.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import GalleryListItem from '../Gallery/GalleryListItem.vue'
 import PublicationListItem from './PublicationListItem.vue'
@@ -146,6 +150,13 @@ const fetchedItems = ref()
 const showAuthModal = ref(false)
 
 const isPhotosCategory = computed(() => selectCategoryFilter.value?.slug === 'photos')
+
+const hasItems = computed(() => {
+  if (isPhotosCategory.value) {
+    return galleriesStore.galleries.length > 0
+  }
+  return publicationsStore.publications.length > 0
+})
 
 const allCategories = computed(() => {
   return [PHOTOS_CATEGORY, ...publicationsStore.publicationCategories]
@@ -194,6 +205,8 @@ onMounted(async () => {
   await publicationsStore.loadCategories()
   initCategoryFromRoute()
   isInitialized.value = true
+  // Load initial data
+  await infiniteHandler()
 })
 
 function initCategoryFromRoute() {

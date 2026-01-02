@@ -42,6 +42,7 @@
 </template>
 
 <script setup>
+import Tag from 'primevue/tag'
 import relativeDateFilter from '../../helper/date/relative-date.js'
 
 defineProps(['toRoute', 'cover', 'title', 'description', 'category', 'author', 'date'])

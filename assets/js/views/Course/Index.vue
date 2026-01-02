@@ -79,6 +79,9 @@
 
       <div class="self-stretch flex flex-col gap-8">
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
+          <template v-if="coursesStore.courses.length === 0 && !fetchedItems">
+            <PublicationListItemSkeleton v-for="i in 5" :key="i" />
+          </template>
           <CourseListItem
               v-for="course in coursesStore.courses"
               :to-route="{name: 'app_course_show', params: {slug: course.slug}}"
@@ -111,6 +114,7 @@ import maoImg from '../../../image/course/mao.png'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddCourseVideoModal from '../../components/Course/AddCourseVideoModal.vue'
 import ColumnCardRadio from '../../components/RadioGroup/ColumnCardRadio.vue'
+import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import { useCoursesStore } from '../../store/course/course.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
@@ -174,6 +178,8 @@ onMounted(async () => {
   await coursesStore.loadCategories()
   initCategoryFromRoute()
   isInitialized.value = true
+  // Load initial data
+  await infiniteHandler()
 })
 
 function initCategoryFromRoute() {

@@ -26,6 +26,9 @@
 
       <div class="self-stretch flex flex-col gap-8">
         <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
+          <template v-if="publicationsStore.publications.length === 0 && !fetchedItems">
+            <PublicationListItemSkeleton v-for="i in 12" :key="i" />
+          </template>
           <PublicationListItem
             v-for="publication in publicationsStore.publications"
             :to-route="{name: 'app_publication_show', params: {slug: publication.slug}}"
@@ -56,6 +59,9 @@
       </div>
 
       <div class="flex flex-col gap-2">
+        <template v-if="isLoadingAnnounces">
+          <AnnounceCardSkeleton v-for="i in 3" :key="i" />
+        </template>
         <Card
           v-for="announce in musicianAnnounceStore.lastAnnounces"
           :key="announce.id"
@@ -136,6 +142,8 @@ import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
+import AnnounceCardSkeleton from '../../components/Skeleton/AnnounceCardSkeleton.vue'
+import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
@@ -158,9 +166,18 @@ const showMessageModal = ref(false)
 const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
 const authModalMessage = ref('')
+const isLoadingAnnounces = ref(true)
 
 onMounted(async () => {
-  await musicianAnnounceStore.loadLastAnnounces()
+  // Load initial data
+  await Promise.all([
+    infiniteHandler(),
+    (async () => {
+      isLoadingAnnounces.value = true
+      await musicianAnnounceStore.loadLastAnnounces()
+      isLoadingAnnounces.value = false
+    })()
+  ])
 })
 
 const infiniteHandler = async () => {
