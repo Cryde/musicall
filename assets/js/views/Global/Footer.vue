@@ -17,6 +17,42 @@
           >
             Publications
           </RouterLink>
+          <RouterLink
+            :to="{name: 'app_publications_by_category', params: {slug: 'news'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            News
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_publications_by_category', params: {slug: 'chroniques'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Chroniques
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_publications_by_category', params: {slug: 'interviews'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Interviews
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_publications_by_category', params: {slug: 'live-reports'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Live-reports
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_publications_by_category', params: {slug: 'articles'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Articles
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_publications_by_category', params: {slug: 'photos'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Photos
+          </RouterLink>
         </div>
         <div class="flex flex-col gap-4">
           <RouterLink
@@ -24,6 +60,36 @@
             class="text-base font-medium text-surface-900 dark:text-surface-0 leading-normal"
           >
             Cours
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_course_by_category', params: {slug: 'guitare'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Guitare
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_course_by_category', params: {slug: 'basse'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Basse
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_course_by_category', params: {slug: 'batterie'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Batterie
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_course_by_category', params: {slug: 'mao'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            MAO
+          </RouterLink>
+          <RouterLink
+            :to="{name: 'app_course_by_category', params: {slug: 'divers'}}"
+            class="text-sm text-surface-600 dark:text-surface-400 leading-normal hover:text-primary"
+          >
+            Divers
           </RouterLink>
         </div>
         <div class="flex flex-col gap-4">
