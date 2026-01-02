@@ -13,7 +13,6 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
@@ -24,15 +23,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
 #[ApiResource(operations: [
     new Get(
+        uriTemplate: '/forum/topics/{slug}',
         openapi: new Operation(tags: ['Forum']),
         normalizationContext: ['groups' => [ForumTopic::ITEM]],
         name: 'api_forum_topics_get_item',
     ),
-    new GetCollection(
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [ForumTopic::LIST]],
-        name: 'api_forum_topics_get_collection'
-    )
 ],
     paginationClientEnabled: true,
     paginationItemsPerPage: 15
@@ -51,7 +46,7 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
+    #[Groups([ForumTopic::ITEM])]
     #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\ManyToOne(targetEntity: Forum::class)]
@@ -59,31 +54,25 @@ class ForumTopic implements SluggableEntityInterface
     #[Groups([ForumTopic::ITEM])]
     private Forum $forum;
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
+    #[Groups([ForumTopic::ITEM])]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
-    #[Groups([ForumTopic::LIST, ForumTopic::ITEM])]
+    #[Groups([ForumTopic::ITEM])]
     private string $slug;
     #[ORM\Column(type: Types::INTEGER)]
-    #[Groups([ForumTopic::LIST])]
     private int $type = self::TYPE_TOPIC_DEFAULT;
     #[ORM\Column(type: Types::BOOLEAN)]
-    #[Groups([ForumTopic::LIST])]
     private bool $isLocked = false;
     #[ORM\ManyToOne(targetEntity: ForumPost::class)]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups([ForumTopic::LIST])]
     private ?ForumPost $lastPost = null;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([ForumTopic::LIST])]
     private DateTimeInterface $creationDatetime;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([ForumTopic::LIST])]
     private User $author;
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
-    #[Groups([ForumTopic::LIST])]
     private int $postNumber = 0;
 
     public function __construct()

@@ -6,24 +6,23 @@ namespace App\ApiResource\Forum;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\Entity\Forum\ForumSource;
-use App\State\Provider\Forum\ForumCategoryListProvider;
+use App\ApiResource\Forum\Data\Forum;
+use App\State\Provider\Forum\ForumCategoryProvider;
 
 #[GetCollection(
     uriTemplate: '/forums/categories',
     openapi: new Operation(tags: ['Forum']),
     paginationEnabled: false,
     name: 'api_forum_categories_list',
-    provider: ForumCategoryListProvider::class,
+    provider: ForumCategoryProvider::class,
 )]
-class ForumCategoryItem
+class ForumCategory
 {
     public string $id;
     public string $title;
 
-    /** @var ForumItem[] */
+    /** @var Forum[] */
     #[ApiProperty(genId: false)]
     public array $forums = [];
 }

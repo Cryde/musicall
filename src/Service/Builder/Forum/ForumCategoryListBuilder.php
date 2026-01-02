@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace App\Service\Builder\Forum;
 
-use App\ApiResource\Forum\ForumCategoryItem;
-use App\ApiResource\Forum\ForumItem;
-use App\Entity\Forum\Forum;
-use App\Entity\Forum\ForumCategory;
+use App\ApiResource\Forum\Data\Forum;
+use App\ApiResource\Forum\ForumCategory;
+use App\Entity\Forum\Forum as ForumEntity;
+use App\Entity\Forum\ForumCategory as ForumCategoryEntity;
 
 readonly class ForumCategoryListBuilder
 {
     /**
-     * @param ForumCategory[] $categories
+     * @param ForumCategoryEntity[] $categories
      *
-     * @return ForumCategoryItem[]
+     * @return ForumCategory[]
      */
     public function buildFromEntities(array $categories): array
     {
         return array_map(
-            fn (ForumCategory $category): ForumCategoryItem => $this->buildCategoryItem($category),
+            fn (ForumCategoryEntity $category): ForumCategory => $this->buildCategoryItem($category),
             $categories
         );
     }
 
-    private function buildCategoryItem(ForumCategory $category): ForumCategoryItem
+    private function buildCategoryItem(ForumCategoryEntity $category): ForumCategory
     {
-        $item = new ForumCategoryItem();
+        $item = new ForumCategory();
         $item->id = $category->getId();
         $item->title = $category->getTitle();
         $item->forums = $this->buildForumItems($category->getForums()->toArray());
@@ -35,24 +35,24 @@ readonly class ForumCategoryListBuilder
     }
 
     /**
-     * @param Forum[] $forums
+     * @param ForumEntity[] $forums
      *
-     * @return ForumItem[]
+     * @return Forum[]
      */
     private function buildForumItems(array $forums): array
     {
         // Sort forums by position
-        usort($forums, fn (Forum $a, Forum $b): int => $a->getPosition() <=> $b->getPosition());
+        usort($forums, fn (ForumEntity $a, ForumEntity $b): int => $a->getPosition() <=> $b->getPosition());
 
         return array_map(
-            fn (Forum $forum): ForumItem => $this->buildForumItem($forum),
+            fn (ForumEntity $forum): Forum => $this->buildForumItem($forum),
             $forums
         );
     }
 
-    private function buildForumItem(Forum $forum): ForumItem
+    private function buildForumItem(ForumEntity $forum): Forum
     {
-        $item = new ForumItem();
+        $item = new Forum();
         $item->id = $forum->getId();
         $item->title = $forum->getTitle();
         $item->slug = $forum->getSlug();

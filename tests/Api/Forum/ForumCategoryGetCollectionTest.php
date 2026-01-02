@@ -89,32 +89,32 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
         $this->client->request('GET', '/api/forums/categories');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ForumCategoryItem',
+            '@context' => '/api/contexts/ForumCategory',
             '@id' => '/api/forums/categories',
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/forum_category_items/' . $category1->getId(),
-                    '@type' => 'ForumCategoryItem',
+                    '@id' => '/api/forum_categories/' . $category1->getId(),
+                    '@type' => 'ForumCategory',
                     'id' => $category1->getId(),
                     'title' => 'First Category',
                     'forums' => [
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $forum1a->getId(),
                             'title' => 'Forum 1A',
                             'slug' => 'forum-1a',
                             'description' => 'First forum in first category',
                         ],
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $forum1b->getId(),
                             'title' => 'Forum 1B',
                             'slug' => 'forum-1b',
                             'description' => 'Second forum in first category',
                         ],
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $forum1c->getId(),
                             'title' => 'Forum 1C',
                             'slug' => 'forum-1c',
@@ -123,20 +123,20 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/forum_category_items/' . $category2->getId(),
-                    '@type' => 'ForumCategoryItem',
+                    '@id' => '/api/forum_categories/' . $category2->getId(),
+                    '@type' => 'ForumCategory',
                     'id' => $category2->getId(),
                     'title' => 'Second Category',
                     'forums' => [
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $forum2a->getId(),
                             'title' => 'Forum 2A',
                             'slug' => 'forum-2a',
                             'description' => 'First forum in second category',
                         ],
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $forum2b->getId(),
                             'title' => 'Forum 2B',
                             'slug' => 'forum-2b',
@@ -145,13 +145,13 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/forum_category_items/' . $category3->getId(),
-                    '@type' => 'ForumCategoryItem',
+                    '@id' => '/api/forum_categories/' . $category3->getId(),
+                    '@type' => 'ForumCategory',
                     'id' => $category3->getId(),
                     'title' => 'Third Category',
                     'forums' => [
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $forum3a->getId(),
                             'title' => 'Forum 3A',
                             'slug' => 'forum-3a',
@@ -200,18 +200,18 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
         $this->client->request('GET', '/api/forums/categories');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ForumCategoryItem',
+            '@context' => '/api/contexts/ForumCategory',
             '@id' => '/api/forums/categories',
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/forum_category_items/' . $rootCategory->getId(),
-                    '@type' => 'ForumCategoryItem',
+                    '@id' => '/api/forum_categories/' . $rootCategory->getId(),
+                    '@type' => 'ForumCategory',
                     'id' => $rootCategory->getId(),
                     'title' => 'Root Category',
                     'forums' => [
                         [
-                            '@type' => 'ForumItem',
+                            '@type' => 'Forum',
                             'id' => $rootForum->getId(),
                             'title' => 'Root Forum',
                             'slug' => 'root-forum',
@@ -231,7 +231,7 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
         $this->client->request('GET', '/api/forums/categories');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ForumCategoryItem',
+            '@context' => '/api/contexts/ForumCategory',
             '@id' => '/api/forums/categories',
             '@type' => 'Collection',
             'member' => [],

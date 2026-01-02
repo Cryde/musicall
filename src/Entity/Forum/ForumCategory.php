@@ -36,10 +36,8 @@ class ForumCategory
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([Forum::ITEM])]
     private $id;
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([Forum::ITEM])]
     private string $title;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;

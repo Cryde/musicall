@@ -6,14 +6,14 @@ namespace App\State\Provider\Forum;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\ApiResource\Forum\ForumCategoryItem;
+use App\ApiResource\Forum\ForumCategory;
 use App\Repository\Forum\ForumCategoryRepository;
 use App\Service\Builder\Forum\ForumCategoryListBuilder;
 
 /**
- * @implements ProviderInterface<ForumCategoryItem>
+ * @implements ProviderInterface<ForumCategory>
  */
-readonly class ForumCategoryListProvider implements ProviderInterface
+readonly class ForumCategoryProvider implements ProviderInterface
 {
     private const string DEFAULT_SOURCE_SLUG = 'root';
 
@@ -24,7 +24,7 @@ readonly class ForumCategoryListProvider implements ProviderInterface
     }
 
     /**
-     * @return ForumCategoryItem[]
+     * @return ForumCategory[]
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Api\Forum;
 
 use App\Tests\ApiTestAssertionsTrait;
@@ -17,48 +19,47 @@ class ForumGetTest extends ApiTestCase
 
     public function test_get_item(): void
     {
-        $forumCategory = ForumCategoryFactory::new(['position' => 1, 'title' => 'forum category title'])->create();
+        $forumCategory = ForumCategoryFactory::new(['position' => 1, 'title' => 'Forum category title'])->create();
         $forum = ForumFactory::new([
-            'description'    => 'Forum description',
-            'forumCategory'  => $forumCategory,
-            'position'       => 5,
-            'postNumber'     => 10,
-            'slug'           => 'forum-title',
-            'title'          => 'Forum title',
-            'topicNumber'    => 20,
+            'description' => 'Forum description',
+            'forumCategory' => $forumCategory,
+            'position' => 5,
+            'postNumber' => 10,
+            'slug' => 'forum-title',
+            'title' => 'Forum title',
+            'topicNumber' => 20,
             'updateDatetime' => null,
         ])->create();
 
-        $this->client->request('GET', '/api/forums/forum-title');
+        $this->client->request('GET', '/api/forum/forum-title');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Forum',
-            '@id' => '/api/forums/forum-title',
+            '@id' => '/api/forum/forum-title',
             '@type' => 'Forum',
-            'id'             => $forum->getId(),
-            'title'          => 'Forum title',
+            'id' => $forum->getId(),
+            'title' => 'Forum title',
             'forum_category' => [
-                'id'    => $forumCategory->getId(),
-                'title' => 'forum category title',
-                '@id' => '/api/forum_categories/' . $forumCategory->getId(),
-                '@type' => 'ForumCategory'
+                '@type' => 'ForumCategory',
+                'id' => $forumCategory->getId(),
+                'title' => 'Forum category title',
             ],
         ]);
     }
 
     public function test_get_item_not_found(): void
     {
-        $this->client->request('GET', '/api/forums/not-found');
+        $this->client->request('GET', '/api/forum/not-found');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
             '@id' => '/api/errors/404',
             '@type' => 'Error',
-            'title'       => 'An error occurred',
-            'description' => 'Not Found',
-            'detail'            => 'Not Found',
-            'status'            => 404,
-            'type'              => '/errors/404',
-            '@context' => '/api/contexts/Error',
+            'title' => 'An error occurred',
+            'detail' => 'Forum not found',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Forum not found',
         ]);
     }
 }
