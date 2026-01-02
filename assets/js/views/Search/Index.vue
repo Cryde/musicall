@@ -58,7 +58,7 @@
     <Divider class="w-full my-0!"/>
 
     <!-- Type selector with clear descriptions -->
-    <div class="mb-4">
+    <div>
         <p class="text-sm text-surface-600 dark:text-surface-400 mb-3">Je recherche :</p>
         <div :class="['grid grid-cols-2 gap-3 max-w-lg transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
             <div
@@ -113,66 +113,65 @@
     </div>
 
     <!-- Filters section -->
-    <div :class="['flex flex-col lg:flex-row flex-wrap gap-4 items-stretch lg:items-center', { 'hidden': !showMobileFilters && !isLargeScreen }]">
-        <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.instrument ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-            <Select
-                v-model="selectedInstrument"
-                :options="instrumentStore.instruments"
-                filter
-                optionLabel="musician_name"
-                placeholder="Sélectionnez un instrument"
-                class="w-full lg:w-56"
-            />
-        </div>
-        <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.styles ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-            <MultiSelect
-                v-model="selectedStyles"
-                :options="styleStore.styles"
-                placeholder="Styles musicaux"
-                option-label="name"
-                filter
-                showClear
-                class="w-full lg:w-64 text-surface-900 dark:text-surface-0"
-            />
-        </div>
-        <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-            <AutoComplete
-                v-model="selectedLocation"
-                :suggestions="locationSuggestions"
-                optionLabel="name"
-                placeholder="Ville (optionnel)"
-                class="w-full lg:w-48"
-                @complete="searchLocation"
-            >
-                <template #option="{ option }">
-                    <div class="flex items-center gap-2">
-                        <i class="pi pi-map-marker text-primary" />
-                        <div>
-                            <div class="font-medium">{{ option.name }}</div>
-                            <div v-if="option.context" class="text-sm text-surface-500">{{ option.context }}</div>
+    <div :class="[{ 'hidden': !showMobileFilters && !isLargeScreen }]">
+        <div class="flex flex-col lg:flex-row flex-wrap gap-3 items-stretch lg:items-center">
+            <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.instrument ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+                <Select
+                    v-model="selectedInstrument"
+                    :options="instrumentStore.instruments"
+                    filter
+                    optionLabel="musician_name"
+                    placeholder="Sélectionnez un instrument"
+                    class="w-full lg:w-56"
+                />
+            </div>
+            <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.styles ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+                <MultiSelect
+                    v-model="selectedStyles"
+                    :options="styleStore.styles"
+                    placeholder="Styles musicaux"
+                    option-label="name"
+                    filter
+                    showClear
+                    class="w-full lg:w-56 text-surface-900 dark:text-surface-0"
+                />
+            </div>
+            <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
+                <AutoComplete
+                    v-model="selectedLocation"
+                    :suggestions="locationSuggestions"
+                    optionLabel="name"
+                    placeholder="Ville (optionnel)"
+                    fluid
+                    @complete="searchLocation"
+                >
+                    <template #option="{ option }">
+                        <div class="flex items-center gap-2">
+                            <i class="pi pi-map-marker text-primary" />
+                            <div>
+                                <div class="font-medium">{{ option.name }}</div>
+                                <div v-if="option.context" class="text-sm text-surface-500">{{ option.context }}</div>
+                            </div>
                         </div>
-                    </div>
-                </template>
-            </AutoComplete>
-        </div>
-
-        <div class="flex gap-2 w-full lg:w-auto">
-            <Button
-                severity="info"
-                icon="pi pi-search"
-                :disabled="!isSearchParamEnough || isSearching || isFilterGenerating"
-                label="Rechercher"
-                class="flex-1 lg:flex-none"
-                @click="search"
-            />
-            <Button
-                text
-                icon="pi pi-times"
-                severity="secondary"
-                v-tooltip.bottom="'Effacer les filtres'"
-                class="shrink-0"
-                @click="clearAllFilters"
-            />
+                    </template>
+                </AutoComplete>
+            </div>
+            <div>
+                <Button
+                    severity="info"
+                    icon="pi pi-search"
+                    :disabled="!isSearchParamEnough || isSearching || isFilterGenerating"
+                    label="Rechercher"
+                    @click="search"
+                />
+                <Button
+                    text
+                    icon="pi pi-times"
+                    severity="secondary"
+                    v-tooltip.bottom="'Effacer les filtres'"
+                    @click="clearAllFilters"
+                />
+            </div>
         </div>
     </div>
 
@@ -183,7 +182,7 @@
             v-if="selectSearchType"
             :label="selectSearchType.key === 1 ? 'Musicien' : 'Groupe'"
             removable
-            @remove="selectSearchType = selectSearchTypeOption[0]"
+            @remove="selectSearchType = null"
             class="text-sm"
         />
         <Chip
@@ -435,7 +434,7 @@ const selectedInstrument = ref(null)
 const selectedStyles = ref([])
 const selectedLocation = ref(null)
 const locationSuggestions = ref([])
-const selectSearchType = ref({ key: 1, name: 'Musiciens' })
+const selectSearchType = ref(null)
 const selectSearchTypeOption = [
   { key: 1, name: 'Musiciens' },
   { key: 2, name: 'Groupe' }
@@ -496,7 +495,7 @@ function searchLocation(event) {
 }
 
 const isSearchParamEnough = computed(() => {
-  return selectedInstrument.value !== null && selectSearchType.value !== null
+  return selectSearchType.value !== null && selectedInstrument.value !== null
 })
 
 const isQuickSearchParamEnough = computed(() => {
@@ -509,10 +508,10 @@ const hasAutoFilledFields = computed(() => {
 })
 
 const hasActiveFilters = computed(() => {
-  return selectedInstrument.value !== null ||
+  return selectSearchType.value !== null ||
+    selectedInstrument.value !== null ||
     selectedStyles.value.length > 0 ||
-    (selectedLocation.value && typeof selectedLocation.value === 'object') ||
-    selectSearchType.value?.key === 2
+    (selectedLocation.value && typeof selectedLocation.value === 'object')
 })
 
 function removeStyle(style) {
@@ -641,7 +640,7 @@ function clearAllFilters() {
   selectedLocation.value = null
   locationSuggestions.value = []
   quickSearch.value = ''
-  selectSearchType.value = { key: 1, name: 'Musiciens' }
+  selectSearchType.value = null
 }
 
 function handleOpenAnnounceModal() {
