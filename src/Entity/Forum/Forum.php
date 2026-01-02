@@ -19,14 +19,14 @@ class Forum implements SluggableEntityInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
+    #[Groups([ForumTopic::ITEM])]
     #[ApiProperty(identifier: false)]
     private $id;
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
+    #[Groups([ForumTopic::ITEM])]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    #[Groups([ForumCategory::LIST, ForumTopic::ITEM])]
+    #[Groups([ForumTopic::ITEM])]
     #[ApiProperty(identifier: true)]
     private string $slug;
     #[ORM\Column(type: Types::TEXT)]

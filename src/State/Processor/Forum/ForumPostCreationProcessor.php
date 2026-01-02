@@ -7,6 +7,7 @@ namespace App\State\Processor\Forum;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Forum\ForumPostCreation;
+use App\ApiResource\Forum\TopicPost;
 use App\Entity\Forum\ForumPost;
 use App\Service\Procedure\Forum\MessageCreationProcedure;
 
@@ -23,7 +24,7 @@ readonly class ForumPostCreationProcessor implements ProcessorInterface
     /**
      * @param ForumPostCreation $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ForumPost
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TopicPost
     {
         return $this->messageCreationProcedure->process($data->topic, $data->content);
     }

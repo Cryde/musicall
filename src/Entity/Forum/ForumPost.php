@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
-use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\User;
 use App\Repository\Forum\ForumPostRepository;
@@ -25,19 +20,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ForumPostRepository::class)]
-#[ApiResource(operations: [
-    new Get(
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [ForumPost::ITEM]],
-    ),
-    new GetCollection(
-        openapi: new Operation(tags: ['Forum']),
-        normalizationContext: ['groups' => [ForumPost::LIST]],
-        name: 'api_forum_posts_get_collection',
-    ),
-], paginationItemsPerPage: 10)]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['topic' => SearchFilterInterface::STRATEGY_EXACT])]
-#[ApiFilter(filterClass: OrderFilter::class, properties: ['creationDatetime' => OrderFilterInterface::DIRECTION_ASC])]
 class ForumPost
 {
     final public const LIST = 'FORUM_POST_LIST';
@@ -49,10 +31,10 @@ class ForumPost
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumPost::LIST, ForumTopic::LIST, ForumPost::ITEM])]
+    #[Groups([ForumPost::ITEM])]
     private $id;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([ForumPost::LIST, ForumTopic::LIST, ForumPost::ITEM])]
+    #[Groups([ForumPost::ITEM])]
     private DateTimeInterface $creationDatetime;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups([ForumPost::LIST])]
@@ -60,7 +42,7 @@ class ForumPost
     #[Assert\NotBlank]
     #[Assert\Length(min: ForumPost::MIN_MESSAGE_LENGTH)]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([ForumPost::LIST, ForumPost::ITEM])]
+    #[Groups([ForumPost::ITEM])]
     private string $content;
 
     #[Assert\NotBlank]
@@ -69,7 +51,7 @@ class ForumPost
     private ForumTopic $topic;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([ForumPost::LIST, ForumTopic::LIST, ForumPost::ITEM])]
+    #[Groups([ForumPost::ITEM])]
     #[ApiProperty(genId: false)]
     private User $creator;
 

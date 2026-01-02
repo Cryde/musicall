@@ -60,17 +60,18 @@ class ForumPostPostTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $results = $forumPostRepository->findBy(['topic' => $topic->_real()]);
         $this->assertCount(1, $results);
+        $userId = $user1->getId();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/ForumPost',
-            '@id' => '/api/forum_posts/' . $results[0]->getId(),
-            '@type' => 'ForumPost',
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/topic_posts/' . $results[0]->getId(),
+            '@type' => 'TopicPost',
             'id'                => $results[0]->getId(),
             'creation_datetime' => $results[0]->getCreationDatetime()->format('c'),
             'content'           => 'test content for new message',
             'creator'           => [
                 '@type' => 'User',
+                'id'              => $userId,
                 'username'        => 'base_admin',
-                'profile_picture' => null,
             ],
         ]);
     }

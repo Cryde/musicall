@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, ForumTopic::LIST, ForumPost::LIST, ForumTopic::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, ForumPost::ITEM, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
     private string $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]

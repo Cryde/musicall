@@ -2,32 +2,16 @@
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Doctrine\Orm\State\Options;
-use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use ApiPlatform\OpenApi\Model\Operation;
-use Doctrine\ORM\QueryBuilder;
-use Doctrine\DBAL\Types\Types;
-use DateTimeInterface;
-use DateTime;
-use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
-use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use App\Repository\Forum\ForumCategoryRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ForumCategoryRepository::class)]
-#[ApiResource(operations: [
-    new Get(openapi: new Operation(tags: ['Forum']),),
-])]
 class ForumCategory
 {
     final const LIST = 'FORUM_CATEGORY_LIST';
@@ -50,7 +34,6 @@ class ForumCategory
      * @var Collection<int, Forum>
      */
     #[ORM\OneToMany(mappedBy: 'forumCategory', targetEntity: Forum::class)]
-    #[Groups([ForumCategory::LIST])]
     private Collection $forums;
 
     public function __construct()
