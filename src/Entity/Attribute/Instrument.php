@@ -26,6 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     new GetCollection(
         openapi: new Operation(tags: ['Attributes']),
         paginationItemsPerPage: 100,
+        order: ['musicianName' => 'ASC'],
         name: 'api_instruments_get_collection',
     ),
 ])]

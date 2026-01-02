@@ -639,6 +639,9 @@ function clearAllFilters() {
   locationSuggestions.value = []
   quickSearch.value = ''
   selectSearchType.value = null
+  // Reset results to initial state
+  musicianSearchStore.clear()
+  isSearchMade.value = false
 }
 
 function handleOpenAnnounceModal() {
