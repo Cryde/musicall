@@ -16,6 +16,11 @@ const routes = [
         path: '',
         component: () => import('../views/Home/Home.vue')
       },
+      {
+        name: 'app_discover',
+        path: 'decouvrir',
+        component: () => import('../views/Discover/Index.vue')
+      },
       ...publication,
       ...course,
       ...search,

@@ -17,7 +17,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 #[ORM\Entity(repositoryClass: MusicianAnnounceRepository::class)]
 class MusicianAnnounce
 {
-    final const LIMIT_LAST_ANNOUNCES = 10;
+    final const LIMIT_LAST_ANNOUNCES = 6;
     final const TYPE_MUSICIAN = 1;
     final const string TYPE_MUSICIAN_STR = '1';
     final const TYPE_BAND = 2;
