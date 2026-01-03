@@ -29,11 +29,11 @@
           <Button label="Voir les publications" icon="pi pi-arrow-right" iconPos="right" />
         </router-link>
       </div>
-      <div class="h-80 md:h-96 w-full xl:flex-1">
+      <div class="w-full xl:flex-1">
         <img
           :src="discoverPublicationImage"
           alt="Publications MusicAll"
-          class="w-full rounded-xl"
+          class="w-full max-h-96 object-contain rounded-xl"
         />
       </div>
     </div>
@@ -57,11 +57,11 @@
           <Button label="Voir les annonces" icon="pi pi-arrow-right" iconPos="right" />
         </router-link>
       </div>
-      <div class="h-80 md:h-96 w-full xl:flex-1">
+      <div class="w-full xl:flex-1">
         <img
           :src="discoverAnnouncesImage"
           alt="Annonces musiciens MusicAll"
-          class="w-full rounded-xl"
+          class="w-full max-h-96 object-contain rounded-xl"
         />
       </div>
     </div>
@@ -85,11 +85,11 @@
           <Button label="Accéder au forum" icon="pi pi-arrow-right" iconPos="right" />
         </router-link>
       </div>
-      <div class="h-80 md:h-96 w-full xl:flex-1">
+      <div class="w-full xl:flex-1">
         <img
           :src="discoverForumImage"
           alt="Forum MusicAll"
-          class="w-full rounded-xl"
+          class="w-full max-h-96 object-contain rounded-xl"
         />
       </div>
     </div>
@@ -113,11 +113,11 @@
           <Button label="Voir les galeries" icon="pi pi-arrow-right" iconPos="right" />
         </router-link>
       </div>
-      <div class="h-80 md:h-96 w-full xl:flex-1">
+      <div class="w-full xl:flex-1">
         <img
           :src="discoverPhotoImage"
           alt="Galeries photos MusicAll"
-          class="w-full rounded-xl"
+          class="w-full max-h-96 object-contain rounded-xl"
         />
       </div>
     </div>
