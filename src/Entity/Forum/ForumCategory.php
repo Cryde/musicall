@@ -14,8 +14,6 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 #[ORM\Entity(repositoryClass: ForumCategoryRepository::class)]
 class ForumCategory
 {
-    final const LIST = 'FORUM_CATEGORY_LIST';
-
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
