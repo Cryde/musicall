@@ -37,7 +37,7 @@ class ForumPostPostTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create();
         $forumSource = ForumSourceFactory::new()->asRoot()->create();
         $forumCategory1 = ForumCategoryFactory::new(['position' => 2, 'title' => 'Forum 1 category title', 'forumSource' => $forumSource])->create();
-        $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
+        $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20, 'postNumber' => 5])->create();
         $topic = ForumTopicFactory::new([
             'author' => UserFactory::new(),
             'forum' => $forum1,
@@ -48,6 +48,8 @@ class ForumPostPostTest extends ApiTestCase
 
         //pretest
         $this->assertCount(0, $forumPostRepository->findBy(['topic' => $topic->_real()]));
+        $this->assertSame(10, $topic->getPostNumber());
+        $this->assertSame(5, $forum1->getPostNumber());
 
         $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum/posts',
@@ -74,6 +76,13 @@ class ForumPostPostTest extends ApiTestCase
                 'username'        => 'base_admin',
             ],
         ]);
+
+        // Verify counters are incremented
+        $topic->_refresh();
+        $forum1->_refresh();
+        $this->assertSame(11, $topic->getPostNumber());
+        $this->assertSame(6, $forum1->getPostNumber());
+        $this->assertSame($results[0]->getId(), $topic->getLastPost()->getId());
     }
 
     public function test_post_with_empty_content(): void
@@ -196,6 +205,43 @@ class ForumPostPostTest extends ApiTestCase
             'description' => 'topic: Cette valeur ne doit pas être nulle.',
             'type' => '/validation_errors/ad32d13f-c3d4-423b-909a-857b961eb720',
             'title' => 'An error occurred',
+        ]);
+    }
+
+    public function test_post_on_locked_topic(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create();
+        $forumSource = ForumSourceFactory::new()->asRoot()->create();
+        $forumCategory1 = ForumCategoryFactory::new(['position' => 2, 'title' => 'Forum 1 category title', 'forumSource' => $forumSource])->create();
+        $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
+        $topic = ForumTopicFactory::new([
+            'author' => UserFactory::new(),
+            'forum' => $forum1,
+            'postNumber' => 10,
+            'slug' => 'locked-topic-slug',
+            'title' => 'Locked Topic',
+            'isLocked' => true,
+        ])->create();
+
+        $this->client->loginUser($user1->_real());
+        $this->client->jsonRequest('POST', '/api/forum/posts',
+            [
+                'content' => 'This is a valid content message',
+                'topic' => '/api/forums/topics/' . $topic->getSlug(),
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'status' => 400,
+            'detail' => 'Ce sujet est verrouillé. Vous ne pouvez plus y répondre.',
+            'description' => 'Ce sujet est verrouillé. Vous ne pouvez plus y répondre.',
+            'title' => 'An error occurred',
+            'type' => '/errors/400',
         ]);
     }
 }

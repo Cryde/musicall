@@ -6,11 +6,14 @@ namespace App\Service\Builder\Forum;
 
 use App\ApiResource\Forum\TopicPost;
 use App\Entity\Forum\ForumPost as ForumPostEntity;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 readonly class TopicPostListBuilder
 {
     public function __construct(
         private UserDtoBuilder $userDtoBuilder,
+        private HtmlSanitizerInterface $appForumSanitizer
     ) {
     }
 
@@ -33,7 +36,7 @@ readonly class TopicPostListBuilder
         $item->id = $post->getId();
         $item->creationDatetime = $post->getCreationDatetime();
         $item->updateDatetime = $post->getUpdateDatetime();
-        $item->content = $post->getContent();
+        $item->content = $this->appForumSanitizer->sanitize(nl2br((string) $post->getContent()));
         $item->creator = $this->userDtoBuilder->buildFromEntity($post->getCreator());
 
         return $item;

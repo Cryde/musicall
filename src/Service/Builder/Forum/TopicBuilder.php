@@ -17,6 +17,7 @@ readonly class TopicBuilder
         $item->id = $topic->getId();
         $item->title = $topic->getTitle();
         $item->slug = $topic->getSlug();
+        $item->isLocked = $topic->getIsLocked();
         $item->forum = $this->buildForum($topic->getForum());
 
         return $item;

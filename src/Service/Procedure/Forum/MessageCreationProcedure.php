@@ -14,6 +14,7 @@ use App\Service\Builder\Forum\ForumPostBuilder;
 use App\Service\Builder\Forum\TopicPostListBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 readonly class MessageCreationProcedure
 {
@@ -30,12 +31,23 @@ readonly class MessageCreationProcedure
     {
         $topic = $this->forumTopicRepository->find($topicDto->id);
 
+        if ($topic->getIsLocked()) {
+            throw new BadRequestHttpException('Ce sujet est verrouillé. Vous ne pouvez plus y répondre.');
+        }
+
         /** @var User $user */
         $user = $this->security->getUser();
         $post = $this->forumPostBuilder->build($topic, $user, $message);
         $this->entityManager->persist($post);
-        // set the post as the last post for this topic
+
+        // Update topic counters
         $topic->setLastPost($post);
+        $topic->setPostNumber($topic->getPostNumber() + 1);
+
+        // Update forum counters
+        $forum = $topic->getForum();
+        $forum->setPostNumber($forum->getPostNumber() + 1);
+
         $this->entityManager->flush();
 
         return $this->topicPostListBuilder->buildFromEntity($post);
