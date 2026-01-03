@@ -1,71 +1,132 @@
 <template>
-  <div class="flex flex-col md:flex-row gap-5">
-    <div class="basis-12/12 md:basis-8/12">
-      <div class="flex justify-between">
-        <h2 class="text-xl font-semibold leading-tight text-surface-900 dark:text-surface-0 mb-4 md:mb-0">
-          Dernières publications
-        </h2>
-      </div>
-      <div class="hidden md:flex md:flex-wrap justify-end-safe gap-4 mb-10">
-        <Button
-          v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
-          label="Poster une découverte"
-          icon="pi pi-plus"
-          severity="info"
-          size="small"
-          @click="handleOpenDiscoverModal"
-        />
-        <Button
-          v-tooltip.bottom="'Ajouter une publication'"
-          label="Poster une publication"
-          icon="pi pi-plus"
-          severity="info"
-          size="small"
-        />
-      </div>
-
-      <div class="self-stretch flex flex-col gap-8">
-        <div class="grid grid-cols-1 xl:grid-cols-1 gap-3">
-          <template v-if="publicationsStore.publications.length === 0 && !fetchedItems">
-            <PublicationListItemSkeleton v-for="i in 12" :key="i" />
-          </template>
-          <PublicationListItem
-            v-for="publication in publicationsStore.publications"
-            :to-route="{name: 'app_publication_show', params: {slug: publication.slug}}"
-            :key="publication.id"
-            :cover="publication.cover"
-            :title="publication.title"
-            :description="publication.description"
-            :category="publication.sub_category"
-            :author="publication.author"
-            :date="publication.publication_datetime"
-          />
+  <div>
+    <!-- Hero Section -->
+    <section class="bg-surface-900 p-8 lg:p-16 rounded-2xl mb-12">
+      <div class="flex flex-wrap lg:flex-row flex-col-reverse gap-12 items-center">
+        <div class="flex-1">
+          <h1 class="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+            La communauté de
+            <span class="text-primary underline">passionné·e·s de musique</span>
+          </h1>
+          <p class="text-lg text-gray-400 mb-8 leading-normal">
+            Partagez votre passion, découvrez des contenus et connectez-vous avec des milliers de passionné·e·s sur MusicAll.
+          </p>
+          <ul class="list-none flex flex-col gap-4">
+            <li class="flex items-center gap-3">
+              <i class="pi pi-book text-primary text-xl" />
+              <span class="text-gray-400 leading-normal">Articles, cours et actualités musicales</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i class="pi pi-images text-primary text-xl" />
+              <span class="text-gray-400 leading-normal">Galeries photos de concerts et événements</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i class="pi pi-users text-primary text-xl" />
+              <span class="text-gray-400 leading-normal">Annonces pour trouver musiciens et groupes</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i class="pi pi-comments text-primary text-xl" />
+              <span class="text-gray-400 leading-normal">Forum pour échanger avec la communauté</span>
+            </li>
+          </ul>
+          <div class="flex flex-wrap gap-4 mt-10">
+            <router-link :to="{ name: 'app_discover' }">
+              <Button label="Découvrir" icon="pi pi-compass" rounded size="large" severity="secondary" />
+            </router-link>
+            <router-link v-if="!userSecurityStore.isAuthenticated" :to="{ name: 'app_register' }">
+              <Button label="S'inscrire gratuitement" icon="pi pi-user-plus" rounded size="large" />
+            </router-link>
+          </div>
+        </div>
+        <div class="flex-1 text-center lg:text-right">
+          <div class="flex justify-center lg:justify-end gap-6">
+            <div class="flex flex-col gap-6">
+              <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-primary/20 flex items-center justify-center">
+                <i class="pi pi-headphones text-4xl lg:text-5xl text-primary" />
+              </div>
+              <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-blue-500/20 flex items-center justify-center">
+                <i class="pi pi-microphone text-4xl lg:text-5xl text-blue-400" />
+              </div>
+            </div>
+            <div class="flex flex-col gap-6 mt-8">
+              <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-orange-500/20 flex items-center justify-center">
+                <i class="pi pi-volume-up text-4xl lg:text-5xl text-orange-400" />
+              </div>
+              <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-purple-500/20 flex items-center justify-center">
+                <i class="pi pi-star text-4xl lg:text-5xl text-purple-400" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="hidden md:block md:basis-4/12">
-      <h2 class="text-xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
-        Dernières annonces
-      </h2>
+    </section>
 
-      <div class="flex flex-wrap justify-end-safe gap-4 mb-10">
-        <Button
-          label="Poster une annonce"
-          icon="pi pi-plus"
-          severity="info"
-          size="small"
-          @click="handleOpenAnnounceModal"
-        />
+    <!-- Latest Publications Section -->
+    <section class="mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
+          Dernières publications
+        </h2>
+        <div class="flex gap-2">
+          <Button
+            v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
+            label="Poster une découverte"
+            icon="pi pi-plus"
+            severity="info"
+            size="small"
+            class="hidden md:inline-flex"
+            @click="handleOpenDiscoverModal"
+          />
+          <router-link :to="{ name: 'app_publications' }">
+            <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
+          </router-link>
+        </div>
       </div>
 
-      <div class="flex flex-col gap-2">
-        <template v-if="isLoadingAnnounces">
-          <AnnounceCardSkeleton v-for="i in 3" :key="i" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <template v-if="isLoadingPublications">
+          <PublicationListItemSkeleton v-for="i in 4" :key="i" />
         </template>
-        <Card
-          v-for="announce in musicianAnnounceStore.lastAnnounces"
-          :key="announce.id"
-        >
+        <PublicationListItem
+          v-for="publication in latestPublications"
+          :key="publication.id"
+          :to-route="{ name: 'app_publication_show', params: { slug: publication.slug } }"
+          :cover="publication.cover"
+          :title="publication.title"
+          :description="publication.description"
+          :category="publication.sub_category"
+          :author="publication.author"
+          :date="publication.publication_datetime"
+        />
+      </div>
+    </section>
+
+    <!-- Latest Announces Section -->
+    <section class="mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
+          Dernières annonces
+        </h2>
+        <div class="flex gap-2">
+          <Button
+            label="Poster une annonce"
+            icon="pi pi-plus"
+            severity="info"
+            size="small"
+            class="hidden md:inline-flex"
+            @click="handleOpenAnnounceModal"
+          />
+          <router-link :to="{ name: 'app_search_musician' }">
+            <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
+          </router-link>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <template v-if="isLoadingAnnounces">
+          <AnnounceCardSkeleton v-for="i in 6" :key="i" />
+        </template>
+        <Card v-for="announce in musicianAnnounceStore.lastAnnounces" :key="announce.id">
           <template #content>
             <div class="flex gap-3">
               <Avatar
@@ -83,22 +144,17 @@
               <div class="flex-1">
                 <template v-if="isTypeBand(announce.type)">
                   <span class="font-semibold">{{ announce.author.username }}</span> est un
-                  <strong>
-                    {{ announce.instrument.musician_name.toLocaleLowerCase() }}
-                  </strong> et cherche un groupe jouant du
-                  <strong>
-                    {{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}
-                  </strong>
+                  <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
+                  et cherche un groupe jouant du
+                  <strong>{{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}</strong>
                   dans les alentours de {{ announce.location_name }}
                 </template>
                 <template v-if="isTypeMusician(announce.type)">
                   <span class="font-semibold">{{ announce.author.username }}</span> cherche pour son groupe un
-                  <strong>
-                    {{ announce.instrument.musician_name.toLocaleLowerCase() }}
-                  </strong> jouant du
-                  <strong>
-                    {{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}
-                  </strong> dans les alentours de {{ announce.location_name }}
+                  <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
+                  jouant du
+                  <strong>{{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}</strong>
+                  dans les alentours de {{ announce.location_name }}
                 </template>
 
                 <div v-if="!isOwnAnnounce(announce)" class="mt-3 flex justify-end">
@@ -116,29 +172,35 @@
           </template>
         </Card>
       </div>
-    </div>
+    </section>
 
+    <!-- CTA Section -->
+    <section v-if="!userSecurityStore.isAuthenticated" class="text-center py-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl">
+      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
+        Rejoignez la communauté MusicAll
+      </h2>
+      <p class="text-primary-100 mb-6">
+        Des milliers de passionné·e·s échangent déjà sur MusicAll
+      </p>
+      <router-link :to="{ name: 'app_register' }">
+        <Button label="Créer mon compte gratuitement" icon="pi pi-user-plus" size="large" severity="contrast" />
+      </router-link>
+    </section>
+
+    <!-- Modals -->
     <AddDiscoverModal @published="handleDiscoverPublished" />
-    <SendMessageModal
-      v-model:visible="showMessageModal"
-      :selected-recipient="selectedRecipient"
-    />
-    <AuthRequiredModal
-      v-model:visible="showAuthModal"
-      :message="authModalMessage"
-    />
-    <AddAnnounceModal
-      v-model:visible="showAnnounceModal"
-      @created="handleAnnounceCreated"
-    />
+    <SendMessageModal v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" />
+    <AuthRequiredModal v-model:visible="showAuthModal" :message="authModalMessage" />
+    <AddAnnounceModal v-model:visible="showAnnounceModal" @created="handleAnnounceCreated" />
   </div>
 </template>
+
 <script setup>
-import { useInfiniteScroll, useTitle } from '@vueuse/core'
+import { useTitle } from '@vueuse/core'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
@@ -159,41 +221,29 @@ const musicianAnnounceStore = useMusicianAnnounceStore()
 const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
 
-const currentPage = ref(1)
-const fetchedItems = ref()
+const isLoadingPublications = ref(true)
+const isLoadingAnnounces = ref(true)
 const showAuthModal = ref(false)
 const showMessageModal = ref(false)
 const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
 const authModalMessage = ref('')
-const isLoadingAnnounces = ref(true)
+
+const latestPublications = computed(() => publicationsStore.publications.slice(0, 4))
 
 onMounted(async () => {
-  // Load initial data
   await Promise.all([
-    infiniteHandler(),
+    (async () => {
+      isLoadingPublications.value = true
+      await publicationsStore.loadPublications({ page: 1 })
+      isLoadingPublications.value = false
+    })(),
     (async () => {
       isLoadingAnnounces.value = true
       await musicianAnnounceStore.loadLastAnnounces()
       isLoadingAnnounces.value = false
     })()
   ])
-})
-
-const infiniteHandler = async () => {
-  fetchedItems.value = await publicationsStore.loadPublications({
-    page: currentPage.value
-  })
-  currentPage.value++
-}
-
-const canLoadMore = () => {
-  return !fetchedItems.value || !!fetchedItems.value.length
-}
-
-const { reset } = useInfiniteScroll(document, infiniteHandler, {
-  distance: 1000,
-  canLoadMore
 })
 
 function isTypeBand(type) {
@@ -210,8 +260,7 @@ function isOwnAnnounce(announce) {
 
 function handleOpenDiscoverModal() {
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value =
-      'Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter.'
+    authModalMessage.value = 'Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter.'
     showAuthModal.value = true
     return
   }
@@ -242,15 +291,12 @@ function handleContactAnnounce(author) {
 }
 
 async function handleDiscoverPublished() {
-  currentPage.value = 1
-  fetchedItems.value = undefined
-  publicationsStore.resetPublications()
-  await nextTick()
-  reset()
+  isLoadingPublications.value = true
+  await publicationsStore.loadPublications({ page: 1 })
+  isLoadingPublications.value = false
 }
 
 onUnmounted(() => {
-  fetchedItems.value = undefined
   publicationsStore.clear()
   musicianAnnounceStore.clear()
 })
