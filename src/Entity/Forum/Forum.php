@@ -24,7 +24,6 @@ class Forum implements SluggableEntityInterface
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private string $slug;
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([ForumCategory::LIST])]
     private string $description;
     #[ORM\ManyToOne(targetEntity: ForumCategory::class, inversedBy: 'forums')]
     #[ORM\JoinColumn(nullable: false)]

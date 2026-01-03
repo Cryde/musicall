@@ -23,7 +23,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ForumPost
 {
     final public const LIST = 'FORUM_POST_LIST';
-    final public const ITEM = 'FORUM_POST_ITEM';
 
     final public const MIN_MESSAGE_LENGTH = 10;
 
@@ -31,18 +30,14 @@ class ForumPost
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([ForumPost::ITEM])]
     private $id;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([ForumPost::ITEM])]
     private DateTimeInterface $creationDatetime;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups([ForumPost::LIST])]
     private ?DateTimeInterface $updateDatetime = null;
     #[Assert\NotBlank]
     #[Assert\Length(min: ForumPost::MIN_MESSAGE_LENGTH)]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([ForumPost::ITEM])]
     private string $content;
 
     #[Assert\NotBlank]
@@ -51,7 +46,6 @@ class ForumPost
     private ForumTopic $topic;
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([ForumPost::ITEM])]
     #[ApiProperty(genId: false)]
     private User $creator;
 

@@ -7,7 +7,6 @@ namespace App\ApiResource\Forum;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Forum\ForumPost;
-use App\Entity\Forum\ForumTopic;
 use App\State\Processor\Forum\ForumPostCreationProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -22,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ForumPostCreation
 {
     #[Assert\NotNull]
-    public ForumTopic $topic;
+    public Topic $topic;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: ForumPost::MIN_MESSAGE_LENGTH)]

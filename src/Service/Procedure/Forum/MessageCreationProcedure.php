@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Procedure\Forum;
 
+use App\ApiResource\Forum\Topic;
 use App\ApiResource\Forum\TopicPost;
 use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
 use App\Entity\User;
+use App\Repository\Forum\ForumTopicRepository;
 use App\Service\Builder\Forum\ForumPostBuilder;
 use App\Service\Builder\Forum\TopicPostListBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,11 +22,14 @@ readonly class MessageCreationProcedure
         private ForumPostBuilder       $forumPostBuilder,
         private TopicPostListBuilder $topicPostListBuilder,
         private EntityManagerInterface $entityManager,
+        private ForumTopicRepository $forumTopicRepository,
     ) {
     }
 
-    public function process(ForumTopic $topic, string $message): TopicPost
+    public function process(Topic $topicDto, string $message): TopicPost
     {
+        $topic = $this->forumTopicRepository->find($topicDto->id);
+
         /** @var User $user */
         $user = $this->security->getUser();
         $post = $this->forumPostBuilder->build($topic, $user, $message);
