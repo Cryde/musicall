@@ -8,11 +8,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Forum\ForumPostCreation;
 use App\ApiResource\Forum\TopicPost;
-use App\Entity\Forum\ForumPost;
 use App\Service\Procedure\Forum\MessageCreationProcedure;
 
 /**
- * @implements ProcessorInterface<ForumPostCreation, ForumPost>
+ * @implements ProcessorInterface<ForumPostCreation, TopicPost>
  */
 readonly class ForumPostCreationProcessor implements ProcessorInterface
 {
