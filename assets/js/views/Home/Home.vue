@@ -1,32 +1,32 @@
 <template>
   <div>
     <!-- Hero Section -->
-    <section class="bg-surface-900 p-8 lg:p-16 rounded-2xl mb-12">
+    <section class="bg-surface-100 dark:bg-surface-900 p-8 lg:p-16 rounded-2xl mb-12">
       <div class="flex flex-wrap lg:flex-row flex-col-reverse gap-12 items-center">
         <div class="flex-1">
-          <h1 class="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+          <h1 class="text-3xl lg:text-4xl font-bold text-surface-900 dark:text-white mb-4 leading-tight">
             La communauté de
             <span class="text-primary underline">passionné·e·s de musique</span>
           </h1>
-          <p class="text-lg text-gray-400 mb-8 leading-normal">
+          <p class="text-lg text-surface-600 dark:text-gray-400 mb-8 leading-normal">
             Partagez votre passion, découvrez des contenus et connectez-vous avec des milliers de passionné·e·s sur MusicAll.
           </p>
           <ul class="list-none flex flex-col gap-4">
             <li class="flex items-center gap-3">
               <i class="pi pi-book text-primary text-xl" />
-              <span class="text-gray-400 leading-normal">Articles, cours et actualités musicales</span>
+              <span class="text-surface-600 dark:text-gray-400 leading-normal">Articles, cours et actualités musicales</span>
             </li>
             <li class="flex items-center gap-3">
               <i class="pi pi-images text-primary text-xl" />
-              <span class="text-gray-400 leading-normal">Galeries photos de concerts et événements</span>
+              <span class="text-surface-600 dark:text-gray-400 leading-normal">Galeries photos de concerts et événements</span>
             </li>
             <li class="flex items-center gap-3">
               <i class="pi pi-users text-primary text-xl" />
-              <span class="text-gray-400 leading-normal">Annonces pour trouver musiciens et groupes</span>
+              <span class="text-surface-600 dark:text-gray-400 leading-normal">Annonces pour trouver musiciens et groupes</span>
             </li>
             <li class="flex items-center gap-3">
               <i class="pi pi-comments text-primary text-xl" />
-              <span class="text-gray-400 leading-normal">Forum pour échanger avec la communauté</span>
+              <span class="text-surface-600 dark:text-gray-400 leading-normal">Forum pour échanger avec la communauté</span>
             </li>
           </ul>
           <div class="flex flex-wrap gap-4 mt-10">
@@ -38,22 +38,22 @@
             </router-link>
           </div>
         </div>
-        <div class="flex-1 text-center lg:text-right">
-          <div class="flex justify-center lg:justify-end gap-6">
+        <div class="hidden lg:block flex-1 text-right">
+          <div class="inline-flex justify-end gap-6">
             <div class="flex flex-col gap-6">
               <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-primary/20 flex items-center justify-center">
                 <i class="pi pi-headphones text-4xl lg:text-5xl text-primary" />
               </div>
               <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-blue-500/20 flex items-center justify-center">
-                <i class="pi pi-microphone text-4xl lg:text-5xl text-blue-400" />
+                <i class="pi pi-microphone text-4xl lg:text-5xl text-blue-500 dark:text-blue-400" />
               </div>
             </div>
             <div class="flex flex-col gap-6 mt-8">
               <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-orange-500/20 flex items-center justify-center">
-                <i class="pi pi-volume-up text-4xl lg:text-5xl text-orange-400" />
+                <i class="pi pi-volume-up text-4xl lg:text-5xl text-orange-500 dark:text-orange-400" />
               </div>
               <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl bg-purple-500/20 flex items-center justify-center">
-                <i class="pi pi-star text-4xl lg:text-5xl text-purple-400" />
+                <i class="pi pi-star text-4xl lg:text-5xl text-purple-500 dark:text-purple-400" />
               </div>
             </div>
           </div>
