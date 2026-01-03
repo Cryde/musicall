@@ -28,6 +28,8 @@ class Topic
     #[ApiProperty(identifier: true)]
     public string $slug;
 
+    public bool $isLocked;
+
     #[ApiProperty(genId: false)]
     public Forum $forum;
 }

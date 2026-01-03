@@ -94,26 +94,29 @@ class ForumStory extends Story
         $this->createPostsForTopic($welcomeTopic, 15);
         $this->addToPool(self::TOPICS, $welcomeTopic);
 
-        // Regular presentation topics
-        $presentationTopics = [
-            ['title' => 'Salut à tous ! Guitariste depuis 10 ans', 'slug' => 'salut-a-tous-guitariste-depuis-10-ans'],
-            ['title' => 'Nouveau batteur dans la place !', 'slug' => 'nouveau-batteur-dans-la-place'],
-            ['title' => 'Bassiste amateur cherche groupe', 'slug' => 'bassiste-amateur-cherche-groupe'],
-            ['title' => 'Hello, pianiste classique ici', 'slug' => 'hello-pianiste-classique-ici'],
-        ];
+        // Regular presentation topics - generate 40 topics for pagination testing
+        $instruments = ['guitariste', 'batteur', 'bassiste', 'pianiste', 'violoniste', 'saxophoniste', 'chanteur', 'flûtiste', 'trompettiste', 'clarinettiste'];
+        $intros = ['Salut à tous', 'Hello', 'Bonjour', 'Coucou', 'Hey', 'Yo', 'Nouveau membre', 'Présentation', 'Me voici', 'Enchanté'];
+        $suffixes = ['depuis 10 ans', 'amateur', 'passionné', 'débutant', 'confirmé', 'pro', 'en herbe', 'du dimanche', 'depuis toujours', 'autodidacte'];
 
-        foreach ($presentationTopics as $index => $topicData) {
+        for ($i = 0; $i < 40; $i++) {
+            $instrument = $instruments[array_rand($instruments)];
+            $intro = $intros[array_rand($intros)];
+            $suffix = $suffixes[array_rand($suffixes)];
+            $title = sprintf('%s ! %s %s', $intro, ucfirst($instrument), $suffix);
+            $slug = sprintf('presentation-%d-%s', $i + 1, $instrument);
+
             $topic = ForumTopicFactory::new([
                 'forum' => $forum,
-                'title' => $topicData['title'],
-                'slug' => $topicData['slug'],
+                'title' => $title,
+                'slug' => $slug,
                 'author' => $users[array_rand($users)],
-                'creationDatetime' => new \DateTime('-' . (5 - $index) . ' months'),
+                'creationDatetime' => new \DateTime('-' . rand(1, 180) . ' days'),
             ])->create();
 
-            // Add posts to some topics only
-            if ($index < 2) {
-                $this->createPostsForTopic($topic, rand(3, 8));
+            // Add posts to some topics only (about 1 in 3)
+            if ($i % 3 === 0) {
+                $this->createPostsForTopic($topic, rand(2, 10));
             }
 
             $this->addToPool(self::TOPICS, $topic);
