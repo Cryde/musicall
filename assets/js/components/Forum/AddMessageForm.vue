@@ -46,6 +46,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Card from 'primevue/card'
+import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
@@ -69,6 +70,7 @@ const emit = defineEmits(['message-created'])
 
 const forumStore = useForumStore()
 const userSecurityStore = useUserSecurityStore()
+const toast = useToast()
 
 const contentHtml = ref('')
 const contentText = ref('')
@@ -101,9 +103,21 @@ async function handleSubmit() {
     editorRef.value?.reset()
     contentHtml.value = ''
     contentText.value = ''
+    toast.add({
+      severity: 'success',
+      summary: 'Message envoyé',
+      detail: 'Votre message a été publié avec succès',
+      life: 3000
+    })
     emit('message-created', post.id)
   } catch (error) {
     console.error('Failed to create post:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: "Une erreur est survenue lors de l'envoi du message",
+      life: 5000
+    })
   } finally {
     isSending.value = false
   }

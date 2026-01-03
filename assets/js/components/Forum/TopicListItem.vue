@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col md:flex-row md:items-center py-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 gap-2 md:gap-4">
+  <div :class="containerClass">
     <div class="flex-1">
       <div class="flex items-center gap-2 mb-1">
-        <Tag v-if="topic.type === 1" value="Epinglé" severity="info" class="text-xs" />
-        <Tag v-if="topic.is_locked" value="Verrouillé" severity="warn" class="text-xs" />
+        <Tag v-if="isPinned" value="Epinglé" severity="info" icon="pi pi-thumbtack" class="text-xs" />
+        <Tag v-if="topic.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" class="text-xs" />
       </div>
       <router-link
         :to="{ name: 'forum_topic_item', params: { slug: topic.slug } }"
@@ -50,6 +50,13 @@ const props = defineProps({
     required: true
   }
 })
+
+const isPinned = computed(() => props.topic.type === 1)
+
+const containerClass = computed(() => [
+  'flex flex-col md:flex-row md:items-center py-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 gap-2 md:gap-4',
+  isPinned.value ? 'bg-primary-50 dark:bg-primary-900/10 -mx-4 px-4 rounded-lg' : ''
+])
 
 const lastPostRoute = computed(() => {
   const lastPage = Math.ceil(props.topic.post_number / POSTS_PER_PAGE)

@@ -4,7 +4,10 @@
       <Breadcrumb :items="breadcrumbItems" />
     </div>
 
-    <h1 class="text-2xl font-semibold mb-6">{{ forumStore.currentTopic?.title }}</h1>
+    <div class="flex items-center gap-3 mb-6">
+      <h1 class="text-2xl font-semibold">{{ forumStore.currentTopic?.title }}</h1>
+      <Tag v-if="forumStore.currentTopic?.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" />
+    </div>
 
     <template v-if="forumStore.isLoading && !forumStore.currentTopic">
       <TopicPostSkeleton v-for="i in 3" :key="i" />
@@ -58,6 +61,7 @@
 <script setup>
 import Divider from 'primevue/divider'
 import Paginator from 'primevue/paginator'
+import Tag from 'primevue/tag'
 import { useTitle } from '@vueuse/core'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
