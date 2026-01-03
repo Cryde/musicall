@@ -75,6 +75,7 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import MessageEditor from './MessageEditor.vue'
@@ -96,6 +97,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'created'])
 
 const forumStore = useForumStore()
+const toast = useToast()
 
 const title = ref('')
 const contentHtml = ref('')
@@ -135,6 +137,12 @@ async function handleSubmit() {
     emit('created', topic)
   } catch (error) {
     console.error('Failed to create topic:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Une erreur est survenue lors de la création du sujet',
+      life: 5000
+    })
   } finally {
     isSending.value = false
   }

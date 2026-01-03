@@ -40,6 +40,11 @@ class TopicCreationProcedure
         $this->entityManager->persist($post);
         // set the post as the last post for this topic
         $topic->setLastPost($post);
+
+        // Update forum counters
+        $forum->setTopicNumber($forum->getTopicNumber() + 1);
+        $forum->setPostNumber($forum->getPostNumber() + 1);
+
         $this->entityManager->flush();
 
         return $this->forumTopicListBuilder->buildFromEntity($topic);
