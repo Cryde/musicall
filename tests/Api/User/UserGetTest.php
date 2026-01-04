@@ -32,15 +32,36 @@ class UserGetTest extends ApiTestCase
         $this->client->request('GET', '/api/users/self');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/User',
+            '@context' => '/api/contexts/UserSelf',
             '@id' => '/api/users/self',
-            '@type' => 'User',
+            '@type' => 'UserSelf',
             'id'              => $user1->getId(),
             'username'        => $user1->getUsername(),
             'email'           => $user1->getEmail(),
+            'roles'           => ['ROLE_USER'],
             'profile_picture' => null,
         ]);
     }
+
+    public function test_get_self_as_admin(): void
+    {
+        $user1 = UserFactory::new()->asAdminUser()->create()->_real();
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/users/self');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSelf',
+            '@id' => '/api/users/self',
+            '@type' => 'UserSelf',
+            'id'              => $user1->getId(),
+            'username'        => $user1->getUsername(),
+            'email'           => $user1->getEmail(),
+            'roles'           => ['ROLE_ADMIN', 'ROLE_USER'],
+            'profile_picture' => null,
+        ]);
+    }
+
 
     public function test_get_item(): void
     {

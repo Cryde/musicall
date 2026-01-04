@@ -41,7 +41,7 @@ with multiline",
             '@type' => 'Comment',
             'id' => $comments[0]->getId(),
             'author' => [
-                '@id' => '/api/users/self',
+                '@id' => '/api/users/' . $user1->getId(),
                 '@type' => 'User',
                 'username' => 'base_user_1',
             ],

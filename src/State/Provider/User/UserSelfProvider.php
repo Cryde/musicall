@@ -1,24 +1,33 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\State\Provider\User;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\User\UserSelf;
+use App\Entity\User;
+use App\Service\Builder\User\UserSelfBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-class UserSelfProvider implements ProviderInterface
+readonly class UserSelfProvider implements ProviderInterface
 {
-    public function __construct(private readonly Security $security)
-    {
+    public function __construct(
+        private Security $security,
+        private UserSelfBuilder $userSelfBuilder,
+    ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): UserSelf
     {
-        if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-            throw new AccessDeniedException('Vous devez être connecté pour accéder à ceci');
+        $user = $this->security->getUser();
+
+        if (!$user instanceof User) {
+            throw new AccessDeniedException();
         }
 
-        return $this->security->getUser();
+        return $this->userSelfBuilder->buildFromEntity($user);
     }
 }

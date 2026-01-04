@@ -80,7 +80,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     '@type' => 'Message',
                     'creation_datetime' => '2023-01-02T02:03:04+00:00',
                     'author'            => [
-                        '@id' => '/api/users/self',
+                        '@id' => '/api/users/' . $user1->getId(),
                         '@type' => 'User',
                         'id'       => $user1->getId(),
                         'username' => 'base_user_1',
@@ -92,7 +92,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     '@type' => 'Message',
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'            => [
-                        '@id' => '/api/users/self',
+                        '@id' => '/api/users/' . $user2->getId(),
                         '@type' => 'User',
                         'id'       => $user2->getId(),
                         'username' => 'base_user_2',
@@ -104,7 +104,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     '@type' => 'Message',
                     'creation_datetime' => '2021-01-02T02:03:04+00:00',
                     'author'            => [
-                        '@id' => '/api/users/self',
+                        '@id' => '/api/users/' . $user1->getId(),
                         '@type' => 'User',
                         'id'       => $user1->getId(),
                         'username' => 'base_user_1',
@@ -116,7 +116,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     '@type' => 'Message',
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'            => [
-                        '@id' => '/api/users/self',
+                        '@id' => '/api/users/' . $user1->getId(),
                         '@type' => 'User',
                         'id'       => $user1->getId(),
                         'username' => 'base_user_1',
