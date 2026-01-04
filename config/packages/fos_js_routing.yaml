@@ -22,3 +22,4 @@ fos_js_routing:
         - api_user_(.*)
         - api_gallery_(.*)
         - _api_(.*)
+        - api_admin_(.*)

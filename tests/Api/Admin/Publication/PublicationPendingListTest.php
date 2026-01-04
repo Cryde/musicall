@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Api\Admin\Publication;
 
 use App\Entity\Publication;
@@ -54,23 +56,37 @@ class PublicationPendingListTest extends ApiTestCase
         $this->client->request('GET', '/api/admin/publications/pending');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            [
-                'id'                   => $publication->_real()->getId(),
-                'title'                => 'Titre de la publication',
-                'sub_category'         => [
-                    'id'         => $sub->_real()->getId(),
-                    'title'      => 'Chroniques',
-                    'slug'       => 'chroniques',
-                    'type_label' => 'publication',
-                    'is_course'  => false,
+            '@context'   => '/api/contexts/AdminPendingPublication',
+            '@id'        => '/api/admin/publications/pending',
+            '@type'      => 'Collection',
+            'member'     => [
+                [
+                    '@id'                  => '/api/publications/' . $publication->_real()->getSlug(),
+                    '@type'                => 'Publication',
+                    'id'                   => $publication->_real()->getId(),
+                    'title'                => 'Titre de la publication',
+                    'sub_category'         => [
+                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->getId(),
+                        '@type'      => 'PublicationSubCategory',
+                        'id'         => $sub->_real()->getId(),
+                        'title'      => 'Chroniques',
+                        'slug'       => 'chroniques',
+                        'type_label' => 'publication',
+                        'is_course'  => false,
+                    ],
+                    'author'               => [
+                        '@id'      => '/api/users/' . $admin->getId(),
+                        '@type'    => 'User',
+                        'username' => 'user_admin',
+                    ],
+                    'slug'                 => 'titre-de-la-publication',
+                    'publication_datetime' => '2022-01-02T02:03:04+00:00',
+                    'cover'                => null,
+                    'type_label'           => 'text',
+                    'description'          => 'Petite description de la publication',
                 ],
-                'author'               => ['username' => 'user_admin'],
-                'slug'                 => 'titre-de-la-publication',
-                'publication_datetime' => '2022-01-02T02:03:04+00:00',
-                'cover'                => null,
-                'type_label'           => 'text',
-                'description'          => 'Petite description de la publication',
             ],
+            'totalItems' => 1,
         ]);
     }
 

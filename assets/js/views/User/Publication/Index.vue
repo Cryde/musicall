@@ -223,6 +223,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AddDiscoverModal from '../../../components/Publication/AddDiscoverModal.vue'
 import AddPublicationModal from '../../../components/publication/AddPublicationModal.vue'
+import publicationApi from '../../../api/user/publication.js'
 import { usePublicationsStore } from '../../../store/publication/publications.js'
 import { useUserPublicationsStore } from '../../../store/publication/userPublications.js'
 import { useVideoStore } from '../../../store/publication/video.js'
@@ -348,12 +349,32 @@ function handleEdit(publication) {
 }
 
 function handleSubmit(publication) {
-  // TODO: Implement submit functionality
-  toast.add({
-    severity: 'info',
-    summary: 'Information',
-    detail: 'La soumission sera disponible prochainement',
-    life: 3000
+  confirm.require({
+    message: `Soumettre la publication "${publication.title}" pour validation ?`,
+    header: 'Confirmation',
+    icon: 'pi pi-send',
+    acceptLabel: 'Soumettre',
+    rejectLabel: 'Annuler',
+    acceptClass: 'p-button-success',
+    accept: async () => {
+      try {
+        await publicationApi.submit(publication.id)
+        await userPublicationsStore.loadPublications()
+        toast.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Publication soumise pour validation',
+          life: 3000
+        })
+      } catch (e) {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de soumettre la publication',
+          life: 3000
+        })
+      }
+    }
   })
 }
 

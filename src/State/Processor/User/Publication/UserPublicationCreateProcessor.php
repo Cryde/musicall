@@ -44,7 +44,7 @@ class UserPublicationCreateProcessor implements ProcessorInterface
         $publication->setTitle($data->title);
         $publication->setSubCategory($category);
         $publication->setAuthor($user);
-        $publication->setSlug($this->publicationSlug->create($data->title));
+        $publication->setSlug($this->publicationSlug->create($data->title) . '-' . $publication->getId());
         $publication->setStatus(Publication::STATUS_DRAFT);
         $publication->setType(Publication::TYPE_TEXT);
 
