@@ -42,7 +42,7 @@
                 <!-- Type & Instrument -->
                 <div class="flex items-center gap-3 md:w-48 shrink-0">
                   <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30">
-                    <i :class="['pi text-xl text-primary-600 dark:text-primary-400', announce.type === TYPES_ANNOUNCE_BAND ? 'pi-users' : 'pi-user']" />
+                    <i :class="['pi text-xl text-primary-600 dark:text-primary-400', announce.type === TYPES_ANNOUNCE_BAND ? 'pi-user' : 'pi-users']" />
                   </div>
                   <div>
                     <Tag :value="getTypeName(announce.type)" :severity="getTypeSeverity(announce.type)" />

@@ -63,12 +63,12 @@
                 @click="selectSearchType = selectSearchTypeOption[0]"
                 :class="[
                     'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
-                    selectSearchType?.key === 1
+                    selectSearchType?.key === 2
                         ? 'border-primary bg-primary/10 dark:bg-primary/20'
                         : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
                 ]"
             >
-                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 1 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
+                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 2 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
                     <i class="pi pi-user text-lg" />
                 </div>
                 <div>
@@ -80,12 +80,12 @@
                 @click="selectSearchType = selectSearchTypeOption[1]"
                 :class="[
                     'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
-                    selectSearchType?.key === 2
+                    selectSearchType?.key === 1
                         ? 'border-primary bg-primary/10 dark:bg-primary/20'
                         : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
                 ]"
             >
-                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 2 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
+                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 1 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
                     <i class="pi pi-users text-lg" />
                 </div>
                 <div>
@@ -178,7 +178,7 @@
         <span class="text-sm text-surface-500 dark:text-surface-400">Filtres actifs :</span>
         <Chip
             v-if="selectSearchType"
-            :label="selectSearchType.key === 1 ? 'Musicien' : 'Groupe'"
+            :label="selectSearchType.key === 2 ? 'Musicien' : 'Groupe'"
             removable
             @remove="selectSearchType = null"
             class="text-sm"
@@ -434,8 +434,8 @@ const selectedLocation = ref(null)
 const locationSuggestions = ref([])
 const selectSearchType = ref(null)
 const selectSearchTypeOption = [
-  { key: 1, name: 'Musiciens' },
-  { key: 2, name: 'Groupe' }
+  { key: 2, name: 'Musiciens' },
+  { key: 1, name: 'Groupe' }
 ]
 
 const showAnnounceModal = ref(false)
@@ -519,10 +519,10 @@ function removeStyle(style) {
 // Computed values for announce modal initial values (only when creating from search)
 const announceInitialType = computed(() => {
   if (!createFromSearch.value) return null
-  // key 1 = Musiciens (searching for a musician) => announce type "musician" (looking for a musician)
-  // key 2 = Groupe (searching for a band) => announce type "band" (looking for a band)
+  // key 2 = Musicien (searching for a musician) => announce type "musician" (looking for a musician)
+  // key 1 = Groupe (searching for a band) => announce type "band" (looking for a band)
   if (!selectSearchType.value) return null
-  return selectSearchType.value.key === 1 ? 'musician' : 'band'
+  return selectSearchType.value.key === 2 ? 'musician' : 'band'
 })
 
 const announceInitialInstrument = computed(() => {
@@ -685,6 +685,6 @@ onUnmounted(() => {
   selectedLocation.value = null
   locationSuggestions.value = []
   quickSearchErrors.value = []
-  selectSearchType.value = { key: 1, name: 'Musiciens' }
+  selectSearchType.value = { key: 2, name: 'Musiciens' }
 })
 </script>
