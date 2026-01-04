@@ -61,18 +61,6 @@ services:
                     key: "%env(AWS_KEY)%"
                     secret: "%env(AWS_SECRET)%"
 
-    Symfony\AI\Platform\Platform:
-        factory: ['Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory', 'create']
-        arguments:
-            - '%env(OPENAI_API_KEY)%'
-
-    ai.agent.announce.musician:
-        class: 'Symfony\AI\Agent\Agent'
-        factory: ['App\Service\AI\AgentFactory', 'create']
-        arguments:
-            - '@Symfony\AI\Platform\Platform'
-            - 'gpt-4.1'
-
     Google\Service\YouTube:
         factory: '@App\Service\Google\YoutubeFactory'
 
