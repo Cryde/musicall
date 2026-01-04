@@ -146,14 +146,28 @@
                   <span class="font-semibold">{{ announce.author.username }}</span> est un
                   <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
                   et cherche un groupe jouant du
-                  <strong>{{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}</strong>
+                  <strong>{{ formatStyles(announce.styles).visible }}</strong>
+                  <span
+                    v-if="hasMoreStyles(announce.styles)"
+                    v-tooltip.top="formatStyles(announce.styles).all"
+                    class="text-primary cursor-help"
+                  >
+                    +{{ formatStyles(announce.styles).remaining }}
+                  </span>
                   dans les alentours de {{ announce.location_name }}
                 </template>
                 <template v-if="isTypeMusician(announce.type)">
                   <span class="font-semibold">{{ announce.author.username }}</span> cherche pour son groupe un
                   <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
                   jouant du
-                  <strong>{{ announce.styles.map(style => style.name.toLocaleLowerCase()).join(', ') }}</strong>
+                  <strong>{{ formatStyles(announce.styles).visible }}</strong>
+                  <span
+                    v-if="hasMoreStyles(announce.styles)"
+                    v-tooltip.top="formatStyles(announce.styles).all"
+                    class="text-primary cursor-help"
+                  >
+                    +{{ formatStyles(announce.styles).remaining }}
+                  </span>
                   dans les alentours de {{ announce.location_name }}
                 </template>
 
@@ -207,6 +221,7 @@ import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import AnnounceCardSkeleton from '../../components/Skeleton/AnnounceCardSkeleton.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
+import { formatStyles, hasMoreStyles } from '../../utils/styles.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'

@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import musicianAnnounceApi from '../../api/announce/musician.js'
+import { handleApiError } from '../../api/utils/handleApiError.js'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
 
 export const useUserAnnounceStore = defineStore('userAnnounce', () => {
   const announces = ref([])
   const isLoading = ref(false)
   const isSaving = ref(false)
+  const saveError = ref(null)
 
   async function loadAnnounces() {
     isLoading.value = true
@@ -23,6 +25,7 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
 
   async function createAnnounce({ type, instrument, styles, location, note }) {
     isSaving.value = true
+    saveError.value = null
     try {
       await musicianAnnounceApi.create({
         type: type === 'band' ? TYPES_ANNOUNCE_BAND : TYPES_ANNOUNCE_MUSICIAN,
@@ -36,11 +39,19 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
       await loadAnnounces()
       return true
     } catch (e) {
-      console.error('Failed to create announce:', e)
+      try {
+        handleApiError(e)
+      } catch (normalizedError) {
+        saveError.value = normalizedError.message
+      }
       return false
     } finally {
       isSaving.value = false
     }
+  }
+
+  function clearError() {
+    saveError.value = null
   }
 
   async function deleteAnnounce(id) {
@@ -61,15 +72,18 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
     announces.value = []
     isLoading.value = false
     isSaving.value = false
+    saveError.value = null
   }
 
   return {
     announces: readonly(announces),
     isLoading: readonly(isLoading),
     isSaving: readonly(isSaving),
+    saveError: readonly(saveError),
     loadAnnounces,
     createAnnounce,
     deleteAnnounce,
+    clearError,
     clear
   }
 })
