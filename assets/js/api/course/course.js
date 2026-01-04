@@ -17,13 +17,7 @@ export default {
   },
   getCourseCategories() {
     return axios
-      .get(
-        Routing.generate('api_publication_sub_categories_get_collection', {
-          type: 2,
-          order: { position: 'asc' }
-        })
-      )
-      .then((resp) => resp.data)
-      .then((resp) => resp.member)
+      .get(Routing.generate('api_course_categories_list'))
+      .then((resp) => resp.data.member)
   }
 }
