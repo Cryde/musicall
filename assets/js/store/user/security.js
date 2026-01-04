@@ -137,6 +137,10 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     return userProfile.value?.profile_picture?.small || null
   })
 
+  const isAdmin = computed(() => {
+    return userProfile.value?.roles?.includes('ROLE_ADMIN') || false
+  })
+
   function isTokenExpired(decodedJwt) {
     // Refresh if token expires within buffer time
     const currentTime = Math.floor(Date.now() / 1000)
@@ -233,6 +237,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     user: readonly(user),
     userProfile: readonly(userProfile),
     profilePictureUrl,
+    isAdmin,
     isAuthenticated: readonly(isAuthenticated),
     isAuthenticatedLoading: readonly(isAuthenticatedLoading),
     loginErrors: readonly(loginErrors),

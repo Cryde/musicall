@@ -57,7 +57,7 @@ class MessagePostInThreadTest extends ApiTestCase
             'id'                => $messages[0]->getId(),
             'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
             'author'            => [
-                '@id' => '/api/users/self',
+                '@id' => '/api/users/' . $user1->getId(),
                 '@type' => 'User',
                 'id'       => $user1->getId(),
                 'username' => 'base_user_1',

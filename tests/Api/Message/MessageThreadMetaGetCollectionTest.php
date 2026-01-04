@@ -73,7 +73,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@id' => '/api/message_participants/' . $mp1->_real()->getId(),
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
-                                    '@id' => '/api/users/self',
+                                    '@id' => '/api/users/' . $user1->_real()->getId(),
                                     '@type' => 'User',
                                     'username' => 'base_user_1',
                                     'id'       => $user1->_real()->getId(),
@@ -82,7 +82,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                 '@id' => '/api/message_participants/' . $mp2->_real()->getId(),
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
-                                    '@id' => '/api/users/self',
+                                    '@id' => '/api/users/' . $user2->_real()->getId(),
                                     '@type' => 'User',
                                     'username' => 'base_user_2',
                                     'id'       => $user2->_real()->getId(),
@@ -94,7 +94,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             '@type' => 'Message',
                             'creation_datetime' => $message->_real()->getCreationDatetime()->format('c'),
                             'author'            => [
-                                '@id' => '/api/users/self',
+                                '@id' => '/api/users/' . $user1->_real()->getId(),
                                 '@type' => 'User',
                                 'username' => 'base_user_1',
                                 'id'       => $user1->_real()->getId(),

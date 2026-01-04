@@ -92,7 +92,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id' => '/api/users/self',
+                        '@id' => '/api/users/' . $author->_real()->getId(),
                         '@type' => 'User',
                         'username' => 'user_admin',
                     ],
@@ -117,7 +117,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id' => '/api/users/self',
+                        '@id' => '/api/users/' . $author->_real()->getId(),
                         '@type' => 'User',
                         'username' => 'user_admin',
                     ],

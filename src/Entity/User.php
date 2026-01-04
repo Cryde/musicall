@@ -12,7 +12,6 @@ use App\Entity\Image\UserProfilePicture;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThreadMeta;
 use App\Repository\UserRepository;
-use App\State\Provider\User\UserSelfProvider;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -33,13 +32,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new Get(
-            uriTemplate: '/users/self',
-            openapi: new Operation(tags: ['Users']),
-            normalizationContext: ['groups' => [User::ITEM_SELF, User::ITEM], 'skip_null_values' => false],
-            name: 'api_users_get_self',
-            provider: UserSelfProvider::class,
-        ),
-        new Get(
             openapi: new Operation(tags: ['Users']),
             normalizationContext: ['groups' => [User::ITEM], 'skip_null_values' => false],
             name: 'api_users_get_item',
@@ -49,7 +41,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ITEM = 'USER_ITEM';
-    const ITEM_SELF = 'USER_ITEM_SELF';
 
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
@@ -60,13 +51,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMeta::LIST, User::ITEM, User::ITEM_SELF, Message::LIST, Message::ITEM, Gallery::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMeta::LIST, User::ITEM, Message::LIST, Message::ITEM, Gallery::LIST])]
     private string $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
     #[Assert\Email(message: 'Email invalide')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups(User::ITEM_SELF)]
     private string $email;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
