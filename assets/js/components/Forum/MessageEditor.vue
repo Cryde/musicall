@@ -74,10 +74,10 @@
 </template>
 
 <script setup>
+import StarterKit from '@tiptap/starter-kit'
+import { EditorContent, useEditor } from '@tiptap/vue-3'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
-import { EditorContent, useEditor } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
 import { watch } from 'vue'
 
 const props = defineProps({

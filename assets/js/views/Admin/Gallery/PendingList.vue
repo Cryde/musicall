@@ -64,11 +64,11 @@
 </template>
 
 <script setup>
-import { useConfirm } from 'primevue/useconfirm'
-import { useToast } from 'primevue/usetoast'
+import Column from 'primevue/column'
 import ConfirmDialog from 'primevue/confirmdialog'
 import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { onMounted } from 'vue'
 import { useAdminGalleryStore } from '../../../store/admin/gallery.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'

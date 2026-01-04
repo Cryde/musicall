@@ -187,12 +187,12 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { useUserSecurityStore } from '../../store/user/security.js'
-import FeatureItem from '../../components/Discover/FeatureItem.vue'
-import discoverPublicationImage from '../../../image/discover/discover-publication.png'
 import discoverAnnouncesImage from '../../../image/discover/discover-announces.png'
-import discoverPhotoImage from '../../../image/discover/discover-photo.png'
 import discoverForumImage from '../../../image/discover/discover-forum.png'
+import discoverPhotoImage from '../../../image/discover/discover-photo.png'
+import discoverPublicationImage from '../../../image/discover/discover-publication.png'
+import FeatureItem from '../../components/Discover/FeatureItem.vue'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
 useTitle('Découvrir MusicAll - La communauté de passionné·e·s de musique')
 

@@ -59,17 +59,17 @@
 </template>
 
 <script setup>
+import { useTitle } from '@vueuse/core'
 import Divider from 'primevue/divider'
 import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
-import { useTitle } from '@vueuse/core'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useForumStore } from '../../store/forum/forum.js'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import AddMessageForm from '../../components/Forum/AddMessageForm.vue'
 import TopicPost from '../../components/Forum/TopicPost.vue'
 import TopicPostSkeleton from '../../components/Forum/TopicPostSkeleton.vue'
-import AddMessageForm from '../../components/Forum/AddMessageForm.vue'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import { useForumStore } from '../../store/forum/forum.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const POSTS_PER_PAGE = 10
@@ -84,7 +84,7 @@ const authModalMessage = ref('')
 const topicSlug = computed(() => route.params.slug)
 const currentPage = computed(() => {
   const page = route.params.page
-  return page ? parseInt(page, 10) : 1
+  return page ? Number.parseInt(page, 10) : 1
 })
 
 const breadcrumbItems = computed(() => [

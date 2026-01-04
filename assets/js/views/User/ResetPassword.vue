@@ -211,7 +211,11 @@ async function handleSubmit() {
     await securityApi.resetPassword(token, form.password)
     isResetComplete.value = true
   } catch (error) {
-    if (error.message?.includes('token') || error.message?.includes('Token') || error.message?.includes('expire')) {
+    if (
+      error.message?.includes('token') ||
+      error.message?.includes('Token') ||
+      error.message?.includes('expire')
+    ) {
       isTokenInvalid.value = true
     } else if (error.isValidationError && error.violationsByField?.password) {
       errors.password = error.violationsByField.password[0].message

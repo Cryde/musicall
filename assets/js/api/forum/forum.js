@@ -11,9 +11,7 @@ export default {
   },
 
   getForum(slug) {
-    return axios
-      .get(Routing.generate('api_forum_detail', { slug }))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_forum_detail', { slug })).then((resp) => resp.data)
   },
 
   getTopicsByForum({ forumSlug, page = 1 }) {
@@ -23,9 +21,7 @@ export default {
   },
 
   getTopic(slug) {
-    return axios
-      .get(Routing.generate('api_forum_topic_get', { slug }))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_forum_topic_get', { slug })).then((resp) => resp.data)
   },
 
   getPostsByTopic({ topicSlug, page = 1 }) {

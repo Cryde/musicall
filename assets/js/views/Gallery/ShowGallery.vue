@@ -84,8 +84,8 @@
 </template>
 
 <script setup>
-import MasonryWall from '@yeger/vue-masonry-wall'
 import { useTitle } from '@vueuse/core'
+import MasonryWall from '@yeger/vue-masonry-wall'
 import { format, parseISO } from 'date-fns'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, onUnmounted, ref } from 'vue'

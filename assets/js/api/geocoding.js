@@ -30,8 +30,9 @@ export default {
     }
 
     // Build context, filtering out duplicates and the location name itself
-    const contextParts = [...new Set([props.county, props.state, props.country].filter(Boolean))]
-      .filter(part => part !== locationName)
+    const contextParts = [
+      ...new Set([props.county, props.state, props.country].filter(Boolean))
+    ].filter((part) => part !== locationName)
 
     return {
       name: locationName,
