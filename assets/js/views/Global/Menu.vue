@@ -106,61 +106,79 @@ onMounted(async () => {
   }
 })
 
-const menuItems = computed(() => [
-  {
-    label: userSecurityStore.user?.username,
-    items: [
+const menuItems = computed(() => {
+  const items = [
+    {
+      label: 'Mes annonces',
+      icon: 'pi pi-megaphone',
+      command: () => {
+        router.push({ name: 'app_user_announces' })
+      }
+    },
+    {
+      label: 'Mes publications',
+      icon: 'pi pi-file-edit',
+      command: () => {
+        router.push({ name: 'app_user_publications' })
+      }
+    },
+    {
+      label: 'Mes cours',
+      icon: 'pi pi-book',
+      command: () => {
+        router.push({ name: 'app_user_courses' })
+      }
+    },
+    {
+      label: 'Mes photos',
+      icon: 'pi pi-images',
+      command: () => {
+        router.push({ name: 'app_user_galleries' })
+      }
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Paramètres',
+      icon: 'pi pi-cog',
+      command: () => {
+        router.push({ name: 'app_user_settings' })
+      }
+    }
+  ]
+
+  if (userSecurityStore.isAdmin) {
+    items.push(
+      { separator: true },
       {
-        label: 'Mes annonces',
-        icon: 'pi pi-megaphone',
+        label: 'Administration',
+        icon: 'pi pi-shield',
         command: () => {
-          router.push({ name: 'app_user_announces' })
-        }
-      },
-      {
-        label: 'Mes publications',
-        icon: 'pi pi-file-edit',
-        command: () => {
-          router.push({ name: 'app_user_publications' })
-        }
-      },
-      {
-        label: 'Mes cours',
-        icon: 'pi pi-book',
-        command: () => {
-          router.push({ name: 'app_user_courses' })
-        }
-      },
-      {
-        label: 'Mes photos',
-        icon: 'pi pi-images',
-        command: () => {
-          router.push({ name: 'app_user_galleries' })
-        }
-      },
-      {
-        separator: true
-      },
-      {
-        label: 'Paramètres',
-        icon: 'pi pi-cog',
-        command: () => {
-          router.push({ name: 'app_user_settings' })
-        }
-      },
-      {
-        separator: true
-      },
-      {
-        label: 'Se déconnecter',
-        icon: 'pi pi-sign-out',
-        command: () => {
-          userSecurityStore.logout()
+          router.push({ name: 'admin_dashboard' })
         }
       }
-    ]
+    )
   }
-])
+
+  items.push(
+    { separator: true },
+    {
+      label: 'Se déconnecter',
+      icon: 'pi pi-sign-out',
+      command: () => {
+        userSecurityStore.logout()
+      }
+    }
+  )
+
+  return [
+    {
+      label: userSecurityStore.user?.username,
+      items
+    }
+  ]
+})
 
 const navs = ref([
   {

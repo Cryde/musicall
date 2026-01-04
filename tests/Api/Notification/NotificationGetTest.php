@@ -80,4 +80,24 @@ class NotificationGetTest extends ApiTestCase
             'pending_publications' => 1,
         ]);
     }
+
+    public function test_get_notification_with_role_admin_and_no_notifications(): void
+    {
+        $user1 = UserFactory::new()->asAdminUser()->create()->_real();
+
+        $thread = MessageThreadFactory::new()->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'isRead' => 0])->create();
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/notifications');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Notification',
+            '@id' => '/api/notifications',
+            '@type' => 'Notification',
+            'unread_messages'      => 1,
+            'pending_galleries'    => 0,
+            'pending_publications' => 0,
+        ]);
+    }
 }

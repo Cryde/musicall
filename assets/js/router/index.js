@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
 import publication from './publication'
@@ -25,7 +26,8 @@ const routes = [
       ...course,
       ...search,
       ...forum,
-      ...user
+      ...user,
+      ...admin
     ]
   },
   {

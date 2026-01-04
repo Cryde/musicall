@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Api\Admin\Publication;
 
 use App\Entity\Publication;
+use App\Repository\PublicationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -24,7 +28,7 @@ class PublicationRejectTest extends ApiTestCase
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         // this one should be kept as DRAFT :
-        $draft = PublicationFactory::new(['author' => $admin, 'status' => Publication::STATUS_DRAFT, 'subCategory' => $sub,])->create();
+        $draft = PublicationFactory::new(['author' => $admin, 'status' => Publication::STATUS_DRAFT, 'subCategory' => $sub])->create();
 
         $viewCache = ViewCacheFactory::new(['count' => 123])->create();
         $publication = PublicationFactory::new([
@@ -40,19 +44,32 @@ class PublicationRejectTest extends ApiTestCase
             'title'               => 'Titre de la publication',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => $viewCache,
-        ])->create()->_real();
+        ])->create();
 
-        $this->assertSame(2, $publication->getStatus());
+        $this->assertSame(Publication::STATUS_PENDING, $publication->getStatus());
         $this->assertNull($publication->getPublicationDatetime());
+
+        $publicationId = $publication->getId();
+        $draftId = $draft->getId();
 
         $this->client->loginUser($admin);
-        $this->client->request('GET', '/api/admin/publications/' . $publication->getId() . '/reject');
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([]);
+        $this->client->request('POST', '/api/admin/publications/' . $publicationId . '/reject', [], [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+        ], '{}');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
-        $this->assertSame(0, $draft->getStatus());
-        $this->assertSame(0, $publication->getStatus());
-        $this->assertNull($publication->getPublicationDatetime());
+        /** @var EntityManagerInterface $em */
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $em->clear();
+
+        /** @var PublicationRepository $publicationRepository */
+        $publicationRepository = static::getContainer()->get(PublicationRepository::class);
+        $refreshedDraft = $publicationRepository->find($draftId);
+        $refreshedPublication = $publicationRepository->find($publicationId);
+
+        $this->assertSame(Publication::STATUS_DRAFT, $refreshedDraft->getStatus());
+        $this->assertSame(Publication::STATUS_DRAFT, $refreshedPublication->getStatus());
+        $this->assertNull($refreshedPublication->getPublicationDatetime());
     }
 
     public function test_reject_publication_with_no_admin(): void
@@ -60,11 +77,25 @@ class PublicationRejectTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create()->_real();
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
-        // this one should be kept as DRAFT :
-        $publication = PublicationFactory::new(['author' => $user, 'status' => Publication::STATUS_DRAFT, 'subCategory' => $sub,])->create();
+        $publication = PublicationFactory::new(['author' => $user, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub])->create();
 
         $this->client->loginUser($user);
-        $this->client->request('GET', '/api/admin/publications/' . $publication->getId() . '/reject');
+        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/reject', [], [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+        ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_reject_publication_not_logged(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create()->_real();
+
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $publication = PublicationFactory::new(['author' => $user, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub])->create();
+
+        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/reject', [], [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+        ], '{}');
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 }

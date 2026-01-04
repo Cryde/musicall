@@ -17,36 +17,68 @@
 
     <template v-else-if="publication">
       <!-- Preview Banner -->
-      <Message severity="warn" :closable="false" class="mb-6">
-        <div class="flex items-center justify-between w-full gap-4">
+      <Message :severity="isAdminReview ? 'info' : 'warn'" :closable="false" class="mb-6">
+        <div class="flex items-center justify-between w-full gap-4 flex-wrap">
           <div class="flex items-center gap-2">
-            <i class="pi pi-eye" />
+            <i :class="isAdminReview ? 'pi pi-shield' : 'pi pi-eye'" />
             <span>
-              <strong>Mode prévisualisation</strong> -
+              <strong>{{ isAdminReview ? 'Validation admin' : 'Mode prévisualisation' }}</strong> -
               Cette publication est en
               <Tag :value="publication.status_label" :severity="getStatusSeverity(publication.status_id)" class="mx-1" />
             </span>
           </div>
           <div class="flex gap-2">
-            <Button
-              v-if="publication.status_id === STATUS_DRAFT"
-              label="Modifier"
-              icon="pi pi-pencil"
-              size="small"
-              severity="secondary"
-              @click="router.push({ name: 'app_user_publication_edit', params: { id: publication.id } })"
-            />
-            <Button
-              label="Mes publications"
-              icon="pi pi-list"
-              size="small"
-              severity="secondary"
-              outlined
-              @click="router.push({ name: 'app_user_publications' })"
-            />
+            <!-- Admin review buttons -->
+            <template v-if="isAdminReview">
+              <Button
+                label="Valider"
+                icon="pi pi-check"
+                size="small"
+                severity="success"
+                :loading="isProcessing"
+                @click="confirmApprove"
+              />
+              <Button
+                label="Rejeter"
+                icon="pi pi-times"
+                size="small"
+                severity="danger"
+                :loading="isProcessing"
+                @click="confirmReject"
+              />
+              <Button
+                label="Retour"
+                icon="pi pi-arrow-left"
+                size="small"
+                severity="secondary"
+                outlined
+                @click="router.push({ name: 'admin_publications_pending' })"
+              />
+            </template>
+            <!-- Regular user buttons -->
+            <template v-else>
+              <Button
+                v-if="publication.status_id === STATUS_DRAFT"
+                label="Modifier"
+                icon="pi pi-pencil"
+                size="small"
+                severity="secondary"
+                @click="router.push({ name: 'app_user_publication_edit', params: { id: publication.id } })"
+              />
+              <Button
+                label="Mes publications"
+                icon="pi pi-list"
+                size="small"
+                severity="secondary"
+                outlined
+                @click="router.push({ name: 'app_user_publications' })"
+              />
+            </template>
           </div>
         </div>
       </Message>
+
+      <ConfirmDialog />
 
       <!-- Breadcrumb -->
       <div class="flex justify-end mb-4">
@@ -82,14 +114,20 @@
 </template>
 
 <script setup>
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import publicationApi from '../../../api/user/publication.js'
+import adminPublicationApi from '../../../api/admin/publication.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
+import { useNotificationStore } from '../../../store/notification/notification.js'
 import Breadcrumb from '../../Global/Breadcrumb.vue'
 
 const STATUS_DRAFT = 0
@@ -97,10 +135,19 @@ const STATUS_PENDING = 2
 
 const route = useRoute()
 const router = useRouter()
+const confirm = useConfirm()
+const toast = useToast()
+const userSecurityStore = useUserSecurityStore()
+const notificationStore = useNotificationStore()
 
 const publication = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const isProcessing = ref(false)
+
+const isAdminReview = computed(() => {
+  return userSecurityStore.isAdmin && publication.value?.status_id === STATUS_PENDING
+})
 
 useTitle(() =>
   publication.value
@@ -148,4 +195,72 @@ const breadCrumbs = computed(() => {
     { label: publication.value.title }
   ]
 })
+
+function confirmApprove() {
+  confirm.require({
+    message: `Valider la publication "${publication.value.title}" ?`,
+    header: 'Confirmation',
+    icon: 'pi pi-check-circle',
+    acceptLabel: 'Valider',
+    rejectLabel: 'Annuler',
+    acceptClass: 'p-button-success',
+    accept: async () => {
+      isProcessing.value = true
+      try {
+        await adminPublicationApi.approvePublication(publication.value.id)
+        await notificationStore.loadNotifications()
+        toast.add({
+          severity: 'success',
+          summary: 'Publication validée',
+          detail: `La publication "${publication.value.title}" a été validée.`,
+          life: 3000
+        })
+        router.push({ name: 'admin_publications_pending' })
+      } catch (e) {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Une erreur est survenue lors de la validation.',
+          life: 3000
+        })
+      } finally {
+        isProcessing.value = false
+      }
+    }
+  })
+}
+
+function confirmReject() {
+  confirm.require({
+    message: `Rejeter la publication "${publication.value.title}" ?`,
+    header: 'Confirmation',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Rejeter',
+    rejectLabel: 'Annuler',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      isProcessing.value = true
+      try {
+        await adminPublicationApi.rejectPublication(publication.value.id)
+        await notificationStore.loadNotifications()
+        toast.add({
+          severity: 'info',
+          summary: 'Publication rejetée',
+          detail: `La publication "${publication.value.title}" a été rejetée.`,
+          life: 3000
+        })
+        router.push({ name: 'admin_publications_pending' })
+      } catch (e) {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Une erreur est survenue lors du rejet.',
+          life: 3000
+        })
+      } finally {
+        isProcessing.value = false
+      }
+    }
+  })
+}
 </script>
