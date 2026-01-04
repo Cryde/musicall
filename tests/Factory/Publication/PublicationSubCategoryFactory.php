@@ -65,4 +65,24 @@ final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
             'type' => PublicationSubCategory::TYPE_COURSE,
         ]);
     }
+
+    public function asCourse(): Factory
+    {
+        return $this->with([
+            'title' => 'Cours',
+            'slug' => 'cours',
+            'position' => 1,
+            'type' => PublicationSubCategory::TYPE_COURSE,
+        ]);
+    }
+
+    public function asCourse2(): Factory
+    {
+        return $this->with([
+            'title' => 'Théorie',
+            'slug' => 'theorie',
+            'position' => 2,
+            'type' => PublicationSubCategory::TYPE_COURSE,
+        ]);
+    }
 }

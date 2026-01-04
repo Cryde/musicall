@@ -1,14 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Repository\PublicationSubCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,14 +20,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         openapi: new Operation(tags: ['Publications']),
         normalizationContext: ['groups' => [PublicationSubCategory::ITEM]]
     ),
-    new GetCollection(
-        openapi: new Operation(tags: ['Publications']),
-        normalizationContext: ['groups' => [PublicationSubCategory::LIST]],
-        name: 'api_publication_sub_categories_get_collection'
-    )
 ])]
-#[ApiFilter(filterClass: OrderFilter::class, properties: ['position' => 'ASC'])]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['type' => SearchFilterInterface::STRATEGY_EXACT])]
 class PublicationSubCategory
 {
     final const int TYPE_PUBLICATION = 1;

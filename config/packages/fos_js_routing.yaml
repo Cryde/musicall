@@ -1,25 +1,4 @@
 fos_js_routing:
     routes_to_expose:
-        - api_styles_(.*)
-        - api_instruments_(.*)
-        - api_publication_sub_categories_(.*)
-        - api_comment_threads_(.*)
-        - api_comments_(.*)
-        - api_publication_featureds_(.*)
-        - api_publication_(.*)
-        - api_forum_(.*)
-        - api_forums_(.*)
-        - api_user_profile_picture_post
-        - api_user_publications_(.*)
-        - api_user_courses_(.*)
-        - api_message_(.*)
-        - api_users_(.*)
-        - api_notifications_(.*)
-        - api_gallery_(.*)
-        - api_musician_announces_(.*)
-        - api_band_spaces_(.*)
-        - api_user_gallery_list
-        - api_user_(.*)
-        - api_gallery_(.*)
+        - api_(.*)
         - _api_(.*)
-        - api_admin_(.*)
