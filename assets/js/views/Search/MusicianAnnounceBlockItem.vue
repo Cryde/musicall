@@ -20,7 +20,7 @@
                     <span class="font-medium text-surface-900 dark:text-surface-0 text-xl leading-tight">{{
                             user.username
                         }}</span>
-                    <span class="text-surface-600 dark:text-surface-200 font-normal leading-tight" v-if="type === 2">
+                    <span class="text-surface-600 dark:text-surface-200 font-normal leading-tight" v-if="type === 1">
                         recherche un {{ instrument.toLowerCase() }}
                     </span>
                     <span class="text-surface-600 dark:text-surface-200 font-normal leading-tight" v-else>
