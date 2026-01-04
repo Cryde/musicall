@@ -129,11 +129,16 @@ const isVisible = computed({
   }
 })
 
+const isValidYoutubeUrl = computed(() => {
+  const url = videoUrl.value.trim()
+  return url.startsWith('https://') && (url.includes('youtube') || url.includes('youtu.be'))
+})
+
 const canPublish = computed(() => {
   return (
     showPreview.value &&
     !isExistingVideo.value &&
-    videoUrl.value.startsWith('https://') &&
+    isValidYoutubeUrl.value &&
     videoTitle.value.trim().length >= 3 &&
     videoDescription.value.trim().length >= 20
   )
@@ -188,7 +193,7 @@ watch(videoUrl, (newUrl) => {
     return
   }
 
-  if (trimmedUrl.startsWith('https://') && trimmedUrl.includes('youtube')) {
+  if (isValidYoutubeUrl.value) {
     debouncedFetchPreview(trimmedUrl)
   }
 })
