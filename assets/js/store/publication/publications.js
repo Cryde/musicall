@@ -4,6 +4,7 @@ import publicationsApi from '../../api/publication/publications.js'
 
 export const usePublicationsStore = defineStore('publications', () => {
   const publications = ref([])
+  const lastPublications = ref([])
   const publicationCategories = ref([])
 
   async function loadPublications({ page = 1, slug = null, orientation = 'desc' }) {
@@ -13,12 +14,17 @@ export const usePublicationsStore = defineStore('publications', () => {
     return member
   }
 
+  async function loadLastPublications() {
+    lastPublications.value = await publicationsApi.getLastPublications()
+  }
+
   async function loadCategories() {
     publicationCategories.value = await publicationsApi.getPublicationCategories()
   }
 
   function clear() {
     publications.value = []
+    lastPublications.value = []
     publicationCategories.value = []
   }
 
@@ -28,10 +34,12 @@ export const usePublicationsStore = defineStore('publications', () => {
 
   return {
     loadPublications,
+    loadLastPublications,
     loadCategories,
     clear,
     resetPublications,
     publications: readonly(publications),
+    lastPublications: readonly(lastPublications),
     publicationCategories: readonly(publicationCategories)
   }
 })

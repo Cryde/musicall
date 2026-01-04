@@ -15,6 +15,12 @@ export default {
       )
       .then((resp) => resp.data)
   },
+  getLastPublications() {
+    return axios
+      .get(Routing.generate('api_publication_get_last'))
+      .then((resp) => resp.data)
+      .then((resp) => resp.member)
+  },
   getPublicationCategories() {
     return axios
       .get(
