@@ -50,8 +50,8 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import MessageEditor from './MessageEditor.vue'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
+import MessageEditor from './MessageEditor.vue'
 
 const MIN_MESSAGE_LENGTH = 10
 

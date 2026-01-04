@@ -113,8 +113,10 @@ const visibleModel = computed({
 })
 
 const canSubmit = computed(() => {
-  return title.value.trim().length >= MIN_TITLE_LENGTH &&
+  return (
+    title.value.trim().length >= MIN_TITLE_LENGTH &&
     contentText.value.trim().length >= MIN_MESSAGE_LENGTH
+  )
 })
 
 function handleContentUpdate({ html, text }) {

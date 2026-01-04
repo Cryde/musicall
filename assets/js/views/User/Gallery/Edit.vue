@@ -349,7 +349,7 @@ function handleDeleteImage(image) {
         toast.add({
           severity: 'error',
           summary: 'Erreur',
-          detail: 'Impossible de supprimer l\'image',
+          detail: "Impossible de supprimer l'image",
           life: 3000
         })
       }
@@ -400,7 +400,7 @@ async function saveSettings() {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: 'Impossible d\'enregistrer les parametres',
+      detail: "Impossible d'enregistrer les parametres",
       life: 3000
     })
   } finally {

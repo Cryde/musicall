@@ -506,14 +506,16 @@ const hasAutoFilledFields = computed(() => {
 })
 
 const hasActiveFilters = computed(() => {
-  return selectSearchType.value !== null ||
+  return (
+    selectSearchType.value !== null ||
     selectedInstrument.value !== null ||
     selectedStyles.value.length > 0 ||
     (selectedLocation.value && typeof selectedLocation.value === 'object')
+  )
 })
 
 function removeStyle(style) {
-  selectedStyles.value = selectedStyles.value.filter(s => s.id !== style.id)
+  selectedStyles.value = selectedStyles.value.filter((s) => s.id !== style.id)
 }
 
 // Computed values for announce modal initial values (only when creating from search)

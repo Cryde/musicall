@@ -67,18 +67,18 @@
 </template>
 
 <script setup>
+import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Paginator from 'primevue/paginator'
-import { useTitle } from '@vueuse/core'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useForumStore } from '../../store/forum/forum.js'
-import { useUserSecurityStore } from '../../store/user/security.js'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import AddTopicModal from '../../components/Forum/AddTopicModal.vue'
 import TopicListItem from '../../components/Forum/TopicListItem.vue'
 import TopicListItemSkeleton from '../../components/Forum/TopicListItemSkeleton.vue'
-import AddTopicModal from '../../components/Forum/AddTopicModal.vue'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import { useForumStore } from '../../store/forum/forum.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const TOPICS_PER_PAGE = 15
@@ -95,7 +95,7 @@ const authModalMessage = ref('')
 const forumSlug = computed(() => route.params.slug)
 const currentPage = computed(() => {
   const page = route.query.page
-  return page ? parseInt(page, 10) : 1
+  return page ? Number.parseInt(page, 10) : 1
 })
 
 const breadcrumbItems = computed(() => [

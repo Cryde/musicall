@@ -40,20 +40,18 @@
 </template>
 
 <script setup>
-import Card from 'primevue/card'
 import { useTitle } from '@vueuse/core'
+import Card from 'primevue/card'
 import { onMounted, onUnmounted } from 'vue'
-import { useForumStore } from '../../store/forum/forum.js'
 import ForumCategorySkeleton from '../../components/Forum/ForumCategorySkeleton.vue'
+import { useForumStore } from '../../store/forum/forum.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 useTitle('Forum - MusicAll')
 
 const forumStore = useForumStore()
 
-const breadcrumbItems = [
-  { label: 'Forum' }
-]
+const breadcrumbItems = [{ label: 'Forum' }]
 
 onMounted(async () => {
   await forumStore.loadCategories()

@@ -58,10 +58,10 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { computed, ref } from 'vue'
-import { formatDate } from '../../utils/date.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import SendMessageModal from '../Message/SendMessageModal.vue'
+import { formatDate } from '../../utils/date.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
+import SendMessageModal from '../Message/SendMessageModal.vue'
 
 const props = defineProps({
   post: {

@@ -121,7 +121,7 @@ const errors = reactive({
 function validateLogin() {
   errors.login = ''
   if (!login.value.trim()) {
-    errors.login = 'Veuillez saisir votre email ou nom d\'utilisateur'
+    errors.login = "Veuillez saisir votre email ou nom d'utilisateur"
     return false
   }
   return true

@@ -113,7 +113,7 @@ const errors = reactive({
 function validateEmail() {
   errors.email = ''
   if (!email.value.trim()) {
-    errors.email = 'Veuillez saisir votre email ou nom d\'utilisateur'
+    errors.email = "Veuillez saisir votre email ou nom d'utilisateur"
     return false
   }
   return true

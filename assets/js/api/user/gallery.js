@@ -36,11 +36,15 @@ export default {
   },
 
   delete(id) {
-    return axios.delete(Routing.generate('api_user_gallery_delete', { id })).then((resp) => resp.data)
+    return axios
+      .delete(Routing.generate('api_user_gallery_delete', { id }))
+      .then((resp) => resp.data)
   },
 
   getImages(id) {
-    return axios.get(Routing.generate('api_user_gallery_images', { id })).then((resp) => resp.data.member)
+    return axios
+      .get(Routing.generate('api_user_gallery_images', { id }))
+      .then((resp) => resp.data.member)
   },
 
   uploadImage(id, file, onProgress) {

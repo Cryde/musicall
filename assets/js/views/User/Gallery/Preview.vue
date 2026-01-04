@@ -168,21 +168,21 @@
 </template>
 
 <script setup>
-import MasonryWall from '@yeger/vue-masonry-wall'
-import { useConfirm } from 'primevue/useconfirm'
-import { useToast } from 'primevue/usetoast'
 import { useTitle } from '@vueuse/core'
+import MasonryWall from '@yeger/vue-masonry-wall'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import userGalleryApi from '../../../api/user/gallery.js'
 import adminGalleryApi from '../../../api/admin/gallery.js'
-import { useUserSecurityStore } from '../../../store/user/security.js'
+import userGalleryApi from '../../../api/user/gallery.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import Breadcrumb from '../../Global/Breadcrumb.vue'
 
 const STATUS_DRAFT = 1

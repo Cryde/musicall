@@ -104,7 +104,11 @@ const errors = ref([])
 const submitted = ref(false)
 
 const canSend = computed(() => {
-  return name.value.trim().length > 0 && email.value.trim().length > 0 && message.value.trim().length >= 10
+  return (
+    name.value.trim().length > 0 &&
+    email.value.trim().length > 0 &&
+    message.value.trim().length >= 10
+  )
 })
 
 async function send() {
