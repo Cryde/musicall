@@ -28,7 +28,7 @@ class MusicianAnnounceCreate
     public Instrument $instrument;
 
     /** @var Style[] */
-    #[Assert\Count(min: 1)]
+    #[Assert\Count(min: 1, max: 10)]
     public array $styles = [];
 
     #[Assert\NotBlank]

@@ -31,11 +31,20 @@
         </div>
         <div class="block text-center">
             <Tag
-                v-for="style in styles"
+                v-for="style in visibleStyles"
+                :key="style.name"
                 size="small"
                 :value="style.name"
                 class="text-nowrap mr-2 mb-2"
                 severity="info"
+            />
+            <Tag
+                v-if="hasMoreStyles(styles)"
+                v-tooltip.top="allStylesText"
+                size="small"
+                :value="`+${styles.length - MAX_VISIBLE_STYLES}`"
+                class="text-nowrap mr-2 mb-2 cursor-help"
+                severity="secondary"
             />
         </div>
         <div class="block text-center">
@@ -74,8 +83,12 @@ import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { hasMoreStyles, MAX_VISIBLE_STYLES } from '../../utils/styles.js'
 
 const props = defineProps(['type', 'user', 'instrument', 'styles', 'location_name', 'distance'])
+
+const visibleStyles = computed(() => props.styles.slice(0, MAX_VISIBLE_STYLES))
+const allStylesText = computed(() => props.styles.map((s) => s.name).join(', '))
 
 const userSecurityStore = useUserSecurityStore()
 const showMessageModal = ref(false)

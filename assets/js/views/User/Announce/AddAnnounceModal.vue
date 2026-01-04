@@ -133,7 +133,11 @@
               placeholder="Sélectionnez un ou plusieurs styles"
               class="w-full"
               display="chip"
+              :selectionLimit="10"
             />
+            <small class="text-surface-500 dark:text-surface-400">
+              {{ selectedStyles.length }}/10 styles sélectionnés
+            </small>
           </div>
           <div class="flex justify-between pt-4">
             <Button
@@ -241,6 +245,9 @@
               </div>
             </div>
           </div>
+          <Message v-if="userAnnounceStore.saveError" severity="error" :closable="false" class="mt-4">
+            {{ userAnnounceStore.saveError }}
+          </Message>
           <div class="flex justify-between pt-4">
             <Button
               label="Précédent"
@@ -405,5 +412,6 @@ function reset() {
   selectedLocation.value = null
   note.value = ''
   locationSuggestions.value = []
+  userAnnounceStore.clearError()
 }
 </script>
