@@ -1,0 +1,23 @@
+services:
+    # OpenAI Platform
+    Symfony\AI\Platform\PlatformInterface:
+        factory: ['Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory', 'create']
+        arguments:
+            $apiKey: '%env(OPENAI_API_KEY)%'
+            $httpClient: '@http_client'
+            $eventDispatcher: '@event_dispatcher'
+
+    # Musician Filter Agent
+    app.ai.agent.musician_filter:
+        class: Symfony\AI\Agent\Agent
+        arguments:
+            $platform: '@Symfony\AI\Platform\PlatformInterface'
+            $model: 'gpt-4.1?temperature=0.5'
+            $inputProcessors: []
+            $outputProcessors: []
+            $name: 'musician_filter'
+
+    # Structured Output Event Subscriber
+    Symfony\AI\Platform\StructuredOutput\PlatformSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }

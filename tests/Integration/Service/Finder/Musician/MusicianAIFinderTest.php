@@ -14,9 +14,8 @@ use App\Tests\Factory\User\UserFactory;
 use Symfony\AI\Agent\Agent;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Model;
+use Symfony\AI\Platform\Result\ObjectResult;
 use Symfony\AI\Platform\Result\ResultInterface;
-use Symfony\AI\Platform\Result\ToolCall;
-use Symfony\AI\Platform\Result\ToolCallResult;
 use Symfony\AI\Platform\Test\InMemoryPlatform;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
@@ -67,7 +66,7 @@ class MusicianAIFinderTest extends KernelTestCase
      */
     private function callableResult(Model $model, MessageBag $input, array $options, Instrument $instrument, array $styles): ResultInterface
     {
-        return new ToolCallResult(new ToolCall('id', 'extract_data', [
+        return new ObjectResult([
             'type' => 1,
             'instrument' => $instrument->getId(),
             'styles' => array_map(fn(Style $style) => $style->getId(), $styles),
@@ -75,6 +74,6 @@ class MusicianAIFinderTest extends KernelTestCase
                 'latitude' => 48.856614,
                 'longitude' => 2.3522219,
             ]
-        ]));
+        ]);
     }
 }

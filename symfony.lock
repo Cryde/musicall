@@ -410,6 +410,18 @@
             "config/packages/sentry.yaml"
         ]
     },
+    "symfony/ai-open-ai-platform": {
+        "version": "0.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "4f925d48b69c145cde2286e2cabfc7bd5eb4aca9"
+        },
+        "files": [
+            "config/packages/ai_open_ai_platform.yaml"
+        ]
+    },
     "symfony/asset": {
         "version": "v4.2.0"
     },
