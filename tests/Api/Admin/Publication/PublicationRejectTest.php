@@ -98,4 +98,60 @@ class PublicationRejectTest extends ApiTestCase
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
+
+    public function test_reject_publication_already_online(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $publication = PublicationFactory::new([
+            'author' => $admin,
+            'status' => Publication::STATUS_ONLINE,
+            'subCategory' => $sub,
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/reject', [], [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+        ], '{}');
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context'    => '/api/contexts/Error',
+            '@id'         => '/api/errors/400',
+            '@type'       => 'Error',
+            'title'       => 'An error occurred',
+            'detail'      => 'Only pending publications can be rejected',
+            'status'      => 400,
+            'type'        => '/errors/400',
+            'description' => 'Only pending publications can be rejected',
+        ]);
+    }
+
+    public function test_reject_publication_draft(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $publication = PublicationFactory::new([
+            'author' => $admin,
+            'status' => Publication::STATUS_DRAFT,
+            'subCategory' => $sub,
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/reject', [], [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+        ], '{}');
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context'    => '/api/contexts/Error',
+            '@id'         => '/api/errors/400',
+            '@type'       => 'Error',
+            'title'       => 'An error occurred',
+            'detail'      => 'Only pending publications can be rejected',
+            'status'      => 400,
+            'type'        => '/errors/400',
+            'description' => 'Only pending publications can be rejected',
+        ]);
+    }
 }

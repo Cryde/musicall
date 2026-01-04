@@ -11,6 +11,7 @@ use App\Repository\PublicationRepository;
 use App\Service\Builder\CommentThreadDirector;
 use App\Service\Publication\PublicationSlug;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -30,6 +31,10 @@ readonly class AdminPublicationApproveProcessor implements ProcessorInterface
     {
         if (!$publication = $this->publicationRepository->find($uriVariables['id'])) {
             throw new NotFoundHttpException('Publication not found');
+        }
+
+        if ($publication->getStatus() !== Publication::STATUS_PENDING) {
+            throw new BadRequestHttpException('Only pending publications can be approved');
         }
 
         $commentThread = $this->commentThreadDirector->create();

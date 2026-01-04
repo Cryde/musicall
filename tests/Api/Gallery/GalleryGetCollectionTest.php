@@ -55,28 +55,30 @@ class GalleryGetCollectionTest extends ApiTestCase
             '@type'            => 'Collection',
             'member'     => [
                 [
-                    '@id' => '/api/galleries/' . $gallery2->getId(),
-                    '@type' => 'Gallery',
+                    '@id'                  => '/api/galleries/' . $gallery2->getId(),
+                    '@type'                => 'Gallery',
+                    'id'                   => $gallery2->getId(),
                     'title'                => 'Title gallery 2',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id' => '/api/users/' . $author->_real()->getId(),
-                        '@type' => 'User',
-                        'username' => 'user_admin'
+                        '@id'      => '/api/users/' . $author->_real()->getId(),
+                        '@type'    => 'User',
+                        'username' => 'user_admin',
                     ],
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-2',
                     'image_count'          => 0,
                 ],
                 [
-                    '@id' => '/api/galleries/' . $gallery1->getId(),
-                    '@type' => 'Gallery',
+                    '@id'                  => '/api/galleries/' . $gallery1->getId(),
+                    '@type'                => 'Gallery',
+                    'id'                   => $gallery1->getId(),
                     'title'                => 'Title gallery 1',
                     'publication_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id' => '/api/users/' . $author->_real()->getId(),
-                        '@type' => 'User',
-                        'username' => 'user_admin'
+                        '@id'      => '/api/users/' . $author->_real()->getId(),
+                        '@type'    => 'User',
+                        'username' => 'user_admin',
                     ],
                     'cover_image'          => null,
                     'slug'                 => 'gallery-slug-1',
