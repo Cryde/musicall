@@ -307,6 +307,7 @@ function handleContactAnnounce(author) {
 
 async function handleDiscoverPublished() {
   isLoadingPublications.value = true
+  publicationsStore.resetPublications()
   await publicationsStore.loadPublications({ page: 1 })
   isLoadingPublications.value = false
 }

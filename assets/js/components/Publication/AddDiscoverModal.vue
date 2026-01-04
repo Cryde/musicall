@@ -224,6 +224,8 @@ async function handlePublish() {
       description: videoDescription.value.trim()
     })
 
+    emit('published')
+
     videoStore.closeModal()
 
     toast.add({
@@ -232,8 +234,6 @@ async function handlePublish() {
       detail: 'Votre vidéo a été mise en ligne',
       life: 5000
     })
-
-    emit('published')
   } catch (error) {
     if (error.isValidationError && error.violationsByField) {
       errors.value = {
