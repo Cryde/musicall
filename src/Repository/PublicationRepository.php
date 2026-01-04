@@ -76,4 +76,21 @@ class PublicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return Publication[]
+     */
+    public function findLastPublications(int $limit = 4): array
+    {
+        return $this->createQueryBuilder('publication')
+            ->select('publication, sub_category, cover')
+            ->join('publication.subCategory', 'sub_category')
+            ->leftJoin('publication.cover', 'cover')
+            ->where('publication.status = :status')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

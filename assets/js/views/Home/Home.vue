@@ -88,7 +88,7 @@
           <PublicationListItemSkeleton v-for="i in 4" :key="i" />
         </template>
         <PublicationListItem
-          v-for="publication in latestPublications"
+          v-for="publication in publicationsStore.lastPublications"
           :key="publication.id"
           :to-route="{ name: 'app_publication_show', params: { slug: publication.slug } }"
           :cover="publication.cover"
@@ -214,7 +214,7 @@ import { useTitle } from '@vueuse/core'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
@@ -244,13 +244,11 @@ const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
 const authModalMessage = ref('')
 
-const latestPublications = computed(() => publicationsStore.publications.slice(0, 4))
-
 onMounted(async () => {
   await Promise.all([
     (async () => {
       isLoadingPublications.value = true
-      await publicationsStore.loadPublications({ page: 1 })
+      await publicationsStore.loadLastPublications()
       isLoadingPublications.value = false
     })(),
     (async () => {
@@ -307,8 +305,7 @@ function handleContactAnnounce(author) {
 
 async function handleDiscoverPublished() {
   isLoadingPublications.value = true
-  publicationsStore.resetPublications()
-  await publicationsStore.loadPublications({ page: 1 })
+  await publicationsStore.loadLastPublications()
   isLoadingPublications.value = false
 }
 
