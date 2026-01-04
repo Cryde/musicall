@@ -10,5 +10,11 @@ export default [
     path: 'admin/publications/pending',
     component: () => import('../views/Admin/Publication/PendingList.vue'),
     meta: { isAuthRequired: true, isAdminRequired: true }
+  },
+  {
+    name: 'admin_galleries_pending',
+    path: 'admin/galleries/pending',
+    component: () => import('../views/Admin/Gallery/PendingList.vue'),
+    meta: { isAuthRequired: true, isAdminRequired: true }
   }
 ]

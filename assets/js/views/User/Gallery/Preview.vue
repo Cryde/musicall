@@ -17,36 +17,68 @@
 
     <template v-else-if="gallery">
       <!-- Preview Banner -->
-      <Message severity="warn" :closable="false" class="mb-6">
-        <div class="flex items-center justify-between w-full gap-4">
+      <Message :severity="isAdminReview ? 'info' : 'warn'" :closable="false" class="mb-6">
+        <div class="flex items-center justify-between w-full gap-4 flex-wrap">
           <div class="flex items-center gap-2">
-            <i class="pi pi-eye" />
+            <i :class="isAdminReview ? 'pi pi-shield' : 'pi pi-eye'" />
             <span>
-              <strong>Mode previsualisation</strong> -
+              <strong>{{ isAdminReview ? 'Validation admin' : 'Mode prévisualisation' }}</strong> -
               Cette galerie est en
               <Tag :value="gallery.status_label" :severity="getStatusSeverity(gallery.status)" class="mx-1" />
             </span>
           </div>
           <div class="flex gap-2">
-            <Button
-              v-if="gallery.status === STATUS_DRAFT"
-              label="Modifier"
-              icon="pi pi-pencil"
-              size="small"
-              severity="secondary"
-              @click="router.push({ name: 'app_user_gallery_edit', params: { id: gallery.id } })"
-            />
-            <Button
-              label="Mes galeries"
-              icon="pi pi-list"
-              size="small"
-              severity="secondary"
-              outlined
-              @click="router.push({ name: 'app_user_galleries' })"
-            />
+            <!-- Admin review buttons -->
+            <template v-if="isAdminReview">
+              <Button
+                label="Valider"
+                icon="pi pi-check"
+                size="small"
+                severity="success"
+                :loading="isProcessing"
+                @click="confirmApprove"
+              />
+              <Button
+                label="Rejeter"
+                icon="pi pi-times"
+                size="small"
+                severity="danger"
+                :loading="isProcessing"
+                @click="confirmReject"
+              />
+              <Button
+                label="Retour"
+                icon="pi pi-arrow-left"
+                size="small"
+                severity="secondary"
+                outlined
+                @click="router.push({ name: 'admin_galleries_pending' })"
+              />
+            </template>
+            <!-- Regular user buttons -->
+            <template v-else>
+              <Button
+                v-if="gallery.status === STATUS_DRAFT"
+                label="Modifier"
+                icon="pi pi-pencil"
+                size="small"
+                severity="secondary"
+                @click="router.push({ name: 'app_user_gallery_edit', params: { id: gallery.id } })"
+              />
+              <Button
+                label="Mes galeries"
+                icon="pi pi-list"
+                size="small"
+                severity="secondary"
+                outlined
+                @click="router.push({ name: 'app_user_galleries' })"
+              />
+            </template>
           </div>
         </div>
       </Message>
+
+      <ConfirmDialog />
 
       <!-- Breadcrumb -->
       <div class="flex justify-end mb-4">
@@ -137,14 +169,20 @@
 
 <script setup>
 import MasonryWall from '@yeger/vue-masonry-wall'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import userGalleryApi from '../../../api/user/gallery.js'
+import adminGalleryApi from '../../../api/admin/gallery.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
+import { useNotificationStore } from '../../../store/notification/notification.js'
 import Breadcrumb from '../../Global/Breadcrumb.vue'
 
 const STATUS_DRAFT = 1
@@ -152,15 +190,24 @@ const STATUS_PENDING = 2
 
 const route = useRoute()
 const router = useRouter()
+const confirm = useConfirm()
+const toast = useToast()
+const userSecurityStore = useUserSecurityStore()
+const notificationStore = useNotificationStore()
 
 const gallery = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const isProcessing = ref(false)
 
 const showLightbox = ref(false)
 const currentIndex = ref(0)
 const currentImage = ref('')
 const imageLoading = ref(false)
+
+const isAdminReview = computed(() => {
+  return userSecurityStore.isAdmin && gallery.value?.status === STATUS_PENDING
+})
 
 useTitle(() =>
   gallery.value
@@ -262,6 +309,74 @@ function handleKeydown(e) {
   } else if (e.code === 'Escape') {
     closeLightbox()
   }
+}
+
+function confirmApprove() {
+  confirm.require({
+    message: `Valider la galerie "${gallery.value.title}" ?`,
+    header: 'Confirmation',
+    icon: 'pi pi-check-circle',
+    acceptLabel: 'Valider',
+    rejectLabel: 'Annuler',
+    acceptClass: 'p-button-success',
+    accept: async () => {
+      isProcessing.value = true
+      try {
+        await adminGalleryApi.approveGallery(gallery.value.id)
+        await notificationStore.loadNotifications()
+        toast.add({
+          severity: 'success',
+          summary: 'Galerie validée',
+          detail: `La galerie "${gallery.value.title}" a été validée.`,
+          life: 3000
+        })
+        router.push({ name: 'admin_galleries_pending' })
+      } catch (e) {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Une erreur est survenue lors de la validation.',
+          life: 3000
+        })
+      } finally {
+        isProcessing.value = false
+      }
+    }
+  })
+}
+
+function confirmReject() {
+  confirm.require({
+    message: `Rejeter la galerie "${gallery.value.title}" ?`,
+    header: 'Confirmation',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Rejeter',
+    rejectLabel: 'Annuler',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      isProcessing.value = true
+      try {
+        await adminGalleryApi.rejectGallery(gallery.value.id)
+        await notificationStore.loadNotifications()
+        toast.add({
+          severity: 'info',
+          summary: 'Galerie rejetée',
+          detail: `La galerie "${gallery.value.title}" a été rejetée.`,
+          life: 3000
+        })
+        router.push({ name: 'admin_galleries_pending' })
+      } catch (e) {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Une erreur est survenue lors du rejet.',
+          life: 3000
+        })
+      } finally {
+        isProcessing.value = false
+      }
+    }
+  })
 }
 </script>
 

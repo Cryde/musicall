@@ -42,6 +42,7 @@ class Gallery implements ViewableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[Groups([Gallery::LIST])]
     private $id;
 
     #[Assert\NotBlank]

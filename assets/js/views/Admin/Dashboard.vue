@@ -34,12 +34,13 @@
         </template>
         <template #content>
           <div class="flex flex-col gap-3">
-            <div
-              class="flex items-center justify-between p-3 rounded-lg bg-surface-100 dark:bg-surface-800 opacity-50 cursor-not-allowed"
+            <RouterLink
+              :to="{ name: 'admin_galleries_pending' }"
+              class="flex items-center justify-between p-3 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
             >
               <span>Galeries en attente</span>
               <Badge v-if="notificationStore.pendingGalleries > 0" :value="notificationStore.pendingGalleries" severity="warn" />
-            </div>
+            </RouterLink>
           </div>
         </template>
       </Card>
