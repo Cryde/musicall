@@ -59,7 +59,7 @@
         <PublicationListItem
           v-for="related in relatedPublications"
           :key="related.slug"
-          :to-route="{ name: 'app_publication_show', params: { slug: related.slug } }"
+          :to-route="{ name: related.sub_category.is_course ? 'app_course_show' : 'app_publication_show', params: { slug: related.slug } }"
           :cover="related.cover"
           :title="related.title"
           :description="related.description"

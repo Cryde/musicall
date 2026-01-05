@@ -90,7 +90,7 @@
         <PublicationListItem
           v-for="publication in publicationsStore.lastPublications"
           :key="publication.id"
-          :to-route="{ name: 'app_publication_show', params: { slug: publication.slug } }"
+          :to-route="{ name: publication.sub_category.is_course ? 'app_course_show' : 'app_publication_show', params: { slug: publication.slug } }"
           :cover="publication.cover"
           :title="publication.title"
           :description="publication.description"
