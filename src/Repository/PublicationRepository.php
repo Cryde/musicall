@@ -96,4 +96,26 @@ class PublicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return Publication[]
+     */
+    public function findRelatedPublications(Publication $publication, int $limit = 4): array
+    {
+        return $this->createQueryBuilder('publication')
+            ->select('publication, sub_category, cover, author')
+            ->join('publication.subCategory', 'sub_category')
+            ->join('publication.author', 'author')
+            ->leftJoin('publication.cover', 'cover')
+            ->where('publication.status = :status')
+            ->andWhere('publication.id != :currentId')
+            ->andWhere('sub_category.id = :subCategoryId')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setParameter('currentId', $publication->getId())
+            ->setParameter('subCategoryId', $publication->getSubCategory()->getId())
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

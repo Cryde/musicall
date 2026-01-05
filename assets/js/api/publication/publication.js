@@ -7,5 +7,11 @@ export default {
     return axios
       .get(Routing.generate('api_publication_get_item', { slug }))
       .then((resp) => resp.data)
+  },
+
+  getRelatedPublications(slug) {
+    return axios
+      .get(Routing.generate('api_publication_related', { slug }))
+      .then((resp) => resp.data.member)
   }
 }
