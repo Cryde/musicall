@@ -15,6 +15,9 @@ readonly class BotMetaDataGenerator
     ) {
     }
 
+    /**
+     * @return array{title?: string, description?: string, cover?: string|null}
+     */
     public function getMetaData(string $uri): array
     {
         foreach ($this->providers as $provider) {

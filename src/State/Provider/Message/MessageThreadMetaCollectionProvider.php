@@ -9,6 +9,9 @@ use App\Repository\Message\MessageThreadMetaRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 class MessageThreadMetaCollectionProvider implements ProviderInterface
 {
     public function __construct(

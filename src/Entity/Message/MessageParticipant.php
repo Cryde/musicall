@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Message;
 
 use ApiPlatform\Metadata\ApiResource;
@@ -12,6 +14,7 @@ use App\Repository\Message\MessageParticipantRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: MessageParticipantRepository::class)]
@@ -31,7 +34,7 @@ class MessageParticipant
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private $id;
+    private ?UuidInterface $id = null;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messageParticipants")]
     #[ORM\JoinColumn(nullable: false)]
@@ -52,7 +55,7 @@ class MessageParticipant
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toString();
     }
 
     public function getThread(): ?MessageThread

@@ -14,6 +14,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+/**
+ * @implements ProviderInterface<\App\ApiResource\Publication\Publication>
+ */
 readonly class PublicationProvider implements ProviderInterface
 {
     public function __construct(

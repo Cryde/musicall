@@ -9,6 +9,9 @@ use App\Service\Builder\Search\UserSearchBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class UserSearchProvider implements ProviderInterface
 {
     public function __construct(

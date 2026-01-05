@@ -27,6 +27,11 @@ readonly class PublicationBuilder
     ) {
     }
 
+    /**
+     * @param PublicationEntity[] $publicationEntities
+     *
+     * @return Publication[]
+     */
     public function buildFromEntities(array $publicationEntities): array
     {
         return array_map(fn (PublicationEntity $publicationEntity): Publication => $this->buildFromEntity($publicationEntity), $publicationEntities);

@@ -38,5 +38,6 @@ class UserGalleryPreview
 
     public string $authorUsername;
 
+    /** @var array<int, array{small?: string, medium?: string, full?: string}> */
     public array $images = [];
 }

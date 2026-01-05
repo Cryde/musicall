@@ -4,11 +4,15 @@ namespace App\State\Provider\Musician;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<MusicianAnnounce>
+ */
 readonly class AnnounceDeleteProvider implements ProviderInterface
 {
     public function __construct(

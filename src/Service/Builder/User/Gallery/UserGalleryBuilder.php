@@ -13,7 +13,8 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class UserGalleryBuilder
 {
-    private const STATUS_LABELS = [
+    /** @var array<int, string> */
+    private const array STATUS_LABELS = [
         Gallery::STATUS_ONLINE => 'En ligne',
         Gallery::STATUS_DRAFT => 'Brouillon',
         Gallery::STATUS_PENDING => 'En validation',
@@ -93,6 +94,9 @@ readonly class UserGalleryBuilder
         return $path ? $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_medium') : null;
     }
 
+    /**
+     * @return array{small?: string, medium?: string, full?: string}
+     */
     private function getImageSizes(GalleryImage $image): array
     {
         $path = $this->uploaderHelper->asset($image, 'imageFile');

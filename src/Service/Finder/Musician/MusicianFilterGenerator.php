@@ -68,6 +68,9 @@ readonly class MusicianFilterGenerator
             PROMPT;
     }
 
+    /**
+     * @return array{type: string, json_schema: array<string, mixed>}
+     */
     private function getResponseFormat(): array
     {
         return [

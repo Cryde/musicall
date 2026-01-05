@@ -40,6 +40,9 @@ readonly class PublicationMetaDataProvider implements BotMetaDataProviderInterfa
         return $this->getForBase();
     }
 
+    /**
+     * @return array{title: string, description: string}
+     */
     private function getForBase(): array
     {
         return [
@@ -48,6 +51,9 @@ readonly class PublicationMetaDataProvider implements BotMetaDataProviderInterfa
         ];
     }
 
+    /**
+     * @return array{title: string, description: string}
+     */
     private function getForCategory(string $slug): array
     {
         $category = $this->publicationSubCategoryRepository->findOneBy([
@@ -65,6 +71,9 @@ readonly class PublicationMetaDataProvider implements BotMetaDataProviderInterfa
         ];
     }
 
+    /**
+     * @return array{title?: string|null, description?: string|null, cover?: string|null}
+     */
     private function getForPublication(string $slug): array
     {
         $publication = $this->publicationRepository->findOneBy([

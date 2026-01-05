@@ -12,6 +12,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class UserGalleryImageCollectionProvider implements ProviderInterface
 {
     public function __construct(
@@ -21,6 +24,9 @@ readonly class UserGalleryImageCollectionProvider implements ProviderInterface
     ) {
     }
 
+    /**
+     * @return \App\ApiResource\User\Gallery\UserGalleryImage[]
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {

@@ -63,6 +63,9 @@ class PublicationRepository extends ServiceEntityRepository
             ->getSingleResult();
     }
 
+    /**
+     * @return Publication[]
+     */
     public function getBySearchTerm(string $term, int $limit = 10): array
     {
         return $this->createQueryBuilder('publication')

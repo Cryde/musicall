@@ -9,6 +9,9 @@ use App\Repository\GalleryRepository;
 use App\Service\Builder\User\Gallery\UserGalleryBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class UserGalleryCollectionProvider implements ProviderInterface
 {
     public function __construct(
@@ -18,6 +21,9 @@ readonly class UserGalleryCollectionProvider implements ProviderInterface
     ) {
     }
 
+    /**
+     * @return \App\ApiResource\User\Gallery\UserGallery[]
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         /** @var User $user */

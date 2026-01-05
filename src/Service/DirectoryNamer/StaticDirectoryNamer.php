@@ -10,6 +10,9 @@ use Vich\UploaderBundle\Mapping\PropertyMapping;
 use Vich\UploaderBundle\Naming\ConfigurableInterface;
 use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
 
+/**
+ * @implements DirectoryNamerInterface<object>
+ */
 class StaticDirectoryNamer implements DirectoryNamerInterface, ConfigurableInterface
 {
     private string $path = '';
@@ -40,6 +43,9 @@ class StaticDirectoryNamer implements DirectoryNamerInterface, ConfigurableInter
         return $this->path;
     }
 
+    /**
+     * @param array{path?: string, property?: string} $options
+     */
     public function configure(array $options): void
     {
         $this->path = $options['path'] ?? '';

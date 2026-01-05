@@ -7,14 +7,16 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Contact\Contact;
 use App\Service\Mail\Brevo\Contact\ContactUsEmail;
 
+/**
+ * @implements ProcessorInterface<Contact, Contact>
+ */
 class ContactProcessor implements ProcessorInterface
 {
     public function __construct(private readonly ContactUsEmail $contactUsEmail)
     {
     }
 
-    /** @param Contact $data */
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): Contact
     {
         $this->contactUsEmail->send($data->name, $data->email, $data->message);
 

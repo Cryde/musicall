@@ -12,6 +12,9 @@ use App\Service\Builder\User\UserSelfBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<UserSelf>
+ */
 readonly class UserSelfProvider implements ProviderInterface
 {
     public function __construct(

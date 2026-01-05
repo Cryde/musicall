@@ -18,7 +18,7 @@ class ViewRepository extends ServiceEntityRepository
         parent::__construct($registry, View::class);
     }
 
-    public function findOneByUser(ViewCache $viewCache, User $user)
+    public function findOneByUser(ViewCache $viewCache, User $user): ?View
     {
         return $this->createQueryBuilder('view')
             ->where('view.viewCache = :view_cache')
@@ -30,7 +30,7 @@ class ViewRepository extends ServiceEntityRepository
             ->getResult()[0] ?? null;
     }
 
-    public function findOneByIdentifierAndPeriod(ViewCache $viewCache, string $identifier, \DateTime $dateTime)
+    public function findOneByIdentifierAndPeriod(ViewCache $viewCache, string $identifier, \DateTime $dateTime): ?View
     {
         return $this->createQueryBuilder('view')
             ->where('view.viewCache = :view_cache')

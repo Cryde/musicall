@@ -9,6 +9,9 @@ use App\Repository\BandSpace\BandSpaceRepository;
 use App\Service\Builder\BandSpace\BandSpaceBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class BandSpaceCollectionProvider implements ProviderInterface
 {
     public function __construct(

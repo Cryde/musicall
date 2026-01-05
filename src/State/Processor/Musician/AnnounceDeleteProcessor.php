@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @implements ProcessorInterface<mixed, void>
+ */
 readonly class AnnounceDeleteProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -13,7 +16,7 @@ readonly class AnnounceDeleteProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
        $this->entityManager->remove($data);
        $this->entityManager->flush();

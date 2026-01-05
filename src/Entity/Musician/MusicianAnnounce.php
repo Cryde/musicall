@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Musician;
 
 use App\Entity\Attribute\Instrument;
@@ -13,6 +15,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: MusicianAnnounceRepository::class)]
 class MusicianAnnounce
@@ -28,17 +31,17 @@ class MusicianAnnounce
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private $id;
+    private ?UuidInterface $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private $creationDatetime;
+    private DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private User $author;
 
     #[ORM\Column(type: Types::SMALLINT)]
-    private $type;
+    private int $type;
 
     #[ORM\ManyToOne(targetEntity: Instrument::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -70,7 +73,7 @@ class MusicianAnnounce
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toString();
     }
 
     public function getCreationDatetime(): ?DateTimeInterface
@@ -121,11 +124,17 @@ class MusicianAnnounce
         return $this;
     }
 
+    /**
+     * @return Collection<int, Style>
+     */
     public function getStyles(): Collection
     {
         return $this->styles;
     }
 
+    /**
+     * @param Collection<int, Style> $styles
+     */
     public function setStyles(Collection $styles): static
     {
         $this->styles = $styles;

@@ -5,10 +5,14 @@ namespace App\State\Processor\Publication;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Publication\Video\AddVideo;
+use App\Entity\Publication;
 use App\Entity\User;
 use App\Procedure\Publication\PublicationVideoCreationProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProcessorInterface<AddVideo, Publication>
+ */
 class VideoPostProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -20,7 +24,7 @@ class VideoPostProcessor implements ProcessorInterface
     /**
      * @param AddVideo $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Publication
     {
         /** @var User $user */
         $user = $this->security->getUser();

@@ -12,6 +12,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<Publication>
+ */
 readonly class UserPublicationUploadCoverProvider implements ProviderInterface
 {
     public function __construct(

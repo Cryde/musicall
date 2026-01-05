@@ -12,6 +12,9 @@ use App\Service\Publication\GallerySlug;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProcessorInterface<UserGalleryCreate, mixed>
+ */
 readonly class UserGalleryCreateProcessor implements ProcessorInterface
 {
     public function __construct(

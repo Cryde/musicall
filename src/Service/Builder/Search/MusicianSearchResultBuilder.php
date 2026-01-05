@@ -23,6 +23,11 @@ class MusicianSearchResultBuilder
     ) {
     }
 
+    /**
+     * @param array<int, MusicianAnnounce|array{0: MusicianAnnounce, distance: float}> $list
+     *
+     * @return AnnounceMusician[]
+     */
     public function buildFromList(array $list): array
     {
         $result = [];

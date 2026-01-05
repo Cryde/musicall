@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Forum;
 
 use App\Contracts\SluggableEntityInterface;
@@ -9,7 +11,7 @@ use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
-use Symfony\Component\Serializer\Attribute\Groups;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
 class Forum implements SluggableEntityInterface
@@ -18,7 +20,7 @@ class Forum implements SluggableEntityInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private $id;
+    private ?UuidInterface $id = null;
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
@@ -46,7 +48,7 @@ class Forum implements SluggableEntityInterface
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toString();
     }
 
     public function getTitle(): ?string

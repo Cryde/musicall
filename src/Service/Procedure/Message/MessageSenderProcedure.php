@@ -35,7 +35,7 @@ class MessageSenderProcedure
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function process(User $sender, User $recipient, string $message) : Message
+    public function process(User $sender, User $recipient, string $content) : Message
     {
         if (!$thread = $this->messageThreadRepository->findByParticipants($recipient, $sender)) {
             $thread = $this->messageThreadDirector->create();
@@ -55,7 +55,7 @@ class MessageSenderProcedure
             $this->handleReadMessage($thread, $sender);
         }
 
-        $message = $this->messageDirector->create($thread, $sender, $message);
+        $message = $this->messageDirector->create($thread, $sender, $content);
         $this->entityManager->persist($message);
         $thread->setLastMessage($message);
         $this->entityManager->flush();
@@ -63,11 +63,11 @@ class MessageSenderProcedure
         return $message;
     }
 
-    public function processByThread(MessageThread $thread, User $sender, string $message): Message
+    public function processByThread(MessageThread $thread, User $sender, string $content): Message
     {
         $this->handleReadMessage($thread, $sender);
 
-        $message = $this->messageDirector->create($thread, $sender, $message);
+        $message = $this->messageDirector->create($thread, $sender, $content);
         $this->entityManager->persist($message);
         $thread->setLastMessage($message);
         $this->entityManager->flush();

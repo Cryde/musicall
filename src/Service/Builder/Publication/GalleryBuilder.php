@@ -72,6 +72,9 @@ readonly class GalleryBuilder
         return $dto;
     }
 
+    /**
+     * @return array{small?: string, medium?: string, full?: string}
+     */
     private function getImageSizes(GalleryImageEntity $image): array
     {
         $path = $this->uploaderHelper->asset($image, 'imageFile');

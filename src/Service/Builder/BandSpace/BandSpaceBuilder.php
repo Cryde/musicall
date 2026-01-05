@@ -7,6 +7,10 @@ use App\Entity\BandSpace\BandSpace as BandSpaceEntity;
 
 readonly class BandSpaceBuilder
 {
+    /**
+     * @param BandSpaceEntity[] $entities
+     * @return BandSpaceDTO[]
+     */
     public function buildFromList(array $entities): array
     {
         return array_map(

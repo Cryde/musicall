@@ -11,6 +11,9 @@ use App\Service\Builder\Search\MusicianSearchResultBuilder;
 use App\Service\Finder\Musician\Builder\SearchModelBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class MusicianSearchProvider implements ProviderInterface
 {
     public function __construct(

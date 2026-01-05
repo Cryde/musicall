@@ -9,6 +9,9 @@ use App\Repository\GalleryImageRepository;
 use App\Service\Builder\User\Gallery\UserGalleryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @implements ProcessorInterface<UserGalleryImage, mixed>
+ */
 readonly class UserGalleryImageSetCoverProcessor implements ProcessorInterface
 {
     public function __construct(

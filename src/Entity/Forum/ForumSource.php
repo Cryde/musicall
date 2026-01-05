@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Forum;
 
 use Doctrine\DBAL\Types\Types;
@@ -11,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: ForumSourceRepository::class)]
 class ForumSource
@@ -20,7 +23,7 @@ class ForumSource
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ApiProperty(identifier: false)]
-    private $id;
+    private ?UuidInterface $id = null;
     /**
      * @var Collection<int, ForumCategory>
      */
@@ -42,11 +45,11 @@ class ForumSource
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toString();
     }
 
     /**
-     * @return Collection|ForumCategory[]
+     * @return Collection<int, ForumCategory>
      */
     public function getForumCategories(): Collection
     {

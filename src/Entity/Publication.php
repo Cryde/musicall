@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
@@ -79,7 +81,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[ApiProperty(identifier: false)]
     #[Groups([Publication::LIST])]
-    private $id;
+    private ?int $id = null;
 
     #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
     #[ORM\Column(type: Types::STRING, length: 255)]
@@ -296,7 +298,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     }
 
     /**
-     * @return Collection|PublicationImage[]
+     * @return Collection<int, PublicationImage>
      */
     public function getImages(): Collection
     {
