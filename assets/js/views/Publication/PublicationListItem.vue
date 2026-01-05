@@ -16,11 +16,11 @@
     />
     <div class="p-2 md:p-4 flex flex-col gap-4 w-full md:w-9/12">
       <div class="flex flex-col gap-4 flex-1">
-        <div class="self-stretch md:h-[51px] flex flex-col gap-2">
-          <div class="self-stretch text-surface-900 dark:text-surface-0 text-lg font-medium leading-normal">
+        <div class="self-stretch md:h-[51px] flex flex-col gap-2 overflow-hidden">
+          <div class="self-stretch text-surface-900 dark:text-surface-0 text-lg font-medium leading-normal truncate">
             {{ title }}
           </div>
-          <div class="self-stretch text-surface-600 dark:text-surface-200 text-sm leading-normal">
+          <div class="self-stretch text-surface-600 dark:text-surface-200 text-sm leading-normal line-clamp-1">
             {{ description }}
           </div>
         </div>
