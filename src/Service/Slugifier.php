@@ -26,13 +26,13 @@ class Slugifier
 
         $slugCandidate = $this->propertyAccessor->getValue($object, $property);
 
-        $slug = $this->slugger->slug($slugCandidate)->lower();
+        $slug = $this->slugger->slug($slugCandidate)->lower()->toString();
         $i = 1;
         $initialSlug = $slug;
         while ($repository->count(['slug' => $slug]) > 0) {
             $slug = $initialSlug . '-' . $i++;
         }
 
-        return $slug->toString();
+        return $slug;
     }
 }
