@@ -47,5 +47,6 @@ class UserGalleryImage
     #[ApiProperty(identifier: true)]
     public int $id;
 
+    /** @var array{small?: string, medium?: string, full?: string} */
     public array $sizes = [];
 }

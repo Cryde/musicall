@@ -11,6 +11,9 @@ use App\Service\Builder\User\Gallery\UserGalleryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProcessorInterface<UserGalleryEdit, mixed>
+ */
 readonly class UserGalleryEditProcessor implements ProcessorInterface
 {
     public function __construct(

@@ -20,7 +20,7 @@ class GalleryImage
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private $id;
+    private ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxWidth: 4000, maxHeight: 4000)]
@@ -36,8 +36,8 @@ class GalleryImage
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private DateTimeInterface $creationDatetime;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Gallery::class, inversedBy: "images")]
     #[ORM\JoinColumn(nullable: false)]

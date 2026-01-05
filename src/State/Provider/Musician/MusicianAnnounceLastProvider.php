@@ -8,6 +8,9 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Builder\Musician\MusicianAnnounceBuilder;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class MusicianAnnounceLastProvider implements ProviderInterface
 {
     public function __construct(
@@ -16,6 +19,9 @@ readonly class MusicianAnnounceLastProvider implements ProviderInterface
     ) {
     }
 
+    /**
+     * @return \App\ApiResource\Musician\MusicianAnnounce[]
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $entities = $this->musicianAnnounceRepository->findBy(

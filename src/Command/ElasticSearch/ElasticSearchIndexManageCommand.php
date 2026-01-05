@@ -58,14 +58,14 @@ class ElasticSearchIndexManageCommand extends Command
     }
 
 
-    private function isValidMethod($method): bool
+    private function isValidMethod(string $method): bool
     {
         return in_array($method, self::AVAILABLE_METHODS, true);
     }
 
     private function displayIndexList(OutputInterface $output): void
     {
-        /** @var array<int, array> $data */
+        /** @var array<int, array<string, mixed>> $data */
         $data = $this->client->request('_cat/indices/?format=json', 'GET')->getData();
         if (!$data) {
             return;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Forum;
 
 use App\Repository\Forum\ForumCategoryRepository;
@@ -10,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: ForumCategoryRepository::class)]
 class ForumCategory
@@ -18,7 +21,7 @@ class ForumCategory
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private $id;
+    private ?UuidInterface $id = null;
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $title;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -42,7 +45,7 @@ class ForumCategory
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toString();
     }
 
     public function getTitle(): ?string
@@ -94,7 +97,7 @@ class ForumCategory
     }
 
     /**
-     * @return Collection|Forum[]
+     * @return Collection<int, Forum>
      */
     public function getForums(): Collection
     {

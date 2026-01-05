@@ -16,6 +16,7 @@ use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -30,7 +31,7 @@ class ForumPost
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private $id;
+    private ?UuidInterface $id = null;
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $creationDatetime;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -56,7 +57,7 @@ class ForumPost
 
     public function getId(): ?string
     {
-        return $this->id ? (string) $this->id : null;
+        return $this->id?->toString();
     }
 
     public function getCreationDatetime(): DateTimeInterface

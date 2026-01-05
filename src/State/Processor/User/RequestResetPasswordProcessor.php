@@ -6,16 +6,16 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\RequestResetPassword;
 use App\Service\User\ResetPassword;
 
+/**
+ * @implements ProcessorInterface<RequestResetPassword, void>
+ */
 readonly class RequestResetPasswordProcessor implements ProcessorInterface
 {
     public function __construct(private ResetPassword $resetPassword)
     {
     }
 
-    /**
-     * @param RequestResetPassword $data
-     */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         $this->resetPassword->resetPasswordByLogin($data->login);
     }

@@ -13,6 +13,9 @@ class RefreshTokenManager implements RefreshTokenManagerInterface
     protected string $class;
     protected RefreshTokenRepository $repository;
 
+    /**
+     * @param class-string<RefreshTokenInterface> $class
+     */
     public function __construct(protected EntityManagerInterface $objectManager, string $class)
     {
         /** @var RefreshTokenRepository $repository */
@@ -82,6 +85,9 @@ class RefreshTokenManager implements RefreshTokenManagerInterface
         return $this->class;
     }
 
+    /**
+     * @return RefreshTokenInterface
+     */
     public function create()
     {
         $class = $this->getClass();

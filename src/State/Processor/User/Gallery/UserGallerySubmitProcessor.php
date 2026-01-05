@@ -12,6 +12,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
+/**
+ * @implements ProcessorInterface<UserGallerySubmit, mixed>
+ */
 readonly class UserGallerySubmitProcessor implements ProcessorInterface
 {
     public function __construct(

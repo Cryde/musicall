@@ -4,5 +4,6 @@ namespace App\ApiResource\Publication;
 
 class GalleryImage
 {
+    /** @var array{small?: string, medium?: string, full?: string} */
     public array $sizes = [];
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Image;
 
 use DateTimeImmutable;
@@ -18,21 +20,21 @@ class PublicationCover
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private $id;
+    private ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
     #[Vich\UploadableField(mapping: 'publication_image_cover', fileNameProperty: 'imageName', size: 'imageSize')]
     private ?File $imageFile = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    private $imageName;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $imageName = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
-    private $imageSize;
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $imageSize = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToOne(targetEntity: Publication::class)]
     private ?Publication $publication = null;

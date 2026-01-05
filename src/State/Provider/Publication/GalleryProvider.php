@@ -13,6 +13,9 @@ use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * @implements ProviderInterface<\App\ApiResource\Publication\Gallery>
+ */
 readonly class GalleryProvider implements ProviderInterface
 {
     public function __construct(

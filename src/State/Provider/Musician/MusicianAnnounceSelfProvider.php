@@ -9,6 +9,9 @@ use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Builder\Musician\MusicianAnnounceBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class MusicianAnnounceSelfProvider implements ProviderInterface
 {
     public function __construct(
@@ -18,6 +21,9 @@ readonly class MusicianAnnounceSelfProvider implements ProviderInterface
     ) {
     }
 
+    /**
+     * @return \App\ApiResource\Musician\MusicianAnnounce[]
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         /** @var User $user */

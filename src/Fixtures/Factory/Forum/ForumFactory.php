@@ -37,7 +37,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         return $this->with(['forumCategory' => $forumCategory]);
     }
 
-    // Généralités forums
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asPresentation(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -49,6 +51,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asDiscussionGenerale(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -60,7 +65,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    // Demande d'aide forums
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asTheorieMusicale(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -72,6 +79,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asInformatiqueMusicale(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -83,7 +93,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    // Annonces et promotion forums
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asPromotion(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -95,6 +107,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asPetitesAnnonces(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -106,7 +121,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    // Partage multimédia forums
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asVideos(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -118,6 +135,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asAudio(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -129,7 +149,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
-    // Concernant le site forums
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asSuggestions(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -141,6 +163,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    /**
+     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     */
     public function asBugs(Proxy|ForumCategory $forumCategory): self
     {
         return $this->with([

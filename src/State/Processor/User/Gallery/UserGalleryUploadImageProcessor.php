@@ -11,6 +11,9 @@ use App\Repository\GalleryRepository;
 use App\Service\Builder\User\Gallery\UserGalleryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @implements ProcessorInterface<UserGalleryUploadImage, UserGalleryImage>
+ */
 readonly class UserGalleryUploadImageProcessor implements ProcessorInterface
 {
     public function __construct(

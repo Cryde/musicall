@@ -32,26 +32,41 @@ final class ForumCategoryFactory extends PersistentProxyObjectFactory
         return $this->with(['forumSource' => $forumSource]);
     }
 
+    /**
+     * @param Proxy<ForumSource>|ForumSource $forumSource
+     */
     public function asGeneralites(Proxy|ForumSource $forumSource): self
     {
         return $this->with(['forumSource' => $forumSource, 'title' => 'Généralités', 'position' => 1]);
     }
 
+    /**
+     * @param Proxy<ForumSource>|ForumSource $forumSource
+     */
     public function asDemandeAide(Proxy|ForumSource $forumSource): self
     {
         return $this->with(['forumSource' => $forumSource, 'title' => "Demande d'aide", 'position' => 2]);
     }
 
+    /**
+     * @param Proxy<ForumSource>|ForumSource $forumSource
+     */
     public function asAnnoncesPromotion(Proxy|ForumSource $forumSource): self
     {
         return $this->with(['forumSource' => $forumSource, 'title' => 'Annonces et promotion', 'position' => 3]);
     }
 
+    /**
+     * @param Proxy<ForumSource>|ForumSource $forumSource
+     */
     public function asPartageMultimedia(Proxy|ForumSource $forumSource): self
     {
         return $this->with(['forumSource' => $forumSource, 'title' => 'Partage multimédia', 'position' => 4]);
     }
 
+    /**
+     * @param Proxy<ForumSource>|ForumSource $forumSource
+     */
     public function asConcernantLeSite(Proxy|ForumSource $forumSource): self
     {
         return $this->with(['forumSource' => $forumSource, 'title' => 'Concernant le site', 'position' => 5]);

@@ -7,6 +7,9 @@ use ApiPlatform\State\ProviderInterface;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationBuilder;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class PublicationSearchProvider implements ProviderInterface
 {
     public function __construct(

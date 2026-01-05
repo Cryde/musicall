@@ -4,6 +4,7 @@ namespace App\State\Processor\BandSpace;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\ApiResource\BandSpace\BandSpace as BandSpaceDto;
 use App\ApiResource\BandSpace\BandSpaceCreate;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
@@ -13,6 +14,9 @@ use App\Service\Builder\BandSpace\BandSpaceBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProcessorInterface<BandSpaceCreate, BandSpaceDto>
+ */
 readonly class BandSpaceCreateProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -25,7 +29,7 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
     /**
      * @param BandSpaceCreate $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): BandSpaceDto
     {
         /** @var User $user */
         $user = $this->security->getUser();

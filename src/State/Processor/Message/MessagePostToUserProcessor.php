@@ -5,11 +5,15 @@ namespace App\State\Processor\Message;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Message\MessageUser;
+use App\Entity\Message\Message;
 use App\Entity\User;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProcessorInterface<MessageUser, Message>
+ */
 class MessagePostToUserProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -18,7 +22,7 @@ class MessagePostToUserProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): Message
     {
         /** @var MessageUser $data */
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {

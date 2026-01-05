@@ -13,6 +13,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<GalleryImage>
+ */
 readonly class UserGalleryImageDeleteProvider implements ProviderInterface
 {
     public function __construct(

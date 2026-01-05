@@ -17,6 +17,9 @@ use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * @implements ProcessorInterface<Register, void>
+ */
 readonly class RegisterProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -32,7 +35,7 @@ readonly class RegisterProcessor implements ProcessorInterface
      *
      * @throws UserAlreadyLoggedException
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         if ($this->security->getUser()) {
             throw new UserAlreadyLoggedException('Vous êtes déjà connecté');

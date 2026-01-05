@@ -9,6 +9,9 @@ use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Builder\Musician\MusicianAnnounceBuilder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @implements ProviderInterface<MusicianAnnounce>
+ */
 readonly class MusicianAnnounceItemProvider implements ProviderInterface
 {
     public function __construct(

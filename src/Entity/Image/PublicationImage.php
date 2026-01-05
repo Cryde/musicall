@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Image;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -19,7 +21,7 @@ class PublicationImage
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private $id;
+    private ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
@@ -32,8 +34,8 @@ class PublicationImage
     #[ORM\Column(type: Types::INTEGER)]
     private int $imageSize;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'images')]
     private ?Publication $publication = null;

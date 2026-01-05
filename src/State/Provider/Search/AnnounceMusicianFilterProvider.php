@@ -4,8 +4,12 @@ namespace App\State\Provider\Search;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Search\AnnounceMusicianFilter;
 use App\Service\Finder\Musician\MusicianFilterGenerator;
 
+/**
+ * @implements ProviderInterface<AnnounceMusicianFilter>
+ */
 readonly class AnnounceMusicianFilterProvider implements ProviderInterface
 {
     public function __construct(
@@ -13,7 +17,7 @@ readonly class AnnounceMusicianFilterProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AnnounceMusicianFilter
     {
         if (!$params = $operation->getParameters()) {
             return null;

@@ -11,6 +11,7 @@ use Doctrine\ORM\Query\TokenType;
 
 class MatchAgainst extends FunctionNode
 {
+    /** @var array<int, Node>|null */
     protected ?array $pathExp = null;
     protected Node|null $against = null;
     protected bool $booleanMode = false;

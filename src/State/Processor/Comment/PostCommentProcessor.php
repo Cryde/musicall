@@ -4,11 +4,16 @@ namespace App\State\Processor\Comment;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\ApiResource\Comment\CommentCreation;
+use App\Entity\Comment\Comment;
 use App\Entity\User;
 use App\Service\Procedure\Comment\CreateCommentProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProcessorInterface<CommentCreation, Comment>
+ */
 readonly class PostCommentProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -17,7 +22,7 @@ readonly class PostCommentProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Comment
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');

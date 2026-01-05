@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceRepository::class)]
 #[ORM\Table(name: 'band_space')]
@@ -19,7 +20,7 @@ class BandSpace
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    public $id {
+    public UuidInterface|string|null $id = null {
         get {
             return is_string($this->id) ? $this->id : $this->id?->toString();
         }

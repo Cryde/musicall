@@ -12,6 +12,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class BandSpaceItemProvider implements ProviderInterface
 {
     public function __construct(

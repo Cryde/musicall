@@ -12,7 +12,9 @@ class SmallPublicationSerializer
     }
 
     /**
-     * @param array|Publication[] $publications
+     * @param Publication[] $publications
+     *
+     * @return array<int, array{id: ?int, title: string, description: ?string, cover_image: ?string}>
      */
     public function listToArray(array $publications): array
     {
@@ -24,6 +26,9 @@ class SmallPublicationSerializer
         return $result;
     }
 
+    /**
+     * @return array{id: ?int, title: string, description: ?string, cover_image: ?string}
+     */
     public function toArray(Publication $publication): array
     {
         return [

@@ -10,6 +10,9 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * @implements ProcessorInterface<ResetPassword, void>
+ */
 readonly class ResetPasswordProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -20,11 +23,9 @@ readonly class ResetPasswordProcessor implements ProcessorInterface
     }
 
     /**
-     * @param ResetPassword $data
-     *
      * @throws ResetPasswordInvalidTokenException
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         if (!$user = $this->userRepository->findByTokenAndLimitDatetime($uriVariables['token'])) {
             throw new ResetPasswordInvalidTokenException('Le token n\'est pas valide ou a expiré.');

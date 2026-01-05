@@ -7,6 +7,9 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Image\GalleryImage;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @implements ProcessorInterface<GalleryImage, null>
+ */
 readonly class UserGalleryImageDeleteProcessor implements ProcessorInterface
 {
     public function __construct(

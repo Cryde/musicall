@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Message;
 
 use ApiPlatform\Metadata\ApiResource;
@@ -15,6 +17,7 @@ use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: MessageThreadMetaRepository::class)]
@@ -47,7 +50,7 @@ class MessageThreadMeta
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([MessageThreadMeta::LIST, MessageThreadMeta::ITEM])]
-    private $id;
+    private ?UuidInterface $id = null;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -75,7 +78,7 @@ class MessageThreadMeta
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toString();
     }
 
     public function getThread(): ?MessageThread

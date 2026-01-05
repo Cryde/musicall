@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
@@ -43,13 +45,13 @@ class Gallery implements ViewableInterface
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[Groups([Gallery::LIST])]
-    private $id;
+    private ?int $id = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 200)]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([Gallery::LIST])]
-    private $title;
+    private string $title;
 
     #[Assert\NotBlank(message: 'Vous devez spécifier une description pour votre galerie', groups: ['publish'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -177,7 +179,7 @@ class Gallery implements ViewableInterface
     }
 
     /**
-     * @return Collection|GalleryImage[]
+     * @return Collection<int, GalleryImage>
      */
     public function getImages(): Collection
     {

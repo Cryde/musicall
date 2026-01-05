@@ -13,6 +13,9 @@ use App\Repository\PublicationRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<Notification>
+ */
 readonly class NotificationProvider implements ProviderInterface
 {
     public function __construct(

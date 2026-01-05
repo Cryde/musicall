@@ -9,6 +9,9 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProcessorInterface<UserProfilePicture, UserProfilePicture>
+ */
 class UserProfilePictureProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -17,10 +20,7 @@ class UserProfilePictureProcessor implements ProcessorInterface
     ) {
     }
 
-    /**
-     * @param UserProfilePicture $data
-     */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserProfilePicture
     {
         /** @var User $user */
         $user = $this->security->getUser();

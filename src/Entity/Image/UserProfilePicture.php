@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Image;
 
 use ApiPlatform\Metadata\ApiResource;
@@ -55,7 +57,7 @@ class UserProfilePicture
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private $id;
+    private ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\NotNull]
@@ -64,14 +66,14 @@ class UserProfilePicture
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
     private ?File $imageFile = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    private $imageName;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $imageName = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
-    private $imageSize;
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $imageSize = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToOne(targetEntity: User::class)]
     private ?User $user = null;

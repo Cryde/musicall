@@ -11,6 +11,9 @@ use App\Service\Access\ThreadAccess;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 class MessageCollectionProvider implements ProviderInterface
 {
     public function __construct(

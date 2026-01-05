@@ -10,6 +10,7 @@ use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceMembershipRepository::class)]
 #[ORM\Table(name: 'band_space_membership')]
@@ -20,7 +21,7 @@ class BandSpaceMembership
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    public $id {
+    public UuidInterface|string|null $id = null {
         get {
             return is_string($this->id) ? $this->id : $this->id?->toString();
         }

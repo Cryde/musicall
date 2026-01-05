@@ -14,6 +14,9 @@ class AnnounceMusicianFilterBuilder
     ) {
     }
 
+    /**
+     * @param array{type?: mixed, instrument?: string, styles?: string[], coordinates?: array{latitude?: float, longitude?: float}} $data
+     */
     public function buildFromArray(array $data): ?AnnounceMusicianFilter
     {
         if (!isset($data['type'], $data['instrument'])) {

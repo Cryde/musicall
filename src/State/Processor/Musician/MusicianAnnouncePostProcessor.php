@@ -13,6 +13,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * @implements ProcessorInterface<MusicianAnnounceCreate, MusicianAnnounce>
+ */
 readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
 {
     public function __construct(

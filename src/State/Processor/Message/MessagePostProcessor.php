@@ -11,6 +11,9 @@ use App\Service\Procedure\Message\MessageSenderProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * @implements ProcessorInterface<Message, Message>
+ */
 class MessagePostProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -20,9 +23,8 @@ class MessagePostProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): Message
     {
-        /** @var Message $data */
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
