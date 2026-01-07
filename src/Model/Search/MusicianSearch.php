@@ -7,11 +7,12 @@ use App\Entity\Attribute\Style;
 
 class MusicianSearch
 {
-    public int $type;
-    public Instrument $instrument;
+    public ?int $type = null;
+    public ?Instrument $instrument = null;
     /** @var Style[] */
     public array $styles = [];
     public ?float $latitude = null;
     public ?float $longitude = null;
-
+    public int $page = 1;
+    public int $limit = 12;
 }

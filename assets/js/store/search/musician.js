@@ -5,18 +5,32 @@ import searchApi from '../../api/search/musician.js'
 export const useMusicianSearchStore = defineStore('musicianSearch', () => {
   const announces = ref([])
   const filters = ref(null)
+  const currentPage = ref(1)
+  const lastBatchSize = ref(0)
 
   async function searchAnnounces({
-    type,
-    instrument,
+    type = null,
+    instrument = null,
     styles = null,
     latitude = null,
-    longitude = null
+    longitude = null,
+    page = 1,
+    append = false
   }) {
-    announces.value = []
-    const data = await searchApi.searchAnnounces({ instrument, styles, type, latitude, longitude })
+    if (!append) {
+      announces.value = []
+      currentPage.value = 1
+    }
 
-    announces.value = data.member
+    const data = await searchApi.searchAnnounces({ instrument, styles, type, latitude, longitude, page })
+
+    if (append) {
+      announces.value = [...announces.value, ...data.member]
+    } else {
+      announces.value = data.member
+    }
+    lastBatchSize.value = data.member.length
+    currentPage.value = page
   }
 
   async function getSearchAnnouncesFilters({ search }) {
@@ -26,6 +40,8 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
 
   function clear() {
     announces.value = []
+    currentPage.value = 1
+    lastBatchSize.value = 0
   }
 
   return {
@@ -33,6 +49,8 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
     getSearchAnnouncesFilters,
     clear,
     announces: readonly(announces),
-    filters: readonly(filters)
+    filters: readonly(filters),
+    currentPage: readonly(currentPage),
+    lastBatchSize: readonly(lastBatchSize)
   }
 })
