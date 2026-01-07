@@ -140,7 +140,27 @@
       </div>
     </div>
     <div class="py-6 px-6 md:px-12 lg:px-20 flex flex-wrap items-center justify-between w-full gap-4">
-      <span class="text-base text-surface-900 dark:text-surface-0 font-normal leading-normal">© 2008-{{ (new Date()).getFullYear() }} MusicAll</span>
+      <div class="flex items-center gap-6">
+        <span class="text-base text-surface-900 dark:text-surface-0 font-normal leading-normal">© 2008-{{ (new Date()).getFullYear() }} MusicAll</span>
+        <RouterLink
+          :to="{ name: 'app_privacy' }"
+          class="text-sm text-surface-600 dark:text-surface-400 hover:text-primary"
+        >
+          Confidentialité
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'app_terms' }"
+          class="text-sm text-surface-600 dark:text-surface-400 hover:text-primary"
+        >
+          CGU
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'app_mentions_legales' }"
+          class="text-sm text-surface-600 dark:text-surface-400 hover:text-primary"
+        >
+          Mentions légales
+        </RouterLink>
+      </div>
       <div class="flex items-center gap-8">
         <a class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75" href="https://www.instagram.com/music.all.official">
           <i class="pi pi-instagram text-base! leading-normal!" />

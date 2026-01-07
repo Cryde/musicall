@@ -138,9 +138,9 @@
             />
             <label for="acceptTerms" class="text-surface-700 dark:text-surface-300 text-sm cursor-pointer">
               J'accepte les
-              <a class="text-primary hover:text-primary-emphasis">conditions d'utilisation</a>
+              <RouterLink :to="{ name: 'app_terms' }" class="text-primary hover:text-primary-emphasis" target="_blank">conditions d'utilisation</RouterLink>
               et la
-              <a class="text-primary hover:text-primary-emphasis">politique de confidentialité</a>
+              <RouterLink :to="{ name: 'app_privacy' }" class="text-primary hover:text-primary-emphasis" target="_blank">politique de confidentialité</RouterLink>
             </label>
           </div>
           <small v-if="errors.acceptTerms" class="text-red-500 -mt-4">{{ errors.acceptTerms }}</small>
