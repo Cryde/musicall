@@ -9,7 +9,6 @@ import ConfirmationService from 'primevue/confirmationservice'
 import Ripple from 'primevue/ripple'
 import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
-import { configure } from 'vue-gtag'
 import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import router from './router/index.js'
@@ -88,11 +87,17 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
+// Google Analytics - configured with manual init mode for GDPR consent
 if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
+  const { configure } = await import('vue-gtag')
   configure({
     tagId: import.meta.env.VITE_GOOGLE_GTAG_ID,
+    initMode: 'manual',
     pageTracker: {
       router
+    },
+    config: {
+      anonymize_ip: true
     }
   })
 }

@@ -6,6 +6,21 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_privacy',
+    path: '/privacy',
+    component: () => import('../views/Legal/Privacy.vue')
+  },
+  {
+    name: 'app_terms',
+    path: '/terms',
+    component: () => import('../views/Legal/Terms.vue')
+  },
+  {
+    name: 'app_mentions_legales',
+    path: '/mentions-legales',
+    component: () => import('../views/Legal/MentionsLegales.vue')
+  },
+  {
     name: 'app_login',
     path: '/login',
     component: () => import('../views/User/Login.vue'),
