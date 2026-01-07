@@ -158,7 +158,7 @@
                 <Button
                     severity="info"
                     icon="pi pi-search"
-                    :disabled="!isSearchParamEnough || isSearching || isFilterGenerating"
+                    :disabled="isSearching || isFilterGenerating"
                     label="Rechercher"
                     @click="search"
                 />
@@ -208,18 +208,9 @@
         />
     </div>
 
-    <!-- Initial state: no search performed yet -->
-    <div v-if="!isSearchMade && !isFilterGenerating" class="flex content-center justify-center items-center h-50">
-        <Message size="large" icon="pi pi-filter">
-            <div class="ml-4">
-                Cherchez parmi + de 2000 annonces de musiciens ou groupes. <br/>
-                Sélectionnez vos filtres ci-dessus pour effectuer la recherche parmi les musiciens ou groupes.
-            </div>
-        </Message>
-    </div>
 
     <!-- LLM processing state (quick search) -->
-    <div v-else-if="isFilterGenerating" class="mt-8">
+    <div v-if="isFilterGenerating" class="mt-8">
         <div class="flex flex-col items-center justify-center py-16 px-4 bg-surface-50 dark:bg-surface-800 rounded-2xl">
             <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                 <i class="pi pi-spin pi-sparkles text-4xl text-primary" />
@@ -293,11 +284,7 @@
 
     <!-- Results state -->
     <template v-else>
-        <div class="flex flex-wrap items-center justify-between gap-4 mt-6">
-            <p class="text-surface-600 dark:text-surface-300">
-                <span class="font-semibold text-surface-900 dark:text-surface-0">{{ musicianSearchStore.announces.length }}</span>
-                {{ musicianSearchStore.announces.length > 1 ? 'résultats trouvés' : 'résultat trouvé' }}
-            </p>
+        <div v-if="hasActiveFilters" class="flex flex-wrap items-center justify-end gap-4 mt-6">
             <Button
                 label="Créer une annonce depuis cette recherche"
                 icon="pi pi-plus"
@@ -306,7 +293,7 @@
                 @click="handleOpenAnnounceModalFromSearch"
             />
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-4 mb-9">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
             <MusicianAnnounceBlockItem
                 v-for="announce in musicianSearchStore.announces"
                 :key="announce.id"
@@ -318,6 +305,19 @@
                 :instrument="announce.instrument.name"
             />
         </div>
+
+        <!-- Load more button -->
+        <div v-if="!userSecurityStore.isAuthenticated || musicianSearchStore.lastBatchSize >= 12" class="flex justify-center mt-8 mb-9">
+            <Button
+                :label="userSecurityStore.isAuthenticated ? 'Voir plus de résultats' : 'Voir plus'"
+                :icon="isLoadingMore ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-down'"
+                severity="secondary"
+                size="large"
+                :loading="isLoadingMore"
+                @click="loadMore"
+            />
+        </div>
+        <div v-else class="mb-9"></div>
     </template>
 
     <AddAnnounceModal
@@ -403,7 +403,17 @@ onMounted(async () => {
 
   // Pre-fill instrument if specified in route meta
   applyPrefilledInstrument()
+
+  // Load initial results without filters
+  await loadInitialResults()
 })
+
+async function loadInitialResults() {
+  isSearching.value = true
+  isSearchMade.value = true
+  await musicianSearchStore.searchAnnounces({})
+  isSearching.value = false
+}
 
 function applyPrefilledInstrument() {
   if (prefilledInstrumentSlug.value) {
@@ -492,10 +502,6 @@ function searchLocation(event) {
   }
 }
 
-const isSearchParamEnough = computed(() => {
-  return selectSearchType.value !== null && selectedInstrument.value !== null
-})
-
 const isQuickSearchParamEnough = computed(() => {
   return quickSearch.value !== '' && quickSearch.value.length > 4
 })
@@ -547,21 +553,48 @@ function insertExample(e) {
   quickSearch.value = e.target.textContent
 }
 
-async function search() {
-  quickSearchErrors.value = []
-  isSearching.value = true
-  const params = {
-    type: selectSearchType.value.key,
-    instrument: selectedInstrument.value.id,
-    styles: selectedStyles?.value.map((style) => style.id)
+function buildSearchParams() {
+  const params = {}
+  if (selectSearchType.value) {
+    params.type = selectSearchType.value.key
+  }
+  if (selectedInstrument.value) {
+    params.instrument = selectedInstrument.value.id
+  }
+  if (selectedStyles.value?.length > 0) {
+    params.styles = selectedStyles.value.map((style) => style.id)
   }
   if (selectedLocation.value && typeof selectedLocation.value === 'object') {
     params.latitude = selectedLocation.value.latitude
     params.longitude = selectedLocation.value.longitude
   }
+  return params
+}
+
+async function search() {
+  quickSearchErrors.value = []
+  isSearching.value = true
+  const params = buildSearchParams()
   await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
   isSearchMade.value = true
+}
+
+const isLoadingMore = ref(false)
+
+async function loadMore() {
+  if (!userSecurityStore.isAuthenticated) {
+    authModalMessage.value = 'Connectez-vous pour voir plus de résultats et contacter les musiciens.'
+    showAuthModal.value = true
+    return
+  }
+
+  isLoadingMore.value = true
+  const params = buildSearchParams()
+  params.page = musicianSearchStore.currentPage + 1
+  params.append = true
+  await musicianSearchStore.searchAnnounces(params)
+  isLoadingMore.value = false
 }
 
 async function generateQuickSearchFilters() {
@@ -668,10 +701,8 @@ function handleOpenAnnounceModalFromSearch() {
 
 async function handleAnnounceCreated() {
   createFromSearch.value = false
-  // Refresh search results if a search was made
-  if (isSearchParamEnough.value) {
-    await search()
-  }
+  // Refresh search results
+  await search()
 }
 
 onUnmounted(() => {

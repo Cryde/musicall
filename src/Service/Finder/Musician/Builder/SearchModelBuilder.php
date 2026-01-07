@@ -12,11 +12,13 @@ class SearchModelBuilder
      * @param Style[] $styles
      */
     public function build(
-        int        $searchType,
-        Instrument $instrument,
-        array      $styles,
-        ?float     $longitude = null,
-        ?float     $latitude = null,
+        ?int        $searchType,
+        ?Instrument $instrument,
+        array       $styles,
+        ?float      $longitude = null,
+        ?float      $latitude = null,
+        int         $page = 1,
+        int         $limit = 12,
     ): MusicianSearch {
         $searchModel = new MusicianSearch();
         $searchModel->type = $searchType;
@@ -24,6 +26,8 @@ class SearchModelBuilder
         $searchModel->styles = $styles;
         $searchModel->longitude = $longitude;
         $searchModel->latitude = $latitude;
+        $searchModel->page = $page;
+        $searchModel->limit = $limit;
 
         return $searchModel;
     }

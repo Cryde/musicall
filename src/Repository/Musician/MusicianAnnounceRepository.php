@@ -19,9 +19,9 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return int|mixed|string
+     * @return array<int, MusicianAnnounce|array{0: MusicianAnnounce, distance: float}>
      */
-    public function findByCriteria(MusicianSearch $musician, ?User $currentUser, int $limit = 10): mixed
+    public function findByCriteria(MusicianSearch $musician, ?User $currentUser, int $limit = 12): array
     {
         $qb = $this->createQueryBuilder('musician_announce')
             ->select('musician_announce')
@@ -29,12 +29,26 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             ->addSelect('author')
             ->join('musician_announce.instrument', 'instrument')
             ->join('musician_announce.author', 'author')
-            ->where('musician_announce.instrument = :instrument')
-            ->andWhere('musician_announce.type = :type')
             ->orderBy('musician_announce.creationDatetime', 'DESC')
-            ->setParameter('type', $musician->type)
-            ->setParameter('instrument', $musician->instrument)
             ->setMaxResults($limit);
+
+        // Calculate offset for pagination
+        $offset = ($musician->page - 1) * $musician->limit;
+        if ($offset > 0) {
+            $qb->setFirstResult($offset);
+        }
+
+        // Filter by type if provided
+        if ($musician->type !== null) {
+            $qb->andWhere('musician_announce.type = :type')
+                ->setParameter('type', $musician->type);
+        }
+
+        // Filter by instrument if provided
+        if ($musician->instrument !== null) {
+            $qb->andWhere('musician_announce.instrument = :instrument')
+                ->setParameter('instrument', $musician->instrument);
+        }
 
         if ($currentUser) {
             $qb->andWhere('musician_announce.author != :current_user')
