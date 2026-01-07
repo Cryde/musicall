@@ -10,6 +10,7 @@
       <Avatar
         v-else
         :label="comment.author.username.charAt(0).toUpperCase()"
+        :style="getAvatarStyle(comment.author.username)"
         shape="circle"
         size="large"
       />
@@ -36,6 +37,7 @@
 <script setup>
 import Avatar from 'primevue/avatar'
 import relativeDate from '../../helper/date/relative-date.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 defineProps({
   comment: {

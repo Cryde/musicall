@@ -138,6 +138,7 @@
               <Avatar
                 v-else
                 :label="announce.author.username.charAt(0).toUpperCase()"
+                :style="getAvatarStyle(announce.author.username)"
                 shape="circle"
                 class="shrink-0"
               />
@@ -225,6 +226,7 @@ import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatStyles, hasMoreStyles } from '../../utils/styles.js'
 import PublicationListItem from '../Publication/PublicationListItem.vue'
 import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'

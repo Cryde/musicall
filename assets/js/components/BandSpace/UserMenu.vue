@@ -3,6 +3,7 @@
     <div v-if="userSecurityStore.isAuthenticated">
       <Avatar
         :label="userInitial"
+        :style="getAvatarStyle(userSecurityStore.user?.username)"
         class="mr-2 cursor-pointer"
         shape="circle"
         @click="toggle"
@@ -25,6 +26,7 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import { computed, ref } from 'vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 const userSecurityStore = useUserSecurityStore()
 

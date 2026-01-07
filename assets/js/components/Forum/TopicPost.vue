@@ -12,6 +12,7 @@
           <Avatar
             v-else
             :label="post.creator.username.charAt(0).toUpperCase()"
+            :style="getAvatarStyle(post.creator.username)"
             size="large"
             shape="circle"
           />
@@ -59,6 +60,7 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { computed, ref } from 'vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatDate } from '../../utils/date.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../Message/SendMessageModal.vue'

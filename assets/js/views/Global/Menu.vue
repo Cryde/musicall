@@ -69,6 +69,7 @@
                   <Avatar
                     v-else
                     :label="userSecurityStore.user.username.charAt(0).toUpperCase()"
+                    :style="getAvatarStyle(userSecurityStore.user.username)"
                     class="cursor-pointer"
                     shape="circle"
                     @click="$refs.userMenu.toggle($event)"
@@ -95,6 +96,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()

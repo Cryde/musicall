@@ -45,6 +45,7 @@
             <Avatar
               v-else
               :label="userSettingsStore.userProfile.username.charAt(0).toUpperCase()"
+              :style="getAvatarStyle(userSettingsStore.userProfile.username)"
               size="xlarge"
               shape="circle"
             />
@@ -96,6 +97,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
+import { getAvatarStyle } from '../../../utils/avatar.js'
 import ProfilePictureModal from './ProfilePictureModal.vue'
 
 const userSettingsStore = useUserSettingsStore()

@@ -48,9 +48,9 @@
               <Avatar
                 v-else
                 :label="option.username.charAt(0).toUpperCase()"
+                :style="getAvatarStyle(option.username)"
                 shape="circle"
                 size="normal"
-                class="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
               />
               <div class="font-medium">{{ option.username }}</div>
             </div>
@@ -69,9 +69,9 @@
         <Avatar
           v-else
           :label="selectedRecipient.username.charAt(0).toUpperCase()"
+          :style="getAvatarStyle(selectedRecipient.username)"
           shape="circle"
           size="large"
-          class="bg-primary-500 text-white"
         />
         <div class="flex-1">
           <div class="font-semibold text-surface-900 dark:text-surface-0">{{ selectedRecipient.username }}</div>
@@ -127,6 +127,7 @@ import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import userSearchApi from '../../api/search/user.js'
 import { useMessageStore } from '../../store/message/message.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 const props = defineProps({
   selectedRecipient: {

@@ -10,6 +10,7 @@
       <Avatar
         v-else
         :label="userSecurityStore.user?.username?.charAt(0).toUpperCase()"
+        :style="getAvatarStyle(userSecurityStore.user?.username)"
         shape="circle"
         size="large"
       />
@@ -60,6 +61,7 @@ import Textarea from 'primevue/textarea'
 import { computed, ref } from 'vue'
 import { useCommentStore } from '../../store/comment/comment.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 const userSecurityStore = useUserSecurityStore()
 const commentStore = useCommentStore()
