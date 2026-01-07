@@ -10,7 +10,8 @@
             />
             <Avatar
                 v-else
-                :label="user.username.charAt(0)"
+                :label="user.username.charAt(0).toUpperCase()"
+                :style="getAvatarStyle(user.username)"
                 size="xlarge"
                 shape="circle"
             />
@@ -83,6 +84,7 @@ import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 import { hasMoreStyles, MAX_VISIBLE_STYLES } from '../../utils/styles.js'
 
 const props = defineProps(['type', 'user', 'instrument', 'styles', 'location_name', 'distance'])

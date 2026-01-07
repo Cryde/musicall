@@ -18,6 +18,7 @@
       <Avatar
         v-else
         :label="otherParticipant?.username?.charAt(0).toUpperCase() || '?'"
+        :style="getAvatarStyle(otherParticipant?.username)"
         shape="circle"
       />
       <span class="font-semibold text-surface-900 dark:text-surface-0">
@@ -102,6 +103,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 const emit = defineEmits(['back'])
 

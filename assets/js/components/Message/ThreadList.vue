@@ -23,6 +23,7 @@
             <Avatar
               v-else
               :label="getParticipant(threadMeta)?.username?.charAt(0).toUpperCase() || '?'"
+              :style="getAvatarStyle(getParticipant(threadMeta)?.username)"
               shape="circle"
               size="large"
             />
@@ -59,6 +60,7 @@ import Avatar from 'primevue/avatar'
 import Tag from 'primevue/tag'
 import relativeDate from '../../helper/date/relative-date.js'
 import { useMessageStore } from '../../store/message/message.js'
+import { getAvatarStyle } from '../../utils/avatar.js'
 
 const messageStore = useMessageStore()
 
