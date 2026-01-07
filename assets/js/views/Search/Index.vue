@@ -65,10 +65,10 @@
                     'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
                     selectSearchType?.key === 2
                         ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                        : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
+                        : 'border-surface-300 dark:border-surface-700 bg-surface-50 dark:bg-transparent hover:border-surface-400 dark:hover:border-surface-600 hover:bg-surface-100 dark:hover:bg-surface-800'
                 ]"
             >
-                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 2 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
+                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 2 ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-800 text-surface-600 dark:text-surface-300']">
                     <i class="pi pi-user text-lg" />
                 </div>
                 <div>
@@ -82,10 +82,10 @@
                     'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
                     selectSearchType?.key === 1
                         ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                        : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
+                        : 'border-surface-300 dark:border-surface-700 bg-surface-50 dark:bg-transparent hover:border-surface-400 dark:hover:border-surface-600 hover:bg-surface-100 dark:hover:bg-surface-800'
                 ]"
             >
-                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 1 ? 'bg-primary text-white' : 'bg-surface-100 dark:bg-surface-800']">
+                <div :class="['flex items-center justify-center w-10 h-10 rounded-full', selectSearchType?.key === 1 ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-800 text-surface-600 dark:text-surface-300']">
                     <i class="pi pi-users text-lg" />
                 </div>
                 <div>

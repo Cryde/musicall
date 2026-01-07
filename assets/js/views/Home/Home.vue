@@ -31,10 +31,10 @@
           </ul>
           <div class="flex flex-wrap gap-4 mt-10">
             <router-link :to="{ name: 'app_discover' }">
-              <Button label="Découvrir" icon="pi pi-compass" rounded size="large" severity="secondary" />
+              <Button label="Découvrir" icon="pi pi-compass" rounded size="large" severity="secondary" outlined raised />
             </router-link>
             <router-link v-if="!userSecurityStore.isAuthenticated" :to="{ name: 'app_register' }">
-              <Button label="S'inscrire gratuitement" icon="pi pi-user-plus" rounded size="large" />
+              <Button label="S'inscrire gratuitement" icon="pi pi-user-plus" rounded size="large" raised />
             </router-link>
           </div>
         </div>
@@ -190,15 +190,15 @@
     </section>
 
     <!-- CTA Section -->
-    <section v-if="!userSecurityStore.isAuthenticated" class="text-center py-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl">
-      <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
+    <section v-if="!userSecurityStore.isAuthenticated" class="text-center py-12 bg-gradient-to-r from-primary-100 to-primary-200 dark:from-primary-500 dark:to-primary-600 rounded-2xl">
+      <h2 class="text-2xl md:text-3xl font-bold text-primary-700 dark:text-white mb-4">
         Rejoignez la communauté MusicAll
       </h2>
-      <p class="text-primary-100 mb-6">
+      <p class="text-primary-600 dark:text-primary-100 mb-6">
         Des milliers de passionné·e·s échangent déjà sur MusicAll
       </p>
       <router-link :to="{ name: 'app_register' }">
-        <Button label="Créer mon compte gratuitement" icon="pi pi-user-plus" size="large" severity="contrast" />
+        <Button label="Créer mon compte gratuitement" icon="pi pi-user-plus" size="large" />
       </router-link>
     </section>
 

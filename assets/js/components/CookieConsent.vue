@@ -1,11 +1,11 @@
 <template>
   <div
     v-if="showBanner"
-    class="fixed bottom-0 left-0 right-0 z-50 bg-surface-900 dark:bg-surface-800 border-t border-surface-700 p-4 md:p-6"
+    class="fixed bottom-0 left-0 right-0 z-50 bg-surface-100 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 p-4 md:p-6 shadow-lg"
   >
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div class="flex-1">
-        <p class="text-surface-0 text-sm md:text-base">
+        <p class="text-surface-700 dark:text-surface-0 text-sm md:text-base">
           Nous utilisons des cookies pour améliorer votre expérience et analyser le trafic du site.
           <RouterLink
             :to="{ name: 'app_privacy' }"
