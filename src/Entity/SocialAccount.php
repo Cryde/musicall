@@ -35,11 +35,11 @@ class SocialAccount
     private ?string $email = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $createdAt;
+    private \DateTimeImmutable $creationDatetime;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->creationDatetime = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -95,8 +95,8 @@ class SocialAccount
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreationDatetime(): \DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->creationDatetime;
     }
 }
