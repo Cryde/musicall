@@ -16,8 +16,11 @@ onMounted(async () => {
   const { isAuthenticated } = storeToRefs(userSecurityStore)
 
   router.beforeResolve((to) => {
-    if (!!to.meta.isAuthRequired && !isAuthenticated.value) {
+    if (to.meta.isAuthRequired && !isAuthenticated.value) {
       return { name: 'app_login' }
+    }
+    if (to.meta.isGuestOnly && isAuthenticated.value) {
+      return { name: 'app_home' }
     }
   })
 })

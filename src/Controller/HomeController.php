@@ -31,7 +31,7 @@ class HomeController extends AbstractController
     }
 
     #[Route('/', name: 'app_homepage')]
-    #[Route('/{route}', name: 'vue_pages', requirements: ['route' => '^(?!.*_wdt|_profiler|media|api|register\/confirm\/).+'])]
+    #[Route('/{route}', name: 'vue_pages', requirements: ['route' => '^(?!.*_wdt|_profiler|media|api|oauth|register\/confirm\/).+'])]
     public function index(Request $request, BotDetector $botDetector): Response
     {
         if ($botDetector->isBot($request->headers->get('User-Agent', ''))) {
