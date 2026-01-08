@@ -57,6 +57,7 @@ security:
     access_control:
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/oauth/, role: PUBLIC_ACCESS }
         - { path: ^/api/admin, role: ROLE_ADMIN }
         - { path: ^/api/users/request-reset-password, role: PUBLIC_ACCESS }
         - { path: ^/api/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }

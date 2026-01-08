@@ -14,7 +14,8 @@ services:
             - ./.docker/frankenphp/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
         environment:
             APP_ENV: 'dev'
-            SERVER_NAME: 'musicall.local'
+            # we need localhost for google oauth...
+            SERVER_NAME: 'musicall.local, localhost'
             APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
             # comment the following line in production, it allows to have nice human-readable logs in dev
         tty: true

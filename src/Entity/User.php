@@ -20,6 +20,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\SocialAccount;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -69,14 +70,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
-    #[ORM\Column(type: Types::STRING)]
-    private string $password;
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $password = null;
 
     /**
      * @var Collection<int, Publication>
      */
     #[ORM\OneToMany(mappedBy: "author", targetEntity: Publication::class, orphanRemoval: true)]
     private Collection $publications;
+
+    /**
+     * @var Collection<int, SocialAccount>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: SocialAccount::class, orphanRemoval: true)]
+    private Collection $socialAccounts;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTime $creationDatetime;
@@ -103,6 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->publications = new ArrayCollection();
+        $this->socialAccounts = new ArrayCollection();
         $this->creationDatetime = new DateTime();
     }
 
@@ -159,10 +167,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPassword(): ?string
     {
-        return (string)$this->password;
+        return $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(?string $password): self
     {
         $this->password = $password;
 
@@ -324,5 +332,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->profilePicture = $profilePicture;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, SocialAccount>
+     */
+    public function getSocialAccounts(): Collection
+    {
+        return $this->socialAccounts;
+    }
+
+    public function addSocialAccount(SocialAccount $socialAccount): self
+    {
+        if (!$this->socialAccounts->contains($socialAccount)) {
+            $this->socialAccounts->add($socialAccount);
+            $socialAccount->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSocialAccount(SocialAccount $socialAccount): self
+    {
+        $this->socialAccounts->removeElement($socialAccount);
+
+        return $this;
+    }
+
+    public function hasSocialAccount(string $provider): bool
+    {
+        foreach ($this->socialAccounts as $socialAccount) {
+            if ($socialAccount->getProvider() === $provider) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
