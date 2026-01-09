@@ -65,6 +65,7 @@ services:
     App\Controller\OAuth\GoogleController:
         arguments:
             $frontendUrl: '%env(DEFAULT_URI)%'
+            $refreshTokenTtl: '%gesdinet_jwt_refresh_token.ttl%'
 
 when@test:
     services:
