@@ -54,6 +54,12 @@ export default {
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
+  deleteProfilePicture() {
+    return axios
+      .delete(Routing.generate('api_user_profile_picture_delete'))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
 
   requestResetPassword(login) {
     return axios

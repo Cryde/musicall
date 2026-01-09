@@ -10,6 +10,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   const isLoading = ref(false)
   const isChangingPassword = ref(false)
   const isChangingPicture = ref(false)
+  const isDeletingPicture = ref(false)
 
   async function loadUserProfile() {
     isLoading.value = true
@@ -41,6 +42,18 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
+  async function deleteProfilePicture() {
+    isDeletingPicture.value = true
+    try {
+      await securityApi.deleteProfilePicture()
+      await loadUserProfile()
+      // Also refresh the security store's profile so navbar avatar updates
+      await userSecurityStore.refreshUserProfile()
+    } finally {
+      isDeletingPicture.value = false
+    }
+  }
+
   function clear() {
     userProfile.value = null
   }
@@ -50,9 +63,11 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     isLoading: readonly(isLoading),
     isChangingPassword: readonly(isChangingPassword),
     isChangingPicture: readonly(isChangingPicture),
+    isDeletingPicture: readonly(isDeletingPicture),
     loadUserProfile,
     changePassword,
     changeProfilePicture,
+    deleteProfilePicture,
     clear
   }
 })
