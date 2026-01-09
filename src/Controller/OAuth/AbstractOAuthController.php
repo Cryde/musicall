@@ -8,6 +8,8 @@ use App\Entity\User;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -22,8 +24,11 @@ abstract class AbstractOAuthController extends AbstractController
         protected readonly ClientRegistry $clientRegistry,
         protected readonly OAuthUserService $oAuthUserService,
         protected readonly JWTTokenManagerInterface $jwtManager,
+        protected readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        protected readonly RefreshTokenManagerInterface $refreshTokenManager,
         protected readonly LoggerInterface $logger,
         protected readonly string $frontendUrl,
+        protected readonly int $refreshTokenTtl,
     ) {
     }
 
@@ -106,6 +111,20 @@ abstract class AbstractOAuthController extends AbstractController
                 ->withSecure(true)
                 ->withHttpOnly(true)
                 ->withSameSite('strict')
+        );
+
+        // Create and set refresh token
+        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, $this->refreshTokenTtl);
+        $this->refreshTokenManager->save($refreshToken);
+
+        $response->headers->setCookie(
+            Cookie::create('refresh_token')
+                ->withValue($refreshToken->getRefreshToken())
+                ->withExpires(time() + $this->refreshTokenTtl)
+                ->withPath('/')
+                ->withSecure(true)
+                ->withHttpOnly(true)
+                ->withSameSite('lax')
         );
 
         return $response;
