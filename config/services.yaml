@@ -65,10 +65,6 @@ services:
         arguments:
             $frontendUrl: '%env(DEFAULT_URI)%'
 
-    App\Controller\OAuth\FacebookController:
-        arguments:
-            $frontendUrl: '%env(DEFAULT_URI)%'
-
 when@test:
     services:
         App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
