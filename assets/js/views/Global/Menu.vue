@@ -24,6 +24,7 @@
       </span>
 
       <div
+          ref="mobileMenu"
           class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-0 dark:bg-surface-900 left-0 top-full z-10 shadow lg:shadow-none border lg:border-0 border-surface-800"
       >
         <div class="flex-1 flex items-start gap-4 px-6 lg:px-0 py-4 lg:py-0 flex-col lg:flex-row">
@@ -37,7 +38,7 @@
             <a
               v-bind="$attrs"
               :href="href"
-              @click="navigate"
+              @click="onNavClick($event, navigate)"
               :class="[
                 'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border w-full lg:w-auto',
                 isExactActive
@@ -52,7 +53,7 @@
           <template v-if="!userSecurityStore.isAuthenticatedLoading">
           <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2 px-6 lg:px-0">
               <template v-if="userSecurityStore.isAuthenticated">
-                  <RouterLink :to="{ name: 'app_messages' }" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
+                  <RouterLink :to="{ name: 'app_messages' }" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors" @click="closeMobileMenu">
                       <OverlayBadge v-if="notificationStore.unreadMessages > 0"
                                     :value="notificationStore.unreadMessages" severity="danger" size="small">
                           <i class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" />
@@ -78,10 +79,10 @@
               </template>
               <template v-else>
                   <Button asChild v-slot="slotProps" severity="info" text>
-                      <RouterLink :to="{name: 'app_login'}" :class="slotProps.class">Se connecter</RouterLink>
+                      <RouterLink :to="{name: 'app_login'}" :class="slotProps.class" @click="closeMobileMenu">Se connecter</RouterLink>
                   </Button>
                   <Button asChild v-slot="slotProps" severity="info">
-                      <RouterLink :to="{name: 'app_register'}" :class="slotProps.class">S'inscrire</RouterLink>
+                      <RouterLink :to="{name: 'app_register'}" :class="slotProps.class" @click="closeMobileMenu">S'inscrire</RouterLink>
                   </Button>
               </template>
           </div>
@@ -101,6 +102,19 @@ import { getAvatarStyle } from '../../utils/avatar.js'
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 const notificationStore = useNotificationStore()
+
+const mobileMenu = ref(null)
+
+function closeMobileMenu() {
+  if (mobileMenu.value && window.innerWidth < 1024) {
+    mobileMenu.value.classList.add('hidden')
+  }
+}
+
+function onNavClick(event, navigate) {
+  navigate(event)
+  closeMobileMenu()
+}
 
 onMounted(async () => {
   if (userSecurityStore.isAuthenticated) {
