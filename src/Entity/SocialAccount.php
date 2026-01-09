@@ -14,7 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
 class SocialAccount
 {
     final public const PROVIDER_GOOGLE = 'google';
-    final public const PROVIDER_FACEBOOK = 'facebook';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
