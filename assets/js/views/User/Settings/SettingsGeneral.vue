@@ -49,13 +49,24 @@
               size="xlarge"
               shape="circle"
             />
-            <Button
-              :label="userSettingsStore.userProfile.profile_picture ? 'Modifier ma photo' : 'Ajouter une photo'"
-              icon="pi pi-image"
-              severity="info"
-              outlined
-              @click="triggerFileInput"
-            />
+            <div class="flex gap-2">
+              <Button
+                :label="userSettingsStore.userProfile.profile_picture ? 'Modifier ma photo' : 'Ajouter une photo'"
+                icon="pi pi-image"
+                severity="info"
+                outlined
+                @click="triggerFileInput"
+              />
+              <Button
+                v-if="userSettingsStore.userProfile.profile_picture"
+                label="Supprimer"
+                icon="pi pi-trash"
+                severity="danger"
+                outlined
+                :loading="userSettingsStore.isDeletingPicture"
+                @click="confirmDeletePicture"
+              />
+            </div>
             <input
               ref="fileInput"
               type="file"
@@ -86,13 +97,17 @@
       :image="selectedImage"
       @saved="handlePictureSaved"
     />
+
+    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
 import ToggleSwitch from 'primevue/toggleswitch'
+import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
@@ -101,6 +116,7 @@ import { getAvatarStyle } from '../../../utils/avatar.js'
 import ProfilePictureModal from './ProfilePictureModal.vue'
 
 const userSettingsStore = useUserSettingsStore()
+const confirm = useConfirm()
 const toast = useToast()
 const { isDarkMode, setDarkMode } = useDarkMode()
 
@@ -143,6 +159,35 @@ function handlePictureSaved() {
     summary: 'Photo mise à jour',
     detail: 'Votre photo de profil a été mise à jour avec succès',
     life: 5000
+  })
+}
+
+function confirmDeletePicture() {
+  confirm.require({
+    message: 'Êtes-vous sûr de vouloir supprimer votre photo de profil ?',
+    header: 'Confirmation',
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Annuler',
+    acceptLabel: 'Supprimer',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await userSettingsStore.deleteProfilePicture()
+        toast.add({
+          severity: 'success',
+          summary: 'Photo supprimée',
+          detail: 'Votre photo de profil a été supprimée avec succès',
+          life: 5000
+        })
+      } catch {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de supprimer la photo de profil',
+          life: 5000
+        })
+      }
+    }
   })
 }
 </script>

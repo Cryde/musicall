@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Entity\Image;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Entity\Comment\Comment;
-use App\Entity\Forum\ForumPost;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\State\Processor\User\UserProfilePictureDeleteProcessor;
 use App\State\Processor\User\UserProfilePictureProcessor;
+use App\State\Provider\User\UserProfilePictureDeleteProvider;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -48,7 +50,16 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
             security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
             name: 'api_user_profile_picture_post',
             processor: UserProfilePictureProcessor::class
-        )
+        ),
+        new Delete(
+            uriTemplate: '/user/profile-picture',
+            openapi: new Operation(tags: ['Users']),
+            security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
+            read: true,
+            name: 'api_user_profile_picture_delete',
+            provider: UserProfilePictureDeleteProvider::class,
+            processor: UserProfilePictureDeleteProcessor::class,
+        ),
     ],
 )]
 class UserProfilePicture
