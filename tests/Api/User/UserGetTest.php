@@ -40,6 +40,7 @@ class UserGetTest extends ApiTestCase
             'email'           => $user1->getEmail(),
             'roles'           => ['ROLE_USER'],
             'profile_picture' => null,
+            'username_changed_datetime' => null,
         ]);
     }
 
@@ -59,6 +60,7 @@ class UserGetTest extends ApiTestCase
             'email'           => $user1->getEmail(),
             'roles'           => ['ROLE_ADMIN', 'ROLE_USER'],
             'profile_picture' => null,
+            'username_changed_datetime' => null,
         ]);
     }
 

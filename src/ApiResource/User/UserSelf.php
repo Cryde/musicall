@@ -32,4 +32,5 @@ class UserSelf
     public array $roles;
     /** @var array{small: string}|null */
     public ?array $profilePicture = null;
+    public ?\DateTimeImmutable $usernameChangedDatetime = null;
 }

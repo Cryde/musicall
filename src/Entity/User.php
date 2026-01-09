@@ -103,6 +103,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $resetRequestDatetime;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $usernameChangedDatetime = null;
+
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
     private ?UserProfilePicture $profilePicture = null;
@@ -368,5 +371,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return false;
+    }
+
+    public function getUsernameChangedDatetime(): ?\DateTimeImmutable
+    {
+        return $this->usernameChangedDatetime;
+    }
+
+    public function setUsernameChangedDatetime(?\DateTimeImmutable $usernameChangedDatetime): self
+    {
+        $this->usernameChangedDatetime = $usernameChangedDatetime;
+
+        return $this;
     }
 }
