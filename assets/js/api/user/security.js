@@ -60,6 +60,26 @@ export default {
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
+  changeUsername(newUsername) {
+    return axios
+      .post(
+        Routing.generate('api_users_change_username_post'),
+        { newUsername },
+        {
+          headers: {
+            'Content-Type': 'application/ld+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+  checkUsernameAvailability(username) {
+    return axios
+      .get(Routing.generate('api_users_username_availability', { username }))
+      .then((resp) => resp.data)
+  },
 
   requestResetPassword(login) {
     return axios

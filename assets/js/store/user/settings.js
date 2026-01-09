@@ -9,6 +9,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   const userProfile = ref(null)
   const isLoading = ref(false)
   const isChangingPassword = ref(false)
+  const isChangingUsername = ref(false)
   const isChangingPicture = ref(false)
   const isDeletingPicture = ref(false)
 
@@ -27,6 +28,17 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       await securityApi.changePassword({ oldPassword, newPassword })
     } finally {
       isChangingPassword.value = false
+    }
+  }
+
+  async function changeUsername(newUsername) {
+    isChangingUsername.value = true
+    try {
+      await securityApi.changeUsername(newUsername)
+      await loadUserProfile()
+      await userSecurityStore.refreshUserProfile()
+    } finally {
+      isChangingUsername.value = false
     }
   }
 
@@ -62,10 +74,12 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     userProfile: readonly(userProfile),
     isLoading: readonly(isLoading),
     isChangingPassword: readonly(isChangingPassword),
+    isChangingUsername: readonly(isChangingUsername),
     isChangingPicture: readonly(isChangingPicture),
     isDeletingPicture: readonly(isDeletingPicture),
     loadUserProfile,
     changePassword,
+    changeUsername,
     changeProfilePicture,
     deleteProfilePicture,
     clear

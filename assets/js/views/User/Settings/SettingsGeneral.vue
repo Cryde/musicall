@@ -15,8 +15,65 @@
           <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
             Nom d'utilisateur
           </div>
-          <div class="md:w-2/3 text-surface-900 dark:text-surface-0">
-            {{ userSettingsStore.userProfile.username }}
+          <div class="md:w-2/3">
+            <template v-if="!isEditingUsername">
+              <div class="flex items-center gap-3">
+                <span class="text-surface-900 dark:text-surface-0">
+                  {{ userSettingsStore.userProfile.username }}
+                </span>
+                <Button
+                  v-if="canChangeUsername"
+                  label="Modifier"
+                  icon="pi pi-pencil"
+                  severity="info"
+                  text
+                  size="small"
+                  @click="startEditUsername"
+                />
+              </div>
+              <p v-if="!canChangeUsername && nextUsernameChangeDate" class="text-sm text-surface-500 dark:text-surface-400 mt-1">
+                Vous pourrez modifier votre nom d'utilisateur le {{ nextUsernameChangeDate }}
+              </p>
+            </template>
+            <template v-else>
+              <div class="flex flex-col gap-2">
+                <Message severity="warn" :closable="false" class="mb-2">
+                  Attention : vous ne pourrez pas modifier votre nom d'utilisateur pendant 30 jours après ce changement.
+                </Message>
+                <div class="flex items-center gap-2">
+                  <InputText
+                    v-model="newUsername"
+                    placeholder="Nouveau nom d'utilisateur"
+                    class="w-full md:w-64"
+                    :invalid="!!usernameError"
+                  />
+                  <i v-if="isCheckingUsername" class="pi pi-spin pi-spinner text-surface-500"></i>
+                  <i v-else-if="isUsernameAvailable === true" class="pi pi-check-circle text-green-500"></i>
+                  <i v-else-if="isUsernameAvailable === false" class="pi pi-times-circle text-red-500"></i>
+                </div>
+                <small v-if="usernameError" class="text-red-500">{{ usernameError }}</small>
+                <small v-else-if="isUsernameAvailable === true" class="text-green-600">Ce nom d'utilisateur est disponible</small>
+                <div class="flex gap-2">
+                  <Button
+                    label="Enregistrer"
+                    icon="pi pi-check"
+                    size="small"
+                    :loading="userSettingsStore.isChangingUsername"
+                    :disabled="isCheckingUsername || isUsernameAvailable === false"
+                    @click="saveUsername"
+                  />
+                  <Button
+                    label="Annuler"
+                    icon="pi pi-times"
+                    severity="secondary"
+                    text
+                    size="small"
+                    :disabled="userSettingsStore.isChangingUsername"
+                    @click="cancelEditUsername"
+                  />
+                </div>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -106,14 +163,19 @@
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
+import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import securityApi from '../../../api/user/security.js'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 import ProfilePictureModal from './ProfilePictureModal.vue'
+
+const COOLDOWN_DAYS = 30
 
 const userSettingsStore = useUserSettingsStore()
 const confirm = useConfirm()
@@ -123,6 +185,134 @@ const { isDarkMode, setDarkMode } = useDarkMode()
 const fileInput = ref(null)
 const selectedImage = ref(null)
 const showPictureModal = ref(false)
+
+const isEditingUsername = ref(false)
+const newUsername = ref('')
+const usernameError = ref('')
+const isCheckingUsername = ref(false)
+const isUsernameAvailable = ref(null)
+let checkUsernameTimeout = null
+
+const canChangeUsername = computed(() => {
+  const lastChange = userSettingsStore.userProfile?.username_changed_datetime
+  if (!lastChange) {
+    return true
+  }
+  const lastChangeDate = new Date(lastChange)
+  const cooldownEnd = new Date(lastChangeDate.getTime() + COOLDOWN_DAYS * 24 * 60 * 60 * 1000)
+  return new Date() >= cooldownEnd
+})
+
+const nextUsernameChangeDate = computed(() => {
+  const lastChange = userSettingsStore.userProfile?.username_changed_datetime
+  if (!lastChange) {
+    return null
+  }
+  const lastChangeDate = new Date(lastChange)
+  const cooldownEnd = new Date(lastChangeDate.getTime() + COOLDOWN_DAYS * 24 * 60 * 60 * 1000)
+  return cooldownEnd.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+})
+
+function startEditUsername() {
+  newUsername.value = userSettingsStore.userProfile?.username || ''
+  usernameError.value = ''
+  isEditingUsername.value = true
+}
+
+function cancelEditUsername() {
+  isEditingUsername.value = false
+  newUsername.value = ''
+  usernameError.value = ''
+  isUsernameAvailable.value = null
+  if (checkUsernameTimeout) {
+    clearTimeout(checkUsernameTimeout)
+  }
+}
+
+const USERNAME_REGEX = /^[a-zA-Z0-9._]+$/
+
+function validateUsername(username) {
+  if (!username || username.length < 3) {
+    return 'Le nom d\'utilisateur doit au moins contenir 3 caractères'
+  }
+  if (username.length > 40) {
+    return 'Le nom d\'utilisateur doit contenir maximum 40 caractères'
+  }
+  if (!USERNAME_REGEX.test(username)) {
+    return 'Nom d\'utilisateur invalide : seuls les lettres, chiffres, points et underscores sont autorisés.'
+  }
+  return null
+}
+
+watch(newUsername, (value) => {
+  usernameError.value = ''
+  isUsernameAvailable.value = null
+
+  if (checkUsernameTimeout) {
+    clearTimeout(checkUsernameTimeout)
+  }
+
+  const trimmed = value?.trim()
+  if (!trimmed || trimmed === userSettingsStore.userProfile?.username) {
+    return
+  }
+
+  // Validate format before checking availability
+  const validationError = validateUsername(trimmed)
+  if (validationError) {
+    usernameError.value = validationError
+    return
+  }
+
+  isCheckingUsername.value = true
+  checkUsernameTimeout = setTimeout(async () => {
+    try {
+      const result = await securityApi.checkUsernameAvailability(trimmed)
+      isUsernameAvailable.value = result.available
+      if (!result.available) {
+        usernameError.value = 'Ce nom d\'utilisateur est déjà pris'
+      }
+    } catch {
+      // Ignore errors, validation will happen on submit
+    } finally {
+      isCheckingUsername.value = false
+    }
+  }, 500)
+})
+
+async function saveUsername() {
+  usernameError.value = ''
+
+  const trimmed = newUsername.value?.trim()
+  const validationError = validateUsername(trimmed)
+  if (validationError) {
+    usernameError.value = validationError
+    return
+  }
+
+  if (trimmed === userSettingsStore.userProfile?.username) {
+    usernameError.value = 'Le nouveau nom d\'utilisateur doit être différent de l\'actuel'
+    return
+  }
+
+  try {
+    await userSettingsStore.changeUsername(newUsername.value.trim())
+    isEditingUsername.value = false
+    newUsername.value = ''
+    toast.add({
+      severity: 'success',
+      summary: 'Nom d\'utilisateur modifié',
+      detail: 'Votre nom d\'utilisateur a été mis à jour avec succès',
+      life: 5000
+    })
+  } catch (error) {
+    usernameError.value = error.message || 'Une erreur est survenue'
+  }
+}
 
 const isDarkModeEnabled = computed({
   get: () => isDarkMode.value,
