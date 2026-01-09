@@ -6,6 +6,7 @@ namespace App\Service\OAuth;
 
 use App\Entity\SocialAccount;
 use App\Entity\User;
+use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,47 +18,49 @@ readonly class OAuthUserService
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
         private SocialAccountRepository $socialAccountRepository,
+        private ProfilePictureImporter $profilePictureImporter,
     ) {
     }
 
     /**
-     * @return array{user: User, isNew: bool}|array{error: string}
+     * @throws OAuthEmailExistsException
      */
-    public function findOrCreateUser(
-        string $provider,
-        string $providerId,
-        string $email,
-        string $username,
-        ?User $currentUser = null
-    ): array {
+    public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null): OAuthResult
+    {
         // Check if social account already exists
-        $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $providerId);
+        $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $userData->id);
 
         if ($socialAccount !== null) {
             // User already linked this social account
-            return ['user' => $socialAccount->getUser(), 'isNew' => false];
+            return new OAuthResult($socialAccount->getUser(), false);
         }
 
         // If user is logged in, link the social account to their existing account
         if ($currentUser !== null) {
-            $this->createSocialAccount($currentUser, $provider, $providerId, $email);
+            $this->createSocialAccount($currentUser, $provider, $userData->id, $userData->email);
 
-            return ['user' => $currentUser, 'isNew' => false];
+            return new OAuthResult($currentUser, false);
         }
 
         // Check if email already exists (email conflict)
-        $existingUser = $this->userRepository->findOneBy(['email' => $email]);
+        $existingUser = $this->userRepository->findOneBy(['email' => $userData->email]);
 
         if ($existingUser !== null) {
             // Email conflict: user must login with password and link in settings
-            return ['error' => 'email_exists'];
+            throw new OAuthEmailExistsException();
         }
 
         // Create new user
-        $user = $this->createUser($email, $username);
-        $this->createSocialAccount($user, $provider, $providerId, $email);
+        $user = $this->createUser($userData->email, $userData->username);
+        $this->createSocialAccount($user, $provider, $userData->id, $userData->email);
 
-        return ['user' => $user, 'isNew' => true];
+        // Import profile picture from OAuth provider
+        if ($userData->pictureUrl !== null) {
+            $this->profilePictureImporter->importFromUrl($user, $userData->pictureUrl);
+            $this->entityManager->flush();
+        }
+
+        return new OAuthResult($user, true);
     }
 
     private function createUser(string $email, string $username): User

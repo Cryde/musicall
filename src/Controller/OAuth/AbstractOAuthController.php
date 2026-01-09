@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Controller\OAuth;
 
 use App\Entity\User;
+use App\Exception\OAuth\OAuthEmailExistsException;
+use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -19,6 +22,7 @@ abstract class AbstractOAuthController extends AbstractController
         protected readonly ClientRegistry $clientRegistry,
         protected readonly OAuthUserService $oAuthUserService,
         protected readonly JWTTokenManagerInterface $jwtManager,
+        protected readonly LoggerInterface $logger,
         protected readonly string $frontendUrl,
     ) {
     }
@@ -32,10 +36,7 @@ abstract class AbstractOAuthController extends AbstractController
      */
     abstract protected function getScopes(): array;
 
-    /**
-     * @return array{id: string, email: string, username: string}
-     */
-    abstract protected function extractUserData(object $resourceOwner): array;
+    abstract protected function extractUserData(object $resourceOwner): OAuthUserData;
 
     public function connect(): RedirectResponse
     {
@@ -58,22 +59,20 @@ abstract class AbstractOAuthController extends AbstractController
             $currentUser = $this->getUser();
 
             $result = $this->oAuthUserService->findOrCreateUser(
+                $userData,
                 $this->getProviderName(),
-                $userData['id'],
-                $userData['email'],
-                $userData['username'],
                 $currentUser
             );
 
-            if (isset($result['error'])) {
-                return $this->redirectWithError($result['error']);
-            }
-
-            /** @var User $user */
-            $user = $result['user'];
-
-            return $this->createAuthenticatedRedirect($user);
+            return $this->createAuthenticatedRedirect($result->user);
+        } catch (OAuthEmailExistsException) {
+            return $this->redirectWithError('email_exists');
         } catch (\Exception $e) {
+            $this->logger->error('OAuth authentication failed', [
+                'provider' => $this->getProviderName(),
+                'error' => $e->getMessage(),
+            ]);
+
             return $this->redirectWithError('oauth_failed');
         }
     }
@@ -86,7 +85,6 @@ abstract class AbstractOAuthController extends AbstractController
         $parts = explode('.', $jwt);
         $headerPayload = $parts[0] . '.' . $parts[1];
         $signature = $parts[2];
-
         $response = new RedirectResponse($this->frontendUrl);
 
         // Set cookies matching the lexik_jwt configuration

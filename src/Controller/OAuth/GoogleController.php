@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\OAuth;
 
+use App\Service\OAuth\OAuthUserData;
 use League\OAuth2\Client\Provider\GoogleUser;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,14 +27,24 @@ class GoogleController extends AbstractOAuthController
         return ['email', 'profile'];
     }
 
-    protected function extractUserData(object $resourceOwner): array
+    protected function extractUserData(object $resourceOwner): OAuthUserData
     {
         /** @var GoogleUser $resourceOwner */
-        return [
-            'id' => $resourceOwner->getId(),
-            'email' => $resourceOwner->getEmail(),
-            'username' => $resourceOwner->getName() ?: $resourceOwner->getEmail(),
-        ];
+        return new OAuthUserData(
+            id: $resourceOwner->getId(),
+            email: $resourceOwner->getEmail(),
+            username: $resourceOwner->getName() ?: $resourceOwner->getEmail(),
+            pictureUrl: $this->getHighResolutionPictureUrl($resourceOwner->getAvatar()),
+        );
+    }
+
+    private function getHighResolutionPictureUrl(?string $pictureUrl): ?string
+    {
+        if ($pictureUrl === null) {
+            return null;
+        }
+
+        return preg_replace('/=s\d+-c$/', '=s500-c', $pictureUrl);
     }
 
     #[Route('/oauth/google', name: 'oauth_google_start')]
