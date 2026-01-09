@@ -96,8 +96,8 @@
         </div>
     </div>
 
-    <!-- Mobile filter toggle -->
-    <div class="lg:hidden mb-3">
+    <!-- Mobile: Filter toggle + Search button always visible -->
+    <div class="lg:hidden flex gap-2 mb-3">
         <Button
             :label="showMobileFilters ? 'Masquer les filtres' : 'Afficher les filtres'"
             :icon="showMobileFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
@@ -105,8 +105,16 @@
             severity="secondary"
             outlined
             size="small"
-            class="w-full"
+            class="flex-1"
             @click="showMobileFilters = !showMobileFilters"
+        />
+        <Button
+            severity="info"
+            icon="pi pi-search"
+            :disabled="isSearching || isFilterGenerating"
+            label="Rechercher"
+            size="small"
+            @click="search"
         />
     </div>
 
@@ -154,7 +162,8 @@
                     </template>
                 </AutoComplete>
             </div>
-            <div>
+            <!-- Desktop: Search buttons inside filters row -->
+            <div class="hidden lg:block">
                 <Button
                     severity="info"
                     icon="pi pi-search"
@@ -167,6 +176,16 @@
                     icon="pi pi-times"
                     severity="secondary"
                     v-tooltip.bottom="'Effacer les filtres'"
+                    @click="clearAllFilters"
+                />
+            </div>
+            <!-- Mobile: Clear button only (search button is above) -->
+            <div class="lg:hidden">
+                <Button
+                    text
+                    icon="pi pi-times"
+                    severity="secondary"
+                    label="Effacer les filtres"
                     @click="clearAllFilters"
                 />
             </div>
