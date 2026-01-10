@@ -47,25 +47,46 @@
         <div class="p-4 md:p-6 relative">
           <!-- Cover picture -->
           <div
-            class="h-[200px] md:h-[270px] bg-cover bg-center rounded-2xl"
+            class="h-[200px] md:h-[270px] bg-cover bg-center rounded-2xl relative"
             :class="profile.cover_picture_url ? '' : 'bg-gradient-to-r from-primary-500 to-primary-700'"
             :style="profile.cover_picture_url ? { backgroundImage: `url(${profile.cover_picture_url})` } : {}"
-          />
+          >
+            <!-- Cover picture edit button -->
+            <button
+              v-if="isOwnProfile"
+              class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors"
+              title="Modifier la photo de couverture"
+              @click="coverPictureInputRef?.click()"
+            >
+              <i class="pi pi-camera" />
+            </button>
+          </div>
           <!-- Avatar centered at bottom -->
           <div class="absolute left-1/2 transform -translate-x-1/2 bottom-[-50px]">
-            <img
-              v-if="profile.profile_picture_url"
-              :src="profile.profile_picture_url"
-              :alt="profile.username"
-              class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full border-[6px] border-surface-0 dark:border-surface-900 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-              @click="showProfilePictureModal = true"
-            />
-            <div
-              v-else
-              class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full border-[6px] border-surface-0 dark:border-surface-900 flex items-center justify-center text-4xl md:text-5xl font-bold"
-              :style="getAvatarStyle(profile.username)"
-            >
-              {{ profile.username.charAt(0).toUpperCase() }}
+            <div class="relative">
+              <img
+                v-if="profile.profile_picture_url"
+                :src="profile.profile_picture_url"
+                :alt="profile.username"
+                class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full border-[6px] border-surface-0 dark:border-surface-900 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                @click="showProfilePictureViewModal = true"
+              />
+              <div
+                v-else
+                class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-full border-[6px] border-surface-0 dark:border-surface-900 flex items-center justify-center text-4xl md:text-5xl font-bold"
+                :style="getAvatarStyle(profile.username)"
+              >
+                {{ profile.username.charAt(0).toUpperCase() }}
+              </div>
+              <!-- Profile picture edit button -->
+              <button
+                v-if="isOwnProfile"
+                class="absolute bottom-1 right-1 bg-primary-500 hover:bg-primary-600 text-white rounded-full p-2 transition-colors"
+                title="Modifier la photo de profil"
+                @click="profilePictureInputRef?.click()"
+              >
+                <i class="pi pi-camera text-sm" />
+              </button>
             </div>
           </div>
         </div>
@@ -95,9 +116,17 @@
             {{ profile.bio }}
           </p>
 
-          <!-- Contact button -->
-          <div v-if="canContact" class="flex items-center justify-center gap-2.5">
+          <!-- Action buttons -->
+          <div class="flex items-center justify-center gap-2.5">
             <Button
+              v-if="isOwnProfile"
+              label="Modifier le profil"
+              icon="pi pi-pencil"
+              rounded
+              @click="showEditProfileModal = true"
+            />
+            <Button
+              v-else-if="canContact"
               label="Contacter"
               icon="pi pi-envelope"
               rounded
@@ -109,11 +138,20 @@
       </section>
 
       <!-- Social links -->
-      <div v-if="profile.social_links && profile.social_links.length > 0" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
-        <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
-          Liens sociaux
-        </h2>
-        <div class="flex flex-wrap gap-3">
+      <div v-if="hasSocialLinks || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0">
+            Liens sociaux
+          </h2>
+          <Button
+            v-if="isOwnProfile"
+            icon="pi pi-pencil"
+            text
+            rounded
+            @click="showEditSocialLinksModal = true"
+          />
+        </div>
+        <div v-if="hasSocialLinks" class="flex flex-wrap gap-3">
           <a
             v-for="link in profile.social_links"
             :key="link.url"
@@ -126,6 +164,9 @@
             <span>{{ link.platform_label }}</span>
           </a>
         </div>
+        <p v-else class="text-surface-500 dark:text-surface-400 text-sm">
+          Vous n'avez pas encore ajouté de liens sociaux.
+        </p>
       </div>
 
       <!-- Musician announces -->
@@ -187,9 +228,9 @@
       message="Vous devez vous connecter pour envoyer un message à cet utilisateur."
     />
 
-    <!-- Profile picture modal -->
+    <!-- Profile picture view modal -->
     <Dialog
-      v-model:visible="showProfilePictureModal"
+      v-model:visible="showProfilePictureViewModal"
       modal
       dismissableMask
       :showHeader="false"
@@ -205,6 +246,51 @@
         class="w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full object-cover"
       />
     </Dialog>
+
+    <!-- Edit profile modal -->
+    <EditProfileModal
+      v-model:visible="showEditProfileModal"
+      :initial-bio="profile?.bio"
+      :initial-location="profile?.location"
+      :initial-is-public="profile?.is_public ?? true"
+      @saved="handleProfileSaved"
+    />
+
+    <!-- Edit social links modal -->
+    <EditSocialLinksModal
+      v-model:visible="showEditSocialLinksModal"
+      @changed="handleSocialLinksChanged"
+    />
+
+    <!-- Cover picture cropper modal -->
+    <CoverPictureModal
+      v-model:visible="showCoverPictureModal"
+      :image="coverPictureImage"
+      @saved="handleCoverPictureSaved"
+    />
+
+    <!-- Profile picture cropper modal -->
+    <ProfilePictureModal
+      v-model:visible="showProfilePictureEditModal"
+      :image="profilePictureImage"
+      @saved="handleProfilePictureSaved"
+    />
+
+    <!-- Hidden file inputs -->
+    <input
+      ref="coverPictureInputRef"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleCoverPictureSelect"
+    />
+    <input
+      ref="profilePictureInputRef"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleProfilePictureSelect"
+    />
   </div>
 </template>
 
@@ -218,6 +304,10 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
+import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
+import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
+import CoverPictureModal from '../Settings/CoverPictureModal.vue'
+import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 import { TYPES_ANNOUNCE_BAND } from '../../../constants/types.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -232,9 +322,28 @@ const notFound = ref(false)
 const isPrivate = ref(false)
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
-const showProfilePictureModal = ref(false)
+const showProfilePictureViewModal = ref(false)
+const showEditProfileModal = ref(false)
+const showEditSocialLinksModal = ref(false)
+const showCoverPictureModal = ref(false)
+const showProfilePictureEditModal = ref(false)
+
+// Picture editing
+const coverPictureInputRef = ref(null)
+const profilePictureInputRef = ref(null)
+const coverPictureImage = ref(null)
+const profilePictureImage = ref(null)
 
 const profile = computed(() => userProfileStore.profile)
+
+const isOwnProfile = computed(() => {
+  if (!profile.value || !userSecurityStore.userProfile) return false
+  return userSecurityStore.userProfile.id === profile.value.user_id
+})
+
+const hasSocialLinks = computed(() => {
+  return profile.value?.social_links && profile.value.social_links.length > 0
+})
 
 const messageRecipient = computed(() => {
   if (!profile.value) return null
@@ -325,6 +434,55 @@ async function loadProfile() {
   } finally {
     isLoading.value = false
   }
+}
+
+// Picture selection handlers
+function handleCoverPictureSelect(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    coverPictureImage.value = e.target.result
+    showCoverPictureModal.value = true
+  }
+  reader.readAsDataURL(file)
+
+  // Reset input so the same file can be selected again
+  event.target.value = ''
+}
+
+function handleProfilePictureSelect(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    profilePictureImage.value = e.target.result
+    showProfilePictureEditModal.value = true
+  }
+  reader.readAsDataURL(file)
+
+  // Reset input so the same file can be selected again
+  event.target.value = ''
+}
+
+// Save handlers
+function handleProfileSaved() {
+  loadProfile()
+}
+
+function handleSocialLinksChanged() {
+  loadProfile()
+}
+
+function handleCoverPictureSaved() {
+  loadProfile()
+}
+
+function handleProfilePictureSaved() {
+  // ProfilePictureModal already refreshes the navbar avatar via userSettingsStore
+  loadProfile()
 }
 
 watch(() => route.params.username, (newUsername) => {
