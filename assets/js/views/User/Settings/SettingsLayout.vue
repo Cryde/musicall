@@ -55,6 +55,12 @@ const userSettingsStore = useUserSettingsStore()
 const tabs = [
   { value: 'general', label: 'Général', icon: 'pi pi-user', route: 'app_user_settings' },
   {
+    value: 'profile',
+    label: 'Profil',
+    icon: 'pi pi-id-card',
+    route: 'app_user_settings_profile'
+  },
+  {
     value: 'password',
     label: 'Mot de passe',
     icon: 'pi pi-lock',
@@ -76,6 +82,10 @@ const tabs = [
 
 const activeTab = computed(() => {
   const currentRoute = route.name
+  // Handle profile sub-routes
+  if (currentRoute?.startsWith('app_user_settings_profile')) {
+    return 'profile'
+  }
   const tab = tabs.find((t) => t.route === currentRoute)
   return tab?.value || 'general'
 })

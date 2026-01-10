@@ -6,6 +6,7 @@ namespace App\Service\OAuth;
 
 use App\Entity\SocialAccount;
 use App\Entity\User;
+use App\Entity\User\UserProfile;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
@@ -74,6 +75,10 @@ readonly class OAuthUserService
         $user->setUsername($finalUsername);
         $user->setPassword(null); // Social-only user, no password
         $user->setConfirmationDatetime(new \DateTime()); // Auto-confirmed
+
+        $profile = new UserProfile();
+        $profile->setUser($user);
+        $user->setProfile($profile);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

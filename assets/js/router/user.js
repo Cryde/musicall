@@ -1,5 +1,11 @@
 export default [
   {
+    name: 'app_user_public_profile',
+    path: '/u/:username',
+    component: () => import('../views/User/Profile/PublicProfile.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_contact',
     path: '/contact',
     component: () => import('../views/Contact/Index.vue'),
@@ -122,6 +128,22 @@ export default [
         name: 'app_user_settings_privacy',
         path: 'privacy',
         component: () => import('../views/User/Settings/SettingsPrivacy.vue')
+      },
+      {
+        path: 'profile',
+        component: () => import('../views/User/Settings/SettingsProfile.vue'),
+        children: [
+          {
+            name: 'app_user_settings_profile',
+            path: '',
+            component: () => import('../views/User/Settings/SettingsProfileGeneral.vue')
+          },
+          {
+            name: 'app_user_settings_profile_privacy',
+            path: 'privacy',
+            component: () => import('../views/User/Settings/SettingsProfilePrivacy.vue')
+          }
+        ]
       }
     ]
   }

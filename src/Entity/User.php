@@ -12,6 +12,7 @@ use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
 use App\Entity\Message\Message;
+use App\Entity\User\UserProfile;
 use App\Entity\Message\MessageThreadMeta;
 use App\Repository\UserRepository;
 use DateTime;
@@ -109,6 +110,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
     private ?UserProfilePicture $profilePicture = null;
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserProfile::class, cascade: ['persist', 'remove'])]
+    private ?UserProfile $profile = null;
 
     public function __construct()
     {
@@ -381,6 +385,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUsernameChangedDatetime(?\DateTimeImmutable $usernameChangedDatetime): self
     {
         $this->usernameChangedDatetime = $usernameChangedDatetime;
+
+        return $this;
+    }
+
+    public function getProfile(): ?UserProfile
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(?UserProfile $profile): self
+    {
+        // Set the owning side of the relation if necessary
+        if ($profile !== null && $profile->getUser() !== $this) {
+            $profile->setUser($this);
+        }
+
+        $this->profile = $profile;
 
         return $this;
     }

@@ -65,3 +65,14 @@ vich_uploader:
                 service: App\Service\DirectoryNamer\StaticDirectoryNamer
                 options: { path: '/images/user/profile' }
             inject_on_load: true
+
+        # this is used to store user cover picture (public profile)
+        user_cover_picture:
+            upload_destination: oneup_flysystem.musicall_filesystem
+            uri_prefix: ''
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+            directory_namer:
+                service: App\Service\DirectoryNamer\StaticDirectoryNamer
+                options: { path: '/images/user/cover' }
+            inject_on_load: true
