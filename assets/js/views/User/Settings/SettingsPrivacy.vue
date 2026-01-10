@@ -4,12 +4,11 @@
       Confidentialité
     </h2>
 
-    <Message severity="info" :closable="false">
-      Les paramètres de confidentialité seront disponibles prochainement.
-    </Message>
+    <div class="text-surface-500 dark:text-surface-400">
+      <p>Aucun paramètre de confidentialité disponible pour le moment.</p>
+    </div>
   </div>
 </template>
 
 <script setup>
-import Message from 'primevue/message'
 </script>

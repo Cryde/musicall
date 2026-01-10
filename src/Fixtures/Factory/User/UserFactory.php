@@ -3,7 +3,7 @@
 namespace App\Fixtures\Factory\User;
 
 use App\Entity\User;
-use Zenstruck\Foundry\Factory;
+use App\Entity\User\UserProfile;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
@@ -26,6 +26,21 @@ final class UserFactory extends PersistentProxyObjectFactory
             'username' => self::faker()->userName(),
             'confirmationDatetime' => self::faker()->dateTime('-1 year'),
         ];
+    }
+
+    protected function initialize(): static
+    {
+        return $this->afterInstantiate(function (User $user): void {
+            if ($user->getProfile() === null) {
+                $profile = new UserProfile();
+                $profile->setUser($user);
+                $profile->setCreationDatetime($user->getCreationDatetime()
+                    ? \DateTimeImmutable::createFromMutable($user->getCreationDatetime())
+                    : new \DateTimeImmutable()
+                );
+                $user->setProfile($profile);
+            }
+        });
     }
 
     public function asAdminUser(): static

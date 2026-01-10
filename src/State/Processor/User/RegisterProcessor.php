@@ -5,15 +5,12 @@ namespace App\State\Processor\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Register;
-use App\ApiResource\User\ResetPassword;
 use App\Entity\User;
+use App\Entity\User\UserProfile;
 use App\Event\UserRegisteredEvent;
-use App\Exception\User\ResetPasswordInvalidTokenException;
 use App\Exception\User\UserAlreadyLoggedException;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -52,6 +49,10 @@ readonly class RegisterProcessor implements ProcessorInterface
                 $data->password
             )
         );
+
+        $profile = new UserProfile();
+        $profile->setUser($user);
+        $user->setProfile($profile);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
