@@ -170,11 +170,28 @@
       </div>
 
       <!-- Musician announces -->
-      <div v-if="profile.musician_announces && profile.musician_announces.length > 0" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
+      <div v-if="hasMusicianAnnounces || isOwnProfile" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
         <h2 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-4">
           Annonces musicien
         </h2>
-        <div class="flex flex-col gap-4">
+
+        <!-- CTA when own profile with no announces -->
+        <div v-if="!hasMusicianAnnounces && isOwnProfile" class="flex flex-col items-center justify-center py-8 text-center">
+          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 mb-4">
+            <i class="pi pi-megaphone text-2xl text-primary-600 dark:text-primary-400" />
+          </div>
+          <p class="text-surface-500 dark:text-surface-400 mb-4">
+            Vous n'avez pas d'annonce
+          </p>
+          <Button
+            label="Ajouter une annonce"
+            icon="pi pi-plus"
+            @click="$router.push({ name: 'app_user_announces' })"
+          />
+        </div>
+
+        <!-- Announces list -->
+        <div v-else class="flex flex-col gap-4">
           <div
             v-for="announce in profile.musician_announces"
             :key="announce.id"
@@ -343,6 +360,10 @@ const isOwnProfile = computed(() => {
 
 const hasSocialLinks = computed(() => {
   return profile.value?.social_links && profile.value.social_links.length > 0
+})
+
+const hasMusicianAnnounces = computed(() => {
+  return profile.value?.musician_announces && profile.value.musician_announces.length > 0
 })
 
 const messageRecipient = computed(() => {
