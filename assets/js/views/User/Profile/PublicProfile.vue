@@ -93,10 +93,10 @@
 
         <!-- Profile info centered -->
         <div class="px-6 md:px-12 flex flex-col items-center gap-5 mt-[60px]">
-          <!-- Username -->
+          <!-- Name and username -->
           <div class="flex flex-col items-center gap-1.5 w-full">
             <h1 class="m-0 font-bold text-surface-900 dark:text-surface-0 text-2xl md:text-3xl text-center">
-              {{ profile.username }}
+              {{ profile.display_name || profile.username }}
             </h1>
             <span class="text-surface-500 dark:text-surface-400 text-base">
               @{{ profile.username }}
@@ -267,6 +267,7 @@
     <!-- Edit profile modal -->
     <EditProfileModal
       v-model:visible="showEditProfileModal"
+      :initial-display-name="profile?.display_name"
       :initial-bio="profile?.bio"
       :initial-location="profile?.location"
       :initial-is-public="profile?.is_public ?? true"

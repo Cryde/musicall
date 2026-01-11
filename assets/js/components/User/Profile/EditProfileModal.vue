@@ -12,6 +12,24 @@
     </Message>
 
     <div class="flex flex-col gap-5">
+      <!-- Display name -->
+      <div class="flex flex-col gap-2">
+        <label for="displayName" class="font-medium text-surface-900 dark:text-surface-0">
+          Nom d'affichage
+        </label>
+        <InputText
+          id="displayName"
+          v-model="displayName"
+          placeholder="Votre nom ou pseudo..."
+          :disabled="isSaving"
+          :maxlength="100"
+          class="w-full"
+        />
+        <small class="text-surface-500">
+          Optionnel. Si vide, votre nom d'utilisateur sera affiché.
+        </small>
+      </div>
+
       <!-- Bio -->
       <div class="flex flex-col gap-2">
         <label for="bio" class="font-medium text-surface-900 dark:text-surface-0">
@@ -92,6 +110,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  initialDisplayName: {
+    type: String,
+    default: null
+  },
   initialBio: {
     type: String,
     default: null
@@ -110,6 +132,7 @@ const emit = defineEmits(['update:visible', 'saved'])
 
 const userProfileStore = useUserProfileStore()
 
+const displayName = ref('')
 const bio = ref('')
 const location = ref('')
 const isPublic = ref(true)
@@ -123,6 +146,7 @@ const isVisible = computed({
 
 watch(() => props.visible, (visible) => {
   if (visible) {
+    displayName.value = props.initialDisplayName || ''
     bio.value = props.initialBio || ''
     location.value = props.initialLocation || ''
     isPublic.value = props.initialIsPublic
@@ -141,6 +165,7 @@ async function handleSave() {
 
   try {
     await userProfileStore.updateProfile({
+      display_name: displayName.value || null,
       bio: bio.value || null,
       location: location.value || null,
       is_public: isPublic.value

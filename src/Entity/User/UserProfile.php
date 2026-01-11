@@ -35,6 +35,9 @@ class UserProfile
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $location = null;
 
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    private ?string $displayName = null;
+
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isPublic = true;
 
@@ -96,6 +99,18 @@ class UserProfile
     public function setLocation(?string $location): self
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getDisplayName(): ?string
+    {
+        return $this->displayName;
+    }
+
+    public function setDisplayName(?string $displayName): self
+    {
+        $this->displayName = $displayName;
 
         return $this;
     }

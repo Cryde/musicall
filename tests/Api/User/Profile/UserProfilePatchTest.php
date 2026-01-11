@@ -17,6 +17,32 @@ class UserProfilePatchTest extends ApiTestCase
     use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
+    public function test_patch_profile_update_display_name(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'displaynameuser',
+            'email' => 'displaynameuser@test.com',
+        ]);
+        $profile = $user->getProfile();
+        $profile->setDisplayName('Original Name');
+        $profile->setIsPublic(true);
+        $user->_save();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'display_name' => 'Jean Dupont',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'display_name' => 'Jean Dupont',
+            'is_public' => true,
+        ]);
+    }
+
     public function test_patch_profile_update_bio(): void
     {
         $user = UserFactory::new()->asBaseUser()->create([
@@ -122,6 +148,38 @@ class UserProfilePatchTest extends ApiTestCase
             'bio' => 'New bio',
             'location' => 'New location',
             'is_public' => false,
+        ]);
+    }
+
+    public function test_patch_profile_display_name_too_long(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'longdisplaynameuser',
+            'email' => 'longdisplaynameuser@test.com',
+        ]);
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'display_name' => str_repeat('a', 101),
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@type' => 'ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Length::TOO_LONG_ERROR,
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'display_name',
+                    'message' => 'Le nom d\'affichage ne doit pas dépasser 100 caractères',
+                    'code' => Length::TOO_LONG_ERROR,
+                ],
+            ],
+            'detail' => 'display_name: Le nom d\'affichage ne doit pas dépasser 100 caractères',
+            'description' => 'display_name: Le nom d\'affichage ne doit pas dépasser 100 caractères',
+            'type' => '/validation_errors/' . Length::TOO_LONG_ERROR,
+            'title' => 'An error occurred',
         ]);
     }
 

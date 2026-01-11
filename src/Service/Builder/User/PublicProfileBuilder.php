@@ -31,6 +31,7 @@ readonly class PublicProfileBuilder
 
         $dto->username = $user->getUsername();
         $dto->userId = $user->getId();
+        $dto->displayName = $profile->getDisplayName();
         $dto->bio = $profile->getBio();
         $dto->location = $profile->getLocation();
         $dto->memberSince = $user->getCreationDatetime();

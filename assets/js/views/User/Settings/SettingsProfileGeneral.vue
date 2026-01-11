@@ -67,6 +67,27 @@
         </div>
       </div>
 
+      <!-- Display name -->
+      <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
+        <div class="md:w-1/3">
+          <div class="text-surface-600 dark:text-surface-400 font-medium">
+            Nom d'affichage
+          </div>
+          <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">
+            Optionnel. Si vide, votre nom d'utilisateur sera affiché.
+          </p>
+        </div>
+        <div class="md:w-2/3">
+          <InputText
+            v-model="displayName"
+            placeholder="Votre nom ou pseudo..."
+            :disabled="isUpdating"
+            class="w-full md:w-80"
+            :maxlength="100"
+          />
+        </div>
+      </div>
+
       <!-- Bio -->
       <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
         <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
@@ -239,10 +260,12 @@ const coverPictureImage = ref(null)
 const coverPictureInputRef = ref(null)
 
 // Profile form
+const displayName = ref('')
 const bio = ref('')
 const location = ref('')
 
 // Original values for change detection
+const originalDisplayName = ref('')
 const originalBio = ref('')
 const originalLocation = ref('')
 
@@ -282,7 +305,9 @@ function getPlatformIcon(platform) {
 }
 
 const hasChanges = computed(() => {
-  return bio.value !== originalBio.value || location.value !== originalLocation.value
+  return displayName.value !== originalDisplayName.value ||
+    bio.value !== originalBio.value ||
+    location.value !== originalLocation.value
 })
 
 const canAddLink = computed(() => {
@@ -290,8 +315,10 @@ const canAddLink = computed(() => {
 })
 
 function setFormValues(profile) {
+  displayName.value = profile?.display_name || ''
   bio.value = profile?.bio || ''
   location.value = profile?.location || ''
+  originalDisplayName.value = displayName.value
   originalBio.value = bio.value
   originalLocation.value = location.value
 }
@@ -342,9 +369,11 @@ async function saveProfile() {
 
   try {
     await userProfileStore.updateProfile({
+      display_name: displayName.value || null,
       bio: bio.value || null,
       location: location.value || null
     })
+    originalDisplayName.value = displayName.value
     originalBio.value = bio.value
     originalLocation.value = location.value
     toast.add({
