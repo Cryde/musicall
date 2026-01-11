@@ -39,6 +39,7 @@ readonly class PublicProfileBuilder
         if ($user->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
             $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+            $dto->profilePictureLargeUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
         }
 
         // Cover picture

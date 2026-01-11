@@ -86,6 +86,15 @@ liip_imagine:
                 jpegoptim: { strip_all: true, max: 100, progressive: true }
                 optipng: { strip_all: true, level: 5 }
 
+        user_profile_picture_large:
+            data_loader: flysystem_loader
+            filters:
+                downscale:
+                    max: [ 500, 500 ]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 100, progressive: true }
+                optipng: { strip_all: true, level: 5 }
+
         user_cover_picture:
             data_loader: flysystem_loader
             filters:
