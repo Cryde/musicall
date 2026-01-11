@@ -139,11 +139,27 @@
           <Button
             v-if="profile.has_musician_profile"
             label="Voir le profil musicien"
-            icon="pi pi-music"
             severity="secondary"
             rounded
             @click="$router.push({ name: 'app_user_musician_profile', params: { username: profile.username } })"
-          />
+          >
+            <template #icon>
+              <MusicNotesIcon class="mr-2" />
+            </template>
+          </Button>
+          <!-- Create musician profile CTA (own profile only) -->
+          <Button
+            v-else-if="isOwnProfile"
+            label="Créer mon profil musicien"
+            severity="secondary"
+            rounded
+            outlined
+            @click="showCreateMusicianProfileModal = true"
+          >
+            <template #icon>
+              <MusicNotesIcon class="mr-2" />
+            </template>
+          </Button>
         </div>
       </section>
 
@@ -270,6 +286,13 @@
       @saved="handleProfilePictureSaved"
     />
 
+    <!-- Create musician profile modal -->
+    <EditMusicianProfileModal
+      v-model:visible="showCreateMusicianProfileModal"
+      :musician-profile="null"
+      @saved="handleMusicianProfileCreated"
+    />
+
     <!-- Hidden file inputs -->
     <input
       ref="coverPictureInputRef"
@@ -294,6 +317,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
+import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
@@ -301,15 +325,20 @@ import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
+import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
+import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import CoverPictureModal from '../Settings/CoverPictureModal.vue'
 import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 
 const route = useRoute()
+const toast = useToast()
 const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
+const musicianProfileStore = useMusicianProfileStore()
 
 const isLoading = ref(true)
 const notFound = ref(false)
@@ -321,6 +350,7 @@ const showEditProfileModal = ref(false)
 const showEditSocialLinksModal = ref(false)
 const showCoverPictureModal = ref(false)
 const showProfilePictureEditModal = ref(false)
+const showCreateMusicianProfileModal = ref(false)
 
 // Picture editing
 const coverPictureInputRef = ref(null)
@@ -456,6 +486,17 @@ function handleCoverPictureSaved() {
 function handleProfilePictureSaved() {
   // ProfilePictureModal already refreshes the navbar avatar via userSettingsStore
   loadProfile()
+}
+
+function handleMusicianProfileCreated() {
+  loadProfile()
+  musicianProfileStore.clear()
+  toast.add({
+    severity: 'success',
+    summary: 'Profil créé',
+    detail: 'Votre profil musicien a été créé avec succès',
+    life: 5000
+  })
 }
 
 watch(() => route.params.username, (newUsername) => {

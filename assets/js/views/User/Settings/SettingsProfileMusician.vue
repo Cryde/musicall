@@ -8,7 +8,7 @@
     <template v-else-if="!hasProfile">
       <div class="flex flex-col items-center justify-center py-12 text-center">
         <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-900/30 mb-6">
-          <i class="pi pi-music text-3xl text-primary-600 dark:text-primary-400" />
+          <MusicNotesIcon :size="32" class="text-primary-600 dark:text-primary-400" />
         </div>
         <h3 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
           Créez votre profil musicien
@@ -160,6 +160,7 @@ import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
+import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 
 const musicianProfileStore = useMusicianProfileStore()
