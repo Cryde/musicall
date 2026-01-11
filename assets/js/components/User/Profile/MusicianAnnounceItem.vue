@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col md:flex-row md:items-center gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-800">
-    <div class="flex items-center gap-3 md:w-48 shrink-0">
+    <div class="flex items-center gap-3 md:w-56 shrink-0">
       <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30">
         <i :class="['pi text-lg text-primary-600 dark:text-primary-400', announce.type === TYPES_ANNOUNCE_BAND ? 'pi-users' : 'pi-user']" />
       </div>
@@ -44,7 +44,7 @@ const props = defineProps({
 })
 
 const typeName = computed(() => {
-  return props.announce.type === TYPES_ANNOUNCE_BAND ? 'Groupe' : 'Musicien'
+  return props.announce.type === TYPES_ANNOUNCE_BAND ? 'Cherche un groupe' : 'Cherche un musicien'
 })
 
 const typeSeverity = computed(() => {
