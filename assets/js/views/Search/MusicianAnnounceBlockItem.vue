@@ -1,26 +1,33 @@
 <template>
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-2xl p-4 flex flex-col gap-5">
         <div class="flex-1 flex flex-col items-center gap-4">
-
-            <Avatar
-                v-if="user.profile_picture"
-                image="https://fqjltiegiezfetthbags.supabase.co/storage/v1/render/image/public/block.images/blocks/avatars/circle/avatar-f-1.png"
-                size="xlarge"
-                shape="circle"
-            />
-            <Avatar
-                v-else
-                :label="user.username.charAt(0).toUpperCase()"
-                :style="getAvatarStyle(user.username)"
-                size="xlarge"
-                shape="circle"
-            />
+            <router-link
+                :to="{ name: 'app_user_public_profile', params: { username: user.username } }"
+                class="cursor-pointer hover:opacity-80 transition-opacity"
+            >
+                <Avatar
+                    v-if="user.profile_picture"
+                    image="https://fqjltiegiezfetthbags.supabase.co/storage/v1/render/image/public/block.images/blocks/avatars/circle/avatar-f-1.png"
+                    size="xlarge"
+                    shape="circle"
+                />
+                <Avatar
+                    v-else
+                    :label="user.username.charAt(0).toUpperCase()"
+                    :style="getAvatarStyle(user.username)"
+                    size="xlarge"
+                    shape="circle"
+                />
+            </router-link>
 
             <div class="flex flex-col items-center gap-4 w-full">
                 <div class="flex flex-col items-center gap-2 w-full text-center">
-                    <span class="font-medium text-surface-900 dark:text-surface-0 text-xl leading-tight">{{
-                            user.username
-                        }}</span>
+                    <router-link
+                        :to="{ name: 'app_user_public_profile', params: { username: user.username } }"
+                        class="font-medium text-surface-900 dark:text-surface-0 text-xl leading-tight hover:text-primary transition-colors"
+                    >
+                        {{ user.username }}
+                    </router-link>
                     <span class="text-surface-600 dark:text-surface-200 font-normal leading-tight" v-if="type === 1">
                         recherche un {{ instrument.toLowerCase() }}
                     </span>
@@ -54,13 +61,23 @@
                 ({{ formattedDistance }})
             </span>
         </div>
-        <div v-if="!isOwnAnnounce" class="flex gap-4">
+        <div class="flex gap-2">
             <Button
               type="button"
               severity="secondary"
               outlined
+              class="flex-1"
+              icon="pi pi-user"
+              @click="$router.push({ name: 'app_user_public_profile', params: { username: user.username } })"
+              v-tooltip.top="'Voir le profil'"
+            />
+            <Button
+              v-if="!isOwnAnnounce"
+              type="button"
+              severity="secondary"
+              outlined
               label="Contacter"
-              class="flex-1 w-full"
+              class="flex-1"
               icon="pi pi-envelope"
               @click="handleContact"
             />

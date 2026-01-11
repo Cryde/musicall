@@ -8,7 +8,6 @@ use App\ApiResource\User\Profile\PublicProfile;
 use App\ApiResource\User\Profile\PublicProfileAnnounce;
 use App\ApiResource\User\Profile\PublicProfileSocialLink;
 use App\Entity\Musician\MusicianAnnounce;
-use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Repository\Musician\MusicianAnnounceRepository;
@@ -55,6 +54,9 @@ readonly class PublicProfileBuilder
         // Musician announces
         $announces = $this->musicianAnnounceRepository->findBy(['author' => $user], ['creationDatetime' => 'DESC']);
         $dto->musicianAnnounces = $this->buildAnnounces($announces);
+
+        // Musician profile flag
+        $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
 
         return $dto;
     }

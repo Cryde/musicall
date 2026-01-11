@@ -12,6 +12,7 @@ use App\Entity\Forum\ForumPost;
 use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
 use App\Entity\Message\Message;
+use App\Entity\Musician\MusicianProfile;
 use App\Entity\User\UserProfile;
 use App\Entity\Message\MessageThreadMeta;
 use App\Repository\UserRepository;
@@ -113,6 +114,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserProfile::class, cascade: ['persist', 'remove'])]
     private ?UserProfile $profile = null;
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: MusicianProfile::class, cascade: ['persist', 'remove'])]
+    private ?MusicianProfile $musicianProfile = null;
 
     public function __construct()
     {
@@ -402,6 +406,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function getMusicianProfile(): ?MusicianProfile
+    {
+        return $this->musicianProfile;
+    }
+
+    public function setMusicianProfile(?MusicianProfile $musicianProfile): self
+    {
+        if ($musicianProfile !== null && $musicianProfile->getUser() !== $this) {
+            $musicianProfile->setUser($this);
+        }
+
+        $this->musicianProfile = $musicianProfile;
 
         return $this;
     }

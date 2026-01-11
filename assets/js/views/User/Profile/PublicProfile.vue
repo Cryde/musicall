@@ -134,6 +134,16 @@
               @click="handleContact"
             />
           </div>
+
+          <!-- Musician profile button -->
+          <Button
+            v-if="profile.has_musician_profile"
+            label="Voir le profil musicien"
+            icon="pi pi-music"
+            severity="secondary"
+            rounded
+            @click="$router.push({ name: 'app_user_musician_profile', params: { username: profile.username } })"
+          />
         </div>
       </section>
 
@@ -192,45 +202,11 @@
 
         <!-- Announces list -->
         <div v-else class="flex flex-col gap-4">
-          <div
+          <MusicianAnnounceItem
             v-for="announce in profile.musician_announces"
             :key="announce.id"
-            class="flex flex-col md:flex-row md:items-center gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-800"
-          >
-            <div class="flex items-center gap-3 md:w-48 shrink-0">
-              <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30">
-                <i :class="['pi text-lg text-primary-600 dark:text-primary-400', announce.type === TYPES_ANNOUNCE_BAND ? 'pi-users' : 'pi-user']" />
-              </div>
-              <div>
-                <Tag :value="getTypeName(announce.type)" :severity="getTypeSeverity(announce.type)" size="small" />
-                <p class="text-sm font-medium text-surface-900 dark:text-surface-0 mt-1">
-                  {{ announce.instrument_name }}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex-1">
-              <div class="flex flex-wrap gap-1">
-                <Tag
-                  v-for="style in announce.styles"
-                  :key="style"
-                  :value="style"
-                  severity="info"
-                  size="small"
-                />
-              </div>
-            </div>
-
-            <div class="flex items-center gap-4 text-sm text-surface-500 dark:text-surface-400">
-              <span class="flex items-center gap-1">
-                <i class="pi pi-map-marker text-xs" />
-                {{ announce.location_name }}
-              </span>
-              <span>
-                {{ formatDate(announce.creation_datetime) }}
-              </span>
-            </div>
-          </div>
+            :announce="announce"
+          />
         </div>
       </div>
     </div>
@@ -324,9 +300,9 @@ import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
+import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
 import CoverPictureModal from '../Settings/CoverPictureModal.vue'
 import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
-import { TYPES_ANNOUNCE_BAND } from '../../../constants/types.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
@@ -403,31 +379,6 @@ const platformIcons = {
 
 function getPlatformIcon(platform) {
   return platformIcons[platform] || 'pi-link'
-}
-
-function formatMemberSince(date) {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('fr-FR', {
-    month: 'long',
-    year: 'numeric'
-  })
-}
-
-function formatDate(date) {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  })
-}
-
-function getTypeName(type) {
-  return type === TYPES_ANNOUNCE_BAND ? 'Groupe' : 'Musicien'
-}
-
-function getTypeSeverity(type) {
-  return type === TYPES_ANNOUNCE_BAND ? 'success' : 'info'
 }
 
 function handleContact() {

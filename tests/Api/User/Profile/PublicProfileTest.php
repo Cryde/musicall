@@ -47,6 +47,7 @@ class PublicProfileTest extends ApiTestCase
             'member_since' => '1990-01-02T02:03:04+00:00',
             'social_links' => [],
             'musician_announces' => [],
+            'has_musician_profile' => false,
         ]);
     }
 
@@ -86,6 +87,7 @@ class PublicProfileTest extends ApiTestCase
                 ],
             ],
             'musician_announces' => [],
+            'has_musician_profile' => false,
         ]);
     }
 
@@ -132,6 +134,7 @@ class PublicProfileTest extends ApiTestCase
                     'styles' => ['Rock'],
                 ],
             ],
+            'has_musician_profile' => false,
         ]);
     }
 
@@ -198,6 +201,7 @@ class PublicProfileTest extends ApiTestCase
             'member_since' => '1990-01-02T02:03:04+00:00',
             'social_links' => [],
             'musician_announces' => [],
+            'has_musician_profile' => false,
         ]);
     }
 }

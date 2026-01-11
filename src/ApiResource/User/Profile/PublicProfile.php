@@ -44,4 +44,6 @@ class PublicProfile
     /** @var PublicProfileAnnounce[] */
     #[ApiProperty(genId: false)]
     public array $musicianAnnounces = [];
+
+    public bool $hasMusicianProfile = false;
 }
