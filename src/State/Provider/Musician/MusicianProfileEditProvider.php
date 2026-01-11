@@ -27,10 +27,10 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): MusicianProfileEdit
     {
-        /** @var User|null $user */
         if (!$user = $this->security->getUser()) {
             throw new AccessDeniedHttpException();
         }
+        /** @var User $user */
         if (!$musicianProfile = $user->getMusicianProfile()) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
