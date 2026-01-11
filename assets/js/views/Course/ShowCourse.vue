@@ -14,7 +14,10 @@
             {{ publication.title }}</h1>
           <div class="text-sm leading-tight text-surface-500 dark:text-surface-300 mt-5">
             Publié par
-            <strong>{{ publication.author.username }}</strong>
+            <router-link
+              :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
+              class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+            >{{ publication.author.username }}</router-link>
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
@@ -33,7 +36,10 @@
             {{ publication.title }}</h1>
           <div class="text-sm leading-tight text-surface-500 dark:text-surface-300 mt-5">
             Publié par
-            <strong>{{ publication.author.username }}</strong>
+            <router-link
+              :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
+              class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+            >{{ publication.author.username }}</router-link>
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>

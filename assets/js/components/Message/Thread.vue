@@ -21,8 +21,13 @@
         :style="getAvatarStyle(otherParticipant?.username)"
         shape="circle"
       />
-      <span class="font-semibold text-surface-900 dark:text-surface-0">
-        {{ otherParticipant?.username || 'Conversation' }}
+      <router-link
+        v-if="otherParticipant?.username"
+        :to="{ name: 'app_user_public_profile', params: { username: otherParticipant.username } }"
+        class="font-semibold text-surface-900 dark:text-surface-0 hover:text-primary transition-colors"
+      >{{ otherParticipant.username }}</router-link>
+      <span v-else class="font-semibold text-surface-900 dark:text-surface-0">
+        Conversation
       </span>
     </div>
 

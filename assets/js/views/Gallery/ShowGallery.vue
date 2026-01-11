@@ -14,7 +14,12 @@
           {{ galleryStore.gallery.title }}
         </h1>
         <div class="text-sm text-surface-500 dark:text-surface-400">
-          Photo de <strong>{{ galleryStore.gallery.author?.username }}</strong>
+          Photo de
+          <router-link
+            v-if="galleryStore.gallery.author?.username"
+            :to="{ name: 'app_user_public_profile', params: { username: galleryStore.gallery.author.username } }"
+            class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+          >{{ galleryStore.gallery.author.username }}</router-link>
           <span v-if="galleryStore.gallery.publicationDatetime">
             le {{ formatDate(galleryStore.gallery.publicationDatetime) }}
           </span>

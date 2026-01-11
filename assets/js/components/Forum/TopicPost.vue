@@ -16,7 +16,10 @@
             size="large"
             shape="circle"
           />
-          <span class="font-medium text-sm">{{ post.creator.username }}</span>
+          <router-link
+            :to="{ name: 'app_user_public_profile', params: { username: post.creator.username } }"
+            class="font-medium text-sm hover:text-primary transition-colors"
+          >{{ post.creator.username }}</router-link>
           <Button
             v-if="canContact"
             icon="pi pi-envelope"
