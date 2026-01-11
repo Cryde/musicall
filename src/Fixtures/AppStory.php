@@ -10,6 +10,7 @@ use App\Fixtures\Course\CourseCategoryStory;
 use App\Fixtures\Course\CourseStory;
 use App\Fixtures\Course\FakeCourseImageGeneratorStory;
 use App\Fixtures\Forum\ForumStory;
+use App\Fixtures\Musician\MusicianProfileStory;
 use App\Fixtures\Publication\FakeImageGeneratorStory;
 use App\Fixtures\Publication\PublicationCategoryStory;
 use App\Fixtures\Publication\PublicationStory;
@@ -40,6 +41,9 @@ final class AppStory extends Story
         InstrumentStory::load();
         StyleStory::load();
         MusicianAnnounceStory::load();
+
+        // musician profiles
+        MusicianProfileStory::load();
 
         // band spaces
         BandSpaceStory::load();

@@ -6,6 +6,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_user_musician_profile',
+    path: '/u/:username/musician',
+    component: () => import('../views/User/Profile/MusicianProfile.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_contact',
     path: '/contact',
     component: () => import('../views/Contact/Index.vue'),
@@ -142,6 +148,11 @@ export default [
             name: 'app_user_settings_profile_privacy',
             path: 'privacy',
             component: () => import('../views/User/Settings/SettingsProfilePrivacy.vue')
+          },
+          {
+            name: 'app_user_settings_profile_musician',
+            path: 'musician',
+            component: () => import('../views/User/Settings/SettingsProfileMusician.vue')
           }
         ]
       }
