@@ -2,7 +2,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-2xl p-4 flex flex-col gap-5">
         <div class="flex-1 flex flex-col items-center gap-4">
             <router-link
-                :to="{ name: 'app_user_public_profile', params: { username: user.username } }"
+                :to="profileRoute"
                 class="cursor-pointer hover:opacity-80 transition-opacity"
             >
                 <Avatar
@@ -23,7 +23,7 @@
             <div class="flex flex-col items-center gap-4 w-full">
                 <div class="flex flex-col items-center gap-2 w-full text-center">
                     <router-link
-                        :to="{ name: 'app_user_public_profile', params: { username: user.username } }"
+                        :to="profileRoute"
                         class="font-medium text-surface-900 dark:text-surface-0 text-xl leading-tight hover:text-primary transition-colors"
                     >
                         {{ user.username }}
@@ -68,8 +68,8 @@
               outlined
               class="flex-1"
               icon="pi pi-user"
-              @click="$router.push({ name: 'app_user_public_profile', params: { username: user.username } })"
-              v-tooltip.top="'Voir le profil'"
+              @click="$router.push(profileRoute)"
+              v-tooltip.top="profileTooltip"
             />
             <Button
               v-if="!isOwnAnnounce"
@@ -116,6 +116,15 @@ const showAuthModal = ref(false)
 const isOwnAnnounce = computed(() => {
   return userSecurityStore.userProfile?.id === props.user.id
 })
+
+const profileRoute = computed(() => ({
+  name: props.type === 2 ? 'app_user_musician_profile' : 'app_user_public_profile',
+  params: { username: props.user.username }
+}))
+
+const profileTooltip = computed(() =>
+  props.type === 2 ? 'Voir le profil musicien' : 'Voir le profil'
+)
 
 const formattedDistance = computed(() => {
   if (!props.distance) return ''

@@ -129,22 +129,22 @@
         <Card v-for="announce in musicianAnnounceStore.lastAnnounces" :key="announce.id">
           <template #content>
             <div class="flex gap-3">
-              <Avatar
-                v-if="announce.author.profile_picture_url"
-                :image="announce.author.profile_picture_url"
-                shape="circle"
-                class="shrink-0"
-              />
-              <Avatar
-                v-else
-                :label="announce.author.username.charAt(0).toUpperCase()"
-                :style="getAvatarStyle(announce.author.username)"
-                shape="circle"
-                class="shrink-0"
-              />
+              <router-link :to="getProfileRoute(announce)" class="shrink-0 hover:opacity-80 transition-opacity">
+                <Avatar
+                  v-if="announce.author.profile_picture_url"
+                  :image="announce.author.profile_picture_url"
+                  shape="circle"
+                />
+                <Avatar
+                  v-else
+                  :label="announce.author.username.charAt(0).toUpperCase()"
+                  :style="getAvatarStyle(announce.author.username)"
+                  shape="circle"
+                />
+              </router-link>
               <div class="flex-1">
                 <template v-if="isTypeBand(announce.type)">
-                  <span class="font-semibold">{{ announce.author.username }}</span> est un
+                  <router-link :to="getProfileRoute(announce)" class="font-semibold hover:text-primary transition-colors">{{ announce.author.username }}</router-link> est un
                   <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
                   et cherche un groupe jouant du
                   <strong>{{ formatStyles(announce.styles).visible }}</strong>
@@ -158,7 +158,7 @@
                   dans les alentours de {{ announce.location_name }}
                 </template>
                 <template v-if="isTypeMusician(announce.type)">
-                  <span class="font-semibold">{{ announce.author.username }}</span> cherche pour son groupe un
+                  <router-link :to="getProfileRoute(announce)" class="font-semibold hover:text-primary transition-colors">{{ announce.author.username }}</router-link> cherche pour son groupe un
                   <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
                   jouant du
                   <strong>{{ formatStyles(announce.styles).visible }}</strong>
@@ -271,6 +271,13 @@ function isTypeMusician(type) {
 
 function isOwnAnnounce(announce) {
   return userSecurityStore.userProfile?.id === announce.author.id
+}
+
+function getProfileRoute(announce) {
+  return {
+    name: announce.type === TYPES_ANNOUNCE_BAND ? 'app_user_musician_profile' : 'app_user_public_profile',
+    params: { username: announce.author.username }
+  }
 }
 
 function handleOpenDiscoverModal() {
