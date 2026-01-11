@@ -97,8 +97,16 @@
         </div>
       </div>
 
-      <!-- Edit button -->
-      <div class="flex justify-end">
+      <!-- Action buttons -->
+      <div class="flex justify-between items-center">
+        <Button
+          label="Supprimer le profil"
+          icon="pi pi-trash"
+          severity="danger"
+          text
+          :loading="isDeleting"
+          @click="showDeleteConfirm = true"
+        />
         <Button
           label="Modifier"
           icon="pi pi-pencil"
@@ -106,6 +114,35 @@
         />
       </div>
     </template>
+
+    <!-- Delete confirmation dialog -->
+    <Dialog
+      v-model:visible="showDeleteConfirm"
+      modal
+      header="Supprimer le profil musicien"
+      :style="{ width: '450px' }"
+    >
+      <div class="flex items-center gap-4">
+        <i class="pi pi-exclamation-triangle text-4xl text-red-500" />
+        <span>
+          Êtes-vous sûr de vouloir supprimer votre profil musicien ?
+          Cette action est irréversible.
+        </span>
+      </div>
+      <template #footer>
+        <Button
+          label="Annuler"
+          text
+          @click="showDeleteConfirm = false"
+        />
+        <Button
+          label="Supprimer"
+          severity="danger"
+          :loading="isDeleting"
+          @click="handleDeleteProfile"
+        />
+      </template>
+    </Dialog>
 
     <!-- Edit/Create modal -->
     <EditMusicianProfileModal
@@ -118,6 +155,7 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
@@ -129,6 +167,9 @@ const toast = useToast()
 
 const isLoading = ref(true)
 const showEditModal = ref(false)
+const showDeleteConfirm = ref(false)
+
+const isDeleting = computed(() => musicianProfileStore.isDeleting)
 
 const profile = computed(() => musicianProfileStore.profile)
 const hasProfile = computed(() => profile.value !== null)
@@ -190,6 +231,26 @@ function handleProfileSaved() {
     detail: 'Votre profil musicien a été enregistré',
     life: 5000
   })
+}
+
+async function handleDeleteProfile() {
+  try {
+    await musicianProfileStore.deleteProfile()
+    showDeleteConfirm.value = false
+    toast.add({
+      severity: 'success',
+      summary: 'Profil supprimé',
+      detail: 'Votre profil musicien a été supprimé',
+      life: 5000
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de supprimer le profil musicien',
+      life: 5000
+    })
+  }
 }
 
 onMounted(() => {

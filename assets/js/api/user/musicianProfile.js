@@ -46,5 +46,11 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  deleteMusicianProfile() {
+    return axios
+      .delete(Routing.generate('api_musician_profile_delete'))
+      .catch(handleApiError)
   }
 }
