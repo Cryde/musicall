@@ -6,8 +6,8 @@
                 class="cursor-pointer hover:opacity-80 transition-opacity"
             >
                 <Avatar
-                    v-if="user.profile_picture"
-                    image="https://fqjltiegiezfetthbags.supabase.co/storage/v1/render/image/public/block.images/blocks/avatars/circle/avatar-f-1.png"
+                    v-if="user.profile_picture_url"
+                    :image="user.profile_picture_url"
                     size="xlarge"
                     shape="circle"
                 />
