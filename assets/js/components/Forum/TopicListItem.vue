@@ -12,7 +12,12 @@
         {{ topic.title }}
       </router-link>
       <div class="text-sm text-surface-500 dark:text-surface-400 mt-1">
-        Par <strong>{{ topic.author.username }}</strong> le {{ formatDate(topic.creation_datetime) }}
+        Par
+        <router-link
+          :to="{ name: 'app_user_public_profile', params: { username: topic.author.username } }"
+          class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+        >{{ topic.author.username }}</router-link>
+        le {{ formatDate(topic.creation_datetime) }}
       </div>
     </div>
 
@@ -21,16 +26,22 @@
       <span>{{ topic.post_number }}</span>
     </div>
 
-    <router-link
+    <div
       v-if="topic.last_post"
-      :to="lastPostRoute"
-      class="text-sm text-surface-500 dark:text-surface-400 md:w-48 shrink-0 hover:text-primary transition-colors"
+      class="text-sm text-surface-500 dark:text-surface-400 md:w-48 shrink-0"
     >
       <div>
-        Dernier message par <strong>{{ topic.last_post.creator.username }}</strong>
+        Dernier message par
+        <router-link
+          :to="{ name: 'app_user_public_profile', params: { username: topic.last_post.creator.username } }"
+          class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+          @click.stop
+        >{{ topic.last_post.creator.username }}</router-link>
       </div>
-      <div>le {{ formatDate(topic.last_post.creation_datetime) }}</div>
-    </router-link>
+      <router-link :to="lastPostRoute" class="hover:text-primary transition-colors">
+        le {{ formatDate(topic.last_post.creation_datetime) }}
+      </router-link>
+    </div>
     <div v-else class="text-sm text-surface-400 dark:text-surface-500 md:w-48 shrink-0">
       Aucune réponse
     </div>

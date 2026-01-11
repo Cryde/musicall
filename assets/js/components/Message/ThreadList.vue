@@ -30,8 +30,14 @@
 
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
-                <span class="font-semibold text-surface-900 dark:text-surface-0 truncate">
-                  {{ getParticipant(threadMeta)?.username || 'Utilisateur inconnu' }}
+                <router-link
+                  v-if="getParticipant(threadMeta)?.username"
+                  :to="{ name: 'app_user_public_profile', params: { username: getParticipant(threadMeta).username } }"
+                  class="font-semibold text-surface-900 dark:text-surface-0 truncate hover:text-primary transition-colors"
+                  @click.stop
+                >{{ getParticipant(threadMeta).username }}</router-link>
+                <span v-else class="font-semibold text-surface-900 dark:text-surface-0 truncate">
+                  Utilisateur inconnu
                 </span>
                 <Tag v-if="!threadMeta.is_read" severity="info" value="new" class="text-xs" />
               </div>
