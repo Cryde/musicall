@@ -33,6 +33,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class UserProfileEdit
 {
+    #[Assert\Length(max: 100, maxMessage: 'Le nom d\'affichage ne doit pas dépasser {{ limit }} caractères')]
+    public ?string $displayName = null;
+
     #[Assert\Length(max: 2000, maxMessage: 'La bio ne doit pas dépasser {{ limit }} caractères')]
     public ?string $bio = null;
 

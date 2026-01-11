@@ -17,6 +17,7 @@ final class UserProfileFactory extends PersistentProxyObjectFactory
     protected function defaults(): array
     {
         return [
+            'displayName' => self::faker()->optional(0.4)->name(),
             'bio' => self::faker()->optional(0.7)->paragraph(),
             'location' => self::faker()->optional(0.6)->city(),
             'isPublic' => true,

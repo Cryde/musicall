@@ -23,6 +23,8 @@ class PublicProfile
 
     public string $userId;
 
+    public ?string $displayName = null;
+
     public ?string $bio = null;
 
     public ?string $location = null;

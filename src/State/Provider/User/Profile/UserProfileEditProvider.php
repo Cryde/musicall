@@ -44,6 +44,7 @@ readonly class UserProfileEditProvider implements ProviderInterface
         $user = $profile->getUser();
         $dto = new UserProfileEdit();
 
+        $dto->displayName = $profile->getDisplayName();
         $dto->bio = $profile->getBio();
         $dto->location = $profile->getLocation();
         $dto->isPublic = $profile->isPublic();
