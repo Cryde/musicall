@@ -125,6 +125,16 @@ onMounted(async () => {
 const menuItems = computed(() => {
   const items = [
     {
+      label: 'Mon profil',
+      icon: 'pi pi-user',
+      command: () => {
+        router.push({ name: 'app_user_public_profile', params: { username: userSecurityStore.user.username } })
+      }
+    },
+    {
+      separator: true
+    },
+    {
       label: 'Mes annonces',
       icon: 'pi pi-megaphone',
       command: () => {
