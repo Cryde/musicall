@@ -20,12 +20,12 @@ use Ramsey\Uuid\UuidInterface;
 #[ORM\Entity(repositoryClass: MusicianAnnounceRepository::class)]
 class MusicianAnnounce
 {
-    final const LIMIT_LAST_ANNOUNCES = 6;
+    final const int LIMIT_LAST_ANNOUNCES = 6;
     final const TYPE_MUSICIAN = 1; // means announce search for a musician (so announce represent a band)
     final const string TYPE_MUSICIAN_STR = '1';
     final const TYPE_BAND = 2; // means announce search for a band (so announce represent a musician alone)
     final const string TYPE_BAND_STR = '2';
-    final const TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
+    final const array TYPES = [self::TYPE_MUSICIAN, self::TYPE_BAND];
 
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
