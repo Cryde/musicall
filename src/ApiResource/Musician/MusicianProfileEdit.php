@@ -6,11 +6,13 @@ namespace App\ApiResource\Musician;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\Musician\MusicianProfileCreateProcessor;
+use App\State\Processor\Musician\MusicianProfileDeleteProcessor;
 use App\State\Processor\Musician\MusicianProfileEditProcessor;
 use App\State\Provider\Musician\MusicianProfileEditProvider;
 
@@ -35,6 +37,14 @@ use App\State\Provider\Musician\MusicianProfileEditProvider;
     name: 'api_musician_profile_edit',
     provider: MusicianProfileEditProvider::class,
     processor: MusicianProfileEditProcessor::class,
+)]
+#[Delete(
+    uriTemplate: '/user/musician-profile',
+    openapi: new Operation(tags: ['Musician Profile']),
+    security: 'is_granted("ROLE_USER")',
+    name: 'api_musician_profile_delete',
+    provider: MusicianProfileEditProvider::class,
+    processor: MusicianProfileDeleteProcessor::class,
 )]
 class MusicianProfileEdit
 {

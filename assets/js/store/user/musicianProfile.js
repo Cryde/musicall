@@ -7,6 +7,7 @@ export const useMusicianProfileStore = defineStore('musicianProfile', () => {
   const isLoading = ref(false)
   const isCreating = ref(false)
   const isUpdating = ref(false)
+  const isDeleting = ref(false)
 
   async function loadPublicProfile(username) {
     isLoading.value = true
@@ -48,6 +49,16 @@ export const useMusicianProfileStore = defineStore('musicianProfile', () => {
     }
   }
 
+  async function deleteProfile() {
+    isDeleting.value = true
+    try {
+      await musicianProfileApi.deleteMusicianProfile()
+      profile.value = null
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
   function clear() {
     profile.value = null
   }
@@ -57,10 +68,12 @@ export const useMusicianProfileStore = defineStore('musicianProfile', () => {
     isLoading: readonly(isLoading),
     isCreating: readonly(isCreating),
     isUpdating: readonly(isUpdating),
+    isDeleting: readonly(isDeleting),
     loadPublicProfile,
     loadMyProfile,
     createProfile,
     updateProfile,
+    deleteProfile,
     clear
   }
 })
