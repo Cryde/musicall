@@ -46,7 +46,7 @@
           size="xlarge"
           shape="circle"
         />
-        <div>
+        <div class="flex-1">
           <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-0">
             Profil musicien
           </h1>
@@ -54,6 +54,13 @@
             @{{ profile.username }}
           </p>
         </div>
+        <Button
+          v-if="!isOwnProfile"
+          label="Contacter"
+          icon="pi pi-envelope"
+          rounded
+          @click="handleContact"
+        />
       </div>
 
       <!-- Availability status -->
@@ -136,6 +143,16 @@
       :musician-profile="profile"
       @saved="handleProfileSaved"
     />
+
+    <!-- Contact modals -->
+    <SendMessageModal
+      v-model:visible="showMessageModal"
+      :selected-recipient="contactRecipient"
+    />
+    <AuthRequiredModal
+      v-model:visible="showAuthModal"
+      message="Vous devez vous connecter pour envoyer un message à cet utilisateur."
+    />
   </div>
 </template>
 
@@ -147,6 +164,8 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
+import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
@@ -160,6 +179,9 @@ const userSecurityStore = useUserSecurityStore()
 const isLoading = ref(true)
 const notFound = ref(false)
 const showEditModal = ref(false)
+const showMessageModal = ref(false)
+const showAuthModal = ref(false)
+const contactRecipient = ref(null)
 
 const profile = computed(() => musicianProfileStore.profile)
 
@@ -226,6 +248,18 @@ async function loadProfile() {
 
 function handleProfileSaved() {
   loadProfile()
+}
+
+function handleContact() {
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  contactRecipient.value = {
+    id: profile.value.user_id,
+    username: profile.value.username
+  }
+  showMessageModal.value = true
 }
 
 watch(() => route.params.username, (newUsername) => {
