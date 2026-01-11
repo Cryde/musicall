@@ -257,8 +257,8 @@
       }"
     >
       <img
-        v-if="profile?.profile_picture_url"
-        :src="profile.profile_picture_url"
+        v-if="profile?.profile_picture_large_url"
+        :src="profile.profile_picture_large_url"
         :alt="profile.username"
         class="w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full object-cover"
       />

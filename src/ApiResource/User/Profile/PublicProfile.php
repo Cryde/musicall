@@ -29,6 +29,8 @@ class PublicProfile
 
     public ?string $profilePictureUrl = null;
 
+    public ?string $profilePictureLargeUrl = null;
+
     public ?string $coverPictureUrl = null;
 
     public \DateTimeInterface $memberSince;
