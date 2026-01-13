@@ -7,6 +7,7 @@ namespace App\Tests\Api\Musician\Profile;
 use App\Entity\Musician\MusicianProfile;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Enum\Musician\SkillLevel;
+use App\Repository\Musician\MusicianProfileMediaRepository;
 use App\Repository\Musician\MusicianProfileRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -14,6 +15,7 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
+use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -91,5 +93,52 @@ class MusicianProfileDeleteTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/musician-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function test_delete_musician_profile_cascade_deletes_media(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'cascadedeleteuser',
+            'email' => 'cascadedeleteuser@test.com',
+        ]);
+
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+        ]);
+
+        $media1 = MusicianProfileMediaFactory::new()->asYouTube()->create([
+            'musicianProfile' => $musicianProfile->_real(),
+            'position' => 0,
+        ]);
+
+        $media2 = MusicianProfileMediaFactory::new()->asSpotify()->create([
+            'musicianProfile' => $musicianProfile->_real(),
+            'position' => 1,
+        ]);
+
+        $user->setMusicianProfile($musicianProfile->_real());
+        $user->_save();
+
+        $profileId = $musicianProfile->_real()->getId();
+        $media1Id = $media1->_real()->getId();
+        $media2Id = $media2->_real()->getId();
+
+        /** @var MusicianProfileMediaRepository $mediaRepository */
+        $mediaRepository = static::getContainer()->get(MusicianProfileMediaRepository::class);
+        $this->assertCount(2, $mediaRepository->findBy(['musicianProfile' => $profileId]));
+
+        $this->client->loginUser($user->_real());
+        $this->client->request('DELETE', '/api/user/musician-profile');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        // Verify profile is deleted
+        /** @var MusicianProfileRepository $profileRepository */
+        $profileRepository = static::getContainer()->get(MusicianProfileRepository::class);
+        $this->assertNull($profileRepository->find($profileId));
+
+        // Verify media are cascade deleted
+        $this->assertNull($mediaRepository->find($media1Id));
+        $this->assertNull($mediaRepository->find($media2Id));
     }
 }
