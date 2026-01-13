@@ -103,3 +103,12 @@ liip_imagine:
             post_processors:
                 jpegoptim: { strip_all: true, max: 85, progressive: true }
                 optipng: { strip_all: true, level: 5 }
+
+        musician_media_thumbnail:
+            data_loader: flysystem_loader
+            filters:
+                downscale:
+                    max: [ 600, 460 ]
+            post_processors:
+                jpegoptim: { strip_all: true, max: 85, progressive: true }
+                optipng: { strip_all: true, level: 5 }

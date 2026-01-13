@@ -45,6 +45,13 @@ class MusicianProfile
     #[ORM\JoinTable(name: 'user_musician_profile_style')]
     private Collection $styles;
 
+    /**
+     * @var Collection<int, MusicianProfileMedia>
+     */
+    #[ORM\OneToMany(mappedBy: 'musicianProfile', targetEntity: MusicianProfileMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $media;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $creationDatetime;
 
@@ -55,6 +62,7 @@ class MusicianProfile
     {
         $this->instruments = new ArrayCollection();
         $this->styles = new ArrayCollection();
+        $this->media = new ArrayCollection();
         $this->creationDatetime = new DateTimeImmutable();
     }
 
@@ -156,6 +164,31 @@ class MusicianProfile
     public function setUpdateDatetime(?DateTimeImmutable $updateDatetime): self
     {
         $this->updateDatetime = $updateDatetime;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MusicianProfileMedia>
+     */
+    public function getMedia(): Collection
+    {
+        return $this->media;
+    }
+
+    public function addMedia(MusicianProfileMedia $media): self
+    {
+        if (!$this->media->contains($media)) {
+            $this->media->add($media);
+            $media->setMusicianProfile($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMedia(MusicianProfileMedia $media): self
+    {
+        $this->media->removeElement($media);
 
         return $this;
     }

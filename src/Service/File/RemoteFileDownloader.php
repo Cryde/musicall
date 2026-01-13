@@ -23,7 +23,7 @@ class RemoteFileDownloader
      * @throws CorruptedFileException
      * @throws FilesystemException
      */
-    public function download(string $path, string $destinationDir): array
+    public function download(string $path, string $destinationDir, bool $validateChecksum = true): array
     {
         $tmpFilePath = tempnam('/tmp', 'remote_file_downloader');
         if ($tmpFilePath === false) {
@@ -52,16 +52,18 @@ class RemoteFileDownloader
             'copy' => $tmpFilePath,
         ]);
 
-        $tmpFileCheckSum = $this->musicallFilesystem->checksum($tmpFilePath);
-        if (md5_file($path) !== $tmpFileCheckSum) {
-            $this->logger->warning('file corrupted after download', [
-                'origin' => $path,
-                'copy' => $tmpFilePath,
-                'md5_path' => md5_file($path),
-                'md5_path_tmp' => $tmpFileCheckSum,
-            ]);
-            $this->musicallFilesystem->delete($tmpFilePath);
-            throw new CorruptedFileException(sprintf('file corrupted after download: %s', $tmpFilePath));
+        if ($validateChecksum) {
+            $tmpFileCheckSum = $this->musicallFilesystem->checksum($tmpFilePath);
+            if (md5_file($path) !== $tmpFileCheckSum) {
+                $this->logger->warning('file corrupted after download', [
+                    'origin' => $path,
+                    'copy' => $tmpFilePath,
+                    'md5_path' => md5_file($path),
+                    'md5_path_tmp' => $tmpFileCheckSum,
+                ]);
+                $this->musicallFilesystem->delete($tmpFilePath);
+                throw new CorruptedFileException(sprintf('file corrupted after download: %s', $tmpFilePath));
+            }
         }
 
         return [$filename, $this->musicallFilesystem->fileSize($tmpFilePath)];
