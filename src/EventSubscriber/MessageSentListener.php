@@ -1,24 +1,38 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
 use App\Event\MessageSentEvent;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 #[AsEventListener]
 readonly class MessageSentListener
 {
-    public function __construct(private MessageReceivedEmail $messageReceivedEmail)
-    {
+    public function __construct(
+        private MessageReceivedEmail $messageReceivedEmail,
+        private RouterInterface      $router,
+    ) {
     }
 
     public function __invoke(MessageSentEvent $event): void
     {
         $recipient = $event->recipient;
-        // @todo : for now we will only send directly the mail
-        // later we will have to check last notifications
+        $sender = $event->sender;
+        $thread = $event->thread;
 
-        $this->messageReceivedEmail->send($recipient->getEmail(), $recipient->getUsername());
+        $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $messageUrl = $baseUrl . 'messages/' . $thread->getId();
+
+        $this->messageReceivedEmail->send(
+            $recipient->getEmail(),
+            $recipient->getUsername(),
+            $sender->getUsername(),
+            $messageUrl
+        );
     }
 }

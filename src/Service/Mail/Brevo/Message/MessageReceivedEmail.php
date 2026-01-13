@@ -14,7 +14,7 @@ class MessageReceivedEmail
     {
     }
 
-    public function send(string $recipientEmail, string $username): void
+    public function send(string $recipientEmail, string $username, string $senderUsername, string $messageUrl): void
     {
         $email = (new Email())
             ->from(new Address('no-reply@musicall.com', 'MusicAll'))
@@ -23,7 +23,9 @@ class MessageReceivedEmail
         $email->getHeaders()
             ->addTextHeader('templateId', self::TEMPLATE_ID)
             ->addParameterizedHeader('params', 'params', [
-                'username' => $username,
+                'username'        => $username,
+                'sender_username' => $senderUsername,
+                'message_url'     => $messageUrl,
             ]);
         $this->mailer->send($email);
     }
