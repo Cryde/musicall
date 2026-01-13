@@ -7,19 +7,22 @@ namespace App\Service\OAuth;
 use App\Entity\SocialAccount;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
+use App\Event\UserConfirmedEvent;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function Symfony\Component\String\u;
 
 readonly class OAuthUserService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private UserRepository $userRepository,
-        private SocialAccountRepository $socialAccountRepository,
-        private ProfilePictureImporter $profilePictureImporter,
+        private EntityManagerInterface   $entityManager,
+        private UserRepository           $userRepository,
+        private SocialAccountRepository  $socialAccountRepository,
+        private ProfilePictureImporter   $profilePictureImporter,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -60,6 +63,8 @@ readonly class OAuthUserService
             $this->profilePictureImporter->importFromUrl($user, $userData->pictureUrl);
             $this->entityManager->flush();
         }
+
+        $this->eventDispatcher->dispatch(new UserConfirmedEvent($user));
 
         return new OAuthResult($user, true);
     }
