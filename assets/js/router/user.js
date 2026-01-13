@@ -45,6 +45,12 @@ export default [
     meta: { isGuestOnly: true }
   },
   {
+    name: 'app_registration_success',
+    path: '/registration/success',
+    component: () => import('../views/User/RegistrationSuccess.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_forgot_password',
     path: '/forgot-password',
     component: () => import('../views/User/ForgotPassword.vue'),
