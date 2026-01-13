@@ -113,6 +113,11 @@
           @click="showEditModal = true"
         />
       </div>
+
+      <!-- Media showcase section -->
+      <div class="mt-8 pt-6 border-t border-surface-200 dark:border-surface-700">
+        <MediaShowcase :is-own-profile="true" />
+      </div>
     </template>
 
     <!-- Delete confirmation dialog -->
@@ -122,12 +127,19 @@
       header="Supprimer le profil musicien"
       :style="{ width: '450px' }"
     >
-      <div class="flex items-center gap-4">
-        <i class="pi pi-exclamation-triangle text-4xl text-red-500" />
-        <span>
-          Êtes-vous sûr de vouloir supprimer votre profil musicien ?
-          Cette action est irréversible.
-        </span>
+      <div class="flex items-start gap-4">
+        <i class="pi pi-exclamation-triangle text-4xl text-red-500 shrink-0" />
+        <div class="flex flex-col gap-2">
+          <span>
+            Êtes-vous sûr de vouloir supprimer votre profil musicien ?
+          </span>
+          <span class="text-surface-500 dark:text-surface-400 text-sm">
+            Vos créations seront également supprimées de MusicAll.
+          </span>
+          <span class="text-red-500 text-sm font-medium">
+            Cette action est irréversible.
+          </span>
+        </div>
       </div>
       <template #footer>
         <Button
@@ -160,10 +172,13 @@ import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
+import MediaShowcase from '../../../components/User/Profile/MediaShowcase.vue'
 import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
+import { useMusicianProfileMediaStore } from '../../../store/user/musicianProfileMedia.js'
 
 const musicianProfileStore = useMusicianProfileStore()
+const musicianProfileMediaStore = useMusicianProfileMediaStore()
 const toast = useToast()
 
 const isLoading = ref(true)
@@ -260,5 +275,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   musicianProfileStore.clear()
+  musicianProfileMediaStore.clear()
 })
 </script>
