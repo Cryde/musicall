@@ -42,6 +42,10 @@ class PublicMusicianProfile
     #[ApiProperty(genId: false)]
     public array $musicianAnnounces = [];
 
+    /** @var MusicianProfileMedia[] */
+    #[ApiProperty(genId: false)]
+    public array $media = [];
+
     public \DateTimeImmutable $creationDatetime;
 
     public ?\DateTimeImmutable $updateDatetime = null;

@@ -22,6 +22,7 @@ readonly class MusicianProfileBuilder
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
+        private MusicianProfileMediaResourceBuilder $musicianProfileMediaResourceBuilder,
     ) {
     }
 
@@ -48,6 +49,7 @@ readonly class MusicianProfileBuilder
 
         $dto->instruments = $this->buildInstruments($profile->getInstruments()->toArray());
         $dto->styles = $this->buildStyles($profile->getStyles()->toArray());
+        $dto->media = $this->musicianProfileMediaResourceBuilder->buildList($profile->getMedia()->toArray());
 
         // Musician announces
         $announces = $this->musicianAnnounceRepository->findBy(['author' => $user], ['creationDatetime' => 'DESC']);

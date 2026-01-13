@@ -12,6 +12,7 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
+use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -59,6 +60,22 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'styles' => [$rock->_real(), $jazz->_real()],
         ]);
 
+        $media1 = MusicianProfileMediaFactory::new()->asYouTube()->create([
+            'musicianProfile' => $musicianProfile->_real(),
+            'title' => 'My YouTube Video',
+            'url' => 'https://www.youtube.com/watch?v=abc123',
+            'embedId' => 'abc123',
+            'position' => 0,
+        ]);
+
+        $media2 = MusicianProfileMediaFactory::new()->asSpotify()->create([
+            'musicianProfile' => $musicianProfile->_real(),
+            'title' => 'My Spotify Track',
+            'url' => 'https://open.spotify.com/track/xyz789',
+            'embedId' => 'track/xyz789',
+            'position' => 1,
+        ]);
+
         $this->client->request('GET', '/api/user/profile/publicmusicianuser/musician');
 
         $this->assertResponseIsSuccessful();
@@ -97,6 +114,28 @@ class PublicMusicianProfileGetTest extends ApiTestCase
                     'styles' => ['Rock', 'Jazz'],
                 ],
             ],
+            'media' => [
+                [
+                    '@type' => 'MusicianProfileMedia',
+                    'id' => $media1->getId(),
+                    'platform' => 'youtube',
+                    'platform_label' => 'YouTube',
+                    'url' => 'https://www.youtube.com/watch?v=abc123',
+                    'embed_id' => 'abc123',
+                    'title' => 'My YouTube Video',
+                    'position' => 0,
+                ],
+                [
+                    '@type' => 'MusicianProfileMedia',
+                    'id' => $media2->getId(),
+                    'platform' => 'spotify',
+                    'platform_label' => 'Spotify',
+                    'url' => 'https://open.spotify.com/track/xyz789',
+                    'embed_id' => 'track/xyz789',
+                    'title' => 'My Spotify Track',
+                    'position' => 1,
+                ],
+            ],
             'creation_datetime' => '2024-01-15T10:00:00+00:00',
         ]);
     }
@@ -130,6 +169,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'instruments' => [],
             'styles' => [],
             'musician_announces' => [],
+            'media' => [],
             'creation_datetime' => '2024-02-20T14:30:00+00:00',
         ]);
     }
@@ -205,6 +245,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'instruments' => [],
             'styles' => [],
             'musician_announces' => [],
+            'media' => [],
             'creation_datetime' => '2024-03-10T08:00:00+00:00',
         ]);
     }
