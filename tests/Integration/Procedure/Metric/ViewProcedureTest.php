@@ -55,7 +55,7 @@ class ViewProcedureTest extends KernelTestCase
         $this->assertCount(1, $views);
 
         $view = $views[0];
-        $this->assertSame('publication', $view->getEntityType());
+        $this->assertSame('app_publication', $view->getEntityType());
         $this->assertSame((string) $publication->getId(), $view->getEntityId());
     }
 
