@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { createApp } from 'vue'
 import '../style/style.css'
-import Aura from '@primeuix/themes/aura'
+import MusicAllPreset from './theme/musicAllPreset.js'
 import { createHead } from '@unhead/vue/client'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -73,7 +73,7 @@ app.use(head)
 app.use(PrimeVue, {
   ripple: true,
   theme: {
-    preset: Aura,
+    preset: MusicAllPreset,
     options: {
       darkModeSelector: '.dark-mode'
     }
