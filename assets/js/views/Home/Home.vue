@@ -168,13 +168,18 @@
                 <Avatar
                   v-if="announce.author.profile_picture_url"
                   :image="announce.author.profile_picture_url"
+                  :pt="{ image: { alt: `Photo de ${announce.author.username}` } }"
                   shape="circle"
+                  role="img"
+                  :aria-label="`Photo de ${announce.author.username}`"
                 />
                 <Avatar
                   v-else
                   :label="announce.author.username.charAt(0).toUpperCase()"
                   :style="getAvatarStyle(announce.author.username)"
                   shape="circle"
+                  role="img"
+                  :aria-label="`Avatar de ${announce.author.username}`"
                 />
               </router-link>
               <div class="flex-1">

@@ -103,12 +103,13 @@
 
         <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <div
-            v-for="image in userGalleryStore.images"
+            v-for="(image, index) in userGalleryStore.images"
             :key="image.id"
             class="relative group aspect-square"
           >
             <img
               :src="image.sizes.medium"
+              :alt="`${userGalleryStore.gallery.title} - Photo ${index + 1}`"
               class="w-full h-full object-cover rounded-lg"
               loading="lazy"
             />

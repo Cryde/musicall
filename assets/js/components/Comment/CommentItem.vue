@@ -4,8 +4,11 @@
       <Avatar
         v-if="comment.author.profile_picture?.small"
         :image="comment.author.profile_picture.small"
+        :pt="{ image: { alt: `Photo de ${comment.author.username}` } }"
         shape="circle"
         size="large"
+        role="img"
+        :aria-label="`Photo de ${comment.author.username}`"
       />
       <Avatar
         v-else
@@ -13,6 +16,8 @@
         :style="getAvatarStyle(comment.author.username)"
         shape="circle"
         size="large"
+        role="img"
+        :aria-label="`Avatar de ${comment.author.username}`"
       />
     </div>
     <div class="flex-1">
