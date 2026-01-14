@@ -3,7 +3,7 @@
       <div class="flex items-center gap-4">
         <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
           <img
-            src="../../../image/logo.png"
+            src="../../../image/logo-2.png"
             alt="Logo"
             class="h-4 w-auto"
           />
