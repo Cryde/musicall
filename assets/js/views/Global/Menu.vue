@@ -1,15 +1,15 @@
 <template>
     <nav class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
       <div class="flex items-center gap-4">
-        <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
+        <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" aria-label="Accueil MusicAll">
           <img
             src="../../../image/logo-2.png"
-            alt="Logo"
+            alt="Logo MusicAll"
             class="h-4 w-auto"
           />
         </RouterLink>
       </div>
-      <span
+      <button
         v-styleclass="{
             selector: '@next',
             enterFromClass: 'hidden',
@@ -18,10 +18,13 @@
             leaveActiveClass: 'animate-fadeout',
             hideOnOutsideClick: true
           }"
-        class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100"
+        class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100 bg-transparent border-0 p-0"
+        aria-label="Ouvrir le menu de navigation"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
       >
-        <i class="pi pi-bars text-xl! leading-normal!"/>
-      </span>
+        <i class="pi pi-bars text-xl! leading-normal!" aria-hidden="true" />
+      </button>
 
       <div
           ref="mobileMenu"
@@ -53,18 +56,27 @@
           <template v-if="!userSecurityStore.isAuthenticatedLoading">
           <div class="flex items-center border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2 px-6 lg:px-0">
               <template v-if="userSecurityStore.isAuthenticated">
-                  <RouterLink :to="{ name: 'app_messages' }" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors" @click="closeMobileMenu">
+                  <RouterLink
+                    :to="{ name: 'app_messages' }"
+                    class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                    :aria-label="notificationStore.unreadMessages > 0 ? `Messages (${notificationStore.unreadMessages} non lus)` : 'Messages'"
+                    @click="closeMobileMenu"
+                  >
                       <OverlayBadge v-if="notificationStore.unreadMessages > 0"
                                     :value="notificationStore.unreadMessages" severity="danger" size="small">
-                          <i class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" />
+                          <i class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
                       </OverlayBadge>
-                      <i v-else class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" />
+                      <i v-else class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
                   </RouterLink>
                   <Avatar
                     v-if="userSecurityStore.profilePictureUrl"
                     :image="userSecurityStore.profilePictureUrl"
+                    :pt="{ image: { alt: `Photo de ${userSecurityStore.user.username}` } }"
                     class="cursor-pointer"
                     shape="circle"
+                    role="button"
+                    :aria-label="`Menu utilisateur de ${userSecurityStore.user.username}`"
+                    aria-haspopup="menu"
                     @click="$refs.userMenu.toggle($event)"
                   />
                   <Avatar
@@ -73,6 +85,9 @@
                     :style="getAvatarStyle(userSecurityStore.user.username)"
                     class="cursor-pointer"
                     shape="circle"
+                    role="button"
+                    :aria-label="`Menu utilisateur de ${userSecurityStore.user.username}`"
+                    aria-haspopup="menu"
                     @click="$refs.userMenu.toggle($event)"
                   />
                   <Menu ref="userMenu" :popup="true" :model="menuItems" />

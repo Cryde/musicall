@@ -162,14 +162,30 @@
         </RouterLink>
       </div>
       <div class="flex items-center gap-8">
-        <a class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75" href="https://www.instagram.com/music.all.official">
-          <i class="pi pi-instagram text-base! leading-normal!" />
+        <a
+          class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75"
+          href="https://www.instagram.com/music.all.official"
+          aria-label="Suivre MusicAll sur Instagram"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="pi pi-instagram text-base! leading-normal!" aria-hidden="true" />
         </a>
-        <a class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75" href="https://www.facebook.com/MusicAll/  ">
-          <i class="pi pi-facebook text-base! leading-normal!" />
+        <a
+          class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75"
+          href="https://www.facebook.com/MusicAll/"
+          aria-label="Suivre MusicAll sur Facebook"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="pi pi-facebook text-base! leading-normal!" aria-hidden="true" />
         </a>
-        <RouterLink :to="{ name: 'app_contact' }" class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75">
-          <i class="pi pi-envelope text-base! leading-normal!" />
+        <RouterLink
+          :to="{ name: 'app_contact' }"
+          class="cursor-pointer text-surface-900 dark:text-surface-0 hover:opacity-75"
+          aria-label="Accéder au formulaire de contact"
+        >
+          <i class="pi pi-envelope text-base! leading-normal!" aria-hidden="true" />
         </RouterLink>
       </div>
     </div>

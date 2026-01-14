@@ -142,23 +142,26 @@
 
         <button
           class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors cursor-pointer"
+          aria-label="Fermer la galerie"
           @click="closeLightbox"
         >
-          <i class="pi pi-times" />
+          <i class="pi pi-times" aria-hidden="true" />
         </button>
 
         <button
           class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 transition-colors cursor-pointer"
+          aria-label="Image précédente"
           @click="prevImage"
         >
-          <i class="pi pi-chevron-left" />
+          <i class="pi pi-chevron-left" aria-hidden="true" />
         </button>
 
         <button
           class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 transition-colors cursor-pointer"
+          aria-label="Image suivante"
           @click="nextImage"
         >
-          <i class="pi pi-chevron-right" />
+          <i class="pi pi-chevron-right" aria-hidden="true" />
         </button>
 
         <div class="absolute bottom-4 text-white text-sm">

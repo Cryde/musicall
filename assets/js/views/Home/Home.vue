@@ -112,7 +112,7 @@
             class="hidden md:inline-flex"
             @click="handleOpenDiscoverModal"
           />
-          <router-link :to="{ name: 'app_publications' }">
+          <router-link :to="{ name: 'app_publications' }" aria-label="Voir toutes les publications">
             <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
           </router-link>
         </div>
@@ -151,7 +151,7 @@
             class="hidden md:inline-flex"
             @click="handleOpenAnnounceModal"
           />
-          <router-link :to="{ name: 'app_search_musician' }">
+          <router-link :to="{ name: 'app_search_musician' }" aria-label="Voir toutes les annonces">
             <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
           </router-link>
         </div>
@@ -164,7 +164,7 @@
         <Card v-for="announce in musicianAnnounceStore.lastAnnounces" :key="announce.id">
           <template #content>
             <div class="flex gap-3">
-              <router-link :to="getProfileRoute(announce)" class="shrink-0 hover:opacity-80 transition-opacity">
+              <router-link :to="getProfileRoute(announce)" class="shrink-0 hover:opacity-80 transition-opacity" :aria-label="`Voir le profil de ${announce.author.username}`">
                 <Avatar
                   v-if="announce.author.profile_picture_url"
                   :image="announce.author.profile_picture_url"

@@ -24,6 +24,7 @@
           <router-link
             :to="{ name: 'app_user_public_profile', params: { username: post.creator.username } }"
             class="font-medium text-sm hover:text-primary transition-colors"
+            :aria-label="`Voir le profil de ${post.creator.username}`"
           >{{ post.creator.username }}</router-link>
           <Button
             v-if="canContact"
@@ -33,6 +34,7 @@
             text
             rounded
             v-tooltip.bottom="'Contacter'"
+            :aria-label="`Contacter ${post.creator.username}`"
             @click="handleContact"
           />
         </div>
