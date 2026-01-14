@@ -7,8 +7,13 @@ namespace App\State\Provider\Musician;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Musician\PublicMusicianProfile;
+use App\Entity\Musician\MusicianProfile;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Builder\Musician\MusicianProfileBuilder;
+use App\Service\Procedure\Metric\ViewProcedure;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -19,6 +24,9 @@ readonly class MusicianProfileProvider implements ProviderInterface
     public function __construct(
         private UserRepository $userRepository,
         private MusicianProfileBuilder $musicianProfileBuilder,
+        private ViewProcedure $viewProcedure,
+        private RequestStack $requestStack,
+        private Security $security,
     ) {
     }
 
@@ -32,6 +40,26 @@ readonly class MusicianProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
 
+        $this->trackView($musicianProfile, $user);
+
         return $this->musicianProfileBuilder->build($musicianProfile);
+    }
+
+    private function trackView(MusicianProfile $profile, User $profileOwner): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!$request) {
+            return;
+        }
+
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+
+        // Don't count own views
+        if ($currentUser && $currentUser->getId() === $profileOwner->getId()) {
+            return;
+        }
+
+        $this->viewProcedure->process($profile, $request, $currentUser);
     }
 }
