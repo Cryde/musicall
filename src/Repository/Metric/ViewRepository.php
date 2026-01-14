@@ -18,13 +18,15 @@ class ViewRepository extends ServiceEntityRepository
         parent::__construct($registry, View::class);
     }
 
-    public function findOneByUser(ViewCache $viewCache, User $user): ?View
+    public function findOneByUserAndPeriod(ViewCache $viewCache, User $user, \DateTime $dateTime): ?View
     {
         return $this->createQueryBuilder('view')
             ->where('view.viewCache = :view_cache')
             ->andWhere('view.user = :user')
+            ->andWhere('view.creationDatetime > :datetime')
             ->setParameter('view_cache', $viewCache)
             ->setParameter('user', $user)
+            ->setParameter('datetime', $dateTime)
             ->getQuery()
             ->setMaxResults(1)
             ->getResult()[0] ?? null;
