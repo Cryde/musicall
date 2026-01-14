@@ -78,10 +78,10 @@
                   <Menu ref="userMenu" :popup="true" :model="menuItems" />
               </template>
               <template v-else>
-                  <Button asChild v-slot="slotProps" severity="info" text>
+                  <Button asChild v-slot="slotProps" severity="info" outlined>
                       <RouterLink :to="{name: 'app_login'}" :class="slotProps.class" @click="closeMobileMenu">Se connecter</RouterLink>
                   </Button>
-                  <Button asChild v-slot="slotProps" severity="info">
+                  <Button asChild v-slot="slotProps" severity="primary">
                       <RouterLink :to="{name: 'app_register'}" :class="slotProps.class" @click="closeMobileMenu">S'inscrire</RouterLink>
                   </Button>
               </template>
