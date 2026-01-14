@@ -54,6 +54,7 @@
           <img
             :src="discoverPublicationImage"
             alt="Publications MusicAll"
+            loading="lazy"
             class="w-full max-h-96 object-contain rounded-2xl"
           />
         </div>
@@ -90,6 +91,7 @@
           <img
             :src="discoverAnnouncesImage"
             alt="Annonces musiciens MusicAll"
+            loading="lazy"
             class="w-full max-h-96 object-contain rounded-2xl"
           />
         </div>
@@ -126,6 +128,7 @@
           <img
             :src="discoverForumImage"
             alt="Forum MusicAll"
+            loading="lazy"
             class="w-full max-h-96 object-contain rounded-2xl"
           />
         </div>
@@ -162,6 +165,7 @@
           <img
             :src="discoverPhotoImage"
             alt="Galeries photos MusicAll"
+            loading="lazy"
             class="w-full max-h-96 object-contain rounded-2xl"
           />
         </div>

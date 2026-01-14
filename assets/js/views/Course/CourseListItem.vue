@@ -12,6 +12,7 @@
             <img
                 :src="cover"
                 :alt="title"
+                loading="lazy"
                 class="h-[130px] md:h-auto md:w-3/12 rounded-lg object-cover"
             />
             <div class="p-2 md:p-4 flex flex-col gap-4 w-full md:w-9/12">

@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name='keywords'
           content='musicien cherche musicien, chercher musicien, chercher chanteuse, chercher guitariste, chercher batteur, chercher groupe, groupe cherche musicien, musicien cherche groupe, groupe cherche musicien, chercher chanteur, chercher bassiste, groups de rock, cherche pianiste, tutoriel de batterie, tutoriel de guitare, tutoriel de basse, forum, forum de musiciens'/>
     <meta name='robots' content='index, follow'/>
-
     <meta name="verify-v1" content="dKTCUOuzn9n0Y5rkFus+08eZunNMKBKj7sqURPF4KIs="/>
+
+    {# Preconnect to external origins for faster resource loading #}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://www.musicall.com">
+
+    {# DNS prefetch as fallback for older browsers #}
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+    {# Font loading with display=swap for better FCP #}
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"></noscript>
+
+    {# Critical CSS and app styles #}
     {{ vite_entry_link_tags('styles') }}
     {{ vite_entry_link_tags('app') }}
 
-    <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
-    <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+    {# Defer non-critical scripts to avoid render blocking #}
+    <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}" defer></script>
+    <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}" defer></script>
 
 </head>
 <body>
