@@ -34,10 +34,11 @@ class ViewProcedure
             $this->entityManager->flush();
         }
 
+        $datetime = new \DateTime(self::DATE_VALIDITY_PERIOD);
+
         if ($user) {
-            $view = $this->viewRepository->findOneByUser($viewCache, $user);
+            $view = $this->viewRepository->findOneByUserAndPeriod($viewCache, $user, $datetime);
         } else {
-            $datetime = new \DateTime(self::DATE_VALIDITY_PERIOD);
             $view = $this->viewRepository->findOneByIdentifierAndPeriod($viewCache, $this->requestIdentifier->fromRequest($request), $datetime);
         }
 
