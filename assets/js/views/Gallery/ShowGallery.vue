@@ -35,6 +35,7 @@
         <template #default="{ item, index }">
           <img
             :src="item.sizes.medium"
+            :alt="`${galleryStore.gallery.title} - Photo ${index + 1}`"
             :data-full-image="item.sizes.full"
             :data-index="index"
             class="w-full rounded-lg cursor-pointer transition-opacity duration-200 hover:opacity-80"
@@ -55,6 +56,7 @@
         <img
           v-show="!imageLoading"
           :src="currentImage"
+          :alt="`${galleryStore.gallery.title} - Photo ${currentIndex + 1}`"
           class="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
           @load="imageLoading = false"
         />

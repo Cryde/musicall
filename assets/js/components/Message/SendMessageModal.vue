@@ -42,8 +42,11 @@
               <Avatar
                 v-if="option.profile_picture?.small"
                 :image="option.profile_picture.small"
+                :pt="{ image: { alt: `Photo de ${option.username}` } }"
                 shape="circle"
                 size="normal"
+                role="img"
+                :aria-label="`Photo de ${option.username}`"
               />
               <Avatar
                 v-else
@@ -51,6 +54,8 @@
                 :style="getAvatarStyle(option.username)"
                 shape="circle"
                 size="normal"
+                role="img"
+                :aria-label="`Avatar de ${option.username}`"
               />
               <div class="font-medium">{{ option.username }}</div>
             </div>
@@ -63,8 +68,11 @@
         <Avatar
           v-if="selectedRecipient.profile_picture?.small"
           :image="selectedRecipient.profile_picture.small"
+          :pt="{ image: { alt: `Photo de ${selectedRecipient.username}` } }"
           shape="circle"
           size="large"
+          role="img"
+          :aria-label="`Photo de ${selectedRecipient.username}`"
         />
         <Avatar
           v-else
@@ -72,6 +80,8 @@
           :style="getAvatarStyle(selectedRecipient.username)"
           shape="circle"
           size="large"
+          role="img"
+          :aria-label="`Avatar de ${selectedRecipient.username}`"
         />
         <div class="flex-1">
           <div class="font-semibold text-surface-900 dark:text-surface-0">{{ selectedRecipient.username }}</div>

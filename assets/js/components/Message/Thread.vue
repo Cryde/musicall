@@ -13,13 +13,18 @@
       <Avatar
         v-if="otherParticipant?.profile_picture?.small"
         :image="otherParticipant.profile_picture.small"
+        :pt="{ image: { alt: `Photo de ${otherParticipant.username}` } }"
         shape="circle"
+        role="img"
+        :aria-label="`Photo de ${otherParticipant.username}`"
       />
       <Avatar
         v-else
         :label="otherParticipant?.username?.charAt(0).toUpperCase() || '?'"
         :style="getAvatarStyle(otherParticipant?.username)"
         shape="circle"
+        role="img"
+        :aria-label="`Avatar de ${otherParticipant?.username || 'utilisateur'}`"
       />
       <router-link
         v-if="otherParticipant?.username"

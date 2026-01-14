@@ -7,8 +7,8 @@
   >
     <img
       :src="imageSrc"
+      :alt="title"
       class="w-full h-20 object-cover rounded-lg"
-      alt="item-img"
     />
     <div class="pt-2 md:pt-4 pb-2 flex flex-col items-center gap-4">
       <div class="flex flex-col gap-2 w-full">

@@ -8,8 +8,11 @@
                 <Avatar
                     v-if="user.profile_picture_url"
                     :image="user.profile_picture_url"
+                    :pt="{ image: { alt: `Photo de ${user.username}` } }"
                     size="xlarge"
                     shape="circle"
+                    role="img"
+                    :aria-label="`Photo de ${user.username}`"
                 />
                 <Avatar
                     v-else
@@ -17,6 +20,8 @@
                     :style="getAvatarStyle(user.username)"
                     size="xlarge"
                     shape="circle"
+                    role="img"
+                    :aria-label="`Avatar de ${user.username}`"
                 />
             </router-link>
 

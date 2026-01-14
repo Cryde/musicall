@@ -37,8 +37,11 @@
           <Avatar
             v-if="profile.profile_picture_url"
             :image="profile.profile_picture_url"
+            :pt="{ image: { alt: `Photo de ${profile.username}` } }"
             size="xlarge"
             shape="circle"
+            role="img"
+            :aria-label="`Photo de ${profile.username}`"
           />
           <Avatar
             v-else
@@ -46,6 +49,8 @@
             :style="getAvatarStyle(profile.username)"
             size="xlarge"
             shape="circle"
+            role="img"
+            :aria-label="`Avatar de ${profile.username}`"
           />
           <div class="flex-1">
             <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-0">

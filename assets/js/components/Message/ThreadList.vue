@@ -17,8 +17,11 @@
             <Avatar
               v-if="getParticipant(threadMeta)?.profile_picture?.small"
               :image="getParticipant(threadMeta).profile_picture.small"
+              :pt="{ image: { alt: `Photo de ${getParticipant(threadMeta).username}` } }"
               shape="circle"
               size="large"
+              role="img"
+              :aria-label="`Photo de ${getParticipant(threadMeta).username}`"
             />
             <Avatar
               v-else
@@ -26,6 +29,8 @@
               :style="getAvatarStyle(getParticipant(threadMeta)?.username)"
               shape="circle"
               size="large"
+              role="img"
+              :aria-label="`Avatar de ${getParticipant(threadMeta)?.username || 'utilisateur'}`"
             />
 
             <div class="flex-1 min-w-0">

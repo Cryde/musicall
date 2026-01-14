@@ -6,8 +6,11 @@
           <Avatar
             v-if="post.creator.profile_picture?.small"
             :image="post.creator.profile_picture.small"
+            :pt="{ image: { alt: `Photo de ${post.creator.username}` } }"
             size="large"
             shape="circle"
+            role="img"
+            :aria-label="`Photo de ${post.creator.username}`"
           />
           <Avatar
             v-else
@@ -15,6 +18,8 @@
             :style="getAvatarStyle(post.creator.username)"
             size="large"
             shape="circle"
+            role="img"
+            :aria-label="`Avatar de ${post.creator.username}`"
           />
           <router-link
             :to="{ name: 'app_user_public_profile', params: { username: post.creator.username } }"
