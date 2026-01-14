@@ -209,4 +209,14 @@ class MusicianProfile implements ViewableInterface
 
         return $this;
     }
+
+    public function getViewableId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getViewableType(): string
+    {
+        return 'musician_profile';
+    }
 }
