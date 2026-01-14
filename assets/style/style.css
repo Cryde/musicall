@@ -11,3 +11,33 @@ html {
     font-family: "Open Sans", serif;
 }
 
+/* Cosmic hero particles */
+@keyframes particle-drift {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(30px, -20px); }
+    50% { transform: translate(-10px, -40px); }
+    75% { transform: translate(-30px, -10px); }
+}
+
+@keyframes particle-glow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.3); }
+}
+
+@keyframes particle-float {
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0.6; }
+    25% { transform: translateY(-15px) translateX(8px); opacity: 0.8; }
+    50% { transform: translateY(-8px) translateX(-4px); opacity: 0.5; }
+    75% { transform: translateY(-20px) translateX(4px); opacity: 0.7; }
+}
+
+@keyframes particle-slow {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+    50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+}
+
+.animate-drift { animation: particle-drift 15s ease-in-out infinite; }
+.animate-glow { animation: particle-glow 3s ease-in-out infinite; }
+.animate-particle { animation: particle-float 8s ease-in-out infinite; }
+.animate-particle-slow { animation: particle-slow 12s ease-in-out infinite; }
+
