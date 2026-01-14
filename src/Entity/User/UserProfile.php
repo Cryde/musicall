@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity\User;
 
+use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Image\UserProfileCoverPicture;
+use App\Entity\Metric\ViewCache;
 use App\Entity\User;
 use App\Repository\User\UserProfileRepository;
 use DateTimeImmutable;
@@ -15,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: UserProfileRepository::class)]
-class UserProfile
+class UserProfile implements ViewableInterface
 {
     final public const string ITEM = 'USER_PROFILE_ITEM';
 
@@ -55,6 +57,9 @@ class UserProfile
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $updateDatetime = null;
+
+    #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
+    private ?ViewCache $viewCache = null;
 
     public function __construct()
     {
@@ -184,6 +189,18 @@ class UserProfile
     public function setUpdateDatetime(?DateTimeImmutable $updateDatetime): self
     {
         $this->updateDatetime = $updateDatetime;
+
+        return $this;
+    }
+
+    public function getViewCache(): ?ViewCache
+    {
+        return $this->viewCache;
+    }
+
+    public function setViewCache(?ViewCache $viewCache): self
+    {
+        $this->viewCache = $viewCache;
 
         return $this;
     }

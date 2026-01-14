@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity\Musician;
 
+use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Attribute\Style;
+use App\Entity\Metric\ViewCache;
 use App\Entity\User;
 use App\Enum\Musician\AvailabilityStatus;
 use App\Repository\Musician\MusicianProfileRepository;
@@ -17,7 +19,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: MusicianProfileRepository::class)]
 #[ORM\Table(name: 'user_musician_profile')]
-class MusicianProfile
+class MusicianProfile implements ViewableInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
@@ -57,6 +59,9 @@ class MusicianProfile
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $updateDatetime = null;
+
+    #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
+    private ?ViewCache $viewCache = null;
 
     public function __construct()
     {
@@ -189,6 +194,18 @@ class MusicianProfile
     public function removeMedia(MusicianProfileMedia $media): self
     {
         $this->media->removeElement($media);
+
+        return $this;
+    }
+
+    public function getViewCache(): ?ViewCache
+    {
+        return $this->viewCache;
+    }
+
+    public function setViewCache(?ViewCache $viewCache): self
+    {
+        $this->viewCache = $viewCache;
 
         return $this;
     }
