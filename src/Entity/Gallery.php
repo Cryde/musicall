@@ -258,4 +258,14 @@ class Gallery implements ViewableInterface
     {
         return count($this->images);
     }
+
+    public function getViewableId(): ?string
+    {
+        return $this->id !== null ? (string) $this->id : null;
+    }
+
+    public function getViewableType(): string
+    {
+        return 'app_gallery';
+    }
 }

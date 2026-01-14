@@ -10,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ViewRepository::class)]
+#[ORM\Index(columns: ['entity_type', 'entity_id'], name: 'idx_view_entity')]
 class View
 {
     #[ORM\Id]
@@ -29,6 +30,12 @@ class View
     #[ORM\ManyToOne(targetEntity: ViewCache::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ViewCache $viewCache;
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    private ?string $entityType = null;
+
+    #[ORM\Column(type: Types::STRING, length: 36, nullable: true)]
+    private ?string $entityId = null;
 
     public function __construct()
     {
@@ -84,6 +91,30 @@ class View
     public function setViewCache(ViewCache $viewCache): self
     {
         $this->viewCache = $viewCache;
+
+        return $this;
+    }
+
+    public function getEntityType(): ?string
+    {
+        return $this->entityType;
+    }
+
+    public function setEntityType(?string $entityType): self
+    {
+        $this->entityType = $entityType;
+
+        return $this;
+    }
+
+    public function getEntityId(): ?string
+    {
+        return $this->entityId;
+    }
+
+    public function setEntityId(?string $entityId): self
+    {
+        $this->entityId = $entityId;
 
         return $this;
     }

@@ -44,6 +44,21 @@ class ViewProcedureTest extends KernelTestCase
         $this->assertSame(1, $publication->getViewCache()->getCount());
     }
 
+    public function test_view_stores_entity_type_and_entity_id(): void
+    {
+        $publication = PublicationFactory::new()->create()->_real();
+        $request = $this->createRequest('192.168.1.1');
+
+        $this->viewProcedure->process($publication, $request);
+
+        $views = $this->viewRepository->findBy(['viewCache' => $publication->getViewCache()]);
+        $this->assertCount(1, $views);
+
+        $view = $views[0];
+        $this->assertSame('publication', $view->getEntityType());
+        $this->assertSame((string) $publication->getId(), $view->getEntityId());
+    }
+
     public function test_anonymous_duplicate_view_within_24_hours_is_not_counted(): void
     {
         $publication = PublicationFactory::new()->create()->_real();

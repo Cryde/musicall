@@ -43,7 +43,13 @@ class ViewProcedure
         }
 
         if (!$view) {
-            $view = $this->viewDirector->build($viewCache, $this->requestIdentifier->fromRequest($request), $user);
+            $view = $this->viewDirector->build(
+                $viewCache,
+                $this->requestIdentifier->fromRequest($request),
+                $user,
+                $viewable->getViewableType(),
+                $viewable->getViewableId(),
+            );
             $this->entityManager->persist($view);
             $this->entityManager->refresh($viewCache);
             $viewCache->setCount($viewCache->getCount() + 1);

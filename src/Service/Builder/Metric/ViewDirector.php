@@ -8,11 +8,18 @@ use App\Entity\User;
 
 class ViewDirector
 {
-    public function build(ViewCache $viewCache, string $identifier, ?User $user): View
-    {
+    public function build(
+        ViewCache $viewCache,
+        string $identifier,
+        ?User $user,
+        ?string $entityType = null,
+        ?string $entityId = null,
+    ): View {
         return (new View())
             ->setUser($user)
             ->setIdentifier($identifier)
-            ->setViewCache($viewCache);
+            ->setViewCache($viewCache)
+            ->setEntityType($entityType)
+            ->setEntityId($entityId);
     }
 }

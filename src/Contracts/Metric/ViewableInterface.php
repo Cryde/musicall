@@ -9,4 +9,8 @@ interface ViewableInterface
     public function getViewCache(): ?ViewCache;
 
     public function setViewCache(?ViewCache $viewCache): self;
+
+    public function getViewableId(): ?string;
+
+    public function getViewableType(): string;
 }
