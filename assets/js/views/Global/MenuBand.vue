@@ -25,7 +25,7 @@
     </span>
 
     <div
-      class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-0 dark:bg-surface-900 left-0 top-full z-100 shadow lg:shadow-none border lg:border-0 border-surface-800"
+      class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow lg:shadow-none border lg:border-0 border-surface-800"
     >
       <div class="flex-1 flex items-start gap-4 px-6 lg:px-0 py-4 lg:py-0 flex-col lg:flex-row">
         <BandSpaceSelector class="mr-2" />
