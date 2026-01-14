@@ -56,9 +56,10 @@
               v-if="isOwnProfile"
               class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors"
               title="Modifier la photo de couverture"
+              aria-label="Modifier la photo de couverture"
               @click="coverPictureInputRef?.click()"
             >
-              <i class="pi pi-camera" />
+              <i class="pi pi-camera" aria-hidden="true" />
             </button>
           </div>
           <!-- Avatar centered at bottom -->
@@ -83,9 +84,10 @@
                 v-if="isOwnProfile"
                 class="absolute bottom-1 right-1 bg-primary-500 hover:bg-primary-600 text-white rounded-full p-2 transition-colors"
                 title="Modifier la photo de profil"
+                aria-label="Modifier la photo de profil"
                 @click="profilePictureInputRef?.click()"
               >
-                <i class="pi pi-camera text-sm" />
+                <i class="pi pi-camera text-sm" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -174,6 +176,7 @@
             icon="pi pi-pencil"
             text
             rounded
+            aria-label="Modifier les liens sociaux"
             @click="showEditSocialLinksModal = true"
           />
         </div>
@@ -185,8 +188,9 @@
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors text-surface-700 dark:text-surface-300"
+            :aria-label="`Visiter ${link.platform_label}`"
           >
-            <i :class="['pi', getPlatformIcon(link.platform)]" />
+            <i :class="['pi', getPlatformIcon(link.platform)]" aria-hidden="true" />
             <span>{{ link.platform_label }}</span>
           </a>
         </div>

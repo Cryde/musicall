@@ -32,6 +32,7 @@
             severity="secondary"
             text
             rounded
+            aria-label="Retour au profil"
             @click="$router.push({ name: 'app_user_public_profile', params: { username: profile.username } })"
           />
           <Avatar
@@ -67,6 +68,7 @@
               severity="secondary"
               rounded
               v-tooltip.bottom="'Modifier'"
+              aria-label="Modifier le profil musicien"
               @click="showEditModal = true"
             />
             <Button
