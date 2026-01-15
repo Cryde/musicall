@@ -21,6 +21,7 @@
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
+        <ShareButton :url="shareUrl" :title="shareTitle" />
       </div>
 
       <div
@@ -43,6 +44,7 @@
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
+        <ShareButton :url="shareUrl" :title="shareTitle" />
       </div>
 
       <figure class="mt-7 w-full">
@@ -88,6 +90,7 @@ import { storeToRefs } from 'pinia'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
+import ShareButton from '../../components/ShareButton.vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { usePublicationStore } from '../../store/publication/publication.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
@@ -127,5 +130,14 @@ const breadCrumbs = computed(() => {
     },
     { label: publication.value.title }
   ]
+})
+
+const shareUrl = computed(() => window.location.href)
+
+const shareTitle = computed(() => {
+  if (publication.value) {
+    return `${publication.value.title} - MusicAll`
+  }
+  return 'Publication - MusicAll'
 })
 </script>
