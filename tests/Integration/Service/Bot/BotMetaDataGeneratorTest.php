@@ -7,6 +7,8 @@ use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Service\Bot\BotMetaDataGenerator;
 use App\Tests\Factory\Attribute\InstrumentFactory;
+use App\Tests\Factory\Forum\ForumFactory;
+use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
@@ -281,6 +283,119 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Profil musicien de musicien_photo - MusicAll',
             'description' => 'Découvrez le profil musicien de musicien_photo sur MusicAll.',
             'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-musicien.jpg',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_forum_base(): void
+    {
+        $result = $this->botMetaDataGenerator->getMetaData('/forums');
+        $this->assertSame([
+            'title'       => 'Forum - MusicAll',
+            'description' => 'Rejoignez la communauté MusicAll et échangez avec des passionnés de musique sur notre forum.',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_forum(): void
+    {
+        ForumFactory::createOne([
+            'title'       => 'Guitare électrique',
+            'slug'        => 'guitare-electrique',
+            'description' => 'Discussions sur les guitares électriques et leur utilisation.',
+        ]);
+
+        $result = $this->botMetaDataGenerator->getMetaData('/forums/guitare-electrique');
+        $this->assertSame([
+            'title'       => 'Guitare électrique - Forum - MusicAll',
+            'description' => 'Discussions sur les guitares électriques et leur utilisation.',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_forum_not_found(): void
+    {
+        $result = $this->botMetaDataGenerator->getMetaData('/forums/forum-inexistant');
+        $this->assertSame([
+            'title'       => 'Forum - MusicAll',
+            'description' => 'Rejoignez la communauté MusicAll et échangez avec des passionnés de musique sur notre forum.',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_forum_topic(): void
+    {
+        $forum = ForumFactory::createOne([
+            'title' => 'Amplis',
+            'slug'  => 'amplis',
+        ]);
+
+        ForumTopicFactory::createOne([
+            'title' => 'Quel ampli pour débuter ?',
+            'slug'  => 'quel-ampli-pour-debuter',
+            'forum' => $forum,
+        ]);
+
+        $result = $this->botMetaDataGenerator->getMetaData('/forums/topic/quel-ampli-pour-debuter');
+        $this->assertSame([
+            'title'       => 'Quel ampli pour débuter ? - Forum - MusicAll',
+            'description' => 'Discussion "Quel ampli pour débuter ?" dans le forum Amplis sur MusicAll.',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_forum_topic_not_found(): void
+    {
+        $result = $this->botMetaDataGenerator->getMetaData('/forums/topic/topic-inexistant');
+        $this->assertSame([
+            'title'       => 'Forum - MusicAll',
+            'description' => 'Rejoignez la communauté MusicAll et échangez avec des passionnés de musique sur notre forum.',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_user_profile_not_found(): void
+    {
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/utilisateur-inexistant'));
+    }
+
+    public function test_get_metadata_for_user_profile_public(): void
+    {
+        $user = UserFactory::new(['username' => 'jean_dupont'])->create();
+        $user->_real()->getProfile()->setDisplayName('Jean Dupont');
+        $user->_real()->getProfile()->setBio('Guitariste passionné depuis 10 ans.');
+        $user->_real()->getProfile()->setIsPublic(true);
+        $user->_save();
+
+        $result = $this->botMetaDataGenerator->getMetaData('/u/jean_dupont');
+        $this->assertSame([
+            'title'       => 'Jean Dupont - MusicAll',
+            'description' => 'Guitariste passionné depuis 10 ans.',
+            'cover'       => null,
+        ], $result);
+    }
+
+    public function test_get_metadata_for_user_profile_private(): void
+    {
+        $user = UserFactory::new(['username' => 'utilisateur_prive'])->create();
+        $user->_real()->getProfile()->setIsPublic(false);
+        $user->_save();
+
+        $result = $this->botMetaDataGenerator->getMetaData('/u/utilisateur_prive');
+        $this->assertSame([
+            'title'       => 'Profil privé - MusicAll',
+            'description' => 'Ce profil est privé.',
+        ], $result);
+    }
+
+    public function test_get_metadata_for_user_profile_with_picture(): void
+    {
+        $user = UserFactory::new(['username' => 'marie_photo'])->create();
+        $user->_real()->getProfile()->setDisplayName('Marie Martin');
+        $user->_real()->getProfile()->setIsPublic(true);
+        $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-marie.jpg', 'imageSize' => 10]);
+        $user->_real()->setProfilePicture($profilePicture->_real());
+        $user->_save();
+
+        $result = $this->botMetaDataGenerator->getMetaData('/u/marie_photo');
+        $this->assertSame([
+            'title'       => 'Marie Martin - MusicAll',
+            'description' => 'Découvrez le profil de Marie Martin sur MusicAll.',
+            'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-marie.jpg',
         ], $result);
     }
 }
