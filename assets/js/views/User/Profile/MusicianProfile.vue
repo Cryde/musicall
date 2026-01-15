@@ -71,7 +71,7 @@
               aria-label="Modifier le profil musicien"
               @click="showEditModal = true"
             />
-            <ProfileShareButton
+            <ShareButton
               v-if="!isOwnProfile"
               :url="shareUrl"
               :title="shareTitle"
@@ -221,10 +221,10 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
+import ShareButton from '../../../components/ShareButton.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import MediaShowcase from '../../../components/User/Profile/MediaShowcase.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
-import ProfileShareButton from '../../../components/User/Profile/ProfileShareButton.vue'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'

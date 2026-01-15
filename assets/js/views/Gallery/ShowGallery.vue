@@ -9,21 +9,24 @@
         <Breadcrumb :items="breadcrumbItems" />
       </div>
 
-      <div class="flex flex-col gap-2 mb-6">
-        <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
-          {{ galleryStore.gallery.title }}
-        </h1>
-        <div class="text-sm text-surface-500 dark:text-surface-400">
-          Photo de
-          <router-link
-            v-if="galleryStore.gallery.author?.username"
-            :to="{ name: 'app_user_public_profile', params: { username: galleryStore.gallery.author.username } }"
-            class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-          >{{ galleryStore.gallery.author.username }}</router-link>
-          <span v-if="galleryStore.gallery.publicationDatetime">
-            le {{ formatDate(galleryStore.gallery.publicationDatetime) }}
-          </span>
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div class="flex flex-col gap-2">
+          <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
+            {{ galleryStore.gallery.title }}
+          </h1>
+          <div class="text-sm text-surface-500 dark:text-surface-400">
+            Photo de
+            <router-link
+              v-if="galleryStore.gallery.author?.username"
+              :to="{ name: 'app_user_public_profile', params: { username: galleryStore.gallery.author.username } }"
+              class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
+            >{{ galleryStore.gallery.author.username }}</router-link>
+            <span v-if="galleryStore.gallery.publicationDatetime">
+              le {{ formatDate(galleryStore.gallery.publicationDatetime) }}
+            </span>
+          </div>
         </div>
+        <ShareButton :url="shareUrl" :title="shareTitle" />
       </div>
 
       <MasonryWall
@@ -100,6 +103,7 @@ import { format, parseISO } from 'date-fns'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import ShareButton from '../../components/ShareButton.vue'
 import { useGalleryStore } from '../../store/gallery/gallery.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
@@ -114,6 +118,15 @@ const imageLoading = ref(false)
 useTitle(() =>
   galleryStore.gallery ? `${galleryStore.gallery.title} - Photos - MusicAll` : 'Photos - MusicAll'
 )
+
+const shareUrl = computed(() => window.location.href)
+
+const shareTitle = computed(() => {
+  if (galleryStore.gallery) {
+    return `${galleryStore.gallery.title} - Photos - MusicAll`
+  }
+  return 'Photos - MusicAll'
+})
 
 const breadcrumbItems = computed(() => {
   const items = [

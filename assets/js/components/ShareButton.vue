@@ -6,7 +6,7 @@
       severity="secondary"
       rounded
       v-tooltip.bottom="'Partager'"
-      aria-label="Partager le profil"
+      aria-label="Partager"
       @click="handleShare"
     />
     <Menu ref="menuRef" :model="menuItems" :popup="true" />
