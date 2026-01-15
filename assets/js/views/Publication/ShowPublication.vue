@@ -86,6 +86,7 @@
 </template>
 
 <script setup>
+import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -99,6 +100,10 @@ import PublicationListItem from './PublicationListItem.vue'
 const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication, relatedPublications } = storeToRefs(publicationStore)
+
+useTitle(() =>
+  publication.value ? `${publication.value.title} - MusicAll` : 'Publication - MusicAll'
+)
 
 async function loadData(slug) {
   await publicationStore.loadPublication(slug)

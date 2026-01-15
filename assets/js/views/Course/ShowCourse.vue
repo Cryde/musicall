@@ -64,6 +64,7 @@
 </template>
 
 <script setup>
+import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -76,6 +77,10 @@ import Breadcrumb from '../Global/Breadcrumb.vue'
 const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication } = storeToRefs(publicationStore)
+
+useTitle(() =>
+  publication.value ? `${publication.value.title} - Cours - MusicAll` : 'Cours - MusicAll'
+)
 
 onMounted(async () => {
   await publicationStore.loadPublication(route.params.slug)
