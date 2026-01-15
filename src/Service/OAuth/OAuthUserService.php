@@ -35,8 +35,12 @@ readonly class OAuthUserService
         $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $userData->id);
 
         if ($socialAccount !== null) {
-            // User already linked this social account
-            return new OAuthResult($socialAccount->getUser(), false);
+            // User already linked this social account - this is a login
+            $user = $socialAccount->getUser();
+            $user->setLastLoginDatetime(new \DateTime());
+            $this->entityManager->flush();
+
+            return new OAuthResult($user, false);
         }
 
         // If user is logged in, link the social account to their existing account
@@ -80,6 +84,7 @@ readonly class OAuthUserService
         $user->setUsername($finalUsername);
         $user->setPassword(null); // Social-only user, no password
         $user->setConfirmationDatetime(new \DateTime()); // Auto-confirmed
+        $user->setLastLoginDatetime(new \DateTime()); // First login
 
         $profile = new UserProfile();
         $profile->setUser($user);
