@@ -123,12 +123,12 @@ const isOwnAnnounce = computed(() => {
 })
 
 const profileRoute = computed(() => ({
-  name: props.type === 2 ? 'app_user_musician_profile' : 'app_user_public_profile',
+  name: props.user.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
   params: { username: props.user.username }
 }))
 
 const profileTooltip = computed(() =>
-  props.type === 2 ? 'Voir le profil musicien' : 'Voir le profil'
+  props.user.has_musician_profile ? 'Voir le profil musicien' : 'Voir le profil'
 )
 
 const formattedDistance = computed(() => {
