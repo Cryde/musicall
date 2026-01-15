@@ -6,11 +6,16 @@ use App\Entity\Gallery;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Service\Bot\BotMetaDataGenerator;
+use App\Tests\Factory\Attribute\InstrumentFactory;
+use App\Tests\Factory\Musician\MusicianProfileFactory;
+use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
 use App\Tests\Factory\Publication\GalleryImageFactory;
 use App\Tests\Factory\Publication\PublicationCoverFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
+use App\Tests\Factory\User\UserFactory;
+use App\Tests\Factory\User\UserProfilePictureFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -37,6 +42,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/publications/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/photos/dont-exists'));
         $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/cours/dont-exists'));
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/dont-exists/musician'));
     }
 
     public function test_get_metadata_for_publication(): void
@@ -215,6 +221,66 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'title'       => 'Gallery sans cover',
             'description' => 'Description de la gallery',
             'cover'       => null,
+        ], $result);
+    }
+
+    public function test_get_metadata_for_musician_profile_not_found(): void
+    {
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/u/unknown-user/musician'));
+    }
+
+    public function test_get_metadata_for_musician_profile_without_instruments(): void
+    {
+        $user = UserFactory::new(['username' => 'musicien_test'])->create();
+        MusicianProfileFactory::createOne(['user' => $user]);
+
+        $result = $this->botMetaDataGenerator->getMetaData('/u/musicien_test/musician');
+        $this->assertSame([
+            'title'       => 'Profil musicien de musicien_test - MusicAll',
+            'description' => 'Découvrez le profil musicien de musicien_test sur MusicAll.',
+            'cover'       => null,
+        ], $result);
+    }
+
+    public function test_get_metadata_for_musician_profile_with_instruments(): void
+    {
+        $user = UserFactory::new(['username' => 'guitariste_batteur'])->create();
+        $musicianProfile = MusicianProfileFactory::createOne(['user' => $user]);
+
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        $drum = InstrumentFactory::new()->asDrum()->create();
+
+        MusicianProfileInstrumentFactory::createOne([
+            'musicianProfile' => $musicianProfile,
+            'instrument'      => $guitar,
+        ]);
+        MusicianProfileInstrumentFactory::createOne([
+            'musicianProfile' => $musicianProfile,
+            'instrument'      => $drum,
+        ]);
+
+        $result = $this->botMetaDataGenerator->getMetaData('/u/guitariste_batteur/musician');
+        $this->assertSame([
+            'title'       => 'Profil musicien de guitariste_batteur - MusicAll',
+            'description' => 'Découvrez le profil musicien de guitariste_batteur sur MusicAll. Instruments : Guitare, Batterie.',
+            'cover'       => null,
+        ], $result);
+    }
+
+    public function test_get_metadata_for_musician_profile_with_profile_picture(): void
+    {
+        $user = UserFactory::new(['username' => 'musicien_photo'])->create();
+        $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-musicien.jpg', 'imageSize' => 10]);
+        $user->_real()->setProfilePicture($profilePicture->_real());
+        $user->_save();
+
+        MusicianProfileFactory::createOne(['user' => $user]);
+
+        $result = $this->botMetaDataGenerator->getMetaData('/u/musicien_photo/musician');
+        $this->assertSame([
+            'title'       => 'Profil musicien de musicien_photo - MusicAll',
+            'description' => 'Découvrez le profil musicien de musicien_photo sur MusicAll.',
+            'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-musicien.jpg',
         ], $result);
     }
 }
