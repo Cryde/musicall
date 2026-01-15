@@ -54,27 +54,36 @@
 
           <!-- Features as pill tags -->
             <div class="flex flex-wrap gap-3 mb-10">
-                          <span
-                              class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-default backdrop-blur-sm">
-              <i class="pi pi-users mr-2 text-fuchsia-600 dark:text-fuchsia-400"/>Trouver un musicien ou groupe
-            </span>
-                <span
-                    class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-default backdrop-blur-sm">
-              <i class="pi pi-youtube mr-2 text-primary-600 dark:text-primary-400"/>Découvertes
-            </span>
-                <span
-                    class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-default backdrop-blur-sm">
-              <i class="pi pi-book mr-2 text-primary-600 dark:text-primary-400"/>Cours
-            </span>
-
-                <span
-                    class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-default backdrop-blur-sm">
-              <i class="pi pi-images mr-2 text-cyan-600 dark:text-cyan-400"/>Photos de live
-            </span>
-                <span
-                    class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-default backdrop-blur-sm">
-              <i class="pi pi-comments mr-2 text-primary-600 dark:text-primary-400"/>Forum
-            </span>
+              <router-link
+                :to="{ name: 'app_search_musician' }"
+                class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-pointer backdrop-blur-sm"
+              >
+                <i class="pi pi-users mr-2 text-fuchsia-600 dark:text-fuchsia-400"/>Trouver un musicien ou groupe
+              </router-link>
+              <router-link
+                :to="{ name: 'app_publications' }"
+                class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-pointer backdrop-blur-sm"
+              >
+                <i class="pi pi-book mr-2 text-primary-600 dark:text-primary-400"/>Publications
+              </router-link>
+              <router-link
+                :to="{ name: 'app_course' }"
+                class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-pointer backdrop-blur-sm"
+              >
+                <i class="pi pi-book mr-2 text-primary-600 dark:text-primary-400"/>Cours
+              </router-link>
+              <router-link
+                :to="{ name: 'app_publications_by_category', params: { slug: 'photos' } }"
+                class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-pointer backdrop-blur-sm"
+              >
+                <i class="pi pi-images mr-2 text-cyan-600 dark:text-cyan-400"/>Photos de live
+              </router-link>
+              <router-link
+                :to="{ name: 'app_forum_index' }"
+                class="px-4 py-2 bg-white/20 dark:bg-white/5 border border-surface-400 dark:border-white/10 rounded-full text-surface-700 dark:text-surface-300 text-sm hover:bg-white/30 dark:hover:bg-white/10 transition-colors cursor-pointer backdrop-blur-sm"
+              >
+                <i class="pi pi-comments mr-2 text-primary-600 dark:text-primary-400"/>Forum
+              </router-link>
             </div>
 
           <!-- CTA Buttons -->
