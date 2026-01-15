@@ -60,6 +60,7 @@ class MusicianSearchResultBuilder
         $user = new User();
         $user->id = $userEntity->getId();
         $user->username = $userEntity->getUsername();
+        $user->hasMusicianProfile = $userEntity->getMusicianProfile() !== null;
         if ($userEntity->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($userEntity->getProfilePicture(), 'imageFile');
             $user->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');

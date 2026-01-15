@@ -93,6 +93,7 @@ class MusicianAnnouncePostTest extends ApiTestCase
                 '@type' => 'Author',
                 'id' => $user1->getId(),
                 'username' => $user1->getUsername(),
+                'has_musician_profile' => false,
             ],
         ]);
     }

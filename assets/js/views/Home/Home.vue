@@ -352,7 +352,7 @@ function isOwnAnnounce(announce) {
 
 function getProfileRoute(announce) {
   return {
-    name: announce.type === TYPES_ANNOUNCE_BAND ? 'app_user_musician_profile' : 'app_user_public_profile',
+    name: announce.author.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
     params: { username: announce.author.username }
   }
 }

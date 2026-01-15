@@ -76,6 +76,7 @@ readonly class MusicianAnnounceBuilder
         $dto = new Author();
         $dto->id = $user->getId();
         $dto->username = $user->getUsername();
+        $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
 
         if ($user->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
