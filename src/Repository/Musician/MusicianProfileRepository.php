@@ -17,4 +17,14 @@ class MusicianProfileRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, MusicianProfile::class);
     }
+
+    public function findByUsername(string $username): ?MusicianProfile
+    {
+        return $this->createQueryBuilder('mp')
+            ->innerJoin('mp.user', 'u')
+            ->where('u.username = :username')
+            ->setParameter('username', $username)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
