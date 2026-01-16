@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { createApp } from 'vue'
 import '../style/style.css'
-import MusicAllPreset from './theme/musicAllPreset.js'
 import { createHead } from '@unhead/vue/client'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -12,6 +11,7 @@ import Tooltip from 'primevue/tooltip'
 import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import router from './router/index.js'
+import MusicAllPreset from './theme/musicAllPreset.js'
 
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()
@@ -89,13 +89,20 @@ app.mount('#app')
 
 // Google Analytics - configured with manual init mode for GDPR consent
 if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
+  const hasChoice = localStorage.getItem('cookie_consent_choice') !== null
+  let consMode = 'denied'
+  if (hasChoice && localStorage.getItem('cookie_consent_choice') === 'accepted') {
+    consMode = 'granted'
+  }
+
   const { configure } = await import('vue-gtag')
   configure({
     tagId: import.meta.env.VITE_GOOGLE_GTAG_ID,
-    initMode: 'manual',
+    initMode: 'auto',
     pageTracker: {
       router
     },
+    consentMode: consMode,
     config: {
       anonymize_ip: true
     }
