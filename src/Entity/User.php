@@ -13,6 +13,7 @@ use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
 use App\Entity\Message\Message;
 use App\Entity\Musician\MusicianProfile;
+use App\Entity\User\UserNotificationPreference;
 use App\Entity\User\UserProfile;
 use App\Entity\Message\MessageThreadMeta;
 use App\Repository\UserRepository;
@@ -117,6 +118,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: MusicianProfile::class, cascade: ['persist', 'remove'])]
     private ?MusicianProfile $musicianProfile = null;
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserNotificationPreference::class, cascade: ['persist', 'remove'])]
+    private ?UserNotificationPreference $notificationPreference = null;
 
     public function __construct()
     {
@@ -422,6 +426,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->musicianProfile = $musicianProfile;
+
+        return $this;
+    }
+
+    public function getNotificationPreference(): ?UserNotificationPreference
+    {
+        return $this->notificationPreference;
+    }
+
+    public function setNotificationPreference(?UserNotificationPreference $notificationPreference): self
+    {
+        if ($notificationPreference !== null) {
+            $notificationPreference->setUser($this);
+        }
+
+        $this->notificationPreference = $notificationPreference;
 
         return $this;
     }
