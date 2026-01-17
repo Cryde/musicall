@@ -75,4 +75,23 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return User[]
+     */
+    public function findInactiveUsersSince(\DateTimeImmutable $cutoffDate, int $limit = 0): array
+    {
+        $qb = $this->createQueryBuilder('user')
+            ->where('user.confirmationDatetime IS NOT NULL')
+            ->andWhere('user.lastLoginDatetime IS NOT NULL')
+            ->andWhere('user.lastLoginDatetime < :cutoff')
+            ->setParameter('cutoff', $cutoffDate)
+            ->orderBy('user.lastLoginDatetime', 'ASC');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
