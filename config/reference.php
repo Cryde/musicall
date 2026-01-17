@@ -1582,6 +1582,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         flysystem?: array{
  *             filesystem_service: scalar|null|Param,
  *         },
+ *         asset_mapper?: array<mixed>,
  *         chain?: array{
  *             loaders: list<scalar|null|Param>,
  *         },
