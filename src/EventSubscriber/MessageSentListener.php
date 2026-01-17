@@ -6,6 +6,7 @@ namespace App\EventSubscriber;
 
 use App\Event\MessageSentEvent;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
+use App\Service\User\UserNotificationPreferenceChecker;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -14,8 +15,9 @@ use Symfony\Component\Routing\RouterInterface;
 readonly class MessageSentListener
 {
     public function __construct(
-        private MessageReceivedEmail $messageReceivedEmail,
-        private RouterInterface      $router,
+        private MessageReceivedEmail              $messageReceivedEmail,
+        private RouterInterface                   $router,
+        private UserNotificationPreferenceChecker $preferenceChecker,
     ) {
     }
 
@@ -24,6 +26,10 @@ readonly class MessageSentListener
         $recipient = $event->recipient;
         $sender = $event->sender;
         $thread = $event->thread;
+
+        if (!$this->preferenceChecker->canReceiveMessageNotification($recipient)) {
+            return;
+        }
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $messageUrl = $baseUrl . 'messages/' . $thread->getId();
