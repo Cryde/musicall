@@ -108,6 +108,7 @@
 <script setup>
 import Menu from 'primevue/menu'
 import OverlayBadge from 'primevue/overlaybadge'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../../store/notification/notification.js'
@@ -208,6 +209,7 @@ const menuItems = computed(() => {
       label: 'Se déconnecter',
       icon: 'pi pi-sign-out',
       command: () => {
+        trackUmamiEvent('user-logout')
         userSecurityStore.logout()
       }
     }

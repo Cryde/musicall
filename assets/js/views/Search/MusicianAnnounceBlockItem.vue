@@ -102,6 +102,7 @@
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
@@ -141,6 +142,7 @@ const formattedDistance = computed(() => {
 })
 
 function handleContact() {
+  trackUmamiEvent('musician-result-contact')
   if (!userSecurityStore.isAuthenticated) {
     showAuthModal.value = true
     return

@@ -122,6 +122,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserSecurityStore } from '../../store/user/security.js'
@@ -185,6 +186,7 @@ async function sendLogin() {
   }
 
   isLoginSubmitting.value = true
+  trackUmamiEvent('user-login')
   await userSecurity.login(email.value, password.value)
   isLoginSubmitting.value = false
 }

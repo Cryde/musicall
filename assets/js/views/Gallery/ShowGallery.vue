@@ -101,6 +101,7 @@ import { useTitle } from '@vueuse/core'
 import MasonryWall from '@yeger/vue-masonry-wall'
 import { format, parseISO } from 'date-fns'
 import ProgressSpinner from 'primevue/progressspinner'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ShareButton from '../../components/ShareButton.vue'
@@ -142,6 +143,7 @@ const breadcrumbItems = computed(() => {
 onMounted(async () => {
   const slug = route.params.slug
   await galleryStore.loadGallery(slug)
+  trackUmamiEvent('gallery-view')
   window.addEventListener('keydown', handleKeydown)
 })
 
@@ -155,6 +157,7 @@ function formatDate(dateString) {
 }
 
 function openLightbox(index) {
+  trackUmamiEvent('gallery-image-view')
   currentIndex.value = index
   loadCurrentImage()
   showLightbox.value = true

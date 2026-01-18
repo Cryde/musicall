@@ -58,6 +58,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 import { useCommentStore } from '../../store/comment/comment.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
@@ -78,6 +79,7 @@ async function handleSubmit() {
 
   try {
     await commentStore.postComment(content.value)
+    trackUmamiEvent('comment-add')
     content.value = ''
   } catch (e) {
     error.value = e.message || 'Une erreur est survenue'

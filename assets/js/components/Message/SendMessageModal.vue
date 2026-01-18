@@ -133,6 +133,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import userSearchApi from '../../api/search/user.js'
@@ -197,6 +198,7 @@ async function sendMessage() {
       recipientId: targetRecipient.id,
       content: content.value
     })
+    trackUmamiEvent('message-send')
 
     // Close modal and navigate to the thread
     visible.value = false

@@ -60,7 +60,7 @@
         <p class="text-sm text-surface-600 dark:text-surface-400 mb-3">Je recherche :</p>
         <div :class="['grid grid-cols-2 gap-3 max-w-lg transition-all duration-300 rounded-lg', autoFilledFields.type ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
             <div
-                @click="selectSearchType = selectSearchTypeOption[0]"
+                @click="selectType(selectSearchTypeOption[0])"
                 :class="[
                     'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
                     selectSearchType?.key === 2
@@ -77,7 +77,7 @@
                 </div>
             </div>
             <div
-                @click="selectSearchType = selectSearchTypeOption[1]"
+                @click="selectType(selectSearchTypeOption[1])"
                 :class="[
                     'flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all',
                     selectSearchType?.key === 1
@@ -354,6 +354,7 @@
 </template>
 <script setup>
 import { useDebounceFn, useMediaQuery, useTitle } from '@vueuse/core'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
@@ -543,6 +544,11 @@ function removeStyle(style) {
   selectedStyles.value = selectedStyles.value.filter((s) => s.id !== style.id)
 }
 
+function selectType(type) {
+  selectSearchType.value = type
+  trackUmamiEvent('musician-type-toggle', { type: type.name })
+}
+
 // Computed values for announce modal initial values (only when creating from search)
 const announceInitialType = computed(() => {
   if (!createFromSearch.value) return null
@@ -593,10 +599,15 @@ function buildSearchParams() {
 async function search() {
   quickSearchErrors.value = []
   isSearching.value = true
+  trackUmamiEvent('musician-search-submit')
   const params = buildSearchParams()
   await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
   isSearchMade.value = true
+
+  if (musicianSearchStore.announces.length === 0) {
+    trackUmamiEvent('musician-search-no-results')
+  }
 }
 
 const isLoadingMore = ref(false)
@@ -618,6 +629,7 @@ async function loadMore() {
 
 async function generateQuickSearchFilters() {
   const searchTxt = quickSearch.value
+  trackUmamiEvent('musician-quick-search')
   clearAllFilters()
   quickSearch.value = searchTxt
   quickSearchErrors.value = []
@@ -686,6 +698,7 @@ async function generateQuickSearchFilters() {
 }
 
 function clearAllFilters() {
+  trackUmamiEvent('musician-filter-clear')
   quickSearchErrors.value = []
   selectedInstrument.value = null
   selectedStyles.value = []
@@ -699,6 +712,7 @@ function clearAllFilters() {
 }
 
 function handleOpenAnnounceModal() {
+  trackUmamiEvent('musician-post-ad-click')
   if (!userSecurityStore.isAuthenticated) {
     authModalMessage.value = 'Si vous souhaitez poster une annonce, vous devez vous connecter.'
     showAuthModal.value = true

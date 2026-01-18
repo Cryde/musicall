@@ -88,6 +88,7 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
@@ -107,6 +108,7 @@ useTitle(() =>
 
 async function loadData(slug) {
   await publicationStore.loadPublication(slug)
+  trackUmamiEvent('publication-view')
   publicationStore.loadRelatedPublications(slug)
 }
 

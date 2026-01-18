@@ -109,6 +109,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Textarea from 'primevue/textarea'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, ref, watch } from 'vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { useMessageStore } from '../../store/message/message.js'
@@ -147,6 +148,7 @@ async function send() {
       threadId: messageStore.currentThreadId,
       content: content.value
     })
+    trackUmamiEvent('message-send')
     content.value = ''
     scrollToBottom()
   } catch (e) {
