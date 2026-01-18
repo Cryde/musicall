@@ -1,6 +1,7 @@
 import * as Cookies from 'es-cookie'
 import { jwtDecode } from 'jwt-decode'
 import { defineStore } from 'pinia'
+import { identifyUmamiSession } from '@jaseeey/vue-umami-plugin'
 import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import router from '../../router/index.js'
@@ -128,6 +129,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
   async function fetchUserProfile() {
     try {
       userProfile.value = await securityApi.getSelf()
+      identifyUmamiSession(userProfile.value.id)
     } catch (e) {
       console.error('Failed to fetch user profile:', e)
     }
