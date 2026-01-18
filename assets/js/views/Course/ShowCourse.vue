@@ -85,7 +85,7 @@ useTitle(() =>
 
 onMounted(async () => {
   await publicationStore.loadPublication(route.params.slug)
-  trackUmamiEvent('course-view')
+  trackUmamiEvent('course-view', { course: route.params.slug })
 })
 
 const breadCrumbs = computed(() => {

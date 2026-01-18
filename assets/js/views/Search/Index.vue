@@ -599,14 +599,20 @@ function buildSearchParams() {
 async function search() {
   quickSearchErrors.value = []
   isSearching.value = true
-  trackUmamiEvent('musician-search-submit')
+  const searchFilters = {
+    type: selectSearchType.value?.name || null,
+    instrument: selectedInstrument.value?.musician_name || null,
+    styles: selectedStyles.value.map(s => s.name).join(', ') || null,
+    location: selectedLocation.value?.name || null
+  }
+  trackUmamiEvent('musician-search-submit', searchFilters)
   const params = buildSearchParams()
   await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
   isSearchMade.value = true
 
   if (musicianSearchStore.announces.length === 0) {
-    trackUmamiEvent('musician-search-no-results')
+    trackUmamiEvent('musician-search-no-results', searchFilters)
   }
 }
 
@@ -630,7 +636,7 @@ async function loadMore() {
 async function generateQuickSearchFilters() {
   const searchTxt = quickSearch.value
   trackUmamiEvent('musician-quick-search', { query: searchTxt })
-  clearAllFilters()
+  clearAllFilters(true)
   quickSearch.value = searchTxt
   quickSearchErrors.value = []
   isFilterGenerating.value = true
@@ -697,8 +703,10 @@ async function generateQuickSearchFilters() {
   isFilterGenerating.value = false
 }
 
-function clearAllFilters() {
-  trackUmamiEvent('musician-filter-clear')
+function clearAllFilters(skipTracking = false) {
+  if (!skipTracking) {
+    trackUmamiEvent('musician-filter-clear')
+  }
   quickSearchErrors.value = []
   selectedInstrument.value = null
   selectedStyles.value = []

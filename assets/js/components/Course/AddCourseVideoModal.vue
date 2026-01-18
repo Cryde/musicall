@@ -250,7 +250,7 @@ async function handlePublish() {
       categoryId: selectedCategory.value.id
     })
 
-    trackUmamiEvent('course-video-submit')
+    trackUmamiEvent('course-video-submit', { category: selectedCategory.value.title })
     emit('update:visible', false)
 
     toast.add({

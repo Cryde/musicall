@@ -103,7 +103,7 @@ useTitle(computed(() => `${forumStore.currentTopic?.title || 'Sujet'} - MusicAll
 
 async function fetchData() {
   await forumStore.loadTopic(topicSlug.value)
-  trackUmamiEvent('forum-topic-view')
+  trackUmamiEvent('forum-topic-view', { topic: topicSlug.value })
   await forumStore.loadPosts({ topicSlug: topicSlug.value, page: currentPage.value })
   await scrollToHash()
 }

@@ -143,7 +143,7 @@ const breadcrumbItems = computed(() => {
 onMounted(async () => {
   const slug = route.params.slug
   await galleryStore.loadGallery(slug)
-  trackUmamiEvent('gallery-view')
+  trackUmamiEvent('gallery-view', { gallery: slug })
   window.addEventListener('keydown', handleKeydown)
 })
 

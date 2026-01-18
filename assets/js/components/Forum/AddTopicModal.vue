@@ -135,7 +135,7 @@ async function handleSubmit() {
       title: title.value,
       message: contentHtml.value
     })
-    trackUmamiEvent('forum-topic-create')
+    trackUmamiEvent('forum-topic-create', { forum: props.forumSlug })
     createdTopic.value = topic
     isSent.value = true
     emit('created', topic)
