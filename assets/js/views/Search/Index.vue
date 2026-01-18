@@ -629,7 +629,7 @@ async function loadMore() {
 
 async function generateQuickSearchFilters() {
   const searchTxt = quickSearch.value
-  trackUmamiEvent('musician-quick-search')
+  trackUmamiEvent('musician-quick-search', { query: searchTxt })
   clearAllFilters()
   quickSearch.value = searchTxt
   quickSearchErrors.value = []
