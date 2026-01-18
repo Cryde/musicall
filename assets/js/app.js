@@ -12,6 +12,7 @@ import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import router from './router/index.js'
 import MusicAllPreset from './theme/musicAllPreset.js'
+import { VueUmamiPlugin } from '@jaseeey/vue-umami-plugin';
 
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()
@@ -79,6 +80,36 @@ app.use(PrimeVue, {
     }
   }
 })
+
+if (import.meta.env.VITE_UMAMI_SITE_ID) {
+    app.use(
+        VueUmamiPlugin({
+            websiteID: import.meta.env.VITE_UMAMI_SITE_ID,
+            scriptSrc: import.meta.env.VITE_UMAMI_SITE_SCRIPT,
+            router,
+        })
+    );
+}
+if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
+    const hasChoice = localStorage.getItem('cookie_consent_choice') !== null
+    let consMode = 'denied'
+    if (hasChoice && localStorage.getItem('cookie_consent_choice') === 'accepted') {
+        consMode = 'granted'
+    }
+
+    const { configure } = await import('vue-gtag')
+    configure({
+        tagId: import.meta.env.VITE_GOOGLE_GTAG_ID,
+        initMode: 'auto',
+        pageTracker: {
+            router
+        },
+        consentMode: consMode,
+        config: {
+            anonymize_ip: true
+        }
+    })
+}
 app.directive('ripple', Ripple)
 app.directive('tooltip', Tooltip)
 app.use(ToastService)
@@ -86,27 +117,5 @@ app.use(ConfirmationService)
 app.use(pinia)
 app.use(router)
 app.mount('#app')
-
-// Google Analytics - configured with manual init mode for GDPR consent
-if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
-  const hasChoice = localStorage.getItem('cookie_consent_choice') !== null
-  let consMode = 'denied'
-  if (hasChoice && localStorage.getItem('cookie_consent_choice') === 'accepted') {
-    consMode = 'granted'
-  }
-
-  const { configure } = await import('vue-gtag')
-  configure({
-    tagId: import.meta.env.VITE_GOOGLE_GTAG_ID,
-    initMode: 'auto',
-    pageTracker: {
-      router
-    },
-    consentMode: consMode,
-    config: {
-      anonymize_ip: true
-    }
-  })
-}
 
 import.meta.glob(['../image/**'])
