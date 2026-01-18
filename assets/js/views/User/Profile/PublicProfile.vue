@@ -322,6 +322,7 @@ import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
@@ -416,6 +417,7 @@ function getPlatformIcon(platform) {
 }
 
 function handleContact() {
+  trackUmamiEvent('profile-contact-click')
   if (!userSecurityStore.isAuthenticated) {
     showAuthModal.value = true
     return
@@ -430,6 +432,7 @@ async function loadProfile() {
 
   try {
     await userProfileStore.loadProfile(route.params.username)
+    trackUmamiEvent('profile-view')
   } catch (error) {
     if (error.response?.status === 404) {
       notFound.value = true

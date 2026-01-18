@@ -156,6 +156,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserGalleriesStore } from '../../../store/gallery/userGalleries.js'
@@ -214,6 +215,7 @@ async function createGallery() {
   isCreating.value = true
   try {
     const gallery = await userGalleriesStore.createGallery(newGalleryTitle.value)
+    trackUmamiEvent('gallery-create')
     closeAddModal()
     toast.add({
       severity: 'success',

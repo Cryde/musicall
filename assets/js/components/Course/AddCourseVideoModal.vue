@@ -115,6 +115,7 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { ERROR_CODES } from '../../constants/errorCodes.js'
 import { useVideoStore } from '../../store/publication/video.js'
@@ -249,6 +250,7 @@ async function handlePublish() {
       categoryId: selectedCategory.value.id
     })
 
+    trackUmamiEvent('course-video-submit')
     emit('update:visible', false)
 
     toast.add({

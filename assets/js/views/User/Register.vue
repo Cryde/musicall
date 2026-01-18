@@ -201,6 +201,7 @@ import Divider from 'primevue/divider'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
@@ -346,6 +347,7 @@ async function handleSubmit() {
       email: form.email.trim(),
       password: form.password
     })
+    trackUmamiEvent('user-register')
 
     registeredEmail.value = form.email.trim()
     isRegistrationComplete.value = true

@@ -76,6 +76,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import MessageEditor from './MessageEditor.vue'
@@ -134,6 +135,7 @@ async function handleSubmit() {
       title: title.value,
       message: contentHtml.value
     })
+    trackUmamiEvent('forum-topic-create')
     createdTopic.value = topic
     isSent.value = true
     emit('created', topic)

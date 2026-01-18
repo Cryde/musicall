@@ -47,6 +47,7 @@
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { useToast } from 'primevue/usetoast'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
@@ -100,6 +101,7 @@ async function handleSubmit() {
       topicSlug: props.topicSlug,
       content: contentHtml.value
     })
+    trackUmamiEvent('forum-reply-submit')
     editorRef.value?.reset()
     contentHtml.value = ''
     contentText.value = ''

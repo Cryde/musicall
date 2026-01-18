@@ -289,6 +289,7 @@ import StepPanel from 'primevue/steppanel'
 import StepPanels from 'primevue/steppanels'
 import Stepper from 'primevue/stepper'
 import Textarea from 'primevue/textarea'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, ref, watch } from 'vue'
 import geocodingApi from '../../../api/geocoding.js'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
@@ -398,6 +399,7 @@ async function save() {
   })
 
   if (success) {
+    trackUmamiEvent('announce-create', { type: selectedType.value })
     isSuccess.value = true
     emit('created')
   }

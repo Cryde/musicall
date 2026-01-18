@@ -66,6 +66,7 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
@@ -84,6 +85,7 @@ useTitle(() =>
 
 onMounted(async () => {
   await publicationStore.loadPublication(route.params.slug)
+  trackUmamiEvent('course-view')
 })
 
 const breadCrumbs = computed(() => {

@@ -63,6 +63,7 @@ import { useTitle } from '@vueuse/core'
 import Divider from 'primevue/divider'
 import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
@@ -102,6 +103,7 @@ useTitle(computed(() => `${forumStore.currentTopic?.title || 'Sujet'} - MusicAll
 
 async function fetchData() {
   await forumStore.loadTopic(topicSlug.value)
+  trackUmamiEvent('forum-topic-view')
   await forumStore.loadPosts({ topicSlug: topicSlug.value, page: currentPage.value })
   await scrollToHash()
 }

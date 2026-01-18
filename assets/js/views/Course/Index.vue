@@ -104,6 +104,7 @@ import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Menu from 'primevue/menu'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import bassImg from '../../../image/course/basse.png'
@@ -241,6 +242,7 @@ const resetList = async () => {
 }
 
 async function changeCategoryFilter(selectedValue) {
+  trackUmamiEvent('course-category-filter', { category: selectedValue.slug })
   if (selectCategoryFilter.value?.slug === selectedValue.slug) {
     await removeFilter()
   } else {

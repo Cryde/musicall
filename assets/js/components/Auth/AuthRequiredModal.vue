@@ -39,7 +39,8 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed } from 'vue'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -60,6 +61,12 @@ const router = useRouter()
 const isVisible = computed({
   get: () => props.visible,
   set: (value) => emit('update:visible', value)
+})
+
+watch(() => props.visible, (newValue) => {
+  if (newValue) {
+    trackUmamiEvent('auth-modal-shown')
+  }
 })
 
 function handleClose() {

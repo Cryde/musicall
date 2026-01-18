@@ -71,6 +71,7 @@ import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Paginator from 'primevue/paginator'
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
@@ -120,6 +121,7 @@ function handlePageChange(event) {
 }
 
 function handleOpenAddTopicModal() {
+  trackUmamiEvent('forum-new-topic-click')
   if (!userSecurityStore.isAuthenticated) {
     authModalMessage.value = 'Vous devez vous connecter pour créer un nouveau sujet.'
     showAuthModal.value = true
