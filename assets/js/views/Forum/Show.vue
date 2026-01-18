@@ -121,7 +121,7 @@ function handlePageChange(event) {
 }
 
 function handleOpenAddTopicModal() {
-  trackUmamiEvent('forum-new-topic-click')
+  trackUmamiEvent('forum-new-topic-click', { forum: forumSlug.value })
   if (!userSecurityStore.isAuthenticated) {
     authModalMessage.value = 'Vous devez vous connecter pour créer un nouveau sujet.'
     showAuthModal.value = true

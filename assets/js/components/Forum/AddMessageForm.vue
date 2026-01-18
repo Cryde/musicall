@@ -101,7 +101,7 @@ async function handleSubmit() {
       topicSlug: props.topicSlug,
       content: contentHtml.value
     })
-    trackUmamiEvent('forum-reply-submit')
+    trackUmamiEvent('forum-reply-submit', { topic: props.topicSlug })
     editorRef.value?.reset()
     contentHtml.value = ''
     contentText.value = ''

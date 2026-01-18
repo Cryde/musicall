@@ -108,7 +108,7 @@ useTitle(() =>
 
 async function loadData(slug) {
   await publicationStore.loadPublication(slug)
-  trackUmamiEvent('publication-view')
+  trackUmamiEvent('publication-view', { publication: slug })
   publicationStore.loadRelatedPublications(slug)
 }
 
