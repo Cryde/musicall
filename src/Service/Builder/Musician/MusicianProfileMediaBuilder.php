@@ -53,6 +53,7 @@ readonly class MusicianProfileMediaBuilder
     private function downloadThumbnail(string $thumbnailUrl): ?string
     {
         try {
+            /** @var string $destination */
             $destination = $this->parameterBag->get('file_musician_media_thumbnail_destination');
             [$filename] = $this->remoteFileDownloader->download($thumbnailUrl, $destination, validateChecksum: false);
 

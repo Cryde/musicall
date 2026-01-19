@@ -22,7 +22,7 @@ readonly class BandSpaceBuilder
     public function buildItem(BandSpaceEntity $entity): BandSpaceDTO
     {
         $dto = new BandSpaceDTO();
-        $dto->id = $entity->id;
+        $dto->id = (string) $entity->id;
         $dto->name = $entity->name;
 
         return $dto;

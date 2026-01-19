@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Service\Builder\Musician;
+
 use App\ApiResource\Musician\MusicianProfileMedia;
 use App\Entity\Musician\MusicianProfileMedia as MusicianProfileMediaEntity;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -46,6 +47,7 @@ readonly class MusicianProfileMediaResourceBuilder
             return null;
         }
 
+        /** @var string $destination */
         $destination = $this->parameterBag->get('file_musician_media_thumbnail_destination');
         $path = $destination . '/' . $thumbnailImageName;
 

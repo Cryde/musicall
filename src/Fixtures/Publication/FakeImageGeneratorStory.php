@@ -23,8 +23,14 @@ class FakeImageGeneratorStory extends Story
         for ($i = 1; $i <= 12; $i++) {
             $fileName = $i . '.jpg';
             $localFilePath = __DIR__ . '/images/' . $fileName;
-            $fullPath = $this->containerBag->get('file_publication_cover_destination') . DIRECTORY_SEPARATOR . $fileName;
-            $this->musicallFilesystem->write($fullPath, file_get_contents($localFilePath));
+            /** @var string $destinationDir */
+            $destinationDir = $this->containerBag->get('file_publication_cover_destination');
+            $fullPath = $destinationDir . DIRECTORY_SEPARATOR . $fileName;
+            $contents = file_get_contents($localFilePath);
+            if ($contents === false) {
+                throw new \RuntimeException(sprintf('Failed to read file: %s', $localFilePath));
+            }
+            $this->musicallFilesystem->write($fullPath, $contents);
 
             $fileInfo[] = [$fileName, $this->musicallFilesystem->fileSize($fullPath)];
         }

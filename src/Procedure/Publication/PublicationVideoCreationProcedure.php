@@ -31,7 +31,9 @@ class PublicationVideoCreationProcedure
     public function process(AddVideo $addVideo, User $currentUser): Publication
     {
         $videoInfo = $this->youtube->getVideoInfo($addVideo->url);
-        [$path, $size] = $this->remoteFileDownloader->download($videoInfo->imageUrl, $this->containerBag->get('file_publication_cover_destination'));
+        /** @var string $destinationDir */
+        $destinationDir = $this->containerBag->get('file_publication_cover_destination');
+        [$path, $size] = $this->remoteFileDownloader->download($videoInfo->imageUrl, $destinationDir);
 
         $thread = $this->commentThreadDirector->create();
         $viewCache = $this->viewCacheDirector->build();

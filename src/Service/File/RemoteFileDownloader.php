@@ -44,7 +44,11 @@ class RemoteFileDownloader
 
         $filename = sha1(uniqid(time() . '', true)) . '.'. (new File($tmpFilePath))->guessExtension();
         $fullPath = $destinationDir . DIRECTORY_SEPARATOR . $filename;
-        $this->musicallFilesystem->write($fullPath, file_get_contents($tmpFilePath));
+        $contents = file_get_contents($tmpFilePath);
+        if ($contents === false) {
+            throw new \RuntimeException(sprintf('Failed to read temporary file: %s', $tmpFilePath));
+        }
+        $this->musicallFilesystem->write($fullPath, $contents);
         $tmpFilePath = $fullPath;
 
         $this->logger->debug('end of download', [

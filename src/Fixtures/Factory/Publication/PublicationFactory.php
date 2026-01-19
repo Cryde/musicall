@@ -37,9 +37,11 @@ final class PublicationFactory extends PersistentProxyObjectFactory
     public function asBaseTextPublicationOnline(): static
     {
         $title = self::faker()->sentence();
+        /** @var string $paragraphs */
+        $paragraphs = self::faker()->paragraphs(random_int(5, 20), true);
 
         return $this->with([
-            'content' => nl2br(self::faker()->paragraphs(random_int(5, 20), true)),
+            'content' => nl2br($paragraphs),
             'creationDatetime' => self::faker()->dateTime(),
             'editionDatetime' => self::faker()->dateTime(),
             'publicationDatetime' => self::faker()->dateTimeBetween('-3 years', 'now'),
