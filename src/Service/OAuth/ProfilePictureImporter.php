@@ -29,6 +29,7 @@ readonly class ProfilePictureImporter
         }
 
         try {
+            /** @var string $destination */
             $destination = $this->parameterBag->get('file_user_profile_picture_destination');
             [$filename, $fileSize] = $this->remoteFileDownloader->download($pictureUrl, $destination);
 

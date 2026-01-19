@@ -130,7 +130,7 @@ readonly class MusicianFilterGenerator
             $arrayInstruments[$instrument->getId()] = $instrument->getSlug();
         }
 
-        return json_encode($arrayInstruments);
+        return (string) json_encode($arrayInstruments);
     }
 
     private function getStyleIds(): string
@@ -141,6 +141,6 @@ readonly class MusicianFilterGenerator
             $arrayStyles[$style->getId()] = $style->getSlug();
         }
 
-        return json_encode($arrayStyles);
+        return (string) json_encode($arrayStyles);
     }
 }
