@@ -31,7 +31,9 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
         $emailStub = $this->createStub(ConfirmEmailReminderEmail::class);
         self::getContainer()->set(ConfirmEmailReminderEmail::class, $emailStub);
 
-        $this->commandTester = new CommandTester(self::getContainer()->get(SendEmailConfirmationReminderCommand::class));
+        /** @var SendEmailConfirmationReminderCommand $command */
+        $command = self::getContainer()->get(SendEmailConfirmationReminderCommand::class);
+        $this->commandTester = new CommandTester($command);
     }
 
     public function test_command_with_no_unconfirmed_users(): void
@@ -107,8 +109,13 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
     {
         $user = $this->createUnconfirmedUser(5);
 
-        // Simulate 1 reminder already sent
-        UserEmailLogFactory::new()->emailConfirmationReminder(1)->create(['user' => $user]);
+        // Simulate 1 reminder already sent (more than 2 days ago)
+        UserEmailLogFactory::new()
+            ->emailConfirmationReminder(1)
+            ->create([
+                'user' => $user,
+                'sentDatetime' => new \DateTimeImmutable('-3 days'),
+            ]);
 
         $this->commandTester->execute(['--dry-run' => true]);
 
@@ -122,6 +129,7 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
     {
         $this->createUnconfirmedUser(5);
 
+        /** @var UserEmailLogRepository $repository */
         $repository = self::getContainer()->get(UserEmailLogRepository::class);
         $this->assertSame(0, $repository->count());
 
@@ -142,11 +150,12 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
             ->emailConfirmationReminder(1)
             ->create([
                 'user' => $user,
-                'sentDatetime' => new \DateTimeImmutable('-1 day'),
+                'sentDatetime' => new \DateTimeImmutable('-3 days'),
             ]);
 
         $this->commandTester->execute([]);
 
+        /** @var UserEmailLogRepository $repository */
         $repository = self::getContainer()->get(UserEmailLogRepository::class);
         $logs = $repository->findBy(['user' => $user], ['sentDatetime' => 'DESC']);
 
@@ -159,6 +168,7 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
     {
         $this->createUnconfirmedUser(5);
 
+        /** @var UserEmailLogRepository $repository */
         $repository = self::getContainer()->get(UserEmailLogRepository::class);
 
         $this->commandTester->execute(['--dry-run' => true]);
@@ -194,6 +204,47 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
 
         $output = $this->commandTester->getDisplay();
         $this->assertStringContainsString('Found 0 users with unconfirmed email', $output);
+    }
+
+    public function test_command_skips_users_with_recent_reminder(): void
+    {
+        $user = $this->createUnconfirmedUser(5);
+
+        // Simulate 1 reminder sent yesterday (within 2 days)
+        UserEmailLogFactory::new()
+            ->emailConfirmationReminder(1)
+            ->create([
+                'user' => $user,
+                'sentDatetime' => new \DateTimeImmutable('-1 day'),
+            ]);
+
+        $this->commandTester->execute(['--dry-run' => true]);
+
+        $this->commandTester->assertCommandIsSuccessful();
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('Emails to send: 0', $output);
+        $this->assertStringContainsString('Skipped (reminder sent within 2 days): 1', $output);
+    }
+
+    public function test_command_sends_reminder_after_minimum_days_passed(): void
+    {
+        $user = $this->createUnconfirmedUser(5);
+
+        // Simulate 1 reminder sent exactly 2 days ago (should allow new reminder)
+        UserEmailLogFactory::new()
+            ->emailConfirmationReminder(1)
+            ->create([
+                'user' => $user,
+                'sentDatetime' => new \DateTimeImmutable('-3 days'),
+            ]);
+
+        $this->commandTester->execute(['--dry-run' => true]);
+
+        $this->commandTester->assertCommandIsSuccessful();
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('[DRY-RUN] Would send reminder #2 to:', $output);
+        $this->assertStringContainsString('Emails to send: 1', $output);
+        $this->assertStringContainsString('Skipped (reminder sent within 2 days): 0', $output);
     }
 
     public function test_command_fails_with_invalid_since_days(): void
