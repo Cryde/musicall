@@ -34,13 +34,16 @@ readonly class MusicianAnnounceBuilder
 
     public function buildItem(MusicianAnnounceEntity $entity): MusicianAnnounceDTO
     {
+        $instrument = $entity->getInstrument();
+        $creationDatetime = $entity->getCreationDatetime();
+
         $dto = new MusicianAnnounceDTO();
-        $dto->id = $entity->getId();
-        $dto->creationDatetime = $entity->getCreationDatetime();
-        $dto->type = $entity->getType();
-        $dto->instrument = $this->buildInstrument($entity->getInstrument());
+        $dto->id = (string) $entity->getId();
+        $dto->creationDatetime = $creationDatetime;
+        $dto->type = (int) $entity->getType();
+        $dto->instrument = $this->buildInstrument($instrument);
         $dto->styles = $this->buildStyles($entity->getStyles()->toArray());
-        $dto->locationName = $entity->getLocationName();
+        $dto->locationName = (string) $entity->getLocationName();
         $dto->note = $entity->getNote();
         $dto->author = $this->buildAuthor($entity->getAuthor());
 
@@ -50,8 +53,8 @@ readonly class MusicianAnnounceBuilder
     private function buildInstrument(InstrumentEntity $entity): Instrument
     {
         $dto = new Instrument();
-        $dto->id = $entity->getId();
-        $dto->musicianName = $entity->getMusicianName();
+        $dto->id = (string) $entity->getId();
+        $dto->musicianName = (string) $entity->getMusicianName();
 
         return $dto;
     }
@@ -64,8 +67,8 @@ readonly class MusicianAnnounceBuilder
     {
         return array_map(function (StyleEntity $entity): Style {
             $dto = new Style();
-            $dto->id = $entity->getId();
-            $dto->name = $entity->getName();
+            $dto->id = (string) $entity->getId();
+            $dto->name = (string) $entity->getName();
 
             return $dto;
         }, $entities);
@@ -74,13 +77,15 @@ readonly class MusicianAnnounceBuilder
     private function buildAuthor(User $user): Author
     {
         $dto = new Author();
-        $dto->id = $user->getId();
+        $dto->id = (string) $user->getId();
         $dto->username = $user->getUsername();
         $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
 
         if ($user->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
-            $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+            if ($path !== null) {
+                $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+            }
         }
 
         return $dto;

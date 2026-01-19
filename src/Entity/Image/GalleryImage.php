@@ -27,11 +27,11 @@ class GalleryImage
     #[Vich\UploadableField(mapping: 'gallery_image', fileNameProperty: 'imageName', size: 'imageSize')]
     private ?File $imageFile = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    private string $imageName;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $imageName = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
-    private int $imageSize;
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $imageSize = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private DateTimeInterface $creationDatetime;

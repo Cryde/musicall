@@ -62,7 +62,7 @@ readonly class ForumMetaDataProvider implements BotMetaDataProviderInterface
 
         return [
             'title' => sprintf('%s - Forum - MusicAll', $forum->getTitle()),
-            'description' => $forum->getDescription(),
+            'description' => (string) $forum->getDescription(),
         ];
     }
 

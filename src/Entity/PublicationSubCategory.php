@@ -126,13 +126,7 @@ class PublicationSubCategory
 
     public function removePublication(Publication $publication): self
     {
-        if ($this->publications->contains($publication)) {
-            $this->publications->removeElement($publication);
-            // set the owning side to null (unless already changed)
-            if ($publication->getSubCategory() === $this) {
-                $publication->setSubCategory(null);
-            }
-        }
+        $this->publications->removeElement($publication);
 
         return $this;
     }

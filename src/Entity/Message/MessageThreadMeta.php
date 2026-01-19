@@ -81,24 +81,24 @@ class MessageThreadMeta
         return $this->id?->toString();
     }
 
-    public function getThread(): ?MessageThread
+    public function getThread(): MessageThread
     {
         return $this->thread;
     }
 
-    public function setThread(?MessageThread $thread): self
+    public function setThread(MessageThread $thread): self
     {
         $this->thread = $thread;
 
         return $this;
     }
 
-    public function getUser(): ?User
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    public function setUser(User $user): self
     {
         $this->user = $user;
 

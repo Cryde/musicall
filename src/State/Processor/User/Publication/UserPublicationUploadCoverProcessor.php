@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Publication\UserPublicationUploadCover;
 use App\ApiResource\User\Publication\UserPublicationUploadCoverOutput;
 use App\Entity\Image\PublicationCover;
+use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -28,6 +29,7 @@ readonly class UserPublicationUploadCoverProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserPublicationUploadCoverOutput
     {
         /** @var UserPublicationUploadCover $data */
+        /** @var Publication $publication */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         // Remove old cover if exists (flush first to avoid unique constraint violation)

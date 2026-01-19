@@ -118,7 +118,7 @@ class Gallery implements ViewableInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?DateTimeInterface
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }

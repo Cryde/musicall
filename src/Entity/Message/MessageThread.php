@@ -89,13 +89,7 @@ class MessageThread
 
     public function removeMessage(Message $message): self
     {
-        if ($this->messages->contains($message)) {
-            $this->messages->removeElement($message);
-            // set the owning side to null (unless already changed)
-            if ($message->getThread() === $this) {
-                $message->setThread(null);
-            }
-        }
+        $this->messages->removeElement($message);
 
         return $this;
     }
@@ -105,7 +99,7 @@ class MessageThread
         return $this->creationDatetime;
     }
 
-    public function setCreationDatetime(?DateTimeInterface $creationDatetime): self
+    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
     {
         $this->creationDatetime = $creationDatetime;
 
@@ -132,13 +126,7 @@ class MessageThread
 
     public function removeMessageParticipant(MessageParticipant $messageParticipant): self
     {
-        if ($this->messageParticipants->contains($messageParticipant)) {
-            $this->messageParticipants->removeElement($messageParticipant);
-            // set the owning side to null (unless already changed)
-            if ($messageParticipant->getThread() === $this) {
-                $messageParticipant->setThread(null);
-            }
-        }
+        $this->messageParticipants->removeElement($messageParticipant);
 
         return $this;
     }

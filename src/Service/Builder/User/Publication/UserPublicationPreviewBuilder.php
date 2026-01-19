@@ -22,30 +22,26 @@ readonly class UserPublicationPreviewBuilder
     public function buildFromEntity(Publication $publication): UserPublicationPreview
     {
         $dto = new UserPublicationPreview();
-        $dto->id = $publication->getId();
-        $dto->title = $publication->getTitle();
-        $dto->slug = $publication->getSlug();
+        $dto->id = (int) $publication->getId();
+        $dto->title = (string) $publication->getTitle();
+        $dto->slug = (string) $publication->getSlug();
         $dto->shortDescription = $publication->getShortDescription();
         $dto->content = $this->appPublicationSanitizer->sanitize($publication->getContent() ?? '');
-        $dto->statusId = $publication->getStatus();
+        $dto->statusId = (int) $publication->getStatus();
         $dto->statusLabel = Publication::STATUS_LABEL[$publication->getStatus()] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
 
         $subCategory = $publication->getSubCategory();
-        if ($subCategory) {
-            $category = new UserPublicationCategory();
-            $category->id = $subCategory->getId();
-            $category->title = $subCategory->getTitle();
-            $category->slug = $subCategory->getSlug();
-            $dto->category = $category;
-        }
+        $category = new UserPublicationCategory();
+        $category->id = (int) $subCategory->getId();
+        $category->title = (string) $subCategory->getTitle();
+        $category->slug = (string) $subCategory->getSlug();
+        $dto->category = $category;
 
         $author = $publication->getAuthor();
-        if ($author) {
-            $authorDto = new UserPublicationPreviewAuthor();
-            $authorDto->username = $author->getUsername();
-            $dto->author = $authorDto;
-        }
+        $authorDto = new UserPublicationPreviewAuthor();
+        $authorDto->username = $author->getUsername();
+        $dto->author = $authorDto;
 
         return $dto;
     }

@@ -23,13 +23,18 @@ readonly class GalleryBuilder
 
     public function buildFromEntity(GalleryEntity $galleryEntity): Gallery
     {
+        $author = $galleryEntity->getAuthor();
+        $coverImage = $galleryEntity->getCoverImage();
+        $publicationDatetime = $galleryEntity->getPublicationDatetime();
+        assert($coverImage !== null && $publicationDatetime !== null);
+
         $gallery = new Gallery();
-        $gallery->slug = $galleryEntity->getSlug();
-        $gallery->title = $galleryEntity->getTitle();
+        $gallery->slug = (string) $galleryEntity->getSlug();
+        $gallery->title = (string) $galleryEntity->getTitle();
         $gallery->description = $galleryEntity->getDescription() ?? '';
-        $gallery->publicationDatetime = $galleryEntity->getPublicationDatetime();
-        $gallery->author = $this->buildAuthor($galleryEntity->getAuthor());
-        $gallery->cover = $this->buildCover($galleryEntity->getCoverImage());
+        $gallery->publicationDatetime = $publicationDatetime;
+        $gallery->author = $this->buildAuthor($author);
+        $gallery->cover = $this->buildCover($coverImage);
         $gallery->category = $this->buildCategory();
         $gallery->images = $this->buildImagesFromEntity($galleryEntity);
 
@@ -39,7 +44,7 @@ readonly class GalleryBuilder
     private function buildAuthor(User $user): Author
     {
         $author = new Author();
-        $author->username = $user->getUsername();
+        $author->username = (string) $user->getUsername();
 
         return $author;
     }
@@ -47,6 +52,7 @@ readonly class GalleryBuilder
     private function buildCover(GalleryImageEntity $galleryCover): Cover
     {
         $path = $this->uploaderHelper->asset($galleryCover, 'imageFile');
+        assert($path !== null);
         $cover = new Cover();
         $cover->coverUrl = $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_medium');
 

@@ -68,10 +68,7 @@ class ForumSource
 
     public function removeForumCategory(ForumCategory $forumCategory): self
     {
-        // set the owning side to null (unless already changed)
-        if ($this->forumCategories->removeElement($forumCategory) && $forumCategory->getForumSource() === $this) {
-            $forumCategory->setForumSource(null);
-        }
+        $this->forumCategories->removeElement($forumCategory);
 
         return $this;
     }

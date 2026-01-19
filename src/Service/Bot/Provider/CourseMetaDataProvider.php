@@ -72,7 +72,7 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
     }
 
     /**
-     * @return array{title?: string|null, description?: string|null, cover?: string|null}
+     * @return array{title?: string, description?: string, cover?: string|null}
      */
     private function getForCourse(string $slug): array
     {
@@ -86,14 +86,13 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         $cover = null;
-        if ($publication->getCover()) {
-            $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile');
+        if ($publication->getCover() && $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile')) {
             $cover = $this->cacheManager->getBrowserPath($path, 'publication_image_filter');
         }
 
         return [
-            'title' => $publication->getTitle(),
-            'description' => $publication->getShortDescription(),
+            'title' => (string) $publication->getTitle(),
+            'description' => (string) $publication->getShortDescription(),
             'cover' => $cover,
         ];
     }

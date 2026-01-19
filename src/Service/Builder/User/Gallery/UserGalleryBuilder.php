@@ -28,13 +28,15 @@ readonly class UserGalleryBuilder
 
     public function buildFromEntity(Gallery $gallery): UserGallery
     {
+        $creationDatetime = $gallery->getCreationDatetime();
+
         $dto = new UserGallery();
-        $dto->id = $gallery->getId();
-        $dto->title = $gallery->getTitle();
+        $dto->id = (int) $gallery->getId();
+        $dto->title = (string) $gallery->getTitle();
         $dto->slug = $gallery->getSlug();
         $dto->description = $gallery->getDescription();
-        $dto->creationDatetime = $gallery->getCreationDatetime();
-        $dto->status = $gallery->getStatus();
+        $dto->creationDatetime = $creationDatetime;
+        $dto->status = (int) $gallery->getStatus();
         $dto->statusLabel = self::STATUS_LABELS[$gallery->getStatus()] ?? 'Inconnu';
         $dto->imageCount = $gallery->getImageCount();
         $dto->coverImageUrl = $this->getCoverImageUrl($gallery);
@@ -45,10 +47,10 @@ readonly class UserGalleryBuilder
     public function buildEditFromEntity(Gallery $gallery): UserGalleryEdit
     {
         $dto = new UserGalleryEdit();
-        $dto->id = $gallery->getId();
-        $dto->title = $gallery->getTitle();
+        $dto->id = (int) $gallery->getId();
+        $dto->title = (string) $gallery->getTitle();
         $dto->description = $gallery->getDescription();
-        $dto->status = $gallery->getStatus();
+        $dto->status = (int) $gallery->getStatus();
         $dto->coverImageUrl = $this->getCoverImageUrl($gallery);
         $dto->coverImageId = $gallery->getCoverImage()?->getId();
 
@@ -57,15 +59,18 @@ readonly class UserGalleryBuilder
 
     public function buildPreviewFromEntity(Gallery $gallery): UserGalleryPreview
     {
+        $author = $gallery->getAuthor();
+        $creationDatetime = $gallery->getCreationDatetime();
+
         $dto = new UserGalleryPreview();
-        $dto->id = $gallery->getId();
-        $dto->title = $gallery->getTitle();
-        $dto->slug = $gallery->getSlug();
+        $dto->id = (int) $gallery->getId();
+        $dto->title = (string) $gallery->getTitle();
+        $dto->slug = (string) $gallery->getSlug();
         $dto->description = $gallery->getDescription();
-        $dto->status = $gallery->getStatus();
+        $dto->status = (int) $gallery->getStatus();
         $dto->statusLabel = self::STATUS_LABELS[$gallery->getStatus()] ?? 'Inconnu';
-        $dto->creationDatetime = $gallery->getCreationDatetime();
-        $dto->authorUsername = $gallery->getAuthor()->getUsername();
+        $dto->creationDatetime = $creationDatetime;
+        $dto->authorUsername = $author->getUsername();
         $dto->images = array_map(
             fn (GalleryImage $image) => $this->getImageSizes($image),
             $gallery->getImages()->toArray()
@@ -77,7 +82,7 @@ readonly class UserGalleryBuilder
     public function buildImageFromEntity(GalleryImage $image): UserGalleryImage
     {
         $dto = new UserGalleryImage();
-        $dto->id = $image->getId();
+        $dto->id = (int) $image->getId();
         $dto->sizes = $this->getImageSizes($image);
 
         return $dto;

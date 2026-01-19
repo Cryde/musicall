@@ -13,10 +13,10 @@ readonly class PublicationCategoryBuilder
     public function buildPublicationCategory(PublicationSubCategory $entity): PublicationCategory
     {
         $dto = new PublicationCategory();
-        $dto->id = $entity->getId();
-        $dto->title = $entity->getTitle();
-        $dto->slug = $entity->getSlug();
-        $dto->position = $entity->getPosition();
+        $dto->id = (int) $entity->getId();
+        $dto->title = (string) $entity->getTitle();
+        $dto->slug = (string) $entity->getSlug();
+        $dto->position = (int) $entity->getPosition();
 
         return $dto;
     }
@@ -34,10 +34,10 @@ readonly class PublicationCategoryBuilder
     public function buildCourseCategory(PublicationSubCategory $entity): CourseCategory
     {
         $dto = new CourseCategory();
-        $dto->id = $entity->getId();
-        $dto->title = $entity->getTitle();
-        $dto->slug = $entity->getSlug();
-        $dto->position = $entity->getPosition();
+        $dto->id = (int) $entity->getId();
+        $dto->title = (string) $entity->getTitle();
+        $dto->slug = (string) $entity->getSlug();
+        $dto->position = (int) $entity->getPosition();
 
         return $dto;
     }

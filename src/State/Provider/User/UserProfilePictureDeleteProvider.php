@@ -30,9 +30,7 @@ readonly class UserProfilePictureDeleteProvider implements ProviderInterface
 
         /** @var User $user */
         $user = $this->security->getUser();
-        $profilePicture = $user->getProfilePicture();
-
-        if ($profilePicture === null) {
+        if (!$profilePicture = $user->getProfilePicture()) {
             throw new NotFoundHttpException('Aucune photo de profil à supprimer');
         }
 

@@ -84,12 +84,12 @@ class ForumCategory
         return $this;
     }
 
-    public function getForumSource(): ?ForumSource
+    public function getForumSource(): ForumSource
     {
         return $this->forumSource;
     }
 
-    public function setForumSource(?ForumSource $forumSource): self
+    public function setForumSource(ForumSource $forumSource): self
     {
         $this->forumSource = $forumSource;
 
@@ -116,10 +116,7 @@ class ForumCategory
 
     public function removeForum(Forum $forum): self
     {
-        // set the owning side to null (unless already changed)
-        if ($this->forums->removeElement($forum) && $forum->getForumCategory() === $this) {
-            $forum->setForumCategory(null);
-        }
+        $this->forums->removeElement($forum);
 
         return $this;
     }

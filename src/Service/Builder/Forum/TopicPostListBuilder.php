@@ -32,12 +32,14 @@ readonly class TopicPostListBuilder
 
     public function buildFromEntity(ForumPostEntity $post): TopicPost
     {
+        $creator = $post->getCreator();
+
         $item = new TopicPost();
-        $item->id = $post->getId();
+        $item->id = (string) $post->getId();
         $item->creationDatetime = $post->getCreationDatetime();
         $item->updateDatetime = $post->getUpdateDatetime();
         $item->content = $this->appForumSanitizer->sanitize(nl2br((string) $post->getContent()));
-        $item->creator = $this->userDtoBuilder->buildFromEntity($post->getCreator());
+        $item->creator = $this->userDtoBuilder->buildFromEntity($creator);
 
         return $item;
     }

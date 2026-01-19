@@ -5,6 +5,7 @@ namespace App\State\Processor\User\Gallery;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Gallery\UserGalleryImage;
+use App\Entity\Image\GalleryImage;
 use App\Repository\GalleryImageRepository;
 use App\Service\Builder\User\Gallery\UserGalleryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,9 +25,10 @@ readonly class UserGalleryImageSetCoverProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         /** @var UserGalleryImage $data */
+        /** @var GalleryImage $image */
         $image = $this->galleryImageRepository->find($uriVariables['id']);
-        $gallery = $image->getGallery();
 
+        $gallery = $image->getGallery();
         $gallery->setCoverImage($image);
         $gallery->setUpdateDatetime(new \DateTime());
 

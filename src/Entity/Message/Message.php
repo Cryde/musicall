@@ -100,31 +100,31 @@ class Message
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): User
     {
         return $this->author;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthor(User $author): self
     {
         $this->author = $author;
 
         return $this;
     }
 
-    public function getThread(): ?MessageThread
+    public function getThread(): MessageThread
     {
         return $this->thread;
     }
 
-    public function setThread(?MessageThread $thread): self
+    public function setThread(MessageThread $thread): self
     {
         $this->thread = $thread;
 
         return $this;
     }
 
-    public function getContent(): ?string
+    public function getContent(): string
     {
         return $this->content;
     }

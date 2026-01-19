@@ -31,26 +31,30 @@ readonly class ForumTopicListBuilder
 
     public function buildFromEntity(ForumTopicEntity $topic): ForumTopic
     {
+        $author = $topic->getAuthor();
+
         $item = new ForumTopic();
-        $item->id = $topic->getId();
-        $item->title = $topic->getTitle();
-        $item->slug = $topic->getSlug();
-        $item->type = $topic->getType();
-        $item->isLocked = $topic->getIsLocked();
+        $item->id = (string) $topic->getId();
+        $item->title = (string) $topic->getTitle();
+        $item->slug = (string) $topic->getSlug();
+        $item->type = (int) $topic->getType();
+        $item->isLocked = (bool) $topic->getIsLocked();
         $item->lastPost = $topic->getLastPost() ? $this->buildPostSimple($topic->getLastPost()) : null;
         $item->creationDatetime = $topic->getCreationDatetime();
-        $item->author = $this->userDtoBuilder->buildFromEntity($topic->getAuthor());
-        $item->postNumber = $topic->getPostNumber();
+        $item->author = $this->userDtoBuilder->buildFromEntity($author);
+        $item->postNumber = (int) $topic->getPostNumber();
 
         return $item;
     }
 
     private function buildPostSimple(ForumPostEntity $post): ForumPost
     {
+        $creator = $post->getCreator();
+
         $item = new ForumPost();
-        $item->id = $post->getId();
+        $item->id = (string) $post->getId();
         $item->creationDatetime = $post->getCreationDatetime();
-        $item->creator = $this->userDtoBuilder->buildFromEntity($post->getCreator());
+        $item->creator = $this->userDtoBuilder->buildFromEntity($creator);
 
         return $item;
     }

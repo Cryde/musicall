@@ -49,13 +49,11 @@ readonly class UserProfileEditProvider implements ProviderInterface
         $dto->location = $profile->getLocation();
         $dto->isPublic = $profile->isPublic();
 
-        if ($user->getProfilePicture()) {
-            $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
+        if ($user->getProfilePicture() && $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile')) {
             $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
         }
 
-        if ($profile->getCoverPicture()) {
-            $path = $this->uploaderHelper->asset($profile->getCoverPicture(), 'imageFile');
+        if ($profile->getCoverPicture() && $path = $this->uploaderHelper->asset($profile->getCoverPicture(), 'imageFile')) {
             $dto->coverPictureUrl = $this->cacheManager->getBrowserPath($path, 'user_cover_picture');
         }
 

@@ -39,7 +39,9 @@ readonly class GalleryProvider implements ProviderInterface
         if ($gallery->getStatus() === Gallery::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
-            $this->viewProcedure->process($gallery, $this->requestStack->getCurrentRequest(), $user);
+            if ($request = $this->requestStack->getCurrentRequest()) {
+                $this->viewProcedure->process($gallery, $request, $user);
+            }
         }
 
         return $this->galleryBuilder->buildFromEntity($gallery);

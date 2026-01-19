@@ -38,7 +38,12 @@ class MusicianMediaLimitValidator extends ConstraintValidator
             return;
         }
 
-        $currentCount = $this->mediaRepository->countByMusicianProfile($profile->getId());
+        $profileId = $profile->getId();
+        if ($profileId === null) {
+            return;
+        }
+
+        $currentCount = $this->mediaRepository->countByMusicianProfile($profileId);
         if ($currentCount >= MusicianMediaLimit::MAX_MEDIA_PER_PROFILE) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ limit }}', (string) MusicianMediaLimit::MAX_MEDIA_PER_PROFILE)

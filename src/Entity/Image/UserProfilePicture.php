@@ -159,7 +159,7 @@ class UserProfilePicture
         return $this;
     }
 
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }

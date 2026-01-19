@@ -58,24 +58,24 @@ class MessageParticipant
         return $this->id?->toString();
     }
 
-    public function getThread(): ?MessageThread
+    public function getThread(): MessageThread
     {
         return $this->thread;
     }
 
-    public function setThread(?MessageThread $thread): self
+    public function setThread(MessageThread $thread): self
     {
         $this->thread = $thread;
 
         return $this;
     }
 
-    public function getParticipant(): ?User
+    public function getParticipant(): User
     {
         return $this->participant;
     }
 
-    public function setParticipant(?User $participant): self
+    public function setParticipant(User $participant): self
     {
         $this->participant = $participant;
 

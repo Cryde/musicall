@@ -26,6 +26,7 @@ readonly class MusicianProfileMediaCreateProcedure
     {
         // URL is already validated by SupportedMediaUrl constraint
         $parsed = $this->mediaUrlParser->parse($mediaDto->url);
+        assert($parsed !== null);
 
         // Fetch metadata from platform (title, thumbnail)
         $metadata = $this->metadataFetcher->fetch($parsed->platform, $mediaDto->url, $parsed->embedId);

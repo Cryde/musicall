@@ -4,6 +4,7 @@ namespace App\State\Processor\User\Publication;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -20,6 +21,7 @@ class UserPublicationRemoveCoverProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
+        /** @var Publication $publication */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         $cover = $publication->getCover();

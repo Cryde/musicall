@@ -206,7 +206,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
     }
 
-    public function getEmail(): ?string
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -238,18 +238,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removePublication(Publication $publication): self
     {
-        if ($this->publications->contains($publication)) {
-            $this->publications->removeElement($publication);
-            // set the owning side to null (unless already changed)
-            if ($publication->getAuthor() === $this) {
-                $publication->setAuthor(null);
-            }
-        }
+        $this->publications->removeElement($publication);
 
         return $this;
     }
 
-    public function getCreationDatetime(): ?DateTime
+    public function getCreationDatetime(): DateTime
     {
         return $this->creationDatetime;
     }

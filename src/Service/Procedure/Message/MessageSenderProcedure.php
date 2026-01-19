@@ -81,12 +81,14 @@ class MessageSenderProcedure
             $recipient = $participant->getParticipant();
             if ($recipient->getId() !== $sender->getId()) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
+                assert($threadMetaRecipient !== null);
                 $threadMetaRecipient->setIsRead(false);
                 $this->eventDispatcher->dispatch(new MessageSentEvent($recipient, $sender, $thread));
             }
         }
 
         $threadMetaSender = $this->messageThreadMetaRepository->findOneBy(['user' => $sender, 'thread' => $thread]);
+        assert($threadMetaSender !== null);
         $threadMetaSender->setIsRead(true);
     }
 }

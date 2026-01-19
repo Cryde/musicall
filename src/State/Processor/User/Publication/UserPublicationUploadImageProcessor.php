@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Publication\UserPublicationUploadImage;
 use App\ApiResource\User\Publication\UserPublicationUploadImageOutput;
 use App\Entity\Image\PublicationImage;
+use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
@@ -28,6 +29,7 @@ readonly class UserPublicationUploadImageProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserPublicationUploadImageOutput
     {
         /** @var UserPublicationUploadImage $data */
+        /** @var Publication $publication */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         $publicationImage = new PublicationImage();

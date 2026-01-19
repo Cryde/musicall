@@ -34,9 +34,7 @@ class UserPublicationEditProvider implements ProviderInterface
 
         /** @var User $user */
         $user = $this->security->getUser();
-
-        $publication = $this->publicationRepository->find($uriVariables['id']);
-        if (!$publication) {
+        if (!$publication = $this->publicationRepository->find($uriVariables['id'])) {
             throw new NotFoundHttpException('Publication not found');
         }
 

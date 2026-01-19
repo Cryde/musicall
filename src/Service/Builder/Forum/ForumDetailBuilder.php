@@ -13,8 +13,8 @@ readonly class ForumDetailBuilder
     public function buildFromEntity(ForumEntity $forum): Forum
     {
         $item = new Forum();
-        $item->id = $forum->getId();
-        $item->title = $forum->getTitle();
+        $item->id = (string) $forum->getId();
+        $item->title = (string) $forum->getTitle();
         $item->forumCategory = $this->buildForumCategorySimple($forum);
 
         return $item;
@@ -22,9 +22,11 @@ readonly class ForumDetailBuilder
 
     private function buildForumCategorySimple(ForumEntity $forum): ForumCategory
     {
+        $forumCategory = $forum->getForumCategory();
+
         $category = new ForumCategory();
-        $category->id = $forum->getForumCategory()->getId();
-        $category->title = $forum->getForumCategory()->getTitle();
+        $category->id = (string) $forumCategory->getId();
+        $category->title = (string) $forumCategory->getTitle();
 
         return $category;
     }

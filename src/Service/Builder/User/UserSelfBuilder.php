@@ -39,8 +39,9 @@ readonly class UserSelfBuilder
         if (!$profilePicture) {
             return null;
         }
-
-        $path = $this->uploaderHelper->asset($profilePicture, 'imageFile');
+        if (!$path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {
+            return null;
+        }
 
         return ['small' => $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small')];
     }
