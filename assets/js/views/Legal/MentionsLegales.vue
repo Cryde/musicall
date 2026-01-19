@@ -61,14 +61,23 @@
             5. Cookies
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
-            Ce site utilise des cookies. Pour en savoir plus sur leur utilisation et gérer vos préférences, consultez notre
+            Ce site utilise uniquement des cookies essentiels nécessaires à son fonctionnement (session de connexion). Aucun cookie publicitaire ou de suivi n'est utilisé. Pour plus d'informations, consultez notre
             <RouterLink :to="{ name: 'app_privacy' }" class="text-primary hover:text-primary-emphasis">politique de confidentialité</RouterLink>.
           </p>
         </section>
 
         <section>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-            6. Contact
+            6. Mesure d'audience
+          </h2>
+          <p class="text-surface-600 dark:text-surface-300">
+            Ce site utilise une solution de mesure d'audience auto-hébergée et respectueuse de la vie privée. Les données collectées sont anonymisées, ne nécessitent aucun cookie et sont utilisées uniquement pour améliorer le site. Aucune donnée n'est partagée avec des tiers.
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
+            7. Contact
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
             Pour toute question ou réclamation, vous pouvez nous contacter à l'adresse

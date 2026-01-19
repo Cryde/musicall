@@ -31,7 +31,7 @@
             <li><strong>Données de compte</strong> : adresse email, nom d'utilisateur</li>
             <li><strong>Données de profil</strong> : photo de profil (optionnelle), informations musicales que vous choisissez de partager</li>
             <li><strong>Données de connexion</strong> : identifiants OAuth (Google, Facebook) si vous utilisez ces méthodes de connexion</li>
-            <li><strong>Données de navigation</strong> : cookies, statistiques de visite (via Google Analytics)</li>
+            <li><strong>Données d'usage anonymisées</strong> : statistiques de visite (pages consultées, actions effectuées) collectées de manière anonyme sans cookies de suivi</li>
             <li><strong>Données techniques</strong> : informations sur les erreurs pour améliorer le service (via Sentry)</li>
           </ul>
         </section>
@@ -58,7 +58,7 @@
             4. Base légale
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
-            Le traitement de vos données repose sur votre consentement (lors de l'inscription et de l'acceptation des cookies) et sur l'exécution du contrat (fourniture du service MusicAll).
+            Le traitement de vos données repose sur votre consentement (lors de l'inscription) et sur l'exécution du contrat (fourniture du service MusicAll).
           </p>
         </section>
 
@@ -71,7 +71,6 @@
           </p>
           <ul class="list-disc list-inside text-surface-600 dark:text-surface-300 space-y-2">
             <li><strong>Google OAuth / Facebook Login</strong> : pour vous permettre de vous connecter avec vos comptes existants</li>
-            <li><strong>Google Analytics</strong> : pour analyser la fréquentation du site (données anonymisées)</li>
             <li><strong>Sentry</strong> : pour détecter et corriger les erreurs techniques</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
@@ -81,23 +80,34 @@
 
         <section>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-            6. Cookies
+            6. Mesure d'audience
           </h2>
           <p class="text-surface-600 dark:text-surface-300 mb-4">
-            Nous utilisons des cookies pour :
+            Nous utilisons Umami, une solution de mesure d'audience auto-hébergée sur nos propres serveurs. Cette solution respecte votre vie privée :
           </p>
           <ul class="list-disc list-inside text-surface-600 dark:text-surface-300 space-y-2">
-            <li><strong>Cookies essentiels</strong> : maintenir votre session de connexion</li>
-            <li><strong>Cookies analytiques</strong> : mesurer l'audience du site (Google Analytics)</li>
+            <li>Aucun cookie de suivi n'est déposé sur votre appareil</li>
+            <li>Les données sont anonymisées et ne permettent pas de vous identifier personnellement</li>
+            <li>Aucune donnée n'est partagée avec des tiers</li>
+            <li>Les données restent hébergées sur nos serveurs en Europe</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            Vous pouvez gérer vos préférences de cookies dans les paramètres de votre navigateur.
+            Ces statistiques sont utilisées uniquement pour comprendre comment le site est utilisé et l'améliorer.
           </p>
         </section>
 
         <section>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-            7. Durée de conservation
+            7. Cookies
+          </h2>
+          <p class="text-surface-600 dark:text-surface-300">
+            Nous utilisons uniquement des cookies essentiels nécessaires au fonctionnement du site, notamment pour maintenir votre session de connexion. Nous n'utilisons aucun cookie publicitaire ou de suivi.
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
+            8. Durée de conservation
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
             Vos données sont conservées tant que votre compte est actif. En cas de suppression de compte, vos données personnelles sont supprimées dans un délai de 30 jours, à l'exception des données que nous sommes légalement tenus de conserver.
@@ -106,7 +116,7 @@
 
         <section>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-            8. Vos droits
+            9. Vos droits
           </h2>
           <p class="text-surface-600 dark:text-surface-300 mb-4">
             Conformément au RGPD, vous disposez des droits suivants :
@@ -127,7 +137,7 @@
 
         <section>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-            9. Sécurité
+            10. Sécurité
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
             Nous mettons en place des mesures techniques et organisationnelles appropriées pour protéger vos données personnelles contre tout accès non autorisé, modification, divulgation ou destruction.
@@ -136,7 +146,7 @@
 
         <section>
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-            10. Contact
+            11. Contact
           </h2>
           <p class="text-surface-600 dark:text-surface-300">
             Pour toute question concernant cette politique de confidentialité ou vos données personnelles, contactez-nous à
@@ -156,5 +166,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '7 janvier 2026'
+const lastUpdate = '19 janvier 2026'
 </script>
