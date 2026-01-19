@@ -62,4 +62,16 @@ class UserEmailLogRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getOneOrNullResult();
     }
+
+    public function countByUserAndType(User $user, UserEmailType $emailType): int
+    {
+        return (int) $this->createQueryBuilder('l')
+            ->select('COUNT(l.id)')
+            ->where('l.user = :user')
+            ->andWhere('l.emailType = :emailType')
+            ->setParameter('user', $user)
+            ->setParameter('emailType', $emailType)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

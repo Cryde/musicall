@@ -47,4 +47,9 @@ readonly class UserEmailLogService
         $this->entityManager->persist($log);
         $this->entityManager->flush();
     }
+
+    public function countSent(User $user, UserEmailType $emailType): int
+    {
+        return $this->userEmailLogRepository->countByUserAndType($user, $emailType);
+    }
 }

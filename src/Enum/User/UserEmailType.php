@@ -10,4 +10,5 @@ enum UserEmailType: string
     case ANNOUNCE_RENEWAL_REMINDER = 'announce_renewal_reminder';
     case WELCOME = 'welcome';
     case INACTIVITY_REMINDER = 'inactivity_reminder';
+    case EMAIL_CONFIRMATION_REMINDER = 'email_confirmation_reminder';
 }
