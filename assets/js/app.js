@@ -90,26 +90,6 @@ if (import.meta.env.VITE_UMAMI_SITE_ID) {
         })
     );
 }
-if (import.meta.env.VITE_GOOGLE_GTAG_ID) {
-    const hasChoice = localStorage.getItem('cookie_consent_choice') !== null
-    let consMode = 'denied'
-    if (hasChoice && localStorage.getItem('cookie_consent_choice') === 'accepted') {
-        consMode = 'granted'
-    }
-
-    const { configure } = await import('vue-gtag')
-    configure({
-        tagId: import.meta.env.VITE_GOOGLE_GTAG_ID,
-        initMode: 'auto',
-        pageTracker: {
-            router
-        },
-        consentMode: consMode,
-        config: {
-            anonymize_ip: true
-        }
-    })
-}
 app.directive('ripple', Ripple)
 app.directive('tooltip', Tooltip)
 app.use(ToastService)

@@ -8,12 +8,10 @@
             </div>
         </div>
         <Footer/>
-        <CookieConsent />
     </div>
 </template>
 <script setup>
 import Toast from 'primevue/toast'
-import CookieConsent from './CookieConsent.vue'
 import Footer from '../views/Global/Footer.vue'
 import Menu from '../views/Global/Menu.vue'
 </script>
