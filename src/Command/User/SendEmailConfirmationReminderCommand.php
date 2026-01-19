@@ -24,6 +24,7 @@ use Symfony\Component\Routing\RouterInterface;
 class SendEmailConfirmationReminderCommand extends Command
 {
     private const int MAX_REMINDERS = 2;
+    private const int MIN_DAYS_BETWEEN_REMINDERS = 2;
 
     public function __construct(
         private readonly UserRepository $userRepository,
@@ -72,7 +73,10 @@ class SendEmailConfirmationReminderCommand extends Command
 
         $sentCount = 0;
         $skippedMaxRemindersCount = 0;
+        $skippedRecentReminderCount = 0;
         $errorCount = 0;
+
+        $minDaysSince = new DateTimeImmutable(sprintf('-%d days', self::MIN_DAYS_BETWEEN_REMINDERS));
 
         foreach ($usersWithUnconfirmedEmail as $user) {
             if ($limit > 0 && $sentCount >= $limit) {
@@ -84,6 +88,12 @@ class SendEmailConfirmationReminderCommand extends Command
             $reminderCount = $this->userEmailLogService->countSent($user, UserEmailType::EMAIL_CONFIRMATION_REMINDER);
             if ($reminderCount >= self::MAX_REMINDERS) {
                 $skippedMaxRemindersCount++;
+                continue;
+            }
+
+            // Check if we sent a reminder recently (within the last N days)
+            if ($this->userEmailLogService->hasBeenSentSince($user, UserEmailType::EMAIL_CONFIRMATION_REMINDER, $minDaysSince)) {
+                $skippedRecentReminderCount++;
                 continue;
             }
 
@@ -138,6 +148,7 @@ class SendEmailConfirmationReminderCommand extends Command
         $output->writeln('<info>Summary:</info>');
         $output->writeln(sprintf('  - Emails %s: %d', $dryRun ? 'to send' : 'sent', $sentCount));
         $output->writeln(sprintf('  - Skipped (max %d reminders reached): %d', self::MAX_REMINDERS, $skippedMaxRemindersCount));
+        $output->writeln(sprintf('  - Skipped (reminder sent within %d days): %d', self::MIN_DAYS_BETWEEN_REMINDERS, $skippedRecentReminderCount));
 
         if ($errorCount > 0) {
             $output->writeln(sprintf('  - Errors: %d', $errorCount));
