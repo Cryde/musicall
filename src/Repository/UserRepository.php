@@ -94,4 +94,25 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Find users who registered but never confirmed their email.
+     *
+     * @return User[]
+     */
+    public function findUsersWithUnconfirmedEmail(\DateTimeImmutable $registeredBefore, int $limit = 0): array
+    {
+        $qb = $this->createQueryBuilder('user')
+            ->where('user.confirmationDatetime IS NULL')
+            ->andWhere('user.token IS NOT NULL')
+            ->andWhere('user.creationDatetime < :registeredBefore')
+            ->setParameter('registeredBefore', $registeredBefore)
+            ->orderBy('user.creationDatetime', 'ASC');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
