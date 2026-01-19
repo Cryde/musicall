@@ -18,9 +18,7 @@ class GalleryImageNormalizer implements NormalizerInterface
     public function normalize(mixed $object, ?string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         /** @var ?GalleryImage $object */
-        if ($object) {
-            $path = $this->uploaderHelper->asset($object, 'imageFile');
-
+        if ($object && $path = $this->uploaderHelper->asset($object, 'imageFile')) {
             return $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_medium');
         }
 

@@ -213,7 +213,7 @@ class Publication implements ViewableInterface, SluggableEntityInterface
         return $this;
     }
 
-    public function getCreationDatetime(): ?DateTimeInterface
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
@@ -273,24 +273,24 @@ class Publication implements ViewableInterface, SluggableEntityInterface
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): User
     {
         return $this->author;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthor(User $author): self
     {
         $this->author = $author;
 
         return $this;
     }
 
-    public function getSubCategory(): ?PublicationSubCategory
+    public function getSubCategory(): PublicationSubCategory
     {
         return $this->subCategory;
     }
 
-    public function setSubCategory(?PublicationSubCategory $subCategory): self
+    public function setSubCategory(PublicationSubCategory $subCategory): self
     {
         $this->subCategory = $subCategory;
 

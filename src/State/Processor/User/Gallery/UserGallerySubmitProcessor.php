@@ -28,6 +28,7 @@ readonly class UserGallerySubmitProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         /** @var UserGallerySubmit $data */
+        /** @var Gallery $gallery */
         $gallery = $this->galleryRepository->find($uriVariables['id']);
 
         // Validate for publish

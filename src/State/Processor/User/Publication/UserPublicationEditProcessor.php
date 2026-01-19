@@ -5,6 +5,7 @@ namespace App\State\Processor\User\Publication;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\User\Publication\UserPublicationEdit;
+use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Service\Builder\User\Publication\UserPublicationEditBuilder;
@@ -28,6 +29,7 @@ class UserPublicationEditProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserPublicationEdit
     {
         /** @var UserPublicationEdit $data */
+        /** @var Publication $publication */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         if (isset($data->title)) {

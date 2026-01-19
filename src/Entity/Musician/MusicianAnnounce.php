@@ -76,7 +76,7 @@ class MusicianAnnounce
         return $this->id?->toString();
     }
 
-    public function getCreationDatetime(): ?DateTimeInterface
+    public function getCreationDatetime(): DateTimeInterface
     {
         return $this->creationDatetime;
     }
@@ -112,12 +112,12 @@ class MusicianAnnounce
         return $this;
     }
 
-    public function getInstrument(): ?Instrument
+    public function getInstrument(): Instrument
     {
         return $this->instrument;
     }
 
-    public function setInstrument(?Instrument $instrument): self
+    public function setInstrument(Instrument $instrument): self
     {
         $this->instrument = $instrument;
 

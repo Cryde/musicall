@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Repository\Message\MessageThreadRepository;
 use App\Service\Access\ThreadAccess;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
@@ -29,9 +30,12 @@ class MessageCollectionProvider implements ProviderInterface
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
+        if (!$thread = $this->messageThreadRepository->find($uriVariables['threadId'])) {
+            throw new NotFoundHttpException('Thread not found.');
+        }
+
         /** @var User $user */
         $user = $this->security->getUser();
-        $thread = $this->messageThreadRepository->find($uriVariables['threadId']);
         if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
             throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
         }

@@ -58,12 +58,12 @@ class ForumTopic implements SluggableEntityInterface
         return $this->id?->toString();
     }
 
-    public function getForum(): ?Forum
+    public function getForum(): Forum
     {
         return $this->forum;
     }
 
-    public function setForum(?Forum $forum): self
+    public function setForum(Forum $forum): self
     {
         $this->forum = $forum;
 
@@ -142,12 +142,12 @@ class ForumTopic implements SluggableEntityInterface
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): User
     {
         return $this->author;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthor(User $author): self
     {
         $this->author = $author;
 

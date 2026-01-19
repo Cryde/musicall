@@ -18,24 +18,26 @@ readonly class UserPublicationBuilder
 
     public function buildFromEntity(Publication $publication): UserPublication
     {
+        $creationDatetime = $publication->getCreationDatetime();
+
         $dto = new UserPublication();
-        $dto->id = $publication->getId();
-        $dto->title = $publication->getTitle();
-        $dto->slug = $publication->getSlug();
-        $dto->creationDatetime = $publication->getCreationDatetime();
+        $dto->id = (int) $publication->getId();
+        $dto->title = (string) $publication->getTitle();
+        $dto->slug = (string) $publication->getSlug();
+        $dto->creationDatetime = $creationDatetime;
         $dto->editionDatetime = $publication->getEditionDatetime();
-        $dto->statusId = $publication->getStatus();
+        $dto->statusId = (int) $publication->getStatus();
         $dto->statusLabel = Publication::STATUS_LABEL[$publication->getStatus()] ?? 'Inconnu';
-        $dto->typeId = $publication->getType();
+        $dto->typeId = (int) $publication->getType();
         $dto->typeLabel = $publication->getType() === Publication::TYPE_VIDEO
             ? Publication::TYPE_VIDEO_LABEL
             : Publication::TYPE_TEXT_LABEL;
 
         $subCategory = $publication->getSubCategory();
         $category = new UserPublicationCategory();
-        $category->id = $subCategory->getId();
-        $category->title = $subCategory->getTitle();
-        $category->slug = $subCategory->getSlug();
+        $category->id = (int) $subCategory->getId();
+        $category->title = (string) $subCategory->getTitle();
+        $category->slug = (string) $subCategory->getSlug();
         $dto->category = $category;
 
         $dto->coverUrl = $this->buildCoverUrl($publication);

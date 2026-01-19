@@ -37,7 +37,7 @@ readonly class AdminGalleryApproveProcessor implements ProcessorInterface
 
         $gallery->setPublicationDatetime(new \DateTime());
         $gallery->setStatus(Gallery::STATUS_ONLINE);
-        $gallery->setSlug($this->gallerySlug->create($gallery->getTitle()));
+        $gallery->setSlug($this->gallerySlug->create((string) $gallery->getTitle()));
 
         $this->entityManager->flush();
 

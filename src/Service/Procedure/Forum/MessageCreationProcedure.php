@@ -6,8 +6,6 @@ namespace App\Service\Procedure\Forum;
 
 use App\ApiResource\Forum\Topic;
 use App\ApiResource\Forum\TopicPost;
-use App\Entity\Forum\ForumPost;
-use App\Entity\Forum\ForumTopic;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
 use App\Service\Builder\Forum\ForumPostBuilder;
@@ -15,6 +13,7 @@ use App\Service\Builder\Forum\TopicPostListBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 readonly class MessageCreationProcedure
 {
@@ -29,7 +28,9 @@ readonly class MessageCreationProcedure
 
     public function process(Topic $topicDto, string $message): TopicPost
     {
-        $topic = $this->forumTopicRepository->find($topicDto->id);
+        if (!$topic = $this->forumTopicRepository->find($topicDto->id)) {
+            throw new NotFoundHttpException('Ce sujet n\'existe pas.');
+        }
 
         if ($topic->getIsLocked()) {
             throw new BadRequestHttpException('Ce sujet est verrouillé. Vous ne pouvez plus y répondre.');

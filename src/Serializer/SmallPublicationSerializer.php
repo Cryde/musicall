@@ -12,30 +12,17 @@ class SmallPublicationSerializer
     }
 
     /**
-     * @param Publication[] $publications
-     *
-     * @return array<int, array{id: ?int, title: string, description: ?string, cover_image: ?string}>
-     */
-    public function listToArray(array $publications): array
-    {
-        $result = [];
-        foreach ($publications as $publication) {
-            $result[] = $this->toArray($publication);
-        }
-
-        return $result;
-    }
-
-    /**
      * @return array{id: ?int, title: string, description: ?string, cover_image: ?string}
      */
     public function toArray(Publication $publication): array
     {
+        $cover = $publication->getCover();
+
         return [
             'id'          => $publication->getId(),
             'title'       => mb_strtoupper((string) $publication->getTitle()),
             'description' => $publication->getShortDescription(),
-            'cover_image' => $this->uploaderHelper->asset($publication->getCover(), 'imageFile'),
+            'cover_image' => $cover ? $this->uploaderHelper->asset($cover, 'imageFile') : null,
         ];
     }
 }

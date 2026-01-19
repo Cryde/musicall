@@ -43,7 +43,7 @@ readonly class AdminPublicationApproveProcessor implements ProcessorInterface
         $publication->setThread($commentThread);
         $publication->setPublicationDatetime(new \DateTime());
         $publication->setStatus(Publication::STATUS_ONLINE);
-        $publication->setSlug($this->publicationSlug->create($publication->getTitle()));
+        $publication->setSlug($this->publicationSlug->create((string) $publication->getTitle()));
 
         $this->entityManager->flush();
 

@@ -87,12 +87,12 @@ class Forum implements SluggableEntityInterface
         return $this;
     }
 
-    public function getForumCategory(): ?ForumCategory
+    public function getForumCategory(): ForumCategory
     {
         return $this->forumCategory;
     }
 
-    public function setForumCategory(?ForumCategory $forumCategory): self
+    public function setForumCategory(ForumCategory $forumCategory): self
     {
         $this->forumCategory = $forumCategory;
 

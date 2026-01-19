@@ -27,8 +27,8 @@ readonly class ForumCategoryListBuilder
     private function buildCategoryItem(ForumCategoryEntity $category): ForumCategory
     {
         $item = new ForumCategory();
-        $item->id = $category->getId();
-        $item->title = $category->getTitle();
+        $item->id = (string) $category->getId();
+        $item->title = (string) $category->getTitle();
         $item->forums = $this->buildForumItems($category->getForums()->toArray());
 
         return $item;
@@ -53,10 +53,10 @@ readonly class ForumCategoryListBuilder
     private function buildForumItem(ForumEntity $forum): Forum
     {
         $item = new Forum();
-        $item->id = $forum->getId();
-        $item->title = $forum->getTitle();
-        $item->slug = $forum->getSlug();
-        $item->description = $forum->getDescription();
+        $item->id = (string) $forum->getId();
+        $item->title = (string) $forum->getTitle();
+        $item->slug = (string) $forum->getSlug();
+        $item->description = (string) $forum->getDescription();
 
         return $item;
     }

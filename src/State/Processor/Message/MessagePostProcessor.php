@@ -30,11 +30,11 @@ class MessagePostProcessor implements ProcessorInterface
         }
         /** @var User $user */
         $user = $this->security->getUser();
-        $thread = $data->getThread();
-        if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
+
+        if (!$this->threadAccess->isOneOfParticipant($data->getThread(), $user)) {
             throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
         }
 
-        return $this->messageSenderProcedure->processByThread($thread, $user, $data->getContent());
+        return $this->messageSenderProcedure->processByThread($data->getThread(), $user, $data->getContent());
     }
 }

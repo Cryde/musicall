@@ -96,24 +96,24 @@ class ForumPost
         return $this;
     }
 
-    public function getTopic(): ?ForumTopic
+    public function getTopic(): ForumTopic
     {
         return $this->topic;
     }
 
-    public function setTopic(?ForumTopic $topic): self
+    public function setTopic(ForumTopic $topic): self
     {
         $this->topic = $topic;
 
         return $this;
     }
 
-    public function getCreator(): ?User
+    public function getCreator(): User
     {
         return $this->creator;
     }
 
-    public function setCreator(?User $creator): self
+    public function setCreator(User $creator): self
     {
         $this->creator = $creator;
 

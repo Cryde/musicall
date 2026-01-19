@@ -30,10 +30,13 @@ class GoogleController extends AbstractOAuthController
     protected function extractUserData(object $resourceOwner): OAuthUserData
     {
         /** @var GoogleUser $resourceOwner */
+        if (!$email = $resourceOwner->getEmail()) {
+            throw new \LogicException('No email address');
+        }
         return new OAuthUserData(
             id: $resourceOwner->getId(),
-            email: $resourceOwner->getEmail(),
-            username: $resourceOwner->getName() ?: $resourceOwner->getEmail(),
+            email: $email,
+            username: $resourceOwner->getName() ?: $email,
             pictureUrl: $this->getHighResolutionPictureUrl($resourceOwner->getAvatar()),
         );
     }

@@ -23,6 +23,7 @@ readonly class UserProfilePictureDeleteProcessor implements ProcessorInterface
     {
         /** @var UserProfilePicture $data */
         $user = $data->getUser();
+        assert($user !== null);
 
         // Detach profile picture from user
         $user->setProfilePicture(null);

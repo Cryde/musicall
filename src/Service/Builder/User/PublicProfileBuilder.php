@@ -26,26 +26,32 @@ readonly class PublicProfileBuilder
     public function build(UserProfile $profile): PublicProfile
     {
         $user = $profile->getUser();
+        $memberSince = $user->getCreationDatetime();
+
         $dto = new PublicProfile();
 
         $dto->username = $user->getUsername();
-        $dto->userId = $user->getId();
+        $dto->userId = (string) $user->getId();
         $dto->displayName = $profile->getDisplayName();
         $dto->bio = $profile->getBio();
         $dto->location = $profile->getLocation();
-        $dto->memberSince = $user->getCreationDatetime();
+        $dto->memberSince = $memberSince;
 
         // Profile picture
         if ($user->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
-            $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
-            $dto->profilePictureLargeUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
+            if ($path !== null) {
+                $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+                $dto->profilePictureLargeUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
+            }
         }
 
         // Cover picture
         if ($profile->getCoverPicture()) {
             $path = $this->uploaderHelper->asset($profile->getCoverPicture(), 'imageFile');
-            $dto->coverPictureUrl = $this->cacheManager->getBrowserPath($path, 'user_cover_picture');
+            if ($path !== null) {
+                $dto->coverPictureUrl = $this->cacheManager->getBrowserPath($path, 'user_cover_picture');
+            }
         }
 
         // Social links
@@ -84,14 +90,17 @@ readonly class PublicProfileBuilder
     private function buildAnnounces(array $announces): array
     {
         return array_map(function (MusicianAnnounce $announce): PublicProfileAnnounce {
+            $instrument = $announce->getInstrument();
+            $creationDatetime = $announce->getCreationDatetime();
+
             $dto = new PublicProfileAnnounce();
-            $dto->id = $announce->getId();
-            $dto->creationDatetime = $announce->getCreationDatetime();
-            $dto->type = $announce->getType();
-            $dto->instrumentName = $announce->getInstrument()->getMusicianName();
-            $dto->locationName = $announce->getLocationName();
+            $dto->id = (string) $announce->getId();
+            $dto->creationDatetime = $creationDatetime;
+            $dto->type = (int) $announce->getType();
+            $dto->instrumentName = (string) $instrument->getMusicianName();
+            $dto->locationName = (string) $announce->getLocationName();
             $dto->styles = array_map(
-                fn($style) => $style->getName(),
+                fn($style) => (string) $style->getName(),
                 $announce->getStyles()->toArray()
             );
 

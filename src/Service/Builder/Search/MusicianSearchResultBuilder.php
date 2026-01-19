@@ -40,14 +40,16 @@ class MusicianSearchResultBuilder
 
     public function build(MusicianAnnounce $musicianAnnounce, ?float $distance = null): AnnounceMusician
     {
+        $instrument = $musicianAnnounce->getInstrument();
+
         $announceMusician = new AnnounceMusician();
-        $announceMusician->id = $musicianAnnounce->getId();
+        $announceMusician->id = (string) $musicianAnnounce->getId();
         $announceMusician->user = $this->buildUser($musicianAnnounce->getAuthor());
-        $announceMusician->instrument = $this->buildInstrument($musicianAnnounce->getInstrument());
+        $announceMusician->instrument = $this->buildInstrument($instrument);
         $announceMusician->styles = $this->buildStyles($musicianAnnounce->getStyles()->toArray());
-        $announceMusician->note = $this->appOnlybrSanitizer->sanitize($musicianAnnounce->getNote());
+        $announceMusician->note = $this->appOnlybrSanitizer->sanitize((string) $musicianAnnounce->getNote());
         $announceMusician->locationName = $musicianAnnounce->getLocationName();
-        $announceMusician->type = $musicianAnnounce->getType();
+        $announceMusician->type = (int) $musicianAnnounce->getType();
         if ($distance !== null) {
             $announceMusician->distance = $distance / 1000;
         }
@@ -58,12 +60,14 @@ class MusicianSearchResultBuilder
     private function buildUser(UserEntity $userEntity): User
     {
         $user = new User();
-        $user->id = $userEntity->getId();
+        $user->id = (string) $userEntity->getId();
         $user->username = $userEntity->getUsername();
         $user->hasMusicianProfile = $userEntity->getMusicianProfile() !== null;
         if ($userEntity->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($userEntity->getProfilePicture(), 'imageFile');
-            $user->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+            if ($path !== null) {
+                $user->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
+            }
         }
 
         return $user;
@@ -72,7 +76,7 @@ class MusicianSearchResultBuilder
     private function buildInstrument(InstrumentEntity $instrumentEntity): Instrument
     {
         $instrument = new Instrument();
-        $instrument->name = $instrumentEntity->getMusicianName();
+        $instrument->name = (string) $instrumentEntity->getMusicianName();
 
         return $instrument;
     }
@@ -86,7 +90,7 @@ class MusicianSearchResultBuilder
     {
         return array_map(static function (StyleEntity $styleEntity): Style {
             $style = new Style();
-            $style->name = $styleEntity->getName();
+            $style->name = (string) $styleEntity->getName();
 
             return $style;
         }, $styles);

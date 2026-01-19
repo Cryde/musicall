@@ -27,7 +27,7 @@ class ViewProcedure
     public function process(ViewableInterface $viewable, Request $request, ?User $user = null): void
     {
         $viewCache = $viewable->getViewCache();
-        if (!$viewable->getViewCache()) {
+        if (!$viewCache) {
             $viewCache = $this->viewCacheDirector->build();
             $viewable->setViewCache($viewCache);
             $this->entityManager->persist($viewCache);

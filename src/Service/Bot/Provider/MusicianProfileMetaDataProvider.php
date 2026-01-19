@@ -53,8 +53,7 @@ readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInt
 
         $cover = null;
         $profilePicture = $user->getProfilePicture();
-        if ($profilePicture) {
-            $path = $this->uploaderHelper->asset($profilePicture, 'imageFile');
+        if ($profilePicture && $path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {
             $cover = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
         }
 

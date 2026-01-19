@@ -39,17 +39,25 @@ readonly class PublicationBuilder
 
     public function buildFromEntity(PublicationEntity $publicationEntity): Publication
     {
+        $author = $publicationEntity->getAuthor();
+        $subCategory = $publicationEntity->getSubCategory();
+        $cover = $publicationEntity->getCover();
+        $thread = $publicationEntity->getThread();
+        assert($cover !== null && $thread !== null);
+
         $publication = new Publication();
-        $publication->slug = $publicationEntity->getSlug();
-        $publication->content = $this->appPublicationSanitizer->sanitize($publicationEntity->getContent());
-        $publication->title = $publicationEntity->getTitle();
+        $publication->slug = (string) $publicationEntity->getSlug();
+        $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->getContent());
+        $publication->title = (string) $publicationEntity->getTitle();
         $publication->description = $publicationEntity->getDescription() ?? '';
-        $publication->publicationDatetime = $publicationEntity->getPublicationDatetime();
-        $publication->author = $this->buildAuthor($publicationEntity->getAuthor());
-        $publication->cover = $this->buildCover($publicationEntity->getCover());
-        $publication->category = $this->buildCategory($publicationEntity->getSubCategory());
-        $publication->thread = $this->buildThread($publicationEntity->getThread());
-        $publication->type = $this->buildType($publicationEntity->getType());
+        $publicationDatetime = $publicationEntity->getPublicationDatetime();
+        assert($publicationDatetime !== null);
+        $publication->publicationDatetime = $publicationDatetime;
+        $publication->author = $this->buildAuthor($author);
+        $publication->cover = $this->buildCover($cover);
+        $publication->category = $this->buildCategory($subCategory);
+        $publication->thread = $this->buildThread($thread);
+        $publication->type = $this->buildType((int) $publicationEntity->getType());
 
         return $publication;
     }
@@ -57,7 +65,7 @@ readonly class PublicationBuilder
     private function buildAuthor(User $user): Author
     {
         $author = new Author();
-        $author->username = $user->getUsername();
+        $author->username = (string) $user->getUsername();
 
         return $author;
     }
@@ -65,6 +73,7 @@ readonly class PublicationBuilder
     private function buildCover(PublicationCover $publicationCover): Cover
     {
         $path = $this->uploaderHelper->asset($publicationCover, 'imageFile');
+        assert($path !== null);
         $cover = new Cover();
         $cover->coverUrl = $this->cacheManager->getBrowserPath($path, 'publication_cover_300x300');
 
@@ -74,9 +83,9 @@ readonly class PublicationBuilder
     private function buildCategory(PublicationSubCategory $publicationSubCategory): Category
     {
         $category = new Category();
-        $category->id = $publicationSubCategory->getId();
-        $category->slug = $publicationSubCategory->getSlug();
-        $category->title = $publicationSubCategory->getTitle();
+        $category->id = (int) $publicationSubCategory->getId();
+        $category->slug = (string) $publicationSubCategory->getSlug();
+        $category->title = (string) $publicationSubCategory->getTitle();
 
         return $category;
     }
@@ -84,7 +93,7 @@ readonly class PublicationBuilder
     private function buildThread(CommentThread $commentThreadEntity): Thread
     {
         $thread = new Thread();
-        $thread->id = $commentThreadEntity->getId();
+        $thread->id = (int) $commentThreadEntity->getId();
 
         return $thread;
     }

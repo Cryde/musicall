@@ -28,6 +28,7 @@ class PublicationDirector
         if (!$category) {
             $category = $this->publicationSubCategoryRepository->findOneBy(['slug' => 'decouvertes']);
         }
+        assert($category !== null);
 
         return (new Publication())
             ->setTitle($addVideo->title)

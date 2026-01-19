@@ -26,6 +26,7 @@ class UserPublicationSubmitProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserPublicationEdit
     {
+        /** @var Publication $publication */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         // Validate required fields for submission

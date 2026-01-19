@@ -34,10 +34,7 @@ final class UserFactory extends PersistentProxyObjectFactory
             if ($user->getProfile() === null) {
                 $profile = new UserProfile();
                 $profile->setUser($user);
-                $profile->setCreationDatetime($user->getCreationDatetime()
-                    ? \DateTimeImmutable::createFromMutable($user->getCreationDatetime())
-                    : new \DateTimeImmutable()
-                );
+                $profile->setCreationDatetime(\DateTimeImmutable::createFromMutable($user->getCreationDatetime()));
                 $user->setProfile($profile);
             }
         });

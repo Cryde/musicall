@@ -47,7 +47,9 @@ readonly class PublicationProvider implements ProviderInterface
         if ($publication->getStatus() === Publication::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
-            $this->viewProcedure->process($publication, $this->requestStack->getCurrentRequest(), $user);
+            if ($request = $this->requestStack->getCurrentRequest()) {
+                $this->viewProcedure->process($publication, $request, $user);
+            }
         }
 
         return $this->publicationBuilder->buildFromEntity($publication);

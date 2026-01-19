@@ -12,6 +12,7 @@ use App\Service\Builder\Forum\ForumTopicListBuilder;
 use App\Service\Slugifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TopicCreationProcedure
 {
@@ -28,7 +29,9 @@ class TopicCreationProcedure
 
     public function process(Forum $forumDto, string $title, string $message): ForumTopic
     {
-        $forum = $this->forumRepository->find($forumDto->id);
+        if (!$forum = $this->forumRepository->find($forumDto->id)) {
+            throw new NotFoundHttpException('Forum not found.');
+        }
         /** @var User $user */
         $user = $this->security->getUser();
         // Create the topic

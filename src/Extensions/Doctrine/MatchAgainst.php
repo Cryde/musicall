@@ -37,17 +37,18 @@ class MatchAgainst extends FunctionNode
 
         $parser->match(TokenType::T_CLOSE_PARENTHESIS);
         // against
-        if (strtolower($lexer->lookahead->value) !== 'against') {
+        $lookahead = $lexer->lookahead;
+        if ($lookahead && strtolower($lookahead->value) !== 'against') {
             $parser->syntaxError('against');
         }
         $parser->match(TokenType::T_IDENTIFIER);
         $parser->match(TokenType::T_OPEN_PARENTHESIS);
         $this->against = $parser->StringPrimary();
-        if (strtolower($lexer->lookahead->value) === 'boolean') {
+        if ($lookahead && strtolower($lookahead->value) === 'boolean') {
             $parser->match(TokenType::T_IDENTIFIER);
             $this->booleanMode = true;
         }
-        if (strtolower($lexer->lookahead->value) === 'expand') {
+        if ($lookahead && strtolower($lookahead->value) === 'expand') {
             $parser->match(TokenType::T_IDENTIFIER);
             $this->queryExpansion = true;
         }
@@ -57,13 +58,15 @@ class MatchAgainst extends FunctionNode
     public function getSql(SqlWalker $walker): string
     {
         $fields = [];
-        foreach ($this->pathExp as $pathExp) {
+        foreach ($this->pathExp ?: [] as $pathExp) {
             $fields[] = $pathExp->dispatch($walker);
         }
-        $against = $walker->walkStringPrimary($this->against)
-            . ($this->booleanMode ? ' IN BOOLEAN MODE' : '')
-            . ($this->queryExpansion ? ' WITH QUERY EXPANSION' : '');
-
+        $against = '';
+        if ($this->against) {
+            $against = $walker->walkStringPrimary($this->against)
+                . ($this->booleanMode ? ' IN BOOLEAN MODE' : '')
+                . ($this->queryExpansion ? ' WITH QUERY EXPANSION' : '');
+        }
         return sprintf('MATCH (%s) AGAINST (%s)', implode(', ', $fields), $against);
     }
 }

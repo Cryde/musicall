@@ -30,11 +30,14 @@ readonly class MusicianProfileMediaBuilder
     ): MusicianProfileMedia
     {
         $media = new MusicianProfileMedia();
+        $profileId = $profile->getId();
+        assert($profileId !== null);
+
         $media->setMusicianProfile($profile);
         $media->setPlatform($parsed->platform);
         $media->setUrl($mediaDto->url);
         $media->setEmbedId($parsed->embedId);
-        $media->setPosition($this->mediaRepository->getNextPosition($profile->getId()));
+        $media->setPosition($this->mediaRepository->getNextPosition($profileId));
 
         // Use user-provided title, or fall back to fetched title
         $media->setTitle($mediaDto->title ?: $metadata->title);

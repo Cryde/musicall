@@ -110,7 +110,7 @@ class PublicationCover
         return $this;
     }
 
-    public function getPublication(): Publication
+    public function getPublication(): ?Publication
     {
         return $this->publication;
     }
