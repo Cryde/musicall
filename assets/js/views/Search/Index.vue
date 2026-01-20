@@ -312,7 +312,7 @@
                 @click="handleOpenAnnounceModalFromSearch"
             />
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-4 items-stretch">
             <MusicianAnnounceBlockItem
                 v-for="announce in musicianSearchStore.announces"
                 :key="announce.id"
