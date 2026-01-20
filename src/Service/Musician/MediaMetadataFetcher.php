@@ -7,7 +7,7 @@ namespace App\Service\Musician;
 use App\Enum\Musician\MediaPlatform;
 use App\Service\Musician\MediaMetadata\MediaMetadata;
 use App\Service\Musician\MediaMetadata\MediaMetadataFetcherInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class MediaMetadataFetcher
 {
@@ -15,7 +15,7 @@ readonly class MediaMetadataFetcher
      * @param iterable<MediaMetadataFetcherInterface> $fetchers
      */
     public function __construct(
-        #[TaggedIterator('app.media_metadata_fetcher')]
+        #[AutowireIterator('app.media_metadata_fetcher')]
         private iterable $fetchers,
     ) {
     }

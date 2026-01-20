@@ -6,7 +6,7 @@ namespace App\Service\Musician;
 
 use App\Service\Musician\MediaUrlParser\MediaUrlParserInterface;
 use App\Service\Musician\MediaUrlParser\ParsedMediaUrl;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class MediaUrlParser
 {
@@ -14,7 +14,7 @@ readonly class MediaUrlParser
      * @param iterable<MediaUrlParserInterface> $parsers
      */
     public function __construct(
-        #[TaggedIterator('app.media_url_parser')]
+        #[AutowireIterator('app.media_url_parser')]
         private iterable $parsers,
     ) {
     }
