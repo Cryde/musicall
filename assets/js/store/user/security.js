@@ -24,7 +24,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
 
   let refreshIntervalId = null
 
-  async function login(login, password) {
+  async function login(login, password, returnUrl = null) {
     loginErrors.value = []
     authError.value = null
     try {
@@ -32,7 +32,12 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
       await checkAuthInfo()
       localStorage.setItem('was_logged_in', 'true')
       startProactiveRefresh()
-      await router.replace({ name: 'app_home' })
+      // Redirect to return_url if present, otherwise home
+      if (returnUrl) {
+        window.location.href = returnUrl
+      } else {
+        await router.replace({ name: 'app_home' })
+      }
     } catch (e) {
       if (e?.response?.status === 401) {
         loginErrors.value = [e.response.data.message]

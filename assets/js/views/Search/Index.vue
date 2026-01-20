@@ -326,7 +326,7 @@
         </div>
 
         <!-- Load more button -->
-        <div v-if="!userSecurityStore.isAuthenticated || musicianSearchStore.lastBatchSize >= 12" class="flex justify-center mt-8 mb-9">
+        <div v-if="showLoadMoreButton" class="flex justify-center mt-8 mb-9">
             <Button
                 :label="userSecurityStore.isAuthenticated ? 'Voir plus de résultats' : 'Voir plus'"
                 :icon="isLoadingMore ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-down'"
@@ -349,6 +349,7 @@
     />
     <AuthRequiredModal
         v-model:visible="showAuthModal"
+        :variant="authModalVariant"
         :message="authModalMessage"
     />
 </template>
@@ -365,7 +366,7 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
@@ -377,6 +378,7 @@ import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const styleStore = useStyleStore()
 const instrumentStore = useInstrumentStore()
@@ -391,6 +393,35 @@ const instrumentTitles = {
   chant: 'chanteur',
   piano: 'pianiste'
 }
+
+const quickSearch = ref('')
+const quickSearchErrors = ref([])
+const isSearching = ref(false)
+const isFilterGenerating = ref(false)
+const isSearchMade = ref(false)
+const selectedInstrument = ref(null)
+const selectedStyles = ref([])
+const selectedLocation = ref(null)
+const locationSuggestions = ref([])
+const selectSearchType = ref(null)
+const selectSearchTypeOption = [
+    { key: 2, name: 'Musiciens' },
+    { key: 1, name: 'Groupe' }
+]
+
+const showAnnounceModal = ref(false)
+const createFromSearch = ref(false)
+const showAuthModal = ref(false)
+const authModalMessage = ref('')
+const authModalVariant = ref('default')
+
+// Progressive loading for guests: allow 3 pages (4 results × 3 = 12 results) before requiring login
+const guestPagesLoaded = ref(1)
+const MAX_GUEST_PAGES = 3
+
+// Mobile responsive
+const showMobileFilters = ref(false)
+const isLargeScreen = useMediaQuery('(min-width: 1024px)')
 
 const prefilledInstrumentSlug = computed(() => route.meta.instrumentSlug || null)
 
@@ -421,21 +452,30 @@ onMounted(async () => {
   await instrumentStore.loadInstruments()
   await styleStore.loadStyles()
 
-  // Pre-fill instrument if specified in route meta
+  // Initialize filters from URL query params
+  initializeFiltersFromUrl()
+
+  // Pre-fill instrument if specified in route meta (takes precedence over URL)
   applyPrefilledInstrument()
 
-  // Load initial results without filters
+  // Load initial results with any URL filters
   await loadInitialResults()
 })
 
 async function loadInitialResults() {
   isSearching.value = true
   isSearchMade.value = true
-  await musicianSearchStore.searchAnnounces({})
+  const params = buildSearchParams()
+  await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
 }
 
 function applyPrefilledInstrument() {
+  // Only apply prefilled instrument from route meta if no URL instrument param
+  if (route.query.instrument) {
+    return
+  }
+
   if (prefilledInstrumentSlug.value) {
     const instrument = instrumentStore.instruments.find(
       (i) => i.slug === prefilledInstrumentSlug.value
@@ -443,8 +483,6 @@ function applyPrefilledInstrument() {
     if (instrument) {
       selectedInstrument.value = instrument
     }
-  } else {
-    selectedInstrument.value = null
   }
 }
 
@@ -452,30 +490,6 @@ function applyPrefilledInstrument() {
 watch(prefilledInstrumentSlug, () => {
   applyPrefilledInstrument()
 })
-
-const quickSearch = ref('')
-const quickSearchErrors = ref([])
-const isSearching = ref(false)
-const isFilterGenerating = ref(false)
-const isSearchMade = ref(false)
-const selectedInstrument = ref(null)
-const selectedStyles = ref([])
-const selectedLocation = ref(null)
-const locationSuggestions = ref([])
-const selectSearchType = ref(null)
-const selectSearchTypeOption = [
-  { key: 2, name: 'Musiciens' },
-  { key: 1, name: 'Groupe' }
-]
-
-const showAnnounceModal = ref(false)
-const createFromSearch = ref(false)
-const showAuthModal = ref(false)
-const authModalMessage = ref('')
-
-// Mobile responsive
-const showMobileFilters = ref(false)
-const isLargeScreen = useMediaQuery('(min-width: 1024px)')
 
 // Track which fields were auto-filled from quick search
 const autoFilledFields = ref({
@@ -540,6 +554,16 @@ const hasActiveFilters = computed(() => {
   )
 })
 
+// Show "See more" button if:
+// - Authenticated: as long as there are more results (lastBatchSize >= 12)
+// - Guest: as long as there are more results (loadMore handles showing auth modal when limit reached)
+const showLoadMoreButton = computed(() => {
+  if (userSecurityStore.isAuthenticated) {
+    return musicianSearchStore.lastBatchSize >= 12
+  }
+  return musicianSearchStore.lastBatchSize >= 4
+})
+
 function removeStyle(style) {
   selectedStyles.value = selectedStyles.value.filter((s) => s.id !== style.id)
 }
@@ -596,9 +620,62 @@ function buildSearchParams() {
   return params
 }
 
+function initializeFiltersFromUrl() {
+  const query = route.query
+
+  // Type (1=group, 2=musician)
+  if (query.type) {
+    selectSearchType.value = selectSearchTypeOption.find((t) => t.key === Number(query.type))
+  }
+
+  // Instrument (by ID) - convert to string for comparison as URL params are strings
+  if (query.instrument) {
+    selectedInstrument.value = instrumentStore.instruments.find(
+      (i) => String(i.id) === String(query.instrument)
+    )
+  }
+
+  // Styles (comma-separated IDs) - convert to string for comparison
+  if (query.styles) {
+    const styleIds = query.styles.split(',')
+    selectedStyles.value = styleStore.styles.filter((s) => styleIds.includes(String(s.id)))
+  }
+
+  // Location (lat, lng, location name)
+  if (query.lat && query.lng && query.location) {
+    selectedLocation.value = {
+      latitude: parseFloat(query.lat),
+      longitude: parseFloat(query.lng),
+      name: query.location
+    }
+  }
+}
+
+function updateUrlWithFilters() {
+  const query = {}
+
+  if (selectSearchType.value) {
+    query.type = selectSearchType.value.key
+  }
+  if (selectedInstrument.value) {
+    query.instrument = selectedInstrument.value.id
+  }
+  if (selectedStyles.value.length > 0) {
+    query.styles = selectedStyles.value.map((s) => s.id).join(',')
+  }
+  if (selectedLocation.value && typeof selectedLocation.value === 'object') {
+    query.lat = selectedLocation.value.latitude
+    query.lng = selectedLocation.value.longitude
+    query.location = selectedLocation.value.name
+  }
+
+  router.replace({ query })
+}
+
 async function search() {
   quickSearchErrors.value = []
   isSearching.value = true
+  guestPagesLoaded.value = 1 // Reset on new search
   const searchFilters = {
     type: selectSearchType.value?.name || null,
     instrument: selectedInstrument.value?.musician_name || null,
@@ -611,6 +688,9 @@ async function search() {
   isSearching.value = false
   isSearchMade.value = true
 
+  // Sync filters with URL for shareability
+  updateUrlWithFilters()
+
   if (musicianSearchStore.announces.length === 0) {
     trackUmamiEvent('musician-search-no-results', searchFilters)
   }
@@ -619,18 +699,34 @@ async function search() {
 const isLoadingMore = ref(false)
 
 async function loadMore() {
+  const nextPage = musicianSearchStore.currentPage + 1
+  trackUmamiEvent('musician-load-more', { page: nextPage })
+
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Connectez-vous pour voir plus de résultats et contacter les musiciens.'
-    showAuthModal.value = true
-    return
+    // Check if guest has reached the progressive loading limit
+    if (guestPagesLoaded.value >= MAX_GUEST_PAGES) {
+      openAuthModal('see_more')
+      return
+    }
   }
 
   isLoadingMore.value = true
   const params = buildSearchParams()
-  params.page = musicianSearchStore.currentPage + 1
+  params.page = nextPage
   params.append = true
   await musicianSearchStore.searchAnnounces(params)
+
+  if (!userSecurityStore.isAuthenticated) {
+    guestPagesLoaded.value++
+  }
+
   isLoadingMore.value = false
+}
+
+function openAuthModal(variant, musicianName = null) {
+  authModalVariant.value = variant
+  authModalMessage.value = ''
+  showAuthModal.value = true
 }
 
 async function generateQuickSearchFilters() {
@@ -717,27 +813,30 @@ function clearAllFilters(skipTracking = false) {
   // Reset results to initial state
   musicianSearchStore.clear()
   isSearchMade.value = false
+  // Clear URL params
+  router.replace({ query: {} })
 }
 
 function handleOpenAnnounceModal() {
   trackUmamiEvent('musician-post-ad-click')
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Si vous souhaitez poster une annonce, vous devez vous connecter.'
-    showAuthModal.value = true
+    openAuthModal('post_announce')
     return
   }
   createFromSearch.value = false
   showAnnounceModal.value = true
+  trackUmamiEvent('announce-modal-opened', { fromSearch: false })
 }
 
 function handleOpenAnnounceModalFromSearch() {
+  trackUmamiEvent('musician-post-ad-from-search-click')
   if (!userSecurityStore.isAuthenticated) {
-    authModalMessage.value = 'Si vous souhaitez poster une annonce, vous devez vous connecter.'
-    showAuthModal.value = true
+    openAuthModal('post_announce')
     return
   }
   createFromSearch.value = true
   showAnnounceModal.value = true
+  trackUmamiEvent('announce-modal-opened', { fromSearch: true })
 }
 
 async function handleAnnounceCreated() {
