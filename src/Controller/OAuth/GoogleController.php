@@ -50,10 +50,10 @@ class GoogleController extends AbstractOAuthController
         return preg_replace('/=s\d+-c$/', '=s500-c', $pictureUrl);
     }
 
-    #[Route('/oauth/google', name: 'oauth_google_start')]
-    public function start(): RedirectResponse
+    #[Route('/oauth/google', name: 'oauth_google_start', options: ['expose' => true])]
+    public function start(Request $request): RedirectResponse
     {
-        return $this->connect();
+        return $this->connect($request);
     }
 
     #[Route('/oauth/google/callback', name: 'oauth_google_callback')]

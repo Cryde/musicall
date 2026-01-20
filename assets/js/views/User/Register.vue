@@ -54,7 +54,7 @@
         <!-- Social Login Buttons -->
         <div class="flex flex-col gap-3 w-full">
           <a
-            href="/oauth/google"
+            :href="googleAuthUrl"
             class="flex items-center justify-center gap-3 w-full p-3 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-0 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer no-underline"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -181,7 +181,7 @@
           <div class="text-center w-full">
             <span class="text-surface-900 dark:text-surface-0 font-medium">Vous avez déjà un compte ?</span>
             <RouterLink
-              :to="{ name: 'app_login' }"
+              :to="{ name: 'app_login', query: returnUrl ? { return_url: returnUrl } : {} }"
               class="ml-3 text-primary font-medium cursor-pointer hover:text-primary-emphasis"
             >
               Connectez-vous ici
@@ -202,13 +202,23 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
 
 useTitle('Créer un compte - MusicAll')
 
+const route = useRoute()
 const router = useRouter()
+
+const returnUrl = computed(() => route.query.return_url || null)
+
+const googleAuthUrl = computed(() => {
+  if (returnUrl.value) {
+    return Routing.generate('oauth_google_start', { return_url: returnUrl.value })
+  }
+  return Routing.generate('oauth_google_start')
+})
 
 const form = reactive({
   username: '',

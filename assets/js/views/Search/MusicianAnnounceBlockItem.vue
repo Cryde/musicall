@@ -94,7 +94,8 @@
         />
         <AuthRequiredModal
           v-model:visible="showAuthModal"
-          message="Vous devez vous connecter pour envoyer un message a cet utilisateur."
+          variant="contact"
+          :musician-name="user.username"
         />
     </div>
 </template>
