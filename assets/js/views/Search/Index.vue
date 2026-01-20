@@ -18,38 +18,48 @@
         />
     </div>
 
-    <div class="flex flex-wrap w-full gap-4 items-center">
-        <Message severity="error" v-if="quickSearchErrors.length">
-            <span v-for="error in quickSearchErrors">{{error}}</span>
+    <!-- Quick Search Section -->
+    <div class="mb-6">
+        <Message severity="error" v-if="quickSearchErrors.length" class="mb-4">
+            <span v-for="error in quickSearchErrors" :key="error">{{ error }}</span>
         </Message>
-        <div class="flex flex-wrap w-full gap-4 items-center">
-            <InputText
+
+        <!-- Search Bar -->
+        <div class="relative w-full">
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-primary">
+                <i class="pi pi-sparkles text-xl"></i>
+            </div>
+            <input
                 v-model="quickSearch"
-                fluid
-                size="large"
-                class="flex-auto lg:flex-1 lg:mt-0 w-full lg:w-72 mr-0 lg:mr-6"
-                placeholder="Taper votre recherche ici, exemple: Je recherche un guitariste qui joue du rock"
-            />
-            <Button
-                label="Recherche rapide"
+                type="text"
+                placeholder="Décrivez ce que vous cherchez..."
+                class="w-full pl-12 pr-16 sm:pr-36 py-4 text-lg rounded-2xl border-2 border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all text-surface-900 dark:text-surface-0 placeholder:text-surface-400"
+                @keyup.enter="isQuickSearchParamEnough && generateQuickSearchFilters()"
+            >
+            <button
                 @click="generateQuickSearchFilters"
-                :loading="isFilterGenerating"
-                icon="pi pi-search"
-                severity="info"
-                class="text-surface-500 dark:text-surface-400 shrink-0"
                 :disabled="isSearching || isFilterGenerating || !isQuickSearchParamEnough"
-            />
+                class="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-primary text-white rounded-xl flex items-center gap-2 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+                <i :class="isFilterGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-search'"></i>
+                <span class="hidden sm:inline">Rechercher</span>
+            </button>
         </div>
 
-        <Message size="small" severity="secondary" variant="simple">
-            exemples :
-            <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je cherche un groupe de pop et rock qui a besoin d'un batteur</span>,
-            <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je recherche un guitariste pour mon groupe de funk</span>,
-            <span class="italic font-bold cursor-pointer hover:text-sky-300" @click="insertExample">je recherche un bassiste sur Lyon</span>
-        </Message>
-        <Message v-if="hasAutoFilledFields" size="small" severity="warn" variant="simple" class="w-full">
-            <i class="pi pi-exclamation-triangle mr-2" />
-            La recherche rapide utilise l'IA pour interpréter votre demande. Veuillez vérifier les filtres générés et les ajuster si nécessaire.
+        <!-- Examples -->
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-sm text-surface-500 dark:text-surface-400">
+            <span>Essayez :</span>
+            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">guitariste rock Paris</button>
+            <span class="text-surface-300 dark:text-surface-600">•</span>
+            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">groupe de jazz cherchant bassiste</button>
+            <span class="text-surface-300 dark:text-surface-600">•</span>
+            <button class="text-primary hover:underline cursor-pointer" @click="insertExample">batteur metal Lyon</button>
+        </div>
+
+        <!-- AI Warning -->
+        <Message v-if="hasAutoFilledFields" size="small" severity="warn" variant="simple" class="mt-4">
+            <i class="pi pi-info-circle mr-2" />
+            Les filtres ont été générés par IA. Vérifiez et ajustez si nécessaire.
         </Message>
     </div>
 
@@ -360,7 +370,6 @@ import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Divider from 'primevue/divider'
-import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
