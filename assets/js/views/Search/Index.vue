@@ -332,6 +332,7 @@
                 :location_name="announce.location_name"
                 :distance="announce.distance"
                 :instrument="announce.instrument.name"
+                from="search"
             />
         </div>
 
@@ -364,6 +365,8 @@
     />
 </template>
 <script setup>
+defineOptions({ name: 'MusicianSearch' })
+
 import { useDebounceFn, useMediaQuery, useTitle } from '@vueuse/core'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import AutoComplete from 'primevue/autocomplete'
@@ -374,7 +377,7 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
@@ -854,19 +857,5 @@ async function handleAnnounceCreated() {
   await search()
 }
 
-onUnmounted(() => {
-  musicianSearchStore.clear()
-  instrumentStore.clear()
-  styleStore.clear()
-  isSearching.value = false
-  isSearchMade.value = false
-  quickSearch.value = ''
-  isSearching.value = false
-  selectedInstrument.value = null
-  selectedStyles.value = []
-  selectedLocation.value = null
-  locationSuggestions.value = []
-  quickSearchErrors.value = []
-  selectSearchType.value = { key: 2, name: 'Musiciens' }
-})
+// Note: No onUnmounted cleanup - state is preserved by KeepAlive for back navigation
 </script>

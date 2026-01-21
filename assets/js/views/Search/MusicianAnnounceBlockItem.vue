@@ -95,7 +95,8 @@ const props = defineProps({
     instrument: { type: String, required: true },
     styles: { type: Array, required: true },
     location_name: { type: String, required: true },
-    distance: { type: [Number, String], default: null }
+    distance: { type: [Number, String], default: null },
+    from: { type: String, default: null }
 })
 
 const visibleStyles = computed(() => props.styles.slice(0, MAX_VISIBLE_STYLES))
@@ -107,10 +108,17 @@ const showAuthModal = ref(false)
 
 const isOwnAnnounce = computed(() => userSecurityStore.userProfile?.id === props.user.id)
 
-const profileRoute = computed(() => ({
-    name: props.user.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
-    params: { username: props.user.username }
-}))
+const profileRoute = computed(() => {
+    const route = {
+        name: props.user.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
+        params: { username: props.user.username }
+    }
+    // Add from query param for contextual back navigation
+    if (props.from) {
+        route.query = { from: props.from }
+    }
+    return route
+})
 
 const formattedDistance = computed(() => {
     if (!props.distance) return ''

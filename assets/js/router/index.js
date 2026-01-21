@@ -78,8 +78,12 @@ const routes = [
 export default createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() {
-    // always scroll to top
+  scrollBehavior(to, from, savedPosition) {
+    // Restore scroll position on back/forward navigation
+    if (savedPosition) {
+      return savedPosition
+    }
+    // Scroll to top for new navigations
     return { top: 0 }
   }
 })

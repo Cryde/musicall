@@ -51,6 +51,14 @@
             :class="profile.cover_picture_url ? '' : 'bg-gradient-to-r from-primary-500 to-primary-700'"
             :style="profile.cover_picture_url ? { backgroundImage: `url(${profile.cover_picture_url})` } : {}"
           >
+            <!-- Back button: mobile only -->
+            <button
+              class="md:hidden absolute top-4 left-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2.5 transition-colors cursor-pointer"
+              aria-label="Retour"
+              @click="handleBack"
+            >
+              <i class="pi pi-arrow-left" aria-hidden="true" />
+            </button>
             <!-- Cover picture edit button -->
             <button
               v-if="isOwnProfile"
@@ -143,7 +151,7 @@
             label="Voir le profil musicien"
             severity="secondary"
             rounded
-            @click="$router.push({ name: 'app_user_musician_profile', params: { username: profile.username } })"
+            @click="$router.push({ name: 'app_user_musician_profile', params: { username: profile.username }, query: { from: 'profile' } })"
           >
             <template #icon>
               <MusicNotesIcon class="mr-2" />
@@ -324,7 +332,7 @@ import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
@@ -340,6 +348,7 @@ import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
 const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
@@ -399,6 +408,28 @@ const pageTitle = computed(() => {
 })
 
 useTitle(pageTitle)
+
+// Contextual back navigation based on where user came from
+function handleBack() {
+  const from = route.query.from
+  switch (from) {
+    case 'search':
+    case 'annonces':
+      // Use router.back() to preserve KeepAlive state and scroll position
+      router.back()
+      break
+    case 'home':
+      router.push({ name: 'app_home' })
+      break
+    default:
+      // Fallback: try back, or go to home
+      if (window.history.length > 1) {
+        router.back()
+      } else {
+        router.push({ name: 'app_home' })
+      }
+  }
+}
 
 const platformIcons = {
   youtube: 'pi-youtube',
