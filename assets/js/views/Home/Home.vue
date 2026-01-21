@@ -360,10 +360,13 @@ function isOwnAnnounce(announce) {
 }
 
 function getProfileRoute(announce) {
-  return {
+  const route = {
     name: announce.author.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
     params: { username: announce.author.username }
   }
+  // Add from query param for contextual back navigation
+  route.query = { from: 'home' }
+  return route
 }
 
 function handleOpenDiscoverModal() {

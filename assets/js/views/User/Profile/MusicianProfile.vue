@@ -27,39 +27,52 @@
       <!-- Header with back button and profile picture -->
       <div class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm p-6">
         <div class="flex items-center gap-4">
-          <Button
-            icon="pi pi-arrow-left"
-            severity="secondary"
-            text
-            rounded
-            aria-label="Retour au profil"
-            @click="$router.push({ name: 'app_user_public_profile', params: { username: profile.username } })"
-          />
+          <!-- Back button: mobile only -->
+          <div class="md:hidden">
+            <Button
+              icon="pi pi-arrow-left"
+              severity="secondary"
+              text
+              rounded
+              aria-label="Retour"
+              @click="handleBack"
+            />
+          </div>
           <Avatar
             v-if="profile.profile_picture_url"
             :image="profile.profile_picture_url"
             :pt="{ image: { alt: `Photo de ${profile.username}` } }"
-            size="xlarge"
+            size="large"
             shape="circle"
             role="img"
+            class="md:!w-16 md:!h-16"
             :aria-label="`Photo de ${profile.username}`"
           />
           <Avatar
             v-else
             :label="profile.username.charAt(0).toUpperCase()"
             :style="getAvatarStyle(profile.username)"
-            size="xlarge"
+            size="large"
             shape="circle"
             role="img"
+            class="md:!w-16 md:!h-16"
             :aria-label="`Avatar de ${profile.username}`"
           />
-          <div class="flex-1">
-            <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-0">
+          <div class="flex-1 min-w-0">
+            <h1 class="hidden md:block text-2xl font-bold text-surface-900 dark:text-surface-0">
               Profil musicien
             </h1>
-            <p class="text-surface-500 dark:text-surface-400">
-              @{{ profile.username }}
-            </p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-surface-500 dark:text-surface-400 truncate">
+                @{{ profile.username }}
+              </span>
+              <router-link
+                :to="{ name: 'app_user_public_profile', params: { username: profile.username } }"
+                class="hidden md:inline text-sm text-primary hover:underline"
+              >
+                Voir le profil
+              </router-link>
+            </div>
           </div>
           <div class="flex gap-2">
             <Button
@@ -71,18 +84,28 @@
               aria-label="Modifier le profil musicien"
               @click="showEditModal = true"
             />
-            <ShareButton
-              v-if="!isOwnProfile"
-              :url="shareUrl"
-              :title="shareTitle"
-            />
-            <Button
-              v-if="!isOwnProfile"
-              label="Contacter"
-              icon="pi pi-envelope"
-              rounded
-              @click="handleContact"
-            />
+            <div v-if="!isOwnProfile" class="hidden md:block">
+              <ShareButton
+                :url="shareUrl"
+                :title="shareTitle"
+              />
+            </div>
+            <div v-if="!isOwnProfile" class="md:hidden">
+              <Button
+                icon="pi pi-envelope"
+                rounded
+                aria-label="Contacter"
+                @click="handleContact"
+              />
+            </div>
+            <div v-if="!isOwnProfile" class="hidden md:block">
+              <Button
+                label="Contacter"
+                icon="pi pi-envelope"
+                rounded
+                @click="handleContact"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -218,7 +241,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
 import ShareButton from '../../../components/ShareButton.vue'
@@ -230,8 +253,34 @@ import { useUserSecurityStore } from '../../../store/user/security.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 
 const route = useRoute()
+const router = useRouter()
 const musicianProfileStore = useMusicianProfileStore()
 const userSecurityStore = useUserSecurityStore()
+
+// Contextual back navigation based on where user came from
+function handleBack() {
+  const from = route.query.from
+  switch (from) {
+    case 'search':
+    case 'annonces':
+      // Use router.back() to preserve KeepAlive state and scroll position
+      router.back()
+      break
+    case 'home':
+      router.push({ name: 'app_home' })
+      break
+    case 'profile':
+      router.push({ name: 'app_user_public_profile', params: { username: route.params.username } })
+      break
+    default:
+      // Fallback: try back, or go to public profile
+      if (window.history.length > 1) {
+        router.back()
+      } else {
+        router.push({ name: 'app_user_public_profile', params: { username: route.params.username } })
+      }
+  }
+}
 
 const isLoading = ref(true)
 const notFound = ref(false)
