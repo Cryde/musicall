@@ -33,13 +33,13 @@
                 v-model="quickSearch"
                 type="text"
                 placeholder="Décrivez ce que vous cherchez..."
-                class="w-full pl-12 pr-16 sm:pr-36 py-4 text-lg rounded-2xl border-2 border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all text-surface-900 dark:text-surface-0 placeholder:text-surface-400"
+                class="w-full pl-12 pr-16 sm:pr-36 py-3 sm:py-4 text-base sm:text-lg rounded-2xl border-2 border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all text-surface-900 dark:text-surface-0 placeholder:text-surface-400"
                 @keyup.enter="isQuickSearchParamEnough && generateQuickSearchFilters()"
             >
             <button
                 @click="generateQuickSearchFilters"
                 :disabled="isSearching || isFilterGenerating || !isQuickSearchParamEnough"
-                class="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-primary text-white rounded-xl flex items-center gap-2 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                class="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-5 py-2 sm:py-2.5 bg-primary text-white rounded-xl flex items-center gap-2 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
                 <i :class="isFilterGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-search'"></i>
                 <span class="hidden sm:inline">Rechercher</span>
