@@ -8,6 +8,7 @@ export const useMusicianProfileStore = defineStore('musicianProfile', () => {
   const isCreating = ref(false)
   const isUpdating = ref(false)
   const isDeleting = ref(false)
+  const profileStepCompleted = ref(false)
 
   async function loadPublicProfile(username) {
     isLoading.value = true
@@ -63,17 +64,28 @@ export const useMusicianProfileStore = defineStore('musicianProfile', () => {
     profile.value = null
   }
 
+  function markProfileStepCompleted() {
+    profileStepCompleted.value = true
+  }
+
+  function resetProfileStepCompleted() {
+    profileStepCompleted.value = false
+  }
+
   return {
     profile: readonly(profile),
     isLoading: readonly(isLoading),
     isCreating: readonly(isCreating),
     isUpdating: readonly(isUpdating),
     isDeleting: readonly(isDeleting),
+    profileStepCompleted: readonly(profileStepCompleted),
     loadPublicProfile,
     loadMyProfile,
     createProfile,
     updateProfile,
     deleteProfile,
-    clear
+    clear,
+    markProfileStepCompleted,
+    resetProfileStepCompleted
   }
 })

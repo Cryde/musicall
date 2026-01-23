@@ -39,7 +39,8 @@
         <Step value="2">Instrument</Step>
         <Step value="3">Styles</Step>
         <Step value="4">Localisation</Step>
-        <Step value="5">Note</Step>
+        <Step value="5">Profil</Step>
+        <Step value="6">Note</Step>
       </StepList>
 
       <StepPanels>
@@ -206,12 +207,22 @@
               icon="pi pi-arrow-right"
               iconPos="right"
               :disabled="!selectedLocation || typeof selectedLocation !== 'object'"
-              @click="activateCallback('5')"
+              @click="handleLocationNext(activateCallback)"
             />
           </div>
         </StepPanel>
 
         <StepPanel v-slot="{ activateCallback }" value="5">
+          <MusicianProfileStepContent
+            :announcement-type="selectedType"
+            :selected-instrument="selectedInstrument"
+            :selected-styles="selectedStyles"
+            @saved="activateCallback('6')"
+            @skipped="activateCallback('6')"
+          />
+        </StepPanel>
+
+        <StepPanel v-slot="{ activateCallback }" value="6">
           <div class="flex flex-col gap-4 py-4">
             <p class="text-surface-700 dark:text-surface-300 font-medium">
               Ajoutez une note (optionnel)
@@ -254,7 +265,7 @@
               icon="pi pi-arrow-left"
               severity="secondary"
               text
-              @click="activateCallback('4')"
+              @click="activateCallback('5')"
             />
             <Button
               label="Créer l'annonce"
@@ -291,10 +302,12 @@ import Stepper from 'primevue/stepper'
 import Textarea from 'primevue/textarea'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, ref, watch } from 'vue'
+import MusicianProfileStepContent from '../../../components/User/Announce/MusicianProfileStepContent.vue'
 import geocodingApi from '../../../api/geocoding.js'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'
+import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 
 const props = defineProps({
   initialType: { type: String, default: null },
@@ -309,6 +322,7 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 const userAnnounceStore = useUserAnnounceStore()
 const instrumentStore = useInstrumentStore()
 const styleStore = useStyleStore()
+const musicianProfileStore = useMusicianProfileStore()
 
 const currentStep = ref('1')
 const isSuccess = ref(false)
@@ -336,9 +350,15 @@ onMounted(async () => {
 })
 
 // Initialize from props when modal opens
-watch(visible, (isVisible) => {
+watch(visible, async (isVisible) => {
   if (isVisible) {
     initializeFromProps()
+    // Load user profile (404 means no profile, which is fine)
+    try {
+      await musicianProfileStore.loadMyProfile()
+    } catch {
+      // No profile exists, that's OK
+    }
   }
 })
 
@@ -366,7 +386,14 @@ function getFirstMissingStep() {
   if (!selectedInstrument.value) return '2'
   if (selectedStyles.value.length === 0) return '3'
   if (!selectedLocation.value) return '4'
+  // Skip profile step if user has profile or already completed this step
+  if (musicianProfileStore.profile || musicianProfileStore.profileStepCompleted) return '6'
   return '5'
+}
+
+function handleLocationNext(activateCallback) {
+  // Always show profile step - component handles display mode based on profile existence
+  activateCallback('5')
 }
 
 const debouncedSearch = useDebounceFn(async (query) => {
@@ -415,5 +442,6 @@ function reset() {
   note.value = ''
   locationSuggestions.value = []
   userAnnounceStore.clearError()
+  musicianProfileStore.resetProfileStepCompleted()
 }
 </script>
