@@ -16,6 +16,8 @@ use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Musician\MusicianProfileFactory;
 use App\Tests\Factory\Musician\MusicianProfileInstrumentFactory;
 use App\Tests\Factory\Musician\MusicianProfileMediaFactory;
+use App\Tests\Factory\Metric\ViewCacheFactory;
+use App\Tests\Factory\Metric\ViewFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -140,5 +142,47 @@ class MusicianProfileDeleteTest extends ApiTestCase
         // Verify media are cascade deleted
         $this->assertNull($mediaRepository->find($media1Id));
         $this->assertNull($mediaRepository->find($media2Id));
+    }
+
+    public function test_delete_musician_profile_with_views_success(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'viewsdeleteuser',
+            'email' => 'viewsdeleteuser@test.com',
+        ]);
+
+        $viewCache = ViewCacheFactory::new()->create(['count' => 5]);
+
+        $musicianProfile = MusicianProfileFactory::new()->create([
+            'user' => $user,
+            'viewCache' => $viewCache->_real(),
+        ]);
+
+        // Create views associated with the profile's viewCache
+        ViewFactory::new()->create([
+            'viewCache' => $viewCache->_real(),
+            'identifier' => 'view1',
+        ]);
+
+        ViewFactory::new()->create([
+            'viewCache' => $viewCache->_real(),
+            'identifier' => 'view2',
+        ]);
+
+        $user->setMusicianProfile($musicianProfile->_real());
+        $user->_save();
+
+        $profileId = $musicianProfile->_real()->getId();
+
+        $this->client->loginUser($user->_real());
+        $this->client->request('DELETE', '/api/user/musician-profile');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        // Verify profile is deleted in database
+        /** @var MusicianProfileRepository $repository */
+        $repository = static::getContainer()->get(MusicianProfileRepository::class);
+        $deletedProfile = $repository->find($profileId);
+        $this->assertNull($deletedProfile);
     }
 }

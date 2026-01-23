@@ -28,7 +28,7 @@ class View
     private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: ViewCache::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ViewCache $viewCache;
 
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
