@@ -53,7 +53,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([User::ITEM, Message::LIST, MessageThreadMeta::LIST, Message::ITEM])]
-    private ?string $id;
+    private string $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
@@ -112,8 +112,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
     private ?UserProfilePicture $profilePicture = null;
-
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserProfile::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true)]
     private ?UserProfile $profile = null;
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: MusicianProfile::class, cascade: ['persist', 'remove'])]
@@ -393,15 +393,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getProfile(): ?UserProfile
+    public function getProfile(): UserProfile
     {
         return $this->profile;
     }
 
-    public function setProfile(?UserProfile $profile): self
+    public function setProfile(UserProfile $profile): self
     {
-        // Set the owning side of the relation if necessary
-        if ($profile !== null && $profile->getUser() !== $this) {
+        if ($profile->getUser() !== $this) {
             $profile->setUser($this);
         }
 
