@@ -29,7 +29,6 @@ readonly class UserProfileCoverPictureProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
         $profile = $user->getProfile();
-        assert($profile !== null);
 
         $previousCoverPicture = $profile->getCoverPicture();
         if ($previousCoverPicture !== null) {

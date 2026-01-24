@@ -113,8 +113,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
     private ?UserProfilePicture $profilePicture = null;
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?UserProfile $profile = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private UserProfile $profile;
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: MusicianProfile::class, cascade: ['persist', 'remove'])]
     private ?MusicianProfile $musicianProfile = null;

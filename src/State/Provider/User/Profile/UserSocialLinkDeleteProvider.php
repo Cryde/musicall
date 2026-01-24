@@ -29,7 +29,6 @@ readonly class UserSocialLinkDeleteProvider implements ProviderInterface
         /** @var User $user */
         $user = $this->security->getUser();
         $profile = $user->getProfile();
-        assert($profile !== null);
 
         $link = $this->userSocialLinkRepository->find($uriVariables['id']);
 

@@ -30,10 +30,6 @@ readonly class UserSocialLinkCollectionProvider implements ProviderInterface
         $user = $this->security->getUser();
         $profile = $user->getProfile();
 
-        if (!$profile) {
-            return [];
-        }
-
         return array_map(
             fn(UserSocialLink $link) => $this->buildFromEntity($link),
             $profile->getSocialLinks()->toArray()

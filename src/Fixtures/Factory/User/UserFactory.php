@@ -28,18 +28,6 @@ final class UserFactory extends PersistentProxyObjectFactory
         ];
     }
 
-    protected function initialize(): static
-    {
-        return $this->afterInstantiate(function (User $user): void {
-            if ($user->getProfile() === null) {
-                $profile = new UserProfile();
-                $profile->setUser($user);
-                $profile->setCreationDatetime(\DateTimeImmutable::createFromMutable($user->getCreationDatetime()));
-                $user->setProfile($profile);
-            }
-        });
-    }
-
     public function asAdminUser(): static
     {
         return $this->with([

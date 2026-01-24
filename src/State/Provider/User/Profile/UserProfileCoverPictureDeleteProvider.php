@@ -26,7 +26,6 @@ readonly class UserProfileCoverPictureDeleteProvider implements ProviderInterfac
         /** @var User $user */
         $user = $this->security->getUser();
         $profile = $user->getProfile();
-        assert($profile !== null);
 
         $coverPicture = $profile->getCoverPicture();
 

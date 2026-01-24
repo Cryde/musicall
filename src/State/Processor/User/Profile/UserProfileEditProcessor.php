@@ -31,7 +31,6 @@ readonly class UserProfileEditProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
         $profile = $user->getProfile();
-        assert($profile !== null);
 
         $profile->setDisplayName($data->displayName);
         $profile->setBio($data->bio);

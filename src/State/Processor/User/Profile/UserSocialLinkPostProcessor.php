@@ -34,7 +34,6 @@ readonly class UserSocialLinkPostProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
         $profile = $user->getProfile();
-        assert($profile !== null);
 
         $platform = SocialPlatform::tryFrom($data->platform);
         if (!$platform) {
