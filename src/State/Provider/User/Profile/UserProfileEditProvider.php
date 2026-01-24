@@ -32,10 +32,6 @@ readonly class UserProfileEditProvider implements ProviderInterface
         $user = $this->security->getUser();
         $profile = $user->getProfile();
 
-        if (!$profile) {
-            throw new NotFoundHttpException('Profil non trouvé');
-        }
-
         return $this->buildFromEntity($profile);
     }
 
