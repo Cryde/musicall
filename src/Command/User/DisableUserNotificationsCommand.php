@@ -36,7 +36,14 @@ class DisableUserNotificationsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $userId = $input->getArgument('user-id');
-        if (!$user = $this->userRepository->find($userId)) {
+
+        try {
+            if (!$user = $this->userRepository->find($userId)) {
+                $output->writeln(sprintf('<error>User with ID "%s" not found</error>', $userId));
+
+                return Command::FAILURE;
+            }
+        } catch (\Exception $exception) {
             $output->writeln(sprintf('<error>User with ID "%s" not found</error>', $userId));
 
             return Command::FAILURE;
