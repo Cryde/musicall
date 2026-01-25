@@ -230,7 +230,11 @@
                   dans les alentours de {{ announce.location_name }}
                 </template>
 
-                <div v-if="!isOwnAnnounce(announce)" class="mt-3 flex justify-end">
+                <div class="mt-2 text-xs text-surface-400 dark:text-surface-500">
+                  <i class="pi pi-clock mr-1" />{{ relativeDate(announce.creation_datetime, { showHours: false }) }}
+                </div>
+
+                <div v-if="!isOwnAnnounce(announce)" class="mt-2 flex justify-end">
                   <Button
                     size="small"
                     icon="pi pi-envelope"
@@ -314,6 +318,7 @@ import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatStyles, hasMoreStyles } from '../../utils/styles.js'
+import relativeDate from '../../helper/date/relative-date.js'
 import PublicationListItem from '../Publication/PublicationListItem.vue'
 import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 
