@@ -27,7 +27,12 @@ const routes = [
       ...search,
       ...forum,
       ...user,
-      ...admin
+      ...admin,
+      {
+        path: ':pathMatch(.*)*',
+        name: 'not_found',
+        component: () => import('../views/NotFound.vue')
+      }
     ]
   },
   {
