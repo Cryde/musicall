@@ -17,14 +17,4 @@ class UserProfileRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, UserProfile::class);
     }
-
-    public function findByUsername(string $username): ?UserProfile
-    {
-        return $this->createQueryBuilder('p')
-            ->innerJoin('p.user', 'u')
-            ->where('u.username = :username')
-            ->setParameter('username', $username)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
 }

@@ -87,7 +87,6 @@ readonly class OAuthUserService
         $user->setLastLoginDatetime(new \DateTime()); // First login
 
         $profile = new UserProfile();
-        $profile->setUser($user);
         $user->setProfile($profile);
 
         $this->entityManager->persist($user);

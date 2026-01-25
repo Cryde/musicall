@@ -11,7 +11,6 @@ use App\Entity\User;
 use App\Entity\User\UserProfile;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 /**
@@ -32,12 +31,11 @@ readonly class UserProfileEditProvider implements ProviderInterface
         $user = $this->security->getUser();
         $profile = $user->getProfile();
 
-        return $this->buildFromEntity($profile);
+        return $this->buildFromEntity($user, $profile);
     }
 
-    private function buildFromEntity(UserProfile $profile): UserProfileEdit
+    private function buildFromEntity(User $user, UserProfile $profile): UserProfileEdit
     {
-        $user = $profile->getUser();
         $dto = new UserProfileEdit();
 
         $dto->displayName = $profile->getDisplayName();
