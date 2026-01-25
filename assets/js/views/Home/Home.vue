@@ -249,6 +249,16 @@
           </template>
         </Card>
       </div>
+
+      <div class="text-center mt-6">
+        <router-link
+          :to="{ name: 'app_search_musician' }"
+          class="inline-flex items-center gap-2 text-primary hover:underline font-medium"
+        >
+          Voir toutes les annonces
+          <i class="pi pi-arrow-right text-sm" />
+        </router-link>
+      </div>
     </section>
 
     <!-- CTA Section - Cosmic Style -->
