@@ -8,6 +8,7 @@ use App\ApiResource\User\Profile\PublicProfile;
 use App\ApiResource\User\Profile\PublicProfileAnnounce;
 use App\ApiResource\User\Profile\PublicProfileSocialLink;
 use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Entity\User\UserSocialLink;
 use App\Repository\Musician\MusicianAnnounceRepository;
@@ -23,9 +24,9 @@ readonly class PublicProfileBuilder
     ) {
     }
 
-    public function build(UserProfile $profile): PublicProfile
+    public function build(User $user): PublicProfile
     {
-        $user = $profile->getUser();
+        $profile = $user->getProfile();
         $memberSince = $user->getCreationDatetime();
 
         $dto = new PublicProfile();

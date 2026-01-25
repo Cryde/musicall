@@ -400,10 +400,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setProfile(UserProfile $profile): self
     {
-        if ($profile->getUser() !== $this) {
-            $profile->setUser($this);
-        }
-
         $this->profile = $profile;
 
         return $this;

@@ -2,7 +2,7 @@
 
 namespace App\Service\Bot\Provider;
 
-use App\Repository\User\UserProfileRepository;
+use App\Repository\UserRepository;
 use App\Service\Bot\BotMetaDataProviderInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
@@ -10,9 +10,9 @@ use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterface
 {
     public function __construct(
-        private UserProfileRepository $userProfileRepository,
-        private UploaderHelper        $uploaderHelper,
-        private CacheManager          $cacheManager,
+        private UserRepository $userRepository,
+        private UploaderHelper $uploaderHelper,
+        private CacheManager   $cacheManager,
     ) {
     }
 
@@ -28,11 +28,13 @@ readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterfa
             return [];
         }
 
-        $userProfile = $this->userProfileRepository->findByUsername($matches[1]);
+        $user = $this->userRepository->findOneBy(['username' => $matches[1]]);
 
-        if (!$userProfile) {
+        if (!$user) {
             return [];
         }
+
+        $userProfile = $user->getProfile();
 
         // Check if profile is public
         if (!$userProfile->isPublic()) {
@@ -42,7 +44,6 @@ readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterfa
             ];
         }
 
-        $user = $userProfile->getUser();
         $username = $user->getUsername();
         $displayName = $userProfile->getDisplayName() ?: $username;
 

@@ -7,7 +7,6 @@ namespace App\Entity\User;
 use App\Contracts\Metric\ViewableInterface;
 use App\Entity\Image\UserProfileCoverPicture;
 use App\Entity\Metric\ViewCache;
-use App\Entity\User;
 use App\Repository\User\UserProfileRepository;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -26,10 +25,6 @@ class UserProfile implements ViewableInterface
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     private ?string $id = null;
-
-    #[ORM\OneToOne(inversedBy: 'profile', targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private User $user;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $bio = null;
@@ -70,18 +65,6 @@ class UserProfile implements ViewableInterface
     public function getId(): ?string
     {
         return $this->id;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function setUser(User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
     }
 
     public function getBio(): ?string

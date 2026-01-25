@@ -51,7 +51,6 @@ readonly class RegisterProcessor implements ProcessorInterface
         );
 
         $profile = new UserProfile();
-        $profile->setUser($user);
         $user->setProfile($profile);
 
         $this->entityManager->persist($user);
