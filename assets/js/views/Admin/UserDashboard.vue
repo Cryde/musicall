@@ -27,7 +27,7 @@
             </div>
             <div>
               <p class="text-sm text-surface-500">Inscriptions 24h</p>
-              <p class="text-2xl font-bold">{{ metrics?.total_users_last_24h ?? '-' }}</p>
+              <p class="text-2xl font-bold">{{ metrics?.total_users_last24h ?? '-' }}</p>
             </div>
           </div>
         </template>
@@ -40,7 +40,7 @@
             </div>
             <div>
               <p class="text-sm text-surface-500">Inscriptions 7 jours</p>
-              <p class="text-2xl font-bold">{{ metrics?.total_users_last_7_days ?? '-' }}</p>
+              <p class="text-2xl font-bold">{{ metrics?.total_users_last7_days ?? '-' }}</p>
             </div>
           </div>
         </template>
