@@ -6,6 +6,12 @@ export default [
     meta: { isAuthRequired: true, isAdminRequired: true }
   },
   {
+    name: 'admin_users_dashboard',
+    path: 'admin/users',
+    component: () => import('../views/Admin/UserDashboard.vue'),
+    meta: { isAuthRequired: true, isAdminRequired: true }
+  },
+  {
     name: 'admin_publications_pending',
     path: 'admin/publications/pending',
     component: () => import('../views/Admin/Publication/PendingList.vue'),
