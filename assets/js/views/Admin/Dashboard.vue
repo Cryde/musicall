@@ -66,32 +66,32 @@
           title="Inscriptions"
           icon="pi-user-plus"
           :today="metrics.registrations_today"
-          :week="metrics.registrations_7_days"
-          :month="metrics.registrations_30_days"
+          :week="metrics.registrations7_days"
+          :month="metrics.registrations30_days"
           :trend-percent="metrics.registrations_trend_percent"
         />
         <MetricCard
           title="Connexions"
           icon="pi-sign-in"
           :today="metrics.logins_today"
-          :week="metrics.logins_7_days"
-          :month="metrics.logins_30_days"
+          :week="metrics.logins7_days"
+          :month="metrics.logins30_days"
           :trend-percent="metrics.logins_trend_percent"
         />
         <MetricCard
           title="Messages"
           icon="pi-envelope"
           :today="metrics.messages_today"
-          :week="metrics.messages_7_days"
-          :month="metrics.messages_30_days"
+          :week="metrics.messages7_days"
+          :month="metrics.messages30_days"
           :trend-percent="metrics.messages_trend_percent"
         />
         <MetricCard
           title="Publications"
           icon="pi-file-edit"
           :today="metrics.publications_today"
-          :week="metrics.publications_7_days"
-          :month="metrics.publications_30_days"
+          :week="metrics.publications7_days"
+          :month="metrics.publications30_days"
           :trend-percent="metrics.publications_trend_percent"
         />
       </div>
@@ -159,8 +159,8 @@
                 >
                   Rétention 7 jours
                 </span>
-                <span v-if="metrics.retention_7_days !== null" :class="getRetentionClass(metrics.retention_7_days)" class="text-2xl font-bold">
-                  {{ metrics.retention_7_days }}%
+                <span v-if="metrics.retention7_days !== null" :class="getRetentionClass(metrics.retention7_days)" class="text-2xl font-bold">
+                  {{ metrics.retention7_days }}%
                 </span>
                 <span v-else class="text-surface-400">-</span>
               </div>
@@ -171,8 +171,8 @@
                 >
                   Rétention 30 jours
                 </span>
-                <span v-if="metrics.retention_30_days !== null" :class="getRetentionClass(metrics.retention_30_days)" class="text-2xl font-bold">
-                  {{ metrics.retention_30_days }}%
+                <span v-if="metrics.retention30_days !== null" :class="getRetentionClass(metrics.retention30_days)" class="text-2xl font-bold">
+                  {{ metrics.retention30_days }}%
                 </span>
                 <span v-else class="text-surface-400">-</span>
               </div>
