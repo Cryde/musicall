@@ -48,6 +48,7 @@ class PublicProfileTest extends ApiTestCase
             'social_links' => [],
             'musician_announces' => [],
             'has_musician_profile' => false,
+            'has_teacher_profile' => false,
         ]);
     }
 
@@ -88,6 +89,7 @@ class PublicProfileTest extends ApiTestCase
             ],
             'musician_announces' => [],
             'has_musician_profile' => false,
+            'has_teacher_profile' => false,
         ]);
     }
 
@@ -135,6 +137,7 @@ class PublicProfileTest extends ApiTestCase
                 ],
             ],
             'has_musician_profile' => false,
+            'has_teacher_profile' => false,
         ]);
     }
 
@@ -202,6 +205,7 @@ class PublicProfileTest extends ApiTestCase
             'social_links' => [],
             'musician_announces' => [],
             'has_musician_profile' => false,
+            'has_teacher_profile' => false,
         ]);
     }
 }

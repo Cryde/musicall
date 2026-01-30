@@ -43,6 +43,7 @@ const router = useRouter()
 const tabs = [
   { value: 'general', label: 'Général', route: 'app_user_settings_profile' },
   { value: 'musician', label: 'Profil musicien', route: 'app_user_settings_profile_musician' },
+  { value: 'teacher', label: 'Profil professeur', route: 'app_user_settings_profile_teacher' },
   { value: 'privacy', label: 'Confidentialité', route: 'app_user_settings_profile_privacy' }
 ]
 
@@ -53,6 +54,9 @@ const activeTab = computed(() => {
   }
   if (currentRoute === 'app_user_settings_profile_musician') {
     return 'musician'
+  }
+  if (currentRoute === 'app_user_settings_profile_teacher') {
+    return 'teacher'
   }
   return 'general'
 })
