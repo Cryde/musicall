@@ -65,6 +65,9 @@ readonly class PublicProfileBuilder
         // Musician profile flag
         $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
 
+        // Teacher profile flag
+        $dto->hasTeacherProfile = $user->getTeacherProfile() !== null;
+
         return $dto;
     }
 

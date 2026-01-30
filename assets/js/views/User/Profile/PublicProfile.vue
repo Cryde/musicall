@@ -170,6 +170,26 @@
               <MusicNotesIcon class="mr-2" />
             </template>
           </Button>
+
+          <!-- Teacher profile button -->
+          <Button
+            v-if="profile.has_teacher_profile"
+            label="Voir le profil professeur"
+            severity="secondary"
+            rounded
+            icon="pi pi-graduation-cap"
+            @click="$router.push({ name: 'app_user_teacher_profile', params: { username: profile.username } })"
+          />
+          <!-- Create teacher profile CTA (own profile only) -->
+          <Button
+            v-else-if="isOwnProfile"
+            label="Créer mon profil professeur"
+            severity="secondary"
+            rounded
+            outlined
+            icon="pi pi-graduation-cap"
+            @click="showCreateTeacherProfileModal = true"
+          />
         </div>
       </section>
 
@@ -305,6 +325,13 @@
       @saved="handleMusicianProfileCreated"
     />
 
+    <!-- Create teacher profile modal -->
+    <EditTeacherProfileModal
+      v-model:visible="showCreateTeacherProfileModal"
+      :teacher-profile="null"
+      @saved="handleTeacherProfileCreated"
+    />
+
     <!-- Hidden file inputs -->
     <input
       ref="coverPictureInputRef"
@@ -339,12 +366,14 @@ import EditProfileModal from '../../../components/User/Profile/EditProfileModal.
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
+import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import CoverPictureModal from '../Settings/CoverPictureModal.vue'
 import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
+import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 
 const route = useRoute()
@@ -353,6 +382,7 @@ const toast = useToast()
 const userProfileStore = useUserProfileStore()
 const userSecurityStore = useUserSecurityStore()
 const musicianProfileStore = useMusicianProfileStore()
+const teacherProfileStore = useTeacherProfileStore()
 
 const isLoading = ref(true)
 const notFound = ref(false)
@@ -365,6 +395,7 @@ const showEditSocialLinksModal = ref(false)
 const showCoverPictureModal = ref(false)
 const showProfilePictureEditModal = ref(false)
 const showCreateMusicianProfileModal = ref(false)
+const showCreateTeacherProfileModal = ref(false)
 
 // Picture editing
 const coverPictureInputRef = ref(null)
@@ -533,6 +564,17 @@ function handleMusicianProfileCreated() {
     severity: 'success',
     summary: 'Profil créé',
     detail: 'Votre profil musicien a été créé avec succès',
+    life: 5000
+  })
+}
+
+function handleTeacherProfileCreated() {
+  loadProfile()
+  teacherProfileStore.clear()
+  toast.add({
+    severity: 'success',
+    summary: 'Profil créé',
+    detail: 'Votre profil professeur a été créé avec succès',
     life: 5000
   })
 }

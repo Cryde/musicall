@@ -38,6 +38,16 @@ final class InstrumentFactory extends PersistentProxyObjectFactory
         ]);
     }
 
+    public function asPiano(): Factory
+    {
+        return $this->with([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'musicianName' => 'Pianiste',
+            'name' => 'Piano',
+            'slug' => 'piano',
+        ]);
+    }
+
     public static function class(): string
     {
         return Instrument::class;
