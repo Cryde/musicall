@@ -45,7 +45,7 @@
           </div>
           <!-- Platform badge -->
           <div class="absolute top-2 right-2">
-            <Tag :value="item.platform_label" :severity="getPlatformSeverity(item.platform)" size="small" />
+            <Tag :value="getMediaPlatformLabel(item.platform)" :severity="getPlatformSeverity(item.platform)" size="small" />
           </div>
         </div>
         <!-- Info -->
@@ -185,7 +185,7 @@
     </Dialog>
 
     <!-- Delete Confirmation -->
-    <ConfirmDialog group="media-delete" />
+    <ConfirmDialog group="teacher-media-delete" />
   </div>
 </template>
 
@@ -198,7 +198,8 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useMusicianProfileMediaStore } from '../../../store/user/musicianProfileMedia.js'
+import { getMediaPlatformLabel } from '../../constants/teacherProfile.js'
+import { useTeacherProfileMediaStore } from '../../store/user/teacherProfileMedia.js'
 
 const MAX_MEDIA = 6
 
@@ -214,7 +215,7 @@ const props = defineProps({
 })
 
 const confirm = useConfirm()
-const mediaStore = useMusicianProfileMediaStore()
+const mediaStore = useTeacherProfileMediaStore()
 
 const showPlayerModal = ref(false)
 const showAddModal = ref(false)
@@ -296,7 +297,7 @@ function closeAddModal() {
 
 function handleDelete(item) {
   confirm.require({
-    group: 'media-delete',
+    group: 'teacher-media-delete',
     message: 'Êtes-vous sûr de vouloir supprimer cette création ?',
     header: 'Confirmation',
     icon: 'pi pi-exclamation-triangle',

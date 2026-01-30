@@ -12,6 +12,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_user_teacher_profile',
+    path: '/u/:username/teacher',
+    component: () => import('../views/User/Profile/TeacherProfile.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_contact',
     path: '/contact',
     component: () => import('../views/Contact/Index.vue'),
@@ -159,6 +165,11 @@ export default [
             name: 'app_user_settings_profile_musician',
             path: 'musician',
             component: () => import('../views/User/Settings/SettingsProfileMusician.vue')
+          },
+          {
+            name: 'app_user_settings_profile_teacher',
+            path: 'teacher',
+            component: () => import('../views/User/Settings/SettingsProfileTeacher.vue')
           }
         ]
       }

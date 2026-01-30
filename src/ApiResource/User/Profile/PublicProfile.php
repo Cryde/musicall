@@ -46,4 +46,6 @@ class PublicProfile
     public array $musicianAnnounces = [];
 
     public bool $hasMusicianProfile = false;
+
+    public bool $hasTeacherProfile = false;
 }
