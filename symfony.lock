@@ -92,12 +92,12 @@
         "version": "v5.0.0"
     },
     "friendsofsymfony/jsrouting-bundle": {
-        "version": "2.3",
+        "version": "3.6",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "2.3",
-            "ref": "a9f2e49180f75cdc71ae279a929c4b2e0638de84"
+            "branch": "main",
+            "version": "3.0",
+            "ref": "03986bbad9dcc3e367036a6b4f48ec469a4b1bf4"
         },
         "files": [
             "config/routes/fos_js_routing.yaml"
@@ -408,12 +408,12 @@
         "version": "2.4.0"
     },
     "sentry/sentry-symfony": {
-        "version": "5.5",
+        "version": "5.8",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
             "version": "5.0",
-            "ref": "b6cb4b34429dadecd7187852123be19d628fa37a"
+            "ref": "12f504985eb24e3b20a9e41e0ec7e398798d18f0"
         },
         "files": [
             "config/packages/sentry.yaml"
@@ -532,12 +532,12 @@
         "version": "v4.1.8"
     },
     "symfony/framework-bundle": {
-        "version": "7.3",
+        "version": "7.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "7.3",
-            "ref": "5a1497d539f691b96afd45ae397ce5fe30beb4b9"
+            "version": "7.4",
+            "ref": "09f6e081c763a206802674ce0cb34a022f0ffc6d"
         },
         "files": [
             ".editorconfig",
