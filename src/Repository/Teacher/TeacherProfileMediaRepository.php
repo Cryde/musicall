@@ -31,16 +31,6 @@ class TeacherProfileMediaRepository extends ServiceEntityRepository
         return $result !== null ? (int) $result + 1 : 0;
     }
 
-    public function countByProfile(TeacherProfile $teacherProfile): int
-    {
-        return (int) $this->createQueryBuilder('m')
-            ->select('COUNT(m.id)')
-            ->where('m.teacherProfile = :profile')
-            ->setParameter('profile', $teacherProfile)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
     public function countByTeacherProfile(string $teacherProfileId): int
     {
         return (int) $this->createQueryBuilder('m')

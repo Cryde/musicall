@@ -43,7 +43,6 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TeacherProfileOutput
     {
-        /** @var TeacherProfileInput $data */
         /** @var User|null $user */
         $user = $this->security->getUser();
 
