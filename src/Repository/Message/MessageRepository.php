@@ -3,7 +3,6 @@
 namespace App\Repository\Message;
 
 use App\Entity\Message\Message;
-use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -37,21 +36,6 @@ class MessageRepository extends ServiceEntityRepository
     {
         return (int) $this->createQueryBuilder('message')
             ->select('COUNT(message.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    /**
-     * Count messages sent by a user within a date range.
-     */
-    public function countMessagesSentByUser(User $user, \DateTimeImmutable $since): int
-    {
-        return (int) $this->createQueryBuilder('message')
-            ->select('COUNT(message.id)')
-            ->where('message.author = :user')
-            ->andWhere('message.creationDatetime >= :since')
-            ->setParameter('user', $user)
-            ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
     }

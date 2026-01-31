@@ -27,14 +27,6 @@ class SocialAccountRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function findByUserAndProvider(User $user, string $provider): ?SocialAccount
-    {
-        return $this->findOneBy([
-            'user' => $user,
-            'provider' => $provider,
-        ]);
-    }
-
     /**
      * @return SocialAccount[]
      */
