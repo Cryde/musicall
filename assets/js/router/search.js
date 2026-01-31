@@ -15,6 +15,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    path: '/rechercher-un-professeur',
+    name: 'app_search_teacher',
+    component: () => import('../views/Search/TeacherSearchTeaser.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     path: '/rechercher-un-guitariste',
     name: 'app_search_guitarist',
     component: () => import('../views/Search/Index.vue'),
