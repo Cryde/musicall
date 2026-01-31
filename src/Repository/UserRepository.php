@@ -269,7 +269,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     /**
      * Calculate profile completion percentage for a user.
      */
-    public function calculateProfileCompletion(User $user): int
+    private function calculateProfileCompletion(User $user): int
     {
         $score = 0;
         $maxScore = 5;
