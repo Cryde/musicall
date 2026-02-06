@@ -12,6 +12,7 @@ use App\ApiResource\Teacher\Private\TeacherProfileLocation;
 use App\ApiResource\Teacher\Private\TeacherProfileOutput;
 use App\ApiResource\Teacher\Private\TeacherProfilePackage;
 use App\ApiResource\Teacher\Private\TeacherProfilePricing;
+use App\ApiResource\Teacher\Private\TeacherProfileSocialLink;
 use App\ApiResource\Teacher\Private\TeacherProfileStyle;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
@@ -115,6 +116,15 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
             return $item;
         }, $profile->getPackages()->toArray()));
+
+        $dto->socialLinks = array_values(array_map(function ($socialLink): TeacherProfileSocialLink {
+            $item = new TeacherProfileSocialLink();
+            $item->id = $socialLink->getId();
+            $item->platform = $socialLink->getPlatform()->value;
+            $item->url = $socialLink->getUrl();
+
+            return $item;
+        }, $profile->getSocialLinks()->toArray()));
 
         return $dto;
     }

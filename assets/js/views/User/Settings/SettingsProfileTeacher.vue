@@ -276,6 +276,33 @@
         </div>
       </div>
 
+      <!-- Social links -->
+      <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
+        <div class="md:w-1/3">
+          <div class="text-surface-600 dark:text-surface-400 font-medium">
+            Réseaux sociaux
+          </div>
+        </div>
+        <div class="md:w-2/3">
+          <div v-if="profile.social_links?.length" class="flex flex-col gap-1">
+            <a
+              v-for="link in profile.social_links"
+              :key="link.platform"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              <span class="font-medium">{{ getSocialPlatformLabel(link.platform) }}</span>
+              <i class="pi pi-external-link text-xs" />
+            </a>
+          </div>
+          <span v-else class="text-surface-500 dark:text-surface-400 text-sm">
+            Aucun réseau social renseigné
+          </span>
+        </div>
+      </div>
+
       <!-- Action buttons -->
       <div class="flex justify-between items-center">
         <Button
@@ -352,7 +379,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
-import { getAgeGroupLabel, getDayOfWeekLabel, getSessionDurationLabel, getStudentLevelLabel } from '../../../constants/teacherProfile.js'
+import { getAgeGroupLabel, getDayOfWeekLabel, getSessionDurationLabel, getSocialPlatformLabel, getStudentLevelLabel } from '../../../constants/teacherProfile.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { useTeacherProfileMediaStore } from '../../../store/user/teacherProfileMedia.js'
 

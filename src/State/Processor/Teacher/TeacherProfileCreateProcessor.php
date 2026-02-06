@@ -14,7 +14,9 @@ use App\Entity\Teacher\TeacherProfileInstrument;
 use App\Entity\Teacher\TeacherProfileLocation;
 use App\Entity\Teacher\TeacherProfilePackage;
 use App\Entity\Teacher\TeacherProfilePricing;
+use App\Entity\Teacher\TeacherSocialLink;
 use App\Entity\User;
+use App\Enum\SocialPlatform;
 use App\Enum\Teacher\DayOfWeek;
 use App\Enum\Teacher\LocationType;
 use App\Enum\Teacher\SessionDuration;
@@ -184,6 +186,23 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
             $package->setSessionsCount($packageInput->sessionsCount);
             $package->setPrice($packageInput->price ?? 0);
             $profile->addPackage($package);
+        }
+
+        // Social Links
+        foreach ($profile->getSocialLinks()->toArray() as $socialLink) {
+            $profile->removeSocialLink($socialLink);
+        }
+
+        foreach ($data->socialLinks as $socialLinkInput) {
+            $platform = SocialPlatform::tryFrom($socialLinkInput->platform ?? '');
+            if (!$platform || empty($socialLinkInput->url)) {
+                continue;
+            }
+
+            $socialLink = new TeacherSocialLink();
+            $socialLink->setPlatform($platform);
+            $socialLink->setUrl($socialLinkInput->url);
+            $profile->addSocialLink($socialLink);
         }
 
         $profile->setUpdateDatetime(new DateTimeImmutable());

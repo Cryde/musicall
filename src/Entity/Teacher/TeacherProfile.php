@@ -101,6 +101,12 @@ class TeacherProfile implements ViewableInterface
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfilePackage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $packages;
 
+    /**
+     * @var Collection<int, TeacherSocialLink>
+     */
+    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherSocialLink::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $socialLinks;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $creationDatetime;
 
@@ -119,6 +125,7 @@ class TeacherProfile implements ViewableInterface
         $this->availability = new ArrayCollection();
         $this->locations = new ArrayCollection();
         $this->packages = new ArrayCollection();
+        $this->socialLinks = new ArrayCollection();
         $this->creationDatetime = new DateTimeImmutable();
     }
 
@@ -405,6 +412,31 @@ class TeacherProfile implements ViewableInterface
     public function removePackage(TeacherProfilePackage $package): self
     {
         $this->packages->removeElement($package);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TeacherSocialLink>
+     */
+    public function getSocialLinks(): Collection
+    {
+        return $this->socialLinks;
+    }
+
+    public function addSocialLink(TeacherSocialLink $socialLink): self
+    {
+        if (!$this->socialLinks->contains($socialLink)) {
+            $this->socialLinks->add($socialLink);
+            $socialLink->setTeacherProfile($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSocialLink(TeacherSocialLink $socialLink): self
+    {
+        $this->socialLinks->removeElement($socialLink);
 
         return $this;
     }

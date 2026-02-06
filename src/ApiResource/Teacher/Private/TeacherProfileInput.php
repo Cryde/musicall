@@ -8,6 +8,7 @@ use App\ApiResource\Teacher\Private\Input\Availability;
 use App\ApiResource\Teacher\Private\Input\Location;
 use App\ApiResource\Teacher\Private\Input\Package;
 use App\ApiResource\Teacher\Private\Input\Pricing;
+use App\ApiResource\Teacher\Private\Input\SocialLink;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class TeacherProfileInput
@@ -67,4 +68,8 @@ class TeacherProfileInput
     /** @var Package[] */
     #[Assert\Valid]
     public $packages = [];
+
+    /** @var SocialLink[] */
+    #[Assert\Valid]
+    public $socialLinks = [];
 }

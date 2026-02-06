@@ -19,7 +19,7 @@ use App\Entity\Teacher\TeacherProfileInstrument;
 use App\Entity\Teacher\TeacherProfileLocation;
 use App\Entity\Teacher\TeacherProfilePackage;
 use App\Entity\Teacher\TeacherProfilePricing;
-use App\Entity\User\UserSocialLink;
+use App\Entity\Teacher\TeacherSocialLink;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -68,10 +68,7 @@ readonly class TeacherProfileBuilder
         $dto->pricing = $this->buildPricing($profile->getPricing()->toArray());
         $dto->availability = $this->buildAvailability($profile->getAvailability()->toArray());
         $dto->packages = $this->buildPackages($profile->getPackages()->toArray());
-
-        // Get social links from user's profile
-        $userProfile = $user->getProfile();
-        $dto->socialLinks = $this->buildSocialLinks($userProfile->getSocialLinks()->toArray());
+        $dto->socialLinks = $this->buildSocialLinks($profile->getSocialLinks()->toArray());
 
         return $dto;
     }
@@ -188,12 +185,12 @@ readonly class TeacherProfileBuilder
     }
 
     /**
-     * @param UserSocialLink[] $socialLinks
+     * @param TeacherSocialLink[] $socialLinks
      * @return PublicTeacherProfileSocialLink[]
      */
     private function buildSocialLinks(array $socialLinks): array
     {
-        return array_values(array_map(function (UserSocialLink $link): PublicTeacherProfileSocialLink {
+        return array_values(array_map(function (TeacherSocialLink $link): PublicTeacherProfileSocialLink {
             $dto = new PublicTeacherProfileSocialLink();
             $dto->platform = $link->getPlatform()->value;
             $dto->url = $link->getUrl();

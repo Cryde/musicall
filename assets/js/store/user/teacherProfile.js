@@ -32,8 +32,7 @@ export const useTeacherProfileStore = defineStore('teacherProfile', () => {
   async function createProfile(data) {
     isCreating.value = true
     try {
-      profile.value = await teacherProfileApi.createTeacherProfile(data)
-      return profile.value
+      return await teacherProfileApi.createTeacherProfile(data)
     } finally {
       isCreating.value = false
     }
@@ -42,8 +41,7 @@ export const useTeacherProfileStore = defineStore('teacherProfile', () => {
   async function updateProfile(data) {
     isUpdating.value = true
     try {
-      profile.value = await teacherProfileApi.updateTeacherProfile(data)
-      return profile.value
+      return await teacherProfileApi.updateTeacherProfile(data)
     } finally {
       isUpdating.value = false
     }

@@ -11,6 +11,7 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\Teacher\TeacherProfileFactory;
 use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
+use App\Tests\Factory\Teacher\TeacherSocialLinkFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -161,6 +162,61 @@ class TeacherProfilePublicTest extends ApiTestCase
             'packages' => [],
             'social_links' => [],
             'creation_datetime' => '2024-03-01T09:00:00+00:00',
+        ]);
+    }
+
+    public function test_get_teacher_profile_with_social_links(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => 'social_teacher',
+            'email' => 'social_teacher@test.com',
+        ]);
+
+        $teacherProfile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'description' => 'Professeur avec réseaux sociaux',
+            'creationDatetime' => new \DateTimeImmutable('2024-04-01T10:00:00+00:00'),
+        ]);
+
+        TeacherSocialLinkFactory::new()->asYoutube()->create([
+            'teacherProfile' => $teacherProfile,
+        ]);
+        TeacherSocialLinkFactory::new()->asInstagram()->create([
+            'teacherProfile' => $teacherProfile,
+        ]);
+
+        $this->client->request('GET', '/api/user/profile/social_teacher/teacher');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TeacherProfile',
+            '@id' => '/api/user/profile/social_teacher/teacher',
+            '@type' => 'TeacherProfile',
+            'username' => 'social_teacher',
+            'user_id' => $user->getId(),
+            'description' => 'Professeur avec réseaux sociaux',
+            'student_levels' => [],
+            'age_groups' => [],
+            'offers_trial' => false,
+            'locations' => [],
+            'instruments' => [],
+            'styles' => [],
+            'media' => [],
+            'pricing' => [],
+            'availability' => [],
+            'packages' => [],
+            'social_links' => [
+                [
+                    '@type' => 'TeacherProfileSocialLink',
+                    'platform' => 'youtube',
+                    'url' => 'https://www.youtube.com/@teacher',
+                ],
+                [
+                    '@type' => 'TeacherProfileSocialLink',
+                    'platform' => 'instagram',
+                    'url' => 'https://www.instagram.com/teacher',
+                ],
+            ],
+            'creation_datetime' => '2024-04-01T10:00:00+00:00',
         ]);
     }
 
