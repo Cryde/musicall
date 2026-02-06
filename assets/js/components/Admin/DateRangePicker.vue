@@ -50,7 +50,7 @@ import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
-import { format, subDays, startOfDay, startOfWeek, startOfMonth, startOfYear } from 'date-fns'
+import { format, subDays, subYears, startOfDay, startOfWeek, startOfMonth, startOfYear } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 const props = defineProps({
@@ -73,6 +73,9 @@ const presets = [
   { key: 'this_week', label: 'Cette semaine', from: () => startOfWeek(today, { locale: fr }), to: () => today },
   { key: 'this_month', label: 'Ce mois', from: () => startOfMonth(today), to: () => today },
   { key: 'this_year', label: 'Cette année', from: () => startOfYear(today), to: () => today },
+  { key: '1y', label: 'Dernière année', from: () => subYears(today, 1), to: () => today },
+  { key: '2y', label: '2 dernières années', from: () => subYears(today, 2), to: () => today },
+  { key: 'all', label: 'Depuis le début', from: () => new Date(2008, 3, 30), to: () => today },
 ]
 
 const buttonLabel = computed(() => {
