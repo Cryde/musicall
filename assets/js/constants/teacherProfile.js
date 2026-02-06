@@ -53,7 +53,6 @@ export const SOCIAL_PLATFORM_LABELS = {
   youtube: 'YouTube',
   soundcloud: 'SoundCloud',
   spotify: 'Spotify',
-  linkedin: 'LinkedIn',
   bandcamp: 'Bandcamp',
   tiktok: 'TikTok',
 }

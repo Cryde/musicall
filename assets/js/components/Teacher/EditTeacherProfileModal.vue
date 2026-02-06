@@ -451,6 +451,64 @@
           </div>
         </div>
       </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════
+           SECTION 5: Social Links
+           ═══════════════════════════════════════════════════════════════════ -->
+      <div class="flex flex-col gap-5">
+        <div class="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-700">
+          <i class="pi pi-share-alt text-primary-500" />
+          <h3 class="text-base font-semibold text-surface-900 dark:text-surface-0">Réseaux sociaux</h3>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <label class="font-medium text-surface-900 dark:text-surface-0">
+            Liens vers vos réseaux
+            <span class="font-normal text-surface-500 dark:text-surface-400">(optionnel)</span>
+          </label>
+          <div class="flex flex-col gap-2">
+            <div
+              v-for="(link, index) in socialLinks"
+              :key="index"
+              class="flex items-center gap-2 p-2 bg-surface-50 dark:bg-surface-800 rounded-lg"
+            >
+              <Select
+                v-model="link.platform"
+                :options="socialPlatformOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Plateforme"
+                :disabled="isSaving"
+                class="w-44"
+              />
+              <InputText
+                v-model="link.url"
+                placeholder="https://..."
+                :disabled="isSaving"
+                class="flex-1"
+              />
+              <Button
+                icon="pi pi-times"
+                severity="danger"
+                text
+                rounded
+                size="small"
+                :disabled="isSaving"
+                @click="removeSocialLink(index)"
+              />
+            </div>
+            <Button
+              label="Ajouter un lien"
+              icon="pi pi-plus"
+              severity="secondary"
+              size="small"
+              :disabled="isSaving"
+              class="w-fit"
+              @click="addSocialLink"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
     <template #footer>
@@ -518,6 +576,7 @@ const selectedDurations = ref([])
 const pricingByDuration = ref({})
 const availabilitySlots = ref([])
 const packages = ref([])
+const socialLinks = ref([])
 const selectedInstrumentIds = ref([])
 const selectedStyleIds = ref([])
 const error = ref('')
@@ -563,6 +622,18 @@ const dayOfWeekOptions = [
   { value: 'friday', label: 'Vendredi' },
   { value: 'saturday', label: 'Samedi' },
   { value: 'sunday', label: 'Dimanche' }
+]
+
+const socialPlatformOptions = [
+  { value: 'website', label: 'Site web' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'twitter', label: 'Twitter / X' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'spotify', label: 'Spotify' },
+  { value: 'soundcloud', label: 'SoundCloud' },
+  { value: 'bandcamp', label: 'Bandcamp' }
 ]
 
 const isVisible = computed({
@@ -629,6 +700,12 @@ function initForm() {
       price: p.price != null ? p.price / 100 : null
     }))
 
+    // Initialize social links
+    socialLinks.value = (props.teacherProfile.social_links || []).map((link) => ({
+      platform: link.platform,
+      url: link.url
+    }))
+
     selectedInstrumentIds.value = (props.teacherProfile.instruments || []).map(
       (i) => i.instrument_id
     )
@@ -646,6 +723,7 @@ function initForm() {
     pricingByDuration.value = {}
     availabilitySlots.value = []
     packages.value = []
+    socialLinks.value = []
     selectedInstrumentIds.value = []
     selectedStyleIds.value = []
   }
@@ -688,6 +766,17 @@ function addPackage() {
 
 function removePackage(index) {
   packages.value.splice(index, 1)
+}
+
+function addSocialLink() {
+  socialLinks.value.push({
+    platform: null,
+    url: ''
+  })
+}
+
+function removeSocialLink(index) {
+  socialLinks.value.splice(index, 1)
 }
 
 function removeLocation(index) {
@@ -780,6 +869,14 @@ async function handleSave() {
       price: pkg.price != null ? Math.round(pkg.price * 100) : 0
     }))
 
+  // Build social links input array
+  const socialLinksInput = socialLinks.value
+    .filter((link) => link.platform && link.url && link.url.trim())
+    .map((link) => ({
+      platform: link.platform,
+      url: link.url.trim()
+    }))
+
   const data = {
     description: description.value || null,
     years_of_experience: yearsOfExperience.value,
@@ -792,6 +889,7 @@ async function handleSave() {
     pricing: pricingInput,
     availability: availabilityInput,
     packages: packagesInput,
+    social_links: socialLinksInput,
     instrument_ids: selectedInstrumentIds.value,
     style_ids: selectedStyleIds.value
   }

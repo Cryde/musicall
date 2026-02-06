@@ -165,6 +165,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
                     'price' => 40000,
                 ],
             ],
+            'social_links' => [],
         ]);
     }
 

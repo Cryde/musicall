@@ -93,4 +93,8 @@ class TeacherProfileOutput
     /** @var TeacherProfilePackage[] */
     #[ApiProperty(genId: false)]
     public array $packages = [];
+
+    /** @var TeacherProfileSocialLink[] */
+    #[ApiProperty(genId: false)]
+    public array $socialLinks = [];
 }
