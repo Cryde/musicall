@@ -2122,6 +2122,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     faker?: array{ // Configure the faker used by your factories.
  *         locale?: scalar|Param|null, // The default locale to use for faker. // Default: null
  *         seed?: scalar|Param|null, // Deprecated: The "faker.seed" configuration is deprecated and will be removed in 3.0. Use environment variable "FOUNDRY_FAKER_SEED" instead. // Random number generator seed to produce the same fake values every run. // Default: null
+ *         manage_seed?: bool|Param, // Automatically manage faker seed to ensure consistent data between test runs. // Default: true
  *         service?: scalar|Param|null, // Service id for custom faker instance. // Default: null
  *     },
  *     instantiator?: array{ // Configure the default instantiator used by your object factories.
