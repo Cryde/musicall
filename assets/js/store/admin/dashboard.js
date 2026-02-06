@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { readonly, ref } from 'vue'
+import { reactive, readonly, ref } from 'vue'
 import adminDashboardApi from '../../api/admin/dashboard.js'
 
 export const useAdminDashboardStore = defineStore('adminDashboard', () => {
@@ -9,6 +9,10 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
   const isLoadingUsers = ref(false)
   const generalError = ref(null)
   const usersError = ref(null)
+
+  const timeSeries = reactive({})
+  const contentOverview = ref(null)
+  const isLoadingContentOverview = ref(false)
 
   async function loadGeneralMetrics() {
     isLoadingGeneral.value = true
@@ -23,11 +27,11 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     }
   }
 
-  async function loadUserMetrics() {
+  async function loadUserMetrics(from, to) {
     isLoadingUsers.value = true
     usersError.value = null
     try {
-      userMetrics.value = await adminDashboardApi.getUserMetrics()
+      userMetrics.value = await adminDashboardApi.getUserMetrics(from, to)
     } catch (e) {
       console.error('Failed to load user metrics:', e)
       usersError.value = 'Impossible de charger les métriques utilisateurs'
@@ -36,11 +40,36 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     }
   }
 
+  async function loadTimeSeries(metric, from, to) {
+    timeSeries[metric] = { data: null, isLoading: true, error: null }
+    try {
+      const result = await adminDashboardApi.getTimeSeries(metric, from, to)
+      timeSeries[metric] = { data: result, isLoading: false, error: null }
+    } catch (e) {
+      console.error(`Failed to load time series for ${metric}:`, e)
+      timeSeries[metric] = { data: null, isLoading: false, error: 'Impossible de charger les données' }
+    }
+  }
+
+  async function loadContentOverview(from, to) {
+    isLoadingContentOverview.value = true
+    try {
+      contentOverview.value = await adminDashboardApi.getContentOverview(from, to)
+    } catch (e) {
+      console.error('Failed to load content overview:', e)
+      contentOverview.value = null
+    } finally {
+      isLoadingContentOverview.value = false
+    }
+  }
+
   function clear() {
     generalMetrics.value = null
     userMetrics.value = null
+    contentOverview.value = null
     generalError.value = null
     usersError.value = null
+    Object.keys(timeSeries).forEach((key) => delete timeSeries[key])
   }
 
   return {
@@ -50,8 +79,13 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     isLoadingUsers: readonly(isLoadingUsers),
     generalError: readonly(generalError),
     usersError: readonly(usersError),
+    timeSeries,
+    contentOverview: readonly(contentOverview),
+    isLoadingContentOverview: readonly(isLoadingContentOverview),
     loadGeneralMetrics,
     loadUserMetrics,
+    loadTimeSeries,
+    loadContentOverview,
     clear
   }
 })

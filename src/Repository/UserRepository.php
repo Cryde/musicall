@@ -207,17 +207,21 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Find recent registrations with profile completion info.
+     * Find registrations with profile completion info within a date range.
      *
      * @return array<int, array{user: User, profile_completion: int}>
      */
-    public function findRecentRegistrationsWithCompletion(int $limit = 5): array
+    public function findRecentRegistrationsWithCompletion(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 10): array
     {
         $users = $this->createQueryBuilder('user')
             ->select('user, profile, profilePicture')
             ->join('user.profile', 'profile')
             ->leftJoin('user.profilePicture', 'profilePicture')
             ->where('user.confirmationDatetime IS NOT NULL')
+            ->andWhere('user.creationDatetime >= :from')
+            ->andWhere('user.creationDatetime < :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
             ->orderBy('user.creationDatetime', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
@@ -235,20 +239,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Find users registered recently with empty profiles (no avatar AND empty bio).
+     * Find users registered within a date range with empty profiles (no avatar AND empty bio).
      *
      * @return array<int, array{user: User, profile_completion: int}>
      */
-    public function findRecentEmptyProfiles(\DateTimeImmutable $since, int $limit = 10): array
+    public function findRecentEmptyProfiles(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 10): array
     {
         $users = $this->createQueryBuilder('user')
             ->select('user, profile')
             ->join('user.profile', 'profile')
-            ->where('user.creationDatetime >= :since')
+            ->where('user.creationDatetime >= :from')
+            ->andWhere('user.creationDatetime < :to')
             ->andWhere('user.confirmationDatetime IS NOT NULL')
             ->andWhere('user.profilePicture IS NULL')
             ->andWhere('profile.bio IS NULL OR profile.bio = :emptyBio')
-            ->setParameter('since', $since)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
             ->setParameter('emptyBio', '')
             ->orderBy('user.creationDatetime', 'DESC')
             ->setMaxResults($limit)
@@ -305,20 +311,70 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
 
     /**
-     * Get profile completion statistics for users registered within a period.
+     * Count registrations grouped by date within a range.
+     *
+     * @return array<int, array{date_label: string, count: int}>
+     */
+    public function countRegistrationsByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $result = $conn->executeQuery(
+            'SELECT DATE(creation_datetime) AS date_label, COUNT(id) AS count
+             FROM fos_user
+             WHERE creation_datetime >= :from AND creation_datetime < :to
+             GROUP BY DATE(creation_datetime)
+             ORDER BY date_label ASC',
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
+        );
+
+        return array_map(
+            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            $result->fetchAllAssociative()
+        );
+    }
+
+    /**
+     * Count logins grouped by date within a range.
+     *
+     * @return array<int, array{date_label: string, count: int}>
+     */
+    public function countLoginsByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $result = $conn->executeQuery(
+            'SELECT DATE(last_login_datetime) AS date_label, COUNT(id) AS count
+             FROM fos_user
+             WHERE last_login_datetime >= :from AND last_login_datetime < :to
+             GROUP BY DATE(last_login_datetime)
+             ORDER BY date_label ASC',
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
+        );
+
+        return array_map(
+            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            $result->fetchAllAssociative()
+        );
+    }
+
+    /**
+     * Get profile completion statistics for users registered within a date range.
      *
      * @return array{avg_percent: float, total: int, levels: array{empty: int, basic: int, complete: int}}
      */
-    public function getProfileCompletionStats(\DateTimeImmutable $since): array
+    public function getProfileCompletionStats(\DateTimeImmutable $from, \DateTimeImmutable $to): array
     {
         $users = $this->createQueryBuilder('user')
             ->select('user, profile, profilePicture, coverPicture')
             ->join('user.profile', 'profile')
             ->leftJoin('user.profilePicture', 'profilePicture')
             ->leftJoin('profile.coverPicture', 'coverPicture')
-            ->where('user.creationDatetime >= :since')
+            ->where('user.creationDatetime >= :from')
+            ->andWhere('user.creationDatetime < :to')
             ->andWhere('user.confirmationDatetime IS NOT NULL')
-            ->setParameter('since', $since)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
             ->getQuery()
             ->getResult();
 

@@ -8,6 +8,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Admin\Dashboard\UserDashboardMetrics;
 use App\Repository\Message\MessageRepository;
+use App\Repository\Musician\MusicianProfileRepository;
+use App\Repository\Teacher\TeacherProfileRepository;
+use App\Repository\User\UserEmailLogRepository;
 use App\Repository\UserRepository;
 
 /**
@@ -18,6 +21,9 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
     public function __construct(
         private UserRepository $userRepository,
         private MessageRepository $messageRepository,
+        private MusicianProfileRepository $musicianProfileRepository,
+        private TeacherProfileRepository $teacherProfileRepository,
+        private UserEmailLogRepository $userEmailLogRepository,
     ) {
     }
 
@@ -25,12 +31,12 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
     {
         $metrics = new UserDashboardMetrics();
 
-        $oneDayAgo = new \DateTimeImmutable('-24 hours');
-        $sevenDaysAgo = new \DateTimeImmutable('-7 days midnight');
-        $thirtyDaysAgo = new \DateTimeImmutable('-30 days midnight');
+        $from = new \DateTimeImmutable($context['filters']['from']);
+        // +1 day so the end date is inclusive
+        $to = (new \DateTimeImmutable($context['filters']['to']))->modify('+1 day');
 
-        // Spam Detection - Recent Empty Accounts (last 24h)
-        $emptyProfiles = $this->userRepository->findRecentEmptyProfiles($oneDayAgo, 10);
+        // Spam Detection - Empty Accounts within date range
+        $emptyProfiles = $this->userRepository->findRecentEmptyProfiles($from, $to, 10);
         foreach ($emptyProfiles as $item) {
             $user = $item['user'];
             $userId = $user->getId();
@@ -46,29 +52,11 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
             ];
         }
 
-        // Spam Detection - Message Spam Ratio (coming soon - requires more complex query)
-        $metrics->messageSpamRatio = null;
+        // Community Health - Profile Completion Rates within date range
+        $metrics->profileCompletionRates = $this->userRepository->getProfileCompletionStats($from, $to);
 
-        // Suspicious Engagement - External Link Posters (coming soon - requires content scanning)
-        $metrics->externalLinkPosters = null;
-
-        // Suspicious Engagement - Abnormal Activity Spikes (coming soon - requires hourly tracking)
-        $metrics->abnormalActivitySpikes = null;
-
-        // Community Health - Profile Completion Rates
-        $stats7Days = $this->userRepository->getProfileCompletionStats($sevenDaysAgo);
-        $stats30Days = $this->userRepository->getProfileCompletionStats($thirtyDaysAgo);
-
-        $metrics->profileCompletionRates = [
-            'last_7_days' => $stats7Days,
-            'last_30_days' => $stats30Days,
-        ];
-
-        // Community Health - Top Contributors (coming soon - requires contribution tracking)
-        $metrics->topContributors = [];
-
-        // Recent Registrations
-        $recentUsers = $this->userRepository->findRecentRegistrationsWithCompletion(5);
+        // Recent Registrations within date range
+        $recentUsers = $this->userRepository->findRecentRegistrationsWithCompletion($from, $to, 10);
         foreach ($recentUsers as $item) {
             $user = $item['user'];
             $userId = $user->getId();
@@ -81,14 +69,14 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
                 'email' => $user->getEmail(),
                 'registration_date' => $user->getCreationDatetime()->format('Y-m-d H:i'),
                 'profile_completion_percent' => $item['profile_completion'],
-                'first_action' => null, // Coming soon - requires action tracking
             ];
         }
 
-        // Top Messagers (7 days)
-        $topMessagers = $this->messageRepository->findTopMessagers($sevenDaysAgo, 5);
+        // Top Messagers within date range
+        $rangeDays = max(1, $from->diff($to)->days ?: 1);
+        $topMessagers = $this->messageRepository->findTopMessagers($from, $to, 5);
         foreach ($topMessagers as $messager) {
-            $avgPerDay = $messager['message_count'] / 7;
+            $avgPerDay = $messager['message_count'] / $rangeDays;
             $metrics->topMessagers[] = [
                 'id' => $messager['user_id'],
                 'username' => $messager['username'],
@@ -98,10 +86,14 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
             ];
         }
 
-        // Totals
-        $metrics->totalUsersLast24h = $this->userRepository->countRegistrationsSince($oneDayAgo);
-        $metrics->totalUsersLast7Days = $this->userRepository->countRegistrationsSince($sevenDaysAgo);
+        // Emails sent by type within date range
+        $metrics->emailsSentByType = $this->userEmailLogRepository->countByTypeBetween($from, $to);
+
+        // Totals (global, not date-filtered)
+        $metrics->totalUsers = $this->userRepository->countTotalUsers();
         $metrics->unconfirmedAccounts = $this->userRepository->countUnconfirmedAccounts();
+        $metrics->totalMusicianProfiles = $this->musicianProfileRepository->countAll();
+        $metrics->totalTeacherProfiles = $this->teacherProfileRepository->countAll();
 
         return $metrics;
     }

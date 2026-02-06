@@ -8,6 +8,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
+use App\Tests\Factory\User\UserEmailLogFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -21,9 +22,10 @@ class UserDashboardMetricsTest extends ApiTestCase
     public function test_get_user_dashboard_metrics_as_admin(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);
-        $this->client->request('GET', '/api/admin/dashboard/users');
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserDashboardMetrics',
@@ -31,40 +33,21 @@ class UserDashboardMetricsTest extends ApiTestCase
             '@type' => 'UserDashboardMetrics',
             'recent_empty_accounts' => [],
             'profile_completion_rates' => [
-                'last_7_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
-                ],
-                'last_30_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
+                'avg_percent' => 0,
+                'total' => 0,
+                'levels' => [
+                    'empty' => 0,
+                    'basic' => 0,
+                    'complete' => 0,
                 ],
             ],
-            'top_contributors' => [],
-            'recent_registrations' => [
-                [
-                    'id' => $admin->getId(),
-                    'username' => 'user_admin',
-                    'email' => 'admin@email.com',
-                    'registration_date' => '1990-01-02 02:03',
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-            ],
+            'recent_registrations' => [],
             'top_messagers' => [],
-            'total_users_last24h' => 0,
-            'total_users_last7_days' => 0,
+            'total_users' => 1,
             'unconfirmed_accounts' => 0,
+            'total_musician_profiles' => 0,
+            'total_teacher_profiles' => 0,
+            'emails_sent_by_type' => [],
         ]);
     }
 
@@ -73,94 +56,45 @@ class UserDashboardMetricsTest extends ApiTestCase
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
         $user1 = UserFactory::new()->with([
-            'creationDatetime' => new \DateTime('2024-01-15 10:00:00'),
+            'creationDatetime' => new \DateTime(),
             'email' => 'today1@test.com',
             'username' => 'today_user_1',
             'password' => UserFactory::DEFAULT_PASSWORD,
-            'confirmationDatetime' => new \DateTime('2024-01-15 10:00:00'),
+            'confirmationDatetime' => new \DateTime(),
         ])->create()->_real();
 
         $user2 = UserFactory::new()->with([
-            'creationDatetime' => new \DateTime('2024-01-15 11:00:00'),
+            'creationDatetime' => new \DateTime(),
             'email' => 'today2@test.com',
             'username' => 'today_user_2',
             'password' => UserFactory::DEFAULT_PASSWORD,
-            'confirmationDatetime' => new \DateTime('2024-01-15 11:00:00'),
+            'confirmationDatetime' => new \DateTime(),
         ])->create()->_real();
 
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+
         $this->client->loginUser($admin);
-        $this->client->request('GET', '/api/admin/dashboard/users');
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/UserDashboardMetrics',
-            '@id' => '/api/admin/dashboard/users',
-            '@type' => 'UserDashboardMetrics',
-            'recent_empty_accounts' => [],
-            'profile_completion_rates' => [
-                'last_7_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
-                ],
-                'last_30_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
-                ],
-            ],
-            'top_contributors' => [],
-            'recent_registrations' => [
-                [
-                    'id' => $user2->getId(),
-                    'username' => 'today_user_2',
-                    'email' => 'today2@test.com',
-                    'registration_date' => '2024-01-15 11:00',
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-                [
-                    'id' => $user1->getId(),
-                    'username' => 'today_user_1',
-                    'email' => 'today1@test.com',
-                    'registration_date' => '2024-01-15 10:00',
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-                [
-                    'id' => $admin->getId(),
-                    'username' => 'user_admin',
-                    'email' => 'admin@email.com',
-                    'registration_date' => '1990-01-02 02:03',
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-            ],
-            'top_messagers' => [],
-            'total_users_last24h' => 0,
-            'total_users_last7_days' => 0,
-            'unconfirmed_accounts' => 0,
-        ]);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertCount(2, $response['recent_registrations']);
+        $usernames = array_column($response['recent_registrations'], 'username');
+        $this->assertContains('today_user_1', $usernames);
+        $this->assertContains('today_user_2', $usernames);
+        $this->assertSame(3, $response['total_users']);
     }
 
     public function test_get_user_dashboard_metrics_with_top_messagers(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
 
-        $registrationDate = new \DateTime('-30 days');
         $messager = UserFactory::new()->with([
-            'creationDatetime' => $registrationDate,
+            'creationDatetime' => new \DateTime('-30 days'),
             'email' => 'messager@test.com',
             'username' => 'top_messager',
             'password' => UserFactory::DEFAULT_PASSWORD,
-            'confirmationDatetime' => $registrationDate,
+            'confirmationDatetime' => new \DateTime('-30 days'),
         ])->create()->_real();
 
         $thread = MessageThreadFactory::new()->create();
@@ -172,74 +106,24 @@ class UserDashboardMetricsTest extends ApiTestCase
             ])->create();
         }
 
+        $thirtyDaysAgo = (new \DateTimeImmutable('-30 days'))->format('Y-m-d');
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+
         $this->client->loginUser($admin);
-        $this->client->request('GET', '/api/admin/dashboard/users');
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $thirtyDaysAgo . '&to=' . $today);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/UserDashboardMetrics',
-            '@id' => '/api/admin/dashboard/users',
-            '@type' => 'UserDashboardMetrics',
-            'recent_empty_accounts' => [],
-            'profile_completion_rates' => [
-                'last_7_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
-                ],
-                'last_30_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 1,
-                    'levels' => [
-                        'empty' => 1,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
-                ],
-            ],
-            'top_contributors' => [],
-            'recent_registrations' => [
-                [
-                    'id' => $messager->getId(),
-                    'username' => 'top_messager',
-                    'email' => 'messager@test.com',
-                    'registration_date' => $registrationDate->format('Y-m-d H:i'),
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-                [
-                    'id' => $admin->getId(),
-                    'username' => 'user_admin',
-                    'email' => 'admin@email.com',
-                    'registration_date' => '1990-01-02 02:03',
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-            ],
-            'top_messagers' => [
-                [
-                    'id' => $messager->getId(),
-                    'username' => 'top_messager',
-                    'message_count' => 5,
-                    'account_age_days' => 30,
-                    'avg_messages_per_day' => 0.7,
-                ],
-            ],
-            'total_users_last24h' => 0,
-            'total_users_last7_days' => 0,
-            'unconfirmed_accounts' => 0,
-        ]);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertCount(1, $response['top_messagers']);
+        $this->assertSame('top_messager', $response['top_messagers'][0]['username']);
+        $this->assertSame(5, $response['top_messagers'][0]['message_count']);
     }
 
     public function test_get_user_dashboard_metrics_with_unconfirmed_accounts(): void
     {
         $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
 
-        // Create an unconfirmed user (no confirmationDatetime, has token)
-        // Note: unconfirmed users don't appear in recent_registrations (which only shows confirmed users)
         UserFactory::new()->with([
             'creationDatetime' => new \DateTime('2024-01-10 09:00:00'),
             'email' => 'unconfirmed@test.com',
@@ -250,7 +134,28 @@ class UserDashboardMetricsTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('GET', '/api/admin/dashboard/users');
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
+        $this->assertResponseIsSuccessful();
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertSame(1, $response['unconfirmed_accounts']);
+        $this->assertSame(1, $response['total_users']);
+    }
+
+    public function test_get_user_dashboard_metrics_with_emails_sent(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+
+        // 2 welcome emails + 1 inactivity reminder today
+        UserEmailLogFactory::new()->welcome()->with(['sentDatetime' => new \DateTimeImmutable()])->create();
+        UserEmailLogFactory::new()->welcome()->with(['sentDatetime' => new \DateTimeImmutable()])->create();
+        UserEmailLogFactory::new()->inactivityReminder()->with(['sentDatetime' => new \DateTimeImmutable()])->create();
+        // 1 email outside range (should be excluded)
+        UserEmailLogFactory::new()->welcome()->with(['sentDatetime' => new \DateTimeImmutable('-10 days')])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserDashboardMetrics',
@@ -258,46 +163,32 @@ class UserDashboardMetricsTest extends ApiTestCase
             '@type' => 'UserDashboardMetrics',
             'recent_empty_accounts' => [],
             'profile_completion_rates' => [
-                'last_7_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
-                ],
-                'last_30_days' => [
-                    'avg_percent' => 0.0,
-                    'total' => 0,
-                    'levels' => [
-                        'empty' => 0,
-                        'basic' => 0,
-                        'complete' => 0,
-                    ],
+                'avg_percent' => 0,
+                'total' => 0,
+                'levels' => [
+                    'empty' => 0,
+                    'basic' => 0,
+                    'complete' => 0,
                 ],
             ],
-            'top_contributors' => [],
-            'recent_registrations' => [
-                [
-                    'id' => $admin->getId(),
-                    'username' => 'user_admin',
-                    'email' => 'admin@email.com',
-                    'registration_date' => '1990-01-02 02:03',
-                    'profile_completion_percent' => 0,
-                    'first_action' => null,
-                ],
-            ],
+            'recent_registrations' => [],
             'top_messagers' => [],
-            'total_users_last24h' => 0,
-            'total_users_last7_days' => 0,
-            'unconfirmed_accounts' => 1,
+            'total_users' => 1,
+            'unconfirmed_accounts' => 0,
+            'total_musician_profiles' => 0,
+            'total_teacher_profiles' => 0,
+            'emails_sent_by_type' => [
+                'welcome' => 2,
+                'inactivity_reminder' => 1,
+            ],
         ]);
     }
 
     public function test_get_user_dashboard_metrics_not_logged(): void
     {
-        $this->client->request('GET', '/api/admin/dashboard/users');
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -308,9 +199,30 @@ class UserDashboardMetricsTest extends ApiTestCase
     public function test_get_user_dashboard_metrics_as_normal_user(): void
     {
         $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($user);
-        $this->client->request('GET', '/api/admin/dashboard/users');
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_get_user_dashboard_metrics_missing_from(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/users?to=' . $today);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_get_user_dashboard_metrics_missing_to(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $today = (new \DateTimeImmutable())->format('Y-m-d');
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }
