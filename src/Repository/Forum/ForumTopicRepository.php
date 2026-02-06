@@ -30,4 +30,16 @@ class ForumTopicRepository extends ServiceEntityRepository
             ->orderBy('ft.type', 'DESC')
             ->addOrderBy('ft.creationDatetime', 'DESC');
     }
+
+    public function countBetween(\DateTimeImmutable $from, \DateTimeImmutable $to): int
+    {
+        return (int) $this->createQueryBuilder('ft')
+            ->select('COUNT(ft.id)')
+            ->where('ft.creationDatetime >= :from')
+            ->andWhere('ft.creationDatetime < :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

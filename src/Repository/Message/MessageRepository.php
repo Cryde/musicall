@@ -41,20 +41,46 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Count messages grouped by date within a range.
+     *
+     * @return array<int, array{date_label: string, count: int}>
+     */
+    public function countMessagesByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $result = $conn->executeQuery(
+            'SELECT DATE(creation_datetime) AS date_label, COUNT(id) AS count
+             FROM message
+             WHERE creation_datetime >= :from AND creation_datetime < :to
+             GROUP BY DATE(creation_datetime)
+             ORDER BY date_label ASC',
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
+        );
+
+        return array_map(
+            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            $result->fetchAllAssociative()
+        );
+    }
+
+    /**
      * Get top messagers within a date range.
      *
      * @return array<int, array{user_id: string, username: string, message_count: int, account_age_days: int, creation_datetime: \DateTimeInterface}>
      */
-    public function findTopMessagers(\DateTimeImmutable $since, int $limit = 5): array
+    public function findTopMessagers(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 5): array
     {
         /** @var array<int, array{user_id: string, username: string, message_count: string, creation_datetime: \DateTimeInterface}> $results */
         $results = $this->createQueryBuilder('message')
             ->select('IDENTITY(message.author) as user_id, u.username, COUNT(message.id) as message_count, u.creationDatetime as creation_datetime')
             ->join('message.author', 'u')
-            ->where('message.creationDatetime >= :since')
+            ->where('message.creationDatetime >= :from')
+            ->andWhere('message.creationDatetime < :to')
             ->groupBy('message.author, u.username, u.creationDatetime')
             ->orderBy('message_count', 'DESC')
-            ->setParameter('since', $since)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

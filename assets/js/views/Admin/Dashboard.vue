@@ -60,44 +60,262 @@
 
     <!-- Metrics Content -->
     <template v-else-if="metrics">
-      <!-- Activity Trends -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
+      <!-- Totals Summary Bar (global, not date-filtered) -->
+      <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-6 rounded-2xl flex flex-col sm:flex-row gap-4">
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-surface-500 dark:text-surface-300 font-normal leading-tight">Utilisateurs</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-3xl! leading-tight! text-center w-full">{{ formatNumber(metrics.total_users) }}</div>
+        </div>
+        <div class="sm:w-px w-full max-w-xs sm:max-w-none mx-auto sm:mx-0 sm:h-auto h-px bg-surface-200 dark:bg-surface-700 self-stretch" />
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-surface-500 dark:text-surface-300 font-normal leading-tight">Publications</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-3xl! leading-tight! text-center w-full">{{ formatNumber(metrics.total_publications) }}</div>
+        </div>
+        <div class="sm:w-px w-full max-w-xs sm:max-w-none mx-auto sm:mx-0 sm:h-auto h-px bg-surface-200 dark:bg-surface-700 self-stretch" />
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-surface-500 dark:text-surface-300 font-normal leading-tight">Messages</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-3xl! leading-tight! text-center w-full">{{ formatNumber(metrics.total_messages) }}</div>
+        </div>
+      </div>
+
+      <!-- Date-filtered section -->
+      <DateRangePicker :from="dateFrom" :to="dateTo" @apply="handleDateRangeApply" />
+
+      <!-- Activity Trends - Charts -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TimeSeriesChart
           title="Inscriptions"
           icon="pi-user-plus"
-          :today="metrics.registrations_today"
-          :week="metrics.registrations7_days"
-          :month="metrics.registrations30_days"
-          :trend-percent="metrics.registrations_trend_percent"
+          color="#6366f1"
+          :series-data="dashboardStore.timeSeries.registrations"
+          :all-dates="allDates"
         />
-        <MetricCard
+        <TimeSeriesChart
           title="Connexions"
           icon="pi-sign-in"
-          :today="metrics.logins_today"
-          :week="metrics.logins7_days"
-          :month="metrics.logins30_days"
-          :trend-percent="metrics.logins_trend_percent"
+          color="#22c55e"
+          :series-data="dashboardStore.timeSeries.logins"
+          :all-dates="allDates"
         />
-        <MetricCard
+        <TimeSeriesChart
           title="Messages"
           icon="pi-envelope"
-          :today="metrics.messages_today"
-          :week="metrics.messages7_days"
-          :month="metrics.messages30_days"
-          :trend-percent="metrics.messages_trend_percent"
+          color="#f59e0b"
+          :series-data="dashboardStore.timeSeries.messages"
+          :all-dates="allDates"
         />
-        <MetricCard
+        <TimeSeriesChart
           title="Publications"
           icon="pi-file-edit"
-          :today="metrics.publications_today"
-          :week="metrics.publications7_days"
-          :month="metrics.publications30_days"
-          :trend-percent="metrics.publications_trend_percent"
+          color="#ef4444"
+          :series-data="dashboardStore.timeSeries.publications"
+          :all-dates="allDates"
+        />
+        <TimeSeriesChart
+          title="Commentaires"
+          icon="pi-comment"
+          color="#8b5cf6"
+          :series-data="dashboardStore.timeSeries.comments"
+          :all-dates="allDates"
+        />
+        <TimeSeriesChart
+          title="Posts forum"
+          icon="pi-comments"
+          color="#06b6d4"
+          :series-data="dashboardStore.timeSeries.forum_posts"
+          :all-dates="allDates"
+        />
+        <TimeSeriesChart
+          title="Annonces musiciens"
+          icon="pi-megaphone"
+          color="#ec4899"
+          :series-data="dashboardStore.timeSeries.musician_announces"
+          :all-dates="allDates"
         />
       </div>
 
+      <!-- Content Overview (date-filtered) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Publications by Type -->
+        <Card>
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-chart-pie text-primary" />
+              <span>Publications par catégorie</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
+              <ProgressSpinner style="width: 30px; height: 30px" />
+            </div>
+            <div v-else-if="contentOverview && Object.keys(contentOverview.publications_by_type).length > 0" class="space-y-3">
+              <div
+                v-for="(count, category) in contentOverview.publications_by_type"
+                :key="category"
+                class="flex items-center justify-between"
+              >
+                <span class="text-surface-600 dark:text-surface-400 capitalize">{{ category }}</span>
+                <Badge :value="count" severity="secondary" />
+              </div>
+            </div>
+            <div v-else class="text-surface-400 text-center py-4">
+              Aucune donnée sur cette période
+            </div>
+          </template>
+        </Card>
+
+        <!-- Publications by Format -->
+        <Card>
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-file text-primary" />
+              <span>Publications par format</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
+              <ProgressSpinner style="width: 30px; height: 30px" />
+            </div>
+            <div v-else-if="contentOverview && Object.keys(contentOverview.publications_by_format).length > 0" class="space-y-3">
+              <div
+                v-for="(count, format) in contentOverview.publications_by_format"
+                :key="format"
+                class="flex items-center justify-between"
+              >
+                <span class="text-surface-600 dark:text-surface-400 capitalize">{{ format }}</span>
+                <Badge :value="count" severity="secondary" />
+              </div>
+            </div>
+            <div v-else class="text-surface-400 text-center py-4">
+              Aucune donnée sur cette période
+            </div>
+          </template>
+        </Card>
+
+        <!-- Top Content -->
+        <Card>
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-star text-primary" />
+              <span>Top contenu</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
+              <ProgressSpinner style="width: 30px; height: 30px" />
+            </div>
+            <div v-else-if="contentOverview && contentOverview.top_content.length > 0" class="space-y-3">
+              <div
+                v-for="(content, index) in contentOverview.top_content"
+                :key="content.id"
+                class="flex items-center gap-3"
+              >
+                <span class="text-surface-400 font-mono">{{ index + 1 }}.</span>
+                <div class="flex-1 min-w-0">
+                  <p class="truncate font-medium">{{ content.title }}</p>
+                  <div class="flex items-center gap-2 text-sm text-surface-500">
+                    <Tag :value="content.type" size="small" />
+                    <span>{{ content.views }} vues</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-surface-400 text-center py-4">
+              Aucune publication sur cette période
+            </div>
+          </template>
+        </Card>
+
+        <!-- Forum -->
+        <Card>
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-comments text-primary" />
+              <span>Forum</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
+              <ProgressSpinner style="width: 30px; height: 30px" />
+            </div>
+            <div v-else-if="contentOverview" class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-surface-600 dark:text-surface-400">Sujets créés</span>
+                <Badge :value="contentOverview.forum_topics_count" severity="secondary" />
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-surface-600 dark:text-surface-400">Posts publiés</span>
+                <Badge :value="contentOverview.forum_posts_count" severity="secondary" />
+              </div>
+            </div>
+          </template>
+        </Card>
+
+        <!-- Musician Announces -->
+        <Card>
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-megaphone text-primary" />
+              <span>Annonces musiciens</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
+              <ProgressSpinner style="width: 30px; height: 30px" />
+            </div>
+            <div v-else-if="contentOverview" class="space-y-4">
+              <div v-if="Object.keys(contentOverview.announces_by_type).length > 0" class="space-y-2">
+                <div
+                  v-for="(count, type) in contentOverview.announces_by_type"
+                  :key="type"
+                  class="flex items-center justify-between"
+                >
+                  <span class="text-surface-600 dark:text-surface-400">{{ type === 'musician' ? 'Cherche musicien' : 'Cherche groupe' }}</span>
+                  <Badge :value="count" severity="secondary" />
+                </div>
+              </div>
+              <div v-else class="text-surface-400 text-center py-2">
+                Aucune annonce sur cette période
+              </div>
+            </div>
+          </template>
+        </Card>
+
+        <!-- Top Instruments & Styles -->
+        <Card>
+          <template #title>
+            <div class="flex items-center gap-2 text-base">
+              <i class="pi pi-music text-primary" />
+              <span>Top instruments &amp; styles</span>
+            </div>
+          </template>
+          <template #content>
+            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
+              <ProgressSpinner style="width: 30px; height: 30px" />
+            </div>
+            <div v-else-if="contentOverview" class="space-y-4">
+              <div v-if="contentOverview.top_instruments.length > 0">
+                <p class="text-sm font-medium text-surface-500 mb-2">Instruments</p>
+                <div class="flex gap-2 flex-wrap">
+                  <Tag v-for="item in contentOverview.top_instruments" :key="item.name" :value="`${item.name} (${item.count})`" severity="info" />
+                </div>
+              </div>
+              <div v-if="contentOverview.top_styles.length > 0">
+                <p class="text-sm font-medium text-surface-500 mb-2">Styles</p>
+                <div class="flex gap-2 flex-wrap">
+                  <Tag v-for="item in contentOverview.top_styles" :key="item.name" :value="`${item.name} (${item.count})`" severity="warn" />
+                </div>
+              </div>
+              <div v-if="contentOverview.top_instruments.length === 0 && contentOverview.top_styles.length === 0" class="text-surface-400 text-center py-2">
+                Aucune donnée sur cette période
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
+
       <!-- Engagement & Retention -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- DAU/MAU Ratio -->
         <Card>
           <template #title>
@@ -179,91 +397,6 @@
             </div>
           </template>
         </Card>
-
-        <!-- Totals -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-database text-primary" />
-              <span>Totaux</span>
-            </div>
-          </template>
-          <template #content>
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span class="text-surface-600 dark:text-surface-400">Utilisateurs</span>
-                <span class="text-2xl font-bold">{{ formatNumber(metrics.total_users) }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-surface-600 dark:text-surface-400">Publications</span>
-                <span class="text-2xl font-bold">{{ formatNumber(metrics.total_publications) }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-surface-600 dark:text-surface-400">Messages</span>
-                <span class="text-2xl font-bold">{{ formatNumber(metrics.total_messages) }}</span>
-              </div>
-            </div>
-          </template>
-        </Card>
-      </div>
-
-      <!-- Content Overview -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Publications by Type -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-chart-pie text-primary" />
-              <span>Publications par catégorie</span>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="Object.keys(metrics.publications_by_type).length > 0" class="space-y-3">
-              <div
-                v-for="(count, category) in metrics.publications_by_type"
-                :key="category"
-                class="flex items-center justify-between"
-              >
-                <span class="text-surface-600 dark:text-surface-400 capitalize">{{ category }}</span>
-                <Badge :value="count" severity="secondary" />
-              </div>
-            </div>
-            <div v-else class="text-surface-400 text-center py-4">
-              Aucune donnée disponible
-            </div>
-          </template>
-        </Card>
-
-        <!-- Top Content This Week -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-star text-primary" />
-              <span>Top contenu cette semaine</span>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="metrics.top_content_this_week.length > 0" class="space-y-3">
-              <div
-                v-for="(content, index) in metrics.top_content_this_week"
-                :key="content.id"
-                class="flex items-center gap-3"
-              >
-                <span class="text-surface-400 font-mono">{{ index + 1 }}.</span>
-                <div class="flex-1 min-w-0">
-                  <p class="truncate font-medium">{{ content.title }}</p>
-                  <div class="flex items-center gap-2 text-sm text-surface-500">
-                    <Tag :value="content.type" size="small" />
-                    <span>{{ content.views }} vues</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-surface-400 text-center py-4">
-              Aucune publication cette semaine
-            </div>
-          </template>
-        </Card>
       </div>
 
       <!-- Popular Searches (Coming Soon) -->
@@ -292,16 +425,27 @@ import Card from 'primevue/card'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { format, subDays, eachDayOfInterval } from 'date-fns'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
-import MetricCard from '../../components/Admin/MetricCard.vue'
+import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
+import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
 import ComingSoonBadge from '../../components/Admin/ComingSoonBadge.vue'
 
 const notificationStore = useNotificationStore()
 const dashboardStore = useAdminDashboardStore()
 
 const metrics = computed(() => dashboardStore.generalMetrics)
+const contentOverview = computed(() => dashboardStore.contentOverview)
+
+const today = new Date()
+const dateFrom = ref(subDays(today, 30))
+const dateTo = ref(today)
+
+const allDates = computed(() =>
+  eachDayOfInterval({ start: dateFrom.value, end: dateTo.value }).map((d) => format(d, 'yyyy-MM-dd'))
+)
 
 function formatNumber(num) {
   if (num >= 1000000) {
@@ -319,11 +463,30 @@ function getRetentionClass(value) {
   return 'text-red-500'
 }
 
+function formatDate(date) {
+  return format(date, 'yyyy-MM-dd')
+}
+
+function loadDateFilteredData() {
+  const from = formatDate(dateFrom.value)
+  const to = formatDate(dateTo.value)
+  const metricNames = ['registrations', 'logins', 'messages', 'publications', 'comments', 'forum_posts', 'musician_announces']
+  metricNames.forEach((metric) => dashboardStore.loadTimeSeries(metric, from, to))
+  dashboardStore.loadContentOverview(from, to)
+}
+
+function handleDateRangeApply({ from, to }) {
+  dateFrom.value = from
+  dateTo.value = to
+  loadDateFilteredData()
+}
+
 async function refreshData() {
   await Promise.all([
     notificationStore.loadNotifications(),
     dashboardStore.loadGeneralMetrics()
   ])
+  loadDateFilteredData()
 }
 
 onMounted(async () => {

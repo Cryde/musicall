@@ -18,6 +18,14 @@ class MusicianProfileRepository extends ServiceEntityRepository
         parent::__construct($registry, MusicianProfile::class);
     }
 
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('mp')
+            ->select('COUNT(mp.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findByUsername(string $username): ?MusicianProfile
     {
         return $this->createQueryBuilder('mp')

@@ -18,6 +18,14 @@ class TeacherProfileRepository extends ServiceEntityRepository
         parent::__construct($registry, TeacherProfile::class);
     }
 
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('tp')
+            ->select('COUNT(tp.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findByUsername(string $username): ?TeacherProfile
     {
         return $this->createQueryBuilder('tp')

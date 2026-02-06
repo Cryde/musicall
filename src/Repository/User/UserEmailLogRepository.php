@@ -74,4 +74,27 @@ class UserEmailLogRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * @return array<string, int>
+     */
+    public function countByTypeBetween(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $results = $this->createQueryBuilder('l')
+            ->select('l.emailType, COUNT(l.id) as count')
+            ->where('l.sentDatetime >= :from')
+            ->andWhere('l.sentDatetime < :to')
+            ->groupBy('l.emailType')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($results as $row) {
+            $counts[$row['emailType']->value] = (int) $row['count'];
+        }
+
+        return $counts;
+    }
 }

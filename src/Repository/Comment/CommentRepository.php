@@ -15,4 +15,26 @@ class CommentRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Comment::class);
     }
+
+    /**
+     * @return array<int, array{date_label: string, count: int}>
+     */
+    public function countCommentsByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $result = $conn->executeQuery(
+            'SELECT DATE(creation_datetime) AS date_label, COUNT(id) AS count
+             FROM comment
+             WHERE creation_datetime >= :from AND creation_datetime < :to
+             GROUP BY DATE(creation_datetime)
+             ORDER BY date_label ASC',
+            ['from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')]
+        );
+
+        return array_map(
+            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            $result->fetchAllAssociative()
+        );
+    }
 }
