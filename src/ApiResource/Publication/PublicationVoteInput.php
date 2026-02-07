@@ -10,5 +10,5 @@ class PublicationVoteInput
 {
     #[Assert\NotNull(message: 'La valeur du vote est obligatoire.')]
     #[Assert\Choice(choices: [1, -1], message: 'La valeur du vote doit être 1 ou -1.')]
-    public ?int $userVote = null;
+    public int $userVote;
 }

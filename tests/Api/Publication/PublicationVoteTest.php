@@ -222,6 +222,38 @@ class PublicationVoteTest extends ApiTestCase
         ]);
     }
 
+    public function test_post_vote_no_value(): void
+    {
+        $this->createOnlinePublication();
+        $user = UserFactory::new()->asBaseUser()->create()->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/publications/test-publication/vote',
+            [],
+            self::SERVER_PARAMS
+        );
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/ad32d13f-c3d4-423b-909a-857b961eb720',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'user_vote',
+                    'message' => 'La valeur du vote est obligatoire.',
+                    'code' => 'ad32d13f-c3d4-423b-909a-857b961eb720',
+                ],
+            ],
+            'detail' => 'user_vote: La valeur du vote est obligatoire.',
+            'description' => 'user_vote: La valeur du vote est obligatoire.',
+            'type' => '/validation_errors/ad32d13f-c3d4-423b-909a-857b961eb720',
+            'title' => 'An error occurred',
+        ]);
+    }
+
     public function test_vote_on_nonexistent_publication(): void
     {
         $user = UserFactory::new()->asBaseUser()->create()->_real();
