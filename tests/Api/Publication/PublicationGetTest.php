@@ -77,6 +77,9 @@ class PublicationGetTest extends ApiTestCase
                 'id'       => 1,
                 'label'    => 'text',
             ],
+            'upvotes'              => 0,
+            'downvotes'            => 0,
+            'user_vote'            => null,
         ]);
     }
 

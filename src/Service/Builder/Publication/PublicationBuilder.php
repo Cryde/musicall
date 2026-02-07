@@ -14,8 +14,12 @@ use App\Entity\Publication as PublicationEntity;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
 use App\Enum\Publication\PublicationType;
+use App\Repository\Metric\VoteRepository;
+use App\Service\Identifier\RequestIdentifier;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class PublicationBuilder
@@ -23,7 +27,11 @@ readonly class PublicationBuilder
     public function __construct(
         private UploaderHelper         $uploaderHelper,
         private CacheManager           $cacheManager,
-        private HtmlSanitizerInterface $appPublicationSanitizer
+        private HtmlSanitizerInterface $appPublicationSanitizer,
+        private VoteRepository         $voteRepository,
+        private Security               $security,
+        private RequestIdentifier      $requestIdentifier,
+        private RequestStack           $requestStack,
     ) {
     }
 
@@ -58,6 +66,26 @@ readonly class PublicationBuilder
         $publication->category = $this->buildCategory($subCategory);
         $publication->thread = $this->buildThread($thread);
         $publication->type = $this->buildType((int) $publicationEntity->getType());
+
+        $voteCache = $publicationEntity->getVoteCache();
+        $publication->upvotes = $voteCache?->getUpvoteCount() ?? 0;
+        $publication->downvotes = $voteCache?->getDownvoteCount() ?? 0;
+
+        if ($voteCache) {
+            /** @var User|null $currentUser */
+            $currentUser = $this->security->getUser();
+            if ($currentUser) {
+                $vote = $this->voteRepository->findOneByUserAndVoteCache($currentUser, $voteCache);
+                $publication->userVote = $vote?->getValue();
+            } else {
+                $request = $this->requestStack->getCurrentRequest();
+                if ($request) {
+                    $identifier = $this->requestIdentifier->fromRequest($request);
+                    $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
+                    $publication->userVote = $vote?->getValue();
+                }
+            }
+        }
 
         return $publication;
     }

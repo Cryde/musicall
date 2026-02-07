@@ -21,7 +21,10 @@
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
-        <ShareButton :url="shareUrl" :title="shareTitle" />
+        <div class="flex items-center gap-3">
+          <VoteButtons :slug="publication.slug" />
+          <ShareButton :url="shareUrl" :title="shareTitle" />
+        </div>
       </div>
 
       <div
@@ -44,7 +47,10 @@
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
-        <ShareButton :url="shareUrl" :title="shareTitle" />
+        <div class="flex items-center gap-3">
+          <VoteButtons :slug="publication.slug" />
+          <ShareButton :url="shareUrl" :title="shareTitle" />
+        </div>
       </div>
 
       <figure class="mt-7 w-full">
@@ -74,6 +80,10 @@
           :category="related.sub_category"
           :author="related.author"
           :date="related.publication_datetime"
+          :slug="related.slug"
+          :upvotes="related.upvotes ?? 0"
+          :downvotes="related.downvotes ?? 0"
+          :user-vote="related.user_vote ?? null"
         />
       </div>
     </div>
@@ -82,6 +92,7 @@
       v-if="publication.thread?.id"
       :thread-id="publication.thread.id"
     />
+
   </template>
 </template>
 
@@ -92,6 +103,7 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
+import VoteButtons from '../../components/Publication/VoteButtons.vue'
 import ShareButton from '../../components/ShareButton.vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { usePublicationStore } from '../../store/publication/publication.js'
