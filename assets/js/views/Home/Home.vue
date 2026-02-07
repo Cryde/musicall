@@ -150,6 +150,10 @@
           :category="publication.sub_category"
           :author="publication.author"
           :date="publication.publication_datetime"
+          :slug="publication.slug"
+          :upvotes="publication.upvotes ?? 0"
+          :downvotes="publication.downvotes ?? 0"
+          :user-vote="publication.user_vote ?? null"
         />
       </div>
     </section>

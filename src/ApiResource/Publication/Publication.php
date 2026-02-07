@@ -36,7 +36,8 @@ use App\State\Provider\Publication\PublicationSearchProvider;
             name: 'api_publication_search',
             provider: PublicationSearchProvider::class
         ),
-    ]
+    ],
+    normalizationContext: ['skip_null_values' => false],
 )]
 class Publication
 {
@@ -55,4 +56,7 @@ class Publication
     public Thread $thread;
     #[ApiProperty(genId: false)]
     public Type $type;
+    public int $upvotes = 0;
+    public int $downvotes = 0;
+    public ?int $userVote = null;
 }

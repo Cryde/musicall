@@ -13,12 +13,14 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Contracts\Metric\VotableInterface;
 use App\Contracts\Metric\ViewableInterface;
 use App\Contracts\SluggableEntityInterface;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Metric\ViewCache;
+use App\Entity\Metric\VoteCache;
 use App\Repository\PublicationRepository;
 use DateTime;
 use DateTimeInterface;
@@ -47,7 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     'subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT,
     'subCategory.type' => SearchFilterInterface::STRATEGY_EXACT
 ])]
-class Publication implements ViewableInterface, SluggableEntityInterface
+class Publication implements ViewableInterface, VotableInterface, SluggableEntityInterface
 {
     final const LIST_ITEMS_PER_PAGE = 12;
     final const ITEM = 'PUBLICATION_ITEM';
@@ -153,6 +155,9 @@ class Publication implements ViewableInterface, SluggableEntityInterface
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     private ?ViewCache $viewCache = null;
+
+    #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
+    private ?VoteCache $voteCache = null;
 
     public function __construct()
     {
@@ -389,6 +394,28 @@ class Publication implements ViewableInterface, SluggableEntityInterface
     }
 
     public function getViewableType(): string
+    {
+        return 'app_publication';
+    }
+
+    public function getVoteCache(): ?VoteCache
+    {
+        return $this->voteCache;
+    }
+
+    public function setVoteCache(?VoteCache $voteCache): self
+    {
+        $this->voteCache = $voteCache;
+
+        return $this;
+    }
+
+    public function getVotableId(): ?string
+    {
+        return $this->id !== null ? (string) $this->id : null;
+    }
+
+    public function getVotableType(): string
     {
         return 'app_publication';
     }

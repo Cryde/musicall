@@ -5,6 +5,8 @@ namespace App\Tests\Api\Publication;
 use App\Entity\Publication;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\Metric\VoteCacheFactory;
+use App\Tests\Factory\Metric\VoteFactory;
 use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
@@ -22,6 +24,19 @@ class PublicationGetCollectionTest extends ApiTestCase
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         $sub2 = PublicationSubCategoryFactory::new()->asNews()->create();
         $author = UserFactory::new()->asAdminUser()->create();
+        $currentUser = UserFactory::new()->asBaseUser()->create();
+        $otherUser = UserFactory::new()->create();
+
+        // pub1: has votes (3 up, 1 down), current user voted up
+        $voteCache1 = VoteCacheFactory::new(['upvoteCount' => 3, 'downvoteCount' => 1])->create();
+        VoteFactory::new([
+            'voteCache' => $voteCache1, 'user' => $currentUser, 'value' => 1,
+            'entityType' => 'app_publication', 'identifier' => 'test',
+        ])->create();
+        VoteFactory::new([
+            'voteCache' => $voteCache1, 'user' => $otherUser, 'value' => 1,
+            'entityType' => 'app_publication', 'identifier' => 'test2',
+        ])->create();
 
         $pub1 = PublicationFactory::new([
             'author'              => $author,
@@ -36,7 +51,15 @@ class PublicationGetCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
+            'voteCache'           => $voteCache1,
         ])->create()->_real();
+
+        // pub2: has votes (1 up, 2 down), current user did NOT vote
+        $voteCache2 = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 2])->create();
+        VoteFactory::new([
+            'voteCache' => $voteCache2, 'user' => $otherUser, 'value' => -1,
+            'entityType' => 'app_publication', 'identifier' => 'test3',
+        ])->create();
 
         $pub2 = PublicationFactory::new([
             'author'              => $author,
@@ -51,6 +74,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 2',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
+            'voteCache'           => $voteCache2,
         ])->create()->_real();
 
         // not taken (status) :
@@ -66,6 +90,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'author' => $author, 'status' => Publication::STATUS_ONLINE, 'subCategory' => $sub2,
         ])->create();
 
+        $this->client->loginUser($currentUser->_real());
         $this->client->request('GET', '/api/publications', [
             'order' => ['publication_datetime' => 'asc'],
             'sub_category.slug' => 'chroniques'
@@ -101,6 +126,9 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'cover'                => null,
                     'type_label'           => 'text',
                     'description'          => 'Petite description de la publication 2',
+                    'upvotes'              => 1,
+                    'downvotes'            => 2,
+                    'user_vote'            => null,
                 ],
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-1',
@@ -126,6 +154,9 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'cover'                => null,
                     'type_label'           => 'text',
                     'description'          => 'Petite description de la publication 1',
+                    'upvotes'              => 3,
+                    'downvotes'            => 1,
+                    'user_vote'            => 1,
                 ],
             ],
             'totalItems' => 2,
