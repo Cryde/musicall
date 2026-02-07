@@ -57,7 +57,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
         $voteCache = $publication->getVoteCache();
 
         $summary = new PublicationVoteSummary();
-        $summary->slug = $publication->getSlug();
+        $summary->slug = $publication->getSlug() ?: '';
         $summary->upvotes = $voteCache?->getUpvoteCount() ?? 0;
         $summary->downvotes = $voteCache?->getDownvoteCount() ?? 0;
 
