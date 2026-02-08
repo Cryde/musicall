@@ -56,6 +56,44 @@ class UserSearchTest extends ApiTestCase
     }
 
 
+    public function test_users_search_excludes_deleted_accounts(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'test1', 'email' => 'base_user1@email.com'])->_real();
+        UserFactory::new()->asBaseUser()->create([
+            'username' => 'test_deleted',
+            'email' => 'deleted@email.com',
+            'deletionDatetime' => new \DateTimeImmutable(),
+        ]);
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/users/search?search=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSearch',
+            '@id' => '/api/users/search',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user_searches/' . $user1->getId(),
+                    '@type' => 'UserSearch',
+                    'id' => $user1->getId(),
+                    'username' => 'test1',
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/users/search?search=test',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/users/search{?}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => []
+            ],
+        ]);
+    }
+
     public function test_users_search_with_invalid_search(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();

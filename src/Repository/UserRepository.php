@@ -70,6 +70,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         return $this->createQueryBuilder('user')
             ->where('user.username LIKE :search')
+            ->andWhere('user.deletionDatetime IS NULL')
             ->setParameter('search', $username . '%')
             ->setMaxResults($limit)
             ->getQuery()
