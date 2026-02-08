@@ -104,6 +104,49 @@ class MessagePostInThreadTest extends ApiTestCase
         ]);
     }
 
+    public function test_post_message_in_thread_with_deleted_participant(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $user2 = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_user',
+            'email' => 'deleted@email.com',
+            'deletionDatetime' => new \DateTimeImmutable(),
+        ]);
+
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
+        MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
+
+        $user1 = $user1->_real();
+        $thread = $thread->_real();
+
+        $this->client->loginUser($user1);
+        $this->client->jsonRequest('POST', '/api/messages', [
+            'thread'  => '/api/message_threads/' . $thread->getId(),
+            'content' => 'message to deleted user',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_a9d3b7e1-4c6f-4e2a-8b5d-3f1c0e9a7d26',
+            '@type' => 'ConstraintViolation',
+            'title' => 'An error occurred',
+            'detail' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'description' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'violations' => [
+                [
+                    'propertyPath' => '',
+                    'message' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+                    'code' => 'music_all_a9d3b7e1-4c6f-4e2a-8b5d-3f1c0e9a7d26',
+                ],
+            ],
+            'status' => 422,
+            'type' => '/validation_errors/music_all_a9d3b7e1-4c6f-4e2a-8b5d-3f1c0e9a7d26',
+        ]);
+    }
+
     public function test_with_invalid_values(): void
     {
         $thread = MessageThreadFactory::new()->create();
