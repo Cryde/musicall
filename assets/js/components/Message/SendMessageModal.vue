@@ -159,9 +159,14 @@ const recipientsOptions = ref([])
 const isSending = ref(false)
 const errorMessage = ref('')
 
+const isRecipientDeleted = computed(() => {
+  const target = props.selectedRecipient || recipient.value
+  return !!target?.deletion_datetime
+})
+
 const canSend = computed(() => {
   const hasRecipient = props.selectedRecipient || recipient.value
-  return content.value.trim().length > 0 && hasRecipient && !isSending.value
+  return content.value.trim().length > 0 && hasRecipient && !isSending.value && !isRecipientDeleted.value
 })
 
 watch(

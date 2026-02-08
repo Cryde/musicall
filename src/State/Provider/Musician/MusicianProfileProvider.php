@@ -36,6 +36,10 @@ readonly class MusicianProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
+        if ($user->isDeleted()) {
+            throw new NotFoundHttpException('Utilisateur non trouvé');
+        }
+
         if (!$musicianProfile = $user->getMusicianProfile()) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }

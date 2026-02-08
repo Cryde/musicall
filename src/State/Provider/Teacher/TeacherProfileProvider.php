@@ -36,6 +36,10 @@ readonly class TeacherProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
+        if ($user->isDeleted()) {
+            throw new NotFoundHttpException('Utilisateur non trouvé');
+        }
+
         if (!$teacherProfile = $user->getTeacherProfile()) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }

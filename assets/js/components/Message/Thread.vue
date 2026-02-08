@@ -77,7 +77,10 @@
 
     <!-- Message input -->
     <div class="border-t border-surface-200 dark:border-surface-700 p-4">
-      <div class="flex gap-2">
+      <p v-if="isRecipientDeleted" class="text-sm text-surface-500 dark:text-surface-400 text-center">
+        Vous ne pouvez plus envoyer de message à cet utilisateur.
+      </p>
+      <div v-else class="flex gap-2">
         <Textarea
           v-model="content"
           :disabled="messageStore.isAddingMessage"
@@ -133,6 +136,8 @@ const otherParticipant = computed(() => {
 const otherParticipantName = computed(() => {
   return otherParticipant.value ? displayName(otherParticipant.value) : 'Conversation'
 })
+
+const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_datetime)
 
 function isSender(message) {
   return message.author?.username === securityStore.user?.username
