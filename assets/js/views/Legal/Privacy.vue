@@ -29,9 +29,10 @@
           </p>
           <ul class="list-disc list-inside text-surface-600 dark:text-surface-300 space-y-2">
             <li><strong>Données de compte</strong> : adresse email, nom d'utilisateur</li>
-            <li><strong>Données de profil</strong> : photo de profil (optionnelle), informations musicales que vous choisissez de partager</li>
+            <li><strong>Données de profil</strong> : photo de profil (optionnelle), informations musicales que vous choisissez de partager (profil musicien, profil professeur, instruments, styles, localisation)</li>
             <li><strong>Données de connexion</strong> : identifiants OAuth (Google, Facebook) si vous utilisez ces méthodes de connexion</li>
             <li><strong>Données d'usage anonymisées</strong> : statistiques de visite (pages consultées, actions effectuées) collectées de manière anonyme sans cookies de suivi</li>
+            <li><strong>Données d'interaction</strong> : votes sur les publications, commentaires, messages privés, annonces</li>
             <li><strong>Données techniques</strong> : informations sur les erreurs pour améliorer le service (via Sentry)</li>
           </ul>
         </section>
@@ -109,8 +110,11 @@
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
             8. Durée de conservation
           </h2>
+          <p class="text-surface-600 dark:text-surface-300 mb-4">
+            Vos données sont conservées tant que votre compte est actif. Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil.
+          </p>
           <p class="text-surface-600 dark:text-surface-300">
-            Vos données sont conservées tant que votre compte est actif. En cas de suppression de compte, vos données personnelles sont supprimées dans un délai de 30 jours, à l'exception des données que nous sommes légalement tenus de conserver.
+            Lors de la suppression de votre compte, vos données personnelles (nom d'utilisateur, adresse email, mot de passe, photo de profil, comptes OAuth associés) sont anonymisées immédiatement. Vos publications, commentaires, messages et contributions au forum restent visibles sur la plateforme mais sont associés à un profil anonyme (« Utilisateur supprimé »).
           </p>
         </section>
 
@@ -124,7 +128,7 @@
           <ul class="list-disc list-inside text-surface-600 dark:text-surface-300 space-y-2">
             <li><strong>Droit d'accès</strong> : obtenir une copie de vos données personnelles</li>
             <li><strong>Droit de rectification</strong> : corriger vos données inexactes</li>
-            <li><strong>Droit à l'effacement</strong> : demander la suppression de vos données</li>
+            <li><strong>Droit à l'effacement</strong> : supprimer votre compte directement depuis les paramètres de votre profil, ou nous en faire la demande</li>
             <li><strong>Droit à la portabilité</strong> : recevoir vos données dans un format structuré</li>
             <li><strong>Droit d'opposition</strong> : vous opposer au traitement de vos données</li>
             <li><strong>Droit de retirer votre consentement</strong> : à tout moment</li>
@@ -166,5 +170,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '19 janvier 2026'
+const lastUpdate = '8 février 2026'
 </script>
