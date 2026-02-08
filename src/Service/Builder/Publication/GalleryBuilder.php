@@ -45,6 +45,7 @@ readonly class GalleryBuilder
     {
         $author = new Author();
         $author->username = (string) $user->getUsername();
+        $author->deletionDatetime = $user->getDeletionDatetime();
 
         return $author;
     }

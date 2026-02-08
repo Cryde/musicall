@@ -62,6 +62,7 @@ class MusicianSearchResultBuilder
         $user = new User();
         $user->id = (string) $userEntity->getId();
         $user->username = $userEntity->getUsername();
+        $user->deletionDatetime = $userEntity->getDeletionDatetime();
         $user->hasMusicianProfile = $userEntity->getMusicianProfile() !== null;
         if ($userEntity->getProfilePicture()) {
             $path = $this->uploaderHelper->asset($userEntity->getProfilePicture(), 'imageFile');

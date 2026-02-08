@@ -119,6 +119,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     'author'               => [
                         '@type' => 'Author',
                         'username' => 'user_admin',
+                        'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication-2',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
@@ -154,6 +155,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     'author'               => [
                         '@type' => 'Author',
                         'username' => 'user_admin',
+                        'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication-1',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',

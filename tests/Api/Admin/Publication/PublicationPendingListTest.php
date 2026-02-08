@@ -78,6 +78,7 @@ class PublicationPendingListTest extends ApiTestCase
                         '@id'      => '/api/users/' . $admin->getId(),
                         '@type'    => 'User',
                         'username' => 'user_admin',
+                        'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',

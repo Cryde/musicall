@@ -37,7 +37,7 @@
 
           <div
               class="text-surface-500 dark:text-surface-300 text-xs md:text-sm leading-normal">
-              par {{ author.username }} {{ relativeDateFilter(date) }}
+              par {{ authorName }} {{ relativeDateFilter(date) }}
 
           <Tag
               severity="secondary"
@@ -53,10 +53,12 @@
 
 <script setup>
 import Tag from 'primevue/tag'
+import { computed } from 'vue'
 import relativeDateFilter from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import VoteButtonsList from '../../components/Publication/VoteButtonsList.vue'
 
-defineProps({
+const props = defineProps({
   toRoute: { type: Object, required: true },
   cover: { type: String, default: null },
   title: { type: String, required: true },
@@ -69,4 +71,6 @@ defineProps({
   downvotes: { type: Number, default: 0 },
   userVote: { type: Number, default: null },
 })
+
+const authorName = computed(() => displayName(props.author))
 </script>

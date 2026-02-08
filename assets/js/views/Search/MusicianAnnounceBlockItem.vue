@@ -3,28 +3,39 @@
         <div class="p-4 flex flex-col flex-1">
             <div class="flex gap-4">
                 <!-- Avatar -->
-                <router-link :to="profileRoute" class="flex-shrink-0">
+                <router-link v-if="!user.deletion_datetime" :to="profileRoute" class="flex-shrink-0">
                     <Avatar
                         v-if="user.profile_picture_url"
                         :image="user.profile_picture_url"
-                        :pt="{ image: { alt: `Photo de ${user.username}` } }"
+                        :pt="{ image: { alt: `Photo de ${userName}` } }"
                         class="!w-16 !h-16"
                         shape="circle"
                     />
                     <Avatar
                         v-else
-                        :label="user.username.charAt(0).toUpperCase()"
-                        :style="getAvatarStyle(user.username)"
+                        :label="userName.charAt(0).toUpperCase()"
+                        :style="getAvatarStyle(userName)"
                         class="!w-16 !h-16"
                         shape="circle"
                     />
                 </router-link>
+                <div v-else class="flex-shrink-0">
+                    <Avatar
+                        :label="userName.charAt(0).toUpperCase()"
+                        :style="getAvatarStyle(userName)"
+                        class="!w-16 !h-16"
+                        shape="circle"
+                    />
+                </div>
 
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
-                    <router-link :to="profileRoute" class="font-medium text-surface-900 dark:text-surface-0 text-lg leading-tight hover:text-primary transition-colors block truncate">
-                        {{ user.username }}
+                    <router-link v-if="!user.deletion_datetime" :to="profileRoute" class="font-medium text-surface-900 dark:text-surface-0 text-lg leading-tight hover:text-primary transition-colors block truncate">
+                        {{ userName }}
                     </router-link>
+                    <span v-else class="font-medium text-surface-500 text-lg leading-tight block truncate">
+                        {{ userName }}
+                    </span>
                     <p class="text-surface-500 dark:text-surface-400 text-sm mt-0.5 truncate">
                         <span v-if="type === 1">recherche un {{ instrument.toLowerCase() }}</span>
                         <span v-else>{{ instrument }}</span>
@@ -75,7 +86,7 @@
         </div>
 
         <SendMessageModal v-model:visible="showMessageModal" :selected-recipient="user" />
-        <AuthRequiredModal v-model:visible="showAuthModal" variant="contact" :musician-name="user.username" />
+        <AuthRequiredModal v-model:visible="showAuthModal" variant="contact" :musician-name="userName" />
     </div>
 </template>
 
@@ -85,6 +96,7 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
+import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { hasMoreStyles, MAX_VISIBLE_STYLES } from '../../utils/styles.js'
@@ -98,6 +110,8 @@ const props = defineProps({
     distance: { type: [Number, String], default: null },
     from: { type: String, default: null }
 })
+
+const userName = computed(() => displayName(props.user))
 
 const visibleStyles = computed(() => props.styles.slice(0, MAX_VISIBLE_STYLES))
 const allStylesText = computed(() => props.styles.map((s) => s.name).join(', '))

@@ -6,6 +6,7 @@ class User
 {
     public string $id;
     public string $username;
+    public ?\DateTimeImmutable $deletionDatetime = null;
     public string $profilePictureUrl;
     public bool $hasMusicianProfile = false;
 }

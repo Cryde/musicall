@@ -15,34 +15,34 @@
         >
           <div class="flex items-start gap-3">
             <Avatar
-              v-if="getParticipant(threadMeta)?.profile_picture?.small"
+              v-if="getParticipant(threadMeta)?.profile_picture?.small && !getParticipant(threadMeta)?.deletion_datetime"
               :image="getParticipant(threadMeta).profile_picture.small"
-              :pt="{ image: { alt: `Photo de ${getParticipant(threadMeta).username}` } }"
+              :pt="{ image: { alt: `Photo de ${getParticipantName(threadMeta)}` } }"
               shape="circle"
               size="large"
               role="img"
-              :aria-label="`Photo de ${getParticipant(threadMeta).username}`"
+              :aria-label="`Photo de ${getParticipantName(threadMeta)}`"
             />
             <Avatar
               v-else
-              :label="getParticipant(threadMeta)?.username?.charAt(0).toUpperCase() || '?'"
-              :style="getAvatarStyle(getParticipant(threadMeta)?.username)"
+              :label="getParticipantName(threadMeta).charAt(0).toUpperCase()"
+              :style="getAvatarStyle(getParticipantName(threadMeta))"
               shape="circle"
               size="large"
               role="img"
-              :aria-label="`Avatar de ${getParticipant(threadMeta)?.username || 'utilisateur'}`"
+              :aria-label="`Avatar de ${getParticipantName(threadMeta)}`"
             />
 
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
                 <router-link
-                  v-if="getParticipant(threadMeta)?.username"
+                  v-if="getParticipant(threadMeta)?.username && !getParticipant(threadMeta)?.deletion_datetime"
                   :to="{ name: 'app_user_public_profile', params: { username: getParticipant(threadMeta).username } }"
                   class="font-semibold text-surface-900 dark:text-surface-0 truncate hover:text-primary transition-colors"
                   @click.stop
-                >{{ getParticipant(threadMeta).username }}</router-link>
-                <span v-else class="font-semibold text-surface-900 dark:text-surface-0 truncate">
-                  Utilisateur inconnu
+                >{{ getParticipantName(threadMeta) }}</router-link>
+                <span v-else class="font-semibold text-surface-500 truncate">
+                  {{ getParticipantName(threadMeta) }}
                 </span>
                 <Tag v-if="!threadMeta.is_read" severity="info" value="new" class="text-xs" />
               </div>
@@ -70,6 +70,7 @@
 import Avatar from 'primevue/avatar'
 import Tag from 'primevue/tag'
 import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 
@@ -77,5 +78,10 @@ const messageStore = useMessageStore()
 
 function getParticipant(threadMeta) {
   return messageStore.getOtherParticipant(threadMeta)
+}
+
+function getParticipantName(threadMeta) {
+  const participant = getParticipant(threadMeta)
+  return participant ? displayName(participant) : 'Utilisateur inconnu'
 }
 </script>

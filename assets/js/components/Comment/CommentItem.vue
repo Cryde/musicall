@@ -2,29 +2,29 @@
   <div class="flex gap-4">
     <div class="shrink-0">
       <Avatar
-        v-if="comment.author.profile_picture?.small"
+        v-if="comment.author.profile_picture?.small && !comment.author.deletion_datetime"
         :image="comment.author.profile_picture.small"
-        :pt="{ image: { alt: `Photo de ${comment.author.username}` } }"
+        :pt="{ image: { alt: `Photo de ${authorName}` } }"
         shape="circle"
         size="large"
         role="img"
-        :aria-label="`Photo de ${comment.author.username}`"
+        :aria-label="`Photo de ${authorName}`"
       />
       <Avatar
         v-else
-        :label="comment.author.username.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(comment.author.username)"
+        :label="authorName.charAt(0).toUpperCase()"
+        :style="getAvatarStyle(authorName)"
         shape="circle"
         size="large"
         role="img"
-        :aria-label="`Avatar de ${comment.author.username}`"
+        :aria-label="`Avatar de ${authorName}`"
       />
     </div>
     <div class="flex-1">
       <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-4">
         <div class="flex items-center gap-2 mb-2">
           <span class="font-semibold text-surface-900 dark:text-surface-0">
-            {{ comment.author.username }}
+            {{ authorName }}
           </span>
           <span class="text-sm text-surface-500 dark:text-surface-400">
             {{ relativeDate(comment.creation_datetime) }}
@@ -41,13 +41,17 @@
 
 <script setup>
 import Avatar from 'primevue/avatar'
+import { computed } from 'vue'
 import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 
-defineProps({
+const props = defineProps({
   comment: {
     type: Object,
     required: true
   }
 })
+
+const authorName = computed(() => displayName(props.comment.author))
 </script>

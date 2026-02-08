@@ -111,5 +111,21 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  deleteAccount(password) {
+    return axios
+      .post(
+        Routing.generate('api_users_delete_account_post'),
+        { password },
+        {
+          headers: {
+            'Content-Type': 'application/ld+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }

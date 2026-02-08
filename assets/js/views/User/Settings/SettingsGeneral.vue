@@ -147,7 +147,74 @@
           </div>
         </div>
       </div>
+
+      <!-- Danger Zone -->
+      <div class="mt-8 border border-red-300 dark:border-red-800 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Zone de danger</h3>
+        <p class="text-sm text-surface-600 dark:text-surface-400 mb-4">
+          La suppression de votre compte est irréversible. Vos publications, commentaires et messages resteront visibles
+          mais seront associés à un utilisateur anonyme.
+        </p>
+        <Button
+          label="Supprimer mon compte"
+          icon="pi pi-trash"
+          severity="danger"
+          @click="showDeleteAccountDialog = true"
+        />
+      </div>
     </template>
+
+    <Dialog
+      v-model:visible="showDeleteAccountDialog"
+      header="Supprimer mon compte"
+      modal
+      :style="{ width: '450px' }"
+    >
+      <div class="flex flex-col gap-4">
+        <Message severity="warn" :closable="false">
+          Cette action est irréversible. Toutes vos données personnelles seront supprimées.
+        </Message>
+        <template v-if="hasPassword">
+          <p class="text-sm text-surface-600 dark:text-surface-400">
+            Pour confirmer la suppression, veuillez saisir votre mot de passe.
+          </p>
+          <InputText
+            v-model="deleteAccountPassword"
+            type="password"
+            placeholder="Votre mot de passe"
+            class="w-full"
+            :invalid="!!deleteAccountError"
+          />
+        </template>
+        <template v-else>
+          <p class="text-sm text-surface-600 dark:text-surface-400">
+            Pour confirmer, veuillez saisir <span class="font-semibold">supprimer définitivement</span> ci-dessous.
+          </p>
+          <InputText
+            v-model="deleteAccountConfirmation"
+            placeholder="supprimer définitivement"
+            class="w-full"
+          />
+        </template>
+        <small v-if="deleteAccountError" class="text-red-500">{{ deleteAccountError }}</small>
+      </div>
+      <template #footer>
+        <Button
+          label="Annuler"
+          severity="secondary"
+          text
+          @click="showDeleteAccountDialog = false"
+        />
+        <Button
+          label="Supprimer définitivement"
+          icon="pi pi-trash"
+          severity="danger"
+          :loading="isDeletingAccount"
+          :disabled="hasPassword ? !deleteAccountPassword : !isConfirmationValid"
+          @click="handleDeleteAccount"
+        />
+      </template>
+    </Dialog>
 
     <ProfilePictureModal
       v-model:visible="showPictureModal"
@@ -163,6 +230,7 @@
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
+import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -171,6 +239,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import securityApi from '../../../api/user/security.js'
 import { useDarkMode } from '../../../composables/useDarkMode.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useUserSettingsStore } from '../../../store/user/settings.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 import ProfilePictureModal from './ProfilePictureModal.vue'
@@ -178,6 +247,7 @@ import ProfilePictureModal from './ProfilePictureModal.vue'
 const COOLDOWN_DAYS = 30
 
 const userSettingsStore = useUserSettingsStore()
+const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
 const toast = useToast()
 const { isDarkMode, setDarkMode } = useDarkMode()
@@ -379,5 +449,37 @@ function confirmDeletePicture() {
       }
     }
   })
+}
+
+// Delete account
+const hasPassword = computed(() => userSettingsStore.userProfile?.has_password ?? true)
+const showDeleteAccountDialog = ref(false)
+const deleteAccountPassword = ref('')
+const deleteAccountConfirmation = ref('')
+const deleteAccountError = ref('')
+const isDeletingAccount = ref(false)
+
+function normalize(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+const isConfirmationValid = computed(() => normalize(deleteAccountConfirmation.value) === 'supprimer definitivement')
+
+async function handleDeleteAccount() {
+  deleteAccountError.value = ''
+  isDeletingAccount.value = true
+  try {
+    await securityApi.deleteAccount(hasPassword.value ? deleteAccountPassword.value : null)
+    showDeleteAccountDialog.value = false
+    await userSecurityStore.logout()
+  } catch (error) {
+    if (error.isValidationError) {
+      deleteAccountError.value = error.violations?.[0]?.message || 'Le mot de passe est invalide'
+    } else {
+      deleteAccountError.value = 'Une erreur est survenue'
+    }
+  } finally {
+    isDeletingAccount.value = false
+  }
 }
 </script>

@@ -57,6 +57,7 @@ class GalleryPendingListTest extends ApiTestCase
                         '@id'      => '/api/users/' . $admin->getId(),
                         '@type'    => 'User',
                         'username' => 'user_admin',
+                        'deletion_datetime' => null,
                     ],
                     'cover_image'          => null,
                     'slug'                 => 'ma-galerie-photo',

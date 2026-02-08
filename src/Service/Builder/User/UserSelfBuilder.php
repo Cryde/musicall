@@ -26,6 +26,7 @@ readonly class UserSelfBuilder
         $dto->roles = $user->getRoles();
         $dto->profilePicture = $this->buildProfilePicture($user);
         $dto->usernameChangedDatetime = $user->getUsernameChangedDatetime();
+        $dto->hasPassword = $user->getPassword() !== null;
 
         return $dto;
     }

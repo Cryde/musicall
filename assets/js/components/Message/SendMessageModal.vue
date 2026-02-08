@@ -57,7 +57,7 @@
                 role="img"
                 :aria-label="`Avatar de ${option.username}`"
               />
-              <div class="font-medium">{{ option.username }}</div>
+              <div class="font-medium">{{ displayName(option) }}</div>
             </div>
           </template>
         </AutoComplete>
@@ -66,25 +66,25 @@
       <!-- Selected recipient card -->
       <div v-else class="flex items-center gap-3 p-3 bg-gradient-to-r from-primary-50 to-primary-100/50 dark:from-primary-900/20 dark:to-primary-800/10 rounded-lg border border-primary-200 dark:border-primary-800">
         <Avatar
-          v-if="selectedRecipient.profile_picture?.small"
+          v-if="selectedRecipient.profile_picture?.small && !selectedRecipient.deletion_datetime"
           :image="selectedRecipient.profile_picture.small"
-          :pt="{ image: { alt: `Photo de ${selectedRecipient.username}` } }"
+          :pt="{ image: { alt: `Photo de ${displayName(selectedRecipient)}` } }"
           shape="circle"
           size="large"
           role="img"
-          :aria-label="`Photo de ${selectedRecipient.username}`"
+          :aria-label="`Photo de ${displayName(selectedRecipient)}`"
         />
         <Avatar
           v-else
-          :label="selectedRecipient.username.charAt(0).toUpperCase()"
-          :style="getAvatarStyle(selectedRecipient.username)"
+          :label="displayName(selectedRecipient).charAt(0).toUpperCase()"
+          :style="getAvatarStyle(displayName(selectedRecipient))"
           shape="circle"
           size="large"
           role="img"
-          :aria-label="`Avatar de ${selectedRecipient.username}`"
+          :aria-label="`Avatar de ${displayName(selectedRecipient)}`"
         />
         <div class="flex-1">
-          <div class="font-semibold text-surface-900 dark:text-surface-0">{{ selectedRecipient.username }}</div>
+          <div class="font-semibold text-surface-900 dark:text-surface-0">{{ displayName(selectedRecipient) }}</div>
         </div>
         <i class="pi pi-check-circle text-primary-500 text-xl" />
       </div>
@@ -137,6 +137,7 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import userSearchApi from '../../api/search/user.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 

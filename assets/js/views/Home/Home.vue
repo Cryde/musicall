@@ -186,27 +186,37 @@
         <Card v-for="announce in musicianAnnounceStore.lastAnnounces" :key="announce.id" class="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <template #content>
             <div class="flex gap-3">
-              <router-link :to="getProfileRoute(announce)" class="shrink-0 hover:opacity-80 transition-opacity" :aria-label="`Voir le profil de ${announce.author.username}`">
+              <router-link v-if="!announce.author.deletion_datetime" :to="getProfileRoute(announce)" class="shrink-0 hover:opacity-80 transition-opacity" :aria-label="`Voir le profil de ${getAuthorName(announce.author)}`">
                 <Avatar
                   v-if="announce.author.profile_picture_url"
                   :image="announce.author.profile_picture_url"
-                  :pt="{ image: { alt: `Photo de ${announce.author.username}` } }"
+                  :pt="{ image: { alt: `Photo de ${getAuthorName(announce.author)}` } }"
                   shape="circle"
                   role="img"
-                  :aria-label="`Photo de ${announce.author.username}`"
+                  :aria-label="`Photo de ${getAuthorName(announce.author)}`"
                 />
                 <Avatar
                   v-else
-                  :label="announce.author.username.charAt(0).toUpperCase()"
-                  :style="getAvatarStyle(announce.author.username)"
+                  :label="getAuthorName(announce.author).charAt(0).toUpperCase()"
+                  :style="getAvatarStyle(getAuthorName(announce.author))"
                   shape="circle"
                   role="img"
-                  :aria-label="`Avatar de ${announce.author.username}`"
+                  :aria-label="`Avatar de ${getAuthorName(announce.author)}`"
                 />
               </router-link>
+              <div v-else class="shrink-0">
+                <Avatar
+                  :label="getAuthorName(announce.author).charAt(0).toUpperCase()"
+                  :style="getAvatarStyle(getAuthorName(announce.author))"
+                  shape="circle"
+                  role="img"
+                  :aria-label="`Avatar de ${getAuthorName(announce.author)}`"
+                />
+              </div>
               <div class="flex-1">
                 <template v-if="isTypeBand(announce.type)">
-                  <router-link :to="getProfileRoute(announce)" class="font-semibold hover:text-primary transition-colors">{{ announce.author.username }}</router-link> est un
+                  <router-link v-if="!announce.author.deletion_datetime" :to="getProfileRoute(announce)" class="font-semibold hover:text-primary transition-colors">{{ getAuthorName(announce.author) }}</router-link>
+                  <span v-else class="font-semibold text-surface-500">{{ getAuthorName(announce.author) }}</span> est un
                   <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
                   et cherche un groupe jouant du
                   <strong>{{ formatStyles(announce.styles).visible }}</strong>
@@ -220,7 +230,8 @@
                   dans les alentours de {{ announce.location_name }}
                 </template>
                 <template v-if="isTypeMusician(announce.type)">
-                  <router-link :to="getProfileRoute(announce)" class="font-semibold hover:text-primary transition-colors">{{ announce.author.username }}</router-link> cherche pour son groupe un
+                  <router-link v-if="!announce.author.deletion_datetime" :to="getProfileRoute(announce)" class="font-semibold hover:text-primary transition-colors">{{ getAuthorName(announce.author) }}</router-link>
+                  <span v-else class="font-semibold text-surface-500">{{ getAuthorName(announce.author) }}</span> cherche pour son groupe un
                   <strong>{{ announce.instrument.musician_name.toLocaleLowerCase() }}</strong>
                   jouant du
                   <strong>{{ formatStyles(announce.styles).visible }}</strong>
@@ -333,6 +344,7 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatStyles, hasMoreStyles } from '../../utils/styles.js'
 import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import PublicationListItem from '../Publication/PublicationListItem.vue'
 import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 
@@ -365,6 +377,10 @@ onMounted(async () => {
     })()
   ])
 })
+
+function getAuthorName(author) {
+  return displayName(author)
+}
 
 function isTypeBand(type) {
   return type === TYPES_ANNOUNCE_BAND
