@@ -61,6 +61,7 @@
             <li>Garantissez être l'auteur ou détenir les droits nécessaires sur ce contenu</li>
             <li>Accordez à MusicAll une licence non exclusive pour afficher et distribuer ce contenu sur la plateforme</li>
             <li>Restez propriétaire de vos contenus et pouvez les supprimer à tout moment</li>
+            <li>Acceptez qu'en cas de suppression de votre compte, vos contenus (publications, commentaires, messages, contributions au forum) restent visibles sur la plateforme mais soient associés à un profil anonyme</li>
           </ul>
         </section>
 
@@ -141,8 +142,11 @@
           <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
             11. Résiliation
           </h2>
-          <p class="text-surface-600 dark:text-surface-300">
+          <p class="text-surface-600 dark:text-surface-300 mb-4">
             Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil. Nous nous réservons également le droit de suspendre ou supprimer votre compte en cas de violation des présentes conditions.
+          </p>
+          <p class="text-surface-600 dark:text-surface-300">
+            Lors de la suppression, vos données personnelles sont anonymisées immédiatement. Vos publications, commentaires, messages et contributions au forum restent visibles mais sont associés à un profil anonyme (« Utilisateur supprimé »). Votre profil public, profil musicien et profil professeur ne seront plus accessibles.
           </p>
         </section>
 
@@ -174,5 +178,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle("Conditions générales d'utilisation - MusicAll")
 
-const lastUpdate = '7 janvier 2026'
+const lastUpdate = '8 février 2026'
 </script>
