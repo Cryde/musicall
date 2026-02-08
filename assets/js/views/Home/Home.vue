@@ -249,7 +249,7 @@
                   <i class="pi pi-clock mr-1" />{{ relativeDate(announce.creation_datetime, { showHours: false }) }}
                 </div>
 
-                <div v-if="!isOwnAnnounce(announce)" class="mt-2 flex justify-end">
+                <div v-if="!isOwnAnnounce(announce) && !announce.author.deletion_datetime" class="mt-2 flex justify-end">
                   <Button
                     size="small"
                     icon="pi pi-envelope"

@@ -70,15 +70,17 @@
             <!-- Buttons -->
             <div class="flex gap-2 mt-auto pt-4">
                 <button
+                    :disabled="!!user.deletion_datetime"
                     @click="$router.push(profileRoute)"
-                    class="flex-1 py-2.5 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 text-sm font-medium hover:bg-surface-200 dark:hover:bg-surface-700 transition-all cursor-pointer"
+                    class="flex-1 py-2.5 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-surface-200 dark:enabled:hover:bg-surface-700 enabled:cursor-pointer"
                 >
                     <i class="pi pi-user mr-2" />Profil
                 </button>
                 <button
                     v-if="!isOwnAnnounce"
+                    :disabled="!!user.deletion_datetime"
                     @click="handleContact"
-                    class="flex-1 py-2.5 rounded-xl bg-surface-900 dark:bg-surface-100 text-white dark:text-surface-900 text-sm font-medium transition-all hover:bg-surface-800 dark:hover:bg-surface-200 cursor-pointer"
+                    class="flex-1 py-2.5 rounded-xl bg-surface-900 dark:bg-surface-100 text-white dark:text-surface-900 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-surface-800 dark:enabled:hover:bg-surface-200 enabled:cursor-pointer"
                 >
                     <i class="pi pi-envelope mr-2" />Contacter
                 </button>
