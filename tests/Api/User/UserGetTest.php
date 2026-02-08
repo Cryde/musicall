@@ -41,6 +41,7 @@ class UserGetTest extends ApiTestCase
             'roles'           => ['ROLE_USER'],
             'profile_picture' => null,
             'username_changed_datetime' => null,
+            'has_password' => true,
         ]);
     }
 
@@ -61,6 +62,7 @@ class UserGetTest extends ApiTestCase
             'roles'           => ['ROLE_ADMIN', 'ROLE_USER'],
             'profile_picture' => null,
             'username_changed_datetime' => null,
+            'has_password' => true,
         ]);
     }
 
@@ -78,6 +80,7 @@ class UserGetTest extends ApiTestCase
             'id'              => $user1->getId(),
             'username'        => $user1->getUsername(),
             'profile_picture' => null,
+            'deletion_datetime' => null,
         ]);
     }
 }

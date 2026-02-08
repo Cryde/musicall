@@ -22,6 +22,7 @@ readonly class UserDtoBuilder
         $dto = new User();
         $dto->id = (string) $user->getId();
         $dto->username = $user->getUsername();
+        $dto->deletionDatetime = $user->getDeletionDatetime();
         $dto->profilePicture = $this->buildProfilePicture($user);
 
         return $dto;

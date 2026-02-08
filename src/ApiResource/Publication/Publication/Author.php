@@ -4,4 +4,5 @@ namespace App\ApiResource\Publication\Publication;
 class Author
 {
     public string $username;
+    public ?\DateTimeImmutable $deletionDatetime = null;
 }

@@ -29,7 +29,7 @@
 
                 <div
                     class="text-surface-500 dark:text-surface-300 text-xs md:text-sm leading-normal">
-                    par {{ author.username }} {{ relativeDateFilter(date) }}
+                    par {{ authorName }} {{ relativeDateFilter(date) }}
 
                     <Tag
                         severity="secondary"
@@ -44,7 +44,11 @@
 
 <script setup>
 import Tag from 'primevue/tag'
+import { computed } from 'vue'
 import relativeDateFilter from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 
-defineProps(['toRoute', 'cover', 'title', 'description', 'category', 'author', 'date'])
+const props = defineProps(['toRoute', 'cover', 'title', 'description', 'category', 'author', 'date'])
+
+const authorName = computed(() => displayName(props.author))
 </script>

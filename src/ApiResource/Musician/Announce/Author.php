@@ -8,6 +8,8 @@ class Author
 
     public string $username;
 
+    public ?\DateTimeImmutable $deletionDatetime = null;
+
     public ?string $profilePictureUrl = null;
 
     public bool $hasMusicianProfile = false;

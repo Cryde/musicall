@@ -27,7 +27,7 @@ readonly class MessageSentListener
         $sender = $event->sender;
         $thread = $event->thread;
 
-        if (!$this->preferenceChecker->canReceiveMessageNotification($recipient)) {
+        if ($recipient->isDeleted() || !$this->preferenceChecker->canReceiveMessageNotification($recipient)) {
             return;
         }
 

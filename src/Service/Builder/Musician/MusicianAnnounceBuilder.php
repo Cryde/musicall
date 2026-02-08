@@ -79,6 +79,7 @@ readonly class MusicianAnnounceBuilder
         $dto = new Author();
         $dto->id = (string) $user->getId();
         $dto->username = $user->getUsername();
+        $dto->deletionDatetime = $user->getDeletionDatetime();
         $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
 
         if ($user->getProfilePicture()) {

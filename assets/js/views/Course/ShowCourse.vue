@@ -15,9 +15,11 @@
           <div class="text-sm leading-tight text-surface-500 dark:text-surface-300 mt-5">
             Publié par
             <router-link
+              v-if="!publication.author.deletion_datetime"
               :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
               class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-            >{{ publication.author.username }}</router-link>
+            >{{ authorName }}</router-link>
+            <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
@@ -38,9 +40,11 @@
           <div class="text-sm leading-tight text-surface-500 dark:text-surface-300 mt-5">
             Publié par
             <router-link
+              v-if="!publication.author.deletion_datetime"
               :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
               class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-            >{{ publication.author.username }}</router-link>
+            >{{ authorName }}</router-link>
+            <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
@@ -72,12 +76,15 @@ import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
 import ShareButton from '../../components/ShareButton.vue'
 import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { usePublicationStore } from '../../store/publication/publication.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication } = storeToRefs(publicationStore)
+
+const authorName = computed(() => publication.value ? displayName(publication.value.author) : '')
 
 useTitle(() =>
   publication.value ? `${publication.value.title} - Cours - MusicAll` : 'Cours - MusicAll'

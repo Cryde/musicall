@@ -110,6 +110,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $usernameChangedDatetime = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMeta::LIST, User::ITEM, Message::LIST, Message::ITEM, Gallery::LIST])]
+    private ?\DateTimeImmutable $deletionDatetime = null;
+
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
     private ?UserProfilePicture $profilePicture = null;
@@ -455,5 +459,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->teacherProfile = $teacherProfile;
 
         return $this;
+    }
+
+    public function getDeletionDatetime(): ?\DateTimeImmutable
+    {
+        return $this->deletionDatetime;
+    }
+
+    public function setDeletionDatetime(?\DateTimeImmutable $deletionDatetime): self
+    {
+        $this->deletionDatetime = $deletionDatetime;
+
+        return $this;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletionDatetime !== null;
     }
 }

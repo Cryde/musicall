@@ -4,37 +4,39 @@
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex md:flex-col items-center gap-3 md:w-24 shrink-0">
           <Avatar
-            v-if="post.creator.profile_picture?.small"
+            v-if="post.creator.profile_picture?.small && !post.creator.deletion_datetime"
             :image="post.creator.profile_picture.small"
-            :pt="{ image: { alt: `Photo de ${post.creator.username}` } }"
+            :pt="{ image: { alt: `Photo de ${creatorName}` } }"
             size="large"
             shape="circle"
             role="img"
-            :aria-label="`Photo de ${post.creator.username}`"
+            :aria-label="`Photo de ${creatorName}`"
           />
           <Avatar
             v-else
-            :label="post.creator.username.charAt(0).toUpperCase()"
-            :style="getAvatarStyle(post.creator.username)"
+            :label="creatorName.charAt(0).toUpperCase()"
+            :style="getAvatarStyle(creatorName)"
             size="large"
             shape="circle"
             role="img"
-            :aria-label="`Avatar de ${post.creator.username}`"
+            :aria-label="`Avatar de ${creatorName}`"
           />
           <router-link
+            v-if="!post.creator.deletion_datetime"
             :to="{ name: 'app_user_public_profile', params: { username: post.creator.username } }"
             class="font-medium text-sm hover:text-primary transition-colors"
-            :aria-label="`Voir le profil de ${post.creator.username}`"
-          >{{ post.creator.username }}</router-link>
+            :aria-label="`Voir le profil de ${creatorName}`"
+          >{{ creatorName }}</router-link>
+          <span v-else class="font-medium text-sm text-surface-500">{{ creatorName }}</span>
           <Button
-            v-if="canContact"
+            v-if="canContact && !post.creator.deletion_datetime"
             icon="pi pi-envelope"
             size="small"
             severity="secondary"
             text
             rounded
             v-tooltip.bottom="'Contacter'"
-            :aria-label="`Contacter ${post.creator.username}`"
+            :aria-label="`Contacter ${creatorName}`"
             @click="handleContact"
           />
         </div>
@@ -69,6 +71,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { computed, ref } from 'vue'
+import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatDate } from '../../utils/date.js'
@@ -83,6 +86,8 @@ const props = defineProps({
 })
 
 const userSecurityStore = useUserSecurityStore()
+
+const creatorName = computed(() => displayName(props.post.creator))
 
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)

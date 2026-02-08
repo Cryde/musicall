@@ -17,10 +17,11 @@
           <div class="text-sm text-surface-500 dark:text-surface-400">
             Photo de
             <router-link
-              v-if="galleryStore.gallery.author?.username"
+              v-if="galleryStore.gallery.author?.username && !galleryStore.gallery.author.deletion_datetime"
               :to="{ name: 'app_user_public_profile', params: { username: galleryStore.gallery.author.username } }"
               class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-            >{{ galleryStore.gallery.author.username }}</router-link>
+            >{{ galleryAuthorName }}</router-link>
+            <span v-else-if="galleryStore.gallery.author" class="font-semibold text-surface-500">{{ galleryAuthorName }}</span>
             <span v-if="galleryStore.gallery.publicationDatetime">
               le {{ formatDate(galleryStore.gallery.publicationDatetime) }}
             </span>
@@ -105,6 +106,7 @@ import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ShareButton from '../../components/ShareButton.vue'
+import { displayName } from '../../helper/user/displayName.js'
 import { useGalleryStore } from '../../store/gallery/gallery.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
@@ -118,6 +120,10 @@ const imageLoading = ref(false)
 
 useTitle(() =>
   galleryStore.gallery ? `${galleryStore.gallery.title} - Photos - MusicAll` : 'Photos - MusicAll'
+)
+
+const galleryAuthorName = computed(() =>
+  galleryStore.gallery?.author ? displayName(galleryStore.gallery.author) : ''
 )
 
 const shareUrl = computed(() => window.location.href)

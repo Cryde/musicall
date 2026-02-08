@@ -33,4 +33,5 @@ class UserSelf
     /** @var array{small: string}|null */
     public ?array $profilePicture = null;
     public ?\DateTimeImmutable $usernameChangedDatetime = null;
+    public bool $hasPassword;
 }

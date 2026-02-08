@@ -29,7 +29,7 @@
         </div>
 
         <div class="text-surface-500 dark:text-surface-300 text-xs md:text-sm leading-normal">
-          par {{ author.username }} {{ relativeDateFilter(date) }}
+          par {{ authorName }} {{ relativeDateFilter(date) }}
 
           <Tag severity="secondary" value="Photos" class="ml-3" />
         </div>
@@ -40,9 +40,11 @@
 
 <script setup>
 import Tag from 'primevue/tag'
+import { computed } from 'vue'
 import relativeDateFilter from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 
-defineProps({
+const props = defineProps({
   slug: { type: String, required: true },
   coverImage: { type: String, required: true },
   title: { type: String, required: true },
@@ -50,4 +52,6 @@ defineProps({
   author: { type: Object, required: true },
   date: { type: String, default: null }
 })
+
+const authorName = computed(() => displayName(props.author))
 </script>

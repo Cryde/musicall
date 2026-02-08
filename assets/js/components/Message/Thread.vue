@@ -11,28 +11,28 @@
         />
       </div>
       <Avatar
-        v-if="otherParticipant?.profile_picture?.small"
+        v-if="otherParticipant?.profile_picture?.small && !otherParticipant?.deletion_datetime"
         :image="otherParticipant.profile_picture.small"
-        :pt="{ image: { alt: `Photo de ${otherParticipant.username}` } }"
+        :pt="{ image: { alt: `Photo de ${otherParticipantName}` } }"
         shape="circle"
         role="img"
-        :aria-label="`Photo de ${otherParticipant.username}`"
+        :aria-label="`Photo de ${otherParticipantName}`"
       />
       <Avatar
         v-else
-        :label="otherParticipant?.username?.charAt(0).toUpperCase() || '?'"
-        :style="getAvatarStyle(otherParticipant?.username)"
+        :label="otherParticipantName.charAt(0).toUpperCase()"
+        :style="getAvatarStyle(otherParticipantName)"
         shape="circle"
         role="img"
-        :aria-label="`Avatar de ${otherParticipant?.username || 'utilisateur'}`"
+        :aria-label="`Avatar de ${otherParticipantName}`"
       />
       <router-link
-        v-if="otherParticipant?.username"
+        v-if="otherParticipant?.username && !otherParticipant?.deletion_datetime"
         :to="{ name: 'app_user_public_profile', params: { username: otherParticipant.username } }"
         class="font-semibold text-surface-900 dark:text-surface-0 hover:text-primary transition-colors"
-      >{{ otherParticipant.username }}</router-link>
-      <span v-else class="font-semibold text-surface-900 dark:text-surface-0">
-        Conversation
+      >{{ otherParticipantName }}</router-link>
+      <span v-else class="font-semibold text-surface-500">
+        {{ otherParticipantName }}
       </span>
     </div>
 
@@ -112,6 +112,7 @@ import Textarea from 'primevue/textarea'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, ref, watch } from 'vue'
 import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
@@ -127,6 +128,10 @@ const messagesContainer = ref(null)
 const otherParticipant = computed(() => {
   if (!messageStore.currentThread) return null
   return messageStore.getOtherParticipant(messageStore.currentThread)
+})
+
+const otherParticipantName = computed(() => {
+  return otherParticipant.value ? displayName(otherParticipant.value) : 'Conversation'
 })
 
 function isSender(message) {

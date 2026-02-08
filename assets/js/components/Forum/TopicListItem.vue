@@ -14,9 +14,11 @@
       <div class="text-sm text-surface-500 dark:text-surface-400 mt-1">
         Par
         <router-link
+          v-if="!topic.author.deletion_datetime"
           :to="{ name: 'app_user_public_profile', params: { username: topic.author.username } }"
           class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
-        >{{ topic.author.username }}</router-link>
+        >{{ authorName }}</router-link>
+        <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
         le {{ formatDate(topic.creation_datetime) }}
       </div>
     </div>
@@ -33,10 +35,12 @@
       <div>
         Dernier message par
         <router-link
+          v-if="!topic.last_post.creator.deletion_datetime"
           :to="{ name: 'app_user_public_profile', params: { username: topic.last_post.creator.username } }"
           class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
           @click.stop
-        >{{ topic.last_post.creator.username }}</router-link>
+        >{{ lastPostCreatorName }}</router-link>
+        <span v-else class="font-semibold text-surface-500">{{ lastPostCreatorName }}</span>
       </div>
       <router-link :to="lastPostRoute" class="hover:text-primary transition-colors">
         le {{ formatDate(topic.last_post.creation_datetime) }}
@@ -51,6 +55,7 @@
 <script setup>
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
+import { displayName } from '../../helper/user/displayName.js'
 import { formatDate } from '../../utils/date.js'
 
 const POSTS_PER_PAGE = 10
@@ -63,6 +68,8 @@ const props = defineProps({
 })
 
 const isPinned = computed(() => props.topic.type === 1)
+const authorName = computed(() => displayName(props.topic.author))
+const lastPostCreatorName = computed(() => props.topic.last_post ? displayName(props.topic.last_post.creator) : '')
 
 const containerClass = computed(() => [
   'flex flex-col md:flex-row md:items-center py-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 gap-2 md:gap-4',

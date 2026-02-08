@@ -92,7 +92,7 @@
             {{ publication.title }}
           </h1>
           <div class="text-sm leading-tight text-surface-500 dark:text-surface-300 mt-5">
-            Par <strong>{{ publication.author?.username }}</strong>
+            Par <strong>{{ previewAuthorName }}</strong>
           </div>
         </div>
       </div>
@@ -126,6 +126,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import adminPublicationApi from '../../../api/admin/publication.js'
 import publicationApi from '../../../api/user/publication.js'
+import { displayName } from '../../../helper/user/displayName.js'
 import { useNotificationStore } from '../../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import Breadcrumb from '../../Global/Breadcrumb.vue'
@@ -144,6 +145,10 @@ const publication = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
 const isProcessing = ref(false)
+
+const previewAuthorName = computed(() =>
+  publication.value?.author ? displayName(publication.value.author) : ''
+)
 
 const isAdminReview = computed(() => {
   return userSecurityStore.isAdmin && publication.value?.status_id === STATUS_PENDING
