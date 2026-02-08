@@ -23,9 +23,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
+use App\Validator\Message\NotDeletedThreadRecipient;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
+#[NotDeletedThreadRecipient]
 #[ApiResource(
     operations: [
         new GetCollection(

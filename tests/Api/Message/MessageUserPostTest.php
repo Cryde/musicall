@@ -167,6 +167,40 @@ class MessageUserPostTest extends ApiTestCase
         ]);
     }
 
+    public function test_cannot_message_deleted_user(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->_real();
+        $user2 = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_user',
+            'email' => 'deleted@email.com',
+            'deletionDatetime' => new \DateTimeImmutable(),
+        ])->_real();
+
+        $this->client->loginUser($user1);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $user2->getId(),
+            'content' => 'Hello deleted user',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/music_all_f7a2c4d6-3b8e-4f1a-9d5c-6e0b7a8c2d14',
+            '@type' => 'ConstraintViolation',
+            'title' => 'An error occurred',
+            'description' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'violations' => [
+                [
+                    'propertyPath' => '',
+                    'message' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+                    'code' => 'music_all_f7a2c4d6-3b8e-4f1a-9d5c-6e0b7a8c2d14',
+                ],
+            ],
+            'status' => 422,
+            'detail' => 'Vous ne pouvez pas envoyer un message à un utilisateur supprimé.',
+            'type' => '/validation_errors/music_all_f7a2c4d6-3b8e-4f1a-9d5c-6e0b7a8c2d14',
+        ]);
+    }
+
     public function test_cannot_message_self(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->_real();
