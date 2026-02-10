@@ -88,7 +88,11 @@
                 size="small"
                 stripedRows
               >
-                <Column field="username" header="Utilisateur" />
+                <Column field="username" header="Utilisateur">
+                  <template #body="{ data }">
+                    <RouterLink :to="{ name: 'app_user_public_profile', params: { username: data.username } }" class="text-primary hover:underline">{{ data.username }}</RouterLink>
+                  </template>
+                </Column>
                 <Column field="email" header="Email" class="hidden md:table-cell" />
                 <Column field="registration_date" header="Inscription" />
                 <Column field="profile_completion_percent" header="Profil">
@@ -268,7 +272,11 @@
                 size="small"
                 stripedRows
               >
-                <Column field="username" header="Utilisateur" />
+                <Column field="username" header="Utilisateur">
+                  <template #body="{ data }">
+                    <RouterLink :to="{ name: 'app_user_public_profile', params: { username: data.username } }" class="text-primary hover:underline">{{ data.username }}</RouterLink>
+                  </template>
+                </Column>
                 <Column field="registration_date" header="Date" />
                 <Column field="profile_completion_percent" header="Profil">
                   <template #body="{ data }">
@@ -297,7 +305,11 @@
                 size="small"
                 stripedRows
               >
-                <Column field="username" header="Utilisateur" />
+                <Column field="username" header="Utilisateur">
+                  <template #body="{ data }">
+                    <RouterLink :to="{ name: 'app_user_public_profile', params: { username: data.username } }" class="text-primary hover:underline">{{ data.username }}</RouterLink>
+                  </template>
+                </Column>
                 <Column field="message_count" header="Messages" />
                 <Column field="account_age_days" header="Âge compte">
                   <template #body="{ data }">
@@ -323,6 +335,34 @@
               </div>
             </template>
           </Card>
+
+          <!-- Recent Teachers -->
+          <Card>
+            <template #title>
+              <div class="flex items-center gap-2 text-base">
+                <i class="pi pi-graduation-cap text-purple-500" />
+                <span>Derniers professeurs inscrits</span>
+              </div>
+            </template>
+            <template #content>
+              <DataTable
+                v-if="metrics.recent_teachers.length > 0"
+                :value="metrics.recent_teachers"
+                size="small"
+                stripedRows
+              >
+                <Column field="username" header="Utilisateur">
+                  <template #body="{ data }">
+                    <RouterLink :to="{ name: 'app_user_public_profile', params: { username: data.username } }" class="text-primary hover:underline">{{ data.username }}</RouterLink>
+                  </template>
+                </Column>
+                <Column field="registration_date" header="Date" />
+              </DataTable>
+              <div v-else class="text-surface-400 text-center py-4">
+                Aucun professeur inscrit sur cette période
+              </div>
+            </template>
+          </Card>
         </div>
       </Panel>
     </template>
@@ -330,6 +370,7 @@
 </template>
 
 <script setup>
+import { eachDayOfInterval, format, subDays } from 'date-fns'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
@@ -341,11 +382,10 @@ import ProgressBar from 'primevue/progressbar'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, ref } from 'vue'
-import { format, subDays, eachDayOfInterval } from 'date-fns'
-import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 import ComingSoonBadge from '../../components/Admin/ComingSoonBadge.vue'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
+import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 
 const dashboardStore = useAdminDashboardStore()
 
@@ -356,7 +396,9 @@ const dateFrom = ref(subDays(today, 30))
 const dateTo = ref(today)
 
 const allDates = computed(() =>
-  eachDayOfInterval({ start: dateFrom.value, end: dateTo.value }).map((d) => format(d, 'yyyy-MM-dd'))
+  eachDayOfInterval({ start: dateFrom.value, end: dateTo.value }).map((d) =>
+    format(d, 'yyyy-MM-dd')
+  )
 )
 
 function formatDate(date) {

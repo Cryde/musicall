@@ -54,6 +54,10 @@ class UserDashboardMetrics
     /** @var array<int, array{id: string, username: string, message_count: int, account_age_days: int, avg_messages_per_day: float}> */
     public array $topMessagers = [];
 
+    // Recent Teachers
+    /** @var array<int, array{username: string, registration_date: string}> */
+    public array $recentTeachers = [];
+
     // Totals for context (global, not date-filtered)
     public int $totalUsers = 0;
     public int $unconfirmedAccounts = 0;
