@@ -47,6 +47,8 @@ with multiline",
             ],
             'creation_datetime' => $comments[0]->getCreationDatetime()->format('c'),
             'content' => "This is a comment<br />\nwith multiline",
+            'upvotes' => 0,
+            'downvotes' => 0,
         ]);
     }
 

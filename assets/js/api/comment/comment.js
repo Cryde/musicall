@@ -33,5 +33,15 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  voteComment(id, value) {
+    return axios
+      .post(
+        Routing.generate('api_comment_vote_post', { id }),
+        { user_vote: value },
+        { headers: { 'Content-Type': 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
   }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Comment;
 
 use ApiPlatform\OpenApi\Model\Operation;
@@ -11,6 +13,8 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use App\Contracts\Metric\VotableInterface;
+use App\Entity\Metric\VoteCache;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
 use Doctrine\DBAL\Types\Types;
@@ -31,7 +35,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     ),
 ])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
-class Comment
+class Comment implements VotableInterface
 {
     const LIST = 'COMMENT_LIST';
     const ITEM = 'COMMENT_ITEM';
@@ -61,6 +65,9 @@ class Comment
     #[ORM\Column(type: Types::TEXT)]
     #[Groups([Comment::ITEM, Comment::LIST])]
     private string $content;
+
+    #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
+    private ?VoteCache $voteCache = null;
 
     public function __construct()
     {
@@ -118,5 +125,39 @@ class Comment
         $this->content = trim($content);
 
         return $this;
+    }
+
+    public function getVoteCache(): ?VoteCache
+    {
+        return $this->voteCache;
+    }
+
+    public function setVoteCache(?VoteCache $voteCache): self
+    {
+        $this->voteCache = $voteCache;
+
+        return $this;
+    }
+
+    public function getVotableId(): ?string
+    {
+        return (string) $this->id;
+    }
+
+    public function getVotableType(): string
+    {
+        return 'app_comment';
+    }
+
+    #[Groups([Comment::LIST, Comment::ITEM])]
+    public function getUpvotes(): int
+    {
+        return $this->voteCache?->getUpvoteCount() ?? 0;
+    }
+
+    #[Groups([Comment::LIST, Comment::ITEM])]
+    public function getDownvotes(): int
+    {
+        return $this->voteCache?->getDownvoteCount() ?? 0;
     }
 }

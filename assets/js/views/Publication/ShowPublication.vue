@@ -84,10 +84,6 @@
           :category="related.sub_category"
           :author="related.author"
           :date="related.publication_datetime"
-          :slug="related.slug"
-          :upvotes="related.upvotes ?? 0"
-          :downvotes="related.downvotes ?? 0"
-          :user-vote="related.user_vote ?? null"
         />
       </div>
     </div>
@@ -101,9 +97,9 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
@@ -119,7 +115,7 @@ const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication, relatedPublications } = storeToRefs(publicationStore)
 
-const authorName = computed(() => publication.value ? displayName(publication.value.author) : '')
+const authorName = computed(() => (publication.value ? displayName(publication.value.author) : ''))
 
 useTitle(() =>
   publication.value ? `${publication.value.title} - MusicAll` : 'Publication - MusicAll'

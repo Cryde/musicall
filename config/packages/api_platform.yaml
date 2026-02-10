@@ -34,6 +34,10 @@ api_platform:
         # APP:
         # Publication
         App\Exception\PublicationNotFoundException: 404
+        # Comment
+        App\Exception\CommentNotFoundException: 404
+        # Forum
+        App\Exception\ForumPostNotFoundException: 404
         # Search
         App\Exception\Musician\InvalidSearchException: 400
         App\Exception\Musician\NoResultException: 404
