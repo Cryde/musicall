@@ -313,11 +313,21 @@
           :loading="isDeleting"
           @click="showDeleteConfirm = true"
         />
-        <Button
-          label="Modifier"
-          icon="pi pi-pencil"
-          @click="showEditModal = true"
-        />
+        <div class="flex items-center gap-2">
+          <RouterLink :to="{ name: 'app_user_teacher_profile', params: { username: userSecurityStore.user.username } }">
+            <Button
+              label="Voir mon profil"
+              icon="pi pi-external-link"
+              severity="secondary"
+              outlined
+            />
+          </RouterLink>
+          <Button
+            label="Modifier"
+            icon="pi pi-pencil"
+            @click="showEditModal = true"
+          />
+        </div>
       </div>
 
       <!-- Media showcase section -->
@@ -379,11 +389,19 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
 import TeacherMediaShowcase from '../../../components/Teacher/TeacherMediaShowcase.vue'
-import { getAgeGroupLabel, getDayOfWeekLabel, getSessionDurationLabel, getSocialPlatformLabel, getStudentLevelLabel } from '../../../constants/teacherProfile.js'
+import {
+  getAgeGroupLabel,
+  getDayOfWeekLabel,
+  getSessionDurationLabel,
+  getSocialPlatformLabel,
+  getStudentLevelLabel,
+} from '../../../constants/teacherProfile.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { useTeacherProfileMediaStore } from '../../../store/user/teacherProfileMedia.js'
 
 const teacherProfileStore = useTeacherProfileStore()
+const userSecurityStore = useUserSecurityStore()
 const teacherProfileMediaStore = useTeacherProfileMediaStore()
 const toast = useToast()
 
@@ -398,7 +416,7 @@ const hasProfile = computed(() => profile.value !== null)
 
 function truncateDescription(text, maxLength = 200) {
   if (!text || text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
+  return `${text.substring(0, maxLength)}...`
 }
 
 function formatPrice(priceInCents) {

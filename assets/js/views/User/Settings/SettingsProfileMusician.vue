@@ -107,11 +107,21 @@
           :loading="isDeleting"
           @click="showDeleteConfirm = true"
         />
-        <Button
-          label="Modifier"
-          icon="pi pi-pencil"
-          @click="showEditModal = true"
-        />
+        <div class="flex items-center gap-2">
+          <RouterLink :to="{ name: 'app_user_musician_profile', params: { username: userSecurityStore.user.username } }">
+            <Button
+              label="Voir mon profil"
+              icon="pi pi-external-link"
+              severity="secondary"
+              outlined
+            />
+          </RouterLink>
+          <Button
+            label="Modifier"
+            icon="pi pi-pencil"
+            @click="showEditModal = true"
+          />
+        </div>
       </div>
 
       <!-- Media showcase section -->
@@ -171,13 +181,15 @@ import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import MediaShowcase from '../../../components/User/Profile/MediaShowcase.vue'
-import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useMusicianProfileMediaStore } from '../../../store/user/musicianProfileMedia.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 
 const musicianProfileStore = useMusicianProfileStore()
+const userSecurityStore = useUserSecurityStore()
 const musicianProfileMediaStore = useMusicianProfileMediaStore()
 const toast = useToast()
 
