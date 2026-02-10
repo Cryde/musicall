@@ -86,6 +86,15 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
             ];
         }
 
+        // Recent Teachers within date range
+        $recentTeachers = $this->teacherProfileRepository->findRecentTeachers($from, $to, 10);
+        foreach ($recentTeachers as $teacherProfile) {
+            $metrics->recentTeachers[] = [
+                'username' => $teacherProfile->getUser()->getUsername(),
+                'registration_date' => $teacherProfile->getCreationDatetime()->format('Y-m-d H:i'),
+            ];
+        }
+
         // Emails sent by type within date range
         $metrics->emailsSentByType = $this->userEmailLogRepository->countByTypeBetween($from, $to);
 

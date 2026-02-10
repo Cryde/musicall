@@ -26,6 +26,24 @@ class TeacherProfileRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return list<TeacherProfile>
+     */
+    public function findRecentTeachers(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit): array
+    {
+        return $this->createQueryBuilder('tp')
+            ->innerJoin('tp.user', 'u')
+            ->addSelect('u')
+            ->where('tp.creationDatetime >= :from')
+            ->andWhere('tp.creationDatetime < :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->orderBy('tp.creationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findByUsername(string $username): ?TeacherProfile
     {
         return $this->createQueryBuilder('tp')
