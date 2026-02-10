@@ -34,4 +34,7 @@ class TopicPost
 
     #[ApiProperty(genId: false)]
     public User $creator;
+    public int $upvotes = 0;
+    public int $downvotes = 0;
+    public ?int $userVote = null;
 }

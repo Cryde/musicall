@@ -23,7 +23,10 @@
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
-        <ShareButton :url="shareUrl" :title="shareTitle" />
+        <div class="flex items-center gap-3">
+          <VoteButtons :slug="publication.slug" />
+          <ShareButton :url="shareUrl" :title="shareTitle" />
+        </div>
       </div>
 
       <div
@@ -48,7 +51,10 @@
             le {{ relativeDate(publication.publication_datetime) }}
           </div>
         </div>
-        <ShareButton :url="shareUrl" :title="shareTitle" />
+        <div class="flex items-center gap-3">
+          <VoteButtons :slug="publication.slug" />
+          <ShareButton :url="shareUrl" :title="shareTitle" />
+        </div>
       </div>
 
       <figure class="mt-7 w-full">
@@ -68,12 +74,13 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'
+import VoteButtons from '../../components/Publication/VoteButtons.vue'
 import ShareButton from '../../components/ShareButton.vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
@@ -84,7 +91,7 @@ const route = useRoute()
 const publicationStore = usePublicationStore()
 const { publication } = storeToRefs(publicationStore)
 
-const authorName = computed(() => publication.value ? displayName(publication.value.author) : '')
+const authorName = computed(() => (publication.value ? displayName(publication.value.author) : ''))
 
 useTitle(() =>
   publication.value ? `${publication.value.title} - Cours - MusicAll` : 'Cours - MusicAll'

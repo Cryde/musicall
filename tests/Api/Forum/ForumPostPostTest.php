@@ -75,6 +75,8 @@ class ForumPostPostTest extends ApiTestCase
                 'id'              => $userId,
                 'username'        => 'base_admin',
             ],
+            'upvotes' => 0,
+            'downvotes' => 0,
         ]);
 
         // Verify counters are incremented

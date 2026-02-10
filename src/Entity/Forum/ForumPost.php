@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity\Forum;
 
-use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\OpenApi\Model\Operation;
+use App\Contracts\Metric\VotableInterface;
+use App\Entity\Metric\VoteCache;
 use App\Entity\User;
 use App\Repository\Forum\ForumPostRepository;
 use DateTime;
@@ -17,11 +15,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ForumPostRepository::class)]
-class ForumPost
+class ForumPost implements VotableInterface
 {
     final public const LIST = 'FORUM_POST_LIST';
 
@@ -49,6 +46,9 @@ class ForumPost
     #[ORM\JoinColumn(nullable: false)]
     #[ApiProperty(genId: false)]
     private User $creator;
+
+    #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
+    private ?VoteCache $voteCache = null;
 
     public function __construct()
     {
@@ -118,5 +118,27 @@ class ForumPost
         $this->creator = $creator;
 
         return $this;
+    }
+
+    public function getVoteCache(): ?VoteCache
+    {
+        return $this->voteCache;
+    }
+
+    public function setVoteCache(?VoteCache $voteCache): self
+    {
+        $this->voteCache = $voteCache;
+
+        return $this;
+    }
+
+    public function getVotableId(): ?string
+    {
+        return $this->id?->toString();
+    }
+
+    public function getVotableType(): string
+    {
+        return 'app_forum_post';
     }
 }

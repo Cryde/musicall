@@ -91,7 +91,11 @@
               :description="course.description"
               :category="course.sub_category"
               :author="course.author"
-              :date="course.publication_datetime"/>
+              :date="course.publication_datetime"
+              :slug="course.slug"
+              :upvotes="course.upvotes ?? 0"
+              :downvotes="course.downvotes ?? 0"
+              :user-vote="course.user_vote ?? null"/>
         </div>
       </div>
     </div>
@@ -100,11 +104,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Menu from 'primevue/menu'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import bassImg from '../../../image/course/basse.png'

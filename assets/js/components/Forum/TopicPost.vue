@@ -50,6 +50,29 @@
           </div>
 
           <div class="prose dark:prose-invert max-w-none" v-html="post.content" />
+          <div class="flex items-center gap-1 mt-3">
+            <Button
+              icon="pi pi-thumbs-up"
+              text
+              rounded
+              size="small"
+              :severity="localUserVote === 1 ? 'success' : 'secondary'"
+              :loading="isVoting"
+              aria-label="J'aime"
+              @click="handleVote(1)"
+            />
+            <span class="text-sm font-semibold min-w-6 text-center">{{ score }}</span>
+            <Button
+              icon="pi pi-thumbs-down"
+              text
+              rounded
+              size="small"
+              :severity="localUserVote === -1 ? 'danger' : 'secondary'"
+              :loading="isVoting"
+              aria-label="Je n'aime pas"
+              @click="handleVote(-1)"
+            />
+          </div>
         </div>
       </div>
     </template>
@@ -71,6 +94,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { computed, ref } from 'vue'
+import forumApi from '../../api/forum/forum.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
@@ -91,6 +115,26 @@ const creatorName = computed(() => displayName(props.post.creator))
 
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
+
+const localUpvotes = ref(props.post.upvotes ?? 0)
+const localDownvotes = ref(props.post.downvotes ?? 0)
+const localUserVote = ref(props.post.user_vote ?? null)
+const isVoting = ref(false)
+
+const score = computed(() => localUpvotes.value - localDownvotes.value)
+
+async function handleVote(value) {
+  if (isVoting.value) return
+  isVoting.value = true
+  try {
+    const data = await forumApi.voteForumPost(props.post.id, value)
+    localUpvotes.value = data.upvotes
+    localDownvotes.value = data.downvotes
+    localUserVote.value = data.user_vote
+  } finally {
+    isVoting.value = false
+  }
+}
 
 const canContact = computed(() => {
   // Don't show button if not logged in or if it's the current user's post

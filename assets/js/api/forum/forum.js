@@ -44,5 +44,15 @@ export default {
         headers: { 'Content-Type': 'application/ld+json' }
       })
       .then((resp) => resp.data)
+  },
+
+  voteForumPost(id, value) {
+    return axios
+      .post(
+        Routing.generate('api_forum_post_vote_post', { id }),
+        { user_vote: value },
+        { headers: { 'Content-Type': 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
   }
 }
