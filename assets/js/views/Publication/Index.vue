@@ -148,6 +148,7 @@ const userSecurityStore = useUserSecurityStore()
 
 const sortMenu = ref()
 const isInitialized = ref(false)
+const isLoadingPage = ref(false)
 const selectCategoryFilter = ref(null)
 const currentPage = ref(1)
 const orientation = ref('desc')
@@ -263,23 +264,28 @@ async function handleCategoryChange(event) {
 }
 
 const infiniteHandler = async () => {
-  if (!isInitialized.value) {
+  if (!isInitialized.value || isLoadingPage.value) {
     return
   }
 
-  if (isPhotosCategory.value) {
-    fetchedItems.value = await galleriesStore.loadGalleries({
-      page: currentPage.value,
-      orientation: orientation.value
-    })
-  } else {
-    fetchedItems.value = await publicationsStore.loadPublications({
-      page: currentPage.value,
-      slug: selectCategoryFilter.value?.slug,
-      orientation: orientation.value
-    })
+  isLoadingPage.value = true
+  try {
+    if (isPhotosCategory.value) {
+      fetchedItems.value = await galleriesStore.loadGalleries({
+        page: currentPage.value,
+        orientation: orientation.value
+      })
+    } else {
+      fetchedItems.value = await publicationsStore.loadPublications({
+        page: currentPage.value,
+        slug: selectCategoryFilter.value?.slug,
+        orientation: orientation.value
+      })
+    }
+    currentPage.value++
+  } finally {
+    isLoadingPage.value = false
   }
-  currentPage.value++
 }
 
 const canLoadMore = () => {
