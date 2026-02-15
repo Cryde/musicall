@@ -7,6 +7,7 @@ use App\Entity\PublicationSubCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -17,6 +18,32 @@ class PublicationRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Publication::class);
+    }
+
+    public function createCollectionQueryBuilder(?string $subCategorySlug, ?int $subCategoryType, string $orderDirection): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('publication')
+            ->select('publication, sub_category, author, cover, vote_cache')
+            ->join('publication.subCategory', 'sub_category')
+            ->join('publication.author', 'author')
+            ->leftJoin('publication.cover', 'cover')
+            ->leftJoin('publication.voteCache', 'vote_cache')
+            ->where('publication.status = :status')
+            ->setParameter('status', Publication::STATUS_ONLINE);
+
+        if ($subCategorySlug !== null) {
+            $qb->andWhere('sub_category.slug = :sub_category_slug')
+               ->setParameter('sub_category_slug', $subCategorySlug);
+        }
+
+        if ($subCategoryType !== null) {
+            $qb->andWhere('sub_category.type = :sub_category_type')
+               ->setParameter('sub_category_type', $subCategoryType);
+        }
+
+        $qb->orderBy('publication.publicationDatetime', strtoupper($orderDirection) === 'ASC' ? 'ASC' : 'DESC');
+
+        return $qb;
     }
 
     /**

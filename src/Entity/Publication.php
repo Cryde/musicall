@@ -4,15 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
-use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\OpenApi\Model\Operation;
 use App\Contracts\Metric\VotableInterface;
 use App\Contracts\Metric\ViewableInterface;
 use App\Contracts\SluggableEntityInterface;
@@ -33,22 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[ORM\Index(columns: ['title', 'short_description', 'content'], flags: ['fulltext'])]
-#[ApiResource(
-    operations: [
-        new GetCollection(
-            openapi: new Operation(tags: ['Publications']),
-            // "PublicationOnlineExtension" add automatic filter on status of the publication
-            paginationItemsPerPage: Publication::LIST_ITEMS_PER_PAGE,
-            normalizationContext: ['groups' => [Publication::LIST], 'skip_null_values' => false],
-            name: 'api_publication_get_collection'
-        ),
-    ]
-)]
-#[ApiFilter(filterClass: OrderFilter::class, properties: ['publicationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
-#[ApiFilter(filterClass: SearchFilter::class, properties: [
-    'subCategory.slug' => SearchFilterInterface::STRATEGY_EXACT,
-    'subCategory.type' => SearchFilterInterface::STRATEGY_EXACT
-])]
+#[ApiResource(operations: [])]
 class Publication implements ViewableInterface, VotableInterface, SluggableEntityInterface
 {
     final const LIST_ITEMS_PER_PAGE = 12;
