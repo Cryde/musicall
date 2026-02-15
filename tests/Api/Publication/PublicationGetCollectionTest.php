@@ -108,8 +108,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'id'                   => $pub2->getId(),
                     'title'                => 'Titre de la publication 2',
                     'sub_category'         => [
-                        '@id' => '/api/publication_sub_categories/' . $sub->_real()->getId(),
-                        '@type' => 'PublicationSubCategory',
+                        '@type' => 'SubCategory',
                         'id'         => $sub->_real()->getId(),
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -117,8 +116,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id' => '/api/users/' . $author->_real()->getId(),
-                        '@type' => 'User',
+                        '@type' => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -137,8 +135,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'id'                   => $pub1->getId(),
                     'title'                => 'Titre de la publication 1',
                     'sub_category'         => [
-                        '@id' => '/api/publication_sub_categories/' . $sub->_real()->getId(),
-                        '@type' => 'PublicationSubCategory',
+                        '@type' => 'SubCategory',
                         'id'         => $sub->_real()->getId(),
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -146,8 +143,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id' => '/api/users/' . $author->_real()->getId(),
-                        '@type' => 'User',
+                        '@type' => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -167,16 +163,10 @@ class PublicationGetCollectionTest extends ApiTestCase
                 '@type' => 'PartialCollectionView',
             ],
             'search'     => [
-                '@type'                        => 'IriTemplate',
-                'template'               => '/api/publications{?order[publication_datetime],sub_category.slug,sub_category.slug[],sub_category.type,sub_category.type[]}',
+                '@type'                  => 'IriTemplate',
+                'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],page}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping'                => [
-                    [
-                        '@type'    => 'IriTemplateMapping',
-                        'variable' => 'order[publication_datetime]',
-                        'property' => 'publication_datetime',
-                        'required' => false,
-                    ],
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'sub_category.slug',
@@ -185,20 +175,20 @@ class PublicationGetCollectionTest extends ApiTestCase
                     ],
                     [
                         '@type'    => 'IriTemplateMapping',
-                        'variable' => 'sub_category.slug[]',
-                        'property' => 'sub_category.slug',
-                        'required' => false,
-                    ],
-                    [
-                        '@type' => 'IriTemplateMapping',
                         'variable' => 'sub_category.type',
                         'property' => 'sub_category.type',
                         'required' => false,
                     ],
                     [
-                        '@type' => 'IriTemplateMapping',
-                        'variable' => 'sub_category.type[]',
-                        'property' => 'sub_category.type',
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'order[publication_datetime]',
+                        'property' => 'publication_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'page',
+                        'property' => 'page',
                         'required' => false,
                     ],
                 ],
