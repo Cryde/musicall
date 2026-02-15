@@ -12,14 +12,14 @@
         {{ pageDescription }}
       </div>
     </div>
-    <div v-if="!isPhotosCategory">
+    <div v-if="!isPhotosCategory" class="flex gap-2 mt-2 md:mt-0">
       <Button
         v-tooltip.bottom="'Ajouter une vidéo YouTube découverte'"
         label="Poster une découverte"
         icon="pi pi-plus"
         severity="info"
         size="small"
-        class="whitespace-nowrap mr-3"
+        class="whitespace-nowrap"
         @click="handleOpenDiscoverModal"
       />
       <Button
