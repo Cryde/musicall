@@ -174,7 +174,7 @@
 
 <script setup>
 import { useTitle } from '@vueuse/core'
-import MasonryWall from '@yeger/vue-masonry-wall'
+import { MasonryWall } from '@yeger/vue-masonry-wall'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'

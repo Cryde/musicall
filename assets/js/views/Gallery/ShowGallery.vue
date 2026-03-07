@@ -99,7 +99,7 @@
 
 <script setup>
 import { useTitle } from '@vueuse/core'
-import MasonryWall from '@yeger/vue-masonry-wall'
+import { MasonryWall } from '@yeger/vue-masonry-wall'
 import { format, parseISO } from 'date-fns'
 import ProgressSpinner from 'primevue/progressspinner'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
