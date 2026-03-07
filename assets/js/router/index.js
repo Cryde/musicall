@@ -59,7 +59,7 @@ const routes = [
       {
         path: ':id/notes',
         name: 'app_band_notes',
-        component: () => import('../views/BandSpace/Empty.vue')
+        component: () => import('../views/BandSpace/Notes.vue')
       },
       {
         path: ':id/social',
