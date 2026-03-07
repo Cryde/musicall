@@ -18,7 +18,7 @@ use App\State\Provider\Teacher\FeaturedTeacherCollectionProvider;
     provider: FeaturedTeacherCollectionProvider::class,
 )]
 #[Get(
-    uriTemplate: '/user/profile/{username}/teacher',
+    uriTemplate: '/user/features/teacher/{username}',
     openapi: false,
     name: 'api_featured_teacher_get',
 )]
