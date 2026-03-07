@@ -4,6 +4,12 @@ import axios from 'axios'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
+  getFeaturedTeachers() {
+    return axios
+      .get(Routing.generate('api_teachers_featured'))
+      .then((resp) => resp.data)
+  },
+
   getPublicTeacherProfile(username) {
     return axios
       .get(Routing.generate('api_teacher_profile_get', { username }))

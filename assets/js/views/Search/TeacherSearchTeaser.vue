@@ -58,6 +58,61 @@
       </div>
     </section>
 
+    <!-- Featured Teachers Section -->
+    <section v-if="teachers.length" class="mb-12">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-surface-900 dark:text-white mb-2">
+          Nos premiers professeurs
+        </h2>
+        <p class="text-surface-600 dark:text-surface-400">
+          Découvrez les professeurs qui nous ont déjà rejoints
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <router-link
+          v-for="teacher in teachers"
+          :key="teacher.username"
+          :to="{ name: 'app_user_teacher_profile', params: { username: teacher.username } }"
+          class="group block bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 p-5 transition-all duration-200 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-700 hover:-translate-y-1"
+        >
+          <!-- Avatar -->
+          <div class="flex justify-center mb-4">
+            <img
+              v-if="teacher.profile_picture_url"
+              :src="teacher.profile_picture_url"
+              :alt="teacher.username"
+              class="w-20 h-20 rounded-full object-cover ring-2 ring-surface-200 dark:ring-surface-700 group-hover:ring-primary-400 dark:group-hover:ring-primary-600 transition-all"
+            />
+            <div
+              v-else
+              class="w-20 h-20 rounded-full bg-gradient-to-br from-primary-400 to-fuchsia-500 flex items-center justify-center ring-2 ring-surface-200 dark:ring-surface-700 group-hover:ring-primary-400 dark:group-hover:ring-primary-600 transition-all"
+            >
+              <i class="pi pi-user text-2xl text-white" aria-hidden="true" />
+            </div>
+          </div>
+
+          <!-- Name -->
+          <h3 class="text-center font-semibold text-surface-900 dark:text-surface-0 mb-2 truncate">
+            {{ teacher.username }}
+          </h3>
+
+          <!-- Instruments -->
+          <p v-if="teacher.instruments.length" class="text-center text-sm text-surface-600 dark:text-surface-400 mb-3 line-clamp-2">
+            {{ teacher.instruments.map(i => i.instrument_name).join(', ') }}
+          </p>
+
+          <!-- Free trial badge -->
+          <div v-if="teacher.offers_trial && teacher.trial_price === 0" class="flex justify-center">
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
+              <i class="pi pi-check-circle" aria-hidden="true" />
+              Cours d'essai gratuit
+            </span>
+          </div>
+        </router-link>
+      </div>
+    </section>
+
     <!-- CTA Section for Teachers -->
     <section class="max-w-3xl mx-auto">
       <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl shadow-lg border border-surface-200 dark:border-surface-700 p-8 md:p-10">
@@ -112,8 +167,9 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import teacherProfileApi from '../../api/user/teacherProfile.js'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
@@ -128,10 +184,20 @@ const userSecurityStore = useUserSecurityStore()
 
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
+const teachers = ref([])
 
 // Randomly select one of the 3 images
 const heroImages = [heroImage1, heroImage2, heroImage3]
 const heroImage = heroImages[Math.floor(Math.random() * heroImages.length)]
+
+onMounted(async () => {
+  try {
+    const data = await teacherProfileApi.getFeaturedTeachers()
+    teachers.value = data.member
+  } catch {
+    // silently fail
+  }
+})
 
 function handleCreateProfile() {
   if (!userSecurityStore.isAuthenticated) {

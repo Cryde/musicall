@@ -44,6 +44,23 @@ class TeacherProfileRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<TeacherProfile>
+     */
+    public function findAllWithInstruments(): array
+    {
+        return $this->createQueryBuilder('tp')
+            ->innerJoin('tp.user', 'u')
+            ->addSelect('u')
+            ->leftJoin('tp.instruments', 'i')
+            ->addSelect('i')
+            ->leftJoin('i.instrument', 'instr')
+            ->addSelect('instr')
+            ->orderBy('tp.creationDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findByUsername(string $username): ?TeacherProfile
     {
         return $this->createQueryBuilder('tp')

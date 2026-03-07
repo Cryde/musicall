@@ -14,6 +14,7 @@ use App\Fixtures\Musician\MusicianProfileStory;
 use App\Fixtures\Publication\FakeImageGeneratorStory;
 use App\Fixtures\Publication\PublicationCategoryStory;
 use App\Fixtures\Publication\PublicationStory;
+use App\Fixtures\Teacher\TeacherProfileStory;
 use App\Fixtures\User\UserStory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
@@ -44,6 +45,9 @@ final class AppStory extends Story
 
         // musician profiles
         MusicianProfileStory::load();
+
+        // teacher profiles
+        TeacherProfileStory::load();
 
         // band spaces
         BandSpaceStory::load();
