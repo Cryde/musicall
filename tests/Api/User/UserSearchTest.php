@@ -46,12 +46,6 @@ class UserSearchTest extends ApiTestCase
                 '@id' => '/api/users/search?search=test',
                 '@type' => 'PartialCollectionView',
             ],
-            'search' => [
-                '@type' => 'IriTemplate',
-                'template' => '/api/users/search{?}',
-                'variableRepresentation' => 'BasicRepresentation',
-                'mapping' => []
-            ],
         ]);
     }
 
@@ -84,12 +78,6 @@ class UserSearchTest extends ApiTestCase
             'view' => [
                 '@id' => '/api/users/search?search=test',
                 '@type' => 'PartialCollectionView',
-            ],
-            'search' => [
-                '@type' => 'IriTemplate',
-                'template' => '/api/users/search{?}',
-                'variableRepresentation' => 'BasicRepresentation',
-                'mapping' => []
             ],
         ]);
     }
