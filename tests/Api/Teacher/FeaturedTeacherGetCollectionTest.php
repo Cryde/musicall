@@ -62,7 +62,7 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [
                 [
-                    '@id'          => '/api/user/features/teacher/teacher_alice',
+                    '@id'          => '/api/featured_teachers/teacher_alice',
                     '@type'        => 'FeaturedTeacher',
                     'username'     => 'teacher_alice',
                     'instruments'  => [
@@ -81,7 +81,7 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
                     'trial_price'  => 0,
                 ],
                 [
-                    '@id'          => '/api/user/features/teacher/teacher_bob',
+                    '@id'          => '/api/featured_teachers/teacher_bob',
                     '@type'        => 'FeaturedTeacher',
                     'username'     => 'teacher_bob',
                     'instruments'  => [

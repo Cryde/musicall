@@ -16,11 +16,7 @@ use App\State\Provider\Teacher\FeaturedTeacherCollectionProvider;
     paginationEnabled: false,
     name: 'api_teachers_featured',
     provider: FeaturedTeacherCollectionProvider::class,
-)]
-#[Get(
-    uriTemplate: '/user/features/teacher/{username}',
-    openapi: false,
-    name: 'api_featured_teacher_get',
+    //itemUriTemplate: '/user/featured_teachers/{username}'
 )]
 class FeaturedTeacher
 {
