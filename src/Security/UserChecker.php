@@ -20,7 +20,7 @@ class UserChecker implements UserCheckerInterface
         }
 
         if (!$user->getConfirmationDatetime()) {
-            throw new CustomUserMessageAccountStatusException('Vous devez confirmer votre compte pour pouvoir vous connecter');
+            throw new CustomUserMessageAccountStatusException('account_not_verified', ['{{ email }}' => $user->getEmail()]);
         }
     }
 

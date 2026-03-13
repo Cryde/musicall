@@ -51,6 +51,12 @@ export default [
     meta: { isGuestOnly: true }
   },
   {
+    name: 'app_verify_email',
+    path: '/verify-email',
+    component: () => import('../views/User/VerifyEmail.vue'),
+    meta: { isGuestOnly: true }
+  },
+  {
     name: 'app_registration_success',
     path: '/registration/success',
     component: () => import('../views/User/RegistrationSuccess.vue'),

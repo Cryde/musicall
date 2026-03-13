@@ -65,6 +65,14 @@ services:
 
     App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\YoutubeRepository'
 
+    App\Command\User\SendEmailConfirmationReminderCommand:
+        arguments:
+            $frontendUrl: '%env(DEFAULT_URI)%'
+
+    App\Security\AuthenticationFailureHandler:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onAuthenticationFailure }
+
     App\Controller\OAuth\GoogleController:
         arguments:
             $frontendUrl: '%env(DEFAULT_URI)%'

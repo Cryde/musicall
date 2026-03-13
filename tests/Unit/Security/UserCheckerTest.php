@@ -23,8 +23,9 @@ class UserCheckerTest extends TestCase
         $checker->checkPreAuth($user);
 
         $user->setConfirmationDatetime(null);
+        $user->setEmail('test@example.com');
         $this->expectException(CustomUserMessageAccountStatusException::class);
-        $this->expectExceptionMessage('Vous devez confirmer votre compte pour pouvoir vous connecter');
+        $this->expectExceptionMessage('account_not_verified');
         $checker->checkPreAuth($user);
     }
 

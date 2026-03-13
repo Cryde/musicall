@@ -6,7 +6,8 @@ namespace App\Command\User;
 
 use App\Enum\User\UserEmailType;
 use App\Repository\UserRepository;
-use App\Service\Mail\Brevo\User\ConfirmEmailReminderEmail;
+use App\Service\Mail\Brevo\User\EmailVerificationReminderEmail;
+use App\Service\User\EmailVerificationCodeGenerator;
 use App\Service\User\UserEmailLogService;
 use DateTimeImmutable;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -14,8 +15,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\RouterInterface;
 
 #[AsCommand(
     name: 'app:user:send-email-confirmation-reminder',
@@ -28,9 +27,10 @@ class SendEmailConfirmationReminderCommand extends Command
 
     public function __construct(
         private readonly UserRepository $userRepository,
-        private readonly ConfirmEmailReminderEmail $confirmEmailReminderEmail,
+        private readonly EmailVerificationReminderEmail $emailVerificationReminderEmail,
         private readonly UserEmailLogService $userEmailLogService,
-        private readonly RouterInterface $router,
+        private readonly EmailVerificationCodeGenerator $codeGenerator,
+        private readonly string $frontendUrl,
     ) {
         parent::__construct();
     }
@@ -97,12 +97,6 @@ class SendEmailConfirmationReminderCommand extends Command
                 continue;
             }
 
-            $confirmationLink = $this->router->generate(
-                'app_register_confirm',
-                ['token' => $user->getToken()],
-                UrlGeneratorInterface::ABSOLUTE_URL
-            );
-
             if ($dryRun) {
                 $output->writeln(sprintf(
                     '  [DRY-RUN] Would send reminder #%d to: %s (%s)',
@@ -115,10 +109,13 @@ class SendEmailConfirmationReminderCommand extends Command
             }
 
             try {
-                $this->confirmEmailReminderEmail->send(
+                $plainCode = $this->codeGenerator->generate($user);
+                $verificationUrl = $this->frontendUrl . '/verify-email?' . http_build_query(['email' => $user->getEmail()]);
+                $this->emailVerificationReminderEmail->send(
                     $user->getEmail(),
                     $user->getUsername(),
-                    $confirmationLink
+                    $plainCode,
+                    $verificationUrl,
                 );
                 $this->userEmailLogService->log(
                     $user,

@@ -8,7 +8,8 @@ use App\Command\User\SendEmailConfirmationReminderCommand;
 use App\Entity\User;
 use App\Enum\User\UserEmailType;
 use App\Repository\User\UserEmailLogRepository;
-use App\Service\Mail\Brevo\User\ConfirmEmailReminderEmail;
+use App\Service\Mail\Brevo\User\EmailVerificationReminderEmail;
+use App\Service\User\EmailVerificationCodeGenerator;
 use App\Tests\Factory\User\UserEmailLogFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -27,9 +28,12 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
         self::bootKernel();
         parent::setUp();
 
-        // Stub the email service to avoid actually sending emails
-        $emailStub = $this->createStub(ConfirmEmailReminderEmail::class);
-        self::getContainer()->set(ConfirmEmailReminderEmail::class, $emailStub);
+        $emailStub = $this->createStub(EmailVerificationReminderEmail::class);
+        self::getContainer()->set(EmailVerificationReminderEmail::class, $emailStub);
+
+        $codeGeneratorStub = $this->createStub(EmailVerificationCodeGenerator::class);
+        $codeGeneratorStub->method('generate')->willReturn('123456');
+        self::getContainer()->set(EmailVerificationCodeGenerator::class, $codeGeneratorStub);
 
         /** @var SendEmailConfirmationReminderCommand $command */
         $command = self::getContainer()->get(SendEmailConfirmationReminderCommand::class);
@@ -176,12 +180,11 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
         $this->assertSame(0, $repository->count());
     }
 
-    public function test_command_skips_users_without_token(): void
+    public function test_command_skips_deleted_users(): void
     {
-        // Create user with no token (shouldn't happen in practice, but test the safety)
         UserFactory::new()->create([
             'confirmationDatetime' => null,
-            'token' => null,
+            'deletionDatetime' => new \DateTimeImmutable('-1 day'),
             'creationDatetime' => new \DateTime('-5 days'),
         ]);
 
@@ -196,7 +199,6 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
         // Create confirmed user
         UserFactory::new()->create([
             'confirmationDatetime' => new \DateTime('-3 days'),
-            'token' => 'some-token',
             'creationDatetime' => new \DateTime('-5 days'),
         ]);
 
@@ -270,7 +272,6 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
         /** @var User $user */
         $user = UserFactory::new()->create([
             'confirmationDatetime' => null,
-            'token' => bin2hex(random_bytes(16)),
             'creationDatetime' => new \DateTime(sprintf('-%d days', $daysAgo)),
         ])->_real();
 

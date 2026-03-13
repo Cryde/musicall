@@ -40,7 +40,12 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
       }
     } catch (e) {
       if (e?.response?.status === 401) {
-        loginErrors.value = [e.response.data.message]
+        const data = e.response.data
+        if (data.message === 'account_not_verified' && data.email) {
+          await router.replace({ name: 'app_verify_email', query: { email: data.email } })
+          return
+        }
+        loginErrors.value = [data.message]
       }
     }
   }

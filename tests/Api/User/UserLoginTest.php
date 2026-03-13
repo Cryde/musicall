@@ -39,7 +39,8 @@ class UserLoginTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
-            'message' => 'Vous devez confirmer votre compte pour pouvoir vous connecter',
+            'message' => 'account_not_verified',
+            'email' => $user1->getEmail(),
         ]);
     }
 

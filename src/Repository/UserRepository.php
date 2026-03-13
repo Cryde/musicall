@@ -105,7 +105,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $qb = $this->createQueryBuilder('user')
             ->where('user.confirmationDatetime IS NULL')
-            ->andWhere('user.token IS NOT NULL')
+            ->andWhere('user.deletionDatetime IS NULL')
             ->andWhere('user.creationDatetime < :registeredBefore')
             ->setParameter('registeredBefore', $registeredBefore)
             ->orderBy('user.creationDatetime', 'ASC');
