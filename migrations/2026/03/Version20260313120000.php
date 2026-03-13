@@ -18,7 +18,7 @@ final class Version20260313120000 extends AbstractMigration
     {
         $this->addSql('CREATE TABLE email_verification_code (
             id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\',
-            user_id INT NOT NULL,
+            user_id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\',
             hashed_code VARCHAR(255) NOT NULL,
             attempts INT NOT NULL DEFAULT 0,
             expiration_datetime DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\',
