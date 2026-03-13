@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
+// TODO: remove after migration - replaced by OTP email verification
 class RegistrationController extends AbstractController
 {
     #[Route('/register/confirm/{token}', name: 'app_register_confirm', options: ['expose' => true])]

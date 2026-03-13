@@ -3,6 +3,7 @@
 namespace App\Tests\Api\User;
 
 use App\Entity\User;
+use App\Repository\User\EmailVerificationCodeRepository;
 use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -19,6 +20,7 @@ class UserRegisterTest extends ApiTestCase
     public function test_register(): void
     {
         $userRepository = static::getContainer()->get(UserRepository::class);
+        $verificationCodeRepository = static::getContainer()->get(EmailVerificationCodeRepository::class);
 
         // pre-test: we don't have user in the db
         $this->assertCount(0, $userRepository->findAll());
@@ -35,11 +37,20 @@ class UserRegisterTest extends ApiTestCase
         $this->assertSame('super_username', $results[0]->getUsername());
         $this->assertSame('super_email@mail.com', $results[0]->getEmail());
         $this->assertNotSame('password', $results[0]->getPassword()); // we assert that we don't record plain text password in db
+        $this->assertNull($results[0]->getConfirmationDatetime()); // email not yet confirmed
 
+        // a verification code was created
+        $verificationCode = $verificationCodeRepository->findLatestUnusedForUser($results[0]);
+        $this->assertNotNull($verificationCode);
+        $this->assertSame(0, $verificationCode->attempts);
+        $this->assertFalse($verificationCode->isExpired());
+        $this->assertFalse($verificationCode->isUsed());
+
+        // OTP email was sent
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
-        $this->assertEmailTextBodyContains($email, 'Confirmer votre email');
-        $this->assertEmailHeaderSame($email, 'templateId', '1');
+        $this->assertEmailTextBodyContains($email, 'Votre code de vérification');
+        $this->assertEmailHeaderSame($email, 'templateId', '10');
         $this->assertEmailAddressContains($email, 'From', 'no-reply@musicall.com');
         $this->assertEmailAddressContains($email, 'To', 'super_email@mail.com');
     }

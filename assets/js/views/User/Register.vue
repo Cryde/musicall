@@ -1,38 +1,69 @@
 <template>
   <div class="py-10 md:py-20 flex items-center justify-center">
     <div class="max-w-2xl w-full flex flex-col items-start gap-8 bg-surface-0 dark:bg-surface-900 p-4 md:p-12 rounded-3xl">
-      <!-- Success State -->
-      <template v-if="isRegistrationComplete">
+      <!-- Email Verified State -->
+      <template v-if="isEmailVerified">
         <div class="flex flex-col items-center gap-6 w-full text-center">
           <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
             <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
           </div>
           <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
-            Inscription réussie !
+            Email vérifié !
           </h1>
-          <div class="flex flex-col gap-4 text-surface-600 dark:text-surface-300">
-            <p>
-              Votre compte a été créé avec succès.
-            </p>
-            <Message severity="info" :closable="false" class="text-left">
-              <div class="flex flex-col gap-2">
-                <span class="font-semibold">Confirmez votre adresse email</span>
-                <span>
-                  Un email de confirmation a été envoyé à <strong>{{ registeredEmail }}</strong>.
-                  Veuillez cliquer sur le lien dans cet email pour activer votre compte.
-                </span>
-              </div>
-            </Message>
-            <p class="text-sm text-surface-500 dark:text-surface-400">
-              Vous n'avez pas reçu l'email ? Vérifiez vos spams ou
-              <a class="text-primary cursor-pointer hover:text-primary-emphasis">renvoyez l'email de confirmation</a>.
-            </p>
-          </div>
+          <p class="text-surface-600 dark:text-surface-300">
+            Votre adresse email a été vérifiée avec succès. Vous pouvez maintenant vous connecter.
+          </p>
           <Button
-            label="Aller à la page de connexion"
+            label="Se connecter"
             class="mt-4"
             @click="goToLogin"
           />
+        </div>
+      </template>
+
+      <!-- OTP Verification State -->
+      <template v-else-if="isRegistrationComplete">
+        <div class="flex flex-col items-center gap-6 w-full text-center">
+          <div class="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+            <i class="pi pi-envelope text-4xl text-blue-600 dark:text-blue-400"></i>
+          </div>
+          <h1 class="text-2xl font-medium text-surface-900 dark:text-surface-0 leading-tight">
+            Vérifiez votre email
+          </h1>
+          <p class="text-surface-600 dark:text-surface-300">
+            Un code à 6 chiffres a été envoyé à <strong>{{ registeredEmail }}</strong>.
+            Saisissez-le ci-dessous pour vérifier votre adresse email.
+          </p>
+
+          <Message v-if="otpError" severity="error" :closable="false" class="w-full text-left">
+            {{ otpError }}
+          </Message>
+
+          <OtpInput
+            ref="otpInputRef"
+            :has-error="!!otpError"
+            :disabled="isVerifying"
+            @complete="handleOtpComplete"
+          />
+
+          <p v-if="expiryCountdown > 0" class="text-sm text-surface-500 dark:text-surface-400">
+            Le code expire dans {{ formattedExpiry }}
+          </p>
+
+          <div class="flex flex-col items-center gap-2">
+            <Button
+              v-if="resendCountdown <= 0"
+              label="Renvoyer le code"
+              severity="secondary"
+              text
+              :loading="isResending"
+              :disabled="isResending"
+              @click="handleResendCode"
+            />
+            <p v-else class="text-sm text-surface-500 dark:text-surface-400">
+              Renvoyer le code dans {{ resendCountdown }}s
+            </p>
+          </div>
         </div>
       </template>
 
@@ -202,9 +233,11 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { computed, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
+import emailVerificationApi from '../../api/user/emailVerification.js'
+import OtpInput from '../../components/Auth/OtpInput.vue'
 
 useTitle('Créer un compte - MusicAll')
 
@@ -238,8 +271,93 @@ const errors = reactive({
 
 const isSubmitting = ref(false)
 const isRegistrationComplete = ref(false)
+const isEmailVerified = ref(false)
 const registeredEmail = ref('')
 const globalError = ref('')
+
+// OTP state
+const otpInputRef = ref(null)
+const otpError = ref('')
+const isVerifying = ref(false)
+const isResending = ref(false)
+const resendCountdown = ref(60)
+const expiryCountdown = ref(15 * 60)
+
+let resendTimer = null
+let expiryTimer = null
+
+const formattedExpiry = computed(() => {
+  const minutes = Math.floor(expiryCountdown.value / 60)
+  const seconds = expiryCountdown.value % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+})
+
+function startCountdowns() {
+  resendCountdown.value = 60
+  expiryCountdown.value = 15 * 60
+
+  resendTimer = setInterval(() => {
+    if (resendCountdown.value > 0) {
+      resendCountdown.value--
+    }
+  }, 1000)
+
+  expiryTimer = setInterval(() => {
+    if (expiryCountdown.value > 0) {
+      expiryCountdown.value--
+    } else {
+      clearInterval(expiryTimer)
+    }
+  }, 1000)
+}
+
+function clearCountdowns() {
+  if (resendTimer) clearInterval(resendTimer)
+  if (expiryTimer) clearInterval(expiryTimer)
+}
+
+onBeforeUnmount(() => {
+  clearCountdowns()
+})
+
+const OTP_ERROR_MESSAGES = {
+  invalid_code: 'Le code saisi est incorrect.',
+  max_attempts_reached: 'Nombre maximum de tentatives atteint. Veuillez renvoyer un nouveau code.',
+  code_expired: 'Le code a expiré. Veuillez en demander un nouveau.',
+  no_code_found: 'Aucun code en attente. Veuillez en demander un nouveau.'
+}
+
+async function handleOtpComplete(code) {
+  otpError.value = ''
+  isVerifying.value = true
+
+  try {
+    await emailVerificationApi.checkCode(registeredEmail.value, code)
+    isEmailVerified.value = true
+    clearCountdowns()
+  } catch (error) {
+    otpError.value = OTP_ERROR_MESSAGES[error.message] || 'Une erreur est survenue.'
+    otpInputRef.value?.clear()
+  } finally {
+    isVerifying.value = false
+  }
+}
+
+async function handleResendCode() {
+  otpError.value = ''
+  isResending.value = true
+
+  try {
+    await emailVerificationApi.sendCode(registeredEmail.value)
+    resendCountdown.value = 60
+    expiryCountdown.value = 15 * 60
+    otpInputRef.value?.clear()
+  } catch (error) {
+    otpError.value = error.message || 'Impossible de renvoyer le code.'
+  } finally {
+    isResending.value = false
+  }
+}
 
 function validateUsername() {
   errors.username = ''
@@ -361,6 +479,7 @@ async function handleSubmit() {
 
     registeredEmail.value = form.email.trim()
     isRegistrationComplete.value = true
+    startCountdowns()
   } catch (error) {
     if (error.isValidationError && error.violationsByField) {
       if (error.violationsByField.username) {

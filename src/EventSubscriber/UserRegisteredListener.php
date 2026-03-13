@@ -3,23 +3,19 @@
 namespace App\EventSubscriber;
 
 use App\Event\UserRegisteredEvent;
-use App\Service\User\ConfirmRegistrationSender;
-use App\Service\User\UserTokenGenerator;
+use App\Service\User\EmailVerificationService;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 #[AsEventListener]
 readonly class UserRegisteredListener
 {
     public function __construct(
-        private ConfirmRegistrationSender $confirmRegistration,
-        private UserTokenGenerator        $generateConfirmationToken
+        private EmailVerificationService $emailVerificationService,
     ) {
     }
 
     public function __invoke(UserRegisteredEvent $event): void
     {
-        $user = $event->user;
-        $this->generateConfirmationToken->generate($user);
-        $this->confirmRegistration->sendConfirmationEmail($user);
+        $this->emailVerificationService->generateAndSend($event->user);
     }
 }
