@@ -40,14 +40,14 @@ readonly class UserGalleryPreviewProvider implements ProviderInterface
             throw new NotFoundHttpException('Gallery not found');
         }
 
-        $isOwner = $gallery->getAuthor()->getId() === $user->getId();
+        $isOwner = $gallery->author->getId() === $user->getId();
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
         if (!$isOwner && !$isAdmin) {
             throw new AccessDeniedHttpException('You are not the owner of this gallery');
         }
 
-        if ($gallery->getStatus() === Gallery::STATUS_ONLINE) {
+        if ($gallery->status === Gallery::STATUS_ONLINE) {
             throw new AccessDeniedHttpException('This gallery is already online. View it directly.');
         }
 

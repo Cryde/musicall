@@ -37,8 +37,8 @@ readonly class UserGalleryImageSetCoverProvider implements ProviderInterface
             throw new NotFoundHttpException('Image non trouvee');
         }
 
-        $gallery = $image->getGallery();
-        if ($gallery->getAuthor()->getId() !== $user->getId()) {
+        $gallery = $image->gallery;
+        if ($gallery->author->getId() !== $user->getId()) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a modifier cette image');
         }
 

@@ -27,7 +27,7 @@ class UserGalleryDeleteTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -43,7 +43,7 @@ class UserGalleryDeleteTest extends ApiTestCase
             'author' => $user,
             'status' => Gallery::STATUS_DRAFT,
         ]);
-        $galleryId = $gallery->getId();
+        $galleryId = $gallery->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('DELETE', '/api/user/galleries/' . $galleryId);
@@ -64,7 +64,7 @@ class UserGalleryDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -98,7 +98,7 @@ class UserGalleryDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([

@@ -48,9 +48,9 @@ class GalleryPendingListTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [
                 [
-                    '@id'                  => '/api/galleries/' . $gallery->_real()->getId(),
+                    '@id'                  => '/api/galleries/' . $gallery->_real()->id,
                     '@type'                => 'Gallery',
-                    'id'                   => $gallery->_real()->getId(),
+                    'id'                   => $gallery->_real()->id,
                     'title'                => 'Ma galerie photo',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'               => [

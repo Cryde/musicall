@@ -38,13 +38,13 @@ readonly class GalleryMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         $cover = null;
-        if ($gallery->getCoverImage() && $path = $this->uploaderHelper->asset($gallery->getCoverImage(), 'imageFile')) {
+        if ($gallery->coverImage && $path = $this->uploaderHelper->asset($gallery->coverImage, 'imageFile')) {
             $cover = $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_full');
         }
 
         return [
-            'title' => (string) $gallery->getTitle(),
-            'description' => (string) $gallery->getDescription(),
+            'title' => (string) $gallery->title,
+            'description' => (string) $gallery->description,
             'cover' => $cover,
         ];
     }

@@ -22,7 +22,7 @@ class PublicationDirector
     public function buildVideo(AddVideo $addVideo, User $user): Publication
     {
         $category = $addVideo->category;
-        if ($category && $category->getType() !== PublicationSubCategory::TYPE_COURSE) {
+        if ($category && $category->type !== PublicationSubCategory::TYPE_COURSE) {
             $category = null;
         }
         if (!$category) {

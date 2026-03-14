@@ -31,13 +31,13 @@ readonly class AdminGalleryApproveProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Gallery not found');
         }
 
-        if ($gallery->getStatus() !== Gallery::STATUS_PENDING) {
+        if ($gallery->status !== Gallery::STATUS_PENDING) {
             throw new BadRequestHttpException('Only pending galleries can be approved');
         }
 
-        $gallery->setPublicationDatetime(new \DateTime());
-        $gallery->setStatus(Gallery::STATUS_ONLINE);
-        $gallery->setSlug($this->gallerySlug->create((string) $gallery->getTitle()));
+        $gallery->publicationDatetime = new \DateTime();
+        $gallery->status = Gallery::STATUS_ONLINE;
+        $gallery->slug = $this->gallerySlug->create((string) $gallery->title);
 
         $this->entityManager->flush();
 

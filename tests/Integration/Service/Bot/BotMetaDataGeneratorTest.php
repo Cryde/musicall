@@ -167,14 +167,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'slug'                => 'cool-slug-for-gallery',
         ])->create();
         $cover = GalleryImageFactory::createOne(['imageName' => 'cover-gallery', 'imageSize' => 10, 'gallery' => $gallery]);
-        $gallery->_real()->setCoverImage($cover->_real());
+        $gallery->_real()->coverImage = $cover->_real();
         $gallery->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/photos/cool-slug-for-gallery');
         $this->assertSame([
             'title'       => 'Ceci est titre gallery',
             'description' => 'Petite description de la gallery 1',
-            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->getId() . '/cover-gallery',
+            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/cover-gallery',
         ], $result);
     }
 

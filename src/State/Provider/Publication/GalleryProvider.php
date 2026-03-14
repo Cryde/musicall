@@ -36,7 +36,7 @@ readonly class GalleryProvider implements ProviderInterface
         if (!$gallery) {
             throw new PublicationNotFoundException('Gallery inexistante');
         }
-        if ($gallery->getStatus() === Gallery::STATUS_ONLINE) {
+        if ($gallery->status === Gallery::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
             if ($request = $this->requestStack->getCurrentRequest()) {

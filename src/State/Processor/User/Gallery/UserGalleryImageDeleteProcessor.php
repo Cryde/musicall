@@ -20,9 +20,9 @@ readonly class UserGalleryImageDeleteProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
         /** @var GalleryImage $data */
-        $gallery = $data->getGallery();
+        $gallery = $data->gallery;
         $gallery->removeImage($data);
-        $gallery->setUpdateDatetime(new \DateTime());
+        $gallery->updateDatetime = new \DateTime();
 
         $this->entityManager->remove($data);
         $this->entityManager->flush();

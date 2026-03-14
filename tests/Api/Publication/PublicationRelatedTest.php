@@ -97,9 +97,9 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $related1->getId(),
                     'title'                => 'Related Publication 1',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->_real()->getId(),
+                        '@id'        => '/api/publication_sub_categories/' . $subChronique->_real()->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $subChronique->_real()->getId(),
+                        'id'         => $subChronique->_real()->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
@@ -126,9 +126,9 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $related2->getId(),
                     'title'                => 'Related Publication 2',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->_real()->getId(),
+                        '@id'        => '/api/publication_sub_categories/' . $subChronique->_real()->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $subChronique->_real()->getId(),
+                        'id'         => $subChronique->_real()->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',

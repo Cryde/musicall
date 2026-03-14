@@ -112,9 +112,9 @@ readonly class PublicationBuilder
     private function buildCategory(PublicationSubCategory $publicationSubCategory): Category
     {
         $category = new Category();
-        $category->id = (int) $publicationSubCategory->getId();
-        $category->slug = (string) $publicationSubCategory->getSlug();
-        $category->title = (string) $publicationSubCategory->getTitle();
+        $category->id = (int) $publicationSubCategory->id;
+        $category->slug = (string) $publicationSubCategory->slug;
+        $category->title = (string) $publicationSubCategory->title;
 
         return $category;
     }

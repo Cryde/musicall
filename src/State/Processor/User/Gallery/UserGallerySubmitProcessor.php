@@ -41,8 +41,8 @@ readonly class UserGallerySubmitProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException(implode(', ', $errors));
         }
 
-        $gallery->setStatus(Gallery::STATUS_PENDING);
-        $gallery->setUpdateDatetime(new \DateTime());
+        $gallery->status = Gallery::STATUS_PENDING;
+        $gallery->updateDatetime = new \DateTime();
 
         $this->entityManager->flush();
 

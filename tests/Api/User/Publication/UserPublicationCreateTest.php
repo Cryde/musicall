@@ -37,7 +37,7 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => 'My New Publication',
-            'categoryId' => $category->getId(),
+            'categoryId' => $category->_real()->id,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
@@ -50,7 +50,7 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->assertEquals('My New Publication', $createdPublication->getTitle());
         $this->assertEquals(Publication::STATUS_DRAFT, $createdPublication->getStatus());
         $this->assertEquals(Publication::TYPE_TEXT, $createdPublication->getType());
-        $this->assertEquals($category->getId(), $createdPublication->getSubCategory()->getId());
+        $this->assertEquals($category->_real()->id, $createdPublication->getSubCategory()->id);
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
@@ -59,7 +59,7 @@ class UserPublicationCreateTest extends ApiTestCase
             'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
-                'id' => $category->getId(),
+                'id' => $category->_real()->id,
                 'title' => 'News',
             ],
         ]);
@@ -73,7 +73,7 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => '',
-            'categoryId' => $category->getId(),
+            'categoryId' => $category->_real()->id,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -87,7 +87,7 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => 'ab',
-            'categoryId' => $category->getId(),
+            'categoryId' => $category->_real()->id,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

@@ -55,9 +55,9 @@ class GalleryGetCollectionTest extends ApiTestCase
             '@type'            => 'Collection',
             'member'     => [
                 [
-                    '@id'                  => '/api/galleries/' . $gallery2->getId(),
+                    '@id'                  => '/api/galleries/' . $gallery2->id,
                     '@type'                => 'Gallery',
-                    'id'                   => $gallery2->getId(),
+                    'id'                   => $gallery2->id,
                     'title'                => 'Title gallery 2',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
                     'author'               => [
@@ -71,9 +71,9 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'image_count'          => 0,
                 ],
                 [
-                    '@id'                  => '/api/galleries/' . $gallery1->getId(),
+                    '@id'                  => '/api/galleries/' . $gallery1->id,
                     '@type'                => 'Gallery',
-                    'id'                   => $gallery1->getId(),
+                    'id'                   => $gallery1->id,
                     'title'                => 'Title gallery 1',
                     'publication_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'               => [

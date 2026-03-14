@@ -42,7 +42,7 @@ readonly class UserPublicationUploadCoverProcessor implements ProcessorInterface
 
         $publicationCover = new PublicationCover();
         $publicationCover->setImageFile($data->imageFile);
-        $publicationCover->setPublication($publication);
+        $publicationCover->publication = $publication;
 
         $publication->setCover($publicationCover);
 

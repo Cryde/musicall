@@ -21,29 +21,24 @@ class PublicationImage
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    public ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
     #[Vich\UploadableField(mapping: 'publication_image', fileNameProperty: 'imageName', size: 'imageSize')]
-    private ?File $imageFile = null;
+    public ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $imageName = null;
+    public ?string $imageName = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $imageSize = null;
+    public ?int $imageSize = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $updatedAt = null;
+    public ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'images')]
-    private ?Publication $publication = null;
-
-    public function getImageFile(): ?File
-    {
-        return $this->imageFile;
-    }
+    public ?Publication $publication = null;
 
     /**
      * If manually uploading a file (i.e. not using Symfony Form) ensure an instance
@@ -60,55 +55,5 @@ class PublicationImage
             // otherwise the event listeners won't be called and the file is lost
             $this->updatedAt = new \DateTime();
         }
-    }
-
-
-    public function setImageName(?string $imageName = null): void
-    {
-        $this->imageName = $imageName;
-    }
-
-    public function getImageName(): ?string
-    {
-        return $this->imageName;
-    }
-
-    public function setImageSize(?int $imageSize): void
-    {
-        $this->imageSize = $imageSize;
-    }
-
-    public function getImageSize(): ?int
-    {
-        return $this->imageSize;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getUpdatedAt(): ?DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(DateTimeInterface $updatedAt): self
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getPublication(): ?Publication
-    {
-        return $this->publication;
-    }
-
-    public function setPublication(Publication $publication): PublicationImage
-    {
-        $this->publication = $publication;
-
-        return $this;
     }
 }

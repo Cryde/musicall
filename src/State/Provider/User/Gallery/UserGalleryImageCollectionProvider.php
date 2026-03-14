@@ -41,13 +41,13 @@ readonly class UserGalleryImageCollectionProvider implements ProviderInterface
             throw new NotFoundHttpException('Galerie non trouvee');
         }
 
-        if ($gallery->getAuthor()->getId() !== $user->getId()) {
+        if ($gallery->author->getId() !== $user->getId()) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a acceder a cette galerie');
         }
 
         return array_map(
             fn($image) => $this->userGalleryBuilder->buildImageFromEntity($image),
-            $gallery->getImages()->toArray()
+            $gallery->images->toArray()
         );
     }
 }

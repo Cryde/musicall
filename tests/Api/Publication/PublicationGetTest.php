@@ -25,7 +25,7 @@ class PublicationGetTest extends ApiTestCase
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         $author = UserFactory::new()->asAdminUser()->create();
         $viewCache = ViewCacheFactory::new(['count' => 123])->create();
-        $cover = PublicationCoverFactory::new(['image_name' => 'test.jpg'])->create();
+        $cover = PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create();
         $thread = CommentThreadFactory::new()->create();
         PublicationFactory::new([
             'author'              => $author,
@@ -60,7 +60,7 @@ class PublicationGetTest extends ApiTestCase
             'publication_datetime' => '2022-01-02T02:03:04+00:00',
             'category'             => [
                 '@type'    => 'Category',
-                'id'       => $sub->_real()->getId(),
+                'id'       => $sub->_real()->id,
                 'title'    => 'Chroniques',
                 'slug'     => 'chroniques',
             ],

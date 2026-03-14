@@ -79,7 +79,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserCourseCategory',
-                        'id' => $category->getId(),
+                        'id' => $category->_real()->id,
                         'title' => 'Guitare',
                         'slug' => 'guitare',
                     ],
@@ -98,7 +98,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserCourseCategory',
-                        'id' => $category->getId(),
+                        'id' => $category->_real()->id,
                         'title' => 'Guitare',
                         'slug' => 'guitare',
                     ],
@@ -252,7 +252,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/courses?category=' . $guitarCategory->getId());
+        $this->client->request('GET', '/api/user/courses?category=' . $guitarCategory->_real()->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,

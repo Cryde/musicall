@@ -29,11 +29,11 @@ readonly class AdminGalleryRejectProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Gallery not found');
         }
 
-        if ($gallery->getStatus() !== Gallery::STATUS_PENDING) {
+        if ($gallery->status !== Gallery::STATUS_PENDING) {
             throw new BadRequestHttpException('Only pending galleries can be rejected');
         }
 
-        $gallery->setStatus(Gallery::STATUS_DRAFT);
+        $gallery->status = Gallery::STATUS_DRAFT;
 
         $this->entityManager->flush();
 

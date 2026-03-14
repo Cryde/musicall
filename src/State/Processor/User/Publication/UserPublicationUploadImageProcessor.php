@@ -34,7 +34,7 @@ readonly class UserPublicationUploadImageProcessor implements ProcessorInterface
 
         $publicationImage = new PublicationImage();
         $publicationImage->setImageFile($data->imageFile);
-        $publicationImage->setPublication($publication);
+        $publicationImage->publication = $publication;
 
         $this->entityManager->persist($publicationImage);
         $this->entityManager->flush();

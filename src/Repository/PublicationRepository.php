@@ -120,7 +120,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->andWhere('sub_category.id = :subCategoryId')
             ->setParameter('status', Publication::STATUS_ONLINE)
             ->setParameter('currentId', $publication->getId())
-            ->setParameter('subCategoryId', $publication->getSubCategory()->getId())
+            ->setParameter('subCategoryId', $publication->getSubCategory()->id)
             ->orderBy('publication.publicationDatetime', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()

@@ -365,7 +365,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->socialAccounts->contains($socialAccount)) {
             $this->socialAccounts->add($socialAccount);
-            $socialAccount->setUser($this);
+            $socialAccount->user = $this;
         }
 
         return $this;
@@ -381,7 +381,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function hasSocialAccount(string $provider): bool
     {
         foreach ($this->socialAccounts as $socialAccount) {
-            if ($socialAccount->getProvider() === $provider) {
+            if ($socialAccount->provider === $provider) {
                 return true;
             }
         }

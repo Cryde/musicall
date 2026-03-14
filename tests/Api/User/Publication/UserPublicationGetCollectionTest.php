@@ -79,7 +79,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserPublicationCategory',
-                        'id' => $category->getId(),
+                        'id' => $category->_real()->id,
                         'title' => 'News',
                         'slug' => 'news',
                     ],
@@ -98,7 +98,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserPublicationCategory',
-                        'id' => $category->getId(),
+                        'id' => $category->_real()->id,
                         'title' => 'News',
                         'slug' => 'news',
                     ],

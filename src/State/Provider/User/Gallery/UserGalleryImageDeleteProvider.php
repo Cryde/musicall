@@ -38,17 +38,17 @@ readonly class UserGalleryImageDeleteProvider implements ProviderInterface
             throw new NotFoundHttpException('Image non trouvee');
         }
 
-        $gallery = $image->getGallery();
-        if ($gallery->getAuthor()->getId() !== $user->getId()) {
+        $gallery = $image->gallery;
+        if ($gallery->author->getId() !== $user->getId()) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a supprimer cette image');
         }
 
-        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+        if ($gallery->status !== Gallery::STATUS_DRAFT) {
             throw new AccessDeniedHttpException('Cette galerie ne peut plus etre modifiee');
         }
 
         // Cannot delete cover image
-        if ($gallery->getCoverImage()?->getId() === $image->getId()) {
+        if ($gallery->coverImage?->id === $image->id) {
             throw new AccessDeniedHttpException('Vous ne pouvez pas supprimer l\'image de couverture');
         }
 

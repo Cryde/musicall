@@ -66,9 +66,9 @@ class PublicationPendingListTest extends ApiTestCase
                     'id'                   => $publication->_real()->getId(),
                     'title'                => 'Titre de la publication',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->getId(),
+                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $sub->_real()->getId(),
+                        'id'         => $sub->_real()->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',

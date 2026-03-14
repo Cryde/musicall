@@ -32,10 +32,10 @@ readonly class UserGalleryCreateProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         $gallery = new Gallery();
-        $gallery->setTitle($data->title);
-        $gallery->setAuthor($user);
-        $gallery->setStatus(Gallery::STATUS_DRAFT);
-        $gallery->setSlug($this->gallerySlug->create($data->title . ' ' .uniqid('', true)));
+        $gallery->title = $data->title;
+        $gallery->author = $user;
+        $gallery->status = Gallery::STATUS_DRAFT;
+        $gallery->slug = $this->gallerySlug->create($data->title . ' ' .uniqid('', true));
 
         $this->entityManager->persist($gallery);
         $this->entityManager->flush();

@@ -34,10 +34,10 @@ readonly class ProfilePictureImporter
             [$filename, $fileSize] = $this->remoteFileDownloader->download($pictureUrl, $destination);
 
             $profilePicture = new UserProfilePicture();
-            $profilePicture->setImageName($filename);
-            $profilePicture->setImageSize($fileSize);
-            $profilePicture->setUpdatedAt(new \DateTime());
-            $profilePicture->setUser($user);
+            $profilePicture->imageName = $filename;
+            $profilePicture->imageSize = $fileSize;
+            $profilePicture->updatedAt = new \DateTime();
+            $profilePicture->user = $user;
 
             $user->setProfilePicture($profilePicture);
 

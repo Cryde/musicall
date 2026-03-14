@@ -28,9 +28,9 @@ readonly class UserGalleryImageSetCoverProcessor implements ProcessorInterface
         /** @var GalleryImage $image */
         $image = $this->galleryImageRepository->find($uriVariables['id']);
 
-        $gallery = $image->getGallery();
-        $gallery->setCoverImage($image);
-        $gallery->setUpdateDatetime(new \DateTime());
+        $gallery = $image->gallery;
+        $gallery->coverImage = $image;
+        $gallery->updateDatetime = new \DateTime();
 
         $this->entityManager->flush();
 

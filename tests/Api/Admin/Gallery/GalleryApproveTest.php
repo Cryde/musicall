@@ -34,11 +34,11 @@ class GalleryApproveTest extends ApiTestCase
             'status'              => Gallery::STATUS_PENDING,
         ])->create();
 
-        $this->assertSame(Gallery::STATUS_PENDING, $gallery->getStatus());
-        $this->assertNull($gallery->getPublicationDatetime());
+        $this->assertSame(Gallery::STATUS_PENDING, $gallery->_real()->status);
+        $this->assertNull($gallery->_real()->publicationDatetime);
 
-        $galleryId = $gallery->getId();
-        $draftId = $draft->getId();
+        $galleryId = $gallery->_real()->id;
+        $draftId = $draft->_real()->id;
 
         $this->client->loginUser($admin);
         $this->client->request('POST', '/api/admin/galleries/' . $galleryId . '/approve', [], [], [
@@ -55,9 +55,9 @@ class GalleryApproveTest extends ApiTestCase
         $refreshedDraft = $galleryRepository->find($draftId);
         $refreshedGallery = $galleryRepository->find($galleryId);
 
-        $this->assertSame(Gallery::STATUS_DRAFT, $refreshedDraft->getStatus());
-        $this->assertSame(Gallery::STATUS_ONLINE, $refreshedGallery->getStatus());
-        $this->assertNotNull($refreshedGallery->getPublicationDatetime());
+        $this->assertSame(Gallery::STATUS_DRAFT, $refreshedDraft->status);
+        $this->assertSame(Gallery::STATUS_ONLINE, $refreshedGallery->status);
+        $this->assertNotNull($refreshedGallery->publicationDatetime);
     }
 
     public function test_approve_gallery_with_no_admin(): void
@@ -67,7 +67,7 @@ class GalleryApproveTest extends ApiTestCase
         $gallery = GalleryFactory::new(['author' => $user, 'status' => Gallery::STATUS_PENDING])->create();
 
         $this->client->loginUser($user);
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -79,7 +79,7 @@ class GalleryApproveTest extends ApiTestCase
 
         $gallery = GalleryFactory::new(['author' => $user, 'status' => Gallery::STATUS_PENDING])->create();
 
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -95,7 +95,7 @@ class GalleryApproveTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
@@ -121,7 +121,7 @@ class GalleryApproveTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);

@@ -44,9 +44,9 @@ class UserGalleryCreateTest extends ApiTestCase
         $this->assertCount(1, $galleries);
 
         $createdGallery = $galleries[0];
-        $this->assertEquals('My New Gallery', $createdGallery->getTitle());
-        $this->assertEquals(Gallery::STATUS_DRAFT, $createdGallery->getStatus());
-        $this->assertNotNull($createdGallery->getSlug());
+        $this->assertEquals('My New Gallery', $createdGallery->title);
+        $this->assertEquals(Gallery::STATUS_DRAFT, $createdGallery->status);
+        $this->assertNotNull($createdGallery->slug);
 
         $this->assertJsonContains([
             '@type' => 'UserGallery',

@@ -35,9 +35,9 @@ readonly class UserPublicationBuilder
 
         $subCategory = $publication->getSubCategory();
         $category = new UserPublicationCategory();
-        $category->id = (int) $subCategory->getId();
-        $category->title = (string) $subCategory->getTitle();
-        $category->slug = (string) $subCategory->getSlug();
+        $category->id = (int) $subCategory->id;
+        $category->title = (string) $subCategory->title;
+        $category->slug = (string) $subCategory->slug;
         $dto->category = $category;
 
         $dto->coverUrl = $this->buildCoverUrl($publication);

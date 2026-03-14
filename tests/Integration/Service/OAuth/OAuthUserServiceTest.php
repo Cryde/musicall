@@ -87,7 +87,7 @@ class OAuthUserServiceTest extends KernelTestCase
             'google-id-456'
         );
         $this->assertNotNull($socialAccount);
-        $this->assertSame($currentUser->getId(), $socialAccount->getUser()->getId());
+        $this->assertSame($currentUser->getId(), $socialAccount->user->getId());
     }
 
     public function test_find_or_create_user_throws_exception_when_email_exists(): void
@@ -147,7 +147,7 @@ class OAuthUserServiceTest extends KernelTestCase
             'google-id-new'
         );
         $this->assertNotNull($socialAccount);
-        $this->assertSame($result->user->getId(), $socialAccount->getUser()->getId());
+        $this->assertSame($result->user->getId(), $socialAccount->user->getId());
     }
 
     public function test_find_or_create_user_sanitizes_username(): void

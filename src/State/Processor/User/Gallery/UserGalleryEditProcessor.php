@@ -28,9 +28,9 @@ readonly class UserGalleryEditProcessor implements ProcessorInterface
         /** @var Gallery $gallery */
         $gallery = $this->galleryRepository->find($uriVariables['id']);
 
-        $gallery->setTitle($data->title);
-        $gallery->setDescription($data->description);
-        $gallery->setUpdateDatetime(new \DateTime());
+        $gallery->title = $data->title;
+        $gallery->description = $data->description;
+        $gallery->updateDatetime = new \DateTime();
 
         $this->entityManager->flush();
 

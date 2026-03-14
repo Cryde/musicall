@@ -29,7 +29,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->getId() . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -46,7 +46,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
         $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->getId() . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 
@@ -76,7 +76,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->getId() . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -92,7 +92,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
         $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->getId() . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -120,7 +120,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-too-big.jpg', 'image-too-big.jpg');
         $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->getId() . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 
@@ -153,7 +153,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->getId() . '/upload-image', [], [], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], [], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 

@@ -64,8 +64,8 @@ class UserGalleryGetCollectionTest extends ApiTestCase
             'member' => [
                 [
                     '@type' => 'UserGallery',
-                    '@id' => '/api/user_galleries/' . $gallery2->getId(),
-                    'id' => $gallery2->getId(),
+                    '@id' => '/api/user_galleries/' . $gallery2->_real()->id,
+                    'id' => $gallery2->_real()->id,
                     'title' => 'Gallery 2',
                     'slug' => 'gallery-2',
                     'status' => Gallery::STATUS_ONLINE,
@@ -76,8 +76,8 @@ class UserGalleryGetCollectionTest extends ApiTestCase
                 ],
                 [
                     '@type' => 'UserGallery',
-                    '@id' => '/api/user_galleries/' . $gallery1->getId(),
-                    'id' => $gallery1->getId(),
+                    '@id' => '/api/user_galleries/' . $gallery1->_real()->id,
+                    'id' => $gallery1->_real()->id,
                     'title' => 'Gallery 1',
                     'slug' => 'gallery-1',
                     'status' => Gallery::STATUS_DRAFT,
@@ -122,8 +122,8 @@ class UserGalleryGetCollectionTest extends ApiTestCase
             'member' => [
                 [
                     '@type' => 'UserGallery',
-                    '@id' => '/api/user_galleries/' . $user1Gallery->getId(),
-                    'id' => $user1Gallery->getId(),
+                    '@id' => '/api/user_galleries/' . $user1Gallery->_real()->id,
+                    'id' => $user1Gallery->_real()->id,
                     'title' => 'User 1 Gallery',
                     'slug' => 'user-1-gallery',
                     'status' => Gallery::STATUS_DRAFT,

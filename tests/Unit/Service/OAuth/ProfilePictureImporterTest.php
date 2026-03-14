@@ -56,10 +56,10 @@ class ProfilePictureImporterTest extends TestCase
             ->expects($this->once())
             ->method('persist')
             ->with($this->callback(function (UserProfilePicture $picture) use ($user) {
-                return $picture->getImageName() === 'downloaded_picture.jpg'
-                    && $picture->getImageSize() === 12345
-                    && $picture->getUser() === $user
-                    && $picture->getUpdatedAt() !== null;
+                return $picture->imageName === 'downloaded_picture.jpg'
+                    && $picture->imageSize === 12345
+                    && $picture->user === $user
+                    && $picture->updatedAt !== null;
             }));
 
         $this->logger
@@ -69,14 +69,14 @@ class ProfilePictureImporterTest extends TestCase
         $this->importer->importFromUrl($user, 'https://example.com/picture.jpg');
 
         $this->assertNotNull($user->getProfilePicture());
-        $this->assertSame('downloaded_picture.jpg', $user->getProfilePicture()->getImageName());
-        $this->assertSame(12345, $user->getProfilePicture()->getImageSize());
+        $this->assertSame('downloaded_picture.jpg', $user->getProfilePicture()->imageName);
+        $this->assertSame(12345, $user->getProfilePicture()->imageSize);
     }
 
     public function test_import_from_url_skips_when_user_already_has_profile_picture(): void
     {
         $existingPicture = new UserProfilePicture();
-        $existingPicture->setImageName('existing.jpg');
+        $existingPicture->imageName = 'existing.jpg';
 
         $user = new User();
         $user->setProfilePicture($existingPicture);

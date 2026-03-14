@@ -33,9 +33,9 @@ readonly class UserPublicationPreviewBuilder
 
         $subCategory = $publication->getSubCategory();
         $category = new UserPublicationCategory();
-        $category->id = (int) $subCategory->getId();
-        $category->title = (string) $subCategory->getTitle();
-        $category->slug = (string) $subCategory->getSlug();
+        $category->id = (int) $subCategory->id;
+        $category->title = (string) $subCategory->title;
+        $category->slug = (string) $subCategory->slug;
         $dto->category = $category;
 
         $author = $publication->getAuthor();
@@ -49,7 +49,7 @@ readonly class UserPublicationPreviewBuilder
     private function buildCoverUrl(Publication $publication): ?string
     {
         $cover = $publication->getCover();
-        if (!$cover || !$cover->getImageName()) {
+        if (!$cover || !$cover->imageName) {
             return null;
         }
 

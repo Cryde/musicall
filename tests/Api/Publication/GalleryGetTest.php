@@ -32,7 +32,7 @@ class GalleryGetTest extends ApiTestCase
         ])->create();
         $cover = GalleryImageFactory::new(['imageName' => 'cover.jpg', 'gallery' => $gallery])->create();
         $image2 = GalleryImageFactory::new(['imageName' => 'image2.jpg', 'gallery' => $gallery])->create();
-        $gallery->setCoverImage($cover->_real());
+        $gallery->_real()->coverImage = $cover->_real();
         $gallery->_save();
 
         $this->client->request('GET', '/api/galleries/titre-de-la-gallery');
@@ -57,23 +57,23 @@ class GalleryGetTest extends ApiTestCase
             'description' => 'Petite description de la gallery',
             'cover' => [
                 '@type' => 'Cover',
-                'cover_url' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/cover.jpg',
+                'cover_url' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/cover.jpg',
             ],
             'images' => [
                 [
                     '@type' => 'GalleryImage',
                     'sizes' => [
-                        'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->getId() . '/cover.jpg',
-                        'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/cover.jpg',
-                        'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->getId() . '/cover.jpg',
+                        'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->_real()->id . '/cover.jpg',
+                        'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/cover.jpg',
+                        'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/cover.jpg',
                     ],
                 ],
                 [
                     '@type' => 'GalleryImage',
                     'sizes' => [
-                        'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->getId() . '/image2.jpg',
-                        'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/image2.jpg',
-                        'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->getId() . '/image2.jpg',
+                        'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
+                        'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
+                        'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
                     ],
                 ],
             ],

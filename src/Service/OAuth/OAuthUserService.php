@@ -36,7 +36,7 @@ readonly class OAuthUserService
 
         if ($socialAccount !== null) {
             // User already linked this social account - this is a login
-            $user = $socialAccount->getUser();
+            $user = $socialAccount->user;
             $user->setLastLoginDatetime(new \DateTime());
             $this->entityManager->flush();
 
@@ -98,10 +98,10 @@ readonly class OAuthUserService
     private function createSocialAccount(User $user, string $provider, string $providerId, string $email): SocialAccount
     {
         $socialAccount = new SocialAccount();
-        $socialAccount->setUser($user);
-        $socialAccount->setProvider($provider);
-        $socialAccount->setProviderId($providerId);
-        $socialAccount->setEmail($email);
+        $socialAccount->user = $user;
+        $socialAccount->provider = $provider;
+        $socialAccount->providerId = $providerId;
+        $socialAccount->email = $email;
 
         $this->entityManager->persist($socialAccount);
         $this->entityManager->flush();

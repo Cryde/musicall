@@ -63,7 +63,7 @@ class UserPublicationPreviewTest extends ApiTestCase
             'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
-                'id' => $category->getId(),
+                'id' => $category->_real()->id,
                 'title' => 'News',
             ],
             'author' => [

@@ -27,7 +27,7 @@ class UserGalleryPreviewTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/preview');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -50,14 +50,14 @@ class UserGalleryPreviewTest extends ApiTestCase
         GalleryImageFactory::new(['gallery' => $gallery, 'imageName' => 'image2.jpg'])->create();
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/preview');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserGalleryPreview',
-            '@id' => '/api/user/galleries/' . $gallery->getId() . '/preview',
+            '@id' => '/api/user/galleries/' . $gallery->_real()->id . '/preview',
             '@type' => 'UserGalleryPreview',
-            'id' => $gallery->getId(),
+            'id' => $gallery->_real()->id,
             'title' => 'My Gallery',
             'slug' => 'my-gallery',
             'description' => 'A great description',
@@ -67,14 +67,14 @@ class UserGalleryPreviewTest extends ApiTestCase
             'author_username' => 'base_admin',
             'images' => [
                 [
-                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->getId() . '/image1.jpg',
-                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/image1.jpg',
-                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->getId() . '/image1.jpg',
+                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->_real()->id . '/image1.jpg',
+                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/image1.jpg',
+                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/image1.jpg',
                 ],
                 [
-                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->getId() . '/image2.jpg',
-                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->getId() . '/image2.jpg',
-                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->getId() . '/image2.jpg',
+                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
+                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
+                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
                 ],
             ],
         ]);
@@ -93,14 +93,14 @@ class UserGalleryPreviewTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/preview');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserGalleryPreview',
-            '@id' => '/api/user/galleries/' . $gallery->getId() . '/preview',
+            '@id' => '/api/user/galleries/' . $gallery->_real()->id . '/preview',
             '@type' => 'UserGalleryPreview',
-            'id' => $gallery->getId(),
+            'id' => $gallery->_real()->id,
             'title' => 'My Pending Gallery',
             'slug' => 'my-pending-gallery',
             'description' => 'Pending description',
@@ -122,7 +122,7 @@ class UserGalleryPreviewTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/preview');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -146,7 +146,7 @@ class UserGalleryPreviewTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/preview');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([

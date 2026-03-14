@@ -41,7 +41,7 @@ readonly class UserProfileCoverPictureProcessor implements ProcessorInterface
         // Create new cover picture entity from the uploaded data
         $coverPicture = new UserProfileCoverPicture();
         $coverPicture->setImageFile($data->imageFile);
-        $coverPicture->setProfile($profile);
+        $coverPicture->profile = $profile;
 
         $profile->setCoverPicture($coverPicture);
         $this->entityManager->persist($coverPicture);

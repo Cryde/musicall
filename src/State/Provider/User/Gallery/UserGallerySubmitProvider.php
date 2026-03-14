@@ -36,16 +36,16 @@ readonly class UserGallerySubmitProvider implements ProviderInterface
             throw new NotFoundHttpException('Galerie non trouvee');
         }
 
-        if ($gallery->getAuthor()->getId() !== $user->getId()) {
+        if ($gallery->author->getId() !== $user->getId()) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a soumettre cette galerie');
         }
 
-        if ($gallery->getStatus() !== Gallery::STATUS_DRAFT) {
+        if ($gallery->status !== Gallery::STATUS_DRAFT) {
             throw new AccessDeniedHttpException('Cette galerie ne peut pas etre soumise');
         }
 
         $dto = new UserGallerySubmit();
-        $dto->id = (int) $gallery->getId();
+        $dto->id = (int) $gallery->id;
 
         return $dto;
     }

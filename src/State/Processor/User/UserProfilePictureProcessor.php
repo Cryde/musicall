@@ -32,7 +32,7 @@ class UserProfilePictureProcessor implements ProcessorInterface
             $this->entityManager->flush();
         }
 
-        $data->setUser($user);
+        $data->user = $user;
         $user->setProfilePicture($data);
         $this->entityManager->flush();
 

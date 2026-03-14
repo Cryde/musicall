@@ -34,11 +34,11 @@ class GalleryRejectTest extends ApiTestCase
             'status'              => Gallery::STATUS_PENDING,
         ])->create();
 
-        $this->assertSame(Gallery::STATUS_PENDING, $gallery->getStatus());
-        $this->assertNull($gallery->getPublicationDatetime());
+        $this->assertSame(Gallery::STATUS_PENDING, $gallery->_real()->status);
+        $this->assertNull($gallery->_real()->publicationDatetime);
 
-        $galleryId = $gallery->getId();
-        $draftId = $draft->getId();
+        $galleryId = $gallery->_real()->id;
+        $draftId = $draft->_real()->id;
 
         $this->client->loginUser($admin);
         $this->client->request('POST', '/api/admin/galleries/' . $galleryId . '/reject', [], [], [
@@ -55,9 +55,9 @@ class GalleryRejectTest extends ApiTestCase
         $refreshedDraft = $galleryRepository->find($draftId);
         $refreshedGallery = $galleryRepository->find($galleryId);
 
-        $this->assertSame(Gallery::STATUS_DRAFT, $refreshedDraft->getStatus());
-        $this->assertSame(Gallery::STATUS_DRAFT, $refreshedGallery->getStatus());
-        $this->assertNull($refreshedGallery->getPublicationDatetime());
+        $this->assertSame(Gallery::STATUS_DRAFT, $refreshedDraft->status);
+        $this->assertSame(Gallery::STATUS_DRAFT, $refreshedGallery->status);
+        $this->assertNull($refreshedGallery->publicationDatetime);
     }
 
     public function test_reject_gallery_with_no_admin(): void
@@ -67,7 +67,7 @@ class GalleryRejectTest extends ApiTestCase
         $gallery = GalleryFactory::new(['author' => $user, 'status' => Gallery::STATUS_PENDING])->create();
 
         $this->client->loginUser($user);
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/reject', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/reject', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -79,7 +79,7 @@ class GalleryRejectTest extends ApiTestCase
 
         $gallery = GalleryFactory::new(['author' => $user, 'status' => Gallery::STATUS_PENDING])->create();
 
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/reject', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/reject', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -95,7 +95,7 @@ class GalleryRejectTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/reject', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/reject', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
@@ -121,7 +121,7 @@ class GalleryRejectTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/admin/galleries/' . $gallery->getId() . '/reject', [], [], [
+        $this->client->request('POST', '/api/admin/galleries/' . $gallery->_real()->id . '/reject', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);

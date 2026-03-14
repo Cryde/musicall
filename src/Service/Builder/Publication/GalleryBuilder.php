@@ -23,15 +23,15 @@ readonly class GalleryBuilder
 
     public function buildFromEntity(GalleryEntity $galleryEntity): Gallery
     {
-        $author = $galleryEntity->getAuthor();
-        $coverImage = $galleryEntity->getCoverImage();
-        $publicationDatetime = $galleryEntity->getPublicationDatetime();
+        $author = $galleryEntity->author;
+        $coverImage = $galleryEntity->coverImage;
+        $publicationDatetime = $galleryEntity->publicationDatetime;
         assert($coverImage !== null && $publicationDatetime !== null);
 
         $gallery = new Gallery();
-        $gallery->slug = (string) $galleryEntity->getSlug();
-        $gallery->title = (string) $galleryEntity->getTitle();
-        $gallery->description = $galleryEntity->getDescription() ?? '';
+        $gallery->slug = (string) $galleryEntity->slug;
+        $gallery->title = (string) $galleryEntity->title;
+        $gallery->description = $galleryEntity->description ?? '';
         $gallery->publicationDatetime = $publicationDatetime;
         $gallery->author = $this->buildAuthor($author);
         $gallery->cover = $this->buildCover($coverImage);
@@ -67,7 +67,7 @@ readonly class GalleryBuilder
     {
         return array_map(
             fn (GalleryImageEntity $image) => $this->buildImageFromEntity($image),
-            $gallery->getImages()->toArray()
+            $gallery->images->toArray()
         );
     }
 

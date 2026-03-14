@@ -20,37 +20,32 @@ class GalleryImage
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    public ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\Image(maxWidth: 4000, maxHeight: 4000)]
     #[Vich\UploadableField(mapping: 'gallery_image', fileNameProperty: 'imageName', size: 'imageSize')]
-    private ?File $imageFile = null;
+    public ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $imageName = null;
+    public ?string $imageName = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $imageSize = null;
+    public ?int $imageSize = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $updatedAt = null;
+    public ?DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Gallery::class, inversedBy: "images")]
     #[ORM\JoinColumn(nullable: false)]
-    private Gallery $gallery;
+    public Gallery $gallery;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-    }
-
-    public function getImageFile(): ?File
-    {
-        return $this->imageFile;
     }
 
     /**
@@ -70,54 +65,5 @@ class GalleryImage
             // otherwise the event listeners won't be called and the file is lost
             $this->updatedAt = new \DateTime();
         }
-    }
-
-    public function getImageName(): ?string
-    {
-        return $this->imageName;
-    }
-
-    public function setImageName(?string $imageName): void
-    {
-        $this->imageName = $imageName;
-    }
-
-    public function getImageSize(): ?int
-    {
-        return $this->imageSize;
-    }
-
-    public function setImageSize(?int $imageSize): void
-    {
-        $this->imageSize = $imageSize;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getUpdatedAt(): ?DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(DateTimeInterface $updatedAt): self
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getGallery(): Gallery
-    {
-        return $this->gallery;
-    }
-
-    public function setGallery(Gallery $gallery): self
-    {
-        $this->gallery = $gallery;
-
-        return $this;
     }
 }

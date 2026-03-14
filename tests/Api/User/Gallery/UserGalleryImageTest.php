@@ -31,7 +31,7 @@ class UserGalleryImageTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/images');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/images');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -50,12 +50,12 @@ class UserGalleryImageTest extends ApiTestCase
         $image2 = GalleryImageFactory::new(['gallery' => $gallery])->create();
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/images');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/images');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             '@context' => '/api/contexts/UserGalleryImage',
-            '@id' => '/api/user/galleries/' . $gallery->getId() . '/images',
+            '@id' => '/api/user/galleries/' . $gallery->_real()->id . '/images',
             '@type' => 'Collection',
             'totalItems' => 2,
         ]);
@@ -74,7 +74,7 @@ class UserGalleryImageTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId() . '/images');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/images');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -110,7 +110,7 @@ class UserGalleryImageTest extends ApiTestCase
         ]);
         $image = GalleryImageFactory::new(['gallery' => $gallery])->create();
 
-        $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image->getId() . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image->_real()->id . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -128,21 +128,21 @@ class UserGalleryImageTest extends ApiTestCase
         ]);
         $image1 = GalleryImageFactory::new(['gallery' => $gallery])->create();
         $image2 = GalleryImageFactory::new(['gallery' => $gallery])->create();
-        $gallery->setCoverImage($image1->_real());
+        $gallery->_real()->coverImage = $image1->_real();
         $gallery->_save();
 
         $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image2->getId() . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image2->_real()->id . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
 
-        $updatedGallery = $galleryRepository->find($gallery->getId());
-        $this->assertEquals($image2->getId(), $updatedGallery->getCoverImage()->getId());
+        $updatedGallery = $galleryRepository->find($gallery->_real()->id);
+        $this->assertEquals($image2->_real()->id, $updatedGallery->coverImage->id);
 
         $this->assertJsonContains([
             '@type' => 'UserGalleryEdit',
-            'id' => $gallery->getId(),
-            'cover_image_id' => $image2->getId(),
+            'id' => $gallery->_real()->id,
+            'cover_image_id' => $image2->_real()->id,
         ]);
     }
 
@@ -157,7 +157,7 @@ class UserGalleryImageTest extends ApiTestCase
         $image = GalleryImageFactory::new(['gallery' => $gallery])->create();
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image->getId() . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image->_real()->id . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -193,7 +193,7 @@ class UserGalleryImageTest extends ApiTestCase
         ]);
         $image = GalleryImageFactory::new(['gallery' => $gallery])->create();
 
-        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->getId());
+        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -222,7 +222,7 @@ class UserGalleryImageTest extends ApiTestCase
         $image = GalleryImageFactory::new(['gallery' => $gallery])->create();
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->getId());
+        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -257,7 +257,7 @@ class UserGalleryImageTest extends ApiTestCase
         $image = GalleryImageFactory::new(['gallery' => $gallery])->create();
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->getId());
+        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -275,11 +275,11 @@ class UserGalleryImageTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
         $image = GalleryImageFactory::new(['gallery' => $gallery])->create();
-        $gallery->setCoverImage($image->_real());
+        $gallery->_real()->coverImage = $image->_real();
         $gallery->_save();
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->getId());
+        $this->client->request('DELETE', '/api/user/gallery-images/' . $image->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([

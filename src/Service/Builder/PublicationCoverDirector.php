@@ -8,9 +8,11 @@ class PublicationCoverDirector
 {
     public function build(string $path, int $size): PublicationCover
     {
-        return (new PublicationCover())
-            ->setImageSize($size)
-            ->setImageName($path)
-            ->setUpdatedAt(new \DateTime());
+        $cover = new PublicationCover();
+        $cover->imageSize = $size;
+        $cover->imageName = $path;
+        $cover->updatedAt = new \DateTime();
+
+        return $cover;
     }
 }

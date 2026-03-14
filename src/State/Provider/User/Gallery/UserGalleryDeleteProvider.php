@@ -37,11 +37,11 @@ readonly class UserGalleryDeleteProvider implements ProviderInterface
             throw new NotFoundHttpException('Galerie non trouvee');
         }
 
-        if ($gallery->getAuthor()->getId() !== $user->getId()) {
+        if ($gallery->author->getId() !== $user->getId()) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a supprimer cette galerie');
         }
 
-        if ($gallery->getStatus() === Gallery::STATUS_ONLINE) {
+        if ($gallery->status === Gallery::STATUS_ONLINE) {
             throw new AccessDeniedHttpException('Vous ne pouvez pas supprimer une galerie publiee');
         }
 

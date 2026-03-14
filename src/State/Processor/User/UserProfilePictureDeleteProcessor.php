@@ -22,7 +22,7 @@ readonly class UserProfilePictureDeleteProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
         /** @var UserProfilePicture $data */
-        $user = $data->getUser();
+        $user = $data->user;
         assert($user !== null);
 
         // Detach profile picture from user

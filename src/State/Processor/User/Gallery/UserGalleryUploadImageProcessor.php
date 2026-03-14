@@ -32,10 +32,10 @@ readonly class UserGalleryUploadImageProcessor implements ProcessorInterface
 
         $galleryImage = new GalleryImage();
         $galleryImage->setImageFile($data->imageFile);
-        $galleryImage->setGallery($gallery);
+        $galleryImage->gallery = $gallery;
 
         $gallery->addImage($galleryImage);
-        $gallery->setUpdateDatetime(new \DateTime());
+        $gallery->updateDatetime = new \DateTime();
 
         $this->entityManager->persist($galleryImage);
         $this->entityManager->flush();

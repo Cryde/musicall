@@ -22,7 +22,7 @@ readonly class UserProfileCoverPictureDeleteProcessor implements ProcessorInterf
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
         /** @var UserProfileCoverPicture $data */
-        $profile = $data->getProfile();
+        $profile = $data->profile;
         assert($profile !== null);
 
         // Detach cover picture from profile

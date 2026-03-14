@@ -69,9 +69,9 @@ readonly class PublicationListItemBuilder
     private function buildSubCategory(PublicationSubCategory $subCategory): SubCategory
     {
         $dto = new SubCategory();
-        $dto->id = (int) $subCategory->getId();
-        $dto->title = (string) $subCategory->getTitle();
-        $dto->slug = (string) $subCategory->getSlug();
+        $dto->id = (int) $subCategory->id;
+        $dto->title = (string) $subCategory->title;
+        $dto->slug = (string) $subCategory->slug;
         $dto->typeLabel = $subCategory->getTypeLabel();
         $dto->isCourse = $subCategory->getIsCourse();
 

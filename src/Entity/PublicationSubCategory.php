@@ -36,29 +36,29 @@ class PublicationSubCategory
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
-    private ?int $id;
+    public ?int $id;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
-    private string $title;
+    public string $title;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[Groups([PublicationSubCategory::LIST, Publication::ITEM, Publication::LIST])]
-    private string $slug;
+    public string $slug;
 
     /**
      * @var Collection<int, Publication>
      */
     #[ORM\OneToMany(mappedBy: "subCategory", targetEntity: Publication::class, orphanRemoval: true)]
-    private Collection $publications;
+    public Collection $publications;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups([PublicationSubCategory::LIST])]
-    private ?int $position;
+    public ?int $position;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     #[Groups([PublicationSubCategory::LIST])]
-    private ?int $type;
+    public ?int $type;
 
     public function __construct()
     {
@@ -75,83 +75,5 @@ class PublicationSubCategory
     public function getIsCourse(): bool
     {
         return $this->type === self::TYPE_COURSE;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Publication>
-     */
-    public function getPublications(): Collection
-    {
-        return $this->publications;
-    }
-
-    public function addPublication(Publication $publication): self
-    {
-        if (!$this->publications->contains($publication)) {
-            $this->publications[] = $publication;
-            $publication->setSubCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removePublication(Publication $publication): self
-    {
-        $this->publications->removeElement($publication);
-
-        return $this;
-    }
-
-    public function getPosition(): ?int
-    {
-        return $this->position;
-    }
-
-    public function setPosition(?int $position): self
-    {
-        $this->position = $position;
-
-        return $this;
-    }
-
-    public function getType(): ?int
-    {
-        return $this->type;
-    }
-
-    public function setType(?int $type): self
-    {
-        $this->type = $type;
-
-        return $this;
     }
 }

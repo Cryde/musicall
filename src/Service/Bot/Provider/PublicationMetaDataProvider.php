@@ -66,8 +66,8 @@ readonly class PublicationMetaDataProvider implements BotMetaDataProviderInterfa
         }
 
         return [
-            'title' => $category->getTitle() . ' - Publications - MusicAll',
-            'description' => 'Retrouvez toutes les publications de la catégorie ' . $category->getTitle() . ' sur MusicAll.',
+            'title' => $category->title . ' - Publications - MusicAll',
+            'description' => 'Retrouvez toutes les publications de la catégorie ' . $category->title . ' sur MusicAll.',
         ];
     }
 

@@ -27,7 +27,7 @@ class UserGalleryEditTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -42,11 +42,11 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             '@type' => 'UserGalleryEdit',
-            'id' => $gallery->getId(),
+            'id' => $gallery->_real()->id,
             'title' => 'My Gallery',
             'description' => 'My description',
             'status' => Gallery::STATUS_DRAFT,
@@ -63,7 +63,7 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -76,7 +76,7 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->getId());
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -97,7 +97,7 @@ class UserGalleryEditTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->getId(), [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id, [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -113,20 +113,20 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->getId(), [
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id, [
             'title' => 'Updated Title',
             'description' => 'Updated description',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
 
-        $updatedGallery = $galleryRepository->find($gallery->getId());
-        $this->assertEquals('Updated Title', $updatedGallery->getTitle());
-        $this->assertEquals('Updated description', $updatedGallery->getDescription());
+        $updatedGallery = $galleryRepository->find($gallery->_real()->id);
+        $this->assertEquals('Updated Title', $updatedGallery->title);
+        $this->assertEquals('Updated description', $updatedGallery->description);
 
         $this->assertJsonContains([
             '@type' => 'UserGalleryEdit',
-            'id' => $gallery->getId(),
+            'id' => $gallery->_real()->id,
             'title' => 'Updated Title',
             'description' => 'Updated description',
         ]);
@@ -142,7 +142,7 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->getId(), [
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id, [
             'title' => 'Hacked Title',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -157,7 +157,7 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->getId(), [
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id, [
             'title' => 'Updated Title',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -172,7 +172,7 @@ class UserGalleryEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->getId(), [
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id, [
             'title' => '',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

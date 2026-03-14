@@ -66,8 +66,8 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         return [
-            'title' => $category->getTitle() . ' - Cours - MusicAll',
-            'description' => 'Retrouvez tous les cours de ' . $category->getTitle() . ' sur MusicAll.',
+            'title' => $category->title . ' - Cours - MusicAll',
+            'description' => 'Retrouvez tous les cours de ' . $category->title . ' sur MusicAll.',
         ];
     }
 
