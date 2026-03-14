@@ -23,9 +23,9 @@ class UserProfilePatchTest extends ApiTestCase
             'username' => 'displaynameuser',
             'email' => 'displaynameuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setDisplayName('Original Name');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->displayName = 'Original Name';
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -49,10 +49,10 @@ class UserProfilePatchTest extends ApiTestCase
             'username' => 'patchuser',
             'email' => 'patchuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('Original bio');
-        $profile->setLocation('Original location');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = 'Original bio';
+        $profile->location = 'Original location';
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -76,10 +76,10 @@ class UserProfilePatchTest extends ApiTestCase
             'username' => 'locationuser',
             'email' => 'locationuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('My bio');
-        $profile->setLocation('Old City');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = 'My bio';
+        $profile->location = 'Old City';
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -103,8 +103,8 @@ class UserProfilePatchTest extends ApiTestCase
             'username' => 'visibilityuser',
             'email' => 'visibilityuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -127,10 +127,10 @@ class UserProfilePatchTest extends ApiTestCase
             'username' => 'multiuser',
             'email' => 'multiuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('Old bio');
-        $profile->setLocation('Old location');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = 'Old bio';
+        $profile->location = 'Old location';
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -253,8 +253,8 @@ class UserProfilePatchTest extends ApiTestCase
             'username' => 'nullbiouser',
             'email' => 'nullbiouser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('Existing bio');
+        $profile = $user->profile;
+        $profile->bio = 'Existing bio';
         $user->_save();
 
         $this->client->loginUser($user->_real());

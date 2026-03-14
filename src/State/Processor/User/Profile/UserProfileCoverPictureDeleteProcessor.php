@@ -26,7 +26,7 @@ readonly class UserProfileCoverPictureDeleteProcessor implements ProcessorInterf
         assert($profile !== null);
 
         // Detach cover picture from profile
-        $profile->setCoverPicture(null);
+        $profile->coverPicture = null;
         $this->entityManager->flush();
 
         // Remove the cover picture entity (VichUploader will handle file deletion)

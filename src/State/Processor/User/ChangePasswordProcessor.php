@@ -29,7 +29,7 @@ class ChangePasswordProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $data->getNewPassword()));
+        $user->password = $this->userPasswordHasher->hashPassword($user, $data->getNewPassword());
         $this->entityManager->flush();
     }
 }

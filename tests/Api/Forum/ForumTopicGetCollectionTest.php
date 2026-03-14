@@ -78,9 +78,9 @@ class ForumTopicGetCollectionTest extends ApiTestCase
         $newerTopic->_save();
 
         // Get IDs before request
-        $author1Id = $author1->getId();
-        $author2Id = $author2->getId();
-        $lastPostCreatorId = $lastPostCreator->getId();
+        $author1Id = $author1->id;
+        $author2Id = $author2->id;
+        $lastPostCreatorId = $lastPostCreator->id;
         $pinnedTopicId = $pinnedTopic->_real()->id;
         $newerTopicId = $newerTopic->_real()->id;
         $olderTopicId = $olderTopic->_real()->id;

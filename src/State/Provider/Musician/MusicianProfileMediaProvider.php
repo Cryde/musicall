@@ -35,7 +35,7 @@ readonly class MusicianProfileMediaProvider implements ProviderInterface
     {
         /** @var User|null $user */
         $user = $this->security->getUser();
-        $profile = $user?->getMusicianProfile();
+        $profile = $user?->musicianProfile;
 
         if ($operation instanceof CollectionOperationInterface) {
             return $this->provideCollection($profile);

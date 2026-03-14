@@ -40,7 +40,7 @@ class DeleteAccountPasswordValidValidator extends ConstraintValidator
             return;
         }
 
-        if ($user->getPassword() === null) {
+        if ($user->password === null) {
             return;
         }
 

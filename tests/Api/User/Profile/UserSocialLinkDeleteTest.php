@@ -24,7 +24,7 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'username' => 'deleteuser',
             'email' => 'deleteuser@test.com',
         ]);
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
         $link = UserSocialLinkFactory::new()->create([
             'profile' => $profile,
@@ -70,7 +70,7 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'username' => 'otheruser',
             'email' => 'otheruser@test.com',
         ]);
-        $ownerProfile = $owner->getProfile();
+        $ownerProfile = $owner->profile;
 
         $link = UserSocialLinkFactory::new()->create([
             'profile' => $ownerProfile,

@@ -28,7 +28,7 @@ readonly class EmailVerificationSendProcessor implements ProcessorInterface
         $user = $this->userRepository->findOneBy(['email' => $data->email]);
 
         // Silent return to avoid email enumeration
-        if ($user === null || $user->getConfirmationDatetime() !== null) {
+        if ($user === null || $user->confirmationDatetime !== null) {
             return;
         }
 

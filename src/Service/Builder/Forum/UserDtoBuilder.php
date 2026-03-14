@@ -20,9 +20,9 @@ readonly class UserDtoBuilder
     public function buildFromEntity(UserEntity $user): User
     {
         $dto = new User();
-        $dto->id = (string) $user->getId();
-        $dto->username = $user->getUsername();
-        $dto->deletionDatetime = $user->getDeletionDatetime();
+        $dto->id = (string) $user->id;
+        $dto->username = $user->username;
+        $dto->deletionDatetime = $user->deletionDatetime;
         $dto->profilePicture = $this->buildProfilePicture($user);
 
         return $dto;
@@ -33,7 +33,7 @@ readonly class UserDtoBuilder
      */
     private function buildProfilePicture(UserEntity $user): ?array
     {
-        $profilePicture = $user->getProfilePicture();
+        $profilePicture = $user->profilePicture;
         if (!$profilePicture) {
             return null;
         }

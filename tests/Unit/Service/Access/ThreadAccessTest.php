@@ -12,8 +12,10 @@ class ThreadAccessTest extends TestCase
 {
     public function testIsOneOfParticipant(): void
     {
-        $user1 = (new User())->setId('user_id_1');
-        $user2 = (new User())->setId('user_id_2');
+        $user1 = new User();
+        $user1->id = 'user_id_1';
+        $user2 = new User();
+        $user2->id = 'user_id_2';
 
         $participant = new MessageParticipant();
         $participant->participant = $user1;

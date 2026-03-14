@@ -50,7 +50,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $profileId = $musicianProfile->_real()->id;
@@ -118,7 +118,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
             'position' => 1,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $profileId = $musicianProfile->_real()->id;
@@ -169,7 +169,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
             'identifier' => 'view2',
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $profileId = $musicianProfile->_real()->id;

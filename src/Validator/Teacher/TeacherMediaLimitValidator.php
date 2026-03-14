@@ -33,7 +33,7 @@ class TeacherMediaLimitValidator extends ConstraintValidator
             return;
         }
 
-        $profile = $currentUser->getTeacherProfile();
+        $profile = $currentUser->teacherProfile;
         if ($profile === null) {
             return;
         }

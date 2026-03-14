@@ -28,11 +28,11 @@ readonly class UserProfileCoverPictureProcessor implements ProcessorInterface
         /** @var UserProfileCoverPictureUpload $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
-        $previousCoverPicture = $profile->getCoverPicture();
+        $previousCoverPicture = $profile->coverPicture;
         if ($previousCoverPicture !== null) {
-            $profile->setCoverPicture(null);
+            $profile->coverPicture = null;
             $this->entityManager->flush();
             $this->entityManager->remove($previousCoverPicture);
             $this->entityManager->flush();
@@ -43,7 +43,7 @@ readonly class UserProfileCoverPictureProcessor implements ProcessorInterface
         $coverPicture->setImageFile($data->imageFile);
         $coverPicture->profile = $profile;
 
-        $profile->setCoverPicture($coverPicture);
+        $profile->coverPicture = $coverPicture;
         $this->entityManager->persist($coverPicture);
         $this->entityManager->flush();
 

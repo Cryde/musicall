@@ -29,7 +29,7 @@ class UserDeletePictureTest extends ApiTestCase
             'imageName' => 'test-picture.jpg',
             'imageSize' => 12345,
         ])->_real();
-        $user->setProfilePicture($profilePicture);
+        $user->profilePicture = $profilePicture;
 
         // Flush to persist the bidirectional relationship
         $em = $this->getEntityManager();
@@ -37,11 +37,11 @@ class UserDeletePictureTest extends ApiTestCase
         $em->clear();
 
         // Reload user without VichUploader file injection issues
-        $user = static::getContainer()->get(UserRepository::class)->find($user->getId());
+        $user = static::getContainer()->get(UserRepository::class)->find($user->id);
 
         // pretest
         $this->assertSame(1, $this->getProfilePictureCount());
-        $this->assertNotNull($user->getProfilePicture());
+        $this->assertNotNull($user->profilePicture);
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/profile-picture');
@@ -66,7 +66,7 @@ class UserDeletePictureTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create()->_real();
 
         // pretest
-        $this->assertNull($user->getProfilePicture());
+        $this->assertNull($user->profilePicture);
         $this->assertSame(0, $this->getProfilePictureCount());
 
         $this->client->loginUser($user);

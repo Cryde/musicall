@@ -32,7 +32,7 @@ class UsernameChangeThrottleValidator extends ConstraintValidator
             return;
         }
 
-        $lastChangeDate = $currentUser->getUsernameChangedDatetime();
+        $lastChangeDate = $currentUser->usernameChangedDatetime;
         if ($lastChangeDate === null) {
             return;
         }

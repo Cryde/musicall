@@ -90,13 +90,13 @@ class SendInactivityReminderCommand extends Command
                 continue;
             }
 
-            $lastLoginDate = $user->getLastLoginDatetime()?->format('d/m/Y') ?? 'N/A';
+            $lastLoginDate = $user->lastLoginDatetime?->format('d/m/Y') ?? 'N/A';
 
             if ($dryRun) {
                 $output->writeln(sprintf(
                     '  [DRY-RUN] Would send to: %s (%s) - last login: %s',
-                    $user->getUsername(),
-                    $user->getEmail(),
+                    $user->username,
+                    $user->email,
                     $lastLoginDate
                 ));
                 $sentCount++;
@@ -105,8 +105,8 @@ class SendInactivityReminderCommand extends Command
 
             try {
                 $this->inactivityReminderEmail->send(
-                    $user->getEmail(),
-                    $user->getUsername(),
+                    $user->email,
+                    $user->username,
                     $lastLoginDate
                 );
                 $this->userEmailLogService->log($user, UserEmailType::INACTIVITY_REMINDER);
@@ -114,14 +114,14 @@ class SendInactivityReminderCommand extends Command
 
                 $output->writeln(sprintf(
                     '  <info>Sent to: %s (%s)</info>',
-                    $user->getUsername(),
-                    $user->getEmail()
+                    $user->username,
+                    $user->email
                 ));
             } catch (\Throwable $e) {
                 $errorCount++;
                 $output->writeln(sprintf(
                     '  <error>Failed to send to %s: %s</error>',
-                    $user->getEmail(),
+                    $user->email,
                     $e->getMessage()
                 ));
             }

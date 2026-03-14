@@ -20,98 +20,27 @@ class UserEmailLog
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?string $id = null;
+    public ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private User $user;
+    public User $user;
 
     #[ORM\Column(type: Types::STRING, length: 50, enumType: UserEmailType::class)]
-    private UserEmailType $emailType;
+    public UserEmailType $emailType;
 
     #[ORM\Column(type: Types::STRING, length: 36, nullable: true)]
-    private ?string $referenceId = null;
+    public ?string $referenceId = null;
 
     /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $metadata = null;
+    public ?array $metadata = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private DateTimeImmutable $sentDatetime;
+    public DateTimeImmutable $sentDatetime;
 
     public function __construct()
     {
         $this->sentDatetime = new DateTimeImmutable();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function setUser(User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getEmailType(): UserEmailType
-    {
-        return $this->emailType;
-    }
-
-    public function setEmailType(UserEmailType $emailType): self
-    {
-        $this->emailType = $emailType;
-
-        return $this;
-    }
-
-    public function getReferenceId(): ?string
-    {
-        return $this->referenceId;
-    }
-
-    public function setReferenceId(?string $referenceId): self
-    {
-        $this->referenceId = $referenceId;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function getMetadata(): ?array
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * @param array<string, mixed>|null $metadata
-     */
-    public function setMetadata(?array $metadata): self
-    {
-        $this->metadata = $metadata;
-
-        return $this;
-    }
-
-    public function getSentDatetime(): DateTimeImmutable
-    {
-        return $this->sentDatetime;
-    }
-
-    public function setSentDatetime(DateTimeImmutable $sentDatetime): self
-    {
-        $this->sentDatetime = $sentDatetime;
-
-        return $this;
     }
 }

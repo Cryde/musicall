@@ -25,7 +25,7 @@ class UsernameChangedListenerTest extends TestCase
     public function test_it_sends_email_when_username_changes(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->email = 'test@example.com';
 
         $oldUsername = 'old_username';
         $newUsername = 'new_username';

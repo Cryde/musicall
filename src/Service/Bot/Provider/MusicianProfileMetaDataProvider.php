@@ -34,7 +34,7 @@ readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInt
         }
 
         $user = $musicianProfile->user;
-        $username = $user->getUsername();
+        $username = $user->username;
 
         $instrumentNames = [];
         foreach ($musicianProfile->instruments as $instrument) {
@@ -51,7 +51,7 @@ readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInt
         }
 
         $cover = null;
-        $profilePicture = $user->getProfilePicture();
+        $profilePicture = $user->profilePicture;
         if ($profilePicture && $path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {
             $cover = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
         }

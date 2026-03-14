@@ -24,16 +24,16 @@ class UserProfilePictureProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $previousProfilePicture = $user->getProfilePicture() ?: null;
+        $previousProfilePicture = $user->profilePicture ?: null;
         if ($previousProfilePicture) {
-            $user->setProfilePicture(null);
+            $user->profilePicture = null;
             $this->entityManager->flush();
             $this->entityManager->remove($previousProfilePicture);
             $this->entityManager->flush();
         }
 
         $data->user = $user;
-        $user->setProfilePicture($data);
+        $user->profilePicture = $data;
         $this->entityManager->flush();
 
         return $data;

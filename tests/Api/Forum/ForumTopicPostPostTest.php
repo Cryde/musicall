@@ -42,7 +42,7 @@ class ForumTopicPostPostTest extends ApiTestCase
         $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->_real()]));
         $this->assertCount(0, $forumPostRepository->findAll());
 
-        $userId = $user1->getId();
+        $userId = $user1->id;
         $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [

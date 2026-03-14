@@ -52,7 +52,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        if ($user->getTeacherProfile()) {
+        if ($user->teacherProfile) {
             throw new BadRequestHttpException('Vous avez déjà un profil professeur');
         }
 

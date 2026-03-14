@@ -19,14 +19,14 @@ class UserRequestPasswordChangeTest extends ApiTestCase
     {
         /** @var User $user */
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
-        $this->assertNull($user->getResetRequestDatetime());
+        $this->assertNull($user->resetRequestDatetime);
 
         $this->client->jsonRequest('POST', '/api/users/request-reset-password', [
             'login' => 'base_user_1',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $this->assertNotNull($user->getResetRequestDatetime());
+        $this->assertNotNull($user->resetRequestDatetime);
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
         $this->assertEmailHeaderSame($email, 'templateId', '2');
@@ -39,14 +39,14 @@ class UserRequestPasswordChangeTest extends ApiTestCase
     {
         /** @var User $user */
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
-        $this->assertNull($user->getResetRequestDatetime());
+        $this->assertNull($user->resetRequestDatetime);
 
         $this->client->jsonRequest('POST', '/api/users/request-reset-password', [
             'login' => 'base_user1@email.com',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $this->assertNotNull($user->getResetRequestDatetime());
+        $this->assertNotNull($user->resetRequestDatetime);
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage();
         $this->assertEmailHeaderSame($email, 'templateId', '2');

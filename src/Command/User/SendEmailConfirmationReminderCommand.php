@@ -101,8 +101,8 @@ class SendEmailConfirmationReminderCommand extends Command
                 $output->writeln(sprintf(
                     '  [DRY-RUN] Would send reminder #%d to: %s (%s)',
                     $reminderCount + 1,
-                    $user->getUsername(),
-                    $user->getEmail()
+                    $user->username,
+                    $user->email
                 ));
                 $sentCount++;
                 continue;
@@ -110,10 +110,10 @@ class SendEmailConfirmationReminderCommand extends Command
 
             try {
                 $plainCode = $this->codeGenerator->generate($user);
-                $verificationUrl = $this->frontendUrl . '/verify-email?' . http_build_query(['email' => $user->getEmail()]);
+                $verificationUrl = $this->frontendUrl . '/verify-email?' . http_build_query(['email' => $user->email]);
                 $this->emailVerificationReminderEmail->send(
-                    $user->getEmail(),
-                    $user->getUsername(),
+                    $user->email,
+                    $user->username,
                     $plainCode,
                     $verificationUrl,
                 );
@@ -128,14 +128,14 @@ class SendEmailConfirmationReminderCommand extends Command
                 $output->writeln(sprintf(
                     '  <info>Sent reminder #%d to: %s (%s)</info>',
                     $reminderCount + 1,
-                    $user->getUsername(),
-                    $user->getEmail()
+                    $user->username,
+                    $user->email
                 ));
             } catch (\Throwable $e) {
                 $errorCount++;
                 $output->writeln(sprintf(
                     '  <error>Failed to send to %s: %s</error>',
-                    $user->getEmail(),
+                    $user->email,
                     $e->getMessage()
                 ));
             }

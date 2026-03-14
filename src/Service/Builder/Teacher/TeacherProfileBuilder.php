@@ -37,14 +37,14 @@ readonly class TeacherProfileBuilder
         $user = $profile->user;
         $dto = new PublicTeacherProfile();
 
-        $dto->username = $user->getUsername();
-        $dto->userId = (string) $user->getId();
+        $dto->username = $user->username;
+        $dto->userId = (string) $user->id;
         $dto->creationDatetime = $profile->creationDatetime;
         $dto->updateDatetime = $profile->updateDatetime;
 
         // Profile picture
-        if ($user->getProfilePicture()) {
-            $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
+        if ($user->profilePicture) {
+            $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
             }

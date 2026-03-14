@@ -25,9 +25,9 @@ readonly class UserProfileCoverPictureDeleteProvider implements ProviderInterfac
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
-        $coverPicture = $profile->getCoverPicture();
+        $coverPicture = $profile->coverPicture;
 
         if ($coverPicture === null) {
             throw new NotFoundHttpException('Aucune photo de couverture à supprimer');

@@ -80,7 +80,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'note' => 'note announce 2',
                     'author' => [
                         '@type' => 'Author',
-                        'id' => $user1->_real()->getId(),
+                        'id' => $user1->_real()->id,
                         'username' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
@@ -107,7 +107,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'note' => 'note announce 1',
                     'author' => [
                         '@type' => 'Author',
-                        'id' => $user1->_real()->getId(),
+                        'id' => $user1->_real()->id,
                         'username' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],

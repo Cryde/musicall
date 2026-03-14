@@ -81,8 +81,8 @@ readonly class PublicationListItemBuilder
     private function buildAuthor(User $user): Author
     {
         $dto = new Author();
-        $dto->username = (string) $user->getUsername();
-        $dto->deletionDatetime = $user->getDeletionDatetime();
+        $dto->username = (string) $user->username;
+        $dto->deletionDatetime = $user->deletionDatetime;
 
         return $dto;
     }

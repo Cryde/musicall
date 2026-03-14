@@ -39,7 +39,7 @@ readonly class PublicationProvider implements ProviderInterface
         if ($publication->status !== Publication::STATUS_ONLINE) {
             /** @var User|null $user */
             $user = $this->security->getUser();
-            if (!$user || $publication->author->getId() !== $user->getId()) {
+            if (!$user || $publication->author->id !== $user->id) {
                 throw new AccessDeniedHttpException('Vous n\'avez pas accès à cette publication');
             }
         }

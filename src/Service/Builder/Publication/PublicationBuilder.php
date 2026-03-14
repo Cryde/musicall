@@ -93,8 +93,8 @@ readonly class PublicationBuilder
     private function buildAuthor(User $user): Author
     {
         $author = new Author();
-        $author->username = (string) $user->getUsername();
-        $author->deletionDatetime = $user->getDeletionDatetime();
+        $author->username = (string) $user->username;
+        $author->deletionDatetime = $user->deletionDatetime;
 
         return $author;
     }

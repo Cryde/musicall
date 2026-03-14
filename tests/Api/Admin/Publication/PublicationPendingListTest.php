@@ -75,7 +75,7 @@ class PublicationPendingListTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $admin->getId(),
+                        '@id'      => '/api/users/' . $admin->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

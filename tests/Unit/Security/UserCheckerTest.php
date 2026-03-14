@@ -19,11 +19,11 @@ class UserCheckerTest extends TestCase
         $checker->checkPreAuth($this->buildNonInternalUser());
 
         $user = new User();
-        $user->setConfirmationDatetime(new \DateTime());
+        $user->confirmationDatetime = new \DateTime();
         $checker->checkPreAuth($user);
 
-        $user->setConfirmationDatetime(null);
-        $user->setEmail('test@example.com');
+        $user->confirmationDatetime = null;
+        $user->email = 'test@example.com';
         $this->expectException(CustomUserMessageAccountStatusException::class);
         $this->expectExceptionMessage('account_not_verified');
         $checker->checkPreAuth($user);

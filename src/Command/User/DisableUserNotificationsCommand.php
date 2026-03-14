@@ -49,26 +49,26 @@ class DisableUserNotificationsCommand extends Command
             return Command::FAILURE;
         }
 
-        if (!$preference = $user->getNotificationPreference()) {
+        if (!$preference = $user->notificationPreference) {
             $preference = new UserNotificationPreference();
-            $preference->setUser($user);
-            $user->setNotificationPreference($preference);
+            $preference->user = $user;
+            $user->notificationPreference = $preference;
             $this->entityManager->persist($preference);
         }
 
-        $preference->setSiteNews(false);
-        $preference->setWeeklyRecap(false);
-        $preference->setMessageReceived(false);
-        $preference->setPublicationComment(false);
-        $preference->setForumReply(false);
-        $preference->setMarketing(false);
-        $preference->setActivityReminder(false);
+        $preference->siteNews = false;
+        $preference->weeklyRecap = false;
+        $preference->messageReceived = false;
+        $preference->publicationComment = false;
+        $preference->forumReply = false;
+        $preference->marketing = false;
+        $preference->activityReminder = false;
 
         $this->entityManager->flush();
 
         $output->writeln(sprintf(
             '<info>All notifications disabled for user "%s"</info>',
-            $user->getUsername()
+            $user->username
         ));
 
         return Command::SUCCESS;

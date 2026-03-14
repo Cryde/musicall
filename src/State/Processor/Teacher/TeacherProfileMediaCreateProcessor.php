@@ -31,7 +31,7 @@ readonly class TeacherProfileMediaCreateProcessor implements ProcessorInterface
         /** @var Media $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        if (!$profile = $user->getTeacherProfile()) {
+        if (!$profile = $user->teacherProfile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }
 

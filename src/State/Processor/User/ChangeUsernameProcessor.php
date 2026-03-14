@@ -35,7 +35,7 @@ readonly class ChangeUsernameProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $oldUsername = $user->getUsername();
+        $oldUsername = $user->username;
         $newUsername = $data->newUsername;
 
         if ($oldUsername === $newUsername) {
@@ -48,8 +48,8 @@ readonly class ChangeUsernameProcessor implements ProcessorInterface
         }
 
         $changedAt = new \DateTimeImmutable();
-        $user->setUsername($newUsername);
-        $user->setUsernameChangedDatetime($changedAt);
+        $user->username = $newUsername;
+        $user->usernameChangedDatetime = $changedAt;
         $this->entityManager->flush();
 
         $this->eventDispatcher->dispatch(new UsernameChangedEvent(

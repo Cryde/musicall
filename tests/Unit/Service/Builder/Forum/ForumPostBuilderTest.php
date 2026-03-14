@@ -15,11 +15,13 @@ class ForumPostBuilderTest extends TestCase
 
         $forumTopic = new ForumTopic();
         $forumTopic->title = 'forum_topic';
-        $author = (new User())->setId('user_id')->setUsername('user_username');
+        $author = new User();
+        $author->id = 'user_id';
+        $author->username = 'user_username';
         $result = $builder->build($forumTopic, $author, 'content_post');
 
         $this->assertSame('content_post', $result->content);
-        $this->assertSame('user_id', $result->creator->getId());
+        $this->assertSame('user_id', $result->creator->id);
         $this->assertSame('user_username', $result->creator->getUserIdentifier());
         $this->assertSame('forum_topic', $result->topic->title);
     }

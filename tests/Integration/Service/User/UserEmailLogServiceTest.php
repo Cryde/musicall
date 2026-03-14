@@ -35,10 +35,10 @@ class UserEmailLogServiceTest extends KernelTestCase
 
         $log = $this->getRepository()->findOneByUserAndType($user, UserEmailType::WELCOME);
         $this->assertNotNull($log);
-        $this->assertSame($user->getId(), $log->getUser()->getId());
-        $this->assertSame(UserEmailType::WELCOME, $log->getEmailType());
-        $this->assertNull($log->getReferenceId());
-        $this->assertNull($log->getMetadata());
+        $this->assertSame($user->id, $log->user->id);
+        $this->assertSame(UserEmailType::WELCOME, $log->emailType);
+        $this->assertNull($log->referenceId);
+        $this->assertNull($log->metadata);
     }
 
     public function test_log_creates_entry_with_reference_id(): void
@@ -50,7 +50,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
         $log = $this->getRepository()->findOneByUserAndType($user, UserEmailType::ANNOUNCE_RENEWAL_REMINDER, $announceId);
         $this->assertNotNull($log);
-        $this->assertSame($announceId, $log->getReferenceId());
+        $this->assertSame($announceId, $log->referenceId);
     }
 
     public function test_log_creates_entry_with_metadata(): void
@@ -62,7 +62,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
         $log = $this->getRepository()->findOneByUserAndType($user, UserEmailType::ANNOUNCE_RENEWAL_REMINDER, 'announce-123');
         $this->assertNotNull($log);
-        $this->assertSame($metadata, $log->getMetadata());
+        $this->assertSame($metadata, $log->metadata);
     }
 
     public function test_has_been_sent_returns_false_when_no_log_exists(): void

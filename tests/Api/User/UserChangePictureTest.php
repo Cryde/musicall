@@ -17,14 +17,14 @@ class UserChangePictureTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
 
-        $this->assertNull($user1->getProfilePicture());
+        $this->assertNull($user1->profilePicture);
 
         $this->client->loginUser($user1);
         $this->client->request('POST', '/api/user_profile_pictures', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ], );
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertNotNull($user1->getProfilePicture());
+        $this->assertNotNull($user1->profilePicture);
     }
 
     public function test_change_picture_too_big(): void

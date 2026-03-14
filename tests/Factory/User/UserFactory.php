@@ -33,11 +33,10 @@ final class UserFactory extends PersistentProxyObjectFactory
             $reflection = new \ReflectionProperty($user, 'profile');
             if (!$reflection->isInitialized($user)) {
                 $profile = new UserProfile();
-                $profile->setCreationDatetime($user->getCreationDatetime()
-                    ? \DateTimeImmutable::createFromMutable($user->getCreationDatetime())
-                    : new \DateTimeImmutable()
-                );
-                $user->setProfile($profile);
+                $profile->creationDatetime = $user->creationDatetime
+                    ? \DateTimeImmutable::createFromMutable($user->creationDatetime)
+                    : new \DateTimeImmutable();
+                $user->profile = $profile;
             }
         });
     }

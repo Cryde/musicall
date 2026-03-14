@@ -37,7 +37,7 @@ class UserCourseDeleteProvider implements ProviderInterface
             throw new NotFoundHttpException('Course not found');
         }
 
-        if ($publication->author->getId() !== $user->getId()) {
+        if ($publication->author->id !== $user->id) {
             throw new AccessDeniedHttpException('You are not the owner of this course');
         }
 

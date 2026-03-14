@@ -49,8 +49,8 @@ class RegisterConfirmCodeTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         // user is now confirmed
-        $userRefreshed = static::getContainer()->get(UserRepository::class)->find($user->getId());
-        $this->assertNotNull($userRefreshed->getConfirmationDatetime());
+        $userRefreshed = static::getContainer()->get(UserRepository::class)->find($user->id);
+        $this->assertNotNull($userRefreshed->confirmationDatetime);
 
         // verification code is marked as used
         $verificationCodeRepository = static::getContainer()->get(EmailVerificationCodeRepository::class);

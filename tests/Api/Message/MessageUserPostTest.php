@@ -23,7 +23,7 @@ class MessageUserPostTest extends ApiTestCase
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
         $this->client->jsonRequest('POST', '/api/messages/user', [
-            'recipient' => '/api/users/' . $user1->getId(),
+            'recipient' => '/api/users/' . $user1->id,
             'content'   => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -43,7 +43,7 @@ class MessageUserPostTest extends ApiTestCase
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user2]));
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
-            'recipient' => '/api/users/' . $user2->getId(),
+            'recipient' => '/api/users/' . $user2->id,
             'content' => 'new content from user1',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $resultUser1 = $messageThreadMetaRepository->findBy(['user' => $user1]);
@@ -63,9 +63,9 @@ class MessageUserPostTest extends ApiTestCase
             'id'                => $messages[0]->id,
             'creation_datetime' => $messages[0]->creationDatetime->format('c'),
             'author'            => [
-                '@id' => '/api/users/' . $user1->getId(),
+                '@id' => '/api/users/' . $user1->id,
                 '@type' => 'User',
-                'id'       => $user1->getId(),
+                'id'       => $user1->id,
                 'username' => 'base_user_1',
             ],
             'thread'            => [
@@ -99,7 +99,7 @@ class MessageUserPostTest extends ApiTestCase
         $this->assertCount(1, $messageThreadMetaRepository->findBy(['user' => $user2]));
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
-            'recipient' => '/api/users/' . $user2->getId(),
+            'recipient' => '/api/users/' . $user2->id,
             'content' => 'new content from user1',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $resultUser1 = $messageThreadMetaRepository->findBy(['user' => $user1]);
@@ -120,9 +120,9 @@ class MessageUserPostTest extends ApiTestCase
             'id'                => $messages[0]->id,
             'creation_datetime' => $messages[0]->creationDatetime->format('c'),
             'author'            => [
-                'id'       => $user1->getId(),
+                'id'       => $user1->id,
                 'username' => 'base_user_1',
-                '@id' => '/api/users/' . $user1->getId(),
+                '@id' => '/api/users/' . $user1->id,
                 '@type' => 'User',
             ],
             'thread'            => [
@@ -144,7 +144,7 @@ class MessageUserPostTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
-            'recipient' => '/api/users/' . $user2->getId(),
+            'recipient' => '/api/users/' . $user2->id,
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -178,7 +178,7 @@ class MessageUserPostTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
-            'recipient' => '/api/users/' . $user2->getId(),
+            'recipient' => '/api/users/' . $user2->id,
             'content' => 'Hello deleted user',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -207,7 +207,7 @@ class MessageUserPostTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
-            'recipient' => '/api/users/' . $user1->getId(),
+            'recipient' => '/api/users/' . $user1->id,
             'content' => 'Hello myself',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

@@ -43,7 +43,7 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        if ($user->getMusicianProfile()) {
+        if ($user->musicianProfile) {
             throw new BadRequestHttpException('Vous avez déjà un profil musicien');
         }
 

@@ -33,7 +33,7 @@ class MusicianMediaLimitValidator extends ConstraintValidator
             return;
         }
 
-        $profile = $currentUser->getMusicianProfile();
+        $profile = $currentUser->musicianProfile;
         if ($profile === null) {
             return;
         }

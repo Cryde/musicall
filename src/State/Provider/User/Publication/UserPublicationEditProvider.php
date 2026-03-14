@@ -38,7 +38,7 @@ class UserPublicationEditProvider implements ProviderInterface
             throw new NotFoundHttpException('Publication not found');
         }
 
-        if ($publication->author->getId() !== $user->getId()) {
+        if ($publication->author->id !== $user->id) {
             throw new AccessDeniedHttpException('You are not the owner of this publication');
         }
 

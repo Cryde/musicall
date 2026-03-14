@@ -35,7 +35,7 @@ class NotSelfRecipientValidator extends ConstraintValidator
             return;
         }
 
-        if ($value->recipient->getId() === $currentUser->getId()) {
+        if ($value->recipient->id === $currentUser->id) {
             $this->context->buildViolation($constraint->message)
                 ->setCode(self::ERROR_CODE_SELF_RECIPIENT)
                 ->addViolation();

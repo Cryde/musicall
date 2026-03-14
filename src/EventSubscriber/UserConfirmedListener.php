@@ -19,6 +19,6 @@ readonly class UserConfirmedListener
     public function __invoke(UserConfirmedEvent $event): void
     {
         $user = $event->user;
-        $this->welcomeEmail->send($user->getEmail(), $user->getUsername());
+        $this->welcomeEmail->send($user->email, $user->username);
     }
 }

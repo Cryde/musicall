@@ -35,7 +35,7 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
     {
         /** @var User|null $user */
         $user = $this->security->getUser();
-        $profile = $user?->getTeacherProfile();
+        $profile = $user?->teacherProfile;
 
         if ($operation instanceof CollectionOperationInterface) {
             return $this->provideCollection($profile);

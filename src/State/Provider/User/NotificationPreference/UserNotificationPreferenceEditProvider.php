@@ -25,7 +25,7 @@ readonly class UserNotificationPreferenceEditProvider implements ProviderInterfa
     {
         /** @var User|null $user */
         $user = $this->security->getUser();
-        $preference = $user?->getNotificationPreference();
+        $preference = $user?->notificationPreference;
 
         if (!$preference) {
             return new UserNotificationPreferenceEdit();
@@ -38,13 +38,13 @@ readonly class UserNotificationPreferenceEditProvider implements ProviderInterfa
     {
         $dto = new UserNotificationPreferenceEdit();
 
-        $dto->siteNews = $preference->isSiteNews();
-        $dto->weeklyRecap = $preference->isWeeklyRecap();
-        $dto->messageReceived = $preference->isMessageReceived();
-        $dto->publicationComment = $preference->isPublicationComment();
-        $dto->forumReply = $preference->isForumReply();
-        $dto->marketing = $preference->isMarketing();
-        $dto->activityReminder = $preference->isActivityReminder();
+        $dto->siteNews = $preference->siteNews;
+        $dto->weeklyRecap = $preference->weeklyRecap;
+        $dto->messageReceived = $preference->messageReceived;
+        $dto->publicationComment = $preference->publicationComment;
+        $dto->forumReply = $preference->forumReply;
+        $dto->marketing = $preference->marketing;
+        $dto->activityReminder = $preference->activityReminder;
 
         return $dto;
     }

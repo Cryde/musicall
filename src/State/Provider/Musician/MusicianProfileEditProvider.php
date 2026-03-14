@@ -31,7 +31,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
         /** @var User $user */
-        if (!$musicianProfile = $user->getMusicianProfile()) {
+        if (!$musicianProfile = $user->musicianProfile) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
 

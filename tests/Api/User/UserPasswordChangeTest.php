@@ -20,16 +20,16 @@ class UserPasswordChangeTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'token' => 'token-abc', 'resetRequestDatetime' => new \DateTime('2 minutes ago')])
             ->_disableAutoRefresh();
 
-        $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->getPassword());
+        $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->password);
 
         $this->client->jsonRequest('POST', '/api/users/reset-password/token-abc', [
             'password' => 'new_password',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $this->assertNotSame(UserFactory::DEFAULT_PASSWORD, $user->getPassword());
-        $this->assertNull($user->getResetRequestDatetime());
-        $this->assertNull($user->getToken());
+        $this->assertNotSame(UserFactory::DEFAULT_PASSWORD, $user->password);
+        $this->assertNull($user->resetRequestDatetime);
+        $this->assertNull($user->token);
     }
 
     public function test_password_change_with_too_old_token(): void
@@ -37,7 +37,7 @@ class UserPasswordChangeTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'token' => 'token-abc', 'resetRequestDatetime' => new \DateTime('17 minutes ago')])
             ->_disableAutoRefresh();
 
-        $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->getPassword());
+        $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->password);
 
         $this->client->jsonRequest('POST', '/api/users/reset-password/token-abc', [
             'password' => 'new_password',
@@ -54,9 +54,9 @@ class UserPasswordChangeTest extends ApiTestCase
             'title' => 'An error occurred',
         ]);
 
-        $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->getPassword());
-        $this->assertNotNull($user->getResetRequestDatetime());
-        $this->assertNotNull($user->getToken());
+        $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->password);
+        $this->assertNotNull($user->resetRequestDatetime);
+        $this->assertNotNull($user->token);
     }
 
     public function test_password_change_with_weak_password(): void

@@ -34,10 +34,10 @@ class UserRegisterTest extends ApiTestCase
 
         $results = $userRepository->findAll();
         $this->assertCount(1, $results);
-        $this->assertSame('super_username', $results[0]->getUsername());
-        $this->assertSame('super_email@mail.com', $results[0]->getEmail());
-        $this->assertNotSame('password', $results[0]->getPassword()); // we assert that we don't record plain text password in db
-        $this->assertNull($results[0]->getConfirmationDatetime()); // email not yet confirmed
+        $this->assertSame('super_username', $results[0]->username);
+        $this->assertSame('super_email@mail.com', $results[0]->email);
+        $this->assertNotSame('password', $results[0]->password); // we assert that we don't record plain text password in db
+        $this->assertNull($results[0]->confirmationDatetime); // email not yet confirmed
 
         // a verification code was created
         $verificationCode = $verificationCodeRepository->findLatestUnusedForUser($results[0]);

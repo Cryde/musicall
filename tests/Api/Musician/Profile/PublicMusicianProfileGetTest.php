@@ -49,7 +49,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $musicianAnnounce = MusicianAnnounceFactory::new()->asBand()->create([
@@ -84,7 +84,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             '@id' => '/api/user/profile/publicmusicianuser/musician',
             '@type' => 'PublicMusicianProfile',
             'username' => 'publicmusicianuser',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'availability_status' => 'available_for_sessions',
             'availability_status_label' => 'Disponible pour sessions/concerts',
             'instruments' => [
@@ -154,7 +154,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->request('GET', '/api/user/profile/minimalmusicianuser/musician');
@@ -165,7 +165,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             '@id' => '/api/user/profile/minimalmusicianuser/musician',
             '@type' => 'PublicMusicianProfile',
             'username' => 'minimalmusicianuser',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'instruments' => [],
             'styles' => [],
             'musician_announces' => [],
@@ -227,7 +227,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         // No login - public endpoint
@@ -239,7 +239,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             '@id' => '/api/user/profile/publicaccessuser/musician',
             '@type' => 'PublicMusicianProfile',
             'username' => 'publicaccessuser',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'availability_status' => 'looking_for_band',
             'availability_status_label' => 'Cherche un groupe',
             'instruments' => [],

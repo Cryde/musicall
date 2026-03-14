@@ -13,7 +13,7 @@ class UserTokenGenerator
 
     public function generate(User $user): void
     {
-        $user->setToken(sha1(random_bytes(10)));
+        $user->token = sha1(random_bytes(10));
         $this->entityManager->flush();
     }
 }

@@ -27,13 +27,13 @@ readonly class MusicianProfileDeleteProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getMusicianProfile();
+        $profile = $user->musicianProfile;
 
         if (!$profile) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
 
-        $user->setMusicianProfile(null);
+        $user->musicianProfile = null;
         $this->entityManager->remove($profile);
         $this->entityManager->flush();
 

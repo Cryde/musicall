@@ -40,7 +40,7 @@ class UserPublicationPreviewProvider implements ProviderInterface
             throw new NotFoundHttpException('Publication not found');
         }
 
-        $isOwner = $publication->author->getId() === $user->getId();
+        $isOwner = $publication->author->id === $user->id;
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
         if (!$isOwner && !$isAdmin) {

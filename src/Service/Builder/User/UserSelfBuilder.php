@@ -20,13 +20,13 @@ readonly class UserSelfBuilder
     public function buildFromEntity(User $user): UserSelf
     {
         $dto = new UserSelf();
-        $dto->id = (string) $user->getId();
-        $dto->username = $user->getUsername();
-        $dto->email = $user->getEmail();
+        $dto->id = (string) $user->id;
+        $dto->username = $user->username;
+        $dto->email = $user->email;
         $dto->roles = $user->getRoles();
         $dto->profilePicture = $this->buildProfilePicture($user);
-        $dto->usernameChangedDatetime = $user->getUsernameChangedDatetime();
-        $dto->hasPassword = $user->getPassword() !== null;
+        $dto->usernameChangedDatetime = $user->usernameChangedDatetime;
+        $dto->hasPassword = $user->password !== null;
 
         return $dto;
     }
@@ -36,7 +36,7 @@ readonly class UserSelfBuilder
      */
     private function buildProfilePicture(User $user): ?array
     {
-        $profilePicture = $user->getProfilePicture();
+        $profilePicture = $user->profilePicture;
         if (!$profilePicture) {
             return null;
         }

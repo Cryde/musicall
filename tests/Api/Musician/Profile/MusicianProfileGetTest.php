@@ -44,7 +44,7 @@ class MusicianProfileGetTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
         $profileId = $musicianProfile->_real()->id;
 
@@ -92,7 +92,7 @@ class MusicianProfileGetTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
         $profileId = $musicianProfile->_real()->id;
 

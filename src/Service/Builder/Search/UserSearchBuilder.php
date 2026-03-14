@@ -20,8 +20,8 @@ class UserSearchBuilder
     public function build(User $user): UserSearch
     {
         $userSearch = new UserSearch();
-        $userSearch->id = (string) $user->getId();
-        $userSearch->username = $user->getUsername();
+        $userSearch->id = (string) $user->id;
+        $userSearch->username = $user->username;
 
         return $userSearch;
     }

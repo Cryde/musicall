@@ -34,7 +34,7 @@ readonly class EmailVerificationCheckProcessor implements ProcessorInterface
             throw new BadRequestHttpException('no_code_found');
         }
 
-        if ($user->getConfirmationDatetime() !== null) {
+        if ($user->confirmationDatetime !== null) {
             throw new BadRequestHttpException('already_verified');
         }
 

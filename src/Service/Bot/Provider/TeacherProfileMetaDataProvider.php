@@ -36,7 +36,7 @@ readonly class TeacherProfileMetaDataProvider implements BotMetaDataProviderInte
         }
 
         $user = $teacherProfile->user;
-        $username = $user->getUsername();
+        $username = $user->username;
 
         $instruments = $teacherProfile->instruments;
         $instrumentNames = [];
@@ -54,7 +54,7 @@ readonly class TeacherProfileMetaDataProvider implements BotMetaDataProviderInte
         }
 
         $cover = null;
-        $profilePicture = $user->getProfilePicture();
+        $profilePicture = $user->profilePicture;
         if ($profilePicture) {
             $path = $this->uploaderHelper->asset($profilePicture, 'imageFile');
             if ($path !== null) {

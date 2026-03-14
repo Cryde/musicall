@@ -35,9 +35,9 @@ readonly class MessageSentListener
         $messageUrl = $baseUrl . 'messages/' . $thread->id;
 
         $this->messageReceivedEmail->send(
-            $recipient->getEmail(),
-            $recipient->getUsername(),
-            $sender->getUsername(),
+            $recipient->email,
+            $recipient->username,
+            $sender->username,
             $messageUrl
         );
     }

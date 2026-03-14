@@ -29,7 +29,7 @@ class MessageThreadMetaPatchProcessor implements ProcessorInterface
         /** @var MessageThreadMeta $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        if ($user->getId() !== $data->user->getId()) {
+        if ($user->id !== $data->user->id) {
             throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
         }
         $this->entityManager->flush();

@@ -79,7 +79,7 @@ class MessageSenderProcedure
     {
         foreach ($thread->messageParticipants as $participant) {
             $recipient = $participant->participant;
-            if ($recipient->getId() !== $sender->getId()) {
+            if ($recipient->id !== $sender->id) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
                 assert($threadMetaRecipient !== null);
                 $threadMetaRecipient->isRead = false;

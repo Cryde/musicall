@@ -28,11 +28,11 @@ readonly class UserSocialLinkCollectionProvider implements ProviderInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
         return array_map(
             fn(UserSocialLink $link) => $this->buildFromEntity($link),
-            $profile->getSocialLinks()->toArray()
+            $profile->socialLinks->toArray()
         );
     }
 

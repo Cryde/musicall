@@ -18,44 +18,44 @@ readonly class DeleteAccountProcedure
 
     public function process(User $user): void
     {
-        $oldUsername = $user->getUsername();
-        $uuid = $user->getId();
+        $oldUsername = $user->username;
+        $uuid = $user->id;
 
         // Anonymize user data
-        $user->setUsername('deleted_' . $uuid);
-        $user->setEmail('deleted_' . $uuid . '@deleted.local');
-        $user->setPassword(null);
-        $user->setRoles([]);
-        $user->setToken(null);
-        $user->setResetRequestDatetime(null);
-        $user->setConfirmationDatetime(null);
-        $user->setLastLoginDatetime(null);
-        $user->setUsernameChangedDatetime(null);
-        $user->setDeletionDatetime(new \DateTimeImmutable());
+        $user->username = 'deleted_' . $uuid;
+        $user->email = 'deleted_' . $uuid . '@deleted.local';
+        $user->password = null;
+        $user->roles = [];
+        $user->token = null;
+        $user->resetRequestDatetime = null;
+        $user->confirmationDatetime = null;
+        $user->lastLoginDatetime = null;
+        $user->usernameChangedDatetime = null;
+        $user->deletionDatetime = new \DateTimeImmutable();
 
         // Remove profile picture (cascade removes entity + VichUploader removes file)
-        $user->setProfilePicture(null);
+        $user->profilePicture = null;
 
         // Clear social accounts (orphanRemoval)
-        $user->getSocialAccounts()->clear();
+        $user->socialAccounts->clear();
 
         // Remove notification preference
-        $user->setNotificationPreference(null);
+        $user->notificationPreference = null;
 
         // Remove musician profile
-        $user->setMusicianProfile(null);
+        $user->musicianProfile = null;
 
         // Remove teacher profile
-        $user->setTeacherProfile(null);
+        $user->teacherProfile = null;
 
         // Anonymize user profile
-        $profile = $user->getProfile();
-        $profile->setBio(null);
-        $profile->setDisplayName(null);
-        $profile->setLocation(null);
-        $profile->setIsPublic(false);
-        $profile->setCoverPicture(null);
-        $profile->getSocialLinks()->clear();
+        $profile = $user->profile;
+        $profile->bio = null;
+        $profile->displayName = null;
+        $profile->location = null;
+        $profile->isPublic = false;
+        $profile->coverPicture = null;
+        $profile->socialLinks->clear();
 
         // Delete refresh tokens (stored by username string, not FK)
         $this->connection->executeStatement(

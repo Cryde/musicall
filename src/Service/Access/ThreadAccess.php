@@ -10,7 +10,7 @@ class ThreadAccess
     public function isOneOfParticipant(MessageThread $messageThread, User $user): bool
     {
         foreach ($messageThread->messageParticipants as $participant) {
-            if ($participant->participant->getId() === $user->getId()) {
+            if ($participant->participant->id === $user->id) {
                 return true;
             }
         }

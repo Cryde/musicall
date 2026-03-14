@@ -68,9 +68,9 @@ class ProfilePictureImporterTest extends TestCase
 
         $this->importer->importFromUrl($user, 'https://example.com/picture.jpg');
 
-        $this->assertNotNull($user->getProfilePicture());
-        $this->assertSame('downloaded_picture.jpg', $user->getProfilePicture()->imageName);
-        $this->assertSame(12345, $user->getProfilePicture()->imageSize);
+        $this->assertNotNull($user->profilePicture);
+        $this->assertSame('downloaded_picture.jpg', $user->profilePicture->imageName);
+        $this->assertSame(12345, $user->profilePicture->imageSize);
     }
 
     public function test_import_from_url_skips_when_user_already_has_profile_picture(): void
@@ -79,7 +79,7 @@ class ProfilePictureImporterTest extends TestCase
         $existingPicture->imageName = 'existing.jpg';
 
         $user = new User();
-        $user->setProfilePicture($existingPicture);
+        $user->profilePicture = $existingPicture;
 
         $this->parameterBag
             ->expects($this->never())
@@ -95,12 +95,13 @@ class ProfilePictureImporterTest extends TestCase
 
         $this->importer->importFromUrl($user, 'https://example.com/picture.jpg');
 
-        $this->assertSame($existingPicture, $user->getProfilePicture());
+        $this->assertSame($existingPicture, $user->profilePicture);
     }
 
     public function test_import_from_url_logs_warning_on_download_failure(): void
     {
-        $user = new User()->setId('42');
+        $user = new User();
+        $user->id = '42';
 
         $this->parameterBag
             ->expects($this->once())
@@ -131,6 +132,6 @@ class ProfilePictureImporterTest extends TestCase
 
         $this->importer->importFromUrl($user, 'https://example.com/picture.jpg');
 
-        $this->assertNull($user->getProfilePicture());
+        $this->assertNull($user->profilePicture);
     }
 }

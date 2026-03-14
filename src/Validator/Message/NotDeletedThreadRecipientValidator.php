@@ -39,7 +39,7 @@ class NotDeletedThreadRecipientValidator extends ConstraintValidator
 
         foreach ($value->thread->messageParticipants as $messageParticipant) {
             $participant = $messageParticipant->participant;
-            if ($participant->getId() !== $currentUser->getId() && $participant->isDeleted()) {
+            if ($participant->id !== $currentUser->id && $participant->isDeleted()) {
                 $this->context->buildViolation($constraint->message)
                     ->setCode(self::ERROR_CODE_DELETED_THREAD_RECIPIENT)
                     ->addViolation();

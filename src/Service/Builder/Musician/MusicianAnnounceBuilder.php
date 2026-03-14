@@ -74,13 +74,13 @@ readonly class MusicianAnnounceBuilder
     private function buildAuthor(User $user): Author
     {
         $dto = new Author();
-        $dto->id = (string) $user->getId();
-        $dto->username = $user->getUsername();
-        $dto->deletionDatetime = $user->getDeletionDatetime();
-        $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
+        $dto->id = (string) $user->id;
+        $dto->username = $user->username;
+        $dto->deletionDatetime = $user->deletionDatetime;
+        $dto->hasMusicianProfile = $user->musicianProfile !== null;
 
-        if ($user->getProfilePicture()) {
-            $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
+        if ($user->profilePicture) {
+            $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
             }

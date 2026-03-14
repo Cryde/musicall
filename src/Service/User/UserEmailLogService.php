@@ -39,10 +39,10 @@ readonly class UserEmailLogService
     public function log(User $user, UserEmailType $emailType, ?string $referenceId = null, ?array $metadata = null): void
     {
         $log = new UserEmailLog();
-        $log->setUser($user);
-        $log->setEmailType($emailType);
-        $log->setReferenceId($referenceId);
-        $log->setMetadata($metadata);
+        $log->user = $user;
+        $log->emailType = $emailType;
+        $log->referenceId = $referenceId;
+        $log->metadata = $metadata;
 
         $this->entityManager->persist($log);
         $this->entityManager->flush();

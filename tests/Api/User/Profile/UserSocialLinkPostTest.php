@@ -279,7 +279,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'username' => 'duplicateuser',
             'email' => 'duplicateuser@test.com',
         ]);
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
         UserSocialLinkFactory::new()->create([
             'profile' => $profile,

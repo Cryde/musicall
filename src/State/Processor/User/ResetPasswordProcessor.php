@@ -30,9 +30,9 @@ readonly class ResetPasswordProcessor implements ProcessorInterface
         if (!$user = $this->userRepository->findByTokenAndLimitDatetime($uriVariables['token'])) {
             throw new ResetPasswordInvalidTokenException('Le token n\'est pas valide ou a expiré.');
         }
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $data->password));
-        $user->setToken(null);
-        $user->setResetRequestDatetime(null);
+        $user->password = $this->userPasswordHasher->hashPassword($user, $data->password);
+        $user->token = null;
+        $user->resetRequestDatetime = null;
         $this->entityManager->flush();
     }
 }

@@ -41,8 +41,8 @@ readonly class PublicProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Profil non trouvé');
         }
 
-        $profile = $user->getProfile();
-        if (!$profile->isPublic()) {
+        $profile = $user->profile;
+        if (!$profile->isPublic) {
             throw new NotFoundHttpException('Ce profil est privé');
         }
 
@@ -62,7 +62,7 @@ readonly class PublicProfileProvider implements ProviderInterface
         $currentUser = $this->security->getUser();
 
         // Don't count own views
-        if ($currentUser && $currentUser->getId() === $profileOwner->getId()) {
+        if ($currentUser && $currentUser->id === $profileOwner->id) {
             return;
         }
 

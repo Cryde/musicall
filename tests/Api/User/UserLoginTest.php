@@ -19,7 +19,7 @@ class UserLoginTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
         $this->client->jsonRequest('POST', '/api/login_check', [
-            'username' => $user1->getUsername(),
+            'username' => $user1->username,
             'password' => 'password',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -33,14 +33,14 @@ class UserLoginTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['confirmationDatetime' => null])->_real();
 
         $this->client->jsonRequest('POST', '/api/login_check', [
-            'username' => $user1->getUsername(),
+            'username' => $user1->username,
             'password' => 'bad',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
             'message' => 'account_not_verified',
-            'email' => $user1->getEmail(),
+            'email' => $user1->email,
         ]);
     }
 
@@ -49,7 +49,7 @@ class UserLoginTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
         $this->client->jsonRequest('POST', '/api/login_check', [
-            'username' => $user1->getUsername(),
+            'username' => $user1->username,
             'password' => 'bad',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);

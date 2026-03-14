@@ -39,7 +39,7 @@ readonly class UserGalleryImageDeleteProvider implements ProviderInterface
         }
 
         $gallery = $image->gallery;
-        if ($gallery->author->getId() !== $user->getId()) {
+        if ($gallery->author->id !== $user->id) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a supprimer cette image');
         }
 

@@ -62,7 +62,7 @@ class ForumPostPostTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $results = $forumPostRepository->findBy(['topic' => $topic->_real()]);
         $this->assertCount(1, $results);
-        $userId = $user1->getId();
+        $userId = $user1->id;
         $this->assertJsonEquals([
             '@context' => '/api/contexts/TopicPost',
             '@id' => '/api/topic_posts/' . $results[0]->id,

@@ -28,10 +28,10 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'publicuser',
             'email' => 'publicuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('Test bio content');
-        $profile->setLocation('Paris, France');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = 'Test bio content';
+        $profile->location = 'Paris, France';
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->request('GET', '/api/user/profile/publicuser');
@@ -41,7 +41,7 @@ class PublicProfileTest extends ApiTestCase
             '@id' => '/api/user/profile/publicuser',
             '@type' => 'PublicProfile',
             'username' => 'publicuser',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'bio' => 'Test bio content',
             'location' => 'Paris, France',
             'member_since' => '1990-01-02T02:03:04+00:00',
@@ -58,9 +58,9 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'socialuser',
             'email' => 'socialuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('Musician bio');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = 'Musician bio';
+        $profile->isPublic = true;
         $user->_save();
 
         UserSocialLinkFactory::new()->create([
@@ -76,7 +76,7 @@ class PublicProfileTest extends ApiTestCase
             '@id' => '/api/user/profile/socialuser',
             '@type' => 'PublicProfile',
             'username' => 'socialuser',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'bio' => 'Musician bio',
             'member_since' => '1990-01-02T02:03:04+00:00',
             'social_links' => [
@@ -99,8 +99,8 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'musician',
             'email' => 'musician@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->isPublic = true;
         $user->_save();
 
         $instrument = InstrumentFactory::new()->asGuitar()->create();
@@ -122,7 +122,7 @@ class PublicProfileTest extends ApiTestCase
             '@id' => '/api/user/profile/musician',
             '@type' => 'PublicProfile',
             'username' => 'musician',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'member_since' => '1990-01-02T02:03:04+00:00',
             'social_links' => [],
             'musician_announces' => [
@@ -163,8 +163,8 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'privateuser',
             'email' => 'privateuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setIsPublic(false);
+        $profile = $user->profile;
+        $profile->isPublic = false;
         $user->_save();
 
         $this->client->request('GET', '/api/user/profile/privateuser');
@@ -187,10 +187,10 @@ class PublicProfileTest extends ApiTestCase
             'username' => 'emptyprofile',
             'email' => 'emptyprofile@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio(null);
-        $profile->setLocation(null);
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = null;
+        $profile->location = null;
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->request('GET', '/api/user/profile/emptyprofile');
@@ -200,7 +200,7 @@ class PublicProfileTest extends ApiTestCase
             '@id' => '/api/user/profile/emptyprofile',
             '@type' => 'PublicProfile',
             'username' => 'emptyprofile',
-            'user_id' => $user->getId(),
+            'user_id' => $user->id,
             'member_since' => '1990-01-02T02:03:04+00:00',
             'social_links' => [],
             'musician_announces' => [],

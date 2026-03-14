@@ -24,115 +24,42 @@ class UserProfile implements ViewableInterface
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?string $id = null;
+    public ?string $id = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $bio = null;
+    public ?string $bio = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $location = null;
+    public ?string $location = null;
 
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
-    private ?string $displayName = null;
+    public ?string $displayName = null;
 
     #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $isPublic = true;
+    public bool $isPublic = true;
 
     #[ORM\OneToOne(targetEntity: UserProfileCoverPicture::class, cascade: ['persist', 'remove'])]
-    private ?UserProfileCoverPicture $coverPicture = null;
+    public ?UserProfileCoverPicture $coverPicture = null;
 
     /**
      * @var Collection<int, UserSocialLink>
      */
     #[ORM\OneToMany(mappedBy: 'profile', targetEntity: UserSocialLink::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $socialLinks;
+    public Collection $socialLinks;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private DateTimeImmutable $creationDatetime;
+    public DateTimeImmutable $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?DateTimeImmutable $updateDatetime = null;
+    public ?DateTimeImmutable $updateDatetime = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    private ?ViewCache $viewCache = null;
+    public ?ViewCache $viewCache = null;
 
     public function __construct()
     {
         $this->socialLinks = new ArrayCollection();
         $this->creationDatetime = new DateTimeImmutable();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getBio(): ?string
-    {
-        return $this->bio;
-    }
-
-    public function setBio(?string $bio): self
-    {
-        $this->bio = $bio;
-
-        return $this;
-    }
-
-    public function getLocation(): ?string
-    {
-        return $this->location;
-    }
-
-    public function setLocation(?string $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
-    public function getDisplayName(): ?string
-    {
-        return $this->displayName;
-    }
-
-    public function setDisplayName(?string $displayName): self
-    {
-        $this->displayName = $displayName;
-
-        return $this;
-    }
-
-    public function isPublic(): bool
-    {
-        return $this->isPublic;
-    }
-
-    public function setIsPublic(bool $isPublic): self
-    {
-        $this->isPublic = $isPublic;
-
-        return $this;
-    }
-
-    public function getCoverPicture(): ?UserProfileCoverPicture
-    {
-        return $this->coverPicture;
-    }
-
-    public function setCoverPicture(?UserProfileCoverPicture $coverPicture): self
-    {
-        $this->coverPicture = $coverPicture;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, UserSocialLink>
-     */
-    public function getSocialLinks(): Collection
-    {
-        return $this->socialLinks;
     }
 
     public function addSocialLink(UserSocialLink $socialLink): self
@@ -148,30 +75,6 @@ class UserProfile implements ViewableInterface
     public function removeSocialLink(UserSocialLink $socialLink): self
     {
         $this->socialLinks->removeElement($socialLink);
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeImmutable
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeImmutable $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getUpdateDatetime(): ?DateTimeImmutable
-    {
-        return $this->updateDatetime;
-    }
-
-    public function setUpdateDatetime(?DateTimeImmutable $updateDatetime): self
-    {
-        $this->updateDatetime = $updateDatetime;
 
         return $this;
     }

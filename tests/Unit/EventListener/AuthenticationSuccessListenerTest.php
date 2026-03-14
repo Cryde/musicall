@@ -16,15 +16,15 @@ class AuthenticationSuccessListenerTest extends TestCase
         $listener = new AuthenticationSuccessListener();
 
         $user = new User();
-        $user->setLastLoginDatetime(null);
+        $user->lastLoginDatetime = null;
 
-        $this->assertNull($user->getLastLoginDatetime());
+        $this->assertNull($user->lastLoginDatetime);
         $listener->onAuthenticationSuccessResponse(new AuthenticationSuccessEvent([], $user, new Response()));
-        $this->assertNotNull($user->getLastLoginDatetime());
+        $this->assertNotNull($user->lastLoginDatetime);
 
         // this is a fake user representation
         $user1 = new class() implements UserInterface {
-            private $lastLoginDatetime;
+            public $lastLoginDatetime;
 
             public function getRoles(): array
             {
@@ -44,8 +44,8 @@ class AuthenticationSuccessListenerTest extends TestCase
             }
         };
 
-        $this->assertNull($user1->getLastLoginDatetime());
+        $this->assertNull($user1->lastLoginDatetime);
         $listener->onAuthenticationSuccessResponse(new AuthenticationSuccessEvent([], $user1, new Response()));
-        $this->assertNull($user1->getLastLoginDatetime());
+        $this->assertNull($user1->lastLoginDatetime);
     }
 }

@@ -78,7 +78,7 @@ class DeleteAccountTest extends ApiTestCase
         ]);
 
         $realUser = $user->_real();
-        $userId = $realUser->getId();
+        $userId = $realUser->id;
 
         $this->client->loginUser($realUser);
         $this->client->jsonRequest('POST', '/api/users/delete_account', [
@@ -92,24 +92,24 @@ class DeleteAccountTest extends ApiTestCase
         \assert($deletedUser instanceof User);
 
         // Deletion datetime is set
-        $this->assertNotNull($deletedUser->getDeletionDatetime());
+        $this->assertNotNull($deletedUser->deletionDatetime);
         $this->assertTrue($deletedUser->isDeleted());
         // Username and email are anonymized
-        $this->assertSame('deleted_' . $userId, $deletedUser->getUsername());
-        $this->assertSame('deleted_' . $userId . '@deleted.local', $deletedUser->getEmail());
+        $this->assertSame('deleted_' . $userId, $deletedUser->username);
+        $this->assertSame('deleted_' . $userId . '@deleted.local', $deletedUser->email);
         // Password is null
-        $this->assertNull($deletedUser->getPassword());
+        $this->assertNull($deletedUser->password);
         // Roles are empty (getRoles() always adds ROLE_USER)
         $this->assertSame(['ROLE_USER'], $deletedUser->getRoles());
         // Profile picture is null
-        $this->assertNull($deletedUser->getProfilePicture());
+        $this->assertNull($deletedUser->profilePicture);
         // Social accounts are empty
-        $this->assertCount(0, $deletedUser->getSocialAccounts());
+        $this->assertCount(0, $deletedUser->socialAccounts);
         // Publication still exists (FK intact)
         /** @var Publication $realPublication */
         $realPublication = $publication->_real();
         $this->assertSame('My publication', $realPublication->title);
-        $this->assertSame($userId, $realPublication->author->getId());
+        $this->assertSame($userId, $realPublication->author->id);
     }
 
     public function test_delete_account_oauth_user_no_password(): void
@@ -121,7 +121,7 @@ class DeleteAccountTest extends ApiTestCase
         ]);
 
         $realUser = $user->_real();
-        $userId = $realUser->getId();
+        $userId = $realUser->id;
 
         $this->client->loginUser($realUser);
         $this->client->jsonRequest('POST', '/api/users/delete_account', [
@@ -133,10 +133,10 @@ class DeleteAccountTest extends ApiTestCase
         $deletedUser = $userRepo->find($userId);
         \assert($deletedUser instanceof User);
 
-        $this->assertNotNull($deletedUser->getDeletionDatetime());
+        $this->assertNotNull($deletedUser->deletionDatetime);
         $this->assertTrue($deletedUser->isDeleted());
-        $this->assertSame('deleted_' . $userId, $deletedUser->getUsername());
-        $this->assertSame('deleted_' . $userId . '@deleted.local', $deletedUser->getEmail());
-        $this->assertNull($deletedUser->getPassword());
+        $this->assertSame('deleted_' . $userId, $deletedUser->username);
+        $this->assertSame('deleted_' . $userId . '@deleted.local', $deletedUser->email);
+        $this->assertNull($deletedUser->password);
     }
 }

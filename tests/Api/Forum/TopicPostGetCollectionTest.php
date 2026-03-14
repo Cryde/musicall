@@ -63,8 +63,8 @@ class TopicPostGetCollectionTest extends ApiTestCase
             'updateDatetime' => null,
         ])->create();
 
-        $poster1Id = $poster1->getId();
-        $poster2Id = $poster2->getId();
+        $poster1Id = $poster1->id;
+        $poster2Id = $poster2->id;
 
         $this->client->request('GET', '/api/forums/topics/test-topic/posts');
         $this->assertResponseIsSuccessful();

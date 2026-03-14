@@ -18,6 +18,6 @@ class AuthenticationSuccessListener
             return;
         }
 
-        $user->setLastLoginDatetime(new \DateTime());
+        $user->lastLoginDatetime = new \DateTime();
     }
 }

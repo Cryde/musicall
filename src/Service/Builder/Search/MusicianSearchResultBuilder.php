@@ -58,12 +58,12 @@ class MusicianSearchResultBuilder
     private function buildUser(UserEntity $userEntity): User
     {
         $user = new User();
-        $user->id = (string) $userEntity->getId();
-        $user->username = $userEntity->getUsername();
-        $user->deletionDatetime = $userEntity->getDeletionDatetime();
-        $user->hasMusicianProfile = $userEntity->getMusicianProfile() !== null;
-        if ($userEntity->getProfilePicture()) {
-            $path = $this->uploaderHelper->asset($userEntity->getProfilePicture(), 'imageFile');
+        $user->id = (string) $userEntity->id;
+        $user->username = $userEntity->username;
+        $user->deletionDatetime = $userEntity->deletionDatetime;
+        $user->hasMusicianProfile = $userEntity->musicianProfile !== null;
+        if ($userEntity->profilePicture) {
+            $path = $this->uploaderHelper->asset($userEntity->profilePicture, 'imageFile');
             if ($path !== null) {
                 $user->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
             }

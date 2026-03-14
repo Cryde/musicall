@@ -39,15 +39,11 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         $emptyProfiles = $this->userRepository->findRecentEmptyProfiles($from, $to, 10);
         foreach ($emptyProfiles as $item) {
             $user = $item['user'];
-            $userId = $user->getId();
-            if ($userId === null) {
-                continue;
-            }
             $metrics->recentEmptyAccounts[] = [
-                'id' => $userId,
-                'username' => $user->getUsername(),
-                'email' => $user->getEmail(),
-                'registration_date' => $user->getCreationDatetime()->format('Y-m-d H:i'),
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'registration_date' => $user->creationDatetime->format('Y-m-d H:i'),
                 'profile_completion_percent' => $item['profile_completion'],
             ];
         }
@@ -59,15 +55,11 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         $recentUsers = $this->userRepository->findRecentRegistrationsWithCompletion($from, $to, 10);
         foreach ($recentUsers as $item) {
             $user = $item['user'];
-            $userId = $user->getId();
-            if ($userId === null) {
-                continue;
-            }
             $metrics->recentRegistrations[] = [
-                'id' => $userId,
-                'username' => $user->getUsername(),
-                'email' => $user->getEmail(),
-                'registration_date' => $user->getCreationDatetime()->format('Y-m-d H:i'),
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'registration_date' => $user->creationDatetime->format('Y-m-d H:i'),
                 'profile_completion_percent' => $item['profile_completion'],
             ];
         }
@@ -90,7 +82,7 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         $recentTeachers = $this->teacherProfileRepository->findRecentTeachers($from, $to, 10);
         foreach ($recentTeachers as $teacherProfile) {
             $metrics->recentTeachers[] = [
-                'username' => $teacherProfile->user->getUsername(),
+                'username' => $teacherProfile->user->username,
                 'registration_date' => $teacherProfile->creationDatetime->format('Y-m-d H:i'),
             ];
         }

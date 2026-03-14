@@ -43,9 +43,9 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
     {
         $user = UserFactory::new()->create()->_real();
 
-        $this->assertNull($user->getNotificationPreference());
+        $this->assertNull($user->notificationPreference);
 
-        $this->commandTester->execute(['user-id' => $user->getId()]);
+        $this->commandTester->execute(['user-id' => $user->id]);
 
         $this->commandTester->assertCommandIsSuccessful();
         $output = $this->commandTester->getDisplay();
@@ -56,13 +56,13 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
         $preference = $repository->findOneBy(['user' => $user]);
 
         $this->assertNotNull($preference);
-        $this->assertFalse($preference->isSiteNews());
-        $this->assertFalse($preference->isWeeklyRecap());
-        $this->assertFalse($preference->isMessageReceived());
-        $this->assertFalse($preference->isPublicationComment());
-        $this->assertFalse($preference->isForumReply());
-        $this->assertFalse($preference->isMarketing());
-        $this->assertFalse($preference->isActivityReminder());
+        $this->assertFalse($preference->siteNews);
+        $this->assertFalse($preference->weeklyRecap);
+        $this->assertFalse($preference->messageReceived);
+        $this->assertFalse($preference->publicationComment);
+        $this->assertFalse($preference->forumReply);
+        $this->assertFalse($preference->marketing);
+        $this->assertFalse($preference->activityReminder);
     }
 
     public function test_command_updates_existing_preference_to_all_disabled(): void
@@ -71,17 +71,17 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
 
         // Create existing preference with some notifications enabled
         $preference = new UserNotificationPreference();
-        $preference->setUser($user);
-        $preference->setSiteNews(true);
-        $preference->setWeeklyRecap(true);
-        $preference->setMessageReceived(true);
-        $user->setNotificationPreference($preference);
+        $preference->user = $user;
+        $preference->siteNews = true;
+        $preference->weeklyRecap = true;
+        $preference->messageReceived = true;
+        $user->notificationPreference = $preference;
 
         $em = self::getContainer()->get(EntityManagerInterface::class);
         $em->persist($preference);
         $em->flush();
 
-        $this->commandTester->execute(['user-id' => $user->getId()]);
+        $this->commandTester->execute(['user-id' => $user->id]);
 
         $this->commandTester->assertCommandIsSuccessful();
         $output = $this->commandTester->getDisplay();
@@ -89,12 +89,12 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
 
         // Verify all preferences were disabled
         $em->refresh($preference);
-        $this->assertFalse($preference->isSiteNews());
-        $this->assertFalse($preference->isWeeklyRecap());
-        $this->assertFalse($preference->isMessageReceived());
-        $this->assertFalse($preference->isPublicationComment());
-        $this->assertFalse($preference->isForumReply());
-        $this->assertFalse($preference->isMarketing());
-        $this->assertFalse($preference->isActivityReminder());
+        $this->assertFalse($preference->siteNews);
+        $this->assertFalse($preference->weeklyRecap);
+        $this->assertFalse($preference->messageReceived);
+        $this->assertFalse($preference->publicationComment);
+        $this->assertFalse($preference->forumReply);
+        $this->assertFalse($preference->marketing);
+        $this->assertFalse($preference->activityReminder);
     }
 }

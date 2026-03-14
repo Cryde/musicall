@@ -143,8 +143,8 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
 
         // Verify the log has correct email type
         $logs = $repository->findAll();
-        $this->assertSame(UserEmailType::EMAIL_CONFIRMATION_REMINDER, $logs[0]->getEmailType());
-        $this->assertSame(['reminder_number' => 1], $logs[0]->getMetadata());
+        $this->assertSame(UserEmailType::EMAIL_CONFIRMATION_REMINDER, $logs[0]->emailType);
+        $this->assertSame(['reminder_number' => 1], $logs[0]->metadata);
     }
 
     public function test_command_logs_correct_reminder_number_for_second_reminder(): void
@@ -165,7 +165,7 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
 
         $this->assertCount(2, $logs);
         // The most recent log should be reminder #2
-        $this->assertSame(['reminder_number' => 2], $logs[0]->getMetadata());
+        $this->assertSame(['reminder_number' => 2], $logs[0]->metadata);
     }
 
     public function test_dry_run_does_not_log_emails(): void

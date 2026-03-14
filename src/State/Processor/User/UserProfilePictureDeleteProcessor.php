@@ -26,7 +26,7 @@ readonly class UserProfilePictureDeleteProcessor implements ProcessorInterface
         assert($user !== null);
 
         // Detach profile picture from user
-        $user->setProfilePicture(null);
+        $user->profilePicture = null;
         $this->entityManager->flush();
 
         // Remove the profile picture entity (VichUploader will handle file deletion)

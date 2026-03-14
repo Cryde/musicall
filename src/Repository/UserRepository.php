@@ -282,29 +282,29 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $maxScore = 5;
 
         // Has profile picture (20%)
-        if ($user->getProfilePicture() !== null) {
+        if ($user->profilePicture !== null) {
             $score++;
         }
 
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
         // Has bio (20%)
-        if ($profile->getBio() !== null && $profile->getBio() !== '') {
+        if ($profile->bio !== null && $profile->bio !== '') {
             $score++;
         }
 
         // Has display name (20%)
-        if ($profile->getDisplayName() !== null && $profile->getDisplayName() !== '') {
+        if ($profile->displayName !== null && $profile->displayName !== '') {
             $score++;
         }
 
         // Has location (20%)
-        if ($profile->getLocation() !== null && $profile->getLocation() !== '') {
+        if ($profile->location !== null && $profile->location !== '') {
             $score++;
         }
 
         // Has cover picture (20%)
-        if ($profile->getCoverPicture() !== null) {
+        if ($profile->coverPicture !== null) {
             $score++;
         }
 

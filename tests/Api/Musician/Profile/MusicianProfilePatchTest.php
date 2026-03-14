@@ -35,7 +35,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
         $musicianProfile->_refresh();
 
@@ -81,7 +81,7 @@ class MusicianProfilePatchTest extends ApiTestCase
         ]);
 
         $musicianProfile->_refresh();
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -133,7 +133,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [$rock->_real()],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
         $musicianProfile->_refresh();
 
@@ -187,7 +187,7 @@ class MusicianProfilePatchTest extends ApiTestCase
         ]);
 
         $musicianProfile->_refresh();
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -222,7 +222,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
         $musicianProfile->_refresh();
 
@@ -263,7 +263,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
         $musicianProfile->_refresh();
 

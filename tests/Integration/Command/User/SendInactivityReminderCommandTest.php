@@ -167,9 +167,9 @@ class SendInactivityReminderCommandTest extends KernelTestCase
 
         // Create notification preference with activity reminder disabled
         $preference = new UserNotificationPreference();
-        $preference->setUser($user);
-        $preference->setActivityReminder(false);
-        $user->setNotificationPreference($preference);
+        $preference->user = $user;
+        $preference->activityReminder = false;
+        $user->notificationPreference = $preference;
 
         $em = self::getContainer()->get(EntityManagerInterface::class);
         $em->persist($preference);

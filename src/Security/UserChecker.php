@@ -19,8 +19,8 @@ class UserChecker implements UserCheckerInterface
             return;
         }
 
-        if (!$user->getConfirmationDatetime()) {
-            throw new CustomUserMessageAccountStatusException('account_not_verified', ['{{ email }}' => $user->getEmail()]);
+        if (!$user->confirmationDatetime) {
+            throw new CustomUserMessageAccountStatusException('account_not_verified', ['{{ email }}' => $user->email]);
         }
     }
 

@@ -26,21 +26,21 @@ readonly class PublicProfileBuilder
 
     public function build(User $user): PublicProfile
     {
-        $profile = $user->getProfile();
-        $memberSince = $user->getCreationDatetime();
+        $profile = $user->profile;
+        $memberSince = $user->creationDatetime;
 
         $dto = new PublicProfile();
 
-        $dto->username = $user->getUsername();
-        $dto->userId = (string) $user->getId();
-        $dto->displayName = $profile->getDisplayName();
-        $dto->bio = $profile->getBio();
-        $dto->location = $profile->getLocation();
+        $dto->username = $user->username;
+        $dto->userId = (string) $user->id;
+        $dto->displayName = $profile->displayName;
+        $dto->bio = $profile->bio;
+        $dto->location = $profile->location;
         $dto->memberSince = $memberSince;
 
         // Profile picture
-        if ($user->getProfilePicture()) {
-            $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile');
+        if ($user->profilePicture) {
+            $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
                 $dto->profilePictureLargeUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
@@ -48,25 +48,25 @@ readonly class PublicProfileBuilder
         }
 
         // Cover picture
-        if ($profile->getCoverPicture()) {
-            $path = $this->uploaderHelper->asset($profile->getCoverPicture(), 'imageFile');
+        if ($profile->coverPicture) {
+            $path = $this->uploaderHelper->asset($profile->coverPicture, 'imageFile');
             if ($path !== null) {
                 $dto->coverPictureUrl = $this->cacheManager->getBrowserPath($path, 'user_cover_picture');
             }
         }
 
         // Social links
-        $dto->socialLinks = $this->buildSocialLinks($profile->getSocialLinks()->toArray());
+        $dto->socialLinks = $this->buildSocialLinks($profile->socialLinks->toArray());
 
         // Musician announces
         $announces = $this->musicianAnnounceRepository->findBy(['author' => $user], ['creationDatetime' => 'DESC']);
         $dto->musicianAnnounces = $this->buildAnnounces($announces);
 
         // Musician profile flag
-        $dto->hasMusicianProfile = $user->getMusicianProfile() !== null;
+        $dto->hasMusicianProfile = $user->musicianProfile !== null;
 
         // Teacher profile flag
-        $dto->hasTeacherProfile = $user->getTeacherProfile() !== null;
+        $dto->hasTeacherProfile = $user->teacherProfile !== null;
 
         return $dto;
     }

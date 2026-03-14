@@ -106,7 +106,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->getId(),
+                        '@id'      => '/api/users/' . $author->_real()->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -135,7 +135,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->getId(),
+                        '@id'      => '/api/users/' . $author->_real()->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

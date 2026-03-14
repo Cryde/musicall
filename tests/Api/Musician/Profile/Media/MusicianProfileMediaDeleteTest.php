@@ -29,7 +29,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $media = MusicianProfileMediaFactory::new()->create([
@@ -58,9 +58,9 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
         $musicianProfile1 = MusicianProfileFactory::new()->create(['user' => $user1]);
         $musicianProfile2 = MusicianProfileFactory::new()->create(['user' => $user2]);
 
-        $user1->setMusicianProfile($musicianProfile1->_real());
+        $user1->musicianProfile = $musicianProfile1->_real();
         $user1->_save();
-        $user2->setMusicianProfile($musicianProfile2->_real());
+        $user2->musicianProfile = $musicianProfile2->_real();
         $user2->_save();
 
         $media = MusicianProfileMediaFactory::new()->create([
@@ -96,7 +96,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -147,7 +147,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
         ]);
 
         $musicianProfile1 = MusicianProfileFactory::new()->create(['user' => $user1]);
-        $user1->setMusicianProfile($musicianProfile1->_real());
+        $user1->musicianProfile = $musicianProfile1->_real();
         $user1->_save();
 
         $media = MusicianProfileMediaFactory::new()->create([

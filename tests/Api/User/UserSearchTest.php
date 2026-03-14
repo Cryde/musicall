@@ -30,15 +30,15 @@ class UserSearchTest extends ApiTestCase
             'totalItems' => 2,
             'member' => [
                 [
-                    '@id' => '/api/user_searches/' . $user1->getId(),
+                    '@id' => '/api/user_searches/' . $user1->id,
                     '@type' => 'UserSearch',
-                    'id' =>$user1->getId(),
+                    'id' =>$user1->id,
                     'username' => 'test1',
                 ],
                 [
-                    '@id' => '/api/user_searches/' .$user2->getId(),
+                    '@id' => '/api/user_searches/' .$user2->id,
                     '@type' => 'UserSearch',
-                    'id' => $user2->getId(),
+                    'id' => $user2->id,
                     'username' => 'test2',
                 ],
             ],
@@ -69,9 +69,9 @@ class UserSearchTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    '@id' => '/api/user_searches/' . $user1->getId(),
+                    '@id' => '/api/user_searches/' . $user1->id,
                     '@type' => 'UserSearch',
-                    'id' => $user1->getId(),
+                    'id' => $user1->id,
                     'username' => 'test1',
                 ],
             ],

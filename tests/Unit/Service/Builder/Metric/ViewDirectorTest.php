@@ -15,13 +15,14 @@ class ViewDirectorTest extends TestCase
         $viewCache = new ViewCache();
         $viewCache->count = 10;
         $viewCache->id = 42;
-        $user = (new User())->setUsername("username_user");
+        $user = new User();
+        $user->username = "username_user";
         $result = $builder->build($viewCache, 'identifier', $user);
 
         $this->assertSame(42, $result->viewCache->id);
         $this->assertSame(10, $result->viewCache->count);
         $this->assertSame('username_user', $result->user->getUserIdentifier());
-        $this->assertSame('username_user', $result->user->getUsername());
+        $this->assertSame('username_user', $result->user->username);
         $this->assertSame('identifier', $result->identifier);
     }
 }

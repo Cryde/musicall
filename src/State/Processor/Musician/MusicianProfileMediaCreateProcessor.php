@@ -34,7 +34,7 @@ readonly class MusicianProfileMediaCreateProcessor implements ProcessorInterface
         /** @var Media $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        if (!$profile = $user->getMusicianProfile()) {
+        if (!$profile = $user->musicianProfile) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
 

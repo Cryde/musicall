@@ -41,7 +41,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -83,7 +83,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -128,7 +128,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         // Create first media
@@ -223,7 +223,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -265,7 +265,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -307,7 +307,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->setMusicianProfile($musicianProfile->_real());
+        $user->musicianProfile = $musicianProfile->_real();
         $user->_save();
 
         // Create 6 media items (the max limit)

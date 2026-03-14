@@ -24,7 +24,7 @@ readonly class ProfilePictureImporter
     public function importFromUrl(User $user, string $pictureUrl): void
     {
         // Skip if user already has a profile picture
-        if ($user->getProfilePicture() !== null) {
+        if ($user->profilePicture !== null) {
             return;
         }
 
@@ -39,12 +39,12 @@ readonly class ProfilePictureImporter
             $profilePicture->updatedAt = new \DateTime();
             $profilePicture->user = $user;
 
-            $user->setProfilePicture($profilePicture);
+            $user->profilePicture = $profilePicture;
 
             $this->entityManager->persist($profilePicture);
         } catch (\Exception $e) {
             $this->logger->warning('Failed to import profile picture from OAuth provider', [
-                'userId' => $user->getId(),
+                'userId' => $user->id,
                 'pictureUrl' => $pictureUrl,
                 'error' => $e->getMessage(),
             ]);

@@ -38,7 +38,7 @@ readonly class UserGalleryEditProvider implements ProviderInterface
             throw new NotFoundHttpException('Galerie non trouvee');
         }
 
-        if ($gallery->author->getId() !== $user->getId()) {
+        if ($gallery->author->id !== $user->id) {
             throw new AccessDeniedHttpException('Vous n\'etes pas autorise a acceder a cette galerie');
         }
 

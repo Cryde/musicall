@@ -89,7 +89,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     'note' => 'note announce 2',
                     'author' => [
                         '@type' => 'Author',
-                        'id' => $user1->getId(),
+                        'id' => $user1->id,
                         'username' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
@@ -116,7 +116,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     'note' => 'note announce 1',
                     'author' => [
                         '@type' => 'Author',
-                        'id' => $user1->getId(),
+                        'id' => $user1->id,
                         'username' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],

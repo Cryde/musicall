@@ -21,10 +21,10 @@ class UserProfileGetTest extends ApiTestCase
             'username' => 'profileuser',
             'email' => 'profileuser@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('My bio');
-        $profile->setLocation('Lyon, France');
-        $profile->setIsPublic(true);
+        $profile = $user->profile;
+        $profile->bio = 'My bio';
+        $profile->location = 'Lyon, France';
+        $profile->isPublic = true;
         $user->_save();
 
         $this->client->loginUser($user->_real());
@@ -46,9 +46,9 @@ class UserProfileGetTest extends ApiTestCase
             'username' => 'privateprofile',
             'email' => 'privateprofile@test.com',
         ]);
-        $profile = $user->getProfile();
-        $profile->setBio('Private bio');
-        $profile->setIsPublic(false);
+        $profile = $user->profile;
+        $profile->bio = 'Private bio';
+        $profile->isPublic = false;
         $user->_save();
 
         $this->client->loginUser($user->_real());

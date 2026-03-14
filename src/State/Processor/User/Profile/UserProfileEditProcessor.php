@@ -30,13 +30,13 @@ readonly class UserProfileEditProcessor implements ProcessorInterface
         /** @var UserProfileEdit $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
-        $profile->setDisplayName($data->displayName);
-        $profile->setBio($data->bio);
-        $profile->setLocation($data->location);
-        $profile->setIsPublic($data->isPublic);
-        $profile->setUpdateDatetime(new DateTimeImmutable());
+        $profile->displayName = $data->displayName;
+        $profile->bio = $data->bio;
+        $profile->location = $data->location;
+        $profile->isPublic = $data->isPublic;
+        $profile->updateDatetime = new DateTimeImmutable();
 
         $this->entityManager->flush();
 

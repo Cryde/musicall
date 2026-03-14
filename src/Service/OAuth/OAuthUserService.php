@@ -37,7 +37,7 @@ readonly class OAuthUserService
         if ($socialAccount !== null) {
             // User already linked this social account - this is a login
             $user = $socialAccount->user;
-            $user->setLastLoginDatetime(new \DateTime());
+            $user->lastLoginDatetime = new \DateTime();
             $this->entityManager->flush();
 
             return new OAuthResult($user, false);
@@ -80,14 +80,14 @@ readonly class OAuthUserService
         $finalUsername = $this->ensureUniqueUsername($baseUsername);
 
         $user = new User();
-        $user->setEmail($email);
-        $user->setUsername($finalUsername);
-        $user->setPassword(null); // Social-only user, no password
-        $user->setConfirmationDatetime(new \DateTime()); // Auto-confirmed
-        $user->setLastLoginDatetime(new \DateTime()); // First login
+        $user->email = $email;
+        $user->username = $finalUsername;
+        $user->password = null; // Social-only user, no password
+        $user->confirmationDatetime = new \DateTime(); // Auto-confirmed
+        $user->lastLoginDatetime = new \DateTime(); // First login
 
         $profile = new UserProfile();
-        $user->setProfile($profile);
+        $user->profile = $profile;
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

@@ -27,13 +27,13 @@ readonly class TeacherProfileDeleteProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getTeacherProfile();
+        $profile = $user->teacherProfile;
 
         if (!$profile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }
 
-        $user->setTeacherProfile(null);
+        $user->teacherProfile = null;
         $this->entityManager->remove($profile);
         $this->entityManager->flush();
 

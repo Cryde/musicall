@@ -19,7 +19,7 @@ readonly class UsernameChangedListener
     public function __invoke(UsernameChangedEvent $event): void
     {
         $this->usernameChangedEmail->send(
-            $event->user->getEmail(),
+            $event->user->email,
             $event->oldUsername,
             $event->newUsername,
             $event->changedAt,

@@ -61,7 +61,7 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'title'                => 'Title gallery 2',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->getId(),
+                        '@id'      => '/api/users/' . $author->_real()->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -77,7 +77,7 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'title'                => 'Title gallery 1',
                     'publication_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->getId(),
+                        '@id'      => '/api/users/' . $author->_real()->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

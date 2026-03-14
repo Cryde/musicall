@@ -34,27 +34,27 @@ readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterfa
             return [];
         }
 
-        $userProfile = $user->getProfile();
+        $userProfile = $user->profile;
 
         // Check if profile is public
-        if (!$userProfile->isPublic()) {
+        if (!$userProfile->isPublic) {
             return [
                 'title' => 'Profil privé - MusicAll',
                 'description' => 'Ce profil est privé.',
             ];
         }
 
-        $username = $user->getUsername();
-        $displayName = $userProfile->getDisplayName() ?: $username;
+        $username = $user->username;
+        $displayName = $userProfile->displayName ?: $username;
 
         $description = sprintf('Découvrez le profil de %s sur MusicAll.', $displayName);
-        if ($userProfile->getBio()) {
-            $bio = $userProfile->getBio();
+        if ($userProfile->bio) {
+            $bio = $userProfile->bio;
             $description = mb_strlen($bio) > 150 ? mb_substr($bio, 0, 147) . '...' : $bio;
         }
 
         $cover = null;
-        $profilePicture = $user->getProfilePicture();
+        $profilePicture = $user->profilePicture;
         if ($profilePicture && $path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {
             $cover = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');
         }

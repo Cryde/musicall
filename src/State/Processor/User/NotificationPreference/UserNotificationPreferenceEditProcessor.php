@@ -29,33 +29,34 @@ readonly class UserNotificationPreferenceEditProcessor implements ProcessorInter
         /** @var UserNotificationPreferenceEdit $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $preference = $user->getNotificationPreference();
+        $preference = $user->notificationPreference;
 
         if (!$preference) {
             $preference = new UserNotificationPreference();
-            $user->setNotificationPreference($preference);
+            $preference->user = $user;
+            $user->notificationPreference = $preference;
             $this->entityManager->persist($preference);
         }
 
-        $preference->setSiteNews($data->siteNews);
-        $preference->setWeeklyRecap($data->weeklyRecap);
-        $preference->setMessageReceived($data->messageReceived);
-        $preference->setPublicationComment($data->publicationComment);
-        $preference->setForumReply($data->forumReply);
-        $preference->setMarketing($data->marketing);
-        $preference->setActivityReminder($data->activityReminder);
-        $preference->setUpdateDatetime(new DateTimeImmutable());
+        $preference->siteNews = $data->siteNews;
+        $preference->weeklyRecap = $data->weeklyRecap;
+        $preference->messageReceived = $data->messageReceived;
+        $preference->publicationComment = $data->publicationComment;
+        $preference->forumReply = $data->forumReply;
+        $preference->marketing = $data->marketing;
+        $preference->activityReminder = $data->activityReminder;
+        $preference->updateDatetime = new DateTimeImmutable();
 
         $this->entityManager->flush();
 
         $dto = new UserNotificationPreferenceEdit();
-        $dto->siteNews = $preference->isSiteNews();
-        $dto->weeklyRecap = $preference->isWeeklyRecap();
-        $dto->messageReceived = $preference->isMessageReceived();
-        $dto->publicationComment = $preference->isPublicationComment();
-        $dto->forumReply = $preference->isForumReply();
-        $dto->marketing = $preference->isMarketing();
-        $dto->activityReminder = $preference->isActivityReminder();
+        $dto->siteNews = $preference->siteNews;
+        $dto->weeklyRecap = $preference->weeklyRecap;
+        $dto->messageReceived = $preference->messageReceived;
+        $dto->publicationComment = $preference->publicationComment;
+        $dto->forumReply = $preference->forumReply;
+        $dto->marketing = $preference->marketing;
+        $dto->activityReminder = $preference->activityReminder;
 
         return $dto;
     }

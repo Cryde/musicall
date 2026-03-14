@@ -273,7 +273,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     {
         $user = UserFactory::new(['username' => 'musicien_photo'])->create();
         $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-musicien.jpg', 'imageSize' => 10]);
-        $user->_real()->setProfilePicture($profilePicture->_real());
+        $user->_real()->profilePicture = $profilePicture->_real();
         $user->_save();
 
         MusicianProfileFactory::createOne(['user' => $user]);
@@ -356,9 +356,9 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     public function test_get_metadata_for_user_profile_public(): void
     {
         $user = UserFactory::new(['username' => 'jean_dupont'])->create();
-        $user->_real()->getProfile()->setDisplayName('Jean Dupont');
-        $user->_real()->getProfile()->setBio('Guitariste passionné depuis 10 ans.');
-        $user->_real()->getProfile()->setIsPublic(true);
+        $user->_real()->profile->displayName = 'Jean Dupont';
+        $user->_real()->profile->bio = 'Guitariste passionné depuis 10 ans.';
+        $user->_real()->profile->isPublic = true;
         $user->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/u/jean_dupont');
@@ -372,7 +372,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     public function test_get_metadata_for_user_profile_private(): void
     {
         $user = UserFactory::new(['username' => 'utilisateur_prive'])->create();
-        $user->_real()->getProfile()->setIsPublic(false);
+        $user->_real()->profile->isPublic = false;
         $user->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/u/utilisateur_prive');
@@ -385,10 +385,10 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     public function test_get_metadata_for_user_profile_with_picture(): void
     {
         $user = UserFactory::new(['username' => 'marie_photo'])->create();
-        $user->_real()->getProfile()->setDisplayName('Marie Martin');
-        $user->_real()->getProfile()->setIsPublic(true);
+        $user->_real()->profile->displayName = 'Marie Martin';
+        $user->_real()->profile->isPublic = true;
         $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-marie.jpg', 'imageSize' => 10]);
-        $user->_real()->setProfilePicture($profilePicture->_real());
+        $user->_real()->profilePicture = $profilePicture->_real();
         $user->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/u/marie_photo');

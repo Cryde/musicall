@@ -29,7 +29,7 @@ readonly class UserProfileEditProvider implements ProviderInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
         return $this->buildFromEntity($user, $profile);
     }
@@ -38,16 +38,16 @@ readonly class UserProfileEditProvider implements ProviderInterface
     {
         $dto = new UserProfileEdit();
 
-        $dto->displayName = $profile->getDisplayName();
-        $dto->bio = $profile->getBio();
-        $dto->location = $profile->getLocation();
-        $dto->isPublic = $profile->isPublic();
+        $dto->displayName = $profile->displayName;
+        $dto->bio = $profile->bio;
+        $dto->location = $profile->location;
+        $dto->isPublic = $profile->isPublic;
 
-        if ($user->getProfilePicture() && $path = $this->uploaderHelper->asset($user->getProfilePicture(), 'imageFile')) {
+        if ($user->profilePicture && $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile')) {
             $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
         }
 
-        if ($profile->getCoverPicture() && $path = $this->uploaderHelper->asset($profile->getCoverPicture(), 'imageFile')) {
+        if ($profile->coverPicture && $path = $this->uploaderHelper->asset($profile->coverPicture, 'imageFile')) {
             $dto->coverPictureUrl = $this->cacheManager->getBrowserPath($path, 'user_cover_picture');
         }
 

@@ -40,7 +40,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
-        if (!$teacherProfile = $user->getTeacherProfile()) {
+        if (!$teacherProfile = $user->teacherProfile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }
 
@@ -59,7 +59,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
         $currentUser = $this->security->getUser();
 
         // Don't count own views
-        if ($currentUser && $currentUser->getId() === $profileOwner->getId()) {
+        if ($currentUser && $currentUser->id === $profileOwner->id) {
             return;
         }
 

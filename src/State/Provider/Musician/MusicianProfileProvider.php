@@ -40,7 +40,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
-        if (!$musicianProfile = $user->getMusicianProfile()) {
+        if (!$musicianProfile = $user->musicianProfile) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
 
@@ -60,7 +60,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
         $currentUser = $this->security->getUser();
 
         // Don't count own views
-        if ($currentUser && $currentUser->getId() === $profileOwner->getId()) {
+        if ($currentUser && $currentUser->id === $profileOwner->id) {
             return;
         }
 

@@ -48,15 +48,15 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
         ]);
 
         $preference = new UserNotificationPreference();
-        $preference->setUser($user->_real());
-        $preference->setSiteNews(false);
-        $preference->setWeeklyRecap(true);
-        $preference->setMessageReceived(false);
-        $preference->setPublicationComment(true);
-        $preference->setForumReply(false);
-        $preference->setMarketing(true);
-        $preference->setActivityReminder(false);
-        $user->_real()->setNotificationPreference($preference);
+        $preference->user = $user->_real();
+        $preference->siteNews = false;
+        $preference->weeklyRecap = true;
+        $preference->messageReceived = false;
+        $preference->publicationComment = true;
+        $preference->forumReply = false;
+        $preference->marketing = true;
+        $preference->activityReminder = false;
+        $user->_real()->notificationPreference = $preference;
         $user->_save();
 
         $this->client->loginUser($user->_real());

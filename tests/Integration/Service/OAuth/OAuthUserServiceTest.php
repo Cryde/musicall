@@ -50,7 +50,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
-        $this->assertSame($existingUser->getId(), $result->user->getId());
+        $this->assertSame($existingUser->id, $result->user->id);
         $this->assertFalse($result->isNew);
         $this->assertSame(1, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
@@ -77,7 +77,7 @@ class OAuthUserServiceTest extends KernelTestCase
             $currentUser
         );
 
-        $this->assertSame($currentUser->getId(), $result->user->getId());
+        $this->assertSame($currentUser->id, $result->user->id);
         $this->assertFalse($result->isNew);
         $this->assertSame(1, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
@@ -87,7 +87,7 @@ class OAuthUserServiceTest extends KernelTestCase
             'google-id-456'
         );
         $this->assertNotNull($socialAccount);
-        $this->assertSame($currentUser->getId(), $socialAccount->user->getId());
+        $this->assertSame($currentUser->id, $socialAccount->user->id);
     }
 
     public function test_find_or_create_user_throws_exception_when_email_exists(): void
@@ -135,10 +135,10 @@ class OAuthUserServiceTest extends KernelTestCase
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
         $this->assertTrue($result->isNew);
-        $this->assertSame('newuser@example.com', $result->user->getEmail());
-        $this->assertSame('newuser', $result->user->getUsername());
-        $this->assertNull($result->user->getPassword());
-        $this->assertNotNull($result->user->getConfirmationDatetime());
+        $this->assertSame('newuser@example.com', $result->user->email);
+        $this->assertSame('newuser', $result->user->username);
+        $this->assertNull($result->user->password);
+        $this->assertNotNull($result->user->confirmationDatetime);
         $this->assertSame(1, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
 
@@ -147,7 +147,7 @@ class OAuthUserServiceTest extends KernelTestCase
             'google-id-new'
         );
         $this->assertNotNull($socialAccount);
-        $this->assertSame($result->user->getId(), $socialAccount->user->getId());
+        $this->assertSame($result->user->id, $socialAccount->user->id);
     }
 
     public function test_find_or_create_user_sanitizes_username(): void
@@ -167,7 +167,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
-        $this->assertSame('johndoespecial', $result->user->getUsername());
+        $this->assertSame('johndoespecial', $result->user->username);
         $this->assertSame(1, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
     }
@@ -191,7 +191,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
-        $this->assertSame('johndoe1', $result->user->getUsername());
+        $this->assertSame('johndoe1', $result->user->username);
         $this->assertSame(2, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
     }
@@ -202,7 +202,7 @@ class OAuthUserServiceTest extends KernelTestCase
         $mock->expects($this->once())
             ->method('importFromUrl')
             ->with(
-                $this->callback(fn ($user) => $user->getEmail() === 'withpicture@example.com'),
+                $this->callback(fn ($user) => $user->email === 'withpicture@example.com'),
                 'https://example.com/picture.jpg'
             );
 
@@ -243,7 +243,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
-        $this->assertSame('user', $result->user->getUsername());
+        $this->assertSame('user', $result->user->username);
         $this->assertSame(1, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
     }
@@ -266,7 +266,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
 
-        $this->assertSame('user1', $result->user->getUsername());
+        $this->assertSame('user1', $result->user->username);
         $this->assertSame(2, $this->getUserRepository()->count());
         $this->assertSame(1, $this->getSocialAccountRepository()->count());
     }

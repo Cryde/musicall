@@ -35,9 +35,9 @@ class UserGetTest extends ApiTestCase
             '@context' => '/api/contexts/UserSelf',
             '@id' => '/api/users/self',
             '@type' => 'UserSelf',
-            'id'              => $user1->getId(),
-            'username'        => $user1->getUsername(),
-            'email'           => $user1->getEmail(),
+            'id'              => $user1->id,
+            'username'        => $user1->username,
+            'email'           => $user1->email,
             'roles'           => ['ROLE_USER'],
             'profile_picture' => null,
             'username_changed_datetime' => null,
@@ -56,9 +56,9 @@ class UserGetTest extends ApiTestCase
             '@context' => '/api/contexts/UserSelf',
             '@id' => '/api/users/self',
             '@type' => 'UserSelf',
-            'id'              => $user1->getId(),
-            'username'        => $user1->getUsername(),
-            'email'           => $user1->getEmail(),
+            'id'              => $user1->id,
+            'username'        => $user1->username,
+            'email'           => $user1->email,
             'roles'           => ['ROLE_ADMIN', 'ROLE_USER'],
             'profile_picture' => null,
             'username_changed_datetime' => null,
@@ -71,14 +71,14 @@ class UserGetTest extends ApiTestCase
     {
         $user1 = UserFactory::new()->asBaseUser()->create()->_real();
 
-        $this->client->request('GET', '/api/users/' . $user1->getId());
+        $this->client->request('GET', '/api/users/' . $user1->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/User',
-            '@id' => '/api/users/' . $user1->getId(),
+            '@id' => '/api/users/' . $user1->id,
             '@type' => 'User',
-            'id'              => $user1->getId(),
-            'username'        => $user1->getUsername(),
+            'id'              => $user1->id,
+            'username'        => $user1->username,
             'profile_picture' => null,
             'deletion_datetime' => null,
         ]);

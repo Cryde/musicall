@@ -54,7 +54,7 @@ class GalleryPendingListTest extends ApiTestCase
                     'title'                => 'Ma galerie photo',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id'      => '/api/users/' . $admin->getId(),
+                        '@id'      => '/api/users/' . $admin->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

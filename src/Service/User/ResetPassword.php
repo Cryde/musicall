@@ -28,14 +28,14 @@ readonly class ResetPassword
             return;
         }
 
-        $user->setResetRequestDatetime(new \DateTime());
+        $user->resetRequestDatetime = new \DateTime();
         $this->userTokenGenerator->generate($user);
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $this->resetPasswordEmail->send(
-            $user->getEmail(),
-            $user->getUsername(),
-            $baseUrl . 'lost-password/' . $user->getToken()
+            $user->email,
+            $user->username,
+            $baseUrl . 'lost-password/' . $user->token
         );
     }
 }

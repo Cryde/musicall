@@ -47,7 +47,7 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
         /** @var TeacherProfileInput $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getTeacherProfile();
+        $profile = $user->teacherProfile;
 
         if (!$profile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');

@@ -40,7 +40,7 @@ readonly class UserGalleryPreviewProvider implements ProviderInterface
             throw new NotFoundHttpException('Gallery not found');
         }
 
-        $isOwner = $gallery->author->getId() === $user->getId();
+        $isOwner = $gallery->author->id === $user->id;
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
         if (!$isOwner && !$isAdmin) {

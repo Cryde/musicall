@@ -36,7 +36,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
         /** @var User $user */
-        if (!$teacherProfile = $user->getTeacherProfile()) {
+        if (!$teacherProfile = $user->teacherProfile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }
 

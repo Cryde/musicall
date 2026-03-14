@@ -24,7 +24,7 @@ class UserChangeUsernameTest extends ApiTestCase
     public function test_change_username(): void
     {
         $user = UserFactory::new()->asBaseUser()->create()->_real();
-        $oldUsername = $user->getUsername();
+        $oldUsername = $user->username;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'new_username'], self::SERVER_PARAMS);
@@ -33,10 +33,10 @@ class UserChangeUsernameTest extends ApiTestCase
 
         // Verify username was changed in database
         $this->getEntityManager()->clear();
-        $updatedUser = static::getContainer()->get(UserRepository::class)->find($user->getId());
-        $this->assertSame('new_username', $updatedUser->getUsername());
-        $this->assertNotSame($oldUsername, $updatedUser->getUsername());
-        $this->assertNotNull($updatedUser->getUsernameChangedDatetime());
+        $updatedUser = static::getContainer()->get(UserRepository::class)->find($user->id);
+        $this->assertSame('new_username', $updatedUser->username);
+        $this->assertNotSame($oldUsername, $updatedUser->username);
+        $this->assertNotNull($updatedUser->usernameChangedDatetime);
     }
 
     public function test_change_username_not_logged(): void
@@ -76,7 +76,7 @@ class UserChangeUsernameTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create()->_real();
 
         $this->client->loginUser($user);
-        $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => $user->getUsername()], self::SERVER_PARAMS);
+        $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => $user->username], self::SERVER_PARAMS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([

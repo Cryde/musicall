@@ -38,20 +38,18 @@ readonly class RegisterProcessor implements ProcessorInterface
             throw new UserAlreadyLoggedException('Vous êtes déjà connecté');
         }
 
-        $user = new User()
-            ->setUsername($data->username)
-            ->setEmail($data->email)
-            ->setPlainPassword($data->password);
+        $user = new User();
+        $user->username = $data->username;
+        $user->email = $data->email;
+        $user->plainPassword = $data->password;
 
-        $user->setPassword(
-            $this->userPasswordHasher->hashPassword(
-                $user,
-                $data->password
-            )
+        $user->password = $this->userPasswordHasher->hashPassword(
+            $user,
+            $data->password
         );
 
         $profile = new UserProfile();
-        $user->setProfile($profile);
+        $user->profile = $profile;
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

@@ -22,8 +22,8 @@ class UserNotificationPreferenceCheckerTest extends TestCase
     #[DataProvider('provideCanReceiveNotificationTrueCases')]
     public function test_can_receive_notification_returns_true(string $method, ?UserNotificationPreference $preference): void
     {
-        $user = $this->createStub(User::class);
-        $user->method('getNotificationPreference')->willReturn($preference);
+        $user = new User();
+        $user->notificationPreference = $preference;
 
         $this->assertTrue($this->checker->$method($user));
     }
@@ -31,8 +31,8 @@ class UserNotificationPreferenceCheckerTest extends TestCase
     #[DataProvider('provideCanReceiveNotificationFalseCases')]
     public function test_can_receive_notification_returns_false(string $method, ?UserNotificationPreference $preference): void
     {
-        $user = $this->createStub(User::class);
-        $user->method('getNotificationPreference')->willReturn($preference);
+        $user = new User();
+        $user->notificationPreference = $preference;
 
         $this->assertFalse($this->checker->$method($user));
     }
@@ -88,13 +88,13 @@ class UserNotificationPreferenceCheckerTest extends TestCase
         bool $activityReminder = true,
     ): UserNotificationPreference {
         $preference = new UserNotificationPreference();
-        $preference->setSiteNews($siteNews);
-        $preference->setWeeklyRecap($weeklyRecap);
-        $preference->setMessageReceived($messageReceived);
-        $preference->setPublicationComment($publicationComment);
-        $preference->setForumReply($forumReply);
-        $preference->setMarketing($marketing);
-        $preference->setActivityReminder($activityReminder);
+        $preference->siteNews = $siteNews;
+        $preference->weeklyRecap = $weeklyRecap;
+        $preference->messageReceived = $messageReceived;
+        $preference->publicationComment = $publicationComment;
+        $preference->forumReply = $forumReply;
+        $preference->marketing = $marketing;
+        $preference->activityReminder = $activityReminder;
 
         return $preference;
     }

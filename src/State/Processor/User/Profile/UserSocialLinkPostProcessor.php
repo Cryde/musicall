@@ -33,7 +33,7 @@ readonly class UserSocialLinkPostProcessor implements ProcessorInterface
         /** @var UserSocialLinkResource $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        $profile = $user->getProfile();
+        $profile = $user->profile;
 
         $platform = SocialPlatform::tryFrom($data->platform);
         if (!$platform) {
@@ -41,7 +41,7 @@ readonly class UserSocialLinkPostProcessor implements ProcessorInterface
         }
 
         // Check if platform already exists for this profile
-        foreach ($profile->getSocialLinks() as $existingLink) {
+        foreach ($profile->socialLinks as $existingLink) {
             if ($existingLink->platform === $platform) {
                 throw new ConflictHttpException('Un lien pour cette plateforme existe déjà');
             }
