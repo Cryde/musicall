@@ -30,14 +30,14 @@ class ForumPostVoteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->getId() . '/vote',
+            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
             ['user_vote' => 1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumPostVoteSummary',
-            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->getId(),
+            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->_real()->id,
             '@type' => 'ForumPostVoteSummary',
             'upvotes' => 1,
             'downvotes' => 0,
@@ -50,7 +50,7 @@ class ForumPostVoteTest extends ApiTestCase
         $forumPost = $this->createForumPost();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $forumPost->_real()->setVoteCache($voteCache->_real());
+        $forumPost->_real()->voteCache = $voteCache->_real();
         $forumPost->_save();
 
         VoteFactory::new([
@@ -59,20 +59,20 @@ class ForumPostVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_forum_post',
-            'entityId' => $forumPost->_real()->getId(),
+            'entityId' => $forumPost->_real()->id,
         ])->create();
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->getId() . '/vote',
+            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
             ['user_vote' => 1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumPostVoteSummary',
-            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->getId(),
+            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->_real()->id,
             '@type' => 'ForumPostVoteSummary',
             'upvotes' => 0,
             'downvotes' => 0,
@@ -85,7 +85,7 @@ class ForumPostVoteTest extends ApiTestCase
         $forumPost = $this->createForumPost();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $forumPost->_real()->setVoteCache($voteCache->_real());
+        $forumPost->_real()->voteCache = $voteCache->_real();
         $forumPost->_save();
 
         VoteFactory::new([
@@ -94,20 +94,20 @@ class ForumPostVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_forum_post',
-            'entityId' => $forumPost->_real()->getId(),
+            'entityId' => $forumPost->_real()->id,
         ])->create();
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->getId() . '/vote',
+            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
             ['user_vote' => -1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumPostVoteSummary',
-            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->getId(),
+            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->_real()->id,
             '@type' => 'ForumPostVoteSummary',
             'upvotes' => 0,
             'downvotes' => 1,
@@ -147,7 +147,7 @@ class ForumPostVoteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->getId() . '/vote',
+            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
             ['user_vote' => 5],
             self::SERVER_PARAMS
         );

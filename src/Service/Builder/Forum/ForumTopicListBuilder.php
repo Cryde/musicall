@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Service\Builder\Forum;
 
@@ -31,30 +29,26 @@ readonly class ForumTopicListBuilder
 
     public function buildFromEntity(ForumTopicEntity $topic): ForumTopic
     {
-        $author = $topic->getAuthor();
-
         $item = new ForumTopic();
-        $item->id = (string) $topic->getId();
-        $item->title = (string) $topic->getTitle();
+        $item->id = (string) $topic->id;
+        $item->title = $topic->title;
         $item->slug = $topic->slug;
-        $item->type = (int) $topic->getType();
-        $item->isLocked = (bool) $topic->getIsLocked();
-        $item->lastPost = $topic->getLastPost() ? $this->buildPostSimple($topic->getLastPost()) : null;
-        $item->creationDatetime = $topic->getCreationDatetime();
-        $item->author = $this->userDtoBuilder->buildFromEntity($author);
-        $item->postNumber = (int) $topic->getPostNumber();
+        $item->type = $topic->type;
+        $item->isLocked = $topic->isLocked;
+        $item->lastPost = $topic->lastPost ? $this->buildPostSimple($topic->lastPost) : null;
+        $item->creationDatetime = $topic->creationDatetime;
+        $item->author = $this->userDtoBuilder->buildFromEntity($topic->author);
+        $item->postNumber = $topic->postNumber;
 
         return $item;
     }
 
     private function buildPostSimple(ForumPostEntity $post): ForumPost
     {
-        $creator = $post->getCreator();
-
         $item = new ForumPost();
-        $item->id = (string) $post->getId();
-        $item->creationDatetime = $post->getCreationDatetime();
-        $item->creator = $this->userDtoBuilder->buildFromEntity($creator);
+        $item->id = (string) $post->id;
+        $item->creationDatetime = $post->creationDatetime;
+        $item->creator = $this->userDtoBuilder->buildFromEntity($post->creator);
 
         return $item;
     }

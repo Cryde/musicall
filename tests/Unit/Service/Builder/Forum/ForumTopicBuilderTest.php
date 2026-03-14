@@ -13,16 +13,17 @@ class ForumTopicBuilderTest extends TestCase
     {
         $builder = new ForumTopicBuilder();
 
-        $forum = (new Forum())->setTitle('forum_title');
+        $forum = new Forum();
+        $forum->title = 'forum_title';
         $author = (new User())->setId('user_id')->setUsername('user_username');
         $result = $builder->build($forum, $author, 'forum_topic_title');
 
-        $this->assertSame('forum_topic_title', $result->getTitle());
-        $this->assertSame('user_id', $result->getAuthor()->getId());
-        $this->assertSame('forum_title', $result->getForum()->getTitle());
-        $this->assertSame(0, $result->getType()); // ForumTopic::TYPE_TOPIC_DEFAULT
-        $this->assertSame(false, $result->getIsLocked());
-        $this->assertSame(null, $result->getLastPost());
-        $this->assertSame(0, $result->getPostNumber());
+        $this->assertSame('forum_topic_title', $result->title);
+        $this->assertSame('user_id', $result->author->getId());
+        $this->assertSame('forum_title', $result->forum->title);
+        $this->assertSame(0, $result->type);
+        $this->assertSame(false, $result->isLocked);
+        $this->assertSame(null, $result->lastPost);
+        $this->assertSame(0, $result->postNumber);
     }
 }

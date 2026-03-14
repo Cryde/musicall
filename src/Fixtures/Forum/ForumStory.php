@@ -247,7 +247,7 @@ class ForumStory extends Story
     private function createPostsForTopic(Proxy $topic, int $count): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
-        $topicCreationDate = \DateTime::createFromInterface($topic->getCreationDatetime());
+        $topicCreationDate = \DateTime::createFromInterface($topic->_real()->creationDatetime);
         $lastPost = null;
 
         for ($i = 0; $i < $count; $i++) {
@@ -269,9 +269,9 @@ class ForumStory extends Story
         }
 
         // Update topic with last post and post count
-        $topic->_real()->setPostNumber($count);
+        $topic->_real()->postNumber = $count;
         if ($lastPost) {
-            $topic->_real()->setLastPost($lastPost->_real());
+            $topic->_real()->lastPost = $lastPost->_real();
         }
         $topic->_save();
     }
@@ -285,14 +285,14 @@ class ForumStory extends Story
         $postCount = 0;
 
         foreach ($this->getPool(self::TOPICS) as $topic) {
-            if ($topic->getForum()->getId() === $forum->getId()) {
+            if ($topic->_real()->forum->id === $forum->_real()->id) {
                 $topicCount++;
-                $postCount += $topic->getPostNumber();
+                $postCount += $topic->_real()->postNumber;
             }
         }
 
-        $forum->_real()->setTopicNumber($topicCount);
-        $forum->_real()->setPostNumber($postCount);
+        $forum->_real()->topicNumber = $topicCount;
+        $forum->_real()->postNumber = $postCount;
         $forum->_save();
     }
 }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Entity\Forum;
 
@@ -23,19 +21,27 @@ class ForumSource
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ApiProperty(identifier: false)]
-    private ?UuidInterface $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
+
     /**
      * @var Collection<int, ForumCategory>
      */
     #[ORM\OneToMany(mappedBy: 'forumSource', targetEntity: ForumCategory::class)]
-    private Collection $forumCategories;
+    public Collection $forumCategories;
+
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[ApiProperty(identifier: true)]
-    private string $slug;
+    public string $slug;
+
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $description = null;
+    public ?string $description = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     public function __construct()
     {
@@ -43,24 +49,11 @@ class ForumSource
         $this->forumCategories = new ArrayCollection();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id?->toString();
-    }
-
-    /**
-     * @return Collection<int, ForumCategory>
-     */
-    public function getForumCategories(): Collection
-    {
-        return $this->forumCategories;
-    }
-
     public function addForumCategory(ForumCategory $forumCategory): self
     {
         if (!$this->forumCategories->contains($forumCategory)) {
             $this->forumCategories[] = $forumCategory;
-            $forumCategory->setForumSource($this);
+            $forumCategory->forumSource = $this;
         }
 
         return $this;
@@ -69,42 +62,6 @@ class ForumSource
     public function removeForumCategory(ForumCategory $forumCategory): self
     {
         $this->forumCategories->removeElement($forumCategory);
-
-        return $this;
-    }
-
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
 
         return $this;
     }

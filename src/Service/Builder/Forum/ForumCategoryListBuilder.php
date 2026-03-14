@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Service\Builder\Forum;
 
@@ -27,9 +25,9 @@ readonly class ForumCategoryListBuilder
     private function buildCategoryItem(ForumCategoryEntity $category): ForumCategory
     {
         $item = new ForumCategory();
-        $item->id = (string) $category->getId();
-        $item->title = (string) $category->getTitle();
-        $item->forums = $this->buildForumItems($category->getForums()->toArray());
+        $item->id = (string) $category->id;
+        $item->title = $category->title;
+        $item->forums = $this->buildForumItems($category->forums->toArray());
 
         return $item;
     }
@@ -42,7 +40,7 @@ readonly class ForumCategoryListBuilder
     private function buildForumItems(array $forums): array
     {
         // Sort forums by position
-        usort($forums, fn (ForumEntity $a, ForumEntity $b): int => $a->getPosition() <=> $b->getPosition());
+        usort($forums, fn (ForumEntity $a, ForumEntity $b): int => $a->position <=> $b->position);
 
         return array_map(
             fn (ForumEntity $forum): Forum => $this->buildForumItem($forum),
@@ -53,10 +51,10 @@ readonly class ForumCategoryListBuilder
     private function buildForumItem(ForumEntity $forum): Forum
     {
         $item = new Forum();
-        $item->id = (string) $forum->getId();
-        $item->title = (string) $forum->getTitle();
+        $item->id = (string) $forum->id;
+        $item->title = $forum->title;
         $item->slug = $forum->slug;
-        $item->description = (string) $forum->getDescription();
+        $item->description = $forum->description;
 
         return $item;
     }

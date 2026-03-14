@@ -35,18 +35,19 @@ class TopicCreationProcedure
         /** @var User $user */
         $user = $this->security->getUser();
         // Create the topic
-        $topic = $this->forumTopicBuilder->build($forum, $user, $title)->setPostNumber(1);
+        $topic = $this->forumTopicBuilder->build($forum, $user, $title);
+        $topic->postNumber = 1;
         $topic->slug = $this->slugifier->create($topic, 'title');
         $this->entityManager->persist($topic);
         // create the first post related to the topic
         $post = $this->forumPostBuilder->build($topic, $user, $message);
         $this->entityManager->persist($post);
         // set the post as the last post for this topic
-        $topic->setLastPost($post);
+        $topic->lastPost = $post;
 
         // Update forum counters
-        $forum->setTopicNumber($forum->getTopicNumber() + 1);
-        $forum->setPostNumber($forum->getPostNumber() + 1);
+        $forum->topicNumber = $forum->topicNumber + 1;
+        $forum->postNumber = $forum->postNumber + 1;
 
         $this->entityManager->flush();
 

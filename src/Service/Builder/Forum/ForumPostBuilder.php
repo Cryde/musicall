@@ -10,9 +10,11 @@ class ForumPostBuilder
 {
     public function build(ForumTopic $topic, User $author, string $content): ForumPost
     {
-        return (new ForumPost())
-            ->setTopic($topic)
-            ->setCreator($author)
-            ->setContent($content);
+        $post = new ForumPost();
+        $post->topic = $topic;
+        $post->creator = $author;
+        $post->content = $content;
+
+        return $post;
     }
 }

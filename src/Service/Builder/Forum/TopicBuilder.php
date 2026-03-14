@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Service\Builder\Forum;
 
@@ -13,14 +11,12 @@ readonly class TopicBuilder
 {
     public function buildFromEntity(ForumTopicEntity $topic): Topic
     {
-        $forum = $topic->getForum();
-
         $item = new Topic();
-        $item->id = (string) $topic->getId();
-        $item->title = (string) $topic->getTitle();
+        $item->id = (string) $topic->id;
+        $item->title = $topic->title;
         $item->slug = $topic->slug;
-        $item->isLocked = (bool) $topic->getIsLocked();
-        $item->forum = $this->buildForum($forum);
+        $item->isLocked = $topic->isLocked;
+        $item->forum = $this->buildForum($topic->forum);
 
         return $item;
     }
@@ -28,10 +24,10 @@ readonly class TopicBuilder
     private function buildForum(ForumEntity $forum): Forum
     {
         $item = new Forum();
-        $item->id = (string) $forum->getId();
-        $item->title = (string) $forum->getTitle();
+        $item->id = (string) $forum->id;
+        $item->title = $forum->title;
         $item->slug = $forum->slug;
-        $item->description = (string) $forum->getDescription();
+        $item->description = $forum->description;
 
         return $item;
     }

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Service\Builder\Forum;
 
@@ -13,8 +11,8 @@ readonly class ForumDetailBuilder
     public function buildFromEntity(ForumEntity $forum): Forum
     {
         $item = new Forum();
-        $item->id = (string) $forum->getId();
-        $item->title = (string) $forum->getTitle();
+        $item->id = (string) $forum->id;
+        $item->title = $forum->title;
         $item->forumCategory = $this->buildForumCategorySimple($forum);
 
         return $item;
@@ -22,11 +20,11 @@ readonly class ForumDetailBuilder
 
     private function buildForumCategorySimple(ForumEntity $forum): ForumCategory
     {
-        $forumCategory = $forum->getForumCategory();
+        $forumCategory = $forum->forumCategory;
 
         $category = new ForumCategory();
-        $category->id = (string) $forumCategory->getId();
-        $category->title = (string) $forumCategory->getTitle();
+        $category->id = (string) $forumCategory->id;
+        $category->title = $forumCategory->title;
 
         return $category;
     }

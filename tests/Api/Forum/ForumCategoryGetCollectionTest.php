@@ -94,28 +94,28 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/forum_categories/' . $category1->getId(),
+                    '@id' => '/api/forum_categories/' . $category1->_real()->id,
                     '@type' => 'ForumCategory',
-                    'id' => $category1->getId(),
+                    'id' => $category1->_real()->id,
                     'title' => 'First Category',
                     'forums' => [
                         [
                             '@type' => 'Forum',
-                            'id' => $forum1a->getId(),
+                            'id' => $forum1a->_real()->id,
                             'title' => 'Forum 1A',
                             'slug' => 'forum-1a',
                             'description' => 'First forum in first category',
                         ],
                         [
                             '@type' => 'Forum',
-                            'id' => $forum1b->getId(),
+                            'id' => $forum1b->_real()->id,
                             'title' => 'Forum 1B',
                             'slug' => 'forum-1b',
                             'description' => 'Second forum in first category',
                         ],
                         [
                             '@type' => 'Forum',
-                            'id' => $forum1c->getId(),
+                            'id' => $forum1c->_real()->id,
                             'title' => 'Forum 1C',
                             'slug' => 'forum-1c',
                             'description' => 'Third forum in first category',
@@ -123,21 +123,21 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/forum_categories/' . $category2->getId(),
+                    '@id' => '/api/forum_categories/' . $category2->_real()->id,
                     '@type' => 'ForumCategory',
-                    'id' => $category2->getId(),
+                    'id' => $category2->_real()->id,
                     'title' => 'Second Category',
                     'forums' => [
                         [
                             '@type' => 'Forum',
-                            'id' => $forum2a->getId(),
+                            'id' => $forum2a->_real()->id,
                             'title' => 'Forum 2A',
                             'slug' => 'forum-2a',
                             'description' => 'First forum in second category',
                         ],
                         [
                             '@type' => 'Forum',
-                            'id' => $forum2b->getId(),
+                            'id' => $forum2b->_real()->id,
                             'title' => 'Forum 2B',
                             'slug' => 'forum-2b',
                             'description' => 'Second forum in second category',
@@ -145,14 +145,14 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/forum_categories/' . $category3->getId(),
+                    '@id' => '/api/forum_categories/' . $category3->_real()->id,
                     '@type' => 'ForumCategory',
-                    'id' => $category3->getId(),
+                    'id' => $category3->_real()->id,
                     'title' => 'Third Category',
                     'forums' => [
                         [
                             '@type' => 'Forum',
-                            'id' => $forum3a->getId(),
+                            'id' => $forum3a->_real()->id,
                             'title' => 'Forum 3A',
                             'slug' => 'forum-3a',
                             'description' => 'Only forum in third category',
@@ -205,14 +205,14 @@ class ForumCategoryGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/forum_categories/' . $rootCategory->getId(),
+                    '@id' => '/api/forum_categories/' . $rootCategory->_real()->id,
                     '@type' => 'ForumCategory',
-                    'id' => $rootCategory->getId(),
+                    'id' => $rootCategory->_real()->id,
                     'title' => 'Root Category',
                     'forums' => [
                         [
                             '@type' => 'Forum',
-                            'id' => $rootForum->getId(),
+                            'id' => $rootForum->_real()->id,
                             'title' => 'Root Forum',
                             'slug' => 'root-forum',
                             'description' => 'Forum in root source',

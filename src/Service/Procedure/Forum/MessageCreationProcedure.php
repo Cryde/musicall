@@ -32,7 +32,7 @@ readonly class MessageCreationProcedure
             throw new NotFoundHttpException('Ce sujet n\'existe pas.');
         }
 
-        if ($topic->getIsLocked()) {
+        if ($topic->isLocked) {
             throw new BadRequestHttpException('Ce sujet est verrouillé. Vous ne pouvez plus y répondre.');
         }
 
@@ -42,12 +42,12 @@ readonly class MessageCreationProcedure
         $this->entityManager->persist($post);
 
         // Update topic counters
-        $topic->setLastPost($post);
-        $topic->setPostNumber($topic->getPostNumber() + 1);
+        $topic->lastPost = $post;
+        $topic->postNumber = $topic->postNumber + 1;
 
         // Update forum counters
-        $forum = $topic->getForum();
-        $forum->setPostNumber($forum->getPostNumber() + 1);
+        $forum = $topic->forum;
+        $forum->postNumber = $forum->postNumber + 1;
 
         $this->entityManager->flush();
 

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Entity\Forum;
 
@@ -21,21 +19,30 @@ class ForumCategory
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?UuidInterface $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
+
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private string $title;
+    public string $title;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
+
     #[ORM\Column(type: Types::INTEGER)]
-    private int $position;
+    public int $position;
+
     #[ORM\ManyToOne(targetEntity: ForumSource::class, inversedBy: 'forumCategories')]
     #[ORM\JoinColumn(nullable: false)]
-    private ForumSource $forumSource;
+    public ForumSource $forumSource;
+
     /**
      * @var Collection<int, Forum>
      */
     #[ORM\OneToMany(mappedBy: 'forumCategory', targetEntity: Forum::class)]
-    private Collection $forums;
+    public Collection $forums;
 
     public function __construct()
     {
@@ -43,72 +50,11 @@ class ForumCategory
         $this->forums = new ArrayCollection();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id?->toString();
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getPosition(): ?int
-    {
-        return $this->position;
-    }
-
-    public function setPosition(int $position): self
-    {
-        $this->position = $position;
-
-        return $this;
-    }
-
-    public function getForumSource(): ForumSource
-    {
-        return $this->forumSource;
-    }
-
-    public function setForumSource(ForumSource $forumSource): self
-    {
-        $this->forumSource = $forumSource;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Forum>
-     */
-    public function getForums(): Collection
-    {
-        return $this->forums;
-    }
-
     public function addForum(Forum $forum): self
     {
         if (!$this->forums->contains($forum)) {
             $this->forums[] = $forum;
-            $forum->setForumCategory($this);
+            $forum->forumCategory = $this;
         }
 
         return $this;

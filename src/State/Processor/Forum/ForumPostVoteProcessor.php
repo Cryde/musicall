@@ -54,10 +54,10 @@ readonly class ForumPostVoteProcessor implements ProcessorInterface
 
     private function buildSummary(ForumPost $forumPost): ForumPostVoteSummary
     {
-        $voteCache = $forumPost->getVoteCache();
+        $voteCache = $forumPost->voteCache;
 
         $summary = new ForumPostVoteSummary();
-        $summary->id = $forumPost->getId() ?? '';
+        $summary->id = (string) $forumPost->id;
         $summary->upvotes = $voteCache?->getUpvoteCount() ?? 0;
         $summary->downvotes = $voteCache?->getDownvoteCount() ?? 0;
 

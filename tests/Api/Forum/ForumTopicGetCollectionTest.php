@@ -74,17 +74,17 @@ class ForumTopicGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-15 15:30:00'),
         ])->create();
 
-        $newerTopic->_real()->setLastPost($lastPost->_real());
+        $newerTopic->_real()->lastPost = $lastPost->_real();
         $newerTopic->_save();
 
         // Get IDs before request
         $author1Id = $author1->getId();
         $author2Id = $author2->getId();
         $lastPostCreatorId = $lastPostCreator->getId();
-        $pinnedTopicId = $pinnedTopic->getId();
-        $newerTopicId = $newerTopic->getId();
-        $olderTopicId = $olderTopic->getId();
-        $lastPostId = $lastPost->getId();
+        $pinnedTopicId = $pinnedTopic->_real()->id;
+        $newerTopicId = $newerTopic->_real()->id;
+        $olderTopicId = $olderTopic->_real()->id;
+        $lastPostId = $lastPost->_real()->id;
 
         $this->client->request('GET', '/api/forums/test-forum/topics');
         $this->assertResponseIsSuccessful();

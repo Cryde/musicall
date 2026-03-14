@@ -61,8 +61,8 @@ readonly class ForumMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         return [
-            'title' => sprintf('%s - Forum - MusicAll', $forum->getTitle()),
-            'description' => (string) $forum->getDescription(),
+            'title' => sprintf('%s - Forum - MusicAll', $forum->title),
+            'description' => $forum->description,
         ];
     }
 
@@ -78,11 +78,11 @@ readonly class ForumMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         return [
-            'title' => sprintf('%s - Forum - MusicAll', $topic->getTitle()),
+            'title' => sprintf('%s - Forum - MusicAll', $topic->title),
             'description' => sprintf(
                 'Discussion "%s" dans le forum %s sur MusicAll.',
-                $topic->getTitle(),
-                $topic->getForum()->getTitle()
+                $topic->title,
+                $topic->forum->title
             ),
         ];
     }

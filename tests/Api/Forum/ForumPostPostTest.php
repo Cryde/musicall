@@ -48,8 +48,8 @@ class ForumPostPostTest extends ApiTestCase
 
         //pretest
         $this->assertCount(0, $forumPostRepository->findBy(['topic' => $topic->_real()]));
-        $this->assertSame(10, $topic->getPostNumber());
-        $this->assertSame(5, $forum1->getPostNumber());
+        $this->assertSame(10, $topic->postNumber);
+        $this->assertSame(5, $forum1->postNumber);
 
         $this->client->loginUser($user1->_real());
         $this->client->jsonRequest('POST', '/api/forum/posts',
@@ -65,10 +65,10 @@ class ForumPostPostTest extends ApiTestCase
         $userId = $user1->getId();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/TopicPost',
-            '@id' => '/api/topic_posts/' . $results[0]->getId(),
+            '@id' => '/api/topic_posts/' . $results[0]->id,
             '@type' => 'TopicPost',
-            'id'                => $results[0]->getId(),
-            'creation_datetime' => $results[0]->getCreationDatetime()->format('c'),
+            'id'                => $results[0]->id,
+            'creation_datetime' => $results[0]->creationDatetime->format('c'),
             'content'           => 'test content for new message',
             'creator'           => [
                 '@type' => 'User',
@@ -82,9 +82,9 @@ class ForumPostPostTest extends ApiTestCase
         // Verify counters are incremented
         $topic->_refresh();
         $forum1->_refresh();
-        $this->assertSame(11, $topic->getPostNumber());
-        $this->assertSame(6, $forum1->getPostNumber());
-        $this->assertSame($results[0]->getId(), $topic->getLastPost()->getId());
+        $this->assertSame(11, $topic->postNumber);
+        $this->assertSame(6, $forum1->postNumber);
+        $this->assertSame($results[0]->id, $topic->lastPost->id);
     }
 
     public function test_post_with_empty_content(): void

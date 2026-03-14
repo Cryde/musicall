@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Service\Builder\Forum;
 
@@ -40,16 +38,14 @@ readonly class TopicPostListBuilder
 
     public function buildFromEntity(ForumPostEntity $post): TopicPost
     {
-        $creator = $post->getCreator();
-
         $item = new TopicPost();
-        $item->id = (string) $post->getId();
-        $item->creationDatetime = $post->getCreationDatetime();
-        $item->updateDatetime = $post->getUpdateDatetime();
-        $item->content = $this->appForumSanitizer->sanitize(nl2br((string) $post->getContent()));
-        $item->creator = $this->userDtoBuilder->buildFromEntity($creator);
+        $item->id = (string) $post->id;
+        $item->creationDatetime = $post->creationDatetime;
+        $item->updateDatetime = $post->updateDatetime;
+        $item->content = $this->appForumSanitizer->sanitize(nl2br($post->content));
+        $item->creator = $this->userDtoBuilder->buildFromEntity($post->creator);
 
-        $voteCache = $post->getVoteCache();
+        $voteCache = $post->voteCache;
         $item->upvotes = $voteCache?->getUpvoteCount() ?? 0;
         $item->downvotes = $voteCache?->getDownvoteCount() ?? 0;
 
