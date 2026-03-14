@@ -10,8 +10,10 @@ class MessageParticipantDirector
 {
     public function create(MessageThread $thread, User $participant): MessageParticipant
     {
-        return (new MessageParticipant())
-            ->setThread($thread)
-            ->setParticipant($participant);
+        $messageParticipant = new MessageParticipant();
+        $messageParticipant->thread = $thread;
+        $messageParticipant->participant = $participant;
+
+        return $messageParticipant;
     }
 }

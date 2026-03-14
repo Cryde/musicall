@@ -38,7 +38,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->getId());
+        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->_real()->id);
 
         $this->assertResponseIsSuccessful();
     }
@@ -70,7 +70,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
 
         // Login as user2 and try to delete user1's media
         $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->getId());
+        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -156,7 +156,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
 
         // Login as user2 who has no musician profile
         $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->getId());
+        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->_real()->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([

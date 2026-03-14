@@ -50,94 +50,33 @@ class MessageThreadMeta
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([MessageThreadMeta::LIST, MessageThreadMeta::ITEM])]
-    private ?UuidInterface $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MessageThreadMeta::LIST])]
-    private MessageThread $thread;
+    public MessageThread $thread;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private User $user;
+    public User $user;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::BOOLEAN)]
     #[Groups([MessageThreadMeta::LIST, MessageThreadMeta::PATCH])]
-    private bool $isRead;
+    public bool $isRead;
 
     #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $isDeleted;
+    public bool $isDeleted;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id?->toString();
-    }
-
-    public function getThread(): MessageThread
-    {
-        return $this->thread;
-    }
-
-    public function setThread(MessageThread $thread): self
-    {
-        $this->thread = $thread;
-
-        return $this;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function setUser(User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): ?DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getIsRead(): ?bool
-    {
-        return $this->isRead;
-    }
-
-    public function setIsRead(bool $isRead): self
-    {
-        $this->isRead = $isRead;
-
-        return $this;
-    }
-
-    public function getIsDeleted(): ?bool
-    {
-        return $this->isDeleted;
-    }
-
-    public function setIsDeleted(bool $isDeleted): self
-    {
-        $this->isDeleted = $isDeleted;
-
-        return $this;
     }
 }

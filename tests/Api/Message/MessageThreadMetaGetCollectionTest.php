@@ -38,7 +38,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             'thread' => $thread,
             'content' => 'basic_content with <b>html</b> in it'
         ])->create();
-        $thread->_real()->setLastMessage($message->_real());
+        $thread->_real()->lastMessage = $message->_real();
         $thread->_save();
         $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
@@ -47,7 +47,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user2])->create();
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user3])->create();
         $message2 = MessageFactory::new(['author' => $user2, 'thread' => $otherThread, 'content' => ''])->create();
-        $otherThread->_real()->setLastMessage($message2->_real());
+        $otherThread->_real()->lastMessage = $message2->_real();
         $otherThread->_save();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $otherThread])->create();
 
@@ -60,17 +60,17 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             '@type'            => 'Collection',
             'member'     => [
                 [
-                    '@id' => '/api/message_thread_metas/' . $meta->_real()->getId(),
+                    '@id' => '/api/message_thread_metas/' . $meta->_real()->id,
                     '@type' => 'MessageThreadMeta',
-                    'id'      => $meta->_real()->getId(),
+                    'id'      => $meta->_real()->id,
                     'is_read' => false,
                     'thread'  => [
-                        '@id' => '/api/message_threads/' . $thread->_real()->getId(),
+                        '@id' => '/api/message_threads/' . $thread->_real()->id,
                         '@type' => 'MessageThread',
-                        'id'                   => $thread->_real()->getId(),
+                        'id'                   => $thread->_real()->id,
                         'message_participants' => [
                             [
-                                '@id' => '/api/message_participants/' . $mp1->_real()->getId(),
+                                '@id' => '/api/message_participants/' . $mp1->_real()->id,
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
                                     '@id' => '/api/users/' . $user1->_real()->getId(),
@@ -79,7 +79,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                                     'id'       => $user1->_real()->getId(),
                                 ],
                             ], [
-                                '@id' => '/api/message_participants/' . $mp2->_real()->getId(),
+                                '@id' => '/api/message_participants/' . $mp2->_real()->id,
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
                                     '@id' => '/api/users/' . $user2->_real()->getId(),
@@ -90,9 +90,9 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             ],
                         ],
                         'last_message'         => [
-                            '@id' => '/api/messages/' . $message->_real()->getId(),
+                            '@id' => '/api/messages/' . $message->_real()->id,
                             '@type' => 'Message',
-                            'creation_datetime' => $message->_real()->getCreationDatetime()->format('c'),
+                            'creation_datetime' => $message->_real()->creationDatetime->format('c'),
                             'author'            => [
                                 '@id' => '/api/users/' . $user1->_real()->getId(),
                                 '@type' => 'User',

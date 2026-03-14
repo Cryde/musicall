@@ -79,13 +79,13 @@ class AnnounceSearchTest extends ApiTestCase
         $this->assertCount(2, $response['member']);
 
         // First result (newest) should be Lyon
-        $this->assertEquals($announce2->getId(), $response['member'][0]['id']);
+        $this->assertEquals($announce2->_real()->id, $response['member'][0]['id']);
         $this->assertEquals('Lyon', $response['member'][0]['location_name']);
         $this->assertEquals('olivia', $response['member'][0]['user']['username']);
         $this->assertEquals('Guitariste', $response['member'][0]['instrument']['name']);
 
         // Second result should be Paris
-        $this->assertEquals($announce1->getId(), $response['member'][1]['id']);
+        $this->assertEquals($announce1->_real()->id, $response['member'][1]['id']);
         $this->assertEquals('Paris', $response['member'][1]['location_name']);
         $this->assertEquals('philip', $response['member'][1]['user']['username']);
     }
@@ -190,7 +190,7 @@ class AnnounceSearchTest extends ApiTestCase
 
         $response = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertCount(1, $response['member']);
-        $this->assertEquals($announce1->getId(), $response['member'][0]['id']);
+        $this->assertEquals($announce1->_real()->id, $response['member'][0]['id']);
     }
 
     public function test_search_musicians_without_parameters_returns_success(): void

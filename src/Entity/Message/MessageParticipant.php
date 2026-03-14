@@ -34,63 +34,26 @@ class MessageParticipant
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?UuidInterface $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messageParticipants")]
     #[ORM\JoinColumn(nullable: false)]
-    private MessageThread $thread;
+    public MessageThread $thread;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MessageThreadMeta::LIST])]
-    private User $participant;
+    public User $participant;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id?->toString();
-    }
-
-    public function getThread(): MessageThread
-    {
-        return $this->thread;
-    }
-
-    public function setThread(MessageThread $thread): self
-    {
-        $this->thread = $thread;
-
-        return $this;
-    }
-
-    public function getParticipant(): User
-    {
-        return $this->participant;
-    }
-
-    public function setParticipant(User $participant): self
-    {
-        $this->participant = $participant;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): ?DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
     }
 }

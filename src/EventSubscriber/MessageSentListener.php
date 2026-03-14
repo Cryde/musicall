@@ -32,7 +32,7 @@ readonly class MessageSentListener
         }
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $messageUrl = $baseUrl . 'messages/' . $thread->getId();
+        $messageUrl = $baseUrl . 'messages/' . $thread->id;
 
         $this->messageReceivedEmail->send(
             $recipient->getEmail(),

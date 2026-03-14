@@ -63,9 +63,9 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce2->_real()->getId(),
+                    '@id' => '/api/musician_announces/' . $user1Announce2->_real()->id,
                     '@type' => 'MusicianAnnounce',
-                    'id' => $user1Announce2->_real()->getId(),
+                    'id' => $user1Announce2->_real()->id,
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'type' => 2,
                     'instrument' => [
@@ -95,9 +95,9 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce1->_real()->getId(),
+                    '@id' => '/api/musician_announces/' . $user1Announce1->_real()->id,
                     '@type' => 'MusicianAnnounce',
-                    'id' => $user1Announce1->_real()->getId(),
+                    'id' => $user1Announce1->_real()->id,
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'type' => 1,
                     'instrument' => [

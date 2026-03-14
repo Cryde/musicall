@@ -30,23 +30,23 @@ readonly class MusicianProfileMediaBuilder
     ): MusicianProfileMedia
     {
         $media = new MusicianProfileMedia();
-        $profileId = $profile->getId();
+        $profileId = $profile->id;
         assert($profileId !== null);
 
-        $media->setMusicianProfile($profile);
-        $media->setPlatform($parsed->platform);
-        $media->setUrl($mediaDto->url);
-        $media->setEmbedId($parsed->embedId);
-        $media->setPosition($this->mediaRepository->getNextPosition($profileId));
+        $media->musicianProfile = $profile;
+        $media->platform = $parsed->platform;
+        $media->url = $mediaDto->url;
+        $media->embedId = $parsed->embedId;
+        $media->position = $this->mediaRepository->getNextPosition($profileId);
 
         // Use user-provided title, or fall back to fetched title
-        $media->setTitle($mediaDto->title ?: $metadata->title);
+        $media->title = $mediaDto->title ?: $metadata->title;
 
         // Download and store thumbnail locally
         if ($metadata->thumbnailUrl) {
             $thumbnailImageName = $this->downloadThumbnail($metadata->thumbnailUrl);
             if ($thumbnailImageName) {
-                $media->setThumbnailImageName($thumbnailImageName);
+                $media->thumbnailImageName = $thumbnailImageName;
             }
         }
 

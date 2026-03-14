@@ -10,10 +10,12 @@ class MessageThreadMetaDirector
 {
     public function create(MessageThread $thread, User $user, bool $isRead): MessageThreadMeta
     {
-        return (new MessageThreadMeta())
-            ->setThread($thread)
-            ->setIsDeleted(false)
-            ->setIsRead($isRead)
-            ->setUser($user);
+        $meta = new MessageThreadMeta();
+        $meta->thread = $thread;
+        $meta->isDeleted = false;
+        $meta->isRead = $isRead;
+        $meta->user = $user;
+
+        return $meta;
     }
 }

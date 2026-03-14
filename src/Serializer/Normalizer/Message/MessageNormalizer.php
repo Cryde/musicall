@@ -25,7 +25,7 @@ class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
         /** @var Message $message */
         $messageArray = $this->normalizer->normalize($message, $format, $context);
         if (is_array($messageArray)) {
-            $messageArray['content'] = $this->sanitizer->sanitize(nl2br((string) $message->getContent()));
+            $messageArray['content'] = $this->sanitizer->sanitize(nl2br((string) $message->content));
         }
 
         return $messageArray;

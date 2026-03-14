@@ -60,10 +60,10 @@ class MusicianAnnouncePostTest extends ApiTestCase
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianAnnounce',
-            '@id' => '/api/musician_announces/' . $createdAnnounce->getId(),
+            '@id' => '/api/musician_announces/' . $createdAnnounce->id,
             '@type' => 'MusicianAnnounce',
-            'id' => $createdAnnounce->getId(),
-            'creation_datetime' => $createdAnnounce->getCreationDatetime()->format('c'),
+            'id' => $createdAnnounce->id,
+            'creation_datetime' => $createdAnnounce->creationDatetime->format('c'),
             'type' => 1,
             'instrument' => [
                 '@type' => 'Instrument',

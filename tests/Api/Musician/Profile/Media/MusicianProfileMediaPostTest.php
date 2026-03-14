@@ -57,9 +57,9 @@ class MusicianProfileMediaPostTest extends ApiTestCase
         $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile->_real()]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianProfileMedia',
-            '@id' => '/api/musician_profile_media/' . $media->getId(),
+            '@id' => '/api/musician_profile_media/' . $media->id,
             '@type' => 'MusicianProfileMedia',
-            'id' => $media->getId(),
+            'id' => $media->id,
             'platform' => 'youtube',
             'platform_label' => 'YouTube',
             'url' => 'https://www.youtube.com/watch?v=' . DummyYoutubeRepository::VIDEO_ID_RICK_ASTLEY,
@@ -102,9 +102,9 @@ class MusicianProfileMediaPostTest extends ApiTestCase
         $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile->_real()]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianProfileMedia',
-            '@id' => '/api/musician_profile_media/' . $media->getId(),
+            '@id' => '/api/musician_profile_media/' . $media->id,
             '@type' => 'MusicianProfileMedia',
-            'id' => $media->getId(),
+            'id' => $media->id,
             'platform' => 'youtube',
             'platform_label' => 'YouTube',
             'url' => 'https://www.youtube.com/watch?v=' . DummyYoutubeRepository::VIDEO_ID_RICK_ASTLEY,
@@ -156,9 +156,9 @@ class MusicianProfileMediaPostTest extends ApiTestCase
         $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile->_real(), 'position' => 2]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianProfileMedia',
-            '@id' => '/api/musician_profile_media/' . $media->getId(),
+            '@id' => '/api/musician_profile_media/' . $media->id,
             '@type' => 'MusicianProfileMedia',
-            'id' => $media->getId(),
+            'id' => $media->id,
             'platform' => 'youtube',
             'platform_label' => 'YouTube',
             'url' => 'https://www.youtube.com/watch?v=' . DummyYoutubeRepository::VIDEO_ID_PROCEDURE_TEST,

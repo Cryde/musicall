@@ -28,21 +28,21 @@ readonly class MusicianProfileMediaResourceBuilder
     public function buildFromEntity(MusicianProfileMediaEntity $media): MusicianProfileMedia
     {
         $profileMedia = new MusicianProfileMedia();
-        $profileMedia->id = $media->getId();
-        $profileMedia->platform = $media->getPlatform()->value;
-        $profileMedia->platformLabel = $media->getPlatform()->getLabel();
-        $profileMedia->url = $media->getUrl();
-        $profileMedia->embedId = $media->getEmbedId();
-        $profileMedia->title = $media->getTitle();
+        $profileMedia->id = $media->id;
+        $profileMedia->platform = $media->platform->value;
+        $profileMedia->platformLabel = $media->platform->getLabel();
+        $profileMedia->url = $media->url;
+        $profileMedia->embedId = $media->embedId;
+        $profileMedia->title = $media->title;
         $profileMedia->thumbnailUrl = $this->getThumbnailUrl($media);
-        $profileMedia->position = $media->getPosition();
+        $profileMedia->position = $media->position;
 
         return $profileMedia;
     }
 
     private function getThumbnailUrl(MusicianProfileMediaEntity $media): ?string
     {
-        $thumbnailImageName = $media->getThumbnailImageName();
+        $thumbnailImageName = $media->thumbnailImageName;
         if (!$thumbnailImageName) {
             return null;
         }

@@ -35,7 +35,7 @@ class MusicianAnnounceDeleteCollectionTest extends ApiTestCase
         $user1 = $user1->_real();
 
         $this->client->loginUser($user1);
-        $this->client->request('DELETE', '/api/user/musician/announces/' . $user1Announce1->getId());
+        $this->client->request('DELETE', '/api/user/musician/announces/' . $user1Announce1->_real()->id);
         $this->assertResponseIsSuccessful();
     }
 
@@ -60,7 +60,7 @@ class MusicianAnnounceDeleteCollectionTest extends ApiTestCase
         $user2 = $user2->_real();
 
         $this->client->loginUser($user2);
-        $this->client->request('DELETE', '/api/user/musician/announces/' . $user1Announce1->getId());
+        $this->client->request('DELETE', '/api/user/musician/announces/' . $user1Announce1->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
@@ -79,7 +79,7 @@ class MusicianAnnounceDeleteCollectionTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create();
         $announce = MusicianAnnounceFactory::new()->create(['author' => $user1,]);
 
-        $this->client->request('DELETE', '/api/user/musician/announces/' . $announce->getId());
+        $this->client->request('DELETE', '/api/user/musician/announces/' . $announce->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 }

@@ -57,7 +57,7 @@ class MessageSenderProcedure
 
         $message = $this->messageDirector->create($thread, $sender, $content);
         $this->entityManager->persist($message);
-        $thread->setLastMessage($message);
+        $thread->lastMessage = $message;
         $this->entityManager->flush();
 
         return $message;
@@ -69,7 +69,7 @@ class MessageSenderProcedure
 
         $message = $this->messageDirector->create($thread, $sender, $content);
         $this->entityManager->persist($message);
-        $thread->setLastMessage($message);
+        $thread->lastMessage = $message;
         $this->entityManager->flush();
 
         return $message;
@@ -77,18 +77,18 @@ class MessageSenderProcedure
 
     private function handleReadMessage(MessageThread $thread, User $sender): void
     {
-        foreach ($thread->getMessageParticipants() as $participant) {
-            $recipient = $participant->getParticipant();
+        foreach ($thread->messageParticipants as $participant) {
+            $recipient = $participant->participant;
             if ($recipient->getId() !== $sender->getId()) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
                 assert($threadMetaRecipient !== null);
-                $threadMetaRecipient->setIsRead(false);
+                $threadMetaRecipient->isRead = false;
                 $this->eventDispatcher->dispatch(new MessageSentEvent($recipient, $sender, $thread));
             }
         }
 
         $threadMetaSender = $this->messageThreadMetaRepository->findOneBy(['user' => $sender, 'thread' => $thread]);
         assert($threadMetaSender !== null);
-        $threadMetaSender->setIsRead(true);
+        $threadMetaSender->isRead = true;
     }
 }

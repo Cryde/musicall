@@ -15,8 +15,10 @@ class ThreadAccessTest extends TestCase
         $user1 = (new User())->setId('user_id_1');
         $user2 = (new User())->setId('user_id_2');
 
+        $participant = new MessageParticipant();
+        $participant->participant = $user1;
         $messageThread = new MessageThread();
-        $messageThread->addMessageParticipant((new MessageParticipant())->setParticipant($user1));
+        $messageThread->addMessageParticipant($participant);
 
         $threadAccess = new ThreadAccess();
 

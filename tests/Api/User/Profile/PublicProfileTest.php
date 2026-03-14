@@ -128,7 +128,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [
                 [
                     '@type' => 'PublicProfileAnnounce',
-                    'id' => $announce->_real()->getId(),
+                    'id' => $announce->_real()->id,
                     'creation_datetime' => '2024-01-15T10:30:00+00:00',
                     'type' => MusicianAnnounce::TYPE_MUSICIAN,
                     'instrument_name' => 'Guitariste',

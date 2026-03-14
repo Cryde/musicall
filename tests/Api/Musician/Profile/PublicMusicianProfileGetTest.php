@@ -106,7 +106,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'musician_announces' => [
                 [
                     '@type' => 'PublicProfileAnnounce',
-                    'id' => $musicianAnnounce->getId(),
+                    'id' => $musicianAnnounce->_real()->id,
                     'creation_datetime' => '2024-06-01T12:00:00+00:00',
                     'type' => 2,
                     'instrument_name' => 'Batteur',
@@ -117,7 +117,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'media' => [
                 [
                     '@type' => 'MusicianProfileMedia',
-                    'id' => $media1->getId(),
+                    'id' => $media1->_real()->id,
                     'platform' => 'youtube',
                     'platform_label' => 'YouTube',
                     'url' => 'https://www.youtube.com/watch?v=abc123',
@@ -127,7 +127,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
                 ],
                 [
                     '@type' => 'MusicianProfileMedia',
-                    'id' => $media2->getId(),
+                    'id' => $media2->_real()->id,
                     'platform' => 'spotify',
                     'platform_label' => 'Spotify',
                     'url' => 'https://open.spotify.com/track/xyz789',

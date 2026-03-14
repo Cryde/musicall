@@ -35,27 +35,31 @@ class MessageThread
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([MessageThreadMeta::LIST, Message::ITEM])]
-    private ?UuidInterface $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
 
     /**
      * @var Collection<int, Message>
      */
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
-    private Collection $messages;
+    public Collection $messages;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
     /**
      * @var Collection<int, MessageParticipant>
      */
     #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
     #[Groups([MessageThreadMeta::LIST])]
-    private Collection $messageParticipants;
+    public Collection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups([MessageThreadMeta::LIST])]
-    private ?Message $lastMessage = null;
+    public ?Message $lastMessage = null;
 
     public function __construct()
     {
@@ -64,24 +68,11 @@ class MessageThread
         $this->messageParticipants = new ArrayCollection();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id?->toString();
-    }
-
-    /**
-     * @return Collection<int, Message>
-     */
-    public function getMessages(): Collection
-    {
-        return $this->messages;
-    }
-
     public function addMessage(Message $message): self
     {
         if (!$this->messages->contains($message)) {
             $this->messages[] = $message;
-            $message->setThread($this);
+            $message->thread = $this;
         }
 
         return $this;
@@ -94,31 +85,11 @@ class MessageThread
         return $this;
     }
 
-    public function getCreationDatetime(): ?DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, MessageParticipant>
-     */
-    public function getMessageParticipants(): Collection
-    {
-        return $this->messageParticipants;
-    }
-
     public function addMessageParticipant(MessageParticipant $messageParticipant): self
     {
         if (!$this->messageParticipants->contains($messageParticipant)) {
             $this->messageParticipants[] = $messageParticipant;
-            $messageParticipant->setThread($this);
+            $messageParticipant->thread = $this;
         }
 
         return $this;
@@ -127,18 +98,6 @@ class MessageThread
     public function removeMessageParticipant(MessageParticipant $messageParticipant): self
     {
         $this->messageParticipants->removeElement($messageParticipant);
-
-        return $this;
-    }
-
-    public function getLastMessage(): ?Message
-    {
-        return $this->lastMessage;
-    }
-
-    public function setLastMessage(?Message $lastMessage): self
-    {
-        $this->lastMessage = $lastMessage;
 
         return $this;
     }

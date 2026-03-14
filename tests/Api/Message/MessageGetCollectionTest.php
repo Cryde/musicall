@@ -19,7 +19,7 @@ class MessageGetCollectionTest extends ApiTestCase
 
     public function test_not_logged(): void
     {
-        $this->client->request('GET', '/api/messages/123',);
+        $this->client->request('GET', '/api/messages/00000000-0000-0000-0000-000000000000',);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -35,7 +35,7 @@ class MessageGetCollectionTest extends ApiTestCase
             'content'          => 'last message from user 1',
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
         ])->create(); // should be the last message in the order
-        $thread->setLastMessage($message1->_real());
+        $thread->_real()->lastMessage = $message1->_real();
         $thread->_save();
         $message2 = MessageFactory::new([
             'author'           => $user1, 'thread' => $thread,
@@ -57,7 +57,7 @@ class MessageGetCollectionTest extends ApiTestCase
             'content'          => 'other message',
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2021-01-02T02:03:04+00:00'),
         ])->create(); // this message is in another thread
-        $thread2->setLastMessage($otherMessage->_real());
+        $thread2->_real()->lastMessage = $otherMessage->_real();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
         //this is other thread participant
@@ -68,15 +68,15 @@ class MessageGetCollectionTest extends ApiTestCase
         $user2 = $user2->_real();
 
         $this->client->loginUser($user1);
-        $this->client->request('GET', '/api/messages/' . $thread->getId() . '?order[creation_datetime]=desc');
+        $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]=desc');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Message',
-            '@id'              => '/api/messages/' . $thread->getId(),
+            '@id'              => '/api/messages/' . $thread->id,
             '@type'            => 'Collection',
             'member'     => [
                 [
-                    '@id' => '/api/messages/' . $message2->_real()->getId(),
+                    '@id' => '/api/messages/' . $message2->_real()->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2023-01-02T02:03:04+00:00',
                     'author'            => [
@@ -88,7 +88,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'first message from user 1',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message3->_real()->getId(),
+                    '@id' => '/api/messages/' . $message3->_real()->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'            => [
@@ -100,7 +100,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'second message from user 2',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message4->_real()->getId(),
+                    '@id' => '/api/messages/' . $message4->_real()->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2021-01-02T02:03:04+00:00',
                     'author'            => [
@@ -112,7 +112,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'third message from user 1',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message1->_real()->getId(),
+                    '@id' => '/api/messages/' . $message1->_real()->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'            => [
@@ -126,12 +126,12 @@ class MessageGetCollectionTest extends ApiTestCase
             ],
             'totalItems' => 4,
             'view'       => [
-                '@id'   => '/api/messages/' . $thread->getId() . '?order%5Bcreation_datetime%5D=desc',
+                '@id'   => '/api/messages/' . $thread->id . '?order%5Bcreation_datetime%5D=desc',
                 '@type' => 'PartialCollectionView',
             ],
             'search'     => [
                 '@type'                        => 'IriTemplate',
-                'template'               => '/api/messages/' . $thread->getId() . '{?order[creation_datetime]}',
+                'template'               => '/api/messages/' . $thread->id . '{?order[creation_datetime]}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping'                => [
                     [
@@ -158,7 +158,7 @@ class MessageGetCollectionTest extends ApiTestCase
         $thread = $thread->_real();
 
         $this->client->loginUser($user3->_real()); // user3 is not part of this thread
-        $this->client->request('GET', '/api/messages/' . $thread->getId());
+        $this->client->request('GET', '/api/messages/' . $thread->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
             '@id' => '/api/errors/403',

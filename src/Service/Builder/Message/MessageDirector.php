@@ -9,9 +9,11 @@ class MessageDirector
 {
     public function create(MessageThread $thread, User $author, string $content) : Message
     {
-        return (new Message())
-            ->setContent($content)
-            ->setAuthor($author)
-            ->setThread($thread);
+        $message = new Message();
+        $message->content = $content;
+        $message->author = $author;
+        $message->thread = $thread;
+
+        return $message;
     }
 }

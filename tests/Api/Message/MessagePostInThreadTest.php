@@ -22,7 +22,7 @@ class MessagePostInThreadTest extends ApiTestCase
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->_real()->getId(),
+            'thread'  => '/api/message_threads/' . $thread->_real()->id,
             'content' => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -45,17 +45,17 @@ class MessagePostInThreadTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->getId(),
+            'thread'  => '/api/message_threads/' . $thread->id,
             'content' => 'new content from user1',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $messages = $messageRepository->findBy(['thread' => $thread]);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Message',
-            '@id' => '/api/messages/' . $messages[0]->getId(),
+            '@id' => '/api/messages/' . $messages[0]->id,
             '@type' => 'Message',
-            'id'                => $messages[0]->getId(),
-            'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
+            'id'                => $messages[0]->id,
+            'creation_datetime' => $messages[0]->creationDatetime->format('c'),
             'author'            => [
                 '@id' => '/api/users/' . $user1->getId(),
                 '@type' => 'User',
@@ -63,9 +63,9 @@ class MessagePostInThreadTest extends ApiTestCase
                 'username' => 'base_user_1',
             ],
             'thread'            => [
-                '@id' => '/api/message_threads/' . $thread->getId(),
+                '@id' => '/api/message_threads/' . $thread->id,
                 '@type' => 'MessageThread',
-                'id' => $thread->getId(),
+                'id' => $thread->id,
             ],
             'content'           => 'new content from user1',
         ]);
@@ -88,7 +88,7 @@ class MessagePostInThreadTest extends ApiTestCase
 
         $this->client->loginUser($user3);
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->getId(),
+            'thread'  => '/api/message_threads/' . $thread->id,
             'content' => 'new content from user1',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -124,7 +124,7 @@ class MessagePostInThreadTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->getId(),
+            'thread'  => '/api/message_threads/' . $thread->id,
             'content' => 'message to deleted user',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -151,7 +151,7 @@ class MessagePostInThreadTest extends ApiTestCase
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->_real()->getId(),
+            'thread'  => '/api/message_threads/' . $thread->_real()->id,
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

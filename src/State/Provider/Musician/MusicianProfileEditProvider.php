@@ -41,22 +41,22 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
     private function buildFromEntity(MusicianProfile $profile): MusicianProfileEdit
     {
         $dto = new MusicianProfileEdit();
-        $dto->id = $profile->getId();
+        $dto->id = $profile->id;
 
-        if ($profile->getAvailabilityStatus()) {
-            $dto->availabilityStatus = $profile->getAvailabilityStatus()->value;
-            $dto->availabilityStatusLabel = $profile->getAvailabilityStatus()->getLabel();
+        if ($profile->availabilityStatus) {
+            $dto->availabilityStatus = $profile->availabilityStatus->value;
+            $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
         }
 
         $dto->instruments = array_values(array_map(function ($instrument): MusicianProfileEditInstrument {
             $item = new MusicianProfileEditInstrument();
-            $item->instrumentId = (string) $instrument->getInstrument()->id;
-            $item->instrumentName = (string) $instrument->getInstrument()->musicianName;
-            $item->skillLevel = $instrument->getSkillLevel()->value;
-            $item->skillLevelLabel = $instrument->getSkillLevel()->getLabel();
+            $item->instrumentId = (string) $instrument->instrument->id;
+            $item->instrumentName = (string) $instrument->instrument->musicianName;
+            $item->skillLevel = $instrument->skillLevel->value;
+            $item->skillLevelLabel = $instrument->skillLevel->getLabel();
 
             return $item;
-        }, $profile->getInstruments()->toArray()));
+        }, $profile->instruments->toArray()));
 
         $dto->styles = array_values(array_map(function ($style): MusicianProfileEditStyle {
             $item = new MusicianProfileEditStyle();
@@ -64,7 +64,7 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
             $item->name = (string) $style->name;
 
             return $item;
-        }, $profile->getStyles()->toArray()));
+        }, $profile->styles->toArray()));
 
         return $dto;
     }

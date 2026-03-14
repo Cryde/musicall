@@ -55,14 +55,14 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
         // Availability status
         if ($data->availabilityStatus !== null) {
             $status = AvailabilityStatus::tryFrom($data->availabilityStatus);
-            $profile->setAvailabilityStatus($status);
+            $profile->availabilityStatus = $status;
         }
 
         // Instruments (if provided)
         if (!empty($data->instruments) || $data->instruments === []) {
             // Remove existing instruments and flush first to avoid unique constraint violation
             // (Doctrine processes INSERTs before DELETEs in the same flush)
-            foreach ($profile->getInstruments()->toArray() as $instrument) {
+            foreach ($profile->instruments->toArray() as $instrument) {
                 $profile->removeInstrument($instrument);
             }
             $this->entityManager->flush();
@@ -79,15 +79,15 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
                 }
 
                 $profileInstrument = new MusicianProfileInstrument();
-                $profileInstrument->setInstrument($instrument);
-                $profileInstrument->setSkillLevel($skillLevel);
+                $profileInstrument->instrument = $instrument;
+                $profileInstrument->skillLevel = $skillLevel;
                 $profile->addInstrument($profileInstrument);
             }
         }
 
         // Styles (if provided)
         if (!empty($data->styleIds) || $data->styleIds === []) {
-            foreach ($profile->getStyles()->toArray() as $style) {
+            foreach ($profile->styles->toArray() as $style) {
                 $profile->removeStyle($style);
             }
 
@@ -99,7 +99,7 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
             }
         }
 
-        $profile->setUpdateDatetime(new DateTimeImmutable());
+        $profile->updateDatetime = new DateTimeImmutable();
         $this->entityManager->flush();
     }
 }

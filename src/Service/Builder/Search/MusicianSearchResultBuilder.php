@@ -40,16 +40,14 @@ class MusicianSearchResultBuilder
 
     public function build(MusicianAnnounce $musicianAnnounce, ?float $distance = null): AnnounceMusician
     {
-        $instrument = $musicianAnnounce->getInstrument();
-
         $announceMusician = new AnnounceMusician();
-        $announceMusician->id = (string) $musicianAnnounce->getId();
-        $announceMusician->user = $this->buildUser($musicianAnnounce->getAuthor());
-        $announceMusician->instrument = $this->buildInstrument($instrument);
-        $announceMusician->styles = $this->buildStyles($musicianAnnounce->getStyles()->toArray());
-        $announceMusician->note = $this->appOnlybrSanitizer->sanitize((string) $musicianAnnounce->getNote());
-        $announceMusician->locationName = $musicianAnnounce->getLocationName();
-        $announceMusician->type = (int) $musicianAnnounce->getType();
+        $announceMusician->id = (string) $musicianAnnounce->id;
+        $announceMusician->user = $this->buildUser($musicianAnnounce->author);
+        $announceMusician->instrument = $this->buildInstrument($musicianAnnounce->instrument);
+        $announceMusician->styles = $this->buildStyles($musicianAnnounce->styles->toArray());
+        $announceMusician->note = $this->appOnlybrSanitizer->sanitize((string) $musicianAnnounce->note);
+        $announceMusician->locationName = $musicianAnnounce->locationName;
+        $announceMusician->type = (int) $musicianAnnounce->type;
         if ($distance !== null) {
             $announceMusician->distance = $distance / 1000;
         }

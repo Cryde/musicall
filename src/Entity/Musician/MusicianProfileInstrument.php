@@ -20,57 +20,16 @@ class MusicianProfileInstrument
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?string $id = null;
+    public ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: MusicianProfile::class, inversedBy: 'instruments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private MusicianProfile $musicianProfile;
+    public MusicianProfile $musicianProfile;
 
     #[ORM\ManyToOne(targetEntity: Instrument::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private Instrument $instrument;
+    public Instrument $instrument;
 
     #[ORM\Column(type: Types::STRING, length: 20, enumType: SkillLevel::class)]
-    private SkillLevel $skillLevel;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getMusicianProfile(): MusicianProfile
-    {
-        return $this->musicianProfile;
-    }
-
-    public function setMusicianProfile(MusicianProfile $musicianProfile): self
-    {
-        $this->musicianProfile = $musicianProfile;
-
-        return $this;
-    }
-
-    public function getInstrument(): Instrument
-    {
-        return $this->instrument;
-    }
-
-    public function setInstrument(Instrument $instrument): self
-    {
-        $this->instrument = $instrument;
-
-        return $this;
-    }
-
-    public function getSkillLevel(): SkillLevel
-    {
-        return $this->skillLevel;
-    }
-
-    public function setSkillLevel(SkillLevel $skillLevel): self
-    {
-        $this->skillLevel = $skillLevel;
-
-        return $this;
-    }
+    public SkillLevel $skillLevel;
 }

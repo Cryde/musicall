@@ -48,14 +48,14 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
         }
 
         $profile = new MusicianProfile();
-        $profile->setUser($user);
+        $profile->user = $user;
 
         $this->updateProfile($profile, $data);
 
         $this->entityManager->persist($profile);
         $this->entityManager->flush();
 
-        $data->id = $profile->getId();
+        $data->id = $profile->id;
 
         return $data;
     }
@@ -65,13 +65,13 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
         // Availability status
         if ($data->availabilityStatus) {
             $status = AvailabilityStatus::tryFrom($data->availabilityStatus);
-            $profile->setAvailabilityStatus($status);
+            $profile->availabilityStatus = $status;
         } else {
-            $profile->setAvailabilityStatus(null);
+            $profile->availabilityStatus = null;
         }
 
         // Instruments
-        foreach ($profile->getInstruments()->toArray() as $instrument) {
+        foreach ($profile->instruments->toArray() as $instrument) {
             $profile->removeInstrument($instrument);
         }
 
@@ -87,13 +87,13 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
             }
 
             $profileInstrument = new MusicianProfileInstrument();
-            $profileInstrument->setInstrument($instrument);
-            $profileInstrument->setSkillLevel($skillLevel);
+            $profileInstrument->instrument = $instrument;
+            $profileInstrument->skillLevel = $skillLevel;
             $profile->addInstrument($profileInstrument);
         }
 
         // Styles
-        foreach ($profile->getStyles()->toArray() as $style) {
+        foreach ($profile->styles->toArray() as $style) {
             $profile->removeStyle($style);
         }
 
@@ -104,6 +104,6 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
             }
         }
 
-        $profile->setUpdateDatetime(new DateTimeImmutable());
+        $profile->updateDatetime = new DateTimeImmutable();
     }
 }

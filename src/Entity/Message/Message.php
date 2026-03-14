@@ -58,83 +58,34 @@ class Message
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups([Message::ITEM])]
-    private ?UuidInterface $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups([MessageThreadMeta::LIST, Message::LIST, Message::ITEM])]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([MessageThreadMeta::LIST, Message::LIST, Message::ITEM])]
-    private User $author;
+    public User $author;
 
     #[Assert\NotBlank]
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messages")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Message::POST, Message::ITEM])]
-    private MessageThread $thread;
+    public MessageThread $thread;
 
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::TEXT)]
     #[Groups([MessageThreadMeta::LIST, Message::LIST, Message::ITEM, Message::POST])]
-    private string $content;
+    public string $content;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id?->toString();
-    }
-
-    public function getCreationDatetime(): ?DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getAuthor(): User
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(User $author): self
-    {
-        $this->author = $author;
-
-        return $this;
-    }
-
-    public function getThread(): MessageThread
-    {
-        return $this->thread;
-    }
-
-    public function setThread(MessageThread $thread): self
-    {
-        $this->thread = $thread;
-
-        return $this;
-    }
-
-    public function getContent(): string
-    {
-        return $this->content;
-    }
-
-    public function setContent(string $content): self
-    {
-        $this->content = $content;
-
-        return $this;
     }
 }

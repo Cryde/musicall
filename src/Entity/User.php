@@ -420,8 +420,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setMusicianProfile(?MusicianProfile $musicianProfile): self
     {
-        if ($musicianProfile !== null && $musicianProfile->getUser() !== $this) {
-            $musicianProfile->setUser($this);
+        if ($musicianProfile !== null && $musicianProfile->user !== $this) {
+            $musicianProfile->user = $this;
         }
 
         $this->musicianProfile = $musicianProfile;

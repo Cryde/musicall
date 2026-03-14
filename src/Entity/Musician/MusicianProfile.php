@@ -25,43 +25,43 @@ class MusicianProfile implements ViewableInterface
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?string $id = null;
+    public ?string $id = null;
 
     #[ORM\OneToOne(inversedBy: 'musicianProfile', targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private User $user;
+    public User $user;
 
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true, enumType: AvailabilityStatus::class)]
-    private ?AvailabilityStatus $availabilityStatus = null;
+    public ?AvailabilityStatus $availabilityStatus = null;
 
     /**
      * @var Collection<int, MusicianProfileInstrument>
      */
     #[ORM\OneToMany(mappedBy: 'musicianProfile', targetEntity: MusicianProfileInstrument::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $instruments;
+    public Collection $instruments;
 
     /**
      * @var Collection<int, Style>
      */
     #[ORM\ManyToMany(targetEntity: Style::class)]
     #[ORM\JoinTable(name: 'user_musician_profile_style')]
-    private Collection $styles;
+    public Collection $styles;
 
     /**
      * @var Collection<int, MusicianProfileMedia>
      */
     #[ORM\OneToMany(mappedBy: 'musicianProfile', targetEntity: MusicianProfileMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
-    private Collection $media;
+    public Collection $media;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private DateTimeImmutable $creationDatetime;
+    public DateTimeImmutable $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?DateTimeImmutable $updateDatetime = null;
+    public ?DateTimeImmutable $updateDatetime = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    private ?ViewCache $viewCache = null;
+    public ?ViewCache $viewCache = null;
 
     public function __construct()
     {
@@ -71,48 +71,11 @@ class MusicianProfile implements ViewableInterface
         $this->creationDatetime = new DateTimeImmutable();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function setUser(User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getAvailabilityStatus(): ?AvailabilityStatus
-    {
-        return $this->availabilityStatus;
-    }
-
-    public function setAvailabilityStatus(?AvailabilityStatus $availabilityStatus): self
-    {
-        $this->availabilityStatus = $availabilityStatus;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, MusicianProfileInstrument>
-     */
-    public function getInstruments(): Collection
-    {
-        return $this->instruments;
-    }
-
     public function addInstrument(MusicianProfileInstrument $instrument): self
     {
         if (!$this->instruments->contains($instrument)) {
             $this->instruments->add($instrument);
-            $instrument->setMusicianProfile($this);
+            $instrument->musicianProfile = $this;
         }
 
         return $this;
@@ -123,14 +86,6 @@ class MusicianProfile implements ViewableInterface
         $this->instruments->removeElement($instrument);
 
         return $this;
-    }
-
-    /**
-     * @return Collection<int, Style>
-     */
-    public function getStyles(): Collection
-    {
-        return $this->styles;
     }
 
     public function addStyle(Style $style): self
@@ -149,43 +104,11 @@ class MusicianProfile implements ViewableInterface
         return $this;
     }
 
-    public function getCreationDatetime(): DateTimeImmutable
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeImmutable $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getUpdateDatetime(): ?DateTimeImmutable
-    {
-        return $this->updateDatetime;
-    }
-
-    public function setUpdateDatetime(?DateTimeImmutable $updateDatetime): self
-    {
-        $this->updateDatetime = $updateDatetime;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, MusicianProfileMedia>
-     */
-    public function getMedia(): Collection
-    {
-        return $this->media;
-    }
-
     public function addMedia(MusicianProfileMedia $media): self
     {
         if (!$this->media->contains($media)) {
             $this->media->add($media);
-            $media->setMusicianProfile($this);
+            $media->musicianProfile = $this;
         }
 
         return $this;

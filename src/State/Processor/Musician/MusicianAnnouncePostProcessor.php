@@ -34,14 +34,14 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         $entity = new MusicianAnnounceEntity();
-        $entity->setAuthor($user);
-        $entity->setType($data->type);
-        $entity->setInstrument($data->instrument);
-        $entity->setStyles(new ArrayCollection($data->styles));
-        $entity->setLocationName($data->locationName);
-        $entity->setLongitude($data->longitude);
-        $entity->setLatitude($data->latitude);
-        $entity->setNote($data->note);
+        $entity->author = $user;
+        $entity->type = $data->type;
+        $entity->instrument = $data->instrument;
+        $entity->styles = new ArrayCollection($data->styles);
+        $entity->locationName = $data->locationName;
+        $entity->longitude = $data->longitude;
+        $entity->latitude = $data->latitude;
+        $entity->note = $data->note;
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();

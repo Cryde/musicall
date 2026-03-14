@@ -53,7 +53,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
         $user->setMusicianProfile($musicianProfile->_real());
         $user->_save();
 
-        $profileId = $musicianProfile->_real()->getId();
+        $profileId = $musicianProfile->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('DELETE', '/api/user/musician-profile');
@@ -121,9 +121,9 @@ class MusicianProfileDeleteTest extends ApiTestCase
         $user->setMusicianProfile($musicianProfile->_real());
         $user->_save();
 
-        $profileId = $musicianProfile->_real()->getId();
-        $media1Id = $media1->_real()->getId();
-        $media2Id = $media2->_real()->getId();
+        $profileId = $musicianProfile->_real()->id;
+        $media1Id = $media1->_real()->id;
+        $media2Id = $media2->_real()->id;
 
         /** @var MusicianProfileMediaRepository $mediaRepository */
         $mediaRepository = static::getContainer()->get(MusicianProfileMediaRepository::class);
@@ -172,7 +172,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
         $user->setMusicianProfile($musicianProfile->_real());
         $user->_save();
 
-        $profileId = $musicianProfile->_real()->getId();
+        $profileId = $musicianProfile->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('DELETE', '/api/user/musician-profile');

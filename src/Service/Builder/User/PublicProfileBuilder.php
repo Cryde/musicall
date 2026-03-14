@@ -94,18 +94,15 @@ readonly class PublicProfileBuilder
     private function buildAnnounces(array $announces): array
     {
         return array_map(function (MusicianAnnounce $announce): PublicProfileAnnounce {
-            $instrument = $announce->getInstrument();
-            $creationDatetime = $announce->getCreationDatetime();
-
             $dto = new PublicProfileAnnounce();
-            $dto->id = (string) $announce->getId();
-            $dto->creationDatetime = $creationDatetime;
-            $dto->type = (int) $announce->getType();
-            $dto->instrumentName = (string) $instrument->musicianName;
-            $dto->locationName = (string) $announce->getLocationName();
+            $dto->id = (string) $announce->id;
+            $dto->creationDatetime = $announce->creationDatetime;
+            $dto->type = (int) $announce->type;
+            $dto->instrumentName = (string) $announce->instrument->musicianName;
+            $dto->locationName = (string) $announce->locationName;
             $dto->styles = array_map(
                 fn($style) => (string) $style->name,
-                $announce->getStyles()->toArray()
+                $announce->styles->toArray()
             );
 
             return $dto;

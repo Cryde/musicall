@@ -42,7 +42,7 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'url' => 'https://www.youtube.com/watch?v=abc123',
             'embedId' => 'abc123',
             'position' => 0,
-        ])->getId();
+        ])->_real()->id;
 
         $media2Id = MusicianProfileMediaFactory::new()->asSpotify()->create([
             'musicianProfile' => $musicianProfile->_real(),
@@ -50,7 +50,7 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'url' => 'https://open.spotify.com/track/xyz789',
             'embedId' => 'track/xyz789',
             'position' => 1,
-        ])->getId();
+        ])->_real()->id;
 
         $media3Id = MusicianProfileMediaFactory::new()->asSoundCloud()->create([
             'musicianProfile' => $musicianProfile->_real(),
@@ -58,7 +58,7 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'url' => 'https://soundcloud.com/artist/track',
             'embedId' => 'artist/track',
             'position' => 2,
-        ])->getId();
+        ])->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('GET', '/api/user/musician-profile/media');
@@ -191,7 +191,7 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'url' => 'https://www.youtube.com/watch?v=user1video',
             'embedId' => 'user1video',
             'position' => 0,
-        ])->getId();
+        ])->_real()->id;
 
         MusicianProfileMediaFactory::new()->asSpotify()->create([
             'musicianProfile' => $musicianProfile2->_real(),

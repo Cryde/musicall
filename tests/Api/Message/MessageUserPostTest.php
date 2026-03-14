@@ -51,17 +51,17 @@ class MessageUserPostTest extends ApiTestCase
         // check we have message meta thread items for both user
         $this->assertCount(1, $resultUser1);
         $this->assertCount(1, $resultUser2);
-        $this->assertSame($resultUser1[0]->getThread(), $resultUser2[0]->getThread()); // the thread must be the same
+        $this->assertSame($resultUser1[0]->thread, $resultUser2[0]->thread); // the thread must be the same
         // get the messages from this thread
-        $messages = $messageRepository->findBy(['thread' => $resultUser1[0]->getThread()]);
+        $messages = $messageRepository->findBy(['thread' => $resultUser1[0]->thread]);
         $this->assertCount(1, $messages);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Message',
-            '@id' => '/api/messages/' . $messages[0]->getId(),
+            '@id' => '/api/messages/' . $messages[0]->id,
             '@type' => 'Message',
-            'id'                => $messages[0]->getId(),
-            'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
+            'id'                => $messages[0]->id,
+            'creation_datetime' => $messages[0]->creationDatetime->format('c'),
             'author'            => [
                 '@id' => '/api/users/' . $user1->getId(),
                 '@type' => 'User',
@@ -69,9 +69,9 @@ class MessageUserPostTest extends ApiTestCase
                 'username' => 'base_user_1',
             ],
             'thread'            => [
-                '@id' => '/api/message_threads/' . $resultUser1[0]->getThread()->getId(),
+                '@id' => '/api/message_threads/' . $resultUser1[0]->thread->id,
                 '@type' => 'MessageThread',
-                'id' => $resultUser1[0]->getThread()->getId(),
+                'id' => $resultUser1[0]->thread->id,
             ],
             'content'           => 'new content from user1',
         ]);
@@ -107,18 +107,18 @@ class MessageUserPostTest extends ApiTestCase
         // check we still have only 1 message meta thread per user
         $this->assertCount(1, $resultUser1);
         $this->assertCount(1, $resultUser2);
-        $this->assertSame($thread, $resultUser1[0]->getThread());
-        $this->assertSame($thread, $resultUser2[0]->getThread());
+        $this->assertSame($thread, $resultUser1[0]->thread);
+        $this->assertSame($thread, $resultUser2[0]->thread);
         // get the messages from this thread
-        $messages = $messageRepository->findBy(['thread' => $resultUser1[0]->getThread()]);
+        $messages = $messageRepository->findBy(['thread' => $resultUser1[0]->thread]);
         $this->assertCount(1, $messages);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Message',
-            '@id' => '/api/messages/' . $messages[0]->getId(),
+            '@id' => '/api/messages/' . $messages[0]->id,
             '@type' => 'Message',
-            'id'                => $messages[0]->getId(),
-            'creation_datetime' => $messages[0]->getCreationDatetime()->format('c'),
+            'id'                => $messages[0]->id,
+            'creation_datetime' => $messages[0]->creationDatetime->format('c'),
             'author'            => [
                 'id'       => $user1->getId(),
                 'username' => 'base_user_1',
@@ -126,9 +126,9 @@ class MessageUserPostTest extends ApiTestCase
                 '@type' => 'User',
             ],
             'thread'            => [
-                '@id' => '/api/message_threads/' . $resultUser1[0]->getThread()->getId(),
+                '@id' => '/api/message_threads/' . $resultUser1[0]->thread->id,
                 '@type' => 'MessageThread',
-                'id' => $resultUser1[0]->getThread()->getId()
+                'id' => $resultUser1[0]->thread->id
             ],
             'content'           => 'new content from user1',
         ]);

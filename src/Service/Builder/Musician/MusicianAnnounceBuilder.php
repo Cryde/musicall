@@ -34,18 +34,15 @@ readonly class MusicianAnnounceBuilder
 
     public function buildItem(MusicianAnnounceEntity $entity): MusicianAnnounceDTO
     {
-        $instrument = $entity->getInstrument();
-        $creationDatetime = $entity->getCreationDatetime();
-
         $dto = new MusicianAnnounceDTO();
-        $dto->id = (string) $entity->getId();
-        $dto->creationDatetime = $creationDatetime;
-        $dto->type = (int) $entity->getType();
-        $dto->instrument = $this->buildInstrument($instrument);
-        $dto->styles = $this->buildStyles($entity->getStyles()->toArray());
-        $dto->locationName = (string) $entity->getLocationName();
-        $dto->note = $entity->getNote();
-        $dto->author = $this->buildAuthor($entity->getAuthor());
+        $dto->id = (string) $entity->id;
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->type = (int) $entity->type;
+        $dto->instrument = $this->buildInstrument($entity->instrument);
+        $dto->styles = $this->buildStyles($entity->styles->toArray());
+        $dto->locationName = (string) $entity->locationName;
+        $dto->note = $entity->note;
+        $dto->author = $this->buildAuthor($entity->author);
 
         return $dto;
     }

@@ -70,7 +70,7 @@ readonly class MusicianProfileMediaProvider implements ProviderInterface
             throw new NotFoundHttpException('Média non trouvé');
         }
 
-        if ($media->getMusicianProfile()->getId() !== $profile->getId()) {
+        if ($media->musicianProfile->id !== $profile->id) {
             throw new AccessDeniedHttpException('Vous ne pouvez pas accéder à ce média');
         }
 

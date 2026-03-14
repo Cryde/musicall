@@ -46,7 +46,7 @@ class MusicianProfileGetTest extends ApiTestCase
 
         $user->setMusicianProfile($musicianProfile->_real());
         $user->_save();
-        $profileId = $musicianProfile->_real()->getId();
+        $profileId = $musicianProfile->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('GET', '/api/user/musician-profile');
@@ -94,7 +94,7 @@ class MusicianProfileGetTest extends ApiTestCase
 
         $user->setMusicianProfile($musicianProfile->_real());
         $user->_save();
-        $profileId = $musicianProfile->_real()->getId();
+        $profileId = $musicianProfile->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('GET', '/api/user/musician-profile');

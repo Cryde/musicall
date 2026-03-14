@@ -174,8 +174,8 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $this->assertCount(2, $results);
 
-        $this->assertSame($announceParٍis->getId(), $results[0][0]->getId());
-        $this->assertSame($announceMarseille->getId(), $results[1][0]->getId());
+        $this->assertSame($announceParٍis->_real()->id, $results[0][0]->id);
+        $this->assertSame($announceMarseille->_real()->id, $results[1][0]->id);
 
         $this->assertArrayHasKey('distance', $results[0]);
         $this->assertArrayHasKey('distance', $results[1]);

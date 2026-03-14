@@ -251,7 +251,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications?category=' . $newsCategory->getId());
+        $this->client->request('GET', '/api/user/publications?category=' . $newsCategory->_real()->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
