@@ -59,8 +59,8 @@ readonly class PublicationListItemBuilder
         $item->description = $publication->getDescription();
 
         $voteCache = $publication->getVoteCache();
-        $item->upvotes = $voteCache?->getUpvoteCount() ?? 0;
-        $item->downvotes = $voteCache?->getDownvoteCount() ?? 0;
+        $item->upvotes = $voteCache->upvoteCount ?? 0;
+        $item->downvotes = $voteCache->downvoteCount ?? 0;
         $item->userVote = $this->resolveUserVote($publication);
 
         return $item;
@@ -108,7 +108,7 @@ readonly class PublicationListItemBuilder
         if ($user) {
             $vote = $this->voteRepository->findOneByUserAndVoteCache($user, $voteCache);
 
-            return $vote?->getValue();
+            return $vote?->value;
         }
 
         $request = $this->requestStack->getCurrentRequest();
@@ -116,7 +116,7 @@ readonly class PublicationListItemBuilder
             $identifier = $this->requestIdentifier->fromRequest($request);
             $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
 
-            return $vote?->getValue();
+            return $vote?->value;
         }
 
         return null;

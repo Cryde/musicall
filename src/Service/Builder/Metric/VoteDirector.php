@@ -16,12 +16,14 @@ class VoteDirector
         ?string   $entityType = null,
         ?string   $entityId = null,
     ): Vote {
-        return (new Vote())
-            ->setVoteCache($voteCache)
-            ->setIdentifier($identifier)
-            ->setUser($user)
-            ->setValue($value)
-            ->setEntityType($entityType)
-            ->setEntityId($entityId);
+        $vote = new Vote();
+        $vote->voteCache = $voteCache;
+        $vote->identifier = $identifier;
+        $vote->user = $user;
+        $vote->value = $value;
+        $vote->entityType = $entityType;
+        $vote->entityId = $entityId;
+
+        return $vote;
     }
 }

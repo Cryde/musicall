@@ -15,11 +15,13 @@ class ViewDirector
         ?string $entityType = null,
         ?string $entityId = null,
     ): View {
-        return (new View())
-            ->setUser($user)
-            ->setIdentifier($identifier)
-            ->setViewCache($viewCache)
-            ->setEntityType($entityType)
-            ->setEntityId($entityId);
+        $view = new View();
+        $view->user = $user;
+        $view->identifier = $identifier;
+        $view->viewCache = $viewCache;
+        $view->entityType = $entityType;
+        $view->entityId = $entityId;
+
+        return $view;
     }
 }

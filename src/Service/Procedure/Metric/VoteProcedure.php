@@ -42,14 +42,14 @@ class VoteProcedure
         }
 
         if ($vote) {
-            if ($vote->getValue() === $value) {
+            if ($vote->value === $value) {
                 // Toggle off — remove vote
-                $this->adjustCacheCount($voteCache, $vote->getValue(), -1);
+                $this->adjustCacheCount($voteCache, $vote->value, -1);
                 $this->entityManager->remove($vote);
             } else {
                 // Change vote direction
-                $this->adjustCacheCount($voteCache, $vote->getValue(), -1);
-                $vote->setValue($value);
+                $this->adjustCacheCount($voteCache, $vote->value, -1);
+                $vote->value = $value;
                 $this->adjustCacheCount($voteCache, $value, 1);
             }
         } else {
@@ -72,9 +72,9 @@ class VoteProcedure
     private function adjustCacheCount(VoteCache $voteCache, int $value, int $delta): void
     {
         if ($value === 1) {
-            $voteCache->setUpvoteCount($voteCache->getUpvoteCount() + $delta);
+            $voteCache->upvoteCount = $voteCache->upvoteCount + $delta;
         } else {
-            $voteCache->setDownvoteCount($voteCache->getDownvoteCount() + $delta);
+            $voteCache->downvoteCount = $voteCache->downvoteCount + $delta;
         }
     }
 }

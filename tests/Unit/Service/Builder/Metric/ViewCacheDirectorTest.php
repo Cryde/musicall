@@ -11,6 +11,6 @@ class ViewCacheDirectorTest extends TestCase
     {
         $result = (new ViewCacheDirector())->build();
 
-        $this->assertSame(0, $result->getCount());
+        $this->assertSame(0, $result->count);
     }
 }

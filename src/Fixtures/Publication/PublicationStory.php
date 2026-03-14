@@ -65,9 +65,9 @@ class PublicationStory extends Story
                 ])->create();
 
                 if ($value === 1) {
-                    $voteCache->setUpvoteCount($voteCache->getUpvoteCount() + 1);
+                    $voteCache->upvoteCount = $voteCache->upvoteCount + 1;
                 } else {
-                    $voteCache->setDownvoteCount($voteCache->getDownvoteCount() + 1);
+                    $voteCache->downvoteCount = $voteCache->downvoteCount + 1;
                 }
             }
         }

@@ -58,21 +58,21 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
 
         $summary = new PublicationVoteSummary();
         $summary->slug = $publication->slug;
-        $summary->upvotes = $voteCache?->getUpvoteCount() ?? 0;
-        $summary->downvotes = $voteCache?->getDownvoteCount() ?? 0;
+        $summary->upvotes = $voteCache->upvoteCount ?? 0;
+        $summary->downvotes = $voteCache->downvoteCount ?? 0;
 
         if ($voteCache) {
             /** @var User|null $user */
             $user = $this->security->getUser();
             if ($user) {
                 $vote = $this->voteRepository->findOneByUserAndVoteCache($user, $voteCache);
-                $summary->userVote = $vote?->getValue();
+                $summary->userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
                 if ($request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
-                    $summary->userVote = $vote?->getValue();
+                    $summary->userVote = $vote?->value;
                 }
             }
         }

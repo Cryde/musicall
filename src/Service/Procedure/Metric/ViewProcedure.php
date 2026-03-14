@@ -52,7 +52,7 @@ class ViewProcedure
             );
             $this->entityManager->persist($view);
             $this->entityManager->refresh($viewCache);
-            $viewCache->setCount($viewCache->getCount() + 1);
+            $viewCache->count = $viewCache->count + 1;
             $this->entityManager->flush();
         }
     }

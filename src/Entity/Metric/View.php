@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\Metric;
 
 use DateTime;
@@ -16,106 +18,29 @@ class View
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    private int $id;
+    public int $id;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private string $identifier;
+    public string $identifier;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    private ?User $user = null;
+    public ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: ViewCache::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ViewCache $viewCache;
+    public ViewCache $viewCache;
 
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $entityType = null;
+    public ?string $entityType = null;
 
     #[ORM\Column(type: Types::STRING, length: 36, nullable: true)]
-    private ?string $entityId = null;
+    public ?string $entityId = null;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getCreationDatetime(): DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getIdentifier(): string
-    {
-        return $this->identifier;
-    }
-
-    public function setIdentifier(string $identifier): self
-    {
-        $this->identifier = $identifier;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getViewCache(): ViewCache
-    {
-        return $this->viewCache;
-    }
-
-    public function setViewCache(ViewCache $viewCache): self
-    {
-        $this->viewCache = $viewCache;
-
-        return $this;
-    }
-
-    public function getEntityType(): ?string
-    {
-        return $this->entityType;
-    }
-
-    public function setEntityType(?string $entityType): self
-    {
-        $this->entityType = $entityType;
-
-        return $this;
-    }
-
-    public function getEntityId(): ?string
-    {
-        return $this->entityId;
-    }
-
-    public function setEntityId(?string $entityId): self
-    {
-        $this->entityId = $entityId;
-
-        return $this;
     }
 }

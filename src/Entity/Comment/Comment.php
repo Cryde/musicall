@@ -101,12 +101,12 @@ class Comment implements VotableInterface
     #[Groups([Comment::LIST, Comment::ITEM])]
     public function getUpvotes(): int
     {
-        return $this->voteCache?->getUpvoteCount() ?? 0;
+        return $this->voteCache->upvoteCount ?? 0;
     }
 
     #[Groups([Comment::LIST, Comment::ITEM])]
     public function getDownvotes(): int
     {
-        return $this->voteCache?->getDownvoteCount() ?? 0;
+        return $this->voteCache->downvoteCount ?? 0;
     }
 }

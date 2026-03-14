@@ -68,21 +68,21 @@ readonly class PublicationBuilder
         $publication->type = $this->buildType((int) $publicationEntity->getType());
 
         $voteCache = $publicationEntity->getVoteCache();
-        $publication->upvotes = $voteCache?->getUpvoteCount() ?? 0;
-        $publication->downvotes = $voteCache?->getDownvoteCount() ?? 0;
+        $publication->upvotes = $voteCache->upvoteCount ?? 0;
+        $publication->downvotes = $voteCache->downvoteCount ?? 0;
 
         if ($voteCache) {
             /** @var User|null $currentUser */
             $currentUser = $this->security->getUser();
             if ($currentUser) {
                 $vote = $this->voteRepository->findOneByUserAndVoteCache($currentUser, $voteCache);
-                $publication->userVote = $vote?->getValue();
+                $publication->userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
                 if ($request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
-                    $publication->userVote = $vote?->getValue();
+                    $publication->userVote = $vote?->value;
                 }
             }
         }

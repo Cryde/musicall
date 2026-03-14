@@ -33,8 +33,8 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
         $arrayPublication = $this->normalizer->normalize($publication, $format, $context);
         if (is_array($arrayPublication)) {
             $voteCache = $publication->getVoteCache();
-            $arrayPublication['upvotes'] = $voteCache?->getUpvoteCount() ?? 0;
-            $arrayPublication['downvotes'] = $voteCache?->getDownvoteCount() ?? 0;
+            $arrayPublication['upvotes'] = $voteCache->upvoteCount ?? 0;
+            $arrayPublication['downvotes'] = $voteCache->downvoteCount ?? 0;
             $arrayPublication['user_vote'] = $this->resolveUserVote($publication);
         }
 
@@ -67,7 +67,7 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
         if ($user) {
             $vote = $this->voteRepository->findOneByUserAndVoteCache($user, $voteCache);
 
-            return $vote?->getValue();
+            return $vote?->value;
         }
 
         $request = $this->requestStack->getCurrentRequest();
@@ -75,7 +75,7 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
             $identifier = $this->requestIdentifier->fromRequest($request);
             $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
 
-            return $vote?->getValue();
+            return $vote?->value;
         }
 
         return null;
