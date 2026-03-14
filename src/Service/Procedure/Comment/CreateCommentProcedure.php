@@ -17,7 +17,7 @@ readonly class CreateCommentProcedure
     public function process(User $user, CommentCreation $commentCreation): Comment
     {
         $comment = $this->commentBuilder->buildFromModel($commentCreation);
-        $comment->setAuthor($user);
+        $comment->author = $user;
         $this->entityManager->persist($comment);
         $this->entityManager->flush();
 

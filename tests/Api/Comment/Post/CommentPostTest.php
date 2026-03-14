@@ -26,7 +26,7 @@ class CommentPostTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->getId(),
+            'thread'  => '/api/comment_threads/' . $commentThread->id,
             'content' => "This is a comment
 with multiline",
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -37,15 +37,15 @@ with multiline",
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Comment',
-            '@id' => '/api/comments/' . $comments[0]->getId(),
+            '@id' => '/api/comments/' . $comments[0]->id,
             '@type' => 'Comment',
-            'id' => $comments[0]->getId(),
+            'id' => $comments[0]->id,
             'author' => [
                 '@id' => '/api/users/' . $user1->getId(),
                 '@type' => 'User',
                 'username' => 'base_user_1',
             ],
-            'creation_datetime' => $comments[0]->getCreationDatetime()->format('c'),
+            'creation_datetime' => $comments[0]->creationDatetime->format('c'),
             'content' => "This is a comment<br />\nwith multiline",
             'upvotes' => 0,
             'downvotes' => 0,
@@ -56,7 +56,7 @@ with multiline",
     {
         $commentThread = CommentThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->_real()->getId(),
+            'thread'  => '/api/comment_threads/' . $commentThread->_real()->id,
             'content' => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -66,7 +66,7 @@ with multiline",
     {
         $commentThread = CommentThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->_real()->getId(),
+            'thread'  => '/api/comment_threads/' . $commentThread->_real()->id,
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity\Comment;
 
@@ -31,24 +31,24 @@ class CommentThread
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[Groups([Publication::ITEM])]
-    private int $id;
+    public int $id;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private int $commentNumber = 0;
+    public int $commentNumber = 0;
 
     #[ORM\Column(type: Types::BOOLEAN)]
     #[Groups([CommentThread::ITEM])]
-    private bool $isActive = true;
+    public bool $isActive = true;
 
     /**
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(mappedBy: "thread", targetEntity: Comment::class)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
-    private Collection $comments;
+    public Collection $comments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $creationDatetime;
+    public ?DateTimeInterface $creationDatetime;
 
     public function __construct()
     {
@@ -56,61 +56,12 @@ class CommentThread
         $this->comments = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getCommentNumber(): ?int
-    {
-        return $this->commentNumber;
-    }
-
-    public function setCommentNumber(int $commentNumber): self
-    {
-        $this->commentNumber = $commentNumber;
-
-        return $this;
-    }
-
-    public function getIsActive(): ?bool
-    {
-        return $this->isActive;
-    }
-
-    public function setIsActive(bool $isActive): self
-    {
-        $this->isActive = $isActive;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
             $this->comments[] = $comment;
-            $comment->setThread($this);
+            $comment->thread = $this;
         }
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): ?DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(?DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
 
         return $this;
     }

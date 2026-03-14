@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Entity\Comment;
 
@@ -44,87 +42,38 @@ class Comment implements VotableInterface
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[Groups([Comment::ITEM, Comment::LIST])]
-    private int $id;
+    public int $id;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: CommentThread::class, inversedBy: "comments")]
     #[ORM\JoinColumn(nullable: false)]
-    private CommentThread $thread;
+    public CommentThread $thread;
 
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Comment::ITEM, Comment::LIST])]
-    private User $author;
+    public User $author;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups([Comment::ITEM, Comment::LIST])]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     #[Assert\NotBlank(message: 'Le commentaire est vide')]
     #[ORM\Column(type: Types::TEXT)]
     #[Groups([Comment::ITEM, Comment::LIST])]
-    private string $content;
+    public string $content {
+        set(string $value) {
+            $this->content = trim($value);
+        }
+    }
 
     #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
-    private ?VoteCache $voteCache = null;
+    public ?VoteCache $voteCache = null;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getThread(): CommentThread
-    {
-        return $this->thread;
-    }
-
-    public function setThread(CommentThread $thread): static
-    {
-        $this->thread = $thread;
-
-        return $this;
-    }
-
-    public function getAuthor(): User
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(User $author): static
-    {
-        $this->author = $author;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): static
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getContent(): string
-    {
-        return $this->content;
-    }
-
-    public function setContent(string $content): static
-    {
-        $this->content = trim($content);
-
-        return $this;
     }
 
     public function getVoteCache(): ?VoteCache

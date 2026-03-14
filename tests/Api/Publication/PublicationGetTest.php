@@ -71,7 +71,7 @@ class PublicationGetTest extends ApiTestCase
             ],
             'thread'               => [
                 '@type'    => 'Thread',
-                'id'       => $thread->_real()->getId(),
+                'id'       => $thread->_real()->id,
             ],
             'type'                 => [
                 '@type'    => 'Type',

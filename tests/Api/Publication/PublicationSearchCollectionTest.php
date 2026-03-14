@@ -101,7 +101,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
         ]);
 
         $subCatId = $sub->_real()->getId();
-        $threadId = $thread->_real()->getId();
+        $threadId = $thread->_real()->id;
         $this->assertResponseIsSuccessful();
         foreach ($objectToDelete as $item) {
             $item->_delete();

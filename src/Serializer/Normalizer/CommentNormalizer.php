@@ -24,7 +24,7 @@ class CommentNormalizer implements NormalizerInterface, NormalizerAwareInterface
         /** @var Comment $comment */
         $arrayComment = $this->normalizer->normalize($comment, $format, $context);
         if (is_array($arrayComment)) {
-            $arrayComment['content'] = $this->appOnlybrSanitizer->sanitize(nl2br($comment->getContent()));
+            $arrayComment['content'] = $this->appOnlybrSanitizer->sanitize(nl2br($comment->content));
         }
 
         return $arrayComment;

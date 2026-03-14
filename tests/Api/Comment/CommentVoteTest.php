@@ -28,14 +28,14 @@ class CommentVoteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/comments/' . $comment->getId() . '/vote',
+            '/api/comments/' . $comment->id . '/vote',
             ['user_vote' => 1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/CommentVoteSummary',
-            '@id' => '/api/comment_vote_summaries/' . $comment->getId(),
+            '@id' => '/api/comment_vote_summaries/' . $comment->id,
             '@type' => 'CommentVoteSummary',
             'upvotes' => 1,
             'downvotes' => 0,
@@ -48,7 +48,7 @@ class CommentVoteTest extends ApiTestCase
         $comment = $this->createComment();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $comment->_real()->setVoteCache($voteCache->_real());
+        $comment->_real()->voteCache = $voteCache->_real();
         $comment->_save();
 
         VoteFactory::new([
@@ -57,20 +57,20 @@ class CommentVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_comment',
-            'entityId' => (string) $comment->_real()->getId(),
+            'entityId' => (string) $comment->_real()->id,
         ])->create();
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
             'POST',
-            '/api/comments/' . $comment->getId() . '/vote',
+            '/api/comments/' . $comment->id . '/vote',
             ['user_vote' => 1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/CommentVoteSummary',
-            '@id' => '/api/comment_vote_summaries/' . $comment->getId(),
+            '@id' => '/api/comment_vote_summaries/' . $comment->id,
             '@type' => 'CommentVoteSummary',
             'upvotes' => 0,
             'downvotes' => 0,
@@ -83,7 +83,7 @@ class CommentVoteTest extends ApiTestCase
         $comment = $this->createComment();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $comment->_real()->setVoteCache($voteCache->_real());
+        $comment->_real()->voteCache = $voteCache->_real();
         $comment->_save();
 
         VoteFactory::new([
@@ -92,20 +92,20 @@ class CommentVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_comment',
-            'entityId' => (string) $comment->_real()->getId(),
+            'entityId' => (string) $comment->_real()->id,
         ])->create();
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
             'POST',
-            '/api/comments/' . $comment->getId() . '/vote',
+            '/api/comments/' . $comment->id . '/vote',
             ['user_vote' => -1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/CommentVoteSummary',
-            '@id' => '/api/comment_vote_summaries/' . $comment->getId(),
+            '@id' => '/api/comment_vote_summaries/' . $comment->id,
             '@type' => 'CommentVoteSummary',
             'upvotes' => 0,
             'downvotes' => 1,
@@ -145,7 +145,7 @@ class CommentVoteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/comments/' . $comment->getId() . '/vote',
+            '/api/comments/' . $comment->id . '/vote',
             ['user_vote' => 5],
             self::SERVER_PARAMS
         );

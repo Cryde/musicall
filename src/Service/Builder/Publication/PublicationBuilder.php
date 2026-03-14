@@ -122,7 +122,7 @@ readonly class PublicationBuilder
     private function buildThread(CommentThread $commentThreadEntity): Thread
     {
         $thread = new Thread();
-        $thread->id = (int) $commentThreadEntity->getId();
+        $thread->id = $commentThreadEntity->id;
 
         return $thread;
     }

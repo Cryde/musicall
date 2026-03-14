@@ -54,10 +54,10 @@ readonly class CommentVoteProcessor implements ProcessorInterface
 
     private function buildSummary(Comment $comment): CommentVoteSummary
     {
-        $voteCache = $comment->getVoteCache();
+        $voteCache = $comment->voteCache;
 
         $summary = new CommentVoteSummary();
-        $summary->id = $comment->getId();
+        $summary->id = $comment->id;
         $summary->upvotes = $voteCache?->getUpvoteCount() ?? 0;
         $summary->downvotes = $voteCache?->getDownvoteCount() ?? 0;
 
