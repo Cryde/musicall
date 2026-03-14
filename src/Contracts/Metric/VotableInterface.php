@@ -6,9 +6,7 @@ use App\Entity\Metric\VoteCache;
 
 interface VotableInterface
 {
-    public function getVoteCache(): ?VoteCache;
-
-    public function setVoteCache(?VoteCache $voteCache): self;
+    public ?VoteCache $voteCache { get; set; }
 
     public function getVotableId(): ?string;
 

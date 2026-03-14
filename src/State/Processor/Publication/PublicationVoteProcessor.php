@@ -54,7 +54,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
 
     private function buildSummary(Publication $publication): PublicationVoteSummary
     {
-        $voteCache = $publication->getVoteCache();
+        $voteCache = $publication->voteCache;
 
         $summary = new PublicationVoteSummary();
         $summary->slug = $publication->slug;

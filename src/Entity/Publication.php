@@ -132,10 +132,10 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     public ?CommentThread $thread = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    private ?ViewCache $viewCache = null;
+    public ?ViewCache $viewCache = null;
 
     #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
-    private ?VoteCache $voteCache = null;
+    public ?VoteCache $voteCache = null;
 
     public function __construct()
     {
@@ -173,18 +173,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
         return $this;
     }
 
-    public function getViewCache(): ?ViewCache
-    {
-        return $this->viewCache;
-    }
-
-    public function setViewCache(?ViewCache $viewCache): self
-    {
-        $this->viewCache = $viewCache;
-
-        return $this;
-    }
-
     public function getViewableId(): ?string
     {
         return $this->id !== null ? (string) $this->id : null;
@@ -193,18 +181,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     public function getViewableType(): string
     {
         return 'app_publication';
-    }
-
-    public function getVoteCache(): ?VoteCache
-    {
-        return $this->voteCache;
-    }
-
-    public function setVoteCache(?VoteCache $voteCache): self
-    {
-        $this->voteCache = $voteCache;
-
-        return $this;
     }
 
     public function getVotableId(): ?string

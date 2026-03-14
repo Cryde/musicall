@@ -72,7 +72,7 @@ class PublicationVoteTest extends ApiTestCase
         $publication = $this->createOnlinePublication();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $publication->_real()->setVoteCache($voteCache->_real());
+        $publication->_real()->voteCache = $voteCache->_real();
         $publication->_save();
 
         VoteFactory::new([
@@ -107,7 +107,7 @@ class PublicationVoteTest extends ApiTestCase
         $publication = $this->createOnlinePublication();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $publication->_real()->setVoteCache($voteCache->_real());
+        $publication->_real()->voteCache = $voteCache->_real();
         $publication->_save();
 
         VoteFactory::new([

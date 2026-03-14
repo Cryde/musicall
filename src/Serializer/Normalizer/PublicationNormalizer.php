@@ -32,7 +32,7 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
         /** @var Publication $publication */
         $arrayPublication = $this->normalizer->normalize($publication, $format, $context);
         if (is_array($arrayPublication)) {
-            $voteCache = $publication->getVoteCache();
+            $voteCache = $publication->voteCache;
             $arrayPublication['upvotes'] = $voteCache->upvoteCount ?? 0;
             $arrayPublication['downvotes'] = $voteCache->downvoteCount ?? 0;
             $arrayPublication['user_vote'] = $this->resolveUserVote($publication);
@@ -57,7 +57,7 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
 
     private function resolveUserVote(Publication $publication): ?int
     {
-        $voteCache = $publication->getVoteCache();
+        $voteCache = $publication->voteCache;
         if (!$voteCache) {
             return null;
         }

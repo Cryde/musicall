@@ -126,18 +126,6 @@ class Gallery implements ViewableInterface
         return count($this->images);
     }
 
-    public function getViewCache(): ?ViewCache
-    {
-        return $this->viewCache;
-    }
-
-    public function setViewCache(?ViewCache $viewCache): self
-    {
-        $this->viewCache = $viewCache;
-
-        return $this;
-    }
-
     public function getViewableId(): ?string
     {
         return $this->id !== null ? (string) $this->id : null;

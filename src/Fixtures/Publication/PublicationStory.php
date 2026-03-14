@@ -49,10 +49,10 @@ class PublicationStory extends Story
 
             foreach ($votedPublications as $index) {
                 $publication = $publications[$index]->_real();
-                $voteCache = $publication->getVoteCache();
+                $voteCache = $publication->voteCache;
                 if (!$voteCache) {
                     $voteCache = VoteCacheFactory::new()->create()->_real();
-                    $publication->setVoteCache($voteCache);
+                    $publication->voteCache = $voteCache;
                 }
 
                 $value = random_int(0, 1) === 1 ? 1 : -1;

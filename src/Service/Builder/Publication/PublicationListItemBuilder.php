@@ -58,7 +58,7 @@ readonly class PublicationListItemBuilder
         $item->typeLabel = $publication->getTypeLabel();
         $item->description = $publication->getDescription();
 
-        $voteCache = $publication->getVoteCache();
+        $voteCache = $publication->voteCache;
         $item->upvotes = $voteCache->upvoteCount ?? 0;
         $item->downvotes = $voteCache->downvoteCount ?? 0;
         $item->userVote = $this->resolveUserVote($publication);
@@ -98,7 +98,7 @@ readonly class PublicationListItemBuilder
 
     private function resolveUserVote(Publication $publication): ?int
     {
-        $voteCache = $publication->getVoteCache();
+        $voteCache = $publication->voteCache;
         if (!$voteCache) {
             return null;
         }

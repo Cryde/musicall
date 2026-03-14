@@ -6,9 +6,7 @@ use App\Entity\Metric\ViewCache;
 
 interface ViewableInterface
 {
-    public function getViewCache(): ?ViewCache;
-
-    public function setViewCache(?ViewCache $viewCache): self;
+    public ?ViewCache $viewCache { get; set; }
 
     public function getViewableId(): ?string;
 

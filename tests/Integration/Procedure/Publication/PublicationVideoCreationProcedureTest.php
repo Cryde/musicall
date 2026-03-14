@@ -52,7 +52,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertSame(1, $result->status); // 1 = Publication::STATUS_ONLINE
         $this->assertSame('v-the-video-title', $result->slug);
         $this->assertSame($category->_real()->slug, $result->subCategory->slug);
-        $this->assertNotNull($result->getViewCache());
+        $this->assertNotNull($result->viewCache);
         $this->assertNotNull($result->thread);
     }
 
@@ -81,7 +81,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertSame(1, $result->status); // 1 = Publication::STATUS_ONLINE
         $this->assertSame('v-the-video-title', $result->slug);
         $this->assertSame($category->_real()->slug, $result->subCategory->slug);
-        $this->assertNotNull($result->getViewCache());
+        $this->assertNotNull($result->viewCache);
         $this->assertNotNull($result->thread);
     }
 

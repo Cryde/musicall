@@ -43,7 +43,7 @@ class PublicationVideoCreationProcedure
         $cover->publication = $publication;
         $publication->cover = $cover;
         $publication->thread = $thread;
-        $publication->setViewCache($viewCache);
+        $publication->viewCache = $viewCache;
         $this->entityManager->persist($publication);
         $this->entityManager->flush();
 

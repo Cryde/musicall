@@ -79,18 +79,6 @@ class UserProfile implements ViewableInterface
         return $this;
     }
 
-    public function getViewCache(): ?ViewCache
-    {
-        return $this->viewCache;
-    }
-
-    public function setViewCache(?ViewCache $viewCache): self
-    {
-        $this->viewCache = $viewCache;
-
-        return $this;
-    }
-
     public function getViewableId(): ?string
     {
         return $this->id;

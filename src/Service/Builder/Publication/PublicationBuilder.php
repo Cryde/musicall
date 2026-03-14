@@ -67,7 +67,7 @@ readonly class PublicationBuilder
         $publication->thread = $this->buildThread($thread);
         $publication->type = $this->buildType((int) $publicationEntity->type);
 
-        $voteCache = $publicationEntity->getVoteCache();
+        $voteCache = $publicationEntity->voteCache;
         $publication->upvotes = $voteCache->upvoteCount ?? 0;
         $publication->downvotes = $voteCache->downvoteCount ?? 0;
 

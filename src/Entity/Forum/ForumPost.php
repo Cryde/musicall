@@ -61,18 +61,6 @@ class ForumPost implements VotableInterface
         $this->creationDatetime = new DateTime();
     }
 
-    public function getVoteCache(): ?VoteCache
-    {
-        return $this->voteCache;
-    }
-
-    public function setVoteCache(?VoteCache $voteCache): self
-    {
-        $this->voteCache = $voteCache;
-
-        return $this;
-    }
-
     public function getVotableId(): ?string
     {
         /** @var string|null $id */

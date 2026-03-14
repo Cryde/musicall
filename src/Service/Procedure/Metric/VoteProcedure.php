@@ -25,10 +25,10 @@ class VoteProcedure
 
     public function process(VotableInterface $votable, Request $request, int $value, ?User $user = null): void
     {
-        $voteCache = $votable->getVoteCache();
+        $voteCache = $votable->voteCache;
         if (!$voteCache) {
             $voteCache = $this->voteCacheDirector->build();
-            $votable->setVoteCache($voteCache);
+            $votable->voteCache = $voteCache;
             $this->entityManager->persist($voteCache);
             $this->entityManager->flush();
         }
