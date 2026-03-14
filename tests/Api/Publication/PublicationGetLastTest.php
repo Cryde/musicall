@@ -134,7 +134,7 @@ class PublicationGetLastTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/publication-5',
                     '@type'                => 'Publication',
-                    'id'                   => $pub5->getId(),
+                    'id'                   => $pub5->id,
                     'title'                => 'Publication 5',
                     'sub_category'         => [
                         '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
@@ -163,7 +163,7 @@ class PublicationGetLastTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/publication-4',
                     '@type'                => 'Publication',
-                    'id'                   => $pub4->getId(),
+                    'id'                   => $pub4->id,
                     'title'                => 'Publication 4',
                     'sub_category'         => [
                         '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
@@ -192,7 +192,7 @@ class PublicationGetLastTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/publication-3',
                     '@type'                => 'Publication',
-                    'id'                   => $pub3->getId(),
+                    'id'                   => $pub3->id,
                     'title'                => 'Publication 3',
                     'sub_category'         => [
                         '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
@@ -221,7 +221,7 @@ class PublicationGetLastTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/publication-2',
                     '@type'                => 'Publication',
-                    'id'                   => $pub2->getId(),
+                    'id'                   => $pub2->id,
                     'title'                => 'Publication 2',
                     'sub_category'         => [
                         '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,

@@ -9,6 +9,7 @@ use App\Repository\Teacher\TeacherProfilePricingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: TeacherProfilePricingRepository::class)]
 #[ORM\Table(name: 'user_teacher_profile_pricing')]
@@ -19,56 +20,19 @@ class TeacherProfilePricing
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?string $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: TeacherProfile::class, inversedBy: 'pricing')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private TeacherProfile $teacherProfile;
+    public TeacherProfile $teacherProfile;
 
     #[ORM\Column(type: Types::STRING, length: 10, enumType: SessionDuration::class)]
-    private SessionDuration $duration;
+    public SessionDuration $duration;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private int $price;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getTeacherProfile(): TeacherProfile
-    {
-        return $this->teacherProfile;
-    }
-
-    public function setTeacherProfile(TeacherProfile $teacherProfile): self
-    {
-        $this->teacherProfile = $teacherProfile;
-
-        return $this;
-    }
-
-    public function getDuration(): SessionDuration
-    {
-        return $this->duration;
-    }
-
-    public function setDuration(SessionDuration $duration): self
-    {
-        $this->duration = $duration;
-
-        return $this;
-    }
-
-    public function getPrice(): int
-    {
-        return $this->price;
-    }
-
-    public function setPrice(int $price): self
-    {
-        $this->price = $price;
-
-        return $this;
-    }
+    public int $price;
 }

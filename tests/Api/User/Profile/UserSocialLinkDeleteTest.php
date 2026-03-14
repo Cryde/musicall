@@ -31,7 +31,7 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'platform' => SocialPlatform::YOUTUBE,
             'url' => 'https://www.youtube.com/@todelete',
         ]);
-        $linkId = $link->getId();
+        $linkId = $link->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('DELETE', '/api/user/profile/social-links/' . $linkId);
@@ -79,7 +79,7 @@ class UserSocialLinkDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('DELETE', '/api/user/profile/social-links/' . $link->getId());
+        $this->client->request('DELETE', '/api/user/profile/social-links/' . $link->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',

@@ -18,22 +18,22 @@ readonly class UserPublicationBuilder
 
     public function buildFromEntity(Publication $publication): UserPublication
     {
-        $creationDatetime = $publication->getCreationDatetime();
+        $creationDatetime = $publication->creationDatetime;
 
         $dto = new UserPublication();
-        $dto->id = (int) $publication->getId();
-        $dto->title = (string) $publication->getTitle();
+        $dto->id = (int) $publication->id;
+        $dto->title = (string) $publication->title;
         $dto->slug = $publication->slug;
         $dto->creationDatetime = $creationDatetime;
-        $dto->editionDatetime = $publication->getEditionDatetime();
-        $dto->statusId = (int) $publication->getStatus();
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->getStatus()] ?? 'Inconnu';
-        $dto->typeId = (int) $publication->getType();
-        $dto->typeLabel = $publication->getType() === Publication::TYPE_VIDEO
+        $dto->editionDatetime = $publication->editionDatetime;
+        $dto->statusId = (int) $publication->status;
+        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
+        $dto->typeId = (int) $publication->type;
+        $dto->typeLabel = $publication->type === Publication::TYPE_VIDEO
             ? Publication::TYPE_VIDEO_LABEL
             : Publication::TYPE_TEXT_LABEL;
 
-        $subCategory = $publication->getSubCategory();
+        $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
         $category->id = (int) $subCategory->id;
         $category->title = (string) $subCategory->title;
@@ -47,7 +47,7 @@ readonly class UserPublicationBuilder
 
     private function buildCoverUrl(Publication $publication): ?string
     {
-        $cover = $publication->getCover();
+        $cover = $publication->cover;
         if ($cover === null) {
             return null;
         }

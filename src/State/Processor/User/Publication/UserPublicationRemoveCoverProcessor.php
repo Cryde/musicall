@@ -24,9 +24,9 @@ class UserPublicationRemoveCoverProcessor implements ProcessorInterface
         /** @var Publication $publication */
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
-        $cover = $publication->getCover();
+        $cover = $publication->cover;
         if ($cover) {
-            $publication->setCover(null);
+            $publication->cover = null;
             $this->entityManager->remove($cover);
             $this->entityManager->flush();
         }

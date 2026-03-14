@@ -79,9 +79,9 @@ readonly class PublicProfileBuilder
     {
         return array_map(function (UserSocialLink $link): PublicProfileSocialLink {
             $dto = new PublicProfileSocialLink();
-            $dto->platform = $link->getPlatform()->value;
-            $dto->platformLabel = $link->getPlatform()->getLabel();
-            $dto->url = $link->getUrl();
+            $dto->platform = $link->platform->value;
+            $dto->platformLabel = $link->platform->getLabel();
+            $dto->url = $link->url;
 
             return $dto;
         }, $links);

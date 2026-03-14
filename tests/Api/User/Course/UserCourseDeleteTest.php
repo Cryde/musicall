@@ -33,7 +33,7 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->request('DELETE', '/api/user/courses/' . $course->getId());
+        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -55,7 +55,7 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $courseId = $course->getId();
+        $courseId = $course->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('DELETE', '/api/user/courses/' . $courseId);
@@ -78,7 +78,7 @@ class UserCourseDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/courses/' . $course->getId());
+        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You are not the owner of this course',
@@ -100,7 +100,7 @@ class UserCourseDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/courses/' . $course->getId());
+        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft courses',
@@ -122,7 +122,7 @@ class UserCourseDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/courses/' . $course->getId());
+        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft courses',

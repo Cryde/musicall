@@ -29,11 +29,11 @@ readonly class AdminPublicationRejectProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Publication not found');
         }
 
-        if ($publication->getStatus() !== Publication::STATUS_PENDING) {
+        if ($publication->status !== Publication::STATUS_PENDING) {
             throw new BadRequestHttpException('Only pending publications can be rejected');
         }
 
-        $publication->setStatus(Publication::STATUS_DRAFT);
+        $publication->status = Publication::STATUS_DRAFT;
         $this->entityManager->flush();
 
         return null;

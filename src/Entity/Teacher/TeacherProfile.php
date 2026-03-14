@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: TeacherProfileRepository::class)]
 #[ORM\Table(name: 'user_teacher_profile')]
@@ -24,97 +25,101 @@ class TeacherProfile implements ViewableInterface
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    private ?string $id = null;
+    public UuidInterface|string|null $id = null {
+        get {
+            return is_string($this->id) ? $this->id : $this->id?->toString();
+        }
+    }
 
     #[ORM\OneToOne(inversedBy: 'teacherProfile', targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private User $user;
+    public User $user;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    public ?string $description = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $yearsOfExperience = null;
+    public ?int $yearsOfExperience = null;
 
     /**
      * @var array<string>
      */
     #[ORM\Column(type: Types::JSON)]
-    private array $studentLevels = [];
+    public array $studentLevels = [];
 
     /**
      * @var array<string>
      */
     #[ORM\Column(type: Types::JSON)]
-    private array $ageGroups = [];
+    public array $ageGroups = [];
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $courseTitle = null;
+    public ?string $courseTitle = null;
 
     #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $offersTrial = false;
+    public bool $offersTrial = false;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $trialPrice = null;
+    public ?int $trialPrice = null;
 
     /**
      * @var Collection<int, TeacherProfileInstrument>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfileInstrument::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $instruments;
+    public Collection $instruments;
 
     /**
      * @var Collection<int, Style>
      */
     #[ORM\ManyToMany(targetEntity: Style::class)]
     #[ORM\JoinTable(name: 'user_teacher_profile_style')]
-    private Collection $styles;
+    public Collection $styles;
 
     /**
      * @var Collection<int, TeacherProfileMedia>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfileMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
-    private Collection $media;
+    public Collection $media;
 
     /**
      * @var Collection<int, TeacherProfilePricing>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfilePricing::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $pricing;
+    public Collection $pricing;
 
     /**
      * @var Collection<int, TeacherAvailability>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherAvailability::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $availability;
+    public Collection $availability;
 
     /**
      * @var Collection<int, TeacherProfileLocation>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfileLocation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $locations;
+    public Collection $locations;
 
     /**
      * @var Collection<int, TeacherProfilePackage>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfilePackage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $packages;
+    public Collection $packages;
 
     /**
      * @var Collection<int, TeacherSocialLink>
      */
     #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherSocialLink::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $socialLinks;
+    public Collection $socialLinks;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private DateTimeImmutable $creationDatetime;
+    public DateTimeImmutable $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?DateTimeImmutable $updateDatetime = null;
+    public ?DateTimeImmutable $updateDatetime = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
-    private ?ViewCache $viewCache = null;
+    public ?ViewCache $viewCache = null;
 
     public function __construct()
     {
@@ -129,132 +134,11 @@ class TeacherProfile implements ViewableInterface
         $this->creationDatetime = new DateTimeImmutable();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function setUser(User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function getYearsOfExperience(): ?int
-    {
-        return $this->yearsOfExperience;
-    }
-
-    public function setYearsOfExperience(?int $yearsOfExperience): self
-    {
-        $this->yearsOfExperience = $yearsOfExperience;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getStudentLevels(): array
-    {
-        return $this->studentLevels;
-    }
-
-    /**
-     * @param array<string> $studentLevels
-     */
-    public function setStudentLevels(array $studentLevels): self
-    {
-        $this->studentLevels = $studentLevels;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getAgeGroups(): array
-    {
-        return $this->ageGroups;
-    }
-
-    /**
-     * @param array<string> $ageGroups
-     */
-    public function setAgeGroups(array $ageGroups): self
-    {
-        $this->ageGroups = $ageGroups;
-
-        return $this;
-    }
-
-    public function getCourseTitle(): ?string
-    {
-        return $this->courseTitle;
-    }
-
-    public function setCourseTitle(?string $courseTitle): self
-    {
-        $this->courseTitle = $courseTitle;
-
-        return $this;
-    }
-
-    public function offersTrial(): bool
-    {
-        return $this->offersTrial;
-    }
-
-    public function setOffersTrial(bool $offersTrial): self
-    {
-        $this->offersTrial = $offersTrial;
-
-        return $this;
-    }
-
-    public function getTrialPrice(): ?int
-    {
-        return $this->trialPrice;
-    }
-
-    public function setTrialPrice(?int $trialPrice): self
-    {
-        $this->trialPrice = $trialPrice;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, TeacherProfileInstrument>
-     */
-    public function getInstruments(): Collection
-    {
-        return $this->instruments;
-    }
-
     public function addInstrument(TeacherProfileInstrument $instrument): self
     {
         if (!$this->instruments->contains($instrument)) {
             $this->instruments->add($instrument);
-            $instrument->setTeacherProfile($this);
+            $instrument->teacherProfile = $this;
         }
 
         return $this;
@@ -265,14 +149,6 @@ class TeacherProfile implements ViewableInterface
         $this->instruments->removeElement($instrument);
 
         return $this;
-    }
-
-    /**
-     * @return Collection<int, Style>
-     */
-    public function getStyles(): Collection
-    {
-        return $this->styles;
     }
 
     public function addStyle(Style $style): self
@@ -291,19 +167,11 @@ class TeacherProfile implements ViewableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, TeacherProfileMedia>
-     */
-    public function getMedia(): Collection
-    {
-        return $this->media;
-    }
-
     public function addMedia(TeacherProfileMedia $media): self
     {
         if (!$this->media->contains($media)) {
             $this->media->add($media);
-            $media->setTeacherProfile($this);
+            $media->teacherProfile = $this;
         }
 
         return $this;
@@ -316,19 +184,11 @@ class TeacherProfile implements ViewableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, TeacherProfilePricing>
-     */
-    public function getPricing(): Collection
-    {
-        return $this->pricing;
-    }
-
     public function addPricing(TeacherProfilePricing $pricing): self
     {
         if (!$this->pricing->contains($pricing)) {
             $this->pricing->add($pricing);
-            $pricing->setTeacherProfile($this);
+            $pricing->teacherProfile = $this;
         }
 
         return $this;
@@ -341,19 +201,11 @@ class TeacherProfile implements ViewableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, TeacherAvailability>
-     */
-    public function getAvailability(): Collection
-    {
-        return $this->availability;
-    }
-
     public function addAvailability(TeacherAvailability $availability): self
     {
         if (!$this->availability->contains($availability)) {
             $this->availability->add($availability);
-            $availability->setTeacherProfile($this);
+            $availability->teacherProfile = $this;
         }
 
         return $this;
@@ -366,19 +218,11 @@ class TeacherProfile implements ViewableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, TeacherProfileLocation>
-     */
-    public function getLocations(): Collection
-    {
-        return $this->locations;
-    }
-
     public function addLocation(TeacherProfileLocation $location): self
     {
         if (!$this->locations->contains($location)) {
             $this->locations->add($location);
-            $location->setTeacherProfile($this);
+            $location->teacherProfile = $this;
         }
 
         return $this;
@@ -391,19 +235,11 @@ class TeacherProfile implements ViewableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, TeacherProfilePackage>
-     */
-    public function getPackages(): Collection
-    {
-        return $this->packages;
-    }
-
     public function addPackage(TeacherProfilePackage $package): self
     {
         if (!$this->packages->contains($package)) {
             $this->packages->add($package);
-            $package->setTeacherProfile($this);
+            $package->teacherProfile = $this;
         }
 
         return $this;
@@ -416,19 +252,11 @@ class TeacherProfile implements ViewableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, TeacherSocialLink>
-     */
-    public function getSocialLinks(): Collection
-    {
-        return $this->socialLinks;
-    }
-
     public function addSocialLink(TeacherSocialLink $socialLink): self
     {
         if (!$this->socialLinks->contains($socialLink)) {
             $this->socialLinks->add($socialLink);
-            $socialLink->setTeacherProfile($this);
+            $socialLink->teacherProfile = $this;
         }
 
         return $this;
@@ -437,30 +265,6 @@ class TeacherProfile implements ViewableInterface
     public function removeSocialLink(TeacherSocialLink $socialLink): self
     {
         $this->socialLinks->removeElement($socialLink);
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeImmutable
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeImmutable $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getUpdateDatetime(): ?DateTimeImmutable
-    {
-        return $this->updateDatetime;
-    }
-
-    public function setUpdateDatetime(?DateTimeImmutable $updateDatetime): self
-    {
-        $this->updateDatetime = $updateDatetime;
 
         return $this;
     }
@@ -479,6 +283,7 @@ class TeacherProfile implements ViewableInterface
 
     public function getViewableId(): ?string
     {
+        /** @var string|null */
         return $this->id;
     }
 

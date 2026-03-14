@@ -90,8 +90,8 @@ readonly class UserDashboardMetricsProvider implements ProviderInterface
         $recentTeachers = $this->teacherProfileRepository->findRecentTeachers($from, $to, 10);
         foreach ($recentTeachers as $teacherProfile) {
             $metrics->recentTeachers[] = [
-                'username' => $teacherProfile->getUser()->getUsername(),
-                'registration_date' => $teacherProfile->getCreationDatetime()->format('Y-m-d H:i'),
+                'username' => $teacherProfile->user->getUsername(),
+                'registration_date' => $teacherProfile->creationDatetime->format('Y-m-d H:i'),
             ];
         }
 

@@ -34,13 +34,13 @@ readonly class TeacherProfileBuilder
 
     public function build(TeacherProfile $profile): PublicTeacherProfile
     {
-        $user = $profile->getUser();
+        $user = $profile->user;
         $dto = new PublicTeacherProfile();
 
         $dto->username = $user->getUsername();
         $dto->userId = (string) $user->getId();
-        $dto->creationDatetime = $profile->getCreationDatetime();
-        $dto->updateDatetime = $profile->getUpdateDatetime();
+        $dto->creationDatetime = $profile->creationDatetime;
+        $dto->updateDatetime = $profile->updateDatetime;
 
         // Profile picture
         if ($user->getProfilePicture()) {
@@ -50,25 +50,25 @@ readonly class TeacherProfileBuilder
             }
         }
 
-        $dto->description = $profile->getDescription();
-        $dto->yearsOfExperience = $profile->getYearsOfExperience();
+        $dto->description = $profile->description;
+        $dto->yearsOfExperience = $profile->yearsOfExperience;
 
-        $dto->studentLevels = $profile->getStudentLevels();
-        $dto->ageGroups = $profile->getAgeGroups();
+        $dto->studentLevels = $profile->studentLevels;
+        $dto->ageGroups = $profile->ageGroups;
 
-        $dto->courseTitle = $profile->getCourseTitle();
-        $dto->offersTrial = $profile->offersTrial();
-        $dto->trialPrice = $profile->getTrialPrice();
+        $dto->courseTitle = $profile->courseTitle;
+        $dto->offersTrial = $profile->offersTrial;
+        $dto->trialPrice = $profile->trialPrice;
 
-        $dto->locations = $this->buildLocations($profile->getLocations()->toArray());
+        $dto->locations = $this->buildLocations($profile->locations->toArray());
 
-        $dto->instruments = $this->buildInstruments($profile->getInstruments()->toArray());
-        $dto->styles = $this->buildStyles($profile->getStyles()->toArray());
-        $dto->media = $this->teacherProfileMediaResourceBuilder->buildList($profile->getMedia()->toArray());
-        $dto->pricing = $this->buildPricing($profile->getPricing()->toArray());
-        $dto->availability = $this->buildAvailability($profile->getAvailability()->toArray());
-        $dto->packages = $this->buildPackages($profile->getPackages()->toArray());
-        $dto->socialLinks = $this->buildSocialLinks($profile->getSocialLinks()->toArray());
+        $dto->instruments = $this->buildInstruments($profile->instruments->toArray());
+        $dto->styles = $this->buildStyles($profile->styles->toArray());
+        $dto->media = $this->teacherProfileMediaResourceBuilder->buildList($profile->media->toArray());
+        $dto->pricing = $this->buildPricing($profile->pricing->toArray());
+        $dto->availability = $this->buildAvailability($profile->availability->toArray());
+        $dto->packages = $this->buildPackages($profile->packages->toArray());
+        $dto->socialLinks = $this->buildSocialLinks($profile->socialLinks->toArray());
 
         return $dto;
     }
@@ -81,8 +81,8 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (TeacherProfileInstrument $instrument): PublicTeacherProfileInstrument {
             $dto = new PublicTeacherProfileInstrument();
-            $dto->instrumentId = (string) $instrument->getInstrument()->id;
-            $dto->instrumentName = (string) $instrument->getInstrument()->name;
+            $dto->instrumentId = (string) $instrument->instrument->id;
+            $dto->instrumentName = (string) $instrument->instrument->name;
 
             return $dto;
         }, $instruments));
@@ -111,13 +111,13 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (TeacherProfileLocation $location): PublicTeacherProfileLocation {
             $dto = new PublicTeacherProfileLocation();
-            $dto->type = $location->getType()->value;
-            $dto->address = $location->getAddress();
-            $dto->city = $location->getCity();
-            $dto->country = $location->getCountry();
-            $dto->latitude = $location->getLatitude();
-            $dto->longitude = $location->getLongitude();
-            $dto->radius = $location->getRadius();
+            $dto->type = $location->type->value;
+            $dto->address = $location->address;
+            $dto->city = $location->city;
+            $dto->country = $location->country;
+            $dto->latitude = $location->latitude;
+            $dto->longitude = $location->longitude;
+            $dto->radius = $location->radius;
 
             return $dto;
         }, $locations));
@@ -131,8 +131,8 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (TeacherProfilePricing $p): PublicTeacherProfilePricing {
             $dto = new PublicTeacherProfilePricing();
-            $dto->duration = $p->getDuration()->value;
-            $dto->price = $p->getPrice();
+            $dto->duration = $p->duration->value;
+            $dto->price = $p->price;
 
             return $dto;
         }, $pricing));
@@ -146,10 +146,10 @@ readonly class TeacherProfileBuilder
     {
         $result = array_values(array_map(function (TeacherAvailability $a): PublicTeacherAvailability {
             $dto = new PublicTeacherAvailability();
-            $dto->dayOfWeek = $a->getDayOfWeek()->value;
-            $dto->dayOfWeekOrder = $a->getDayOfWeek()->getOrder();
-            $dto->startTime = $a->getStartTime()->format('H:i');
-            $dto->endTime = $a->getEndTime()->format('H:i');
+            $dto->dayOfWeek = $a->dayOfWeek->value;
+            $dto->dayOfWeekOrder = $a->dayOfWeek->getOrder();
+            $dto->startTime = $a->startTime->format('H:i');
+            $dto->endTime = $a->endTime->format('H:i');
 
             return $dto;
         }, $availability));
@@ -174,11 +174,11 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (TeacherProfilePackage $package): PublicTeacherProfilePackage {
             $dto = new PublicTeacherProfilePackage();
-            $dto->id = (string) $package->getId();
-            $dto->title = $package->getTitle();
-            $dto->description = $package->getDescription();
-            $dto->sessionsCount = $package->getSessionsCount();
-            $dto->price = $package->getPrice();
+            $dto->id = (string) $package->id;
+            $dto->title = $package->title;
+            $dto->description = $package->description;
+            $dto->sessionsCount = $package->sessionsCount;
+            $dto->price = $package->price;
 
             return $dto;
         }, $packages));
@@ -192,8 +192,8 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (TeacherSocialLink $link): PublicTeacherProfileSocialLink {
             $dto = new PublicTeacherProfileSocialLink();
-            $dto->platform = $link->getPlatform()->value;
-            $dto->url = $link->getUrl();
+            $dto->platform = $link->platform->value;
+            $dto->url = $link->url;
 
             return $dto;
         }, $socialLinks));

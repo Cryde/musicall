@@ -33,23 +33,23 @@ class UserPublicationEditProcessor implements ProcessorInterface
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         if (isset($data->title)) {
-            $publication->setTitle($data->title);
+            $publication->title = $data->title;
         }
         if (isset($data->shortDescription)) {
-            $publication->setShortDescription($data->shortDescription);
+            $publication->shortDescription = $data->shortDescription;
         }
         if (isset($data->content)) {
-            $publication->setContent($data->content);
+            $publication->content = $data->content;
         }
         if (isset($data->categoryId)) {
             $category = $this->subCategoryRepository->find($data->categoryId);
             if (!$category) {
                 throw new BadRequestHttpException('Category not found');
             }
-            $publication->setSubCategory($category);
+            $publication->subCategory = $category;
         }
 
-        $publication->setEditionDatetime(new DateTime());
+        $publication->editionDatetime = new DateTime();
 
         $this->entityManager->flush();
 

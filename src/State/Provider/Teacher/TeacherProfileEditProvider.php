@@ -46,38 +46,42 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
     public function buildFromEntity(TeacherProfile $profile): TeacherProfileOutput
     {
         $dto = new TeacherProfileOutput();
-        $dto->id = $profile->getId();
-        $dto->description = $profile->getDescription();
-        $dto->yearsOfExperience = $profile->getYearsOfExperience();
+        /** @var string|null $profileId */
+        $profileId = $profile->id;
+        $dto->id = $profileId;
+        $dto->description = $profile->description;
+        $dto->yearsOfExperience = $profile->yearsOfExperience;
 
-        $dto->studentLevels = $profile->getStudentLevels();
-        $dto->ageGroups = $profile->getAgeGroups();
+        $dto->studentLevels = $profile->studentLevels;
+        $dto->ageGroups = $profile->ageGroups;
 
-        $dto->courseTitle = $profile->getCourseTitle();
-        $dto->offersTrial = $profile->offersTrial();
-        $dto->trialPrice = $profile->getTrialPrice();
+        $dto->courseTitle = $profile->courseTitle;
+        $dto->offersTrial = $profile->offersTrial;
+        $dto->trialPrice = $profile->trialPrice;
 
         $dto->locations = array_values(array_map(function ($location): TeacherProfileLocation {
             $item = new TeacherProfileLocation();
-            $item->id = $location->getId();
-            $item->type = $location->getType()->value;
-            $item->address = $location->getAddress();
-            $item->city = $location->getCity();
-            $item->country = $location->getCountry();
-            $item->latitude = $location->getLatitude();
-            $item->longitude = $location->getLongitude();
-            $item->radius = $location->getRadius();
+            /** @var string|null $locationId */
+            $locationId = $location->id;
+            $item->id = $locationId;
+            $item->type = $location->type->value;
+            $item->address = $location->address;
+            $item->city = $location->city;
+            $item->country = $location->country;
+            $item->latitude = $location->latitude;
+            $item->longitude = $location->longitude;
+            $item->radius = $location->radius;
 
             return $item;
-        }, $profile->getLocations()->toArray()));
+        }, $profile->locations->toArray()));
 
         $dto->instruments = array_values(array_map(function ($instrument): TeacherProfileInstrument {
             $item = new TeacherProfileInstrument();
-            $item->instrumentId = (string) $instrument->getInstrument()->id;
-            $item->instrumentName = (string) $instrument->getInstrument()->musicianName;
+            $item->instrumentId = (string) $instrument->instrument->id;
+            $item->instrumentName = (string) $instrument->instrument->musicianName;
 
             return $item;
-        }, $profile->getInstruments()->toArray()));
+        }, $profile->instruments->toArray()));
 
         $dto->styles = array_values(array_map(function ($style): TeacherProfileStyle {
             $item = new TeacherProfileStyle();
@@ -85,46 +89,52 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             $item->name = (string) $style->name;
 
             return $item;
-        }, $profile->getStyles()->toArray()));
+        }, $profile->styles->toArray()));
 
         $dto->pricing = array_values(array_map(function ($pricing): TeacherProfilePricing {
             $item = new TeacherProfilePricing();
-            $item->id = $pricing->getId();
-            $item->duration = $pricing->getDuration()->value;
-            $item->price = $pricing->getPrice();
+            /** @var string|null $pricingId */
+            $pricingId = $pricing->id;
+            $item->id = $pricingId;
+            $item->duration = $pricing->duration->value;
+            $item->price = $pricing->price;
 
             return $item;
-        }, $profile->getPricing()->toArray()));
+        }, $profile->pricing->toArray()));
 
         $dto->availability = array_values(array_map(function ($availability): TeacherProfileAvailability {
             $item = new TeacherProfileAvailability();
-            $item->id = $availability->getId();
-            $item->dayOfWeek = $availability->getDayOfWeek()->value;
-            $item->startTime = $availability->getStartTime()->format('H:i');
-            $item->endTime = $availability->getEndTime()->format('H:i');
+            /** @var string|null $availabilityId */
+            $availabilityId = $availability->id;
+            $item->id = $availabilityId;
+            $item->dayOfWeek = $availability->dayOfWeek->value;
+            $item->startTime = $availability->startTime->format('H:i');
+            $item->endTime = $availability->endTime->format('H:i');
 
             return $item;
-        }, $profile->getAvailability()->toArray()));
+        }, $profile->availability->toArray()));
 
         $dto->packages = array_values(array_map(function ($package): TeacherProfilePackage {
             $item = new TeacherProfilePackage();
-            $item->id = $package->getId();
-            $item->title = $package->getTitle();
-            $item->description = $package->getDescription();
-            $item->sessionsCount = $package->getSessionsCount();
-            $item->price = $package->getPrice();
+            /** @var string|null $packageId */
+            $packageId = $package->id;
+            $item->id = $packageId;
+            $item->title = $package->title;
+            $item->description = $package->description;
+            $item->sessionsCount = $package->sessionsCount;
+            $item->price = $package->price;
 
             return $item;
-        }, $profile->getPackages()->toArray()));
+        }, $profile->packages->toArray()));
 
         $dto->socialLinks = array_values(array_map(function ($socialLink): TeacherProfileSocialLink {
             $item = new TeacherProfileSocialLink();
-            $item->id = $socialLink->getId();
-            $item->platform = $socialLink->getPlatform()->value;
-            $item->url = $socialLink->getUrl();
+            $item->id = $socialLink->id;
+            $item->platform = $socialLink->platform->value;
+            $item->url = $socialLink->url;
 
             return $item;
-        }, $profile->getSocialLinks()->toArray()));
+        }, $profile->socialLinks->toArray()));
 
         return $dto;
     }

@@ -41,12 +41,12 @@ class UserPublicationCreateProcessor implements ProcessorInterface
         }
 
         $publication = new Publication();
-        $publication->setTitle($data->title);
-        $publication->setSubCategory($category);
-        $publication->setAuthor($user);
-        $publication->slug = $this->publicationSlug->create($data->title) . '-' . $publication->getId();
-        $publication->setStatus(Publication::STATUS_DRAFT);
-        $publication->setType(Publication::TYPE_TEXT);
+        $publication->title = $data->title;
+        $publication->subCategory = $category;
+        $publication->author = $user;
+        $publication->slug = $this->publicationSlug->create($data->title) . '-' . $publication->id;
+        $publication->status = Publication::STATUS_DRAFT;
+        $publication->type = Publication::TYPE_TEXT;
 
         $this->entityManager->persist($publication);
         $this->entityManager->flush();

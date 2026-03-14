@@ -38,7 +38,8 @@ class TeacherMediaLimitValidator extends ConstraintValidator
             return;
         }
 
-        $profileId = $profile->getId();
+        /** @var string|null $profileId */
+        $profileId = $profile->id;
         if ($profileId === null) {
             return;
         }

@@ -139,7 +139,7 @@ class UserProfile implements ViewableInterface
     {
         if (!$this->socialLinks->contains($socialLink)) {
             $this->socialLinks->add($socialLink);
-            $socialLink->setProfile($this);
+            $socialLink->profile = $this;
         }
 
         return $this;

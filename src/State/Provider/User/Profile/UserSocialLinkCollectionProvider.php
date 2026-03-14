@@ -39,10 +39,10 @@ readonly class UserSocialLinkCollectionProvider implements ProviderInterface
     public function buildFromEntity(UserSocialLink $link): UserSocialLinkResource
     {
         $dto = new UserSocialLinkResource();
-        $dto->id = $link->getId();
-        $dto->platform = $link->getPlatform()->value;
-        $dto->platformLabel = $link->getPlatform()->getLabel();
-        $dto->url = $link->getUrl();
+        $dto->id = $link->id;
+        $dto->platform = $link->platform->value;
+        $dto->platformLabel = $link->platform->getLabel();
+        $dto->url = $link->url;
 
         return $dto;
     }

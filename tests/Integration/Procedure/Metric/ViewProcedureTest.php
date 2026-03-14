@@ -56,7 +56,7 @@ class ViewProcedureTest extends KernelTestCase
 
         $view = $views[0];
         $this->assertSame('app_publication', $view->entityType);
-        $this->assertSame((string) $publication->getId(), $view->entityId);
+        $this->assertSame((string) $publication->id, $view->entityId);
     }
 
     public function test_anonymous_duplicate_view_within_24_hours_is_not_counted(): void

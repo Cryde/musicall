@@ -61,7 +61,7 @@ class PublicationStory extends Story
                     'user' => $user,
                     'value' => $value,
                     'entityType' => 'app_publication',
-                    'entityId' => (string) $publication->getId(),
+                    'entityId' => (string) $publication->id,
                 ])->create();
 
                 if ($value === 1) {

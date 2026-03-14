@@ -85,7 +85,7 @@ class TeacherProfileEditTest extends ApiTestCase
             '@context' => '/api/contexts/TeacherProfileOutput',
             '@id' => '/api/user/teacher-profile',
             '@type' => 'TeacherProfileOutput',
-            'id' => $profile->getId(),
+            'id' => $profile->id,
             'description' => 'Nouveau profil de professeur de guitare',
             'years_of_experience' => 8,
             'student_levels' => ['beginner', 'intermediate'],
@@ -372,40 +372,40 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
 
         // Add initial location
         $initialLocation = new TeacherProfileLocation();
-        $initialLocation->setTeacherProfile($teacherProfile->_real());
-        $initialLocation->setType(LocationType::TEACHER_PLACE);
-        $initialLocation->setAddress('5 rue Initiale');
-        $initialLocation->setCity('Lyon');
-        $initialLocation->setCountry('France');
+        $initialLocation->teacherProfile = $teacherProfile->_real();
+        $initialLocation->type = LocationType::TEACHER_PLACE;
+        $initialLocation->address = '5 rue Initiale';
+        $initialLocation->city = 'Lyon';
+        $initialLocation->country = 'France';
         $teacherProfile->_real()->addLocation($initialLocation);
 
         // Add initial pricing
         $initialPricing = new TeacherProfilePricing();
-        $initialPricing->setTeacherProfile($teacherProfile->_real());
-        $initialPricing->setDuration(SessionDuration::THIRTY_MINUTES);
-        $initialPricing->setPrice(20);
+        $initialPricing->teacherProfile = $teacherProfile->_real();
+        $initialPricing->duration = SessionDuration::THIRTY_MINUTES;
+        $initialPricing->price = 20;
         $teacherProfile->_real()->addPricing($initialPricing);
 
         // Add initial availability
         $initialAvailability = new TeacherAvailability();
-        $initialAvailability->setTeacherProfile($teacherProfile->_real());
-        $initialAvailability->setDayOfWeek(DayOfWeek::TUESDAY);
-        $initialAvailability->setStartTime(new \DateTimeImmutable('10:00'));
-        $initialAvailability->setEndTime(new \DateTimeImmutable('12:00'));
+        $initialAvailability->teacherProfile = $teacherProfile->_real();
+        $initialAvailability->dayOfWeek = DayOfWeek::TUESDAY;
+        $initialAvailability->startTime = new \DateTimeImmutable('10:00');
+        $initialAvailability->endTime = new \DateTimeImmutable('12:00');
         $teacherProfile->_real()->addAvailability($initialAvailability);
 
         // Add initial package
         $initialPackage = new TeacherProfilePackage();
-        $initialPackage->setTeacherProfile($teacherProfile->_real());
-        $initialPackage->setTitle('Pack initial');
-        $initialPackage->setDescription('Description initiale');
-        $initialPackage->setSessionsCount(3);
-        $initialPackage->setPrice(50);
+        $initialPackage->teacherProfile = $teacherProfile->_real();
+        $initialPackage->title = 'Pack initial';
+        $initialPackage->description = 'Description initiale';
+        $initialPackage->sessionsCount = 3;
+        $initialPackage->price = 50;
         $teacherProfile->_real()->addPackage($initialPackage);
 
         $entityManager->flush();
 
-        $profileId = $teacherProfile->getId();
+        $profileId = $teacherProfile->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [

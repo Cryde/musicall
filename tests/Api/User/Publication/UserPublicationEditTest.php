@@ -29,7 +29,7 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/publications/' . $publication->getId() . '/edit');
+        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -49,12 +49,12 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->getId() . '/edit');
+        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
         $this->assertResponseIsSuccessful();
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
-            'id' => $publication->getId(),
+            'id' => $publication->_real()->id,
             'title' => 'Test Publication',
             'slug' => 'test-publication',
             'short_description' => 'Short desc',
@@ -81,7 +81,7 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->getId() . '/edit');
+        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -96,7 +96,7 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->getId() . '/edit');
+        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -119,7 +119,7 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->getId(), [], [], [
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -141,7 +141,7 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->getId(), [], [], [
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([
@@ -153,7 +153,7 @@ class UserPublicationEditTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
-            'id' => $publication->getId(),
+            'id' => $publication->_real()->id,
             'title' => 'Updated Title',
             'short_description' => 'Updated desc',
             'content' => '<p>Updated content</p>',
@@ -176,7 +176,7 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->getId(), [], [], [
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([
@@ -203,7 +203,7 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($otherUser->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->getId(), [], [], [
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([
@@ -224,7 +224,7 @@ class UserPublicationEditTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->getId(), [], [], [
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([

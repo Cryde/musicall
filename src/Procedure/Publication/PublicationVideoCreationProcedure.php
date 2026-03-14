@@ -41,8 +41,8 @@ class PublicationVideoCreationProcedure
         $cover = $this->publicationCoverDirector->build($path, $size);
         $publication = $this->publicationDirector->buildVideo($addVideo, $currentUser);
         $cover->publication = $publication;
-        $publication->setCover($cover);
-        $publication->setThread($thread);
+        $publication->cover = $cover;
+        $publication->thread = $thread;
         $publication->setViewCache($viewCache);
         $this->entityManager->persist($publication);
         $this->entityManager->flush();

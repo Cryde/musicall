@@ -47,10 +47,10 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->assertCount(1, $publications);
 
         $createdPublication = $publications[0];
-        $this->assertEquals('My New Publication', $createdPublication->getTitle());
-        $this->assertEquals(Publication::STATUS_DRAFT, $createdPublication->getStatus());
-        $this->assertEquals(Publication::TYPE_TEXT, $createdPublication->getType());
-        $this->assertEquals($category->_real()->id, $createdPublication->getSubCategory()->id);
+        $this->assertEquals('My New Publication', $createdPublication->title);
+        $this->assertEquals(Publication::STATUS_DRAFT, $createdPublication->status);
+        $this->assertEquals(Publication::TYPE_TEXT, $createdPublication->type);
+        $this->assertEquals($category->_real()->id, $createdPublication->subCategory->id);
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',

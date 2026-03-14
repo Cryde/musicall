@@ -64,17 +64,17 @@ class UserSocialLinkGetTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/user_social_link_resources/' . $link1->getId(),
+                    '@id' => '/api/user_social_link_resources/' . $link1->_real()->id,
                     '@type' => 'UserSocialLinkResource',
-                    'id' => $link1->getId(),
+                    'id' => $link1->_real()->id,
                     'platform' => 'youtube',
                     'platform_label' => 'YouTube',
                     'url' => 'https://www.youtube.com/@testchannel',
                 ],
                 [
-                    '@id' => '/api/user_social_link_resources/' . $link2->getId(),
+                    '@id' => '/api/user_social_link_resources/' . $link2->_real()->id,
                     '@type' => 'UserSocialLinkResource',
-                    'id' => $link2->getId(),
+                    'id' => $link2->_real()->id,
                     'platform' => 'instagram',
                     'platform_label' => 'Instagram',
                     'url' => 'https://www.instagram.com/testuser',

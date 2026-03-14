@@ -31,20 +31,20 @@ readonly class TeacherProfileMediaBuilder
         MediaMetadata $metadata,
     ): TeacherProfileMedia {
         $media = new TeacherProfileMedia();
-        $media->setTeacherProfile($profile);
-        $media->setPlatform($parsed->platform);
-        $media->setUrl($mediaDto->url);
-        $media->setEmbedId($parsed->embedId);
-        $media->setPosition($this->mediaRepository->getNextPosition($profile));
+        $media->teacherProfile = $profile;
+        $media->platform = $parsed->platform;
+        $media->url = $mediaDto->url;
+        $media->embedId = $parsed->embedId;
+        $media->position = $this->mediaRepository->getNextPosition($profile);
 
         // Use user-provided title, or fall back to fetched title
-        $media->setTitle($mediaDto->title ?: $metadata->title);
+        $media->title = $mediaDto->title ?: $metadata->title;
 
         // Download and store thumbnail locally
         if ($metadata->thumbnailUrl) {
             $thumbnailImageName = $this->downloadThumbnail($metadata->thumbnailUrl);
             if ($thumbnailImageName) {
-                $media->setThumbnailImageName($thumbnailImageName);
+                $media->thumbnailImageName = $thumbnailImageName;
             }
         }
 

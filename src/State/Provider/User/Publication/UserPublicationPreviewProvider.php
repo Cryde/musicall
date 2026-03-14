@@ -40,7 +40,7 @@ class UserPublicationPreviewProvider implements ProviderInterface
             throw new NotFoundHttpException('Publication not found');
         }
 
-        $isOwner = $publication->getAuthor()->getId() === $user->getId();
+        $isOwner = $publication->author->getId() === $user->getId();
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
         if (!$isOwner && !$isAdmin) {
@@ -48,7 +48,7 @@ class UserPublicationPreviewProvider implements ProviderInterface
         }
 
         // Preview is only available for draft or pending publications
-        if ($publication->getStatus() === Publication::STATUS_ONLINE) {
+        if ($publication->status === Publication::STATUS_ONLINE) {
             throw new AccessDeniedHttpException('This publication is already online. View it directly.');
         }
 

@@ -43,8 +43,8 @@ class TeacherProfileMediaTest extends ApiTestCase
             'position' => 1,
         ]);
 
-        $media1Id = $media1->getId();
-        $media2Id = $media2->getId();
+        $media1Id = $media1->_real()->id;
+        $media2Id = $media2->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('GET', '/api/user/teacher-profile/media');
@@ -128,7 +128,7 @@ class TeacherProfileMediaTest extends ApiTestCase
             'teacherProfile' => $teacherProfile,
         ]);
 
-        $mediaId = $media->getId();
+        $mediaId = $media->_real()->id;
         $this->assertNotNull($mediaRepository->find($mediaId));
 
         $this->client->loginUser($user->_real());
@@ -168,7 +168,7 @@ class TeacherProfileMediaTest extends ApiTestCase
             'teacherProfile' => $teacherProfile1,
         ]);
 
-        $mediaId = $media->getId();
+        $mediaId = $media->_real()->id;
 
         // User2 tries to delete User1's media
         $this->client->loginUser($user2->_real());
@@ -189,7 +189,7 @@ class TeacherProfileMediaTest extends ApiTestCase
             'teacherProfile' => $teacherProfile,
         ]);
 
-        $mediaId = $media->getId();
+        $mediaId = $media->_real()->id;
 
         $this->client->request('DELETE', '/api/user/teacher-profile/media/' . $mediaId);
         // Not logged in returns 404 because the provider can't find the user's profile

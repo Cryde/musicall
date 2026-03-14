@@ -70,7 +70,7 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
             throw new NotFoundHttpException('Média non trouvé');
         }
 
-        if ($media->getTeacherProfile()->getId() !== $profile->getId()) {
+        if ($media->teacherProfile->id !== $profile->id) {
             throw new AccessDeniedHttpException('Vous ne pouvez pas accéder à ce média');
         }
 

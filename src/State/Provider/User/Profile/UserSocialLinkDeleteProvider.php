@@ -36,7 +36,7 @@ readonly class UserSocialLinkDeleteProvider implements ProviderInterface
             throw new NotFoundHttpException('Lien social non trouvé');
         }
 
-        if ($link->getProfile()->getId() !== $profile->getId()) {
+        if ($link->profile->getId() !== $profile->getId()) {
             throw new AccessDeniedHttpException('Vous ne pouvez pas supprimer ce lien');
         }
 

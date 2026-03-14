@@ -33,9 +33,9 @@ readonly class UserPublicationUploadCoverProcessor implements ProcessorInterface
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         // Remove old cover if exists (flush first to avoid unique constraint violation)
-        $oldCover = $publication->getCover();
+        $oldCover = $publication->cover;
         if ($oldCover) {
-            $publication->setCover(null);
+            $publication->cover = null;
             $this->entityManager->remove($oldCover);
             $this->entityManager->flush();
         }
@@ -44,7 +44,7 @@ readonly class UserPublicationUploadCoverProcessor implements ProcessorInterface
         $publicationCover->setImageFile($data->imageFile);
         $publicationCover->publication = $publication;
 
-        $publication->setCover($publicationCover);
+        $publication->cover = $publicationCover;
 
         $this->entityManager->persist($publicationCover);
         $this->entityManager->flush();

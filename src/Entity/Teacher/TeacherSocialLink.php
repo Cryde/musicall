@@ -19,31 +19,14 @@ class TeacherSocialLink
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    public ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: TeacherProfile::class, inversedBy: 'socialLinks')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private TeacherProfile $teacherProfile;
+    public TeacherProfile $teacherProfile;
 
     public function __construct()
     {
         $this->initializeSocialLinkTrait();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getTeacherProfile(): TeacherProfile
-    {
-        return $this->teacherProfile;
-    }
-
-    public function setTeacherProfile(TeacherProfile $teacherProfile): self
-    {
-        $this->teacherProfile = $teacherProfile;
-
-        return $this;
     }
 }

@@ -19,16 +19,16 @@ readonly class UserPublicationEditBuilder
     public function buildFromEntity(Publication $publication): UserPublicationEdit
     {
         $dto = new UserPublicationEdit();
-        $dto->id = (int) $publication->getId();
-        $dto->title = (string) $publication->getTitle();
+        $dto->id = (int) $publication->id;
+        $dto->title = (string) $publication->title;
         $dto->slug = $publication->slug;
-        $dto->shortDescription = $publication->getShortDescription();
-        $dto->content = $publication->getContent();
-        $dto->statusId = (int) $publication->getStatus();
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->getStatus()] ?? 'Inconnu';
+        $dto->shortDescription = $publication->shortDescription;
+        $dto->content = $publication->content;
+        $dto->statusId = (int) $publication->status;
+        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
 
-        $subCategory = $publication->getSubCategory();
+        $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
         $category->id = (int) $subCategory->id;
         $category->title = (string) $subCategory->title;
@@ -40,7 +40,7 @@ readonly class UserPublicationEditBuilder
 
     private function buildCoverUrl(Publication $publication): ?string
     {
-        $cover = $publication->getCover();
+        $cover = $publication->cover;
         if (!$cover || !$cover->imageName) {
             return null;
         }

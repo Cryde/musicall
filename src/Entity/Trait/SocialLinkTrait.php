@@ -13,52 +13,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 trait SocialLinkTrait
 {
     #[ORM\Column(type: Types::STRING, length: 20, enumType: SocialPlatform::class)]
-    private SocialPlatform $platform;
+    public SocialPlatform $platform;
 
     #[Assert\NotBlank]
     #[Assert\Url(requireTld: true)]
     #[Assert\Length(max: 500)]
     #[ORM\Column(type: Types::STRING, length: 500)]
-    private string $url;
+    public string $url;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private DateTimeImmutable $creationDatetime;
-
-    public function getPlatform(): SocialPlatform
-    {
-        return $this->platform;
-    }
-
-    public function setPlatform(SocialPlatform $platform): self
-    {
-        $this->platform = $platform;
-
-        return $this;
-    }
-
-    public function getUrl(): string
-    {
-        return $this->url;
-    }
-
-    public function setUrl(string $url): self
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeImmutable
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeImmutable $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
+    public DateTimeImmutable $creationDatetime;
 
     protected function initializeSocialLinkTrait(): void
     {

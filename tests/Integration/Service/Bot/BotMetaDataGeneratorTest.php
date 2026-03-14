@@ -58,7 +58,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'type'                => Publication::TYPE_TEXT,
         ])->create();
         $cover = PublicationCoverFactory::createOne(['imageName' => 'cover-publication', 'imageSize' => 10, 'publication' => $publication1]);
-        $publication1->_real()->setCover($cover->_real());
+        $publication1->_real()->cover = $cover->_real();
         $publication1->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/publications/cool-slug-for-publication');
@@ -113,7 +113,7 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'type'                => Publication::TYPE_TEXT,
         ])->create();
         $cover = PublicationCoverFactory::createOne(['imageName' => 'cover-course', 'imageSize' => 10, 'publication' => $course]);
-        $course->_real()->setCover($cover->_real());
+        $course->_real()->cover = $cover->_real();
         $course->_save();
 
         $result = $this->botMetaDataGenerator->getMetaData('/cours/apprendre-la-guitare');

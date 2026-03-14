@@ -238,7 +238,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->publications->contains($publication)) {
             $this->publications[] = $publication;
-            $publication->setAuthor($this);
+            $publication->author = $this;
         }
 
         return $this;
@@ -452,8 +452,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setTeacherProfile(?TeacherProfile $teacherProfile): self
     {
-        if ($teacherProfile !== null && $teacherProfile->getUser() !== $this) {
-            $teacherProfile->setUser($this);
+        if ($teacherProfile !== null && $teacherProfile->user !== $this) {
+            $teacherProfile->user = $this;
         }
 
         $this->teacherProfile = $teacherProfile;

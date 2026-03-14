@@ -42,15 +42,15 @@ readonly class UserSocialLinkPostProcessor implements ProcessorInterface
 
         // Check if platform already exists for this profile
         foreach ($profile->getSocialLinks() as $existingLink) {
-            if ($existingLink->getPlatform() === $platform) {
+            if ($existingLink->platform === $platform) {
                 throw new ConflictHttpException('Un lien pour cette plateforme existe déjà');
             }
         }
 
         $link = new UserSocialLink();
-        $link->setProfile($profile);
-        $link->setPlatform($platform);
-        $link->setUrl($data->url);
+        $link->profile = $profile;
+        $link->platform = $platform;
+        $link->url = $data->url;
 
         $this->entityManager->persist($link);
         $this->entityManager->flush();

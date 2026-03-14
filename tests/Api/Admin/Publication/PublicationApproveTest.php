@@ -46,11 +46,11 @@ class PublicationApproveTest extends ApiTestCase
             'viewCache'           => $viewCache,
         ])->create();
 
-        $this->assertSame(Publication::STATUS_PENDING, $publication->getStatus());
-        $this->assertNull($publication->getPublicationDatetime());
+        $this->assertSame(Publication::STATUS_PENDING, $publication->_real()->status);
+        $this->assertNull($publication->_real()->publicationDatetime);
 
-        $publicationId = $publication->getId();
-        $draftId = $draft->getId();
+        $publicationId = $publication->_real()->id;
+        $draftId = $draft->_real()->id;
 
         $this->client->loginUser($admin);
         $this->client->request('POST', '/api/admin/publications/' . $publicationId . '/approve', [], [], [
@@ -67,9 +67,9 @@ class PublicationApproveTest extends ApiTestCase
         $refreshedDraft = $publicationRepository->find($draftId);
         $refreshedPublication = $publicationRepository->find($publicationId);
 
-        $this->assertSame(Publication::STATUS_DRAFT, $refreshedDraft->getStatus());
-        $this->assertSame(Publication::STATUS_ONLINE, $refreshedPublication->getStatus());
-        $this->assertNotNull($refreshedPublication->getPublicationDatetime());
+        $this->assertSame(Publication::STATUS_DRAFT, $refreshedDraft->status);
+        $this->assertSame(Publication::STATUS_ONLINE, $refreshedPublication->status);
+        $this->assertNotNull($refreshedPublication->publicationDatetime);
     }
 
     public function test_approve_publication_with_no_admin(): void
@@ -80,7 +80,7 @@ class PublicationApproveTest extends ApiTestCase
         $publication = PublicationFactory::new(['author' => $user, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub])->create();
 
         $this->client->loginUser($user);
-        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/publications/' . $publication->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -93,7 +93,7 @@ class PublicationApproveTest extends ApiTestCase
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         $publication = PublicationFactory::new(['author' => $user, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub])->create();
 
-        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/publications/' . $publication->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -111,7 +111,7 @@ class PublicationApproveTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/publications/' . $publication->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
@@ -139,7 +139,7 @@ class PublicationApproveTest extends ApiTestCase
         ])->create();
 
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/admin/publications/' . $publication->getId() . '/approve', [], [], [
+        $this->client->request('POST', '/api/admin/publications/' . $publication->_real()->id . '/approve', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
         ], '{}');
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);

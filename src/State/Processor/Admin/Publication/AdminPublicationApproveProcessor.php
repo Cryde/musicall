@@ -33,17 +33,17 @@ readonly class AdminPublicationApproveProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Publication not found');
         }
 
-        if ($publication->getStatus() !== Publication::STATUS_PENDING) {
+        if ($publication->status !== Publication::STATUS_PENDING) {
             throw new BadRequestHttpException('Only pending publications can be approved');
         }
 
         $commentThread = $this->commentThreadDirector->create();
         $this->entityManager->persist($commentThread);
 
-        $publication->setThread($commentThread);
-        $publication->setPublicationDatetime(new \DateTime());
-        $publication->setStatus(Publication::STATUS_ONLINE);
-        $publication->slug = $this->publicationSlug->create((string) $publication->getTitle());
+        $publication->thread = $commentThread;
+        $publication->publicationDatetime = new \DateTime();
+        $publication->status = Publication::STATUS_ONLINE;
+        $publication->slug = $this->publicationSlug->create($publication->title);
 
         $this->entityManager->flush();
 

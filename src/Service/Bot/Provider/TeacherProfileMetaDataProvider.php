@@ -35,13 +35,13 @@ readonly class TeacherProfileMetaDataProvider implements BotMetaDataProviderInte
             return [];
         }
 
-        $user = $teacherProfile->getUser();
+        $user = $teacherProfile->user;
         $username = $user->getUsername();
 
-        $instruments = $teacherProfile->getInstruments();
+        $instruments = $teacherProfile->instruments;
         $instrumentNames = [];
         foreach ($instruments as $instrument) {
-            $instrumentNames[] = $instrument->getInstrument()->name;
+            $instrumentNames[] = $instrument->instrument->name;
         }
 
         $description = sprintf('Découvrez le profil professeur de %s sur MusicAll.', $username);

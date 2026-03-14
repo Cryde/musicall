@@ -18,19 +18,19 @@ readonly class UserCourseBuilder
 
     public function buildFromEntity(Publication $publication): UserCourse
     {
-        $subCategory = $publication->getSubCategory();
-        $creationDatetime = $publication->getCreationDatetime();
+        $subCategory = $publication->subCategory;
+        $creationDatetime = $publication->creationDatetime;
 
         $dto = new UserCourse();
-        $dto->id = (int) $publication->getId();
-        $dto->title = (string) $publication->getTitle();
+        $dto->id = (int) $publication->id;
+        $dto->title = (string) $publication->title;
         $dto->slug = $publication->slug;
         $dto->creationDatetime = $creationDatetime;
-        $dto->editionDatetime = $publication->getEditionDatetime();
-        $dto->statusId = (int) $publication->getStatus();
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->getStatus()] ?? 'Inconnu';
-        $dto->typeId = (int) $publication->getType();
-        $dto->typeLabel = $publication->getType() === Publication::TYPE_VIDEO
+        $dto->editionDatetime = $publication->editionDatetime;
+        $dto->statusId = (int) $publication->status;
+        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
+        $dto->typeId = (int) $publication->type;
+        $dto->typeLabel = $publication->type === Publication::TYPE_VIDEO
             ? Publication::TYPE_VIDEO_LABEL
             : Publication::TYPE_TEXT_LABEL;
 
@@ -47,7 +47,7 @@ readonly class UserCourseBuilder
 
     private function buildCoverUrl(Publication $publication): ?string
     {
-        $cover = $publication->getCover();
+        $cover = $publication->cover;
         if ($cover === null) {
             return null;
         }

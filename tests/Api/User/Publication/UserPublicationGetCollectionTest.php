@@ -66,9 +66,9 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/user_publications/' . $publication2->getId(),
+                    '@id' => '/api/user_publications/' . $publication2->_real()->id,
                     '@type' => 'UserPublication',
-                    'id' => $publication2->getId(),
+                    'id' => $publication2->_real()->id,
                     'title' => 'Publication 2',
                     'slug' => 'publication-2',
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -85,9 +85,9 @@ class UserPublicationGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/user_publications/' . $publication1->getId(),
+                    '@id' => '/api/user_publications/' . $publication1->_real()->id,
                     '@type' => 'UserPublication',
-                    'id' => $publication1->getId(),
+                    'id' => $publication1->_real()->id,
                     'title' => 'Publication 1',
                     'slug' => 'publication-1',
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -140,7 +140,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $user1Publication->getId(),
+                    'id' => $user1Publication->_real()->id,
                     'title' => 'User 1 Publication',
                 ],
             ],
@@ -182,7 +182,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $publication->getId(),
+                    'id' => $publication->_real()->id,
                     'title' => 'Publication',
                 ],
             ],
@@ -219,7 +219,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $draftPublication->getId(),
+                    'id' => $draftPublication->_real()->id,
                     'title' => 'Draft Publication',
                 ],
             ],
@@ -257,7 +257,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $newsPublication->getId(),
+                    'id' => $newsPublication->_real()->id,
                     'title' => 'News Publication',
                 ],
             ],
@@ -350,11 +350,11 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'totalItems' => 2,
             'member' => [
                 [
-                    'id' => $alphaPublication->getId(),
+                    'id' => $alphaPublication->_real()->id,
                     'title' => 'Alpha Publication',
                 ],
                 [
-                    'id' => $zebraPublication->getId(),
+                    'id' => $zebraPublication->_real()->id,
                     'title' => 'Zebra Publication',
                 ],
             ],

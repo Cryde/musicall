@@ -61,23 +61,23 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
     #[ApiProperty(identifier: false)]
     #[Groups([Publication::LIST])]
-    private ?int $id = null;
+    public ?int $id = null;
 
     #[Assert\NotBlank(message: 'Le titre ne peut être vide')]
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private string $title;
+    public string $title;
 
     #[Assert\NotBlank(message: 'La catégorie ne peut être vide')]
     #[ORM\ManyToOne(targetEntity: PublicationSubCategory::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private PublicationSubCategory $subCategory;
+    public PublicationSubCategory $subCategory;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "publications")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private User $author;
+    public User $author;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
@@ -87,49 +87,49 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([Publication::ITEM])]
-    private ?string $shortDescription = null;
+    public ?string $shortDescription = null;
 
     #[Assert\NotBlank(message: 'Il doit y avoir du contenu dans la publication', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([Publication::ITEM])]
-    private ?string $content = null;
+    public ?string $content = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private DateTimeInterface $creationDatetime;
+    public DateTimeInterface $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $editionDatetime = null;
+    public ?DateTimeInterface $editionDatetime = null;
 
     #[Assert\Type(type: DateTime::class, groups: ['publication'])]
     #[Assert\NotBlank(groups: ['publication'])]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private ?DateTimeInterface $publicationDatetime = null;
+    public ?DateTimeInterface $publicationDatetime = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
-    private int $status = self::STATUS_DRAFT;
+    public int $status = self::STATUS_DRAFT;
 
     /**
      * @var Collection<int, PublicationImage>
      */
     #[ORM\OneToMany(mappedBy: "publication", targetEntity: PublicationImage::class)]
-    private Collection $images;
+    public Collection $images;
 
     #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]
     #[ORM\OneToOne(targetEntity: PublicationCover::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups([Publication::LIST])]
-    private ?PublicationCover $cover = null;
+    public ?PublicationCover $cover = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private ?int $type = null;
+    public ?int $type = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $oldPublicationId = null;
+    public ?int $oldPublicationId = null;
 
     #[ORM\ManyToOne(targetEntity: CommentThread::class)]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups([Publication::ITEM])]
-    private ?CommentThread $thread = null;
+    public ?CommentThread $thread = null;
 
     #[ORM\OneToOne(targetEntity: ViewCache::class, cascade: ['persist', 'remove'])]
     private ?ViewCache $viewCache = null;
@@ -155,127 +155,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
         return $this->type === Publication::TYPE_TEXT ? $this->shortDescription : null;
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    public function getShortDescription(): ?string
-    {
-        return $this->shortDescription;
-    }
-
-    public function setShortDescription(?string $shortDescription): self
-    {
-        $this->shortDescription = $shortDescription;
-
-        return $this;
-    }
-
-    public function getContent(): ?string
-    {
-        return $this->content;
-    }
-
-    public function setContent(?string $content): self
-    {
-        $this->content = $content;
-
-        return $this;
-    }
-
-    public function getCreationDatetime(): DateTimeInterface
-    {
-        return $this->creationDatetime;
-    }
-
-    public function setCreationDatetime(DateTimeInterface $creationDatetime): self
-    {
-        $this->creationDatetime = $creationDatetime;
-
-        return $this;
-    }
-
-    public function getEditionDatetime(): ?DateTimeInterface
-    {
-        return $this->editionDatetime;
-    }
-
-    public function setEditionDatetime(DateTimeInterface $editionDatetime): self
-    {
-        $this->editionDatetime = $editionDatetime;
-
-        return $this;
-    }
-
-    public function getPublicationDatetime(): ?DateTimeInterface
-    {
-        return $this->publicationDatetime;
-    }
-
-    public function setPublicationDatetime(?DateTimeInterface $publicationDatetime): self
-    {
-        $this->publicationDatetime = $publicationDatetime;
-
-        return $this;
-    }
-
-    public function getStatus(): ?int
-    {
-        return $this->status;
-    }
-
-    public function setStatus(int $status): self
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    public function getAuthor(): User
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(User $author): self
-    {
-        $this->author = $author;
-
-        return $this;
-    }
-
-    public function getSubCategory(): PublicationSubCategory
-    {
-        return $this->subCategory;
-    }
-
-    public function setSubCategory(PublicationSubCategory $subCategory): self
-    {
-        $this->subCategory = $subCategory;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, PublicationImage>
-     */
-    public function getImages(): Collection
-    {
-        return $this->images;
-    }
-
     public function addImage(PublicationImage $image): self
     {
         if (!$this->images->contains($image)) {
@@ -290,54 +169,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
         if ($this->images->contains($image)) {
             $this->images->removeElement($image);
         }
-
-        return $this;
-    }
-
-    public function getCover(): ?PublicationCover
-    {
-        return $this->cover;
-    }
-
-    public function setCover(?PublicationCover $cover): self
-    {
-        $this->cover = $cover;
-
-        return $this;
-    }
-
-    public function getType(): ?int
-    {
-        return $this->type;
-    }
-
-    public function setType(int $type): self
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    public function getOldPublicationId(): ?int
-    {
-        return $this->oldPublicationId;
-    }
-
-    public function setOldPublicationId(?int $oldPublicationId): self
-    {
-        $this->oldPublicationId = $oldPublicationId;
-
-        return $this;
-    }
-
-    public function getThread(): ?CommentThread
-    {
-        return $this->thread;
-    }
-
-    public function setThread(?CommentThread $thread): self
-    {
-        $this->thread = $thread;
 
         return $this;
     }

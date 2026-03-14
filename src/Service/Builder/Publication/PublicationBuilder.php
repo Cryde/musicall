@@ -47,25 +47,25 @@ readonly class PublicationBuilder
 
     public function buildFromEntity(PublicationEntity $publicationEntity): Publication
     {
-        $author = $publicationEntity->getAuthor();
-        $subCategory = $publicationEntity->getSubCategory();
-        $cover = $publicationEntity->getCover();
-        $thread = $publicationEntity->getThread();
+        $author = $publicationEntity->author;
+        $subCategory = $publicationEntity->subCategory;
+        $cover = $publicationEntity->cover;
+        $thread = $publicationEntity->thread;
         assert($cover !== null && $thread !== null);
 
         $publication = new Publication();
         $publication->slug = $publicationEntity->slug;
-        $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->getContent());
-        $publication->title = (string) $publicationEntity->getTitle();
+        $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->content);
+        $publication->title = (string) $publicationEntity->title;
         $publication->description = $publicationEntity->getDescription() ?? '';
-        $publicationDatetime = $publicationEntity->getPublicationDatetime();
+        $publicationDatetime = $publicationEntity->publicationDatetime;
         assert($publicationDatetime !== null);
         $publication->publicationDatetime = $publicationDatetime;
         $publication->author = $this->buildAuthor($author);
         $publication->cover = $this->buildCover($cover);
         $publication->category = $this->buildCategory($subCategory);
         $publication->thread = $this->buildThread($thread);
-        $publication->type = $this->buildType((int) $publicationEntity->getType());
+        $publication->type = $this->buildType((int) $publicationEntity->type);
 
         $voteCache = $publicationEntity->getVoteCache();
         $publication->upvotes = $voteCache->upvoteCount ?? 0;

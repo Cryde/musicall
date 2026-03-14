@@ -57,44 +57,46 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'instrument' => $guitar,
         ]);
 
+        $realProfile = $teacherProfile->_disableAutoRefresh()->_real();
+
         // Add style
-        $teacherProfile->_real()->addStyle($rock->_real());
+        $realProfile->addStyle($rock->_real());
 
         // Add location
         $location = new TeacherProfileLocation();
-        $location->setType(LocationType::TEACHER_PLACE);
-        $location->setAddress('123 rue de la Musique');
-        $location->setCity('Paris');
-        $location->setCountry('France');
-        $location->setLatitude('48.8566');
-        $location->setLongitude('2.3522');
-        $location->setRadius(10);
-        $teacherProfile->_real()->addLocation($location);
+        $location->type = LocationType::TEACHER_PLACE;
+        $location->address = '123 rue de la Musique';
+        $location->city = 'Paris';
+        $location->country = 'France';
+        $location->latitude = '48.8566';
+        $location->longitude = '2.3522';
+        $location->radius = 10;
+        $realProfile->addLocation($location);
 
         // Add pricing
         $pricing = new TeacherProfilePricing();
-        $pricing->setDuration(SessionDuration::ONE_HOUR);
-        $pricing->setPrice(4500);
-        $teacherProfile->_real()->addPricing($pricing);
+        $pricing->duration = SessionDuration::ONE_HOUR;
+        $pricing->price = 4500;
+        $realProfile->addPricing($pricing);
 
         // Add availability
         $availability = new TeacherAvailability();
-        $availability->setDayOfWeek(DayOfWeek::MONDAY);
-        $availability->setStartTime(new \DateTimeImmutable('09:00'));
-        $availability->setEndTime(new \DateTimeImmutable('12:00'));
-        $teacherProfile->_real()->addAvailability($availability);
+        $availability->dayOfWeek = DayOfWeek::MONDAY;
+        $availability->startTime = new \DateTimeImmutable('09:00');
+        $availability->endTime = new \DateTimeImmutable('12:00');
+        $realProfile->addAvailability($availability);
 
         // Add package
         $package = new TeacherProfilePackage();
-        $package->setTitle('Forfait 10 cours');
-        $package->setDescription('Pack de 10 cours d\'une heure');
-        $package->setSessionsCount(10);
-        $package->setPrice(40000);
-        $teacherProfile->_real()->addPackage($package);
+        $package->title = 'Forfait 10 cours';
+        $package->description = 'Pack de 10 cours d\'une heure';
+        $package->sessionsCount = 10;
+        $package->price = 40000;
+        $realProfile->addPackage($package);
 
-        $teacherProfile->_save();
+        $teacherProfile->_enableAutoRefresh()->_save();
 
-        $profileId = $teacherProfile->getId();
+        $profileId = $teacherProfile->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('GET', '/api/user/teacher-profile');
@@ -114,7 +116,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'locations' => [
                 [
                     '@type' => 'TeacherProfileLocation',
-                    'id' => $location->getId(),
+                    'id' => $location->id,
                     'type' => 'teacher_place',
                     'address' => '123 rue de la Musique',
                     'city' => 'Paris',
@@ -141,7 +143,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'pricing' => [
                 [
                     '@type' => 'TeacherProfilePricing',
-                    'id' => $pricing->getId(),
+                    'id' => $pricing->id,
                     'duration' => '1h',
                     'price' => 4500,
                 ],
@@ -149,7 +151,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'availability' => [
                 [
                     '@type' => 'TeacherProfileAvailability',
-                    'id' => $availability->getId(),
+                    'id' => $availability->id,
                     'day_of_week' => 'monday',
                     'start_time' => '09:00',
                     'end_time' => '12:00',
@@ -158,7 +160,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'packages' => [
                 [
                     '@type' => 'TeacherProfilePackage',
-                    'id' => $package->getId(),
+                    'id' => $package->id,
                     'title' => 'Forfait 10 cours',
                     'description' => 'Pack de 10 cours d\'une heure',
                     'sessions_count' => 10,

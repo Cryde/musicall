@@ -30,22 +30,22 @@ class UserPublicationSubmitProcessor implements ProcessorInterface
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
         // Validate required fields for submission
-        if (empty($publication->getTitle())) {
+        if (empty($publication->title)) {
             throw new BadRequestHttpException('Le titre ne peut être vide');
         }
-        if (empty($publication->getShortDescription())) {
+        if (empty($publication->shortDescription)) {
             throw new BadRequestHttpException('La description ne peut être vide');
         }
-        if (empty($publication->getContent())) {
+        if (empty($publication->content)) {
             throw new BadRequestHttpException('Le contenu ne peut être vide');
         }
-        if (!$publication->getCover()) {
+        if (!$publication->cover) {
             throw new BadRequestHttpException('Vous devez ajouter une image de couverture');
         }
 
-        $publication->setStatus(Publication::STATUS_PENDING);
-        $publication->setPublicationDatetime(new DateTime());
-        $publication->setEditionDatetime(new DateTime());
+        $publication->status = Publication::STATUS_PENDING;
+        $publication->publicationDatetime = new DateTime();
+        $publication->editionDatetime = new DateTime();
 
         $this->entityManager->flush();
 

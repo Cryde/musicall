@@ -30,15 +30,15 @@ class PublicationDirector
         }
         assert($category !== null);
 
-        $publication = (new Publication())
-            ->setTitle($addVideo->title)
-            ->setType(Publication::TYPE_VIDEO)
-            ->setStatus(Publication::STATUS_ONLINE)
-            ->setShortDescription($addVideo->description)
-            ->setContent($this->youtubeUrlHelper->getVideoId($addVideo->url))
-            ->setSubCategory($category)
-            ->setAuthor($user)
-            ->setPublicationDatetime(new \DateTime());
+        $publication = new Publication();
+        $publication->title = $addVideo->title;
+        $publication->type = Publication::TYPE_VIDEO;
+        $publication->status = Publication::STATUS_ONLINE;
+        $publication->shortDescription = $addVideo->description;
+        $publication->content = $this->youtubeUrlHelper->getVideoId($addVideo->url);
+        $publication->subCategory = $category;
+        $publication->author = $user;
+        $publication->publicationDatetime = new \DateTime();
         $publication->slug = $this->publicationSlug->create('v-' . $addVideo->title);
 
         return $publication;

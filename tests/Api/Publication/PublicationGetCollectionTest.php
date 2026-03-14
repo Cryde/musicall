@@ -105,7 +105,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-2',
                     '@type'                => 'Publication',
-                    'id'                   => $pub2->getId(),
+                    'id'                   => $pub2->id,
                     'title'                => 'Titre de la publication 2',
                     'sub_category'         => [
                         '@type' => 'SubCategory',
@@ -132,7 +132,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-1',
                     '@type'                => 'Publication',
-                    'id'                   => $pub1->getId(),
+                    'id'                   => $pub1->id,
                     'title'                => 'Titre de la publication 1',
                     'sub_category'         => [
                         '@type' => 'SubCategory',

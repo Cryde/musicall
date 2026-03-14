@@ -30,20 +30,22 @@ readonly class TeacherProfileMediaResourceBuilder
     public function buildFromEntity(TeacherProfileMediaEntity $media): TeacherProfileMedia
     {
         $profileMedia = new TeacherProfileMedia();
-        $profileMedia->id = $media->getId();
-        $profileMedia->platform = $media->getPlatform()->value;
-        $profileMedia->url = $media->getUrl();
-        $profileMedia->embedId = $media->getEmbedId();
-        $profileMedia->title = $media->getTitle();
+        /** @var string|null $mediaId */
+        $mediaId = $media->id;
+        $profileMedia->id = $mediaId;
+        $profileMedia->platform = $media->platform->value;
+        $profileMedia->url = $media->url;
+        $profileMedia->embedId = $media->embedId;
+        $profileMedia->title = $media->title;
         $profileMedia->thumbnailUrl = $this->getThumbnailUrl($media);
-        $profileMedia->position = $media->getPosition();
+        $profileMedia->position = $media->position;
 
         return $profileMedia;
     }
 
     private function getThumbnailUrl(TeacherProfileMediaEntity $media): ?string
     {
-        $thumbnailImageName = $media->getThumbnailImageName();
+        $thumbnailImageName = $media->thumbnailImageName;
         if (!$thumbnailImageName) {
             return null;
         }

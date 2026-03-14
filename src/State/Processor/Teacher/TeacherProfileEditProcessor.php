@@ -62,35 +62,35 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
     {
         // Description
         if ($data->description !== null) {
-            $profile->setDescription($data->description);
+            $profile->description = $data->description;
         }
 
         // Years of experience
         if ($data->yearsOfExperience !== null) {
-            $profile->setYearsOfExperience($data->yearsOfExperience);
+            $profile->yearsOfExperience = $data->yearsOfExperience;
         }
 
         // Student levels
         if (!empty($data->studentLevels) || $data->studentLevels === []) {
-            $profile->setStudentLevels($data->studentLevels);
+            $profile->studentLevels = $data->studentLevels;
         }
 
         // Age groups
         if (!empty($data->ageGroups) || $data->ageGroups === []) {
-            $profile->setAgeGroups($data->ageGroups);
+            $profile->ageGroups = $data->ageGroups;
         }
 
         // Course title
         if ($data->courseTitle !== null) {
-            $profile->setCourseTitle($data->courseTitle);
+            $profile->courseTitle = $data->courseTitle;
         }
 
         // Trial lesson
-        $profile->setOffersTrial($data->offersTrial);
-        $profile->setTrialPrice($data->trialPrice);
+        $profile->offersTrial = $data->offersTrial;
+        $profile->trialPrice = $data->trialPrice;
 
         // Locations
-        foreach ($profile->getLocations()->toArray() as $location) {
+        foreach ($profile->locations->toArray() as $location) {
             $profile->removeLocation($location);
         }
 
@@ -101,20 +101,20 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             }
 
             $location = new TeacherProfileLocation();
-            $location->setType($locationType);
-            $location->setAddress($locationInput->address);
-            $location->setCity($locationInput->city);
-            $location->setCountry($locationInput->country);
-            $location->setLatitude($locationInput->latitude !== null ? (string) $locationInput->latitude : null);
-            $location->setLongitude($locationInput->longitude !== null ? (string) $locationInput->longitude : null);
-            $location->setRadius($locationInput->radius);
+            $location->type = $locationType;
+            $location->address = $locationInput->address;
+            $location->city = $locationInput->city;
+            $location->country = $locationInput->country;
+            $location->latitude = $locationInput->latitude !== null ? (string) $locationInput->latitude : null;
+            $location->longitude = $locationInput->longitude !== null ? (string) $locationInput->longitude : null;
+            $location->radius = $locationInput->radius;
             $profile->addLocation($location);
         }
 
         // Instruments (if provided)
         if (!empty($data->instrumentIds) || $data->instrumentIds === []) {
             // Remove existing instruments and flush first to avoid unique constraint violation
-            foreach ($profile->getInstruments()->toArray() as $instrument) {
+            foreach ($profile->instruments->toArray() as $instrument) {
                 $profile->removeInstrument($instrument);
             }
             $this->entityManager->flush();
@@ -126,14 +126,14 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
                 }
 
                 $profileInstrument = new TeacherProfileInstrument();
-                $profileInstrument->setInstrument($instrument);
+                $profileInstrument->instrument = $instrument;
                 $profile->addInstrument($profileInstrument);
             }
         }
 
         // Styles (if provided)
         if (!empty($data->styleIds) || $data->styleIds === []) {
-            foreach ($profile->getStyles()->toArray() as $style) {
+            foreach ($profile->styles->toArray() as $style) {
                 $profile->removeStyle($style);
             }
 
@@ -146,7 +146,7 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
         }
 
         // Pricing
-        foreach ($profile->getPricing()->toArray() as $pricing) {
+        foreach ($profile->pricing->toArray() as $pricing) {
             $profile->removePricing($pricing);
         }
         $this->entityManager->flush();
@@ -158,13 +158,13 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             }
 
             $pricing = new TeacherProfilePricing();
-            $pricing->setDuration($duration);
-            $pricing->setPrice($pricingInput->price);
+            $pricing->duration = $duration;
+            $pricing->price = $pricingInput->price;
             $profile->addPricing($pricing);
         }
 
         // Availability
-        foreach ($profile->getAvailability()->toArray() as $availability) {
+        foreach ($profile->availability->toArray() as $availability) {
             $profile->removeAvailability($availability);
         }
 
@@ -175,14 +175,14 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             }
 
             $availability = new TeacherAvailability();
-            $availability->setDayOfWeek($dayOfWeek);
-            $availability->setStartTime(new DateTimeImmutable($availabilityInput->startTime));
-            $availability->setEndTime(new DateTimeImmutable($availabilityInput->endTime));
+            $availability->dayOfWeek = $dayOfWeek;
+            $availability->startTime = new DateTimeImmutable($availabilityInput->startTime);
+            $availability->endTime = new DateTimeImmutable($availabilityInput->endTime);
             $profile->addAvailability($availability);
         }
 
         // Packages
-        foreach ($profile->getPackages()->toArray() as $package) {
+        foreach ($profile->packages->toArray() as $package) {
             $profile->removePackage($package);
         }
 
@@ -192,15 +192,15 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             }
 
             $package = new TeacherProfilePackage();
-            $package->setTitle($packageInput->title);
-            $package->setDescription($packageInput->description);
-            $package->setSessionsCount($packageInput->sessionsCount);
-            $package->setPrice($packageInput->price ?? 0);
+            $package->title = $packageInput->title;
+            $package->description = $packageInput->description;
+            $package->sessionsCount = $packageInput->sessionsCount;
+            $package->price = $packageInput->price ?? 0;
             $profile->addPackage($package);
         }
 
         // Social Links
-        foreach ($profile->getSocialLinks()->toArray() as $socialLink) {
+        foreach ($profile->socialLinks->toArray() as $socialLink) {
             $profile->removeSocialLink($socialLink);
         }
         $this->entityManager->flush();
@@ -212,12 +212,12 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             }
 
             $socialLink = new TeacherSocialLink();
-            $socialLink->setPlatform($platform);
-            $socialLink->setUrl($socialLinkInput->url);
+            $socialLink->platform = $platform;
+            $socialLink->url = $socialLinkInput->url;
             $profile->addSocialLink($socialLink);
         }
 
-        $profile->setUpdateDatetime(new DateTimeImmutable());
+        $profile->updateDatetime = new DateTimeImmutable();
         $this->entityManager->flush();
     }
 }

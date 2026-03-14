@@ -108,8 +108,8 @@ class DeleteAccountTest extends ApiTestCase
         // Publication still exists (FK intact)
         /** @var Publication $realPublication */
         $realPublication = $publication->_real();
-        $this->assertSame('My publication', $realPublication->getTitle());
-        $this->assertSame($userId, $realPublication->getAuthor()->getId());
+        $this->assertSame('My publication', $realPublication->title);
+        $this->assertSame($userId, $realPublication->author->getId());
     }
 
     public function test_delete_account_oauth_user_no_password(): void

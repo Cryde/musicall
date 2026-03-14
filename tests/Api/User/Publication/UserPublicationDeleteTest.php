@@ -33,7 +33,7 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->getId());
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -55,7 +55,7 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $publicationId = $publication->getId();
+        $publicationId = $publication->_real()->id;
 
         $this->client->loginUser($user->_real());
         $this->client->request('DELETE', '/api/user/publications/' . $publicationId);
@@ -78,7 +78,7 @@ class UserPublicationDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->getId());
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You are not the owner of this publication',
@@ -100,7 +100,7 @@ class UserPublicationDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->getId());
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft publications',
@@ -122,7 +122,7 @@ class UserPublicationDeleteTest extends ApiTestCase
         ]);
 
         $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->getId());
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft publications',

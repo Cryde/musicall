@@ -18,31 +18,14 @@ class UserSocialLink
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $id = null;
+    public ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: UserProfile::class, inversedBy: 'socialLinks')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private UserProfile $profile;
+    public UserProfile $profile;
 
     public function __construct()
     {
         $this->initializeSocialLinkTrait();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getProfile(): UserProfile
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(UserProfile $profile): self
-    {
-        $this->profile = $profile;
-
-        return $this;
     }
 }

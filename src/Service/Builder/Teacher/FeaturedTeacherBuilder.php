@@ -31,7 +31,7 @@ readonly class FeaturedTeacherBuilder
 
     private function build(TeacherProfile $profile): FeaturedTeacher
     {
-        $user = $profile->getUser();
+        $user = $profile->user;
         $dto = new FeaturedTeacher();
 
         $dto->username = $user->getUsername();
@@ -45,14 +45,14 @@ readonly class FeaturedTeacherBuilder
 
         $dto->instruments = array_values(array_map(static function (TeacherProfileInstrumentEntity $instrument): TeacherProfileInstrument {
             $dto = new TeacherProfileInstrument();
-            $dto->instrumentId = (string) $instrument->getInstrument()->id;
-            $dto->instrumentName = (string) $instrument->getInstrument()->name;
+            $dto->instrumentId = (string) $instrument->instrument->id;
+            $dto->instrumentName = (string) $instrument->instrument->name;
 
             return $dto;
-        }, $profile->getInstruments()->toArray()));
+        }, $profile->instruments->toArray()));
 
-        $dto->offersTrial = $profile->offersTrial();
-        $dto->trialPrice = $profile->getTrialPrice();
+        $dto->offersTrial = $profile->offersTrial;
+        $dto->trialPrice = $profile->trialPrice;
 
         return $dto;
     }

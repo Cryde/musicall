@@ -86,13 +86,13 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         $cover = null;
-        if ($publication->getCover() && $path = $this->uploaderHelper->asset($publication->getCover(), 'imageFile')) {
+        if ($publication->cover && $path = $this->uploaderHelper->asset($publication->cover, 'imageFile')) {
             $cover = $this->cacheManager->getBrowserPath($path, 'publication_image_filter');
         }
 
         return [
-            'title' => (string) $publication->getTitle(),
-            'description' => (string) $publication->getShortDescription(),
+            'title' => (string) $publication->title,
+            'description' => (string) $publication->shortDescription,
             'cover' => $cover,
         ];
     }

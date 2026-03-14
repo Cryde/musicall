@@ -66,9 +66,9 @@ class UserCourseGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/user_courses/' . $course2->getId(),
+                    '@id' => '/api/user_courses/' . $course2->_real()->id,
                     '@type' => 'UserCourse',
-                    'id' => $course2->getId(),
+                    'id' => $course2->_real()->id,
                     'title' => 'Course 2',
                     'slug' => 'course-2',
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -85,9 +85,9 @@ class UserCourseGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/user_courses/' . $course1->getId(),
+                    '@id' => '/api/user_courses/' . $course1->_real()->id,
                     '@type' => 'UserCourse',
-                    'id' => $course1->getId(),
+                    'id' => $course1->_real()->id,
                     'title' => 'Course 1',
                     'slug' => 'course-1',
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -140,7 +140,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $user1Course->getId(),
+                    'id' => $user1Course->_real()->id,
                     'title' => 'User 1 Course',
                 ],
             ],
@@ -178,7 +178,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $course->getId(),
+                    'id' => $course->_real()->id,
                     'title' => 'Course',
                 ],
             ],
@@ -215,7 +215,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $draftCourse->getId(),
+                    'id' => $draftCourse->_real()->id,
                     'title' => 'Draft Course',
                 ],
             ],
@@ -258,7 +258,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $guitarCourse->getId(),
+                    'id' => $guitarCourse->_real()->id,
                     'title' => 'Guitar Course',
                 ],
             ],
@@ -351,11 +351,11 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'totalItems' => 2,
             'member' => [
                 [
-                    'id' => $alphaCourse->getId(),
+                    'id' => $alphaCourse->_real()->id,
                     'title' => 'Alpha Course',
                 ],
                 [
-                    'id' => $zebraCourse->getId(),
+                    'id' => $zebraCourse->_real()->id,
                     'title' => 'Zebra Course',
                 ],
             ],

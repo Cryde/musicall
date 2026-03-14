@@ -82,7 +82,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
             ],
             'top_content' => [
                 [
-                    'id' => $publication->getId(),
+                    'id' => $publication->id,
                     'title' => 'Test Content Overview',
                     'views' => 42,
                     'type' => 'text',

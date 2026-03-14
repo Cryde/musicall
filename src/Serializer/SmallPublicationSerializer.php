@@ -16,12 +16,12 @@ class SmallPublicationSerializer
      */
     public function toArray(Publication $publication): array
     {
-        $cover = $publication->getCover();
+        $cover = $publication->cover;
 
         return [
-            'id'          => $publication->getId(),
-            'title'       => mb_strtoupper((string) $publication->getTitle()),
-            'description' => $publication->getShortDescription(),
+            'id'          => $publication->id,
+            'title'       => mb_strtoupper((string) $publication->title),
+            'description' => $publication->shortDescription,
             'cover_image' => $cover ? $this->uploaderHelper->asset($cover, 'imageFile') : null,
         ];
     }

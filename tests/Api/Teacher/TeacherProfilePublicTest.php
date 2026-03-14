@@ -85,9 +85,10 @@ class TeacherProfilePublicTest extends ApiTestCase
             'instrument' => $guitar,
         ]);
 
-        $teacherProfile->_real()->addStyle($rock->_real());
-        $teacherProfile->_real()->addStyle($pop->_real());
-        $teacherProfile->_save();
+        $realProfile = $teacherProfile->_disableAutoRefresh()->_real();
+        $realProfile->addStyle($rock->_real());
+        $realProfile->addStyle($pop->_real());
+        $teacherProfile->_enableAutoRefresh()->_save();
 
         $this->client->request('GET', '/api/user/profile/music_teacher/teacher');
         $this->assertResponseIsSuccessful();

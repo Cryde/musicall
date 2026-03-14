@@ -46,15 +46,15 @@ readonly class PublicationListItemBuilder
     public function buildFromEntity(Publication $publication): PublicationListItem
     {
         $item = new PublicationListItem();
-        $item->id = (int) $publication->getId();
-        $item->title = (string) $publication->getTitle();
+        $item->id = (int) $publication->id;
+        $item->title = (string) $publication->title;
         $item->slug = $publication->slug;
-        $item->subCategory = $this->buildSubCategory($publication->getSubCategory());
-        $item->author = $this->buildAuthor($publication->getAuthor());
-        $publicationDatetime = $publication->getPublicationDatetime();
+        $item->subCategory = $this->buildSubCategory($publication->subCategory);
+        $item->author = $this->buildAuthor($publication->author);
+        $publicationDatetime = $publication->publicationDatetime;
         assert($publicationDatetime !== null);
         $item->publicationDatetime = $publicationDatetime;
-        $item->cover = $this->buildCoverUrl($publication->getCover());
+        $item->cover = $this->buildCoverUrl($publication->cover);
         $item->typeLabel = $publication->getTypeLabel();
         $item->description = $publication->getDescription();
 

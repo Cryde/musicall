@@ -81,7 +81,7 @@ class PublicationVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_publication',
-            'entityId' => (string) $publication->_real()->getId(),
+            'entityId' => (string) $publication->_real()->id,
         ])->create();
 
         $this->client->loginUser($user->_real());
@@ -116,7 +116,7 @@ class PublicationVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_publication',
-            'entityId' => (string) $publication->_real()->getId(),
+            'entityId' => (string) $publication->_real()->id,
         ])->create();
 
         // POST same value = toggle off

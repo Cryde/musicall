@@ -22,23 +22,23 @@ readonly class UserPublicationPreviewBuilder
     public function buildFromEntity(Publication $publication): UserPublicationPreview
     {
         $dto = new UserPublicationPreview();
-        $dto->id = (int) $publication->getId();
-        $dto->title = (string) $publication->getTitle();
+        $dto->id = (int) $publication->id;
+        $dto->title = (string) $publication->title;
         $dto->slug = $publication->slug;
-        $dto->shortDescription = $publication->getShortDescription();
-        $dto->content = $this->appPublicationSanitizer->sanitize($publication->getContent() ?? '');
-        $dto->statusId = (int) $publication->getStatus();
-        $dto->statusLabel = Publication::STATUS_LABEL[$publication->getStatus()] ?? 'Inconnu';
+        $dto->shortDescription = $publication->shortDescription;
+        $dto->content = $this->appPublicationSanitizer->sanitize($publication->content ?? '');
+        $dto->statusId = (int) $publication->status;
+        $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
 
-        $subCategory = $publication->getSubCategory();
+        $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
         $category->id = (int) $subCategory->id;
         $category->title = (string) $subCategory->title;
         $category->slug = (string) $subCategory->slug;
         $dto->category = $category;
 
-        $author = $publication->getAuthor();
+        $author = $publication->author;
         $authorDto = new UserPublicationPreviewAuthor();
         $authorDto->username = $author->getUsername();
         $dto->author = $authorDto;
@@ -48,7 +48,7 @@ readonly class UserPublicationPreviewBuilder
 
     private function buildCoverUrl(Publication $publication): ?string
     {
-        $cover = $publication->getCover();
+        $cover = $publication->cover;
         if (!$cover || !$cover->imageName) {
             return null;
         }
