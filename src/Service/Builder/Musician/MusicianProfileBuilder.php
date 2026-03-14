@@ -69,8 +69,8 @@ readonly class MusicianProfileBuilder
         return array_values(array_map(function (MusicianProfileInstrument $instrument): PublicMusicianProfileInstrument {
             $instrumentEntity = $instrument->getInstrument();
             $dto = new PublicMusicianProfileInstrument();
-            $dto->instrumentId = (string) $instrumentEntity->getId();
-            $dto->instrumentName = (string) $instrumentEntity->getMusicianName();
+            $dto->instrumentId = (string) $instrumentEntity->id;
+            $dto->instrumentName = (string) $instrumentEntity->musicianName;
             $dto->skillLevel = $instrument->getSkillLevel()->value;
             $dto->skillLevelLabel = $instrument->getSkillLevel()->getLabel();
 
@@ -86,8 +86,8 @@ readonly class MusicianProfileBuilder
     {
         return array_values(array_map(function (Style $style): PublicMusicianProfileStyle {
             $dto = new PublicMusicianProfileStyle();
-            $dto->id = (string) $style->getId();
-            $dto->name = (string) $style->getName();
+            $dto->id = (string) $style->id;
+            $dto->name = (string) $style->name;
 
             return $dto;
         }, $styles));
@@ -106,10 +106,10 @@ readonly class MusicianProfileBuilder
             $dto->id = (string) $announce->getId();
             $dto->creationDatetime = $creationDatetime;
             $dto->type = (int) $announce->getType();
-            $dto->instrumentName = (string) $instrument->getMusicianName();
+            $dto->instrumentName = (string) $instrument->musicianName;
             $dto->locationName = (string) $announce->getLocationName();
             $dto->styles = array_map(
-                fn($style) => (string) $style->getName(),
+                fn($style) => (string) $style->name,
                 $announce->getStyles()->toArray()
             );
 

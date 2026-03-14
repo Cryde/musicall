@@ -88,7 +88,7 @@ class MusicianProfilePatchTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'instruments' => [
                 [
-                    'instrument_id' => $drum->getId(),
+                    'instrument_id' => $drum->_real()->id,
                     'skill_level' => 'professional',
                 ],
             ],
@@ -105,7 +105,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'instruments' => [
                 [
                     '@type' => 'MusicianProfileEditInstrument',
-                    'instrument_id' => $drum->getId(),
+                    'instrument_id' => $drum->_real()->id,
                     'instrument_name' => 'Batteur',
                     'skill_level' => 'professional',
                     'skill_level_label' => 'Professionnel',
@@ -139,7 +139,7 @@ class MusicianProfilePatchTest extends ApiTestCase
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
-            'style_ids' => [$jazz->getId(), $metal->getId()],
+            'style_ids' => [$jazz->_real()->id, $metal->_real()->id],
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
@@ -153,12 +153,12 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [
                 [
                     '@type' => 'MusicianProfileEditStyle',
-                    'id' => $jazz->getId(),
+                    'id' => $jazz->_real()->id,
                     'name' => 'Jazz',
                 ],
                 [
                     '@type' => 'MusicianProfileEditStyle',
-                    'id' => $metal->getId(),
+                    'id' => $metal->_real()->id,
                     'name' => 'Metal',
                 ],
             ],

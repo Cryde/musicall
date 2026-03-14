@@ -55,7 +55,7 @@ readonly class ForumCategoryListBuilder
         $item = new Forum();
         $item->id = (string) $forum->getId();
         $item->title = (string) $forum->getTitle();
-        $item->slug = (string) $forum->getSlug();
+        $item->slug = $forum->slug;
         $item->description = (string) $forum->getDescription();
 
         return $item;

@@ -48,7 +48,7 @@ class ForumTopicPostPostTest extends ApiTestCase
             [
                 "title" => "Title for this new topic",
                 "message" => "test content for new topic",
-                "forum"   => '/api/forum/' . $forum1->getSlug(),
+                "forum"   => '/api/forum/' . $forum1->slug,
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -59,7 +59,7 @@ class ForumTopicPostPostTest extends ApiTestCase
         $posts = $forumPostRepository->findBy(['topic' => $results[0]]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumTopic',
-            '@id' => '/api/forum_topics/' . $results[0]->getSlug(),
+            '@id' => '/api/forum_topics/' . $results[0]->slug,
             '@type' => 'ForumTopic',
             'id' => $results[0]->getId(),
             'title' => 'Title for this new topic',

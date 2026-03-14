@@ -36,7 +36,7 @@ class TopicCreationProcedure
         $user = $this->security->getUser();
         // Create the topic
         $topic = $this->forumTopicBuilder->build($forum, $user, $title)->setPostNumber(1);
-        $topic->setSlug($this->slugifier->create($topic, 'title'));
+        $topic->slug = $this->slugifier->create($topic, 'title');
         $this->entityManager->persist($topic);
         // create the first post related to the topic
         $post = $this->forumPostBuilder->build($topic, $user, $message);

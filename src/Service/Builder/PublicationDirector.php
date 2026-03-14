@@ -30,9 +30,8 @@ class PublicationDirector
         }
         assert($category !== null);
 
-        return (new Publication())
+        $publication = (new Publication())
             ->setTitle($addVideo->title)
-            ->setSlug($this->publicationSlug->create('v-' . $addVideo->title))
             ->setType(Publication::TYPE_VIDEO)
             ->setStatus(Publication::STATUS_ONLINE)
             ->setShortDescription($addVideo->description)
@@ -40,5 +39,8 @@ class PublicationDirector
             ->setSubCategory($category)
             ->setAuthor($user)
             ->setPublicationDatetime(new \DateTime());
+        $publication->slug = $this->publicationSlug->create('v-' . $addVideo->title);
+
+        return $publication;
     }
 }

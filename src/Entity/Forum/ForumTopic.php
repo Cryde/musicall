@@ -32,7 +32,7 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private string $slug;
+    public string $slug;
     #[ORM\Column(type: Types::INTEGER)]
     private int $type = self::TYPE_TOPIC_DEFAULT;
     #[ORM\Column(type: Types::BOOLEAN)]
@@ -78,18 +78,6 @@ class ForumTopic implements SluggableEntityInterface
     public function setTitle(string $title): self
     {
         $this->title = $title;
-
-        return $this;
-    }
-
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
 
         return $this;
     }

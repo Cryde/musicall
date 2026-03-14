@@ -73,16 +73,16 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
         $dto->instruments = array_values(array_map(function ($instrument): TeacherProfileInstrument {
             $item = new TeacherProfileInstrument();
-            $item->instrumentId = (string) $instrument->getInstrument()->getId();
-            $item->instrumentName = (string) $instrument->getInstrument()->getMusicianName();
+            $item->instrumentId = (string) $instrument->getInstrument()->id;
+            $item->instrumentName = (string) $instrument->getInstrument()->musicianName;
 
             return $item;
         }, $profile->getInstruments()->toArray()));
 
         $dto->styles = array_values(array_map(function ($style): TeacherProfileStyle {
             $item = new TeacherProfileStyle();
-            $item->id = (string) $style->getId();
-            $item->name = (string) $style->getName();
+            $item->id = (string) $style->id;
+            $item->name = (string) $style->name;
 
             return $item;
         }, $profile->getStyles()->toArray()));

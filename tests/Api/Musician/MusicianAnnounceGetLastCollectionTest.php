@@ -61,18 +61,18 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'type' => 2,
                     'instrument' => [
                         '@type' => 'Instrument',
-                        'id' => $instrument2->getId(),
+                        'id' => $instrument2->id,
                         'musician_name' => 'Guitariste',
                     ],
                     'styles' => [
                         [
                             '@type' => 'Style',
-                            'id' => $style1->getId(),
+                            'id' => $style1->id,
                             'name' => 'Rock',
                         ],
                         [
                             '@type' => 'Style',
-                            'id' => $style2->getId(),
+                            'id' => $style2->id,
                             'name' => 'Pop',
                         ],
                     ],
@@ -93,13 +93,13 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'type' => 1,
                     'instrument' => [
                         '@type' => 'Instrument',
-                        'id' => $instrument1->getId(),
+                        'id' => $instrument1->id,
                         'musician_name' => 'Batteur',
                     ],
                     'styles' => [
                         [
                             '@type' => 'Style',
-                            'id' => $style1->getId(),
+                            'id' => $style1->id,
                             'name' => 'Rock',
                         ],
                     ],

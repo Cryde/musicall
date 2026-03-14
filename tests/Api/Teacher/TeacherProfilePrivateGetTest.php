@@ -127,14 +127,14 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'instruments' => [
                 [
                     '@type' => 'TeacherProfileInstrument',
-                    'instrument_id' => $guitar->getId(),
+                    'instrument_id' => $guitar->id,
                     'instrument_name' => 'Guitariste',
                 ],
             ],
             'styles' => [
                 [
                     '@type' => 'TeacherProfileStyle',
-                    'id' => $rock->getId(),
+                    'id' => $rock->id,
                     'name' => 'Rock',
                 ],
             ],

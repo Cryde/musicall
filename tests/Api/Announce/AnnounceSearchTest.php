@@ -63,7 +63,7 @@ class AnnounceSearchTest extends ApiTestCase
             '/api/musicians/search',
             [
                 'type' => '1',
-                'instrument' => $guitar->getId(),
+                'instrument' => $guitar->id,
             ]
         );
 
@@ -130,7 +130,7 @@ class AnnounceSearchTest extends ApiTestCase
             '/api/musicians/search',
             [
                 'type' => '1',
-                'instrument' => $drum->getId(),
+                'instrument' => $drum->id,
                 'latitude' => '48.8566',
                 'longitude' => '2.3522'
             ]
@@ -181,8 +181,8 @@ class AnnounceSearchTest extends ApiTestCase
             '/api/musicians/search',
             [
                 'type' => '1',
-                'instrument' => $guitar->getId(),
-                'styles' => [$rock->getId()],
+                'instrument' => $guitar->id,
+                'styles' => [$rock->id],
             ]
         );
 

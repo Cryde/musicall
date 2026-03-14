@@ -77,7 +77,7 @@ class MusicianSearchResultBuilder
     private function buildInstrument(InstrumentEntity $instrumentEntity): Instrument
     {
         $instrument = new Instrument();
-        $instrument->name = (string) $instrumentEntity->getMusicianName();
+        $instrument->name = (string) $instrumentEntity->musicianName;
 
         return $instrument;
     }
@@ -91,7 +91,7 @@ class MusicianSearchResultBuilder
     {
         return array_map(static function (StyleEntity $styleEntity): Style {
             $style = new Style();
-            $style->name = (string) $styleEntity->getName();
+            $style->name = (string) $styleEntity->name;
 
             return $style;
         }, $styles);

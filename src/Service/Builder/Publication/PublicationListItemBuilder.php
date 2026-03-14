@@ -48,7 +48,7 @@ readonly class PublicationListItemBuilder
         $item = new PublicationListItem();
         $item->id = (int) $publication->getId();
         $item->title = (string) $publication->getTitle();
-        $item->slug = (string) $publication->getSlug();
+        $item->slug = $publication->slug;
         $item->subCategory = $this->buildSubCategory($publication->getSubCategory());
         $item->author = $this->buildAuthor($publication->getAuthor());
         $publicationDatetime = $publication->getPublicationDatetime();

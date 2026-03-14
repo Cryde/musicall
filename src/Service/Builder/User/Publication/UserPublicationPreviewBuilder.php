@@ -24,7 +24,7 @@ readonly class UserPublicationPreviewBuilder
         $dto = new UserPublicationPreview();
         $dto->id = (int) $publication->getId();
         $dto->title = (string) $publication->getTitle();
-        $dto->slug = (string) $publication->getSlug();
+        $dto->slug = $publication->slug;
         $dto->shortDescription = $publication->getShortDescription();
         $dto->content = $this->appPublicationSanitizer->sanitize($publication->getContent() ?? '');
         $dto->statusId = (int) $publication->getStatus();

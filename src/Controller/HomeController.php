@@ -25,7 +25,7 @@ class HomeController extends AbstractController
     public function oldCourseRedirect(int $id, string $slug, PublicationRepository $publicationRepository): RedirectResponse
     {
         $course = $publicationRepository->findOldCourseByOldId($id);
-        $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'cours/' . $course->getSlug();
+        $url = $this->generateUrl('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL) . 'cours/' . $course->slug;
 
         return $this->redirect($url, Response::HTTP_MOVED_PERMANENTLY);
     }

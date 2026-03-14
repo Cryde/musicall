@@ -45,8 +45,8 @@ readonly class FeaturedTeacherBuilder
 
         $dto->instruments = array_values(array_map(static function (TeacherProfileInstrumentEntity $instrument): TeacherProfileInstrument {
             $dto = new TeacherProfileInstrument();
-            $dto->instrumentId = (string) $instrument->getInstrument()->getId();
-            $dto->instrumentName = (string) $instrument->getInstrument()->getName();
+            $dto->instrumentId = (string) $instrument->getInstrument()->id;
+            $dto->instrumentName = (string) $instrument->getInstrument()->name;
 
             return $dto;
         }, $profile->getInstruments()->toArray()));

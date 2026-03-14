@@ -41,7 +41,7 @@ readonly class TeacherProfileMetaDataProvider implements BotMetaDataProviderInte
         $instruments = $teacherProfile->getInstruments();
         $instrumentNames = [];
         foreach ($instruments as $instrument) {
-            $instrumentNames[] = $instrument->getInstrument()->getName();
+            $instrumentNames[] = $instrument->getInstrument()->name;
         }
 
         $description = sprintf('Découvrez le profil professeur de %s sur MusicAll.', $username);

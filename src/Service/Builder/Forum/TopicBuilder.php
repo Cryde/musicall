@@ -18,7 +18,7 @@ readonly class TopicBuilder
         $item = new Topic();
         $item->id = (string) $topic->getId();
         $item->title = (string) $topic->getTitle();
-        $item->slug = (string) $topic->getSlug();
+        $item->slug = $topic->slug;
         $item->isLocked = (bool) $topic->getIsLocked();
         $item->forum = $this->buildForum($forum);
 
@@ -30,7 +30,7 @@ readonly class TopicBuilder
         $item = new Forum();
         $item->id = (string) $forum->getId();
         $item->title = (string) $forum->getTitle();
-        $item->slug = (string) $forum->getSlug();
+        $item->slug = $forum->slug;
         $item->description = (string) $forum->getDescription();
 
         return $item;

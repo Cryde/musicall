@@ -50,8 +50,8 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
         $dto->instruments = array_values(array_map(function ($instrument): MusicianProfileEditInstrument {
             $item = new MusicianProfileEditInstrument();
-            $item->instrumentId = (string) $instrument->getInstrument()->getId();
-            $item->instrumentName = (string) $instrument->getInstrument()->getMusicianName();
+            $item->instrumentId = (string) $instrument->getInstrument()->id;
+            $item->instrumentName = (string) $instrument->getInstrument()->musicianName;
             $item->skillLevel = $instrument->getSkillLevel()->value;
             $item->skillLevelLabel = $instrument->getSkillLevel()->getLabel();
 
@@ -60,8 +60,8 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
         $dto->styles = array_values(array_map(function ($style): MusicianProfileEditStyle {
             $item = new MusicianProfileEditStyle();
-            $item->id = (string) $style->getId();
-            $item->name = (string) $style->getName();
+            $item->id = (string) $style->id;
+            $item->name = (string) $style->name;
 
             return $item;
         }, $profile->getStyles()->toArray()));

@@ -36,11 +36,11 @@ class MusicianProfilePostTest extends ApiTestCase
             'availability_status' => 'looking_for_band',
             'instruments' => [
                 [
-                    'instrument_id' => $guitar->getId(),
+                    'instrument_id' => $guitar->_real()->id,
                     'skill_level' => 'advanced',
                 ],
             ],
-            'style_ids' => [$rock->getId(), $jazz->getId()],
+            'style_ids' => [$rock->_real()->id, $jazz->_real()->id],
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -58,11 +58,11 @@ class MusicianProfilePostTest extends ApiTestCase
             'instruments' => [
                 [
                     '@type' => 'MusicianProfileEditInstrument',
-                    'instrument_id' => $guitar->getId(),
+                    'instrument_id' => $guitar->_real()->id,
                     'skill_level' => 'advanced',
                 ],
             ],
-            'style_ids' => [$rock->getId(), $jazz->getId()],
+            'style_ids' => [$rock->_real()->id, $jazz->_real()->id],
             'styles' => [],
         ]);
     }

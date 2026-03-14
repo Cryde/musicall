@@ -82,7 +82,7 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     #[ApiProperty(identifier: true)]
     #[Groups([Publication::ITEM, Publication::LIST])]
-    private string $slug;
+    public string $slug;
 
     #[Assert\NotBlank(message: 'La description de la publication ne doit pas être vide', groups: ['publication'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -228,18 +228,6 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     public function setPublicationDatetime(?DateTimeInterface $publicationDatetime): self
     {
         $this->publicationDatetime = $publicationDatetime;
-
-        return $this;
-    }
-
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
 
         return $this;
     }

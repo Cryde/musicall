@@ -101,10 +101,10 @@ readonly class PublicProfileBuilder
             $dto->id = (string) $announce->getId();
             $dto->creationDatetime = $creationDatetime;
             $dto->type = (int) $announce->getType();
-            $dto->instrumentName = (string) $instrument->getMusicianName();
+            $dto->instrumentName = (string) $instrument->musicianName;
             $dto->locationName = (string) $announce->getLocationName();
             $dto->styles = array_map(
-                fn($style) => (string) $style->getName(),
+                fn($style) => (string) $style->name,
                 $announce->getStyles()->toArray()
             );
 

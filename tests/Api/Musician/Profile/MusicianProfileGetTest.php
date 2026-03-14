@@ -62,7 +62,7 @@ class MusicianProfileGetTest extends ApiTestCase
             'instruments' => [
                 [
                     '@type' => 'MusicianProfileEditInstrument',
-                    'instrument_id' => $guitar->getId(),
+                    'instrument_id' => $guitar->id,
                     'instrument_name' => 'Guitariste',
                     'skill_level' => 'advanced',
                     'skill_level_label' => 'Avancé',
@@ -72,7 +72,7 @@ class MusicianProfileGetTest extends ApiTestCase
             'styles' => [
                 [
                     '@type' => 'MusicianProfileEditStyle',
-                    'id' => $rock->getId(),
+                    'id' => $rock->id,
                     'name' => 'Rock',
                 ],
             ],

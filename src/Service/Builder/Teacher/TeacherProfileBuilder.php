@@ -81,8 +81,8 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (TeacherProfileInstrument $instrument): PublicTeacherProfileInstrument {
             $dto = new PublicTeacherProfileInstrument();
-            $dto->instrumentId = (string) $instrument->getInstrument()->getId();
-            $dto->instrumentName = (string) $instrument->getInstrument()->getName();
+            $dto->instrumentId = (string) $instrument->getInstrument()->id;
+            $dto->instrumentName = (string) $instrument->getInstrument()->name;
 
             return $dto;
         }, $instruments));
@@ -96,8 +96,8 @@ readonly class TeacherProfileBuilder
     {
         return array_values(array_map(function (Style $style): PublicTeacherProfileStyle {
             $dto = new PublicTeacherProfileStyle();
-            $dto->id = (string) $style->getId();
-            $dto->name = (string) $style->getName();
+            $dto->id = (string) $style->id;
+            $dto->name = (string) $style->name;
 
             return $dto;
         }, $styles));

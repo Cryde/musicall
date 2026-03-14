@@ -23,7 +23,7 @@ readonly class UserPublicationBuilder
         $dto = new UserPublication();
         $dto->id = (int) $publication->getId();
         $dto->title = (string) $publication->getTitle();
-        $dto->slug = (string) $publication->getSlug();
+        $dto->slug = $publication->slug;
         $dto->creationDatetime = $creationDatetime;
         $dto->editionDatetime = $publication->getEditionDatetime();
         $dto->statusId = (int) $publication->getStatus();

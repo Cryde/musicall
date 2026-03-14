@@ -55,7 +55,7 @@ class ForumPostPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 "content" => "test content for new message",
-                "topic"   => '/api/forums/topics/' . $topic->getSlug(),
+                "topic"   => '/api/forums/topics/' . $topic->slug,
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -105,7 +105,7 @@ class ForumPostPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => '',
-                'topic' => '/api/forums/topics/' . $topic->getSlug(),
+                'topic' => '/api/forums/topics/' . $topic->slug,
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -153,7 +153,7 @@ class ForumPostPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => 'short',
-                'topic' => '/api/forums/topics/' . $topic->getSlug(),
+                'topic' => '/api/forums/topics/' . $topic->slug,
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -229,7 +229,7 @@ class ForumPostPostTest extends ApiTestCase
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => 'This is a valid content message',
-                'topic' => '/api/forums/topics/' . $topic->getSlug(),
+                'topic' => '/api/forums/topics/' . $topic->slug,
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

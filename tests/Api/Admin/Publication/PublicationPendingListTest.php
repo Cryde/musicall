@@ -61,7 +61,7 @@ class PublicationPendingListTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [
                 [
-                    '@id'                  => '/api/publications/' . $publication->_real()->getSlug(),
+                    '@id'                  => '/api/publications/' . $publication->_real()->slug,
                     '@type'                => 'Publication',
                     'id'                   => $publication->_real()->getId(),
                     'title'                => 'Titre de la publication',

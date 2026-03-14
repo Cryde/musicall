@@ -39,11 +39,11 @@ class MusicianAnnouncePostTest extends ApiTestCase
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/musician_announces', [
             "type"          => 1,
-            "instrument"    => "/api/instruments/" . $instrument1->getId(),
+            "instrument"    => "/api/instruments/" . $instrument1->id,
             "styles"        => [
-                "/api/styles/" . $style1->getId(),
-                "/api/styles/" . $style2->getId(),
-                "/api/styles/" . $style3->getId(),
+                "/api/styles/" . $style1->id,
+                "/api/styles/" . $style2->id,
+                "/api/styles/" . $style3->id,
             ],
             "location_name" => "Brussels",
             "longitude"     => "4.3517103",
@@ -67,23 +67,23 @@ class MusicianAnnouncePostTest extends ApiTestCase
             'type' => 1,
             'instrument' => [
                 '@type' => 'Instrument',
-                'id' => $instrument1->getId(),
+                'id' => $instrument1->id,
                 'musician_name' => 'Batteur',
             ],
             'styles' => [
                 [
                     '@type' => 'Style',
-                    'id' => $style1->getId(),
+                    'id' => $style1->id,
                     'name' => 'Rock',
                 ],
                 [
                     '@type' => 'Style',
-                    'id' => $style2->getId(),
+                    'id' => $style2->id,
                     'name' => 'Pop',
                 ],
                 [
                     '@type' => 'Style',
-                    'id' => $style3->getId(),
+                    'id' => $style3->id,
                     'name' => 'Metal',
                 ],
             ],

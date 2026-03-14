@@ -24,7 +24,7 @@ class Forum implements SluggableEntityInterface
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $title;
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private string $slug;
+    public string $slug;
     #[ORM\Column(type: Types::TEXT)]
     private string $description;
     #[ORM\ManyToOne(targetEntity: ForumCategory::class, inversedBy: 'forums')]
@@ -59,18 +59,6 @@ class Forum implements SluggableEntityInterface
     public function setTitle(string $title): self
     {
         $this->title = $title;
-
-        return $this;
-    }
-
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): static
-    {
-        $this->slug = $slug;
 
         return $this;
     }

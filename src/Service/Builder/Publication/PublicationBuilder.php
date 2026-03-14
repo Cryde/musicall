@@ -54,7 +54,7 @@ readonly class PublicationBuilder
         assert($cover !== null && $thread !== null);
 
         $publication = new Publication();
-        $publication->slug = (string) $publicationEntity->getSlug();
+        $publication->slug = $publicationEntity->slug;
         $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->getContent());
         $publication->title = (string) $publicationEntity->getTitle();
         $publication->description = $publicationEntity->getDescription() ?? '';

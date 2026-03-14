@@ -53,8 +53,8 @@ readonly class MusicianAnnounceBuilder
     private function buildInstrument(InstrumentEntity $entity): Instrument
     {
         $dto = new Instrument();
-        $dto->id = (string) $entity->getId();
-        $dto->musicianName = (string) $entity->getMusicianName();
+        $dto->id = (string) $entity->id;
+        $dto->musicianName = (string) $entity->musicianName;
 
         return $dto;
     }
@@ -67,8 +67,8 @@ readonly class MusicianAnnounceBuilder
     {
         return array_map(function (StyleEntity $entity): Style {
             $dto = new Style();
-            $dto->id = (string) $entity->getId();
-            $dto->name = (string) $entity->getName();
+            $dto->id = (string) $entity->id;
+            $dto->name = (string) $entity->name;
 
             return $dto;
         }, $entities);

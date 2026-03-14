@@ -29,9 +29,9 @@ class SearchModelBuilderTest extends KernelTestCase
         $this->assertSame(1, $result->type);
         $this->assertSame(48.856614, $result->longitude);
         $this->assertSame(2.3522219, $result->latitude);
-        $this->assertSame($instrument1->_real()->getId(), $result->instrument->getId());
+        $this->assertSame($instrument1->_real()->id, $result->instrument->id);
         $this->assertCount(2, $result->styles);
-        $this->assertSame($style1->_real()->getId(), $result->styles[0]->getId());
-        $this->assertSame($style2->_real()->getId(), $result->styles[1]->getId());
+        $this->assertSame($style1->_real()->id, $result->styles[0]->id);
+        $this->assertSame($style2->_real()->id, $result->styles[1]->id);
     }
 }

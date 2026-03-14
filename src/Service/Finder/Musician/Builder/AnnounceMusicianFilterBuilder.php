@@ -39,7 +39,8 @@ class AnnounceMusicianFilterBuilder
 
     public function getInstrumentId(string $instrumentId): ?string
     {
-        return $this->instrumentRepository->find($instrumentId)?->getId();
+        /** @var ?string */
+        return $this->instrumentRepository->find($instrumentId)?->id;
     }
 
     /**
@@ -53,7 +54,7 @@ class AnnounceMusicianFilterBuilder
             array_values(
                 array_filter(
                     array_map(
-                        fn(string $styleId): ?string => $this->styleRepository->find($styleId)?->getId(),
+                        fn(string $styleId): ?string => ($id = $this->styleRepository->find($styleId)?->id) !== null ? (string) $id : null,
                         $styleIds
                     )
                 )

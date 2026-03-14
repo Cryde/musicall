@@ -3,5 +3,5 @@
 namespace App\Contracts;
 interface SluggableEntityInterface
 {
-    public function getSlug(): ?string;
+    public string $slug { get; }
 }

@@ -21,7 +21,7 @@ readonly class UserPublicationEditBuilder
         $dto = new UserPublicationEdit();
         $dto->id = (int) $publication->getId();
         $dto->title = (string) $publication->getTitle();
-        $dto->slug = (string) $publication->getSlug();
+        $dto->slug = $publication->slug;
         $dto->shortDescription = $publication->getShortDescription();
         $dto->content = $publication->getContent();
         $dto->statusId = (int) $publication->getStatus();

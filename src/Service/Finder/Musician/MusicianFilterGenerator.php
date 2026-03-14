@@ -127,7 +127,7 @@ readonly class MusicianFilterGenerator
         $instruments = $this->instrumentRepository->findAll();
         $arrayInstruments = [];
         foreach ($instruments as $instrument) {
-            $arrayInstruments[$instrument->getId()] = $instrument->getSlug();
+            $arrayInstruments[(string) $instrument->id] = $instrument->slug;
         }
 
         return (string) json_encode($arrayInstruments);
@@ -138,7 +138,7 @@ readonly class MusicianFilterGenerator
         $styles = $this->styleRepository->findAll();
         $arrayStyles = [];
         foreach ($styles as $style) {
-            $arrayStyles[$style->getId()] = $style->getSlug();
+            $arrayStyles[(string) $style->id] = $style->slug;
         }
 
         return (string) json_encode($arrayStyles);

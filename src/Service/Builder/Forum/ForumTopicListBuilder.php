@@ -36,7 +36,7 @@ readonly class ForumTopicListBuilder
         $item = new ForumTopic();
         $item->id = (string) $topic->getId();
         $item->title = (string) $topic->getTitle();
-        $item->slug = (string) $topic->getSlug();
+        $item->slug = $topic->slug;
         $item->type = (int) $topic->getType();
         $item->isLocked = (bool) $topic->getIsLocked();
         $item->lastPost = $topic->getLastPost() ? $this->buildPostSimple($topic->getLastPost()) : null;
