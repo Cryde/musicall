@@ -11,7 +11,10 @@ use App\Event\UserRegisteredEvent;
 use App\Exception\User\UserAlreadyLoggedException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -24,6 +27,9 @@ readonly class RegisterProcessor implements ProcessorInterface
         private UserPasswordHasherInterface $userPasswordHasher,
         private Security $security,
         private EventDispatcherInterface $eventDispatcher,
+        #[Target('registration')]
+        private RateLimiterFactoryInterface $registrationLimiter,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -37,6 +43,9 @@ readonly class RegisterProcessor implements ProcessorInterface
         if ($this->security->getUser()) {
             throw new UserAlreadyLoggedException('Vous êtes déjà connecté');
         }
+
+        $ip = $this->requestStack->getCurrentRequest()?->getClientIp() ?? 'unknown';
+        $this->registrationLimiter->create($ip)->consume()->ensureAccepted();
 
         $user = new User();
         $user->username = $data->username;
