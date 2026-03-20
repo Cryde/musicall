@@ -43,7 +43,7 @@ class GalleryPendingListTest extends ApiTestCase
         $this->client->request('GET', '/api/admin/galleries/pending');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'   => '/api/contexts/AdminPendingGallery',
+            '@context'   => '/api/contexts/Gallery',
             '@id'        => '/api/admin/galleries/pending',
             '@type'      => 'Collection',
             'member'     => [

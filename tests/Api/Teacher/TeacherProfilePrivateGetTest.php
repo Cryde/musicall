@@ -174,7 +174,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
     public function test_get_my_teacher_profile_not_logged_in(): void
     {
         $this->client->request('GET', '/api/user/teacher-profile');
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
     public function test_get_my_teacher_profile_no_profile(): void

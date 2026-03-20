@@ -138,6 +138,6 @@ class MusicianProfileGetTest extends ApiTestCase
     {
         $this->client->request('GET', '/api/user/musician-profile');
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 }

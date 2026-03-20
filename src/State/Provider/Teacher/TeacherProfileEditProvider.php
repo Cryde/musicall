@@ -17,7 +17,6 @@ use App\ApiResource\Teacher\Private\TeacherProfileStyle;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -32,10 +31,8 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TeacherProfileOutput
     {
-        if (!$user = $this->security->getUser()) {
-            throw new AccessDeniedHttpException();
-        }
         /** @var User $user */
+        $user = $this->security->getUser();
         if (!$teacherProfile = $user->teacherProfile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }

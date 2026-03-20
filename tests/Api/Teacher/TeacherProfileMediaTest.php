@@ -192,8 +192,7 @@ class TeacherProfileMediaTest extends ApiTestCase
         $mediaId = $media->_real()->id;
 
         $this->client->request('DELETE', '/api/user/teacher-profile/media/' . $mediaId);
-        // Not logged in returns 404 because the provider can't find the user's profile
-        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
     public function test_delete_media_no_profile(): void

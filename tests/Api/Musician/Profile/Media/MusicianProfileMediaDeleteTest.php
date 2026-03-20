@@ -119,19 +119,7 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
     {
         $this->client->request('DELETE', '/api/user/musician-profile/media/00000000-0000-0000-0000-000000000000');
 
-        // Note: The provider runs before security check, so we get 404 "Profil musicien non trouvé" instead of 401
-        // This is expected behavior since security is checked after the provider
-        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/Error',
-            '@id' => '/api/errors/404',
-            '@type' => 'Error',
-            'title' => 'An error occurred',
-            'detail' => 'Profil musicien non trouvé',
-            'description' => 'Profil musicien non trouvé',
-            'status' => 404,
-            'type' => '/errors/404',
-        ]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
     public function test_delete_media_without_musician_profile(): void

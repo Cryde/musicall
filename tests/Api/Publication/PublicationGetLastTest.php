@@ -127,7 +127,7 @@ class PublicationGetLastTest extends ApiTestCase
         $this->client->request('GET', '/api/last-publications');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'   => '/api/contexts/LastPublication',
+            '@context'   => '/api/contexts/Publication',
             '@id'        => '/api/last-publications',
             '@type'      => 'Collection',
             'member'     => [

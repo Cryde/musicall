@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\ApiResource\User\Profile;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\User\Profile\PublicProfileProvider;
 
 #[Get(
     uriTemplate: '/user/profile/{username}',
+    requirements: ['username' => '(?!social-links$|cover-picture$)[^/]+'],
     openapi: new Operation(tags: ['Profile']),
     name: 'api_public_profile_get',
     provider: PublicProfileProvider::class,

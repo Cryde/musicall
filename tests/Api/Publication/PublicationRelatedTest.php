@@ -87,7 +87,7 @@ class PublicationRelatedTest extends ApiTestCase
         $this->client->request('GET', '/api/publications/current-publication/related');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'   => '/api/contexts/RelatedPublication',
+            '@context'   => '/api/contexts/Publication',
             '@id'        => '/api/publications/current-publication/related',
             '@type'      => 'Collection',
             'member'     => [
@@ -159,7 +159,7 @@ class PublicationRelatedTest extends ApiTestCase
         $this->client->request('GET', '/api/publications/nonexistent-slug/related');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'   => '/api/contexts/RelatedPublication',
+            '@context'   => '/api/contexts/Publication',
             '@id'        => '/api/publications/nonexistent-slug/related',
             '@type'      => 'Collection',
             'member'     => [],

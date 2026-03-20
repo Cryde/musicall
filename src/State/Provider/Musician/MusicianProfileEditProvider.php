@@ -12,7 +12,6 @@ use App\ApiResource\Musician\MusicianProfileEditStyle;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -27,10 +26,8 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): MusicianProfileEdit
     {
-        if (!$user = $this->security->getUser()) {
-            throw new AccessDeniedHttpException();
-        }
         /** @var User $user */
+        $user = $this->security->getUser();
         if (!$musicianProfile = $user->musicianProfile) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }

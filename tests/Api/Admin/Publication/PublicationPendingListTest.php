@@ -56,7 +56,7 @@ class PublicationPendingListTest extends ApiTestCase
         $this->client->request('GET', '/api/admin/publications/pending');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
-            '@context'   => '/api/contexts/AdminPendingPublication',
+            '@context'   => '/api/contexts/Publication',
             '@id'        => '/api/admin/publications/pending',
             '@type'      => 'Collection',
             'member'     => [
