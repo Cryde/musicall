@@ -5,3 +5,8 @@ framework:
             limit: 3
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        musician_search:
+            policy: sliding_window
+            limit: 10
+            interval: '20 minutes'
+            cache_pool: "rate_limiter.cache"

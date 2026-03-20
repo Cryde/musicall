@@ -800,7 +800,11 @@ async function generateQuickSearchFilters() {
 
     await search()
   } catch (e) {
-    if (e?.response?.status === 422) {
+    if (e?.response?.status === 429) {
+      quickSearchErrors.value = [
+        'Trop de recherches effectuées. Veuillez réessayer dans quelques minutes.'
+      ]
+    } else if (e?.response?.status === 422) {
       quickSearchErrors.value = e.response.data.violations.map((violation) => violation.message)
     } else {
       quickSearchErrors.value = [
