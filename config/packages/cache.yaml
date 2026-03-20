@@ -18,3 +18,11 @@ framework:
         pools:
             rate_limiter.cache:
                 adapter: cache.app
+
+when@test:
+    framework:
+        cache:
+            app: cache.adapter.array
+            pools:
+                rate_limiter.cache:
+                    adapter: cache.adapter.array

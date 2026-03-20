@@ -144,9 +144,12 @@ async function handleSubmit() {
     await securityApi.requestResetPassword(login.value.trim())
     isRequestSent.value = true
   } catch (error) {
-    // Always show success to prevent email enumeration
-    // The API should also not reveal if the email exists
-    isRequestSent.value = true
+    if (error.status === 429 || error.response?.status === 429) {
+      globalError.value = 'Trop de demandes effectuées. Veuillez réessayer plus tard.'
+    } else {
+      // Always show success to prevent email enumeration
+      isRequestSent.value = true
+    }
   } finally {
     isSubmitting.value = false
   }

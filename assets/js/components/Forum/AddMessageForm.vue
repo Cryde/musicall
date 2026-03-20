@@ -117,7 +117,9 @@ async function handleSubmit() {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: "Une erreur est survenue lors de l'envoi du message",
+      detail: error.response?.status === 429
+        ? 'Veuillez patienter avant de poster un nouveau message.'
+        : "Une erreur est survenue lors de l'envoi du message",
       life: 5000
     })
   } finally {

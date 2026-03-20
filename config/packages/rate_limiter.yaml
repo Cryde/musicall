@@ -30,3 +30,28 @@ framework:
             limit: 5
             interval: '2 minutes'
             cache_pool: "rate_limiter.cache"
+        forum_topic_creation:
+            policy: fixed_window
+            limit: 1
+            interval: '5 minutes'
+            cache_pool: "rate_limiter.cache"
+        forum_reply:
+            policy: fixed_window
+            limit: 1
+            interval: '30 seconds'
+            cache_pool: "rate_limiter.cache"
+        musician_announce:
+            policy: fixed_window
+            limit: 1
+            interval: '5 minutes'
+            cache_pool: "rate_limiter.cache"
+        musician_announce_daily:
+            policy: fixed_window
+            limit: 5
+            interval: '1 day'
+            cache_pool: "rate_limiter.cache"
+        password_reset:
+            policy: fixed_window
+            limit: 4
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"

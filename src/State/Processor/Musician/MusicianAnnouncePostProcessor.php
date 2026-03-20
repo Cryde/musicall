@@ -12,6 +12,8 @@ use App\Service\Builder\Musician\MusicianAnnounceBuilder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * @implements ProcessorInterface<MusicianAnnounceCreate, MusicianAnnounce>
@@ -22,6 +24,10 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
         private Security               $security,
         private EntityManagerInterface $entityManager,
         private MusicianAnnounceBuilder $musicianAnnounceBuilder,
+        #[Target('musician_announce')]
+        private RateLimiterFactoryInterface $musicianAnnounceLimiter,
+        #[Target('musician_announce_daily')]
+        private RateLimiterFactoryInterface $musicianAnnounceDailyLimiter,
     ) {
     }
 
@@ -32,6 +38,9 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
     {
         /** @var User $user */
         $user = $this->security->getUser();
+        $userIdentifier = $user->getUserIdentifier();
+        $this->musicianAnnounceLimiter->create($userIdentifier)->consume()->ensureAccepted();
+        $this->musicianAnnounceDailyLimiter->create($userIdentifier)->consume()->ensureAccepted();
 
         $entity = new MusicianAnnounceEntity();
         $entity->author = $user;
