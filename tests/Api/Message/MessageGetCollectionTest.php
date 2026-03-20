@@ -145,6 +145,34 @@ class MessageGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_xss_payload_is_sanitized_in_message_content(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
+
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
+        $message = MessageFactory::new([
+            'author' => $user2,
+            'thread' => $thread,
+            'content' => '<img src=x onerror="alert(1)"><a href="javascript:alert(1)">click</a><script>alert(1)</script>',
+        ])->create();
+        $thread->_real()->lastMessage = $message->_real();
+        $thread->_save();
+
+        $this->client->loginUser($user1->_real());
+        $this->client->request('GET', '/api/messages/' . $thread->_real()->id);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonContains([
+            'member' => [
+                [
+                    'content' => '',
+                ],
+            ],
+        ]);
+    }
+
     public function test_get_collection_but_not_participant(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
