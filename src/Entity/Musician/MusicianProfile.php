@@ -19,6 +19,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: MusicianProfileRepository::class)]
 #[ORM\Table(name: 'user_musician_profile')]
+#[ORM\UniqueConstraint(name: 'unique_musician_profile_user', columns: ['user_id'])]
 class MusicianProfile implements ViewableInterface
 {
     #[ORM\Id]

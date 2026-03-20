@@ -19,6 +19,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: TeacherProfileRepository::class)]
 #[ORM\Table(name: 'user_teacher_profile')]
+#[ORM\UniqueConstraint(name: 'unique_teacher_profile_user', columns: ['user_id'])]
 class TeacherProfile implements ViewableInterface
 {
     #[ORM\Id]
