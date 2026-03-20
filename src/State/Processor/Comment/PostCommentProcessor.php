@@ -9,6 +9,8 @@ use App\Entity\Comment\Comment;
 use App\Entity\User;
 use App\Service\Procedure\Comment\CreateCommentProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
@@ -19,6 +21,8 @@ readonly class PostCommentProcessor implements ProcessorInterface
     public function __construct(
         private Security $security,
         private CreateCommentProcedure $createCommentProcedure,
+        #[Target('comment_post')]
+        private RateLimiterFactoryInterface $commentPostLimiter,
     ) {
     }
 
@@ -29,6 +33,7 @@ readonly class PostCommentProcessor implements ProcessorInterface
         }
         /** @var User $user */
         $user = $this->security->getUser();
+        $this->commentPostLimiter->create($user->getUserIdentifier())->consume()->ensureAccepted();
 
         return $this->createCommentProcedure->process($user, $data);
     }

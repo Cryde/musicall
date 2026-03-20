@@ -82,7 +82,11 @@ async function handleSubmit() {
     trackUmamiEvent('comment-add')
     content.value = ''
   } catch (e) {
-    error.value = e.message || 'Une erreur est survenue'
+    if (e.status === 429 || e.response?.status === 429) {
+      error.value = 'Trop de commentaires postés. Veuillez patienter un instant.'
+    } else {
+      error.value = e.message || 'Une erreur est survenue'
+    }
   }
 }
 </script>
