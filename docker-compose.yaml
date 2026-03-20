@@ -24,7 +24,7 @@ services:
                 ipv4_address: 10.200.200.7
 
     node:
-        image: node:20
+        image: node:22
         container_name: node
         command: /bin/true
         working_dir: /var/www
@@ -78,6 +78,16 @@ services:
                     - elasticsearch.musicall
         volumes:
             - es_files:/usr/share/elasticsearch/data:cached
+
+    valkey:
+        image: valkey/valkey:8-alpine
+        container_name: musicall-valkey
+        command: valkey-server --save "" --appendonly no
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.9
+                aliases:
+                    - valkey.musicall
 networks:
     musicall:
         name: musicall
