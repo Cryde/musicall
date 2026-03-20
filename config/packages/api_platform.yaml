@@ -24,6 +24,7 @@ api_platform:
     use_symfony_listeners: false
     exception_to_status:
         # Symfony
+        Symfony\Component\RateLimiter\Exception\RateLimitExceededException: 429
         Symfony\Component\Serializer\Exception\ExceptionInterface: 400
         Symfony\Component\Security\Core\Exception\AccessDeniedException: 401
         # Api platform specific

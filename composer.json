@@ -59,6 +59,7 @@
         "symfony/property-access": "^7.3.3",
         "symfony/property-info": "^7.3.5",
         "symfony/psr-http-message-bridge": "^7.3.0",
+        "symfony/rate-limiter": "^7.0.0",
         "symfony/runtime": "^7.3.4",
         "symfony/security-bundle": "^7.3.4",
         "symfony/serializer": "^7.3.5",

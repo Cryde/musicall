@@ -126,7 +126,9 @@ async function send() {
     })
     isSent.value = true
   } catch (e) {
-    if (e.response?.data?.violations) {
+    if (e.response?.status === 429) {
+      errors.value = ['Trop de messages envoyés. Veuillez réessayer plus tard.']
+    } else if (e.response?.data?.violations) {
       errors.value = e.response.data.violations.map((item) => item.message)
     } else {
       errors.value = ['Une erreur est survenue. Veuillez réessayer.']
