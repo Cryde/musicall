@@ -67,7 +67,7 @@
           />
           <InputText
             v-model="newLinkUrl"
-            placeholder="URL du profil"
+            placeholder="https://www.example.com"
             class="w-full"
             :disabled="isProcessing"
           />
@@ -205,10 +205,13 @@ async function addLink() {
   addLinkError.value = ''
   isAddingSocialLink.value = true
 
+  const url = newLinkUrl.value.trim()
+  const normalizedUrl = url.match(/^https?:\/\//) ? url : `https://${url}`
+
   try {
     await userProfileStore.addSocialLink({
       platform: newLinkPlatform.value,
-      url: newLinkUrl.value.trim()
+      url: normalizedUrl
     })
     newLinkPlatform.value = null
     newLinkUrl.value = ''

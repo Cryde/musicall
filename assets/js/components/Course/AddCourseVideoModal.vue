@@ -212,7 +212,13 @@ watch(videoUrl, (newUrl) => {
     return
   }
 
-  if (trimmedUrl.startsWith('https://') && trimmedUrl.includes('youtube')) {
+  // Auto-prepend https:// if user pastes a URL without scheme
+  if (!trimmedUrl.match(/^https?:\/\//) && (trimmedUrl.includes('youtube') || trimmedUrl.includes('youtu.be'))) {
+    videoUrl.value = `https://${trimmedUrl}`
+    return
+  }
+
+  if (trimmedUrl.startsWith('https://') && (trimmedUrl.includes('youtube') || trimmedUrl.includes('youtu.be'))) {
     debouncedFetchPreview(trimmedUrl)
   }
 })
