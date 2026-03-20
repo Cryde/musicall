@@ -15,3 +15,13 @@ framework:
             limit: 3
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        message_send:
+            policy: fixed_window
+            limit: 20
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
+        thread_creation:
+            policy: fixed_window
+            limit: 5
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"

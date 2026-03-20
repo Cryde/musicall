@@ -212,7 +212,11 @@ async function sendMessage() {
       router.push({ name: 'app_messages', params: { threadId } })
     }
   } catch (e) {
-    errorMessage.value = e.message || "Une erreur est survenue lors de l'envoi du message."
+    if (e.status === 429 || e.originalError?.response?.status === 429) {
+      errorMessage.value = 'Trop de messages envoyés. Veuillez patienter un instant.'
+    } else {
+      errorMessage.value = e.message || "Une erreur est survenue lors de l'envoi du message."
+    }
   } finally {
     isSending.value = false
   }

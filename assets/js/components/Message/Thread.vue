@@ -80,8 +80,13 @@
       <p v-if="isRecipientDeleted" class="text-sm text-surface-500 dark:text-surface-400 text-center">
         Vous ne pouvez plus envoyer de message à cet utilisateur.
       </p>
-      <div v-else class="flex gap-2">
+      <template v-else>
+        <Message v-if="sendError" severity="error" :closable="true" class="mb-2" @close="sendError = ''">
+          {{ sendError }}
+        </Message>
+        <div class="flex gap-2">
         <Textarea
+          ref="messageInput"
           v-model="content"
           :disabled="messageStore.isAddingMessage"
           placeholder="Votre message..."
@@ -95,7 +100,8 @@
           :disabled="!content.trim() || messageStore.isAddingMessage"
           @click="send"
         />
-      </div>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -110,6 +116,7 @@
 <script setup>
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
+import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Textarea from 'primevue/textarea'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
@@ -127,6 +134,8 @@ const securityStore = useUserSecurityStore()
 
 const content = ref('')
 const messagesContainer = ref(null)
+const messageInput = ref(null)
+const sendError = ref('')
 
 const otherParticipant = computed(() => {
   if (!messageStore.currentThread) return null
@@ -153,6 +162,7 @@ function autoLink(str) {
 async function send() {
   if (!content.value.trim() || messageStore.isAddingMessage) return
 
+  sendError.value = ''
   try {
     await messageStore.postMessageInThread({
       threadId: messageStore.currentThreadId,
@@ -161,8 +171,13 @@ async function send() {
     trackUmamiEvent('message-send')
     content.value = ''
     scrollToBottom()
+    nextTick(() => messageInput.value?.$el?.focus())
   } catch (e) {
-    console.error('Failed to send message:', e)
+    if (e.response?.status === 429) {
+      sendError.value = 'Trop de messages envoyés. Veuillez patienter un instant.'
+    } else {
+      console.error('Failed to send message:', e)
+    }
   }
 }
 
