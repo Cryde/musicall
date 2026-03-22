@@ -64,7 +64,9 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
             $email = mb_strtolower($identifier);
             $existingUser = $this->userRepository->findOneBy(['email' => $email]);
         } else {
+            // Username existence is guaranteed by InvitationIdentifierValidator
             $existingUser = $this->userRepository->findOneBy(['username' => $identifier]);
+            \assert($existingUser !== null);
             $email = mb_strtolower($existingUser->email);
         }
 
