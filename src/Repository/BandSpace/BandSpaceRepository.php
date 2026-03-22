@@ -24,7 +24,9 @@ class BandSpaceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('bs')
             ->innerJoin('bs.memberships', 'm')
+            ->addSelect('m')
             ->innerJoin('m.user', 'u')
+            ->addSelect('u')
             ->where('m.user = :user')
             ->setParameter('user', $user)
             ->orderBy('bs.creationDatetime', 'DESC')

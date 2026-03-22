@@ -74,7 +74,12 @@ const routes = [
       {
         path: ':id/parametres',
         name: 'app_band_parameters',
-        component: () => import('../views/BandSpace/Empty.vue')
+        component: () => import('../views/BandSpace/Settings.vue')
+      },
+      {
+        path: 'invitation/:token',
+        name: 'app_band_invitation',
+        component: () => import('../views/BandSpace/InvitationResponse.vue')
       }
     ]
   }

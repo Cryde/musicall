@@ -27,6 +27,6 @@ readonly class BandSpaceCollectionProvider implements ProviderInterface
         $user = $this->security->getUser();
         $bandSpaces = $this->bandSpaceRepository->findByUser($user);
 
-        return $this->bandSpaceBuilder->buildFromList($bandSpaces);
+        return $this->bandSpaceBuilder->buildFromList($bandSpaces, $user);
     }
 }

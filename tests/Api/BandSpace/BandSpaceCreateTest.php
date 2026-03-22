@@ -56,6 +56,7 @@ class BandSpaceCreateTest extends ApiTestCase
             '@type' => 'BandSpace',
             'id' => $bandSpace->id,
             'name' => 'The Rockers',
+            'role' => 'admin',
         ]);
     }
 

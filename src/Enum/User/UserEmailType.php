@@ -12,4 +12,5 @@ enum UserEmailType: string
     case INACTIVITY_REMINDER = 'inactivity_reminder';
     case EMAIL_CONFIRMATION_REMINDER = 'email_confirmation_reminder';
     case EMAIL_VERIFICATION_OTP = 'email_verification_otp';
+    case BAND_SPACE_INVITATION = 'band_space_invitation';
 }

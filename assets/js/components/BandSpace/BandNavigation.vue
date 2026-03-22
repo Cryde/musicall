@@ -1,7 +1,7 @@
 <template>
   <template v-if="currentSpaceId">
     <RouterLink
-      v-for="item in NAVIGATION_ITEMS"
+      v-for="item in visibleItems"
       :key="item.route"
       :to="{ name: item.route, params: { id: currentSpaceId } }"
       custom
@@ -27,8 +27,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
-import { NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
+import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
+import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
 
 defineProps({
   disabled: {
@@ -38,4 +40,13 @@ defineProps({
 })
 
 const { currentSpaceId } = useBandSpaceNavigation()
+const bandSpaceStore = useBandSpaceStore()
+
+const visibleItems = computed(() => {
+  const space = bandSpaceStore.getById(currentSpaceId.value)
+  if (space?.role === 'admin') {
+    return NAVIGATION_ITEMS
+  }
+  return NAVIGATION_ITEMS.filter((item) => item.route !== BAND_SPACE_ROUTES.PARAMETERS)
+})
 </script>

@@ -55,3 +55,8 @@ framework:
             limit: 4
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        band_space_invitation:
+            policy: fixed_window
+            limit: 10
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"

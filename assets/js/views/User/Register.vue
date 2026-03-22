@@ -78,6 +78,10 @@
           </p>
         </div>
 
+        <Message v-if="invitationBandSpaceName" severity="info" :closable="false" class="w-full">
+          Vous avez été invité à rejoindre <strong>{{ invitationBandSpaceName }}</strong>. Créez votre compte pour accepter l'invitation.
+        </Message>
+
         <Message v-if="globalError" severity="error" :closable="false" class="w-full">
           {{ globalError }}
         </Message>
@@ -233,10 +237,11 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import securityApi from '../../api/user/security.js'
 import emailVerificationApi from '../../api/user/emailVerification.js'
+import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
 
 useTitle('Créer un compte - MusicAll')
@@ -245,6 +250,8 @@ const route = useRoute()
 const router = useRouter()
 
 const returnUrl = computed(() => route.query.return_url || null)
+const invitationToken = computed(() => route.query.invitation_token || null)
+const invitationBandSpaceName = ref(null)
 
 const googleAuthUrl = computed(() => {
   if (returnUrl.value) {
@@ -315,6 +322,18 @@ function clearCountdowns() {
   if (resendTimer) clearInterval(resendTimer)
   if (expiryTimer) clearInterval(expiryTimer)
 }
+
+onMounted(async () => {
+  if (invitationToken.value) {
+    try {
+      const info = await bandSpaceSettingsApi.getInvitationInfo(invitationToken.value)
+      form.email = info.email
+      invitationBandSpaceName.value = info.band_space_name
+    } catch {
+      // Token invalid or expired — user can still register normally
+    }
+  }
+})
 
 onBeforeUnmount(() => {
   clearCountdowns()

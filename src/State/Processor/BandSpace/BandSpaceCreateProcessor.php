@@ -52,6 +52,6 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
         $this->entityManager->persist($creatorMembership);
         $this->entityManager->flush();
 
-        return $this->bandSpaceBuilder->buildItem($bandSpace);
+        return $this->bandSpaceBuilder->buildItem($bandSpace, Role::Admin);
     }
 }

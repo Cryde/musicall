@@ -1,0 +1,144 @@
+<?php declare(strict_types=1);
+
+namespace App\Tests\Integration\EventSubscriber;
+
+use App\Entity\User;
+use App\Entity\User\UserProfile;
+use App\Enum\BandSpace\InvitationStatus;
+use App\Enum\BandSpace\Role;
+use App\Event\UserRegisteredEvent;
+use App\Repository\BandSpace\BandSpaceInvitationRepository;
+use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Zenstruck\Foundry\Test\Factories;
+use Zenstruck\Foundry\Test\ResetDatabase;
+
+class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
+{
+    use ResetDatabase, Factories;
+
+    public function test_auto_accepts_pending_invitation_on_registration(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $invitation = BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace,
+            'invitedBy' => $admin,
+            'email' => 'newuser@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $newUser = new User();
+        $newUser->username = 'newuser';
+        $newUser->email = 'newuser@example.com';
+        $newUser->password = 'hashed';
+        $newUser->profile = new UserProfile();
+        $em->persist($newUser);
+        $em->flush();
+
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+
+        $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
+        $this->assertTrue($membershipRepo->isMember($bandSpace->_real(), $newUser));
+
+        $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
+        $updated = $invitationRepo->find($invitation->_real()->id);
+        $this->assertSame(InvitationStatus::Accepted, $updated->status);
+        $this->assertSame($newUser->id, $updated->existingUser->id);
+    }
+
+    public function test_auto_accepts_multiple_invitations(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace1 = BandSpaceFactory::new()->create();
+        $bandSpace2 = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace1, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace2, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace1,
+            'invitedBy' => $admin,
+            'email' => 'newuser@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+        BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace2,
+            'invitedBy' => $admin,
+            'email' => 'newuser@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $newUser = new User();
+        $newUser->username = 'newuser';
+        $newUser->email = 'newuser@example.com';
+        $newUser->password = 'hashed';
+        $newUser->profile = new UserProfile();
+        $em->persist($newUser);
+        $em->flush();
+
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+
+        $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
+        $this->assertTrue($membershipRepo->isMember($bandSpace1->_real(), $newUser));
+        $this->assertTrue($membershipRepo->isMember($bandSpace2->_real(), $newUser));
+    }
+
+    public function test_ignores_expired_invitations(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace,
+            'invitedBy' => $admin,
+            'email' => 'newuser@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('-1 day'),
+        ])->create();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $newUser = new User();
+        $newUser->username = 'newuser';
+        $newUser->email = 'newuser@example.com';
+        $newUser->password = 'hashed';
+        $newUser->profile = new UserProfile();
+        $em->persist($newUser);
+        $em->flush();
+
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+
+        $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
+        $this->assertFalse($membershipRepo->isMember($bandSpace->_real(), $newUser));
+    }
+
+    public function test_no_pending_invitations(): void
+    {
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $newUser = new User();
+        $newUser->username = 'newuser';
+        $newUser->email = 'newuser@example.com';
+        $newUser->password = 'hashed';
+        $newUser->profile = new UserProfile();
+        $em->persist($newUser);
+        $em->flush();
+
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+
+        // No exception thrown — just runs silently
+        $this->assertTrue(true);
+    }
+}
