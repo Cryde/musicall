@@ -10,6 +10,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\BandSpaceNoteFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Enum\BandSpace\MembershipStatus;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -413,6 +414,36 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $note = $note->_real();
 
         $this->client->loginUser($otherUser);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            ['title' => 'Hacked'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_update_inactive_member(): void
+    {
+        $inactiveUser = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $inactiveUser,
+            'status' => MembershipStatus::Left,
+        ])->create();
+
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+        ])->create();
+
+        $inactiveUser = $inactiveUser->_real();
+        $bandSpace = $bandSpace->_real();
+        $note = $note->_real();
+
+        $this->client->loginUser($inactiveUser);
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,

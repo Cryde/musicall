@@ -9,6 +9,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Enum\BandSpace\MembershipStatus;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -85,6 +86,25 @@ class BandSpaceGetTest extends ApiTestCase
             'status' => 403,
             'type' => '/errors/403',
         ]);
+    }
+
+    public function test_get_item_inactive_member(): void
+    {
+        $inactiveUser = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $inactiveUser,
+            'status' => MembershipStatus::Left,
+        ])->create();
+
+        $inactiveUser = $inactiveUser->_real();
+        $bandSpace = $bandSpace->_real();
+
+        $this->client->loginUser($inactiveUser);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
 }

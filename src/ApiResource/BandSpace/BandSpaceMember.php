@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\BandSpaceMemberDeleteProcessor;
 use App\State\Processor\BandSpace\BandSpaceMemberUpdateRoleProcessor;
@@ -28,6 +29,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_members_get_collection',
             provider: BandSpaceMemberCollectionProvider::class,
+            parameters: [
+                'include_inactive' => new QueryParameter(key: 'include_inactive'),
+            ],
         ),
         new Get(
             uriTemplate: '/band_spaces/{bandSpaceId}/members/{id}',
@@ -82,4 +86,7 @@ class BandSpaceMember
     public string $role;
 
     public string $creationDatetime;
+    #[Assert\Choice(choices: ['active', 'left', 'kicked'], message: 'Le statut doit être "active", "left" ou "kicked"')]
+    public string $status;
+    public ?string $leftDatetime = null;
 }

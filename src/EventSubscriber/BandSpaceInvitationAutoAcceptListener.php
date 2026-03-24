@@ -4,6 +4,7 @@ namespace App\EventSubscriber;
 
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Enum\BandSpace\InvitationStatus;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Event\UserRegisteredEvent;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
@@ -35,15 +36,23 @@ readonly class BandSpaceInvitationAutoAcceptListener
                 continue;
             }
 
-            $membership = new BandSpaceMembership();
-            $membership->bandSpace = $invitation->bandSpace;
-            $membership->user = $user;
-            $membership->role = Role::User;
+            $existingMembership = $this->membershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
+
+            if ($existingMembership) {
+                $existingMembership->status = MembershipStatus::Active;
+                $existingMembership->leftDatetime = null;
+                $existingMembership->role = Role::User;
+            } else {
+                $existingMembership = new BandSpaceMembership();
+                $existingMembership->bandSpace = $invitation->bandSpace;
+                $existingMembership->user = $user;
+                $existingMembership->role = Role::User;
+
+                $this->entityManager->persist($existingMembership);
+            }
 
             $invitation->status = InvitationStatus::Accepted;
             $invitation->existingUser = $user;
-
-            $this->entityManager->persist($membership);
         }
 
         $this->entityManager->flush();

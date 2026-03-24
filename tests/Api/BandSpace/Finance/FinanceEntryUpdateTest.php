@@ -1,0 +1,490 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Api\BandSpace\Finance;
+
+use App\Enum\BandSpace\FinanceEntryScope;
+use App\Enum\BandSpace\FinanceEntryStatus;
+use App\Enum\BandSpace\FinanceEntryType;
+use App\Repository\BandSpace\FinanceEntryRepository;
+use App\Tests\ApiTestAssertionsTrait;
+use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
+use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\User\UserFactory;
+use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Foundry\Test\Factories;
+use Zenstruck\Foundry\Test\ResetDatabase;
+
+class FinanceEntryUpdateTest extends ApiTestCase
+{
+    use ResetDatabase, Factories;
+    use ApiTestAssertionsTrait;
+
+    public function test_update_entry_label(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Ancien libellé',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+            'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $category = $category->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['label' => 'Nouveau libellé'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $updatedEntry = $entryRepository->find($entry->id);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            '@type' => 'FinanceEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'category_id' => $category->id,
+            'category_name' => 'Studio',
+            'label' => 'Nouveau libellé',
+            'type' => 'expense',
+            'status' => 'planned',
+            'amount' => 50000,
+            'amount_min' => null,
+            'amount_max' => null,
+            'date' => '2024-01-15',
+            'scope' => 'band',
+            'member_id' => null,
+            'member_name' => null,
+            'recurrence_id' => null,
+            'is_former_member' => false,
+            'split_warning' => false,
+            'creation_datetime' => '2024-02-01T10:00:00+00:00',
+            'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_update_entry_status(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mixage',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+            'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $category = $category->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['status' => 'paid'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $updatedEntry = $entryRepository->find($entry->id);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            '@type' => 'FinanceEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'category_id' => $category->id,
+            'category_name' => 'Studio',
+            'label' => 'Mixage',
+            'type' => 'expense',
+            'status' => 'paid',
+            'amount' => 50000,
+            'amount_min' => null,
+            'amount_max' => null,
+            'date' => '2024-01-15',
+            'scope' => 'band',
+            'member_id' => null,
+            'member_name' => null,
+            'recurrence_id' => null,
+            'is_former_member' => false,
+            'split_warning' => false,
+            'creation_datetime' => '2024-02-01T10:00:00+00:00',
+            'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_update_entry_amount(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mixage',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+            'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $category = $category->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['amount' => 75000],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $updatedEntry = $entryRepository->find($entry->id);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            '@type' => 'FinanceEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'category_id' => $category->id,
+            'category_name' => 'Studio',
+            'label' => 'Mixage',
+            'type' => 'expense',
+            'status' => 'planned',
+            'amount' => 75000,
+            'amount_min' => null,
+            'amount_max' => null,
+            'date' => '2024-01-15',
+            'scope' => 'band',
+            'member_id' => null,
+            'member_name' => null,
+            'recurrence_id' => null,
+            'is_former_member' => false,
+            'split_warning' => false,
+            'creation_datetime' => '2024-02-01T10:00:00+00:00',
+            'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_update_paid_entry_protected_fields(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['amount' => 99999],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function test_update_paid_entry_allows_status_change(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['status' => 'committed'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function test_update_personal_entry_by_non_owner(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $otherUser = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $otherUser])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mon achat perso',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'amount' => 80000,
+            'member' => $ownerMembership,
+        ])->create();
+
+        $otherUser = $otherUser->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($otherUser);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['label' => 'Tentative de modification'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_update_personal_entry_by_owner(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mon achat perso',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'amount' => 80000,
+            'member' => $ownerMembership,
+            'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
+        ])->create();
+
+        $owner = $owner->_real();
+        $bandSpace = $bandSpace->_real();
+        $ownerMembership = $ownerMembership->_real();
+        $category = $category->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($owner);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['label' => 'Nouveau libellé perso'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function test_update_status_forbidden_transition_paid_to_planned(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['status' => 'planned'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function test_update_status_allowed_transition_paid_to_committed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['status' => 'committed'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function test_update_status_allowed_transition_planned_to_paid(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['status' => 'paid'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+}

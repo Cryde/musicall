@@ -16,6 +16,8 @@ readonly class BandSpaceMemberBuilder
         $dto->username = $membership->user->username;
         $dto->role = $membership->role->value;
         $dto->creationDatetime = $membership->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->status = $membership->status->value;
+        $dto->leftDatetime = $membership->leftDatetime?->format(\DateTimeInterface::ATOM);
 
         return $dto;
     }

@@ -5,9 +5,15 @@ namespace App\State\Processor\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceMember;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\FinanceEntryScope;
+use App\Enum\BandSpace\FinanceEntryStatus;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -22,6 +28,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceAdminChecker $adminChecker,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private Security $security,
     ) {
     }
@@ -49,7 +56,34 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
             throw new ConflictHttpException('Vous ne pouvez pas vous exclure vous-même. Utilisez la fonction "Quitter"');
         }
 
-        $this->entityManager->remove($membership);
+        $membership->status = MembershipStatus::Kicked;
+        $membership->leftDatetime = new DateTime();
+
+        $this->deactivatePersonalRecurrences($membership);
+
         $this->entityManager->flush();
+    }
+
+    private function deactivatePersonalRecurrences(BandSpaceMembership $membership): void
+    {
+        $recurrences = $this->financeRecurrenceRepository->findActivePersonalByMember($membership);
+        $now = new DateTime();
+
+        foreach ($recurrences as $recurrence) {
+            $recurrence->isActive = false;
+            $recurrence->updateDatetime = new DateTime();
+
+            // Delete future planned entries
+            $this->entityManager->createQuery(
+                'DELETE FROM App\Entity\BandSpace\FinanceEntry e
+                 WHERE e.recurrence = :recurrence
+                 AND e.date > :now
+                 AND e.status = :status'
+            )
+            ->setParameter('recurrence', $recurrence)
+            ->setParameter('now', $now)
+            ->setParameter('status', FinanceEntryStatus::Planned)
+            ->execute();
+        }
     }
 }

@@ -10,6 +10,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\BandSpaceNoteFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Enum\BandSpace\MembershipStatus;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -118,6 +119,25 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = $bandSpace->_real();
 
         $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_get_collection_inactive_member(): void
+    {
+        $inactiveUser = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $inactiveUser,
+            'status' => MembershipStatus::Left,
+        ])->create();
+
+        $inactiveUser = $inactiveUser->_real();
+        $bandSpace = $bandSpace->_real();
+
+        $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);

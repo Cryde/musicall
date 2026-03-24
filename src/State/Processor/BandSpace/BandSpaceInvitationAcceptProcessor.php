@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\Invitation\BandSpaceInvitationAccept;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\InvitationStatus;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
@@ -55,14 +56,22 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
             throw new ConflictHttpException('Vous êtes déjà membre de ce Band Space');
         }
 
-        $membership = new BandSpaceMembership();
-        $membership->bandSpace = $invitation->bandSpace;
-        $membership->user = $user;
-        $membership->role = Role::User;
+        $existingMembership = $this->bandSpaceMembershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
+
+        if ($existingMembership) {
+            $existingMembership->status = MembershipStatus::Active;
+            $existingMembership->leftDatetime = null;
+            $existingMembership->role = Role::User;
+        } else {
+            $existingMembership = new BandSpaceMembership();
+            $existingMembership->bandSpace = $invitation->bandSpace;
+            $existingMembership->user = $user;
+            $existingMembership->role = Role::User;
+
+            $this->entityManager->persist($existingMembership);
+        }
 
         $invitation->status = InvitationStatus::Accepted;
-
-        $this->entityManager->persist($membership);
 
         try {
             $this->entityManager->flush();

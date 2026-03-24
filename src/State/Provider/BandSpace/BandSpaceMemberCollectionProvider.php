@@ -34,7 +34,8 @@ readonly class BandSpaceMemberCollectionProvider implements ProviderInterface
 
         [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
-        $memberships = $this->bandSpaceMembershipRepository->findByBandSpace($bandSpace);
+        $includeInactive = ($context['filters']['include_inactive'] ?? null) === 'true';
+        $memberships = $this->bandSpaceMembershipRepository->findByBandSpace($bandSpace, $includeInactive);
 
         return $this->bandSpaceMemberBuilder->buildList($memberships);
     }

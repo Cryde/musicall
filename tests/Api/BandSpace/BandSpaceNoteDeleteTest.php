@@ -11,6 +11,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\BandSpaceNoteFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -113,6 +114,31 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $note = $note->_real();
 
         $this->client->loginUser($otherUser);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_delete_inactive_member(): void
+    {
+        $inactiveUser = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $inactiveUser,
+            'status' => MembershipStatus::Left,
+        ])->create();
+
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Protected Note',
+        ])->create();
+
+        $inactiveUser = $inactiveUser->_real();
+        $bandSpace = $bandSpace->_real();
+        $note = $note->_real();
+
+        $this->client->loginUser($inactiveUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);

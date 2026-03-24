@@ -54,6 +54,8 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'username' => $admin->_real()->username,
                     'role' => 'admin',
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
+                    'status' => 'active',
+                    'left_datetime' => null,
                 ],
                 [
                     '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $memberMembership->_real()->id,
@@ -64,6 +66,8 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'username' => 'member_user',
                     'role' => 'user',
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
+                    'status' => 'active',
+                    'left_datetime' => null,
                 ],
             ],
             'totalItems' => 2,

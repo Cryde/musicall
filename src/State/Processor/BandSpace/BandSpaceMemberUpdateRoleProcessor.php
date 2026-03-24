@@ -6,12 +6,14 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
 use App\Service\Builder\BandSpace\BandSpaceMemberBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,6 +28,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private BandSpaceMemberBuilder $bandSpaceMemberBuilder,
         private Security $security,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -48,17 +51,29 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Membre introuvable');
         }
 
-        $newRole = Role::from($data->role);
+        $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
-        if ($newRole === Role::User
-            && $membership->role === Role::Admin
-            && $membership->user->id === $user->id
-            && $this->bandSpaceMembershipRepository->countAdmins($bandSpace) === 1
-        ) {
-            throw new ConflictHttpException('Vous ne pouvez pas vous rétrograder car vous êtes le seul administrateur');
+        if (array_key_exists('role', $requestPayload)) {
+            $newRole = Role::from($data->role);
+
+            if ($newRole === Role::User
+                && $membership->role === Role::Admin
+                && $membership->user->id === $user->id
+                && $this->bandSpaceMembershipRepository->countAdmins($bandSpace) === 1
+            ) {
+                throw new ConflictHttpException('Vous ne pouvez pas vous rétrograder car vous êtes le seul administrateur');
+            }
+
+            $membership->role = $newRole;
         }
 
-        $membership->role = $newRole;
+        if (array_key_exists('status', $requestPayload)) {
+            if ($data->status === 'active' && $membership->status !== MembershipStatus::Active) {
+                $membership->status = MembershipStatus::Active;
+                $membership->leftDatetime = null;
+            }
+        }
+
         $this->entityManager->flush();
 
         return $this->bandSpaceMemberBuilder->buildItem($membership);

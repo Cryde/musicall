@@ -11,7 +11,7 @@
     <Popover ref="popoverRef">
       <div class="flex flex-col sm:flex-row">
         <!-- Presets Panel -->
-        <div class="flex flex-col gap-1 p-3 sm:border-r border-b sm:border-b-0 border-surface-200 dark:border-surface-700 min-w-44">
+        <div class="flex flex-col gap-1 p-3 sm:border-r border-b sm:border-b-0 border-surface-200 dark:border-surface-700 min-w-0 sm:min-w-44">
           <span class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1 px-2">Période</span>
           <button
             v-for="preset in presets"
@@ -34,7 +34,7 @@
             v-model="dateRange"
             selectionMode="range"
             :manualInput="false"
-            :maxDate="today"
+            :maxDate="maxDate"
             :numberOfMonths="1"
             inline
             @update:modelValue="handleRangeChange"
@@ -55,7 +55,9 @@ import { fr } from 'date-fns/locale'
 
 const props = defineProps({
   from: { type: Date, required: true },
-  to: { type: Date, required: true }
+  to: { type: Date, required: true },
+  presets: { type: Array, default: null },
+  maxDate: { type: Date, default: null }
 })
 
 const emit = defineEmits(['apply'])
@@ -65,7 +67,7 @@ const today = startOfDay(new Date())
 const dateRange = ref([new Date(props.from), new Date(props.to)])
 const activePreset = ref(null)
 
-const presets = [
+const defaultPresets = [
   { key: 'today', label: "Aujourd'hui", from: () => today, to: () => today },
   { key: '7d', label: '7 derniers jours', from: () => subDays(today, 6), to: () => today },
   { key: '14d', label: '14 derniers jours', from: () => subDays(today, 13), to: () => today },
@@ -77,6 +79,8 @@ const presets = [
   { key: '2y', label: '2 dernières années', from: () => subYears(today, 2), to: () => today },
   { key: 'all', label: 'Depuis le début', from: () => new Date(2008, 3, 30), to: () => today },
 ]
+
+const presets = computed(() => props.presets ?? defaultPresets)
 
 const buttonLabel = computed(() => {
   return format(props.from, 'd MMM yyyy', { locale: fr }) + ' – ' + format(props.to, 'd MMM yyyy', { locale: fr })

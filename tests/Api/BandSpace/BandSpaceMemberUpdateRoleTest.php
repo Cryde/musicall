@@ -45,6 +45,8 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             'username' => 'member_user',
             'role' => 'admin',
             'creation_datetime' => '2024-01-02T10:00:00+00:00',
+            'status' => 'active',
+            'left_datetime' => null,
         ]);
     }
 
@@ -76,6 +78,8 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             'username' => 'admin2',
             'role' => 'user',
             'creation_datetime' => '2024-01-02T10:00:00+00:00',
+            'status' => 'active',
+            'left_datetime' => null,
         ]);
     }
 

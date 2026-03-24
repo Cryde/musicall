@@ -3,6 +3,7 @@
 namespace App\Entity\BandSpace;
 
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use DateTime;
@@ -38,8 +39,14 @@ class BandSpaceMembership
     #[ORM\Column(type: Types::STRING, nullable: false, enumType: Role::class)]
     public Role $role = Role::User;
 
+    #[ORM\Column(type: Types::STRING, nullable: false, enumType: MembershipStatus::class)]
+    public MembershipStatus $status = MembershipStatus::Active;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    public ?DateTimeInterface $leftDatetime = null;
 
     public function __construct()
     {

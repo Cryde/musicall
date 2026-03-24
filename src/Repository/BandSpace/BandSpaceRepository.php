@@ -4,6 +4,7 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -28,7 +29,9 @@ class BandSpaceRepository extends ServiceEntityRepository
             ->innerJoin('m.user', 'u')
             ->addSelect('u')
             ->where('m.user = :user')
+            ->andWhere('m.status = :status')
             ->setParameter('user', $user)
+            ->setParameter('status', MembershipStatus::Active)
             ->orderBy('bs.creationDatetime', 'DESC')
             ->getQuery()
             ->getResult();
