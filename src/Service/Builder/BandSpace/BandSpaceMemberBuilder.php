@@ -4,9 +4,17 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\BandSpace\BandSpaceMembership;
+use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class BandSpaceMemberBuilder
 {
+    public function __construct(
+        private UploaderHelper $uploaderHelper,
+        private CacheManager $cacheManager,
+    ) {
+    }
+
     public function buildItem(BandSpaceMembership $membership): BandSpaceMember
     {
         $dto = new BandSpaceMember();
@@ -15,6 +23,7 @@ readonly class BandSpaceMemberBuilder
         $dto->userId = (string) $membership->user->id;
         $dto->username = $membership->user->username;
         $dto->role = $membership->role->value;
+        $dto->profilePictureUrl = $this->buildProfilePictureUrl($membership);
         $dto->creationDatetime = $membership->creationDatetime->format(\DateTimeInterface::ATOM);
         $dto->status = $membership->status->value;
         $dto->leftDatetime = $membership->leftDatetime?->format(\DateTimeInterface::ATOM);
@@ -32,5 +41,20 @@ readonly class BandSpaceMemberBuilder
             fn(BandSpaceMembership $m): BandSpaceMember => $this->buildItem($m),
             $memberships
         );
+    }
+
+    private function buildProfilePictureUrl(BandSpaceMembership $membership): ?string
+    {
+        $profilePicture = $membership->user->profilePicture;
+        if (!$profilePicture) {
+            return null;
+        }
+
+        $path = $this->uploaderHelper->asset($profilePicture, 'imageFile');
+        if (!$path) {
+            return null;
+        }
+
+        return $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
     }
 }

@@ -85,6 +85,7 @@ class BandSpaceMember
     #[Assert\Choice(choices: ['admin', 'user'], message: 'Le rôle doit être "admin" ou "user"')]
     public string $role;
 
+    public ?string $profilePictureUrl = null;
     public string $creationDatetime;
     #[Assert\Choice(choices: ['active', 'left', 'kicked'], message: 'Le statut doit être "active", "left" ou "kicked"')]
     public string $status;
