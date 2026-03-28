@@ -1,13 +1,20 @@
 <template>
   <template v-if="!userSecurityStore.isAuthenticatedLoading">
-    <div v-if="userSecurityStore.isAuthenticated">
+    <div v-if="userSecurityStore.isAuthenticated" class="flex items-center gap-3 cursor-pointer" @click="toggle">
       <Avatar
+        v-if="userSecurityStore.profilePictureUrl"
+        :image="userSecurityStore.profilePictureUrl"
+        shape="circle"
+      />
+      <Avatar
+        v-else
         :label="userInitial"
         :style="getAvatarStyle(userSecurityStore.user?.username)"
-        class="mr-2 cursor-pointer"
         shape="circle"
-        @click="toggle"
       />
+      <span class="text-sm font-medium text-surface-700 dark:text-surface-200 lg:hidden">
+        {{ userSecurityStore.user?.username }}
+      </span>
       <Menu ref="menuRef" :popup="true" :model="menuItems" />
     </div>
     <div v-else class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-4">

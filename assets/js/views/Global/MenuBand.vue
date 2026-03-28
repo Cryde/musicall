@@ -49,7 +49,9 @@
         </RouterLink>
       </div>
 
-      <UserMenu />
+      <div class="border-t lg:border-t-0 border-surface-200 dark:border-surface-700 py-4 lg:py-0 mt-4 lg:mt-0 px-6 lg:px-0">
+        <UserMenu />
+      </div>
     </div>
   </nav>
 

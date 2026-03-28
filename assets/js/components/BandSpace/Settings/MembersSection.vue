@@ -70,7 +70,14 @@
           class="flex items-center justify-between p-3 rounded-lg bg-surface-50 dark:bg-surface-800"
         >
           <div class="flex items-center gap-3">
+            <img
+              v-if="member.profile_picture_url"
+              :src="member.profile_picture_url"
+              :alt="member.username"
+              class="w-8 h-8 rounded-full object-cover"
+            />
             <div
+              v-else
               class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-contrast text-sm font-semibold"
             >
               {{ member.username.charAt(0).toUpperCase() }}
