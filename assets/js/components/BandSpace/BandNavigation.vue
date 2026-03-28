@@ -9,7 +9,7 @@
     >
       <a
         :href="href"
-        @click="(e) => { if (!disabled) navigate(e) }"
+        @click="(e) => { if (!disabled) { navigate(e); emit('navigate') } }"
         :class="[
           'flex items-center gap-2 p-2 rounded-lg transition-colors duration-150 border w-full lg:w-auto',
           disabled
@@ -38,6 +38,8 @@ defineProps({
     default: false
   }
 })
+
+const emit = defineEmits(['navigate'])
 
 const { currentSpaceId } = useBandSpaceNavigation()
 const bandSpaceStore = useBandSpaceStore()

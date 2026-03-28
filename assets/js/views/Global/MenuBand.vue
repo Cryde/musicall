@@ -25,17 +25,18 @@
     </span>
 
     <div
+      ref="mobileMenu"
       class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow lg:shadow-none border lg:border-0 border-surface-800"
     >
       <div class="flex-1 flex items-start gap-4 px-6 lg:px-0 py-4 lg:py-0 flex-col lg:flex-row">
-        <BandSpaceSelector class="mr-2" />
+        <BandSpaceSelector class="mr-2" @navigate="closeMobileMenu" />
 
-        <BandNavigation :disabled="bandSpaceStore.isCreating" />
+        <BandNavigation :disabled="bandSpaceStore.isCreating" @navigate="closeMobileMenu" />
 
         <RouterLink :to="{ name: 'app_home' }" custom v-slot="{ href, navigate }">
           <a
             :href="href"
-            @click="(e) => { if (!bandSpaceStore.isCreating) navigate(e) }"
+            @click="(e) => { if (!bandSpaceStore.isCreating) { navigate(e); closeMobileMenu() } }"
             :class="[
               'flex items-center lg:ml-10 text-xs gap-2 p-2 rounded-lg transition-colors duration-150 border w-full lg:w-auto border-transparent',
               bandSpaceStore.isCreating
@@ -60,12 +61,20 @@ import BandNavigation from '../../components/BandSpace/BandNavigation.vue'
 import BandSpaceSelector from '../../components/BandSpace/BandSpaceSelector.vue'
 import CreateBandSpaceModal from '../../components/BandSpace/CreateBandSpaceModal.vue'
 import UserMenu from '../../components/BandSpace/UserMenu.vue'
+import { ref } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
 const bandSpaceStore = useBandSpaceStore()
 const { navigateToSpace } = useBandSpaceNavigation()
+const mobileMenu = ref(null)
+
+function closeMobileMenu() {
+  if (mobileMenu.value && window.innerWidth < 1024) {
+    mobileMenu.value.classList.add('hidden')
+  }
+}
 
 function handleBandSpaceCreated(newSpace) {
   navigateToSpace(newSpace.id, BAND_SPACE_ROUTES.DASHBOARD)

@@ -33,6 +33,8 @@ import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation
 import { BAND_SPACE_ROUTES, CREATE_ACTION_ID } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
+const emit = defineEmits(['navigate'])
+
 const bandSpaceStore = useBandSpaceStore()
 const { currentSpace, navigateToSpace } = useBandSpaceNavigation()
 
@@ -64,5 +66,6 @@ function handleSpaceChange(event) {
   }
 
   navigateToSpace(selected.id, BAND_SPACE_ROUTES.DASHBOARD)
+  emit('navigate')
 }
 </script>
