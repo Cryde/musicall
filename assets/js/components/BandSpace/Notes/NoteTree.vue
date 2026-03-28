@@ -23,35 +23,20 @@
         @node-select="handleSelect"
       >
         <template #default="{ node }">
-          <div class="flex items-center w-full group min-w-0">
+          <div class="flex items-center w-full min-w-0">
             <span class="text-sm min-w-0 flex-1 truncate">
               <span v-if="node.data.emoji" class="mr-1">{{ node.data.emoji }}</span>
               <span v-else class="mr-1 text-surface-400">📄</span>
               {{ node.label }}
             </span>
-            <div class="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                v-if="canCreateChild(node.key)"
-                v-tooltip.bottom="'Sous-note'"
-                icon="pi pi-plus"
-                severity="secondary"
-                text
-                rounded
-                size="small"
-                class="!w-6 !h-6"
-                @click.stop="emit('create-child', node.key)"
-              />
-              <Button
-                v-tooltip.bottom="'Supprimer'"
-                icon="pi pi-trash"
-                severity="danger"
-                text
-                rounded
-                size="small"
-                class="!w-6 !h-6"
-                @click.stop="emit('delete', node.key)"
-              />
-            </div>
+            <Button
+              icon="pi pi-ellipsis-h"
+              severity="secondary"
+              text
+              rounded
+              class="!w-8 !h-8 shrink-0 lg:opacity-0 transition-opacity note-tree-action"
+              @click.stop="openNodeMenu($event, node)"
+            />
           </div>
         </template>
       </Tree>
@@ -68,11 +53,13 @@
         />
       </div>
     </div>
+    <Menu ref="nodeMenu" :model="nodeMenuItems" :popup="true" />
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
+import Menu from 'primevue/menu'
 import Tree from 'primevue/tree'
 import { computed, ref, watch } from 'vue'
 
@@ -87,6 +74,30 @@ const emit = defineEmits(['select', 'create-root', 'create-child', 'delete'])
 
 const expandedKeys = ref({})
 const selectionKeys = ref({})
+const nodeMenu = ref(null)
+const nodeMenuItems = ref([])
+
+function openNodeMenu(event, node) {
+  const items = []
+
+  if (canCreateChild(node.key)) {
+    items.push({
+      label: 'Ajouter une sous-note',
+      icon: 'pi pi-plus',
+      command: () => emit('create-child', node.key)
+    })
+  }
+
+  items.push({
+    label: 'Supprimer',
+    icon: 'pi pi-trash',
+    class: 'text-red-500',
+    command: () => emit('delete', node.key)
+  })
+
+  nodeMenuItems.value = items
+  nodeMenu.value.toggle(event)
+}
 
 const depthMap = computed(() => {
   const map = {}
@@ -141,5 +152,40 @@ function handleSelect(node) {
 .note-tree .p-tree-node-label {
   min-width: 0 !important;
   overflow: hidden !important;
+  flex: 1 !important;
+}
+
+.note-tree.p-tree {
+  padding: 0 !important;
+  gap: 0 !important;
+}
+
+.note-tree .p-tree-root-children {
+  padding: 0 !important;
+  gap: 2px !important;
+}
+
+.note-tree .p-tree-node {
+  padding: 0 !important;
+}
+
+.note-tree .p-tree-node-content {
+  padding: 0.2rem 0.25rem !important;
+  gap: 0.25rem !important;
+  border-radius: 0.375rem;
+}
+
+.note-tree .p-tree-node-children {
+  padding-left: 0.75rem !important;
+  gap: 2px !important;
+}
+
+.note-tree .p-tree-node-toggle-button {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+.note-tree .p-tree-node-content:hover .note-tree-action {
+  opacity: 1;
 }
 </style>
