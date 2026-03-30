@@ -72,6 +72,11 @@ const routes = [
         component: () => import('../views/BandSpace/Empty.vue')
       },
       {
+        path: ':id/taches',
+        name: 'app_band_tasks',
+        component: () => import('../views/BandSpace/Tasks.vue')
+      },
+      {
         path: ':id/finances',
         name: 'app_band_finance',
         component: () => import('../views/BandSpace/Finance.vue')
