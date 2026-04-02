@@ -21,11 +21,6 @@ export default defineConfig({
         app: './assets/js/app.js',
         styles: './assets/style/style.css'
       },
-      output: {
-        manualChunks: {
-          vue: ['vue']
-        }
-      }
     }
   },
   server: {
