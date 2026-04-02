@@ -160,8 +160,9 @@
 import Menu from 'primevue/menu'
 import OverlayBadge from 'primevue/overlaybadge'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
@@ -169,6 +170,7 @@ import { getAvatarStyle } from '../../utils/avatar.js'
 const router = useRouter()
 const userSecurityStore = useUserSecurityStore()
 const notificationStore = useNotificationStore()
+const bandSpaceStore = useBandSpaceStore()
 
 const mobileMenu = ref(null)
 const searchDropdownWrapper = ref(null)
@@ -224,6 +226,16 @@ function handleClickOutside(event) {
     searchDropdownVisible.value = false
   }
 }
+
+watch(
+  () => userSecurityStore.isAuthenticated,
+  (authenticated) => {
+    if (authenticated) {
+      bandSpaceStore.loadMyBandSpaces()
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   if (userSecurityStore.isAuthenticated) {
@@ -321,22 +333,18 @@ const menuItems = computed(() => {
   ]
 })
 
-const navs = ref([
-  {
-    label: 'Accueil',
-    to: 'app_home'
-  },
-  {
-    label: 'Publications',
-    to: 'app_publications'
-  },
-  {
-    label: 'Cours',
-    to: 'app_course'
-  },
-  {
-    label: 'Forum',
-    to: 'app_forum_index'
+const navs = computed(() => {
+  const items = [
+    { label: 'Accueil', to: 'app_home' },
+    { label: 'Publications', to: 'app_publications' },
+    { label: 'Cours', to: 'app_course' },
+    { label: 'Forum', to: 'app_forum_index' }
+  ]
+
+  if (bandSpaceStore.hasSpaces) {
+    items.push({ label: 'Band Space', to: 'app_band_index' })
   }
-])
+
+  return items
+})
 </script>
