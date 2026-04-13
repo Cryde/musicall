@@ -11,7 +11,7 @@
       </Message>
 
       <div class="flex flex-col gap-1">
-        <label for="finance-label" class="text-sm font-medium">Libellé</label>
+        <label for="finance-label" class="text-sm font-medium">Libellé <span class="text-red-500">*</span></label>
         <InputText id="finance-label" v-model="form.label" placeholder="Ex : Location salle de répétition" />
       </div>
 
@@ -377,6 +377,10 @@ function buildPayload() {
 
 async function handleSave() {
   formError.value = null
+  if (!isEditMode.value && !props.categoryId && !form.categoryId) {
+    formError.value = 'Veuillez sélectionner une catégorie'
+    return
+  }
   try {
     const data = buildPayload()
     let entryId
