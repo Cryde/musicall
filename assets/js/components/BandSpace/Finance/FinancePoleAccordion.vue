@@ -29,6 +29,14 @@
           <p class="text-xs text-surface-500 mt-1">{{ progressPercent(pole) }}% payé</p>
         </div>
 
+        <!-- Entries at pole level -->
+        <EntryList
+          v-if="(entriesByCategory[pole.id] || []).length > 0 || pole.children.length === 0"
+          :entries="entriesByCategory[pole.id] || []"
+          :currentMembershipId="currentMembershipId"
+          @edit="(entry) => emit('edit-entry', entry)"
+        />
+
         <!-- Child categories -->
         <div v-if="pole.children.length > 0">
           <div v-for="child in pole.children" :key="child.id" class="mb-4 group">
@@ -55,15 +63,6 @@
               Ajouter une entrée
             </button>
           </div>
-        </div>
-
-        <!-- Entries at pole level (if no children) -->
-        <div v-else>
-          <EntryList
-            :entries="entriesByCategory[pole.id] || []"
-            :currentMembershipId="currentMembershipId"
-            @edit="(entry) => emit('edit-entry', entry)"
-          />
         </div>
 
         <!-- Pole-level actions -->
