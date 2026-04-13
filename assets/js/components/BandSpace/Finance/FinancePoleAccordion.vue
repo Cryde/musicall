@@ -101,9 +101,12 @@ import Button from 'primevue/button'
 import AccordionContent from 'primevue/accordioncontent'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionPanel from 'primevue/accordionpanel'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { effectiveAmount } from '../../../utils/currency.js'
 import EntryList from './EntryList.vue'
+
+const STORAGE_KEY_PREFIX = 'finance_open_panels_'
 
 const props = defineProps({
   poles: { type: Array, required: true },
@@ -113,7 +116,23 @@ const props = defineProps({
 
 const emit = defineEmits(['add-entry', 'edit-entry', 'add-category', 'delete-category'])
 
-const openPanels = ref([])
+const route = useRoute()
+const storageKey = STORAGE_KEY_PREFIX + route.params.id
+
+function loadOpenPanels() {
+  try {
+    const stored = localStorage.getItem(storageKey)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+const openPanels = ref(loadOpenPanels())
+
+watch(openPanels, (value) => {
+  localStorage.setItem(storageKey, JSON.stringify(value))
+}, { deep: true })
 
 const poleStats = computed(() => {
   const stats = new Map()

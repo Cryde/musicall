@@ -1,4 +1,4 @@
-import { endOfYear, format, startOfYear } from 'date-fns'
+import { endOfMonth, endOfYear, format, parseISO, startOfMonth, startOfYear } from 'date-fns'
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceFinanceApi from '../../api/bandSpace/band-space-finance.js'
@@ -129,6 +129,16 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     dateTo.value = to
   }
 
+  function expandDateRangeIfNeeded(entryDate) {
+    const date = typeof entryDate === 'string' ? parseISO(entryDate) : entryDate
+    if (date < dateFrom.value) {
+      dateFrom.value = startOfMonth(date)
+    }
+    if (date > dateTo.value) {
+      dateTo.value = endOfMonth(date)
+    }
+  }
+
   async function createCategory(bandSpaceId, data) {
     isCreating.value = true
     try {
@@ -166,6 +176,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     isCreating.value = true
     try {
       const newEntry = await bandSpaceFinanceApi.createEntry(bandSpaceId, data)
+      expandDateRangeIfNeeded(data.date)
       await loadEntries(bandSpaceId)
       await loadSummary(bandSpaceId)
       return newEntry
@@ -178,6 +189,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     isSaving.value = true
     try {
       const updated = await bandSpaceFinanceApi.updateEntry(bandSpaceId, entryId, data)
+      expandDateRangeIfNeeded(data.date)
       await loadEntries(bandSpaceId)
       await loadSummary(bandSpaceId)
       return updated

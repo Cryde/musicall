@@ -37,44 +37,9 @@
         />
       </div>
 
-      <div v-if="isDateRangeLoading">
-        <!-- Date range change skeleton -->
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <div v-for="i in 4" :key="i" class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
-            <Skeleton width="60%" height="0.875rem" class="mb-2" />
-            <Skeleton width="80%" height="1.5rem" />
-          </div>
-        </div>
-        <div class="flex flex-col lg:flex-row gap-6">
-          <div class="flex-1 min-w-0">
-            <div v-for="i in 3" :key="i" class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700 mb-3">
-              <div class="flex items-center justify-between mb-3">
-                <Skeleton width="40%" height="1rem" />
-                <Skeleton width="15%" height="0.875rem" />
-              </div>
-              <Skeleton width="100%" height="0.5rem" class="mb-3" />
-              <div v-for="j in 2" :key="j" class="flex items-center gap-3 py-2">
-                <Skeleton shape="circle" size="0.625rem" />
-                <Skeleton width="50%" height="0.875rem" />
-                <Skeleton width="20%" height="0.875rem" class="ml-auto" />
-              </div>
-            </div>
-          </div>
-          <div class="hidden lg:block w-80 flex-shrink-0">
-            <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
-              <Skeleton width="70%" height="0.875rem" class="mb-3" />
-              <Skeleton width="100%" height="0.5rem" class="mb-2" />
-              <Skeleton width="100%" height="0.5rem" class="mb-2" />
-              <Skeleton width="100%" height="0.5rem" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <FinanceMetricCards :summary="financeStore.summary" class="mb-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }" />
 
-      <template v-else>
-      <FinanceMetricCards :summary="financeStore.summary" class="mb-6" />
-
-      <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex flex-col lg:flex-row gap-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }">
         <div class="flex-1 min-w-0">
           <FinancePoleAccordion
             :poles="financeStore.categoryTree"
@@ -110,7 +75,6 @@
           />
         </div>
       </div>
-      </template>
     </div>
 
     <CreateCategoryDialog
@@ -149,9 +113,9 @@ import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { endOfMonth, endOfYear, startOfDay, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns'
+import { endOfMonth, endOfYear, format, startOfDay, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns'
 import { parseISO } from 'date-fns'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useRoute } from 'vue-router'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
@@ -198,11 +162,37 @@ const financePresets = computed(() => {
     { key: 'last_quarter', label: 'Trimestre dernier', from: () => quarterStart(today, -1), to: () => quarterEnd(today, -1) },
     { key: 'this_year', label: 'Cette année', from: () => startOfYear(today), to: () => endOfYear(today) },
     { key: 'last_year', label: 'Année dernière', from: () => startOfYear(subYears(today, 1)), to: () => endOfYear(subYears(today, 1)) },
-    { key: 'all', label: 'Depuis le début', from: () => minDate, to: () => maxDate },
+    { key: 'all', label: 'Depuis le début', from: () => minDate, to: () => maxDate > endOfYear(today) ? maxDate : endOfYear(today) },
   ]
 })
 
 const bandSpaceId = route.params.id
+const dateRangeStorageKey = `finance_date_range_${bandSpaceId}`
+
+function restoreDateRange() {
+  try {
+    const stored = localStorage.getItem(dateRangeStorageKey)
+    if (stored) {
+      const { from, to } = JSON.parse(stored)
+      financeStore.setDateRange(parseISO(from), parseISO(to))
+    }
+  } catch {
+    // ignore corrupt data
+  }
+}
+
+restoreDateRange()
+
+watch(
+  () => [financeStore.dateFrom, financeStore.dateTo],
+  ([from, to]) => {
+    localStorage.setItem(dateRangeStorageKey, JSON.stringify({
+      from: format(from, 'yyyy-MM-dd'),
+      to: format(to, 'yyyy-MM-dd')
+    }))
+  }
+)
+
 const drawerVisible = ref(false)
 const editingEntry = ref(null)
 const drawerCategoryId = ref(null)

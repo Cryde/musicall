@@ -25,10 +25,7 @@ export const SECTION_NAMES = {
 
 export const NAVIGATION_ITEMS = Object.freeze([
   { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD },
-  { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA },
   { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES },
-  { label: 'Social', route: BAND_SPACE_ROUTES.SOCIAL },
-  { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES },
   { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE },
   { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS }
 ])
