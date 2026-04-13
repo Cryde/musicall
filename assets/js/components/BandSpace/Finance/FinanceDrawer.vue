@@ -15,6 +15,18 @@
         <InputText id="finance-label" v-model="form.label" placeholder="Ex : Location salle de répétition" />
       </div>
 
+      <div v-if="showCategorySelect" class="flex flex-col gap-1">
+        <label for="finance-category" class="text-sm font-medium">Catégorie <span class="text-red-500">*</span></label>
+        <Select
+          id="finance-category"
+          v-model="form.categoryId"
+          :options="financeStore.categories"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Sélectionne une catégorie"
+        />
+      </div>
+
       <div class="flex flex-col gap-1">
         <label for="finance-type" class="text-sm font-medium">Type</label>
         <Select
@@ -171,6 +183,7 @@ import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import { format } from 'date-fns'
 import { computed, reactive, ref, watch } from 'vue'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
@@ -230,6 +243,8 @@ const statusOptions = [
   { label: 'Payé', value: 'paid' }
 ]
 
+const showCategorySelect = computed(() => !isEditMode.value && !props.categoryId)
+
 const scopeOptions = [
   { label: 'Groupe', value: 'band' },
   { label: 'Personnel', value: 'personal' }
@@ -242,6 +257,7 @@ const amountModeOptions = [
 
 const form = reactive({
   label: '',
+  categoryId: null,
   type: 'expense',
   status: 'planned',
   amountMode: 'exact',
@@ -292,10 +308,12 @@ watch(
       }
       form.date = new Date(props.entry.date)
       form.scope = props.entry.scope ?? 'band'
+      form.categoryId = props.entry.category_id ?? null
 
       await splitManagerRef.value?.reset(props.entry.id)
     } else {
       form.label = ''
+      form.categoryId = null
       form.type = 'expense'
       form.status = 'planned'
       form.amountMode = 'exact'
@@ -346,12 +364,12 @@ function buildPayload() {
     amount: form.amountMode === 'exact' && form.amountEuros != null ? currencyToCents(form.amountEuros) : null,
     amount_min: form.amountMode === 'range' && form.amountMinEuros != null ? currencyToCents(form.amountMinEuros) : null,
     amount_max: form.amountMode === 'range' && form.amountMaxEuros != null ? currencyToCents(form.amountMaxEuros) : null,
-    date: form.date ? form.date.toISOString().split('T')[0] : null,
+    date: form.date ? format(form.date, 'yyyy-MM-dd') : null,
     scope: form.scope
   }
 
   if (!isEditMode.value) {
-    data.category_id = props.categoryId
+    data.category_id = props.categoryId || form.categoryId
   }
 
   return data

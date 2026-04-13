@@ -35,6 +35,26 @@
           :presets="financePresets"
           @apply="handleDateRangeApply"
         />
+        <div class="flex items-center gap-1">
+          <Button
+            :icon="'pi pi-objects-column'"
+            size="small"
+            :severity="viewMode === 'categories' ? 'primary' : 'secondary'"
+            :outlined="viewMode !== 'categories'"
+            :text="viewMode !== 'categories'"
+            title="Vue par catégories"
+            @click="viewMode = 'categories'"
+          />
+          <Button
+            :icon="'pi pi-list'"
+            size="small"
+            :severity="viewMode === 'timeline' ? 'primary' : 'secondary'"
+            :outlined="viewMode !== 'timeline'"
+            :text="viewMode !== 'timeline'"
+            title="Vue chronologique"
+            @click="viewMode = 'timeline'"
+          />
+        </div>
       </div>
 
       <FinanceMetricCards :summary="financeStore.summary" class="mb-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }" />
@@ -42,6 +62,7 @@
       <div class="flex flex-col lg:flex-row gap-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }">
         <div class="flex-1 min-w-0">
           <FinancePoleAccordion
+            v-if="viewMode === 'categories'"
             :poles="financeStore.categoryTree"
             :entriesByCategory="financeStore.entriesByCategory"
             :currentMembershipId="financeStore.summary?.current_membership_id"
@@ -49,6 +70,15 @@
             @edit-entry="handleEditEntry"
             @add-category="handleAddCategory"
             @delete-category="handleDeleteCategory"
+          />
+          <FinanceTimeline
+            v-else
+            :entries="financeStore.entriesByDate"
+            :categories="financeStore.categories"
+            :currentMembershipId="financeStore.summary?.current_membership_id"
+            @edit-entry="handleEditEntry"
+            @add-entry="handleAddEntry(null)"
+            @add-category="handleAddCategory(null)"
           />
 
           <!-- Mobile: sidebar content below accordion -->
@@ -125,6 +155,7 @@ import FinanceDrawer from '../../components/BandSpace/Finance/FinanceDrawer.vue'
 import FinanceMetricCards from '../../components/BandSpace/Finance/FinanceMetricCards.vue'
 import FinancePoleAccordion from '../../components/BandSpace/Finance/FinancePoleAccordion.vue'
 import FinanceSidebar from '../../components/BandSpace/Finance/FinanceSidebar.vue'
+import FinanceTimeline from '../../components/BandSpace/Finance/FinanceTimeline.vue'
 import RecurrenceDrawer from '../../components/BandSpace/Finance/RecurrenceDrawer.vue'
 import RecurrenceList from '../../components/BandSpace/Finance/RecurrenceList.vue'
 import { useBandSpaceFinanceStore } from '../../store/bandSpace/bandSpaceFinance.js'
@@ -192,6 +223,13 @@ watch(
     }))
   }
 )
+
+const viewModeStorageKey = `finance_view_mode_${bandSpaceId}`
+const viewMode = ref(localStorage.getItem(viewModeStorageKey) || 'categories')
+
+watch(viewMode, (value) => {
+  localStorage.setItem(viewModeStorageKey, value)
+})
 
 const drawerVisible = ref(false)
 const editingEntry = ref(null)

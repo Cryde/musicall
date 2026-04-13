@@ -27,6 +27,10 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
 
   const categoryTree = computed(() => buildTree(categories.value))
 
+  const entriesByDate = computed(() =>
+    [...entries.value].sort((a, b) => b.date.localeCompare(a.date))
+  )
+
   const entriesByCategory = computed(() => {
     const map = {}
     for (const entry of entries.value) {
@@ -288,6 +292,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     dateFrom: readonly(dateFrom),
     dateTo: readonly(dateTo),
     categoryTree,
+    entriesByDate,
     entriesByCategory,
     loadCategories,
     loadEntries,
