@@ -80,6 +80,10 @@ class TaskCategoryResource
     #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
     public string $name;
 
+    #[Assert\Regex(
+        pattern: '/^#[0-9A-Fa-f]{6}$/',
+        message: 'La couleur doit être au format hexadécimal #RRGGBB'
+    )]
     public string $color;
     public string $creationDatetime;
     public ?string $updateDatetime = null;
