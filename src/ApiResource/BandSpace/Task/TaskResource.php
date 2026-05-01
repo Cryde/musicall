@@ -97,8 +97,8 @@ class TaskResource
     public string $priority;
 
     public ?string $dueDate = null;
-    public string $createdById;
-    public string $createdByUsername;
+    public ?string $createdById = null;
+    public ?string $createdByUsername = null;
     public ?string $categoryId = null;
     public ?string $categoryName = null;
 

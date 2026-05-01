@@ -44,7 +44,8 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
-        if ($task->createdBy->id !== $user->id && $membership->role !== Role::Admin) {
+        $isCreator = $task->createdBy !== null && $task->createdBy->id === $user->id;
+        if (!$isCreator && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer cette tâche');
         }
 

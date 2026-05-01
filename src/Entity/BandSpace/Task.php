@@ -53,8 +53,8 @@ class Task
     public ?DateTimeImmutable $dueDate = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    public User $createdBy;
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?User $createdBy = null;
 
     /**
      * @var Collection<int, User>
