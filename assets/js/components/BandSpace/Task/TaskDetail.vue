@@ -257,8 +257,14 @@ async function saveField(field, value) {
 }
 
 async function saveTitle() {
-  if (!editTitle.value.trim() || editTitle.value === task.value?.title) return
-  await saveField('title', editTitle.value.trim())
+  const trimmed = editTitle.value.trim()
+  if (!trimmed) {
+    toast.add({ severity: 'error', summary: 'Le titre ne peut pas être vide', life: 5000 })
+    editTitle.value = task.value?.title ?? ''
+    return
+  }
+  if (trimmed === task.value?.title) return
+  await saveField('title', trimmed)
 }
 
 async function saveDescription() {
