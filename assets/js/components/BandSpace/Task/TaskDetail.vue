@@ -243,7 +243,11 @@ async function loadDetails() {
     comments.value = c
     activities.value = a
   } catch {
-    // silently fail, detail data is supplementary
+    toast.add({
+      severity: 'warn',
+      summary: 'Impossible de charger les commentaires et activités',
+      life: 5000
+    })
   }
 }
 
