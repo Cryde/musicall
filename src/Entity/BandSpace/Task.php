@@ -43,10 +43,10 @@ class Task
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $description = null;
 
-    #[ORM\Column(type: Types::STRING, nullable: false, enumType: TaskStatus::class)]
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: false, enumType: TaskStatus::class)]
     public TaskStatus $status = TaskStatus::Todo;
 
-    #[ORM\Column(type: Types::STRING, nullable: false, enumType: TaskPriority::class)]
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: false, enumType: TaskPriority::class)]
     public TaskPriority $priority = TaskPriority::Normal;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
