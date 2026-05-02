@@ -126,6 +126,148 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertNull($refreshed->completedDatetime);
     }
 
+    public function test_archive_done_task_records_activity(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Mix final',
+            'status' => TaskStatus::Done,
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            ['archived' => true],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->_real()->id);
+        $this->assertNotNull($refreshed->archiveDatetime);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '@type' => 'Task',
+            'id' => (string) $task->_real()->id,
+            'band_space_id' => (string) $bandSpace->_real()->id,
+            'title' => 'Mix final',
+            'description' => null,
+            'status' => 'done',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->_real()->id,
+            'created_by_username' => $user->_real()->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => $refreshed->archiveDatetime->format(\DateTimeInterface::ATOM),
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+        ]);
+
+        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
+        $activities = $activityRepo->findByTask($task->_real());
+        $this->assertCount(1, $activities);
+        $this->assertSame('task_archived', $activities[0]->type);
+    }
+
+    public function test_archive_rejects_non_done_task(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            ['archived' => true],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->_real()->id);
+        $this->assertNull($refreshed->archiveDatetime);
+
+        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findByTask($task->_real()));
+    }
+
+    public function test_unarchive_records_activity(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Master cassette',
+            'status' => TaskStatus::Done,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            ['archived' => false],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->_real()->id);
+        $this->assertNull($refreshed->archiveDatetime);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '@type' => 'Task',
+            'id' => (string) $task->_real()->id,
+            'band_space_id' => (string) $bandSpace->_real()->id,
+            'title' => 'Master cassette',
+            'description' => null,
+            'status' => 'done',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->_real()->id,
+            'created_by_username' => $user->_real()->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+        ]);
+
+        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
+        $activities = $activityRepo->findByTask($task->_real());
+        $this->assertCount(1, $activities);
+        $this->assertSame('task_unarchived', $activities[0]->type);
+    }
+
     public function test_update_task_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();
