@@ -2,7 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
@@ -16,6 +19,28 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
+    }
+
+    /**
+     * @param string[] $userIds
+     * @return User[]
+     */
+    public function findActiveBandSpaceMembersByIds(BandSpace $bandSpace, array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('u')
+            ->innerJoin(BandSpaceMembership::class, 'm', 'WITH', 'm.user = u')
+            ->where('u.id IN (:userIds)')
+            ->andWhere('m.bandSpace = :bandSpace')
+            ->andWhere('m.status = :status')
+            ->setParameter('userIds', $userIds)
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getResult();
     }
 
     public function findByTokenAndLimitDatetime(

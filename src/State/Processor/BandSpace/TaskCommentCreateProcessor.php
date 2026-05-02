@@ -8,7 +8,6 @@ use App\ApiResource\BandSpace\Task\TaskCommentCreate;
 use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\BandSpace\TaskComment;
 use App\Entity\User;
-use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -30,7 +29,6 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private UserRepository $userRepository,
-        private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private MentionParserService $mentionParserService,
         private TaskActivityRecorder $taskActivityRecorder,
         private TaskCommentBuilder $taskCommentBuilder,
@@ -65,17 +63,8 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         $this->taskActivityRecorder->record($task, $user, 'comment_added');
 
         $mentionedUuids = $this->mentionParserService->extractMentions($data->content);
-        foreach ($mentionedUuids as $mentionedUuid) {
-            $mentionedUser = $this->userRepository->find($mentionedUuid);
-            if (!$mentionedUser) {
-                continue;
-            }
-
-            $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $mentionedUser);
-            if (!$membership) {
-                continue;
-            }
-
+        $mentionedMembers = $this->userRepository->findActiveBandSpaceMembersByIds($bandSpace, $mentionedUuids);
+        foreach ($mentionedMembers as $mentionedUser) {
             $this->taskActivityRecorder->record($task, $user, 'mention', [
                 'mentioned_user_id' => $mentionedUser->id,
                 'mentioned_username' => $mentionedUser->username,
