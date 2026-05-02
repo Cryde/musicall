@@ -110,4 +110,5 @@ class TaskResource
     public int $position = 0;
     public string $creationDatetime;
     public ?string $updateDatetime = null;
+    public int $commentCount = 0;
 }

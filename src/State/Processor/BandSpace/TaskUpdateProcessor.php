@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
 use App\Procedure\BandSpace\TaskUpdateProcedure;
+use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
@@ -23,6 +24,7 @@ readonly class TaskUpdateProcessor implements ProcessorInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
+        private TaskCommentRepository $taskCommentRepository,
         private TaskUpdateProcedure $taskUpdateProcedure,
         private TaskBuilder $taskBuilder,
         private Security $security,
@@ -51,6 +53,8 @@ readonly class TaskUpdateProcessor implements ProcessorInterface
 
         $task = $this->taskUpdateProcedure->update($task, $payload, $data, $bandSpace, $user);
 
-        return $this->taskBuilder->buildItem($task);
+        $counts = $this->taskCommentRepository->countByTaskIds([(string) $task->id]);
+
+        return $this->taskBuilder->buildItem($task, $counts[(string) $task->id] ?? 0);
     }
 }

@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
+use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
@@ -21,6 +22,7 @@ readonly class TaskItemProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
+        private TaskCommentRepository $taskCommentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -40,6 +42,8 @@ readonly class TaskItemProvider implements ProviderInterface
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
-        return $this->taskBuilder->buildItem($task);
+        $counts = $this->taskCommentRepository->countByTaskIds([(string) $task->id]);
+
+        return $this->taskBuilder->buildItem($task, $counts[(string) $task->id] ?? 0);
     }
 }

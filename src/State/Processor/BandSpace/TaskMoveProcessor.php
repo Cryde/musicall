@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\Task\TaskMove;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
 use App\Procedure\BandSpace\TaskMoveProcedure;
+use App\Repository\BandSpace\TaskCommentRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -21,6 +22,7 @@ readonly class TaskMoveProcessor implements ProcessorInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private TaskMoveProcedure $taskMoveProcedure,
+        private TaskCommentRepository $taskCommentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -49,6 +51,8 @@ readonly class TaskMoveProcessor implements ProcessorInterface
             $user,
         );
 
-        return $this->taskBuilder->buildItem($task);
+        $counts = $this->taskCommentRepository->countByTaskIds([(string) $task->id]);
+
+        return $this->taskBuilder->buildItem($task, $counts[(string) $task->id] ?? 0);
     }
 }

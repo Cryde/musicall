@@ -31,4 +31,30 @@ class TaskCommentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param string[] $taskIds
+     * @return array<string, int>
+     */
+    public function countByTaskIds(array $taskIds): array
+    {
+        if (count($taskIds) === 0) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('tc')
+            ->select('IDENTITY(tc.task) AS task_id, COUNT(tc.id) AS cnt')
+            ->where('tc.task IN (:ids)')
+            ->setParameter('ids', $taskIds)
+            ->groupBy('tc.task')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['task_id']] = (int) $row['cnt'];
+        }
+
+        return $counts;
+    }
 }

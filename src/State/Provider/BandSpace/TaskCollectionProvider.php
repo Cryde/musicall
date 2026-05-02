@@ -5,7 +5,9 @@ namespace App\State\Provider\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
+use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
@@ -20,6 +22,7 @@ readonly class TaskCollectionProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
+        private TaskCommentRepository $taskCommentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -50,6 +53,9 @@ readonly class TaskCollectionProvider implements ProviderInterface
             $archived,
         );
 
-        return $this->taskBuilder->buildFromList($tasks);
+        $taskIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);
+        $commentCounts = $this->taskCommentRepository->countByTaskIds($taskIds);
+
+        return $this->taskBuilder->buildFromList($tasks, $commentCounts);
     }
 }

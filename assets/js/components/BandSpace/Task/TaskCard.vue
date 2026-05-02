@@ -45,13 +45,27 @@
         </div>
       </div>
 
-      <span
-        v-if="task.due_date"
-        class="text-xs"
-        :class="isPastDue ? 'text-red-500 font-semibold' : 'text-surface-400'"
-      >
-        {{ formattedDueDate }}
-      </span>
+      <div class="flex items-center gap-2 text-xs text-surface-400">
+        <i
+          v-if="task.description"
+          class="pi pi-align-left"
+          title="Cette tâche a une description"
+        />
+        <span
+          v-if="task.comment_count > 0"
+          class="flex items-center gap-1"
+          :title="`${task.comment_count} commentaire${task.comment_count > 1 ? 's' : ''}`"
+        >
+          <i class="pi pi-comment" />
+          {{ task.comment_count }}
+        </span>
+        <span
+          v-if="task.due_date"
+          :class="isPastDue ? 'text-red-500 font-semibold' : ''"
+        >
+          {{ formattedDueDate }}
+        </span>
+      </div>
     </div>
   </div>
 </template>
