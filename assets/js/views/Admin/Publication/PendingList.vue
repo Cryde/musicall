@@ -1,11 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <div class="flex items-center gap-4">
-      <RouterLink :to="{ name: 'admin_dashboard' }" class="text-surface-500 hover:text-surface-700 dark:hover:text-surface-300">
-        <i class="pi pi-arrow-left" />
-      </RouterLink>
-      <h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100">Publications en attente de validation</h1>
-    </div>
+    <h1 class="text-3xl font-bold text-surface-900 dark:text-surface-100">Publications en attente de validation</h1>
 
     <DataTable
       :value="adminPublicationStore.pendingPublications"

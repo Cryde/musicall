@@ -1,26 +1,63 @@
-export default [
-  {
-    name: 'admin_dashboard',
-    path: 'admin',
-    component: () => import('../views/Admin/Dashboard.vue'),
-    meta: { isAuthRequired: true, isAdminRequired: true }
-  },
-  {
-    name: 'admin_users_dashboard',
-    path: 'admin/users',
-    component: () => import('../views/Admin/UserDashboard.vue'),
-    meta: { isAuthRequired: true, isAdminRequired: true }
-  },
-  {
-    name: 'admin_publications_pending',
-    path: 'admin/publications/pending',
-    component: () => import('../views/Admin/Publication/PendingList.vue'),
-    meta: { isAuthRequired: true, isAdminRequired: true }
-  },
-  {
-    name: 'admin_galleries_pending',
-    path: 'admin/galleries/pending',
-    component: () => import('../views/Admin/Gallery/PendingList.vue'),
-    meta: { isAuthRequired: true, isAdminRequired: true }
-  }
-]
+export default {
+  path: 'admin',
+  component: () => import('../components/AppAdminLayout.vue'),
+  meta: { isAuthRequired: true, isAdminRequired: true },
+  children: [
+    {
+      name: 'admin_dashboard',
+      path: '',
+      component: () => import('../views/Admin/Dashboard.vue')
+    },
+    {
+      name: 'admin_users_dashboard',
+      path: 'users',
+      component: () => import('../views/Admin/UserDashboard.vue')
+    },
+    {
+      name: 'admin_publications_index',
+      path: 'publications',
+      component: () => import('../views/Admin/Publications/Index.vue')
+    },
+    {
+      name: 'admin_publications_pending',
+      path: 'publications/pending',
+      component: () => import('../views/Admin/Publication/PendingList.vue')
+    },
+    {
+      name: 'admin_galleries_pending',
+      path: 'galleries/pending',
+      component: () => import('../views/Admin/Gallery/PendingList.vue')
+    },
+    {
+      name: 'admin_directory_coming_soon',
+      path: 'annuaire',
+      component: () => import('../views/Admin/ComingSoonPage.vue'),
+      props: {
+        title: 'Annuaire',
+        icon: 'pi-id-card',
+        description:
+          'Annonces musiciens, professeurs et autres profils — bientôt regroupés dans une vue unifiée.'
+      }
+    },
+    {
+      name: 'admin_forum_coming_soon',
+      path: 'forum',
+      component: () => import('../views/Admin/ComingSoonPage.vue'),
+      props: {
+        title: 'Forum',
+        icon: 'pi-comments',
+        description: 'Sujets, posts et modération du forum.'
+      }
+    },
+    {
+      name: 'admin_band_space_coming_soon',
+      path: 'band-spaces',
+      component: () => import('../views/Admin/ComingSoonPage.vue'),
+      props: {
+        title: 'Band Space',
+        icon: 'pi-objects-column',
+        description: 'Espaces de groupe et leurs activités.'
+      }
+    }
+  ]
+}

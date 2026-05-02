@@ -12,40 +12,18 @@
       />
     </div>
 
-    <!-- Quick Links -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <RouterLink
-        :to="{ name: 'admin_publications_pending' }"
-        class="flex items-center justify-between p-4 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
-      >
-        <div class="flex items-center gap-3">
-          <i class="pi pi-file-edit text-xl text-primary" />
-          <span class="font-medium">Publications en attente</span>
-        </div>
-        <Badge v-if="notificationStore.pendingPublications > 0" :value="notificationStore.pendingPublications" severity="warn" />
-      </RouterLink>
-
-      <RouterLink
-        :to="{ name: 'admin_galleries_pending' }"
-        class="flex items-center justify-between p-4 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
-      >
-        <div class="flex items-center gap-3">
-          <i class="pi pi-images text-xl text-primary" />
-          <span class="font-medium">Galeries en attente</span>
-        </div>
-        <Badge v-if="notificationStore.pendingGalleries > 0" :value="notificationStore.pendingGalleries" severity="warn" />
-      </RouterLink>
-
-      <RouterLink
-        :to="{ name: 'admin_users_dashboard' }"
-        class="flex items-center justify-between p-4 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
-      >
-        <div class="flex items-center gap-3">
-          <i class="pi pi-users text-xl text-primary" />
-          <span class="font-medium">Gestion des utilisateurs</span>
-        </div>
-        <i class="pi pi-arrow-right text-surface-400" />
-      </RouterLink>
+    <!-- Module entry points -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <AdminModuleCard
+        v-for="module in ADMIN_MODULES"
+        :key="module.key"
+        :label="module.label"
+        :description="module.description"
+        :icon="module.icon"
+        :color="module.color"
+        :route="module.route"
+        :badge-count="badgeCountFor(module)"
+      />
     </div>
 
     <!-- Loading State -->
@@ -427,8 +405,10 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { computed, onMounted, ref } from 'vue'
 import { format, subDays, eachDayOfInterval } from 'date-fns'
+import { ADMIN_MODULES } from '../../constants/admin.js'
 import { useNotificationStore } from '../../store/notification/notification.js'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
+import AdminModuleCard from '../../components/Admin/AdminModuleCard.vue'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
 import ComingSoonBadge from '../../components/Admin/ComingSoonBadge.vue'
@@ -446,6 +426,13 @@ const dateTo = ref(today)
 const allDates = computed(() =>
   eachDayOfInterval({ start: dateFrom.value, end: dateTo.value }).map((d) => format(d, 'yyyy-MM-dd'))
 )
+
+function badgeCountFor(module) {
+  if (module.key === 'publications') {
+    return notificationStore.pendingPublications + notificationStore.pendingGalleries
+  }
+  return 0
+}
 
 function formatNumber(num) {
   if (num >= 1000000) {
