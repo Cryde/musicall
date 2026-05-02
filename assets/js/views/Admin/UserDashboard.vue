@@ -50,13 +50,29 @@
       <!-- Date-filtered section -->
       <DateRangePicker :from="dateFrom" :to="dateTo" @apply="handleDateRangeApply" />
 
-      <TimeSeriesChart
-        title="Inscriptions"
-        icon="pi-user-plus"
-        color="#6366f1"
-        :series-data="dashboardStore.timeSeries.registrations"
-        :all-dates="allDates"
-      />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TimeSeriesChart
+          title="Inscriptions"
+          icon="pi-user-plus"
+          color="#6366f1"
+          :series-data="dashboardStore.timeSeries.registrations"
+          :all-dates="allDates"
+        />
+        <TimeSeriesChart
+          title="Connexions"
+          icon="pi-sign-in"
+          color="#22c55e"
+          :series-data="dashboardStore.timeSeries.logins"
+          :all-dates="allDates"
+        />
+        <TimeSeriesChart
+          title="Messages"
+          icon="pi-envelope"
+          color="#f59e0b"
+          :series-data="dashboardStore.timeSeries.messages"
+          :all-dates="allDates"
+        />
+      </div>
 
       <!-- Engagement & Retention Section -->
       <Panel header="Engagement & rétention" toggleable>
@@ -509,7 +525,8 @@ function loadDateFilteredData() {
   const from = formatDate(dateFrom.value)
   const to = formatDate(dateTo.value)
   dashboardStore.loadUserMetrics(from, to)
-  dashboardStore.loadTimeSeries('registrations', from, to)
+  const metricNames = ['registrations', 'logins', 'messages']
+  metricNames.forEach((metric) => dashboardStore.loadTimeSeries(metric, from, to))
 }
 
 function getRetentionClass(value) {
