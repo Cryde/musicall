@@ -44,6 +44,7 @@
             placeholder="0,00"
             class="w-20 sm:w-28"
             size="small"
+            :disabled="props.disabled"
           />
         </div>
 
@@ -81,7 +82,8 @@ const props = defineProps({
   bandSpaceId: { type: String, required: true },
   entryId: { type: String, default: null },
   amountEuros: { type: Number, default: null },
-  visible: { type: Boolean, default: false }
+  visible: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false }
 })
 
 const expanded = ref(false)

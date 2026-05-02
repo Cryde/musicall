@@ -22,6 +22,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<FinanceEntryResource, FinanceEntryResource>
@@ -72,11 +73,11 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
             $entry->status = $newStatus;
         }
 
-        $protectedFields = ['amount', 'amount_min', 'amount_max', 'type', 'category_id', 'date'];
+        $protectedFields = ['amount', 'amount_min', 'amount_max', 'type', 'category_id', 'date', 'label', 'scope', 'member_id'];
         if ($entry->status === FinanceEntryStatus::Paid) {
             foreach ($protectedFields as $field) {
                 if (array_key_exists($field, $requestPayload)) {
-                    throw new BadRequestHttpException('Impossible de modifier une entrée payée. Changez d\'abord le statut.');
+                    throw new UnprocessableEntityHttpException('Impossible de modifier une entrée payée. Repassez le statut à Engagé.');
                 }
             }
         }

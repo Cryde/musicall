@@ -42,7 +42,7 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording session',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'amount' => 50000,
         ])->create();
 
@@ -85,7 +85,7 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording session',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'amount' => 50000,
         ])->create();
 
@@ -104,6 +104,53 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_delete_split_on_paid_entry_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording session',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+        ])->create();
+
+        $split = FinanceEntrySplitFactory::new([
+            'entry' => $entry,
+            'member' => $membership,
+            'amount' => 25000,
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+        $split = $split->_real();
+
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Impossible de supprimer une répartition d\'une entrée payée. Repassez le statut à Engagé.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Impossible de supprimer une répartition d\'une entrée payée. Repassez le statut à Engagé.',
+        ]);
     }
 
     public function test_delete_split_inactive_member(): void
@@ -128,7 +175,7 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording session',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'amount' => 50000,
         ])->create();
 

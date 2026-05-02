@@ -15,6 +15,7 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\User\UserFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -228,7 +229,168 @@ class FinanceEntryUpdateTest extends ApiTestCase
         ]);
     }
 
-    public function test_update_paid_entry_protected_fields(): void
+    /**
+     * @return iterable<string, array{0: string, 1: int|string|null}>
+     */
+    public static function paidEntryProtectedFieldProvider(): iterable
+    {
+        yield 'label' => ['label', 'Nouveau libellé'];
+        yield 'amount' => ['amount', 99999];
+        yield 'amount_min' => ['amount_min', 1000];
+        yield 'amount_max' => ['amount_max', 2000];
+        yield 'type' => ['type', 'income'];
+        yield 'date' => ['date', '2024-12-31'];
+        yield 'scope' => ['scope', 'personal'];
+    }
+
+    #[DataProvider('paidEntryProtectedFieldProvider')]
+    public function test_update_paid_entry_each_protected_field_rejected(string $field, mixed $value): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+            'date' => new \DateTime('2024-01-15'),
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            [$field => $value],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+        ]);
+    }
+
+    public function test_update_paid_entry_member_id_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+        $membership = $membership->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['member_id' => (string) $membership->id],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+        ]);
+    }
+
+    public function test_update_paid_entry_category_id_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $otherCategory = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Backline',
+            'position' => 1,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+        $otherCategory = $otherCategory->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['category_id' => (string) $otherCategory->id],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+        ]);
+    }
+
+    public function test_update_paid_entry_unlock_with_amount_in_one_patch(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
@@ -257,11 +419,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
-            ['amount' => 99999],
+            ['status' => 'committed', 'amount' => 75000],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonContains(['status' => 'committed', 'amount' => 75000]);
     }
 
     public function test_update_paid_entry_allows_status_change(): void

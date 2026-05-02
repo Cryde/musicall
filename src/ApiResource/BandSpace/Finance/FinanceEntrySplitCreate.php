@@ -6,9 +6,11 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\FinanceEntrySplitCreateProcessor;
+use App\Validator\BandSpace\EntryNotPaid;
 use App\Validator\BandSpace\SplitNotPersonal;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[EntryNotPaid]
 #[SplitNotPersonal]
 #[Post(
     uriTemplate: '/band_spaces/{bandSpaceId}/finance/entries/{entryId}/splits',

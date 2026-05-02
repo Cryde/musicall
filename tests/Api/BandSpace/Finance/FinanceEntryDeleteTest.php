@@ -137,6 +137,47 @@ class FinanceEntryDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
+    public function test_delete_paid_entry_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mixage',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.',
+        ]);
+    }
+
     public function test_delete_personal_entry_by_non_owner(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

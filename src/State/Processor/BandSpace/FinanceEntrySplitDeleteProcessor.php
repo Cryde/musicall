@@ -6,12 +6,14 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceEntrySplitResource;
 use App\Entity\User;
+use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceEntrySplitRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<FinanceEntrySplitResource, void>
@@ -40,6 +42,10 @@ readonly class FinanceEntrySplitDeleteProcessor implements ProcessorInterface
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry) {
             throw new NotFoundHttpException('Entrée introuvable');
+        }
+
+        if ($entry->status === FinanceEntryStatus::Paid) {
+            throw new UnprocessableEntityHttpException('Impossible de supprimer une répartition d\'une entrée payée. Repassez le statut à Engagé.');
         }
 
         $split = $this->financeEntrySplitRepository->findOneByIdAndEntry((string) $uriVariables['id'], $entry);

@@ -17,6 +17,7 @@ use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntrySplitFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Validator\BandSpace\EntryNotPaidValidator;
 use App\Validator\BandSpace\SplitNotPersonalValidator;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -43,7 +44,7 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording session',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'amount' => 50000,
         ])->create();
 
@@ -100,7 +101,7 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording session',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'amount' => 50000,
         ])->create();
 
@@ -142,7 +143,7 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording session',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'amount' => 50000,
         ])->create();
 
@@ -180,7 +181,7 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'category' => $category,
             'label' => 'Recording',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Committed,
             'scope' => FinanceEntryScope::Band,
             'amount' => 10000,
         ])->create();
@@ -205,6 +206,59 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function test_create_split_on_paid_entry_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Recording session',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'amount' => 50000,
+        ])->create();
+
+        $user = $user->_real();
+        $bandSpace = $bandSpace->_real();
+        $membership = $membership->_real();
+        $entry = $entry->_real();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits',
+            ['member_id' => (string) $membership->id, 'amount' => 25000],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . EntryNotPaidValidator::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => '',
+                    'message' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+                    'code' => EntryNotPaidValidator::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'description' => 'Impossible de modifier une entrée payée. Repassez le statut à Engagé.',
+            'type' => '/validation_errors/' . EntryNotPaidValidator::ERROR_CODE,
+            'title' => 'An error occurred',
+        ]);
     }
 
     public function test_create_split_on_personal_entry(): void

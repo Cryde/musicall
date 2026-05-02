@@ -10,9 +10,13 @@
         {{ formError }}
       </Message>
 
+      <Message v-if="isLocked" severity="info" :closable="false" class="text-sm">
+        Cette entrée est verrouillée. Repassez le statut à « Engagé » pour la modifier.
+      </Message>
+
       <div class="flex flex-col gap-1">
         <label for="finance-label" class="text-sm font-medium">Libellé <span class="text-red-500">*</span></label>
-        <InputText id="finance-label" v-model="form.label" placeholder="Ex : Location salle de répétition" />
+        <InputText id="finance-label" v-model="form.label" :disabled="isLocked" placeholder="Ex : Location salle de répétition" />
       </div>
 
       <div v-if="showCategorySelect" class="flex flex-col gap-1">
@@ -24,6 +28,7 @@
           optionLabel="name"
           optionValue="id"
           placeholder="Sélectionne une catégorie"
+          :disabled="isLocked"
         />
       </div>
 
@@ -36,6 +41,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Sélectionne un type"
+          :disabled="isLocked"
         />
       </div>
 
@@ -80,6 +86,7 @@
           optionValue="value"
           :allowEmpty="false"
           class="text-sm"
+          :disabled="isLocked"
         />
         <div v-if="form.amountMode === 'exact'" class="flex flex-col gap-1">
           <InputNumber
@@ -89,6 +96,7 @@
             :maxFractionDigits="2"
             suffix=" €"
             placeholder="0,00"
+            :disabled="isLocked"
           />
         </div>
         <div v-else class="flex flex-col sm:flex-row gap-2">
@@ -99,6 +107,7 @@
             suffix=" €"
             placeholder="Min"
             class="flex-1"
+            :disabled="isLocked"
           />
           <InputNumber
             v-model="form.amountMaxEuros"
@@ -107,13 +116,14 @@
             suffix=" €"
             placeholder="Max"
             class="flex-1"
+            :disabled="isLocked"
           />
         </div>
       </div>
 
       <div class="flex flex-col gap-1">
         <label for="finance-date" class="text-sm font-medium">Date <span class="text-red-500">*</span></label>
-        <DatePicker id="finance-date" v-model="form.date" dateFormat="dd/mm/yy" showIcon />
+        <DatePicker id="finance-date" v-model="form.date" dateFormat="dd/mm/yy" showIcon :disabled="isLocked" />
       </div>
 
       <div class="flex flex-col gap-1">
@@ -125,6 +135,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Sélectionne la portée"
+          :disabled="isLocked"
         />
       </div>
 
@@ -140,11 +151,12 @@
         :entryId="isEditMode ? props.entry.id : null"
         :amountEuros="effectiveAmountEuros"
         :visible="props.visible"
+        :disabled="isLocked"
       />
 
       <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-4">
         <Button
-          v-if="canEditEntry"
+          v-if="canEditEntry && !isLocked"
           type="submit"
           label="Enregistrer"
           :loading="financeStore.isCreating || financeStore.isSaving"
@@ -157,7 +169,7 @@
           @click="visibleModel = false"
         />
         <Button
-          v-if="isEditMode && canEditEntry"
+          v-if="isEditMode && canEditEntry && !isLocked"
           type="button"
           label="Supprimer"
           severity="danger"
@@ -215,6 +227,7 @@ const canEditEntry = computed(() => {
   if (props.entry.scope !== 'personal') return true
   return props.entry.member_id === props.currentMembershipId
 })
+const isLocked = computed(() => isEditMode.value && form.status === 'paid')
 
 const typeOptions = [
   { label: 'Dépense', value: 'expense' },
@@ -345,7 +358,7 @@ function statusBadgeClass(status) {
   }
 }
 
-async function handleStatusTransition(newStatus) {
+async function applyStatusTransition(newStatus) {
   formError.value = null
   try {
     await financeStore.updateEntry(props.bandSpaceId, props.entry.id, { status: newStatus })
@@ -354,6 +367,21 @@ async function handleStatusTransition(newStatus) {
   } catch (error) {
     formError.value = error.message || 'Impossible de changer le statut'
   }
+}
+
+function handleStatusTransition(newStatus) {
+  if (form.status === 'paid') {
+    confirm.require({
+      message: 'Cette entrée sera marquée comme « Engagé » et redeviendra modifiable. Continuer ?',
+      header: 'Rouvrir l’entrée',
+      icon: 'pi pi-exclamation-triangle',
+      rejectLabel: 'Annuler',
+      acceptLabel: 'Rouvrir',
+      accept: () => applyStatusTransition(newStatus)
+    })
+    return
+  }
+  applyStatusTransition(newStatus)
 }
 
 function buildPayload() {
