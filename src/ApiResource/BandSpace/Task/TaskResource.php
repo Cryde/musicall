@@ -36,6 +36,7 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'assignee_id' => new QueryParameter(key: 'assignee_id'),
                 'priority' => new QueryParameter(key: 'priority'),
                 'archived' => new QueryParameter(key: 'archived'),
+                'query' => new QueryParameter(key: 'query'),
             ],
         ),
         new Get(

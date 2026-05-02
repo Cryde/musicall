@@ -188,6 +188,14 @@ watch(
   }
 )
 
+// Refetch tasks from the server when the search query changes
+watch(
+  () => tasksStore.filters.query,
+  () => {
+    tasksStore.fetchTasks(bandSpaceId)
+  }
+)
+
 function handleOpenTask(taskId) {
   router.replace({ query: { ...route.query, task: taskId } })
 }

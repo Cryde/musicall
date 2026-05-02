@@ -51,6 +51,7 @@ readonly class TaskCollectionProvider implements ProviderInterface
             $filters['assignee_id'] ?? null,
             $filters['priority'] ?? null,
             $archived,
+            $filters['query'] ?? null,
         );
 
         $taskIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);

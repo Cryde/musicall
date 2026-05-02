@@ -27,6 +27,7 @@ class TaskRepository extends ServiceEntityRepository
         ?string $assigneeId = null,
         ?string $priority = null,
         ?bool $archived = null,
+        ?string $query = null,
     ): array {
         $qb = $this->createQueryBuilder('t')
             ->addSelect('u', 'c', 'a')
@@ -62,6 +63,12 @@ class TaskRepository extends ServiceEntityRepository
         if ($priority !== null) {
             $qb->andWhere('t.priority = :priority')
                 ->setParameter('priority', $priority);
+        }
+
+        $trimmedQuery = $query !== null ? trim($query) : '';
+        if ($trimmedQuery !== '') {
+            $qb->andWhere('LOWER(t.title) LIKE :query OR LOWER(t.description) LIKE :query')
+                ->setParameter('query', '%' . mb_strtolower($trimmedQuery) . '%');
         }
 
         return $qb->getQuery()->getResult();

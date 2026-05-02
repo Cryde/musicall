@@ -1,5 +1,17 @@
 <template>
   <div class="flex items-center gap-3 flex-wrap mb-4">
+    <!-- Search -->
+    <IconField class="w-56">
+      <InputIcon class="pi pi-search" />
+      <InputText
+        v-model="searchInput"
+        placeholder="Rechercher…"
+        size="small"
+        class="w-full"
+        @input="emitSearchDebounced"
+      />
+    </IconField>
+
     <!-- Category filters -->
     <div class="flex items-center gap-1.5">
       <button
@@ -106,7 +118,12 @@
 </template>
 
 <script setup>
+import { useDebounceFn } from '@vueuse/core'
 import Button from 'primevue/button'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import InputText from 'primevue/inputtext'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   categories: { type: Array, default: () => [] },
@@ -115,6 +132,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update-filter', 'open-categories', 'create-task'])
+
+const searchInput = ref(props.filters.query ?? '')
+
+watch(
+  () => props.filters.query,
+  (val) => {
+    if (val !== searchInput.value) searchInput.value = val ?? ''
+  }
+)
+
+const emitSearchDebounced = useDebounceFn(() => {
+  emit('update-filter', 'query', searchInput.value)
+}, 300)
 
 const priorities = [
   { value: 'urgent', label: 'Urgent', activeClass: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-700' },

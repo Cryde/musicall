@@ -15,7 +15,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     assigneeId: null,
     priority: null,
     myTasks: false,
-    showArchived: false
+    showArchived: false,
+    query: ''
   })
 
   const isLoading = ref(false)
@@ -66,7 +67,11 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     isLoading.value = tasks.value.length === 0
     loadError.value = null
     try {
-      const result = await bandSpaceTasksApi.getTasks(bandSpaceId)
+      const trimmedQuery = filters.query.trim()
+      const result = await bandSpaceTasksApi.getTasks(
+        bandSpaceId,
+        trimmedQuery ? { query: trimmedQuery } : {}
+      )
       if (requestId === tasksRequestId) {
         tasks.value = result
       }
@@ -288,6 +293,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     filters.priority = null
     filters.myTasks = false
     filters.showArchived = false
+    filters.query = ''
     loadError.value = null
     isLoadingActiveTask.value = false
     activeTaskError.value = null
