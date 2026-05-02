@@ -11,7 +11,7 @@ export const ADMIN_MODULES = [
     key: 'directory',
     label: 'Annuaire',
     icon: 'pi-id-card',
-    route: 'admin_directory_coming_soon',
+    route: 'admin_annuaire_index',
     description: 'Annonces musiciens, professeurs et autres profils',
     color: '#22c55e'
   },

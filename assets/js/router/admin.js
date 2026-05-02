@@ -29,15 +29,9 @@ export default {
       component: () => import('../views/Admin/Gallery/PendingList.vue')
     },
     {
-      name: 'admin_directory_coming_soon',
+      name: 'admin_annuaire_index',
       path: 'annuaire',
-      component: () => import('../views/Admin/ComingSoonPage.vue'),
-      props: {
-        title: 'Annuaire',
-        icon: 'pi-id-card',
-        description:
-          'Annonces musiciens, professeurs et autres profils — bientôt regroupés dans une vue unifiée.'
-      }
+      component: () => import('../views/Admin/Annuaire/Index.vue')
     },
     {
       name: 'admin_forum_index',
