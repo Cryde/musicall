@@ -5,13 +5,12 @@
     </template>
 
     <div v-if="task" class="flex flex-col gap-5">
-      <!-- Title (inline edit) -->
+      <!-- Title (inline edit, save on Enter or via Save button) -->
       <div>
         <input
           v-model="editTitle"
           class="w-full text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1"
-          @blur="saveTitle"
-          @keydown.enter="$event.target.blur()"
+          @keydown.enter.prevent="saveTextFields"
         />
       </div>
 
@@ -81,17 +80,42 @@
         />
       </div>
 
-      <!-- Description -->
+      <!-- Description (explicit save) -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-surface-500">Description</label>
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-medium text-surface-500">Description</label>
+          <span
+            v-if="hasTextChanges"
+            class="text-xs text-amber-600 dark:text-amber-400"
+          >
+            Modifications non enregistrées
+          </span>
+        </div>
         <Textarea
           v-model="editDescription"
           rows="4"
           autoResize
           placeholder="Ajouter une description..."
           class="text-sm"
-          @blur="saveDescription"
         />
+        <div class="flex justify-end gap-2">
+          <Button
+            v-if="hasTextChanges"
+            label="Annuler"
+            severity="secondary"
+            text
+            size="small"
+            @click="resetTextFields"
+          />
+          <Button
+            label="Enregistrer"
+            size="small"
+            icon="pi pi-check"
+            :disabled="!hasTextChanges"
+            :loading="isSavingText"
+            @click="saveTextFields"
+          />
+        </div>
       </div>
 
       <!-- Separator -->
@@ -219,8 +243,26 @@ watch(
   }
 )
 
+// Tracks the id of the task currently reflected in the edit refs, so we can
+// distinguish "first load / switched task" (populate everything) from
+// "same task updated via auto-save" (preserve in-progress text edits).
+const lastPopulatedId = ref(null)
+
 watch(task, () => {
-  if (task.value) populateForm()
+  if (!task.value) return
+  if (lastPopulatedId.value !== task.value.id) {
+    populateForm()
+    return
+  }
+  if (hasTextChanges.value) {
+    editStatus.value = task.value.status
+    editPriority.value = task.value.priority
+    editCategoryId.value = task.value.category_id
+    editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
+    editAssigneeIds.value = task.value.assignees.map((a) => a.id)
+    return
+  }
+  populateForm()
 })
 
 function populateForm() {
@@ -232,6 +274,7 @@ function populateForm() {
   editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
   editAssigneeIds.value = task.value.assignees.map((a) => a.id)
   editDescription.value = task.value.description || ''
+  lastPopulatedId.value = task.value.id
 }
 
 async function loadDetails() {
@@ -254,26 +297,56 @@ async function loadDetails() {
 async function saveField(field, value) {
   try {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, { [field]: value })
+    toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 2000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
     populateForm()
   }
 }
 
-async function saveTitle() {
-  const trimmed = editTitle.value.trim()
-  if (!trimmed) {
-    toast.add({ severity: 'error', summary: 'Le titre ne peut pas être vide', life: 5000 })
-    editTitle.value = task.value?.title ?? ''
-    return
-  }
-  if (trimmed === task.value?.title) return
-  await saveField('title', trimmed)
+const isSavingText = ref(false)
+
+const hasTextChanges = computed(() => {
+  if (!task.value) return false
+  const trimmedTitle = editTitle.value.trim()
+  const titleChanged = trimmedTitle !== '' && trimmedTitle !== task.value.title
+  const descriptionChanged = editDescription.value !== (task.value.description || '')
+  return titleChanged || descriptionChanged
+})
+
+function resetTextFields() {
+  if (!task.value) return
+  editTitle.value = task.value.title
+  editDescription.value = task.value.description || ''
 }
 
-async function saveDescription() {
-  if (editDescription.value === (task.value?.description || '')) return
-  await saveField('description', editDescription.value || null)
+async function saveTextFields() {
+  if (!task.value) return
+
+  const trimmedTitle = editTitle.value.trim()
+  if (!trimmedTitle) {
+    toast.add({ severity: 'error', summary: 'Le titre ne peut pas être vide', life: 5000 })
+    editTitle.value = task.value.title
+    return
+  }
+
+  const payload = {}
+  if (trimmedTitle !== task.value.title) payload.title = trimmedTitle
+  if (editDescription.value !== (task.value.description || '')) {
+    payload.description = editDescription.value || null
+  }
+  if (Object.keys(payload).length === 0) return
+
+  isSavingText.value = true
+  try {
+    await tasksStore.updateTask(props.bandSpaceId, props.taskId, payload)
+    toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: e.message, life: 5000 })
+    populateForm()
+  } finally {
+    isSavingText.value = false
+  }
 }
 
 async function saveDueDate() {
@@ -288,6 +361,7 @@ async function saveAssignees() {
     await tasksStore.updateTask(props.bandSpaceId, props.taskId, {
       assignee_ids: editAssigneeIds.value
     })
+    toast.add({ severity: 'success', summary: 'Modifications enregistrées', life: 2000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
     populateForm()
