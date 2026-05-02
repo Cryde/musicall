@@ -83,13 +83,6 @@
           :all-dates="allDates"
         />
         <TimeSeriesChart
-          title="Posts forum"
-          icon="pi-comments"
-          color="#06b6d4"
-          :series-data="dashboardStore.timeSeries.forum_posts"
-          :all-dates="allDates"
-        />
-        <TimeSeriesChart
           title="Annonces musiciens"
           icon="pi-megaphone"
           color="#ec4899"
@@ -100,31 +93,6 @@
 
       <!-- Content Overview (date-filtered) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Forum -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-comments text-primary" />
-              <span>Forum</span>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
-              <ProgressSpinner style="width: 30px; height: 30px" />
-            </div>
-            <div v-else-if="contentOverview" class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-surface-600 dark:text-surface-400">Sujets créés</span>
-                <Badge :value="contentOverview.forum_topics_count" severity="secondary" />
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-surface-600 dark:text-surface-400">Posts publiés</span>
-                <Badge :value="contentOverview.forum_posts_count" severity="secondary" />
-              </div>
-            </div>
-          </template>
-        </Card>
-
         <!-- Musician Announces -->
         <Card>
           <template #title>
@@ -246,7 +214,7 @@ function formatDate(date) {
 function loadDateFilteredData() {
   const from = formatDate(dateFrom.value)
   const to = formatDate(dateTo.value)
-  const metricNames = ['registrations', 'logins', 'messages', 'forum_posts', 'musician_announces']
+  const metricNames = ['registrations', 'logins', 'messages', 'musician_announces']
   metricNames.forEach((metric) => dashboardStore.loadTimeSeries(metric, from, to))
   dashboardStore.loadContentOverview(from, to)
 }

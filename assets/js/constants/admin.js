@@ -19,7 +19,7 @@ export const ADMIN_MODULES = [
     key: 'forum',
     label: 'Forum',
     icon: 'pi-comments',
-    route: 'admin_forum_coming_soon',
+    route: 'admin_forum_index',
     description: 'Sujets, posts et modération du forum',
     color: '#06b6d4'
   },

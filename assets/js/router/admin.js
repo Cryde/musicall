@@ -40,14 +40,9 @@ export default {
       }
     },
     {
-      name: 'admin_forum_coming_soon',
+      name: 'admin_forum_index',
       path: 'forum',
-      component: () => import('../views/Admin/ComingSoonPage.vue'),
-      props: {
-        title: 'Forum',
-        icon: 'pi-comments',
-        description: 'Sujets, posts et modération du forum.'
-      }
+      component: () => import('../views/Admin/Forum/Index.vue')
     },
     {
       name: 'admin_band_space_coming_soon',
