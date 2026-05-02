@@ -83,20 +83,6 @@
           :all-dates="allDates"
         />
         <TimeSeriesChart
-          title="Publications"
-          icon="pi-file-edit"
-          color="#ef4444"
-          :series-data="dashboardStore.timeSeries.publications"
-          :all-dates="allDates"
-        />
-        <TimeSeriesChart
-          title="Commentaires"
-          icon="pi-comment"
-          color="#8b5cf6"
-          :series-data="dashboardStore.timeSeries.comments"
-          :all-dates="allDates"
-        />
-        <TimeSeriesChart
           title="Posts forum"
           icon="pi-comments"
           color="#06b6d4"
@@ -114,96 +100,6 @@
 
       <!-- Content Overview (date-filtered) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Publications by Type -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-chart-pie text-primary" />
-              <span>Publications par catégorie</span>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
-              <ProgressSpinner style="width: 30px; height: 30px" />
-            </div>
-            <div v-else-if="contentOverview && Object.keys(contentOverview.publications_by_type).length > 0" class="space-y-3">
-              <div
-                v-for="(count, category) in contentOverview.publications_by_type"
-                :key="category"
-                class="flex items-center justify-between"
-              >
-                <span class="text-surface-600 dark:text-surface-400 capitalize">{{ category }}</span>
-                <Badge :value="count" severity="secondary" />
-              </div>
-            </div>
-            <div v-else class="text-surface-400 text-center py-4">
-              Aucune donnée sur cette période
-            </div>
-          </template>
-        </Card>
-
-        <!-- Publications by Format -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-file text-primary" />
-              <span>Publications par format</span>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
-              <ProgressSpinner style="width: 30px; height: 30px" />
-            </div>
-            <div v-else-if="contentOverview && Object.keys(contentOverview.publications_by_format).length > 0" class="space-y-3">
-              <div
-                v-for="(count, format) in contentOverview.publications_by_format"
-                :key="format"
-                class="flex items-center justify-between"
-              >
-                <span class="text-surface-600 dark:text-surface-400 capitalize">{{ format }}</span>
-                <Badge :value="count" severity="secondary" />
-              </div>
-            </div>
-            <div v-else class="text-surface-400 text-center py-4">
-              Aucune donnée sur cette période
-            </div>
-          </template>
-        </Card>
-
-        <!-- Top Content -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-star text-primary" />
-              <span>Top contenu</span>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="dashboardStore.isLoadingContentOverview" class="flex justify-center py-4">
-              <ProgressSpinner style="width: 30px; height: 30px" />
-            </div>
-            <div v-else-if="contentOverview && contentOverview.top_content.length > 0" class="space-y-3">
-              <div
-                v-for="(content, index) in contentOverview.top_content"
-                :key="content.id"
-                class="flex items-center gap-3"
-              >
-                <span class="text-surface-400 font-mono">{{ index + 1 }}.</span>
-                <div class="flex-1 min-w-0">
-                  <p class="truncate font-medium">{{ content.title }}</p>
-                  <div class="flex items-center gap-2 text-sm text-surface-500">
-                    <Tag :value="content.type" size="small" />
-                    <span>{{ content.views }} vues</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-surface-400 text-center py-4">
-              Aucune publication sur cette période
-            </div>
-          </template>
-        </Card>
-
         <!-- Forum -->
         <Card>
           <template #title>
@@ -457,7 +353,7 @@ function formatDate(date) {
 function loadDateFilteredData() {
   const from = formatDate(dateFrom.value)
   const to = formatDate(dateTo.value)
-  const metricNames = ['registrations', 'logins', 'messages', 'publications', 'comments', 'forum_posts', 'musician_announces']
+  const metricNames = ['registrations', 'logins', 'messages', 'forum_posts', 'musician_announces']
   metricNames.forEach((metric) => dashboardStore.loadTimeSeries(metric, from, to))
   dashboardStore.loadContentOverview(from, to)
 }
