@@ -23,8 +23,11 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
   const isSaving = ref(false)
   const isDeleting = ref(false)
   const loadError = ref(null)
+  const isLoadingActiveTask = ref(false)
+  const activeTaskError = ref(null)
 
   let tasksRequestId = 0
+  let activeTaskRequestId = 0
 
   const tasksByStatus = computed(() => {
     const userSecurityStore = useUserSecurityStore()
@@ -74,6 +77,30 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     } finally {
       if (requestId === tasksRequestId) {
         isLoading.value = false
+      }
+    }
+  }
+
+  async function fetchTaskById(bandSpaceId, taskId) {
+    const requestId = ++activeTaskRequestId
+    isLoadingActiveTask.value = true
+    activeTaskError.value = null
+    try {
+      const fetched = await bandSpaceTasksApi.getTask(bandSpaceId, taskId)
+      if (requestId !== activeTaskRequestId) return
+      const target = fetched.archive_datetime ? archivedTasks : tasks
+      const existing = target.value.findIndex((t) => t.id === fetched.id)
+      if (existing === -1) {
+        target.value = [fetched, ...target.value]
+      } else {
+        target.value = target.value.map((t) => (t.id === fetched.id ? fetched : t))
+      }
+    } catch (e) {
+      if (requestId !== activeTaskRequestId) return
+      activeTaskError.value = e.status === 404 ? 'Tâche introuvable' : e.message
+    } finally {
+      if (requestId === activeTaskRequestId) {
+        isLoadingActiveTask.value = false
       }
     }
   }
@@ -224,8 +251,18 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     )
   }
 
-  function setActiveTask(taskId) {
+  function setActiveTask(taskId, bandSpaceId = null) {
     activeTaskId.value = taskId || null
+    if (!taskId) {
+      activeTaskError.value = null
+      isLoadingActiveTask.value = false
+      return
+    }
+    const alreadyLoaded =
+      tasks.value.some((t) => t.id === taskId) || archivedTasks.value.some((t) => t.id === taskId)
+    if (!alreadyLoaded && bandSpaceId) {
+      fetchTaskById(bandSpaceId, taskId)
+    }
   }
 
   function setFilter(key, value) {
@@ -244,6 +281,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     filters.myTasks = false
     filters.showArchived = false
     loadError.value = null
+    isLoadingActiveTask.value = false
+    activeTaskError.value = null
   }
 
   return {
@@ -258,9 +297,12 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     isSaving: readonly(isSaving),
     isDeleting: readonly(isDeleting),
     loadError: readonly(loadError),
+    isLoadingActiveTask: readonly(isLoadingActiveTask),
+    activeTaskError: readonly(activeTaskError),
     tasksByStatus,
     activeTask,
     fetchTasks,
+    fetchTaskById,
     fetchArchivedTasks,
     fetchCategories,
     fetchMembers,

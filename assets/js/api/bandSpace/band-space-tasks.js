@@ -14,6 +14,13 @@ export default {
       .catch(handleApiError)
   },
 
+  getTask(bandSpaceId, taskId) {
+    return axios
+      .get(Routing.generate('api_band_space_tasks_get_item', { bandSpaceId, id: taskId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   createTask(bandSpaceId, data) {
     return axios
       .post(

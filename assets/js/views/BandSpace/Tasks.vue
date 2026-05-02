@@ -159,7 +159,7 @@ watch(
   () => route.query.task,
   (taskId) => {
     if (taskId) {
-      tasksStore.setActiveTask(taskId)
+      tasksStore.setActiveTask(taskId, bandSpaceId)
       detailVisible.value = true
     } else {
       tasksStore.setActiveTask(null)

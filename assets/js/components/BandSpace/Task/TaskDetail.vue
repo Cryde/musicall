@@ -4,7 +4,26 @@
       <span class="text-base font-semibold">Détail de la tâche</span>
     </template>
 
-    <div v-if="task" class="flex flex-col gap-5">
+    <div
+      v-if="!task && tasksStore.isLoadingActiveTask"
+      class="flex flex-col gap-5"
+    >
+      <Skeleton width="60%" height="1.5rem" />
+      <div class="grid grid-cols-2 gap-3">
+        <Skeleton v-for="i in 4" :key="i" width="100%" height="2.5rem" borderRadius="0.375rem" />
+      </div>
+      <Skeleton width="100%" height="6rem" borderRadius="0.375rem" />
+    </div>
+
+    <div
+      v-else-if="!task && tasksStore.activeTaskError"
+      class="flex flex-col items-center justify-center gap-4 py-10"
+    >
+      <Message severity="error" :closable="false">{{ tasksStore.activeTaskError }}</Message>
+      <Button label="Fermer" severity="secondary" text @click="visibleModel = false" />
+    </div>
+
+    <div v-else-if="task" class="flex flex-col gap-5">
       <!-- Title (inline edit, save on Enter or via Save button) -->
       <div>
         <input
@@ -173,8 +192,10 @@ import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
+import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
+import Skeleton from 'primevue/skeleton'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
@@ -230,15 +251,17 @@ const priorityOptions = [
   { label: 'Urgent', value: 'urgent' }
 ]
 
+// Track which task id we've loaded comments/activities for, so we don't
+// refetch on every task update (e.g. after saveField).
+const detailsLoadedFor = ref(null)
+
 watch(
   () => props.visible,
-  async (val) => {
-    if (val && props.taskId) {
-      populateForm()
-      await loadDetails()
-    } else {
+  (val) => {
+    if (!val) {
       comments.value = []
       activities.value = []
+      detailsLoadedFor.value = null
     }
   }
 )
@@ -248,8 +271,12 @@ watch(
 // "same task updated via auto-save" (preserve in-progress text edits).
 const lastPopulatedId = ref(null)
 
-watch(task, () => {
+watch(task, async () => {
   if (!task.value) return
+  if (props.visible && detailsLoadedFor.value !== task.value.id) {
+    detailsLoadedFor.value = task.value.id
+    await loadDetails()
+  }
   if (lastPopulatedId.value !== task.value.id) {
     populateForm()
     return
