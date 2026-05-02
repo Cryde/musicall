@@ -91,6 +91,11 @@ readonly class TaskUpdateProcedure
         }
 
         $task->status = TaskStatus::from($newStatus);
+        if ($task->status === TaskStatus::Done) {
+            $task->completedDatetime = new DateTimeImmutable();
+        } else {
+            $task->completedDatetime = null;
+        }
         $this->taskActivityRecorder->record($task, $user, 'status_changed', [
             'from' => $oldStatus,
             'to' => $newStatus,

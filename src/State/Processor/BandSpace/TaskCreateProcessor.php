@@ -56,6 +56,9 @@ readonly class TaskCreateProcessor implements ProcessorInterface
         $task->title = $data->title;
         $task->description = $data->description;
         $task->status = TaskStatus::from($data->status);
+        if ($task->status === TaskStatus::Done) {
+            $task->completedDatetime = new \DateTimeImmutable();
+        }
         $task->priority = TaskPriority::from($data->priority);
         $task->createdBy = $user;
 

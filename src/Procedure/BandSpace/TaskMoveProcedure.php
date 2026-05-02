@@ -9,6 +9,7 @@ use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\BandSpace\TaskActivityRecorder;
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -49,6 +50,11 @@ readonly class TaskMoveProcedure
             $oldStatus = $task->status->value;
             if ($oldStatus !== $newStatus) {
                 $task->status = TaskStatus::from($newStatus);
+                if ($task->status === TaskStatus::Done) {
+                    $task->completedDatetime = new DateTimeImmutable();
+                } else {
+                    $task->completedDatetime = null;
+                }
                 $this->taskActivityRecorder->record($task, $user, 'status_changed', [
                     'from' => $oldStatus,
                     'to' => $newStatus,

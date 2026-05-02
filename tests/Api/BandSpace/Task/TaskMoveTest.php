@@ -111,6 +111,32 @@ class TaskMoveTest extends ApiTestCase
         $this->assertCount(0, $activityRepo->findByTask($taskA->_real()));
     }
 
+    public function test_move_task_to_done_sets_completed_datetime(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
+        $taskId = (string) $task->_real()->id;
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            [
+                'task_id' => $taskId,
+                'status' => 'done',
+                'positions' => [['id' => $taskId, 'position' => 0]],
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $taskRepo = self::getContainer()->get(TaskRepository::class);
+        $this->assertNotNull($taskRepo->find($taskId)->completedDatetime);
+    }
+
     public function test_move_task_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

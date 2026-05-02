@@ -64,8 +64,8 @@ const isDoneColumn = computed(() => props.status === 'done')
 const visibleTasks = computed(() => {
   if (!isDoneColumn.value) return localTasks.value
   const sorted = [...localTasks.value].sort((a, b) => {
-    const dateA = a.update_datetime || a.creation_datetime
-    const dateB = b.update_datetime || b.creation_datetime
+    const dateA = a.completed_datetime || a.update_datetime || a.creation_datetime
+    const dateB = b.completed_datetime || b.update_datetime || b.creation_datetime
     return new Date(dateB) - new Date(dateA)
   })
   return sorted.slice(0, MAX_DONE_VISIBLE)

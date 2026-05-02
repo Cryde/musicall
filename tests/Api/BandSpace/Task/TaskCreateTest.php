@@ -56,6 +56,7 @@ class TaskCreateTest extends ApiTestCase
             'category_name' => null,
             'assignees' => [],
             'archive_datetime' => null,
+            'completed_datetime' => null,
             'position' => 0,
             'creation_datetime' => $task->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,

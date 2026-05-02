@@ -70,6 +70,9 @@ class Task
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $archiveDatetime = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $completedDatetime = null;
+
     #[ORM\Column(type: Types::INTEGER)]
     public int $position = 0;
 

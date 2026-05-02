@@ -75,6 +75,57 @@ class TaskUpdateTest extends ApiTestCase
         ]);
     }
 
+    public function test_completed_datetime_set_when_moving_to_done(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            ['status' => 'done'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->_real()->id);
+        $this->assertNotNull($refreshed->completedDatetime);
+    }
+
+    public function test_completed_datetime_cleared_when_leaving_done(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Done,
+            'completedDatetime' => new \DateTimeImmutable('2026-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            ['status' => 'in_progress'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->_real()->id);
+        $this->assertNull($refreshed->completedDatetime);
+    }
+
     public function test_update_task_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

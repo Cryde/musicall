@@ -106,6 +106,7 @@ class TaskResource
     public array $assignees = [];
 
     public ?string $archiveDatetime = null;
+    public ?string $completedDatetime = null;
     public int $position = 0;
     public string $creationDatetime;
     public ?string $updateDatetime = null;
