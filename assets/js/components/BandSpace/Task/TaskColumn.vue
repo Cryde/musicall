@@ -19,8 +19,9 @@
         v-for="task in visibleTasks"
         :key="task.id"
         :task="task"
+        :band-space-id="bandSpaceId"
         :category-color="getCategoryColor(task.category_id)"
-        @click="$emit('open-task', task.id)"
+        @open-task="$emit('open-task', $event)"
       />
     </VueDraggable>
 
@@ -45,7 +46,8 @@ const props = defineProps({
   status: { type: String, required: true },
   tasks: { type: Array, required: true },
   label: { type: String, required: true },
-  categories: { type: Array, default: () => [] }
+  categories: { type: Array, default: () => [] },
+  bandSpaceId: { type: String, required: true }
 })
 
 const emit = defineEmits(['open-task', 'reorder', 'status-change', 'show-all-done'])

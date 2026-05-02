@@ -7,6 +7,7 @@
       :tasks="col.tasks"
       :label="col.label"
       :categories="categories"
+      :band-space-id="bandSpaceId"
       @open-task="$emit('open-task', $event)"
       @reorder="(status, ids) => $emit('reorder', status, ids)"
       @status-change="(taskId, status, newIndex) => $emit('status-change', taskId, status, newIndex)"
@@ -21,7 +22,8 @@ import TaskColumn from './TaskColumn.vue'
 
 const props = defineProps({
   tasksByStatus: { type: Object, required: true },
-  categories: { type: Array, default: () => [] }
+  categories: { type: Array, default: () => [] },
+  bandSpaceId: { type: String, required: true }
 })
 
 defineEmits(['open-task', 'reorder', 'status-change', 'show-all-done'])

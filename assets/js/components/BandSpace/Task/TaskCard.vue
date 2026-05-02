@@ -2,6 +2,7 @@
   <div
     :data-task-id="task.id"
     class="bg-surface-0 dark:bg-surface-900 rounded-lg p-3 cursor-pointer hover:ring-1 hover:ring-primary-300 transition-shadow shadow-sm border border-surface-200 dark:border-surface-700"
+    @click="emit('open-task', task.id)"
   >
     <p class="font-medium text-sm text-surface-800 dark:text-surface-100">{{ task.title }}</p>
 
@@ -51,14 +52,23 @@
           class="pi pi-align-left"
           title="Cette tâche a une description"
         />
-        <span
+        <button
           v-if="task.comment_count > 0"
-          class="flex items-center gap-1"
+          type="button"
+          class="flex items-center gap-1 hover:text-primary transition-colors"
           :title="`${task.comment_count} commentaire${task.comment_count > 1 ? 's' : ''}`"
+          @click.stop="popoverRef?.toggle($event)"
         >
           <i class="pi pi-comment" />
           {{ task.comment_count }}
-        </span>
+        </button>
+        <TaskCommentPopover
+          v-if="task.comment_count > 0"
+          ref="popoverRef"
+          :task-id="task.id"
+          :band-space-id="bandSpaceId"
+          @open-task="emit('open-task', $event)"
+        />
         <span
           v-if="task.due_date"
           :class="isPastDue ? 'text-red-500 font-semibold' : ''"
@@ -71,12 +81,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import TaskCommentPopover from './TaskCommentPopover.vue'
 
 const props = defineProps({
   task: { type: Object, required: true },
-  categoryColor: { type: String, default: null }
+  categoryColor: { type: String, default: null },
+  bandSpaceId: { type: String, required: true }
 })
+
+const emit = defineEmits(['open-task'])
+
+const popoverRef = ref()
 
 const MAX_AVATARS = 3
 

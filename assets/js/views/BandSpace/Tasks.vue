@@ -99,6 +99,7 @@
         v-else
         :tasks-by-status="tasksStore.tasksByStatus"
         :categories="tasksStore.categories"
+        :band-space-id="bandSpaceId"
         @open-task="handleOpenTask"
         @reorder="handleReorder"
         @status-change="handleStatusChange"
