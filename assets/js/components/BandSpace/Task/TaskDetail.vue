@@ -1,5 +1,5 @@
 <template>
-  <Drawer v-model:visible="visibleModel" position="right" class="w-full md:w-[32rem]">
+  <Drawer v-model:visible="visibleModel" position="right" class="w-full md:w-[48rem]!">
     <template #header>
       <span class="text-base font-semibold">Détail de la tâche</span>
     </template>
