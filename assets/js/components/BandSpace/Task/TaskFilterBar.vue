@@ -40,16 +40,21 @@
       <button
         v-for="member in members"
         :key="member.id"
-        class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold transition-all"
+        type="button"
+        class="rounded-full transition-all"
         :class="
           filters.assigneeId === member.user_id
-            ? 'ring-2 ring-primary bg-primary text-primary-contrast'
-            : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-300 hover:ring-1 hover:ring-surface-400'
+            ? 'ring-2 ring-primary'
+            : 'hover:ring-1 hover:ring-surface-400'
         "
         :title="member.username"
         @click="toggleFilter('assigneeId', member.user_id)"
       >
-        {{ member.username.charAt(0).toUpperCase() }}
+        <Avatar
+          :username="member.username"
+          :picture-url="member.profile_picture_url"
+          size="md"
+        />
       </button>
     </div>
 
@@ -124,6 +129,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { ref, watch } from 'vue'
+import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
   categories: { type: Array, default: () => [] },

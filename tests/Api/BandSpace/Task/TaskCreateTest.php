@@ -99,7 +99,11 @@ class TaskCreateTest extends ApiTestCase
             'category_id' => $category->_real()->id,
             'category_name' => 'Logistique',
             'assignees' => [
-                ['id' => $assignee->_real()->id, 'username' => 'assignee_user'],
+                [
+                    'id' => $assignee->_real()->id,
+                    'username' => 'assignee_user',
+                    'profile_picture_url' => null,
+                ],
             ],
         ]);
     }

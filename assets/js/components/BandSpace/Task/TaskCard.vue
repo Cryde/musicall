@@ -31,12 +31,15 @@
     <div class="flex items-center justify-between mt-2">
       <div class="flex items-center -space-x-1.5">
         <div
-          v-for="(assignee, index) in visibleAssignees"
+          v-for="assignee in visibleAssignees"
           :key="assignee.id"
-          class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-contrast text-[10px] font-semibold border-2 border-surface-0 dark:border-surface-900"
-          :title="assignee.username"
+          class="rounded-full border-2 border-surface-0 dark:border-surface-900"
         >
-          {{ assignee.username.charAt(0).toUpperCase() }}
+          <Avatar
+            :username="assignee.username"
+            :picture-url="assignee.profile_picture_url"
+            size="sm"
+          />
         </div>
         <div
           v-if="overflowCount > 0"
@@ -82,6 +85,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import Avatar from '../../User/Avatar.vue'
 import TaskCommentPopover from './TaskCommentPopover.vue'
 
 const props = defineProps({

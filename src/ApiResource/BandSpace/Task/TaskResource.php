@@ -103,7 +103,7 @@ class TaskResource
     public ?string $categoryId = null;
     public ?string $categoryName = null;
 
-    /** @var array<int, array{id: string, username: string}> */
+    /** @var array<int, array{id: string, username: string, profile_picture_url: string|null}> */
     public array $assignees = [];
 
     public ?string $archiveDatetime = null;
