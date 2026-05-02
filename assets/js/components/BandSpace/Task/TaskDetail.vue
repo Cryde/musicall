@@ -398,7 +398,7 @@ async function saveAssignees() {
 async function handleCommentSubmit(content) {
   isSubmittingComment.value = true
   try {
-    await bandSpaceTasksApi.createComment(props.bandSpaceId, props.taskId, { content })
+    await tasksStore.createComment(props.bandSpaceId, props.taskId, { content })
     await loadDetails()
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })

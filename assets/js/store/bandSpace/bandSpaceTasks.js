@@ -140,6 +140,14 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     }
   }
 
+  async function createComment(bandSpaceId, taskId, data) {
+    const created = await bandSpaceTasksApi.createComment(bandSpaceId, taskId, data)
+    const bump = (t) => (t.id === taskId ? { ...t, comment_count: (t.comment_count ?? 0) + 1 } : t)
+    tasks.value = tasks.value.map(bump)
+    archivedTasks.value = archivedTasks.value.map(bump)
+    return created
+  }
+
   async function updateTask(bandSpaceId, taskId, data) {
     isSaving.value = true
     try {
@@ -307,6 +315,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     fetchCategories,
     fetchMembers,
     createTask,
+    createComment,
     updateTask,
     updateTaskOptimistic,
     moveTaskToColumn,
