@@ -216,6 +216,12 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
   async function deleteCategory(bandSpaceId, categoryId) {
     await bandSpaceTasksApi.deleteCategory(bandSpaceId, categoryId)
     categories.value = categories.value.filter((c) => c.id !== categoryId)
+    tasks.value = tasks.value.map((t) =>
+      t.category_id === categoryId ? { ...t, category_id: null, category_name: null } : t
+    )
+    archivedTasks.value = archivedTasks.value.map((t) =>
+      t.category_id === categoryId ? { ...t, category_id: null, category_name: null } : t
+    )
   }
 
   function setActiveTask(taskId) {

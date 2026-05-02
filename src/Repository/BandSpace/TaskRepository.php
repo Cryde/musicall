@@ -4,7 +4,6 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
-use App\Entity\BandSpace\TaskCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -133,15 +132,4 @@ class TaskRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function countByCategoryAndBandSpace(TaskCategory $category, BandSpace $bandSpace): int
-    {
-        return (int) $this->createQueryBuilder('t')
-            ->select('COUNT(t.id)')
-            ->where('t.category = :category')
-            ->andWhere('t.bandSpace = :bandSpace')
-            ->setParameter('category', $category)
-            ->setParameter('bandSpace', $bandSpace)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
 }

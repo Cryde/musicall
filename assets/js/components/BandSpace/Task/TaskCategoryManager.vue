@@ -136,8 +136,13 @@ async function handleCreate() {
 }
 
 function handleDelete(category) {
+  const linkedCount = tasksStore.tasks.filter((t) => t.category_id === category.id).length
+  const message = linkedCount > 0
+    ? `Supprimer la catégorie "${category.name}" ? ${linkedCount} tâche(s) deviendront sans catégorie.`
+    : `Supprimer la catégorie "${category.name}" ?`
+
   confirm.require({
-    message: `Supprimer la catégorie "${category.name}" ?`,
+    message,
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
