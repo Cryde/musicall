@@ -50,6 +50,7 @@ class TaskCommentCreateTest extends ApiTestCase
             'task_id' => $task->_real()->id,
             'author_id' => $user->_real()->id,
             'author_username' => $user->_real()->username,
+            'author_profile_picture_url' => null,
             'content' => 'Super, on avance bien !',
             'creation_datetime' => $comment->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);

@@ -53,6 +53,7 @@ class TaskCommentResource
 
     public string $authorId;
     public string $authorUsername;
+    public ?string $authorProfilePictureUrl = null;
     public string $content;
     public string $creationDatetime;
 }

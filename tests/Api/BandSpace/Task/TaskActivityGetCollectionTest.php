@@ -45,6 +45,14 @@ class TaskActivityGetCollectionTest extends ApiTestCase
         $this->assertJsonContains([
             '@type' => 'Collection',
             'totalItems' => 1,
+            'member' => [
+                [
+                    'actor_id' => $user->_real()->id,
+                    'actor_username' => $user->_real()->username,
+                    'actor_profile_picture_url' => null,
+                    'type' => 'status_changed',
+                ],
+            ],
         ]);
     }
 

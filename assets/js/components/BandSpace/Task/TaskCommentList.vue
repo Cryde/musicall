@@ -5,10 +5,12 @@
       :key="comment.id"
       class="flex gap-3"
     >
-      <div
-        class="w-7 h-7 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-primary-contrast text-[10px] font-semibold"
-      >
-        {{ comment.author_username.charAt(0).toUpperCase() }}
+      <div class="flex-shrink-0">
+        <Avatar
+          :username="comment.author_username"
+          :picture-url="comment.author_profile_picture_url"
+          size="md"
+        />
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
@@ -35,6 +37,7 @@
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useMentionParser } from '../../../composables/useMentionParser.js'
+import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
   comments: { type: Array, default: () => [] },

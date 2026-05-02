@@ -5,13 +5,20 @@
       <div
         v-for="activity in activities"
         :key="activity.id"
-        class="text-xs text-surface-500 dark:text-surface-400"
+        class="flex items-center gap-2 text-xs text-surface-500 dark:text-surface-400"
       >
-        <span class="font-medium text-surface-700 dark:text-surface-200">
-          {{ activity.actor_username }}
-        </span>
-        {{ activityLabel(activity) }}
-        <span class="text-surface-400 ml-1">{{ formatRelative(activity.creation_datetime) }}</span>
+        <Avatar
+          :username="activity.actor_username"
+          :picture-url="activity.actor_profile_picture_url"
+          size="sm"
+        />
+        <div class="flex-1 min-w-0">
+          <span class="font-medium text-surface-700 dark:text-surface-200">
+            {{ activity.actor_username }}
+          </span>
+          {{ activityLabel(activity) }}
+          <span class="text-surface-400 ml-1">{{ formatRelative(activity.creation_datetime) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -20,6 +27,7 @@
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import Avatar from '../../User/Avatar.vue'
 
 defineProps({
   activities: { type: Array, default: () => [] }

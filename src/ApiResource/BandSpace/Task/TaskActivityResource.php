@@ -53,6 +53,7 @@ class TaskActivityResource
 
     public string $actorId;
     public string $actorUsername;
+    public ?string $actorProfilePictureUrl = null;
     public string $type;
 
     /** @var array<string, mixed>|null */
