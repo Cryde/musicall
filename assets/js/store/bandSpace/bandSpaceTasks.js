@@ -138,7 +138,6 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
 
   async function moveTaskToColumn(bandSpaceId, taskId, newStatus, newIndex) {
     const snapshot = [...tasks.value]
-    // Build the ordered IDs for the destination column by inserting the moved task at the drop index
     const destinationIds = tasks.value
       .filter((t) => t.status === newStatus && !t.archive_datetime && t.id !== taskId)
       .sort((a, b) => a.position - b.position)
@@ -146,16 +145,15 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     destinationIds.splice(newIndex, 0, taskId)
     const positions = destinationIds.map((id, index) => ({ id, position: index }))
 
-    // Optimistic: update the moved task's status + reposition all tasks in the destination column
     tasks.value = tasks.value.map((t) => {
       const pos = positions.find((p) => p.id === t.id)
       if (t.id === taskId) return { ...t, status: newStatus, position: newIndex }
       return pos ? { ...t, position: pos.position } : t
     })
+
     try {
-      const updated = await bandSpaceTasksApi.updateTask(bandSpaceId, taskId, { status: newStatus })
-      tasks.value = tasks.value.map((t) => (t.id === taskId ? { ...updated, position: newIndex } : t))
-      await bandSpaceTasksApi.reorderTasks(bandSpaceId, positions)
+      const updated = await bandSpaceTasksApi.moveTask(bandSpaceId, taskId, newStatus, positions)
+      tasks.value = tasks.value.map((t) => (t.id === taskId ? updated : t))
     } catch (e) {
       tasks.value = snapshot
       throw e

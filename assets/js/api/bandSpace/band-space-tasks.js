@@ -88,6 +88,17 @@ export default {
       .catch(handleApiError)
   },
 
+  moveTask(bandSpaceId, taskId, status, positions) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_tasks_move', { bandSpaceId }),
+        { task_id: taskId, status, positions },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   getComments(bandSpaceId, taskId) {
     return axios
       .get(Routing.generate('api_band_space_task_comments_get_collection', { bandSpaceId, taskId }))
