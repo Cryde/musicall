@@ -58,6 +58,110 @@
         :all-dates="allDates"
       />
 
+      <!-- Engagement & Retention Section -->
+      <Panel header="Engagement & rétention" toggleable>
+        <template #icons>
+          <i class="pi pi-chart-line text-primary" />
+        </template>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <template #title>
+              <div class="flex items-center gap-2 text-base">
+                <i class="pi pi-chart-line text-primary" />
+                <span>Engagement</span>
+              </div>
+            </template>
+            <template #content>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <span
+                    v-tooltip.top="'Utilisateurs actifs aujourd\'hui / Utilisateurs actifs ce mois. Plus le ratio est élevé, plus les utilisateurs reviennent souvent.'"
+                    class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
+                  >
+                    Ratio DAU/MAU
+                  </span>
+                  <span v-if="generalMetrics?.dau_mau_ratio !== null && generalMetrics?.dau_mau_ratio !== undefined" class="text-2xl font-bold text-primary">
+                    {{ generalMetrics.dau_mau_ratio }}%
+                  </span>
+                  <ComingSoonBadge v-else />
+                </div>
+                <div class="flex items-center justify-between">
+                  <span
+                    v-tooltip.top="'Temps moyen entre l\'inscription et la première action (message, publication, etc.)'"
+                    class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
+                  >
+                    Temps avant 1re action
+                  </span>
+                  <ComingSoonBadge />
+                </div>
+                <div class="flex items-center justify-between">
+                  <span
+                    v-tooltip.top="'Pourcentage d\'utilisateurs ayant initié au moins une conversation'"
+                    class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
+                  >
+                    Ratio conversations
+                  </span>
+                  <ComingSoonBadge />
+                </div>
+              </div>
+            </template>
+          </Card>
+
+          <Card>
+            <template #title>
+              <div class="flex items-center gap-2 text-base">
+                <i class="pi pi-replay text-primary" />
+                <span>Rétention</span>
+              </div>
+            </template>
+            <template #content>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <span
+                    v-tooltip.top="'Pourcentage d\'utilisateurs inscrits il y a 7-14 jours qui se sont reconnectés depuis'"
+                    class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
+                  >
+                    Rétention 7 jours
+                  </span>
+                  <span v-if="generalMetrics?.retention7_days !== null && generalMetrics?.retention7_days !== undefined" :class="getRetentionClass(generalMetrics.retention7_days)" class="text-2xl font-bold">
+                    {{ generalMetrics.retention7_days }}%
+                  </span>
+                  <span v-else class="text-surface-400">-</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span
+                    v-tooltip.top="'Pourcentage d\'utilisateurs inscrits il y a 30-60 jours qui se sont reconnectés depuis'"
+                    class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
+                  >
+                    Rétention 30 jours
+                  </span>
+                  <span v-if="generalMetrics?.retention30_days !== null && generalMetrics?.retention30_days !== undefined" :class="getRetentionClass(generalMetrics.retention30_days)" class="text-2xl font-bold">
+                    {{ generalMetrics.retention30_days }}%
+                  </span>
+                  <span v-else class="text-surface-400">-</span>
+                </div>
+              </div>
+            </template>
+          </Card>
+
+          <Card class="lg:col-span-2">
+            <template #title>
+              <div class="flex items-center gap-2 text-base">
+                <i class="pi pi-search text-primary" />
+                <span>Recherches populaires</span>
+                <ComingSoonBadge />
+              </div>
+            </template>
+            <template #content>
+              <div class="text-surface-400 text-center py-4">
+                Le suivi des recherches n'est pas encore implémenté
+              </div>
+            </template>
+          </Card>
+        </div>
+      </Panel>
+
       <!-- Spam/Abuse Detection Section -->
       <Panel header="Détection spam / abus" toggleable>
         <template #icons>
@@ -385,6 +489,7 @@ import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 const dashboardStore = useAdminDashboardStore()
 
 const metrics = computed(() => dashboardStore.userMetrics)
+const generalMetrics = computed(() => dashboardStore.generalMetrics)
 
 const today = new Date()
 const dateFrom = ref(subDays(today, 30))
@@ -407,6 +512,12 @@ function loadDateFilteredData() {
   dashboardStore.loadTimeSeries('registrations', from, to)
 }
 
+function getRetentionClass(value) {
+  if (value >= 50) return 'text-green-500'
+  if (value >= 25) return 'text-yellow-500'
+  return 'text-red-500'
+}
+
 function handleDateRangeApply({ from, to }) {
   dateFrom.value = from
   dateTo.value = to
@@ -418,6 +529,7 @@ function refreshData() {
 }
 
 onMounted(() => {
+  dashboardStore.loadGeneralMetrics()
   loadDateFilteredData()
 })
 </script>

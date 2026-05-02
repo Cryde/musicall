@@ -188,106 +188,6 @@
         </Card>
       </div>
 
-      <!-- Engagement & Retention -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- DAU/MAU Ratio -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-chart-line text-primary" />
-              <span>Engagement</span>
-            </div>
-          </template>
-          <template #content>
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span
-                  v-tooltip.top="'Utilisateurs actifs aujourd\'hui / Utilisateurs actifs ce mois. Plus le ratio est élevé, plus les utilisateurs reviennent souvent.'"
-                  class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
-                >
-                  Ratio DAU/MAU
-                </span>
-                <span v-if="metrics.dau_mau_ratio !== null" class="text-2xl font-bold text-primary">
-                  {{ metrics.dau_mau_ratio }}%
-                </span>
-                <ComingSoonBadge v-else />
-              </div>
-              <div class="flex items-center justify-between">
-                <span
-                  v-tooltip.top="'Temps moyen entre l\'inscription et la première action (message, publication, etc.)'"
-                  class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
-                >
-                  Temps avant 1re action
-                </span>
-                <ComingSoonBadge />
-              </div>
-              <div class="flex items-center justify-between">
-                <span
-                  v-tooltip.top="'Pourcentage d\'utilisateurs ayant initié au moins une conversation'"
-                  class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
-                >
-                  Ratio conversations
-                </span>
-                <ComingSoonBadge />
-              </div>
-            </div>
-          </template>
-        </Card>
-
-        <!-- Retention -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 text-base">
-              <i class="pi pi-replay text-primary" />
-              <span>Rétention</span>
-            </div>
-          </template>
-          <template #content>
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span
-                  v-tooltip.top="'Pourcentage d\'utilisateurs inscrits il y a 7-14 jours qui se sont reconnectés depuis'"
-                  class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
-                >
-                  Rétention 7 jours
-                </span>
-                <span v-if="metrics.retention7_days !== null" :class="getRetentionClass(metrics.retention7_days)" class="text-2xl font-bold">
-                  {{ metrics.retention7_days }}%
-                </span>
-                <span v-else class="text-surface-400">-</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span
-                  v-tooltip.top="'Pourcentage d\'utilisateurs inscrits il y a 30-60 jours qui se sont reconnectés depuis'"
-                  class="text-surface-600 dark:text-surface-400 cursor-help border-b border-dashed border-surface-400"
-                >
-                  Rétention 30 jours
-                </span>
-                <span v-if="metrics.retention30_days !== null" :class="getRetentionClass(metrics.retention30_days)" class="text-2xl font-bold">
-                  {{ metrics.retention30_days }}%
-                </span>
-                <span v-else class="text-surface-400">-</span>
-              </div>
-            </div>
-          </template>
-        </Card>
-      </div>
-
-      <!-- Popular Searches (Coming Soon) -->
-      <Card>
-        <template #title>
-          <div class="flex items-center gap-2 text-base">
-            <i class="pi pi-search text-primary" />
-            <span>Recherches populaires</span>
-            <ComingSoonBadge />
-          </div>
-        </template>
-        <template #content>
-          <div class="text-surface-400 text-center py-4">
-            Le suivi des recherches n'est pas encore implémenté
-          </div>
-        </template>
-      </Card>
     </template>
   </div>
 </template>
@@ -307,7 +207,6 @@ import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 import AdminModuleCard from '../../components/Admin/AdminModuleCard.vue'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
-import ComingSoonBadge from '../../components/Admin/ComingSoonBadge.vue'
 
 const notificationStore = useNotificationStore()
 const dashboardStore = useAdminDashboardStore()
@@ -338,12 +237,6 @@ function formatNumber(num) {
     return (num / 1000).toFixed(1) + 'k'
   }
   return num.toString()
-}
-
-function getRetentionClass(value) {
-  if (value >= 50) return 'text-green-500'
-  if (value >= 25) return 'text-yellow-500'
-  return 'text-red-500'
 }
 
 function formatDate(date) {
