@@ -153,6 +153,18 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     return created
   }
 
+  async function updateComment(bandSpaceId, taskId, commentId, data) {
+    return await bandSpaceTasksApi.updateComment(bandSpaceId, taskId, commentId, data)
+  }
+
+  async function deleteComment(bandSpaceId, taskId, commentId) {
+    await bandSpaceTasksApi.deleteComment(bandSpaceId, taskId, commentId)
+    const decrement = (t) =>
+      t.id === taskId ? { ...t, comment_count: Math.max(0, (t.comment_count ?? 0) - 1) } : t
+    tasks.value = tasks.value.map(decrement)
+    archivedTasks.value = archivedTasks.value.map(decrement)
+  }
+
   async function updateTask(bandSpaceId, taskId, data) {
     isSaving.value = true
     try {
@@ -322,6 +334,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     fetchMembers,
     createTask,
     createComment,
+    updateComment,
+    deleteComment,
     updateTask,
     updateTaskOptimistic,
     moveTaskToColumn,

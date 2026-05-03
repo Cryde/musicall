@@ -45,6 +45,8 @@ function activityLabel(activity) {
     category_changed: () => 'a modifié la catégorie',
     due_date_changed: () => 'a modifié la date d\'échéance',
     comment_added: () => 'a ajouté un commentaire',
+    comment_edited: () => 'a modifié un commentaire',
+    comment_deleted: () => 'a supprimé un commentaire',
     mention: () => `a mentionné ${activity.payload?.mentioned_username || 'un membre'}`
   }
   return (labels[activity.type] || (() => activity.type))()

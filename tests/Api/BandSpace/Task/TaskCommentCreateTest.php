@@ -53,6 +53,7 @@ class TaskCommentCreateTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => 'Super, on avance bien !',
             'creation_datetime' => $comment->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
         ]);
 
         $activityRepo = self::getContainer()->get(TaskActivityRepository::class);

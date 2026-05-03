@@ -126,6 +126,33 @@ export default {
       .catch(handleApiError)
   },
 
+  updateComment(bandSpaceId, taskId, commentId, data) {
+    return axios
+      .patch(
+        Routing.generate('api_band_space_task_comments_patch', {
+          bandSpaceId,
+          taskId,
+          id: commentId
+        }),
+        data,
+        { headers: { 'Content-Type': 'application/merge-patch+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  deleteComment(bandSpaceId, taskId, commentId) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_task_comments_delete', {
+          bandSpaceId,
+          taskId,
+          id: commentId
+        })
+      )
+      .catch(handleApiError)
+  },
+
   getActivities(bandSpaceId, taskId) {
     return axios
       .get(Routing.generate('api_band_space_task_activities_get_collection', { bandSpaceId, taskId }))

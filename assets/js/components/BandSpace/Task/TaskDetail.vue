@@ -146,7 +146,12 @@
         :is-submitting="isSubmittingComment"
         @submit="handleCommentSubmit"
       />
-      <TaskCommentList :comments="comments" :members="members" />
+      <TaskCommentList
+        :comments="comments"
+        :members="members"
+        @edit="handleCommentEdit"
+        @delete="handleCommentDelete"
+      />
 
       <!-- Activity -->
       <TaskActivityFeed :activities="activities" />
@@ -404,6 +409,25 @@ async function handleCommentSubmit(content) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   } finally {
     isSubmittingComment.value = false
+  }
+}
+
+async function handleCommentEdit(commentId, content) {
+  try {
+    await tasksStore.updateComment(props.bandSpaceId, props.taskId, commentId, { content })
+    await loadDetails()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: e.message, life: 5000 })
+  }
+}
+
+async function handleCommentDelete(commentId) {
+  try {
+    await tasksStore.deleteComment(props.bandSpaceId, props.taskId, commentId)
+    await loadDetails()
+    toast.add({ severity: 'success', summary: 'Commentaire supprimé', life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }
 }
 

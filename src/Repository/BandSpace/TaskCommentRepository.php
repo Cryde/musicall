@@ -32,6 +32,19 @@ class TaskCommentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findOneByIdAndTask(string $id, Task $task): ?TaskComment
+    {
+        return $this->createQueryBuilder('tc')
+            ->addSelect('u')
+            ->leftJoin('tc.author', 'u')
+            ->where('tc.id = :id')
+            ->andWhere('tc.task = :task')
+            ->setParameter('id', $id)
+            ->setParameter('task', $task)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * @param string[] $taskIds
      * @return array<string, int>

@@ -36,6 +36,7 @@ readonly class TaskCommentBuilder
         $dto->authorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->author);
         $dto->content = $entity->content;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
 
         return $dto;
     }

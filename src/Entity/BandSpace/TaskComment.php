@@ -39,6 +39,9 @@ class TaskComment
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    public ?DateTimeInterface $updateDatetime = null;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
