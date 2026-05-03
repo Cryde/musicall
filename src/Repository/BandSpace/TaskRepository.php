@@ -7,6 +7,7 @@ use App\Entity\BandSpace\Task;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\Filter\TaskFilter;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -152,4 +153,26 @@ class TaskRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return Task[]
+     */
+    public function findUpcomingForBand(BandSpace $bandSpace, DateTimeInterface $from, DateTimeInterface $to): array
+    {
+        return $this->createQueryBuilder('t')
+            ->addSelect('c')
+            ->leftJoin('t.category', 'c')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.dueDate IS NOT NULL')
+            ->andWhere('t.dueDate >= :from')
+            ->andWhere('t.dueDate <= :to')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->andWhere('t.status != :doneStatus')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->setParameter('doneStatus', TaskStatus::Done->value)
+            ->orderBy('t.dueDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

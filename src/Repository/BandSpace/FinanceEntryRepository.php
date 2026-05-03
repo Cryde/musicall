@@ -179,6 +179,25 @@ class FinanceEntryRepository extends ServiceEntityRepository
     /**
      * @return FinanceEntry[]
      */
+    public function findUpcomingForBand(BandSpace $bandSpace, \DateTimeInterface $from, \DateTimeInterface $to): array
+    {
+        return $this->createQueryBuilder('e')
+            ->addSelect('c')
+            ->join('e.category', 'c')
+            ->where('c.bandSpace = :bandSpace')
+            ->andWhere('e.date >= :from')
+            ->andWhere('e.date <= :to')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->orderBy('e.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return FinanceEntry[]
+     */
     public function getUpcomingByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null, int $limit = 5): array
     {
         $now = new \DateTimeImmutable();
