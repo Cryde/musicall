@@ -22,11 +22,11 @@
           v-for="src in sourceOptions"
           :key="src.key"
           type="button"
-          class="text-xs font-medium px-2.5 py-1 rounded-full transition-all"
+          class="text-xs font-medium px-2.5 py-1 rounded-full transition-all min-w-20 text-center tabular-nums"
           :class="selectedSources.has(src.key) ? src.activeClass : src.inactiveClass"
           @click="toggleSource(src.key)"
         >
-          {{ src.label }}
+          {{ src.label }} · {{ countsBySource[src.key] }}
         </button>
       </div>
       <div class="flex items-center gap-1 ml-auto">
@@ -252,6 +252,16 @@ const SOURCE_COLORS = {
 }
 
 const selectedSources = reactive(new Set(['manual', 'task', 'finance']))
+
+const countsBySource = computed(() => {
+  const counts = { manual: 0, task: 0, finance: 0 }
+  for (const item of agendaStore.items) {
+    if (counts[item.source] !== undefined) {
+      counts[item.source]++
+    }
+  }
+  return counts
+})
 
 const filteredItems = computed(() =>
   agendaStore.items.filter((item) => selectedSources.has(item.source))
