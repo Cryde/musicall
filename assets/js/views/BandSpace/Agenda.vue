@@ -288,11 +288,13 @@ const calendarEvents = computed(() =>
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: viewMode.value === 'list' ? 'dayGridMonth' : viewMode.value,
+  initialDate: dateFrom.value,
   locale: 'fr',
   firstDay: 1,
   events: calendarEvents.value,
   eventClick: handleEventClick,
   dateClick: handleDateClick,
+  datesSet: handleDatesSet,
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
@@ -374,6 +376,30 @@ function handleDateClick(info) {
   dialogItem.value = null
   dialogInitialDatetime.value = clickedDate
   dialogVisible.value = true
+}
+
+function handleDatesSet(arg) {
+  const visibleStart = startOfDay(arg.start)
+  const visibleEndInclusive = startOfDay(new Date(arg.end.getTime() - 1))
+
+  let newFrom = dateFrom.value
+  let newTo = dateTo.value
+  let needsRefetch = false
+
+  if (visibleStart < dateFrom.value) {
+    newFrom = visibleStart
+    needsRefetch = true
+  }
+  if (visibleEndInclusive > dateTo.value) {
+    newTo = visibleEndInclusive
+    needsRefetch = true
+  }
+
+  if (needsRefetch) {
+    dateFrom.value = newFrom
+    dateTo.value = newTo
+    fetchWithCurrentRange()
+  }
 }
 
 function formatDateLabel(dateString) {
