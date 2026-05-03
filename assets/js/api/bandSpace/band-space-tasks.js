@@ -106,6 +106,24 @@ export default {
       .catch(handleApiError)
   },
 
+  bulkPatchTasks(bandSpaceId, payload) {
+    return axios
+      .post(Routing.generate('api_band_space_tasks_bulk_patch', { bandSpaceId }), payload, {
+        headers: { 'Content-Type': 'application/ld+json' }
+      })
+      .catch(handleApiError)
+  },
+
+  bulkDeleteTasks(bandSpaceId, taskIds) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_tasks_bulk_delete', { bandSpaceId }),
+        { task_ids: taskIds },
+        { headers: { 'Content-Type': 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
   getComments(bandSpaceId, taskId) {
     return axios
       .get(Routing.generate('api_band_space_task_comments_get_collection', { bandSpaceId, taskId }))

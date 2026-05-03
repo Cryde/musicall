@@ -29,6 +29,14 @@
       <div class="flex-1"></div>
 
       <Button
+        :label="tasksStore.isSelectionMode ? 'Annuler' : 'Sélectionner'"
+        :icon="tasksStore.isSelectionMode ? 'pi pi-times' : 'pi pi-check-square'"
+        size="small"
+        :severity="tasksStore.isSelectionMode ? 'secondary' : 'secondary'"
+        :outlined="!tasksStore.isSelectionMode"
+        @click="toggleSelectionMode"
+      />
+      <Button
         icon="pi pi-cog"
         text
         rounded
@@ -159,7 +167,18 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
+import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
+
+const tasksStore = useBandTasksStore()
+
+function toggleSelectionMode() {
+  if (tasksStore.isSelectionMode) {
+    tasksStore.exitSelectionMode()
+  } else {
+    tasksStore.enterSelectionMode()
+  }
+}
 
 const props = defineProps({
   categories: { type: Array, default: () => [] },

@@ -127,6 +127,13 @@
       :band-space-id="bandSpaceId"
       @created="handleTaskCreated"
     />
+
+    <!-- Bulk action bar (visible only in selection mode) -->
+    <TaskBulkActionBar
+      :band-space-id="bandSpaceId"
+      :categories="tasksStore.categories"
+      :members="tasksStore.members"
+    />
   </div>
 </template>
 
@@ -138,6 +145,7 @@ import { useToast } from 'primevue/usetoast'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TaskBoard from '../../components/BandSpace/Task/TaskBoard.vue'
+import TaskBulkActionBar from '../../components/BandSpace/Task/TaskBulkActionBar.vue'
 import TaskCategoryManager from '../../components/BandSpace/Task/TaskCategoryManager.vue'
 import TaskCreateForm from '../../components/BandSpace/Task/TaskCreateForm.vue'
 import TaskDetail from '../../components/BandSpace/Task/TaskDetail.vue'

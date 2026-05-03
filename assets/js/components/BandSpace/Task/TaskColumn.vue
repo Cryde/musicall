@@ -10,6 +10,7 @@
       v-model="localTasks"
       group="tasks"
       :animation="200"
+      :disabled="tasksStore.isSelectionMode"
       ghost-class="opacity-30"
       :data-status="status"
       class="flex flex-col gap-2 min-h-[100px]"
@@ -38,7 +39,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import TaskCard from './TaskCard.vue'
+
+const tasksStore = useBandTasksStore()
 
 const MAX_DONE_VISIBLE = 5
 

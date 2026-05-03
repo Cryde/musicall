@@ -10,6 +10,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
   const categories = ref([])
   const members = ref([])
   const activeTaskId = ref(null)
+  const isSelectionMode = ref(false)
+  const selectedTaskIds = ref(new Set())
   const filters = reactive({
     categoryId: null,
     assigneeId: null,
@@ -299,12 +301,51 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     filters[key] = value
   }
 
+  function enterSelectionMode() {
+    isSelectionMode.value = true
+  }
+
+  function exitSelectionMode() {
+    isSelectionMode.value = false
+    selectedTaskIds.value = new Set()
+  }
+
+  function toggleTaskSelection(taskId) {
+    const next = new Set(selectedTaskIds.value)
+    if (next.has(taskId)) {
+      next.delete(taskId)
+    } else {
+      next.add(taskId)
+    }
+    selectedTaskIds.value = next
+  }
+
+  async function bulkPatch(bandSpaceId, patch) {
+    const payload = { task_ids: [...selectedTaskIds.value], ...patch }
+    await bandSpaceTasksApi.bulkPatchTasks(bandSpaceId, payload)
+    await fetchTasks(bandSpaceId)
+    if (filters.showArchived) {
+      await fetchArchivedTasks(bandSpaceId)
+    }
+    exitSelectionMode()
+  }
+
+  async function bulkDelete(bandSpaceId) {
+    const ids = [...selectedTaskIds.value]
+    await bandSpaceTasksApi.bulkDeleteTasks(bandSpaceId, ids)
+    tasks.value = tasks.value.filter((t) => !ids.includes(t.id))
+    archivedTasks.value = archivedTasks.value.filter((t) => !ids.includes(t.id))
+    exitSelectionMode()
+  }
+
   function clear() {
     tasks.value = []
     archivedTasks.value = []
     categories.value = []
     members.value = []
     activeTaskId.value = null
+    isSelectionMode.value = false
+    selectedTaskIds.value = new Set()
     filters.categoryId = null
     filters.assigneeId = null
     filters.priority = null
@@ -325,6 +366,8 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     categories: readonly(categories),
     members: readonly(members),
     activeTaskId: readonly(activeTaskId),
+    isSelectionMode: readonly(isSelectionMode),
+    selectedTaskIds: readonly(selectedTaskIds),
     filters: readonly(filters),
     isLoading: readonly(isLoading),
     isCreating: readonly(isCreating),
@@ -356,6 +399,11 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     deleteCategory,
     setActiveTask,
     setFilter,
+    enterSelectionMode,
+    exitSelectionMode,
+    toggleTaskSelection,
+    bulkPatch,
+    bulkDelete,
     clear
   }
 })

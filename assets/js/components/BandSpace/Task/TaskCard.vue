@@ -1,10 +1,25 @@
 <template>
   <div
     :data-task-id="task.id"
-    class="bg-surface-0 dark:bg-surface-900 rounded-lg p-3 cursor-pointer hover:ring-1 hover:ring-primary-300 transition-shadow shadow-sm border border-surface-200 dark:border-surface-700"
-    @click="emit('open-task', task.id)"
+    class="bg-surface-0 dark:bg-surface-900 rounded-lg p-3 cursor-pointer hover:ring-1 hover:ring-primary-300 transition-shadow shadow-sm border"
+    :class="
+      isSelected
+        ? 'ring-2 ring-primary border-primary'
+        : 'border-surface-200 dark:border-surface-700'
+    "
+    @click="handleClick"
   >
-    <p class="font-medium text-sm text-surface-800 dark:text-surface-100">{{ task.title }}</p>
+    <div class="flex items-start gap-2">
+      <Checkbox
+        v-if="tasksStore.isSelectionMode"
+        :model-value="isSelected"
+        binary
+        size="small"
+        class="mt-0.5"
+        @click.stop="tasksStore.toggleTaskSelection(task.id)"
+      />
+      <p class="font-medium text-sm text-surface-800 dark:text-surface-100 flex-1">{{ task.title }}</p>
+    </div>
 
     <div class="flex flex-wrap gap-1.5 mt-2">
       <span
@@ -84,7 +99,9 @@
 </template>
 
 <script setup>
+import Checkbox from 'primevue/checkbox'
 import { computed, ref } from 'vue'
+import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
 import TaskCommentPopover from './TaskCommentPopover.vue'
 
@@ -96,7 +113,18 @@ const props = defineProps({
 
 const emit = defineEmits(['open-task'])
 
+const tasksStore = useBandTasksStore()
 const popoverRef = ref()
+
+const isSelected = computed(() => tasksStore.selectedTaskIds.has(props.task.id))
+
+function handleClick() {
+  if (tasksStore.isSelectionMode) {
+    tasksStore.toggleTaskSelection(props.task.id)
+  } else {
+    emit('open-task', props.task.id)
+  }
+}
 
 const MAX_AVATARS = 3
 
