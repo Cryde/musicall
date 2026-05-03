@@ -54,7 +54,7 @@ const routes = [
       {
         path: ':id/agenda',
         name: 'app_band_agenda',
-        component: () => import('../views/BandSpace/Empty.vue')
+        component: () => import('../views/BandSpace/Agenda.vue')
       },
       {
         path: ':id/notes',
