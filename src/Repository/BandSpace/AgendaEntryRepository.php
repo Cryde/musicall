@@ -36,4 +36,32 @@ class AgendaEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return AgendaEntry[]
+     */
+    public function findByBandSpace(BandSpace $bandSpace): array
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('c')
+            ->leftJoin('a.creator', 'c')
+            ->where('a.bandSpace = :bandSpace')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('a.eventDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?AgendaEntry
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('c')
+            ->leftJoin('a.creator', 'c')
+            ->where('a.id = :id')
+            ->andWhere('a.bandSpace = :bandSpace')
+            ->setParameter('id', $id)
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
