@@ -42,4 +42,18 @@ class ForumTopicRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * @return ForumTopic[]
+     */
+    public function findLatest(int $limit = 10): array
+    {
+        return $this->createQueryBuilder('ft')
+            ->innerJoin('ft.author', 'a')
+            ->addSelect('a')
+            ->orderBy('ft.creationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

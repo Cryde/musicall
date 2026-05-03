@@ -25,5 +25,11 @@ export default {
     return axios
       .get(Routing.generate('_api_/admin/dashboard/content-overview_get', { from, to }))
       .then((resp) => resp.data)
+  },
+
+  getForumRecentActivity() {
+    return axios
+      .get(Routing.generate('_api_/admin/forum/recent-activity_get'))
+      .then((resp) => resp.data)
   }
 }

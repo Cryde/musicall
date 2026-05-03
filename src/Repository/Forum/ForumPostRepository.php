@@ -62,4 +62,31 @@ class ForumPostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * @return ForumPost[]
+     */
+    public function findLatest(int $limit = 10): array
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.topic', 't')
+            ->innerJoin('p.creator', 'c')
+            ->addSelect('t', 'c')
+            ->orderBy('p.creationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findPositionInTopic(ForumPost $post): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.topic = :topic')
+            ->andWhere('p.creationDatetime <= :datetime')
+            ->setParameter('topic', $post->topic)
+            ->setParameter('datetime', $post->creationDatetime)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

@@ -13,6 +13,8 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
   const timeSeries = reactive({})
   const contentOverview = ref(null)
   const isLoadingContentOverview = ref(false)
+  const forumRecentActivity = ref(null)
+  const isLoadingForumRecentActivity = ref(false)
 
   async function loadGeneralMetrics() {
     isLoadingGeneral.value = true
@@ -67,10 +69,23 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     }
   }
 
+  async function loadForumRecentActivity() {
+    isLoadingForumRecentActivity.value = true
+    try {
+      forumRecentActivity.value = await adminDashboardApi.getForumRecentActivity()
+    } catch (e) {
+      console.error('Failed to load forum recent activity:', e)
+      forumRecentActivity.value = null
+    } finally {
+      isLoadingForumRecentActivity.value = false
+    }
+  }
+
   function clear() {
     generalMetrics.value = null
     userMetrics.value = null
     contentOverview.value = null
+    forumRecentActivity.value = null
     generalError.value = null
     usersError.value = null
     for (const key of Object.keys(timeSeries)) {
@@ -88,10 +103,13 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     timeSeries,
     contentOverview: readonly(contentOverview),
     isLoadingContentOverview: readonly(isLoadingContentOverview),
+    forumRecentActivity: readonly(forumRecentActivity),
+    isLoadingForumRecentActivity: readonly(isLoadingForumRecentActivity),
     loadGeneralMetrics,
     loadUserMetrics,
     loadTimeSeries,
     loadContentOverview,
+    loadForumRecentActivity,
     clear
   }
 })

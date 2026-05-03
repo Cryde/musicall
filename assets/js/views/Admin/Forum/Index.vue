@@ -52,6 +52,93 @@
         </template>
       </Card>
     </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <Card>
+        <template #title>
+          <div class="flex items-center gap-2 text-base">
+            <i class="pi pi-bookmark text-primary" />
+            <span>Derniers sujets créés</span>
+          </div>
+        </template>
+        <template #content>
+          <div v-if="dashboardStore.isLoadingForumRecentActivity" class="flex justify-center py-4">
+            <ProgressSpinner style="width: 30px; height: 30px" />
+          </div>
+          <div
+            v-else-if="forumRecentActivity && forumRecentActivity.recent_topics.length > 0"
+            class="space-y-3"
+          >
+            <router-link
+              v-for="(topic, index) in forumRecentActivity.recent_topics"
+              :key="topic.id"
+              :to="{ name: 'forum_topic_item', params: { slug: topic.slug } }"
+              class="flex items-start gap-3 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-md p-2 -mx-2 transition-colors"
+            >
+              <span class="text-surface-400 font-mono pt-0.5">{{ index + 1 }}.</span>
+              <div class="flex-1 min-w-0">
+                <p class="truncate font-medium text-surface-800 dark:text-surface-100">
+                  {{ topic.title }}
+                </p>
+                <div class="flex items-center gap-2 text-xs text-surface-500">
+                  <span>{{ topic.author_username }}</span>
+                  <span>•</span>
+                  <span>{{ formatDate(topic.creation_datetime) }}</span>
+                </div>
+              </div>
+            </router-link>
+          </div>
+          <div v-else class="text-surface-400 text-center py-4">Aucun sujet créé</div>
+        </template>
+      </Card>
+
+      <Card>
+        <template #title>
+          <div class="flex items-center gap-2 text-base">
+            <i class="pi pi-comment text-primary" />
+            <span>Derniers messages publiés</span>
+          </div>
+        </template>
+        <template #content>
+          <div v-if="dashboardStore.isLoadingForumRecentActivity" class="flex justify-center py-4">
+            <ProgressSpinner style="width: 30px; height: 30px" />
+          </div>
+          <div
+            v-else-if="forumRecentActivity && forumRecentActivity.recent_posts.length > 0"
+            class="space-y-3"
+          >
+            <router-link
+              v-for="(post, index) in forumRecentActivity.recent_posts"
+              :key="post.id"
+              :to="{
+                name: 'forum_topic_item',
+                params:
+                  post.topic_page === 1
+                    ? { slug: post.topic_slug }
+                    : { slug: post.topic_slug, page: post.topic_page },
+                hash: `#post-${post.id}`
+              }"
+              class="flex items-start gap-3 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-md p-2 -mx-2 transition-colors"
+            >
+              <span class="text-surface-400 font-mono pt-0.5">{{ index + 1 }}.</span>
+              <div class="flex-1 min-w-0">
+                <p class="truncate text-sm text-surface-700 dark:text-surface-200">
+                  {{ post.content_excerpt }}
+                </p>
+                <div class="flex items-center gap-2 text-xs text-surface-500">
+                  <span class="truncate">dans « {{ post.topic_title }} »</span>
+                  <span>•</span>
+                  <span>{{ post.creator_username }}</span>
+                  <span>•</span>
+                  <span>{{ formatDate(post.creation_datetime) }}</span>
+                </div>
+              </div>
+            </router-link>
+          </div>
+          <div v-else class="text-surface-400 text-center py-4">Aucun message publié</div>
+        </template>
+      </Card>
+    </div>
   </div>
 </template>
 
@@ -69,6 +156,17 @@ import { useAdminDashboardStore } from '../../../store/admin/dashboard.js'
 const dashboardStore = useAdminDashboardStore()
 
 const contentOverview = computed(() => dashboardStore.contentOverview)
+const forumRecentActivity = computed(() => dashboardStore.forumRecentActivity)
+
+function formatDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 const today = new Date()
 const dateFrom = ref(subDays(today, 30))
@@ -87,6 +185,10 @@ function loadMetrics() {
   dashboardStore.loadContentOverview(from, to)
 }
 
+function loadRecentActivity() {
+  dashboardStore.loadForumRecentActivity()
+}
+
 function handleDateRangeApply({ from, to }) {
   dateFrom.value = from
   dateTo.value = to
@@ -95,5 +197,6 @@ function handleDateRangeApply({ from, to }) {
 
 onMounted(() => {
   loadMetrics()
+  loadRecentActivity()
 })
 </script>
