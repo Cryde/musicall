@@ -10,6 +10,27 @@
       />
     </div>
 
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+      <DateRangePicker
+        :from="dateFrom"
+        :to="dateTo"
+        :presets="agendaPresets"
+        @apply="handleDateRangeApply"
+      />
+      <div class="flex items-center gap-1">
+        <button
+          v-for="src in sourceOptions"
+          :key="src.key"
+          type="button"
+          class="text-xs font-medium px-2.5 py-1 rounded-full transition-all"
+          :class="selectedSources.has(src.key) ? src.activeClass : src.inactiveClass"
+          @click="toggleSource(src.key)"
+        >
+          {{ src.label }}
+        </button>
+      </div>
+    </div>
+
     <div v-if="agendaStore.isLoading" class="flex items-center justify-center py-12">
       <ProgressSpinner />
     </div>
@@ -22,7 +43,14 @@
       v-else-if="agendaStore.items.length === 0"
       class="text-center text-surface-400 italic py-12"
     >
-      Aucun événement à venir dans les 30 prochains jours
+      Aucun événement à venir dans cette période
+    </div>
+
+    <div
+      v-else-if="filteredItems.length === 0"
+      class="text-center text-surface-400 italic py-12"
+    >
+      Aucun événement avec ces filtres
     </div>
 
     <div v-else>
@@ -89,11 +117,22 @@
 </template>
 
 <script setup>
+import {
+  addDays,
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek
+} from 'date-fns'
+import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import ProgressSpinner from 'primevue/progressspinner'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { formatDateCompactWithYear } from '../../utils/date.js'
@@ -104,9 +143,82 @@ const agendaStore = useBandAgendaStore()
 const dialogVisible = ref(false)
 const dialogItem = ref(null)
 
+const today = startOfDay(new Date())
+const dateFrom = ref(today)
+const dateTo = ref(addDays(today, 30))
+
+const agendaPresets = [
+  {
+    key: 'next_7d',
+    label: '7 prochains jours',
+    from: () => startOfDay(new Date()),
+    to: () => addDays(startOfDay(new Date()), 6)
+  },
+  {
+    key: 'next_14d',
+    label: '14 prochains jours',
+    from: () => startOfDay(new Date()),
+    to: () => addDays(startOfDay(new Date()), 13)
+  },
+  {
+    key: 'next_30d',
+    label: '30 prochains jours',
+    from: () => startOfDay(new Date()),
+    to: () => addDays(startOfDay(new Date()), 29)
+  },
+  {
+    key: 'this_week',
+    label: 'Cette semaine',
+    from: () => startOfWeek(new Date(), { locale: fr }),
+    to: () => endOfWeek(new Date(), { locale: fr })
+  },
+  {
+    key: 'this_month',
+    label: 'Ce mois',
+    from: () => startOfMonth(new Date()),
+    to: () => endOfMonth(new Date())
+  },
+  {
+    key: 'next_month',
+    label: 'Le mois prochain',
+    from: () => startOfMonth(addDays(endOfMonth(new Date()), 1)),
+    to: () => endOfMonth(addDays(endOfMonth(new Date()), 1))
+  }
+]
+
+const sourceOptions = [
+  {
+    key: 'manual',
+    label: 'Manuel',
+    activeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    inactiveClass:
+      'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
+  },
+  {
+    key: 'task',
+    label: 'Tâches',
+    activeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    inactiveClass:
+      'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
+  },
+  {
+    key: 'finance',
+    label: 'Finances',
+    activeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    inactiveClass:
+      'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
+  }
+]
+
+const selectedSources = reactive(new Set(['manual', 'task', 'finance']))
+
+const filteredItems = computed(() =>
+  agendaStore.items.filter((item) => selectedSources.has(item.source))
+)
+
 const groupedItems = computed(() => {
   const groups = new Map()
-  for (const item of agendaStore.items) {
+  for (const item of filteredItems.value) {
     const date = item.datetime.substring(0, 10)
     if (!groups.has(date)) {
       groups.set(date, [])
@@ -117,7 +229,7 @@ const groupedItems = computed(() => {
 })
 
 onMounted(() => {
-  agendaStore.fetchAgenda(route.params.id)
+  fetchWithCurrentRange()
 })
 
 watch(
@@ -125,10 +237,30 @@ watch(
   (newId, oldId) => {
     if (newId && newId !== oldId) {
       agendaStore.clear()
-      agendaStore.fetchAgenda(newId)
+      fetchWithCurrentRange()
     }
   }
 )
+
+function fetchWithCurrentRange() {
+  const fromIso = format(dateFrom.value, "yyyy-MM-dd'T'00:00:00")
+  const toIso = format(dateTo.value, "yyyy-MM-dd'T'23:59:59")
+  agendaStore.fetchAgenda(route.params.id, { from: fromIso, to: toIso })
+}
+
+function handleDateRangeApply({ from, to }) {
+  dateFrom.value = from
+  dateTo.value = to
+  fetchWithCurrentRange()
+}
+
+function toggleSource(key) {
+  if (selectedSources.has(key)) {
+    selectedSources.delete(key)
+  } else {
+    selectedSources.add(key)
+  }
+}
 
 function openCreateDialog() {
   dialogItem.value = null
