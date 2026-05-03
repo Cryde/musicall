@@ -188,9 +188,14 @@ watch(
   }
 )
 
-// Refetch tasks from the server when the search query changes
+// Refetch tasks from the server when any server-side filter changes
 watch(
-  () => tasksStore.filters.query,
+  () => [
+    tasksStore.filters.query,
+    tasksStore.filters.dueDateFrom,
+    tasksStore.filters.dueDateTo,
+    tasksStore.filters.overdue
+  ],
   () => {
     tasksStore.fetchTasks(bandSpaceId)
   }

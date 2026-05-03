@@ -4,10 +4,13 @@ import axios from 'axios'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
-  getTasks(bandSpaceId, { archived, query } = {}) {
+  getTasks(bandSpaceId, { archived, query, dueDateFrom, dueDateTo, overdue } = {}) {
     const params = {}
     if (archived !== undefined) params.archived = archived
     if (query) params.query = query
+    if (dueDateFrom) params.due_date_from = dueDateFrom
+    if (dueDateTo) params.due_date_to = dueDateTo
+    if (overdue) params.overdue = 1
     return axios
       .get(Routing.generate('api_band_space_tasks_get_collection', { bandSpaceId }), { params })
       .then((resp) => resp.data)

@@ -16,7 +16,10 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     priority: null,
     myTasks: false,
     showArchived: false,
-    query: ''
+    query: '',
+    dueDateFrom: null,
+    dueDateTo: null,
+    overdue: false
   })
 
   const isLoading = ref(false)
@@ -68,10 +71,12 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     loadError.value = null
     try {
       const trimmedQuery = filters.query.trim()
-      const result = await bandSpaceTasksApi.getTasks(
-        bandSpaceId,
-        trimmedQuery ? { query: trimmedQuery } : {}
-      )
+      const params = {}
+      if (trimmedQuery) params.query = trimmedQuery
+      if (filters.dueDateFrom) params.dueDateFrom = filters.dueDateFrom
+      if (filters.dueDateTo) params.dueDateTo = filters.dueDateTo
+      if (filters.overdue) params.overdue = true
+      const result = await bandSpaceTasksApi.getTasks(bandSpaceId, params)
       if (requestId === tasksRequestId) {
         tasks.value = result
       }
@@ -306,6 +311,9 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     filters.myTasks = false
     filters.showArchived = false
     filters.query = ''
+    filters.dueDateFrom = null
+    filters.dueDateTo = null
+    filters.overdue = false
     loadError.value = null
     isLoadingActiveTask.value = false
     activeTaskError.value = null

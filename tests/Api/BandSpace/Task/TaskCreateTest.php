@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\BandSpace\Task;
 
+use App\Repository\BandSpace\Filter\TaskFilter;
 use App\Repository\BandSpace\TaskRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -35,7 +36,7 @@ class TaskCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(TaskRepository::class);
-        $tasks = $repo->findByBandSpace($bandSpace->_real());
+        $tasks = $repo->findByBandSpace($bandSpace->_real(), new TaskFilter());
         $this->assertCount(1, $tasks);
 
         $task = $tasks[0];

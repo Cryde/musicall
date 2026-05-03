@@ -265,6 +265,98 @@ class TaskGetCollectionTest extends ApiTestCase
         $this->assertJsonContains(['totalItems' => 1]);
     }
 
+    public function test_get_tasks_filter_overdue_excludes_done_and_future(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $overdueTodo = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'dueDate' => new \DateTimeImmutable('-3 days'),
+        ])->create();
+        TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Done,
+            'dueDate' => new \DateTimeImmutable('-3 days'),
+        ])->create();
+        TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'dueDate' => new \DateTimeImmutable('+3 days'),
+        ])->create();
+        TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'dueDate' => null,
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?overdue=1',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonContains([
+            'totalItems' => 1,
+            'member' => [
+                ['id' => $overdueTodo->_real()->id],
+            ],
+        ]);
+    }
+
+    public function test_get_tasks_filter_due_date_range(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'dueDate' => new \DateTimeImmutable('2026-04-30 12:00:00'),
+        ])->create();
+        $inRangeStart = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'dueDate' => new \DateTimeImmutable('2026-05-01 00:00:00'),
+        ])->create();
+        $inRangeEnd = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'dueDate' => new \DateTimeImmutable('2026-05-31 23:59:00'),
+        ])->create();
+        TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'dueDate' => new \DateTimeImmutable('2026-06-01 00:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?due_date_from=2026-05-01&due_date_to=2026-05-31',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonContains(['totalItems' => 2]);
+
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        $ids = array_column($body['member'], 'id');
+        $this->assertContains($inRangeStart->_real()->id, $ids);
+        $this->assertContains($inRangeEnd->_real()->id, $ids);
+    }
+
     public function test_get_tasks_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

@@ -4,6 +4,9 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
+use App\Enum\BandSpace\TaskStatus;
+use App\Repository\BandSpace\Filter\TaskFilter;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -20,15 +23,8 @@ class TaskRepository extends ServiceEntityRepository
     /**
      * @return Task[]
      */
-    public function findByBandSpace(
-        BandSpace $bandSpace,
-        ?string $status = null,
-        ?string $categoryId = null,
-        ?string $assigneeId = null,
-        ?string $priority = null,
-        ?bool $archived = null,
-        ?string $query = null,
-    ): array {
+    public function findByBandSpace(BandSpace $bandSpace, TaskFilter $filter): array
+    {
         $qb = $this->createQueryBuilder('t')
             ->addSelect('u', 'c', 'a')
             ->leftJoin('t.createdBy', 'u')
@@ -39,36 +35,53 @@ class TaskRepository extends ServiceEntityRepository
             ->orderBy('t.position', 'ASC')
             ->addOrderBy('t.creationDatetime', 'DESC');
 
-        if ($archived === true) {
+        if ($filter->archived === true) {
             $qb->andWhere('t.archiveDatetime IS NOT NULL');
         } else {
             $qb->andWhere('t.archiveDatetime IS NULL');
         }
 
-        if ($status !== null) {
+        if ($filter->status !== null) {
             $qb->andWhere('t.status = :status')
-                ->setParameter('status', $status);
+                ->setParameter('status', $filter->status);
         }
 
-        if ($categoryId !== null) {
+        if ($filter->categoryId !== null) {
             $qb->andWhere('t.category = :categoryId')
-                ->setParameter('categoryId', $categoryId);
+                ->setParameter('categoryId', $filter->categoryId);
         }
 
-        if ($assigneeId !== null) {
+        if ($filter->assigneeId !== null) {
             $qb->andWhere('a.id = :assigneeId')
-                ->setParameter('assigneeId', $assigneeId);
+                ->setParameter('assigneeId', $filter->assigneeId);
         }
 
-        if ($priority !== null) {
+        if ($filter->priority !== null) {
             $qb->andWhere('t.priority = :priority')
-                ->setParameter('priority', $priority);
+                ->setParameter('priority', $filter->priority);
         }
 
-        $trimmedQuery = $query !== null ? trim($query) : '';
+        $trimmedQuery = $filter->query !== null ? trim($filter->query) : '';
         if ($trimmedQuery !== '') {
             $qb->andWhere('LOWER(t.title) LIKE :query OR LOWER(t.description) LIKE :query')
                 ->setParameter('query', '%' . mb_strtolower($trimmedQuery) . '%');
+        }
+
+        if ($filter->dueDateFrom !== null) {
+            $qb->andWhere('t.dueDate >= :dueDateFrom')
+                ->setParameter('dueDateFrom', $filter->dueDateFrom);
+        }
+
+        if ($filter->dueDateTo !== null) {
+            $qb->andWhere('t.dueDate <= :dueDateTo')
+                ->setParameter('dueDateTo', $filter->dueDateTo);
+        }
+
+        if ($filter->overdueOnly) {
+            $qb->andWhere('t.dueDate < :today')
+                ->andWhere('t.status != :doneStatus')
+                ->setParameter('today', new DateTimeImmutable('today'))
+                ->setParameter('doneStatus', TaskStatus::Done->value);
         }
 
         return $qb->getQuery()->getResult();
