@@ -16,6 +16,11 @@
     "vite-plugin-symfony": "^8.2.2"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.20",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/timegrid": "^6.1.20",
+    "@fullcalendar/vue3": "^6.1.20",
     "@jaseeey/vue-umami-plugin": "^1.4.0",
     "@primeuix/themes": "^2.0.2",
     "@tailwindcss/vite": "^4.1.14",

@@ -29,6 +29,18 @@
           {{ src.label }}
         </button>
       </div>
+      <div class="flex items-center gap-1 ml-auto">
+        <Button
+          v-for="mode in viewModeOptions"
+          :key="mode.key"
+          :label="mode.label"
+          size="small"
+          :severity="viewMode === mode.key ? 'primary' : 'secondary'"
+          :outlined="viewMode !== mode.key"
+          :text="viewMode !== mode.key"
+          @click="viewMode = mode.key"
+        />
+      </div>
     </div>
 
     <div v-if="agendaStore.isLoading" class="flex items-center justify-center py-12">
@@ -39,72 +51,81 @@
       {{ agendaStore.loadError }}
     </div>
 
-    <div
-      v-else-if="agendaStore.items.length === 0"
-      class="text-center text-surface-400 italic py-12"
-    >
-      Aucun événement à venir dans cette période
-    </div>
+    <template v-else-if="viewMode === 'list'">
+      <div
+        v-if="agendaStore.items.length === 0"
+        class="text-center text-surface-400 italic py-12"
+      >
+        Aucun événement à venir dans cette période
+      </div>
 
-    <div
-      v-else-if="filteredItems.length === 0"
-      class="text-center text-surface-400 italic py-12"
-    >
-      Aucun événement avec ces filtres
-    </div>
+      <div
+        v-else-if="filteredItems.length === 0"
+        class="text-center text-surface-400 italic py-12"
+      >
+        Aucun événement avec ces filtres
+      </div>
 
-    <div v-else>
-      <div v-for="group in groupedItems" :key="group.date" class="mb-6">
-        <div class="flex items-center gap-2 mb-2 px-2">
-          <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">
-            {{ formatDateLabel(group.date) }}
-          </span>
-          <span class="text-xs text-surface-400">
-            {{ group.items.length }} événement{{ group.items.length > 1 ? 's' : '' }}
-          </span>
-        </div>
-        <div
-          class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden"
-        >
-          <div
-            v-for="item in group.items"
-            :key="item.id"
-            class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors"
-            :class="[
-              sourceBorderClass(item.source),
-              item.source === 'manual' ? 'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700' : ''
-            ]"
-            @click="handleItemClick(item)"
-          >
-            <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 w-12 flex-shrink-0 pt-0.5">
-              {{ formatTime(item.datetime) }}
+      <div v-else>
+        <div v-for="group in groupedItems" :key="group.date" class="mb-6">
+          <div class="flex items-center gap-2 mb-2 px-2">
+            <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">
+              {{ formatDateLabel(group.date) }}
             </span>
+            <span class="text-xs text-surface-400">
+              {{ group.items.length }} événement{{ group.items.length > 1 ? 's' : '' }}
+            </span>
+          </div>
+          <div
+            class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden"
+          >
+            <div
+              v-for="item in group.items"
+              :key="item.id"
+              class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors"
+              :class="[
+                sourceBorderClass(item.source),
+                item.source === 'manual' ? 'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700' : ''
+              ]"
+              @click="handleItemClick(item)"
+            >
+              <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 w-12 flex-shrink-0 pt-0.5">
+                {{ formatTime(item.datetime) }}
+              </span>
 
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-medium truncate">{{ item.title }}</span>
-                <span
-                  class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-                  :class="sourceBadgeClass(item.source)"
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-medium truncate">{{ item.title }}</span>
+                  <span
+                    class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+                    :class="sourceBadgeClass(item.source)"
+                  >
+                    {{ sourceLabel(item.source) }}
+                  </span>
+                </div>
+
+                <div
+                  v-if="item.description"
+                  class="text-sm text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-2"
                 >
-                  {{ sourceLabel(item.source) }}
-                </span>
-              </div>
+                  {{ item.description }}
+                </div>
 
-              <div
-                v-if="item.description"
-                class="text-sm text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-2"
-              >
-                {{ item.description }}
-              </div>
-
-              <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
-                {{ metadataLine(item) }}
+                <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
+                  {{ metadataLine(item) }}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </template>
+
+    <div
+      v-else
+      class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
+    >
+      <FullCalendar :key="viewMode" :options="calendarOptions" />
     </div>
 
     <AgendaEntryDrawer
@@ -117,6 +138,10 @@
 </template>
 
 <script setup>
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import FullCalendar from '@fullcalendar/vue3'
 import {
   addDays,
   endOfMonth,
@@ -146,6 +171,14 @@ const dialogItem = ref(null)
 const today = startOfDay(new Date())
 const dateFrom = ref(today)
 const dateTo = ref(addDays(today, 30))
+
+const viewMode = ref('list')
+const viewModeOptions = [
+  { key: 'list', label: 'Liste' },
+  { key: 'dayGridMonth', label: 'Mois' },
+  { key: 'timeGridWeek', label: 'Semaine' },
+  { key: 'timeGridDay', label: 'Jour' }
+]
 
 const agendaPresets = [
   {
@@ -210,6 +243,12 @@ const sourceOptions = [
   }
 ]
 
+const SOURCE_COLORS = {
+  manual: { bg: '#3b82f6', border: '#2563eb' },
+  task: { bg: '#f59e0b', border: '#d97706' },
+  finance: { bg: '#10b981', border: '#059669' }
+}
+
 const selectedSources = reactive(new Set(['manual', 'task', 'finance']))
 
 const filteredItems = computed(() =>
@@ -227,6 +266,46 @@ const groupedItems = computed(() => {
   }
   return Array.from(groups, ([date, items]) => ({ date, items }))
 })
+
+const calendarEvents = computed(() =>
+  filteredItems.value.map((item) => {
+    const colors = SOURCE_COLORS[item.source] ?? { bg: '#94a3b8', border: '#64748b' }
+    return {
+      id: item.id,
+      title: item.title,
+      start: item.datetime,
+      allDay: item.source === 'finance',
+      backgroundColor: colors.bg,
+      borderColor: colors.border,
+      classNames: item.source === 'manual' ? ['agenda-event-clickable'] : [],
+      extendedProps: { item }
+    }
+  })
+)
+
+const calendarOptions = computed(() => ({
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+  initialView: viewMode.value === 'list' ? 'dayGridMonth' : viewMode.value,
+  locale: 'fr',
+  firstDay: 1,
+  events: calendarEvents.value,
+  eventClick: handleEventClick,
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: ''
+  },
+  buttonText: {
+    today: "Aujourd'hui"
+  },
+  height: 'auto',
+  allDaySlot: true,
+  allDayText: 'Toute la journée',
+  slotMinTime: '06:00:00',
+  slotMaxTime: '24:00:00',
+  nowIndicator: true,
+  dayMaxEvents: 3
+}))
 
 onMounted(() => {
   fetchWithCurrentRange()
@@ -271,6 +350,14 @@ function handleItemClick(item) {
   if (item.source !== 'manual') return
   dialogItem.value = item
   dialogVisible.value = true
+}
+
+function handleEventClick(info) {
+  const item = info.event.extendedProps.item
+  if (item && item.source === 'manual') {
+    dialogItem.value = item
+    dialogVisible.value = true
+  }
 }
 
 function formatDateLabel(dateString) {
@@ -351,3 +438,40 @@ function taskPriorityLabel(priority) {
   }
 }
 </script>
+
+<style>
+.agenda-fc-theme .fc {
+  --fc-border-color: var(--p-surface-200);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--p-surface-50);
+  --fc-today-bg-color: color-mix(in oklch, var(--p-primary-color) 8%, transparent);
+  --fc-event-text-color: #fff;
+  color: var(--p-text-color);
+}
+
+.agenda-fc-theme .fc-col-header-cell-cushion,
+.agenda-fc-theme .fc-daygrid-day-number,
+.agenda-fc-theme .fc-timegrid-axis-cushion,
+.agenda-fc-theme .fc-timegrid-slot-label-cushion,
+.agenda-fc-theme .fc-list-day-cushion {
+  color: var(--p-text-color);
+}
+
+.agenda-fc-theme .fc-toolbar-title {
+  color: var(--p-text-color);
+}
+
+.agenda-fc-theme .fc-day-other .fc-daygrid-day-number {
+  color: var(--p-text-muted-color);
+  opacity: 0.6;
+}
+
+.dark-mode .agenda-fc-theme .fc {
+  --fc-border-color: var(--p-surface-700);
+  --fc-neutral-bg-color: var(--p-surface-900);
+}
+
+.agenda-fc-theme .fc-event.agenda-event-clickable {
+  cursor: pointer;
+}
+</style>
