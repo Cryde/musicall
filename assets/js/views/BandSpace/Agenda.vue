@@ -132,6 +132,7 @@
       v-model:visible="dialogVisible"
       :bandSpaceId="route.params.id"
       :agendaItem="dialogItem"
+      :initialDatetime="dialogInitialDatetime"
     />
     <ConfirmDialog />
   </div>
@@ -167,6 +168,7 @@ const agendaStore = useBandAgendaStore()
 
 const dialogVisible = ref(false)
 const dialogItem = ref(null)
+const dialogInitialDatetime = ref(null)
 
 const today = startOfDay(new Date())
 const dateFrom = ref(today)
@@ -290,6 +292,7 @@ const calendarOptions = computed(() => ({
   firstDay: 1,
   events: calendarEvents.value,
   eventClick: handleEventClick,
+  dateClick: handleDateClick,
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
@@ -343,12 +346,14 @@ function toggleSource(key) {
 
 function openCreateDialog() {
   dialogItem.value = null
+  dialogInitialDatetime.value = null
   dialogVisible.value = true
 }
 
 function handleItemClick(item) {
   if (item.source !== 'manual') return
   dialogItem.value = item
+  dialogInitialDatetime.value = null
   dialogVisible.value = true
 }
 
@@ -356,8 +361,19 @@ function handleEventClick(info) {
   const item = info.event.extendedProps.item
   if (item && item.source === 'manual') {
     dialogItem.value = item
+    dialogInitialDatetime.value = null
     dialogVisible.value = true
   }
+}
+
+function handleDateClick(info) {
+  const clickedDate = new Date(info.date.getTime())
+  if (info.allDay) {
+    clickedDate.setHours(9, 0, 0, 0)
+  }
+  dialogItem.value = null
+  dialogInitialDatetime.value = clickedDate
+  dialogVisible.value = true
 }
 
 function formatDateLabel(dateString) {

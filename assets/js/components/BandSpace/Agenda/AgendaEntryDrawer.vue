@@ -109,7 +109,8 @@ import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  agendaItem: { type: Object, default: null }
+  agendaItem: { type: Object, default: null },
+  initialDatetime: { type: Date, default: null }
 })
 
 const emit = defineEmits(['saved', 'deleted'])
@@ -147,7 +148,7 @@ watch(isVisible, (visible) => {
     form.description = props.agendaItem.description ?? ''
   } else {
     form.title = ''
-    form.eventDatetime = null
+    form.eventDatetime = props.initialDatetime ? new Date(props.initialDatetime) : null
     form.location = ''
     form.description = ''
   }
