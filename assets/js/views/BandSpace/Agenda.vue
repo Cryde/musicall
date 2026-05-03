@@ -2,6 +2,12 @@
   <div class="p-4">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">Agenda</h1>
+      <Button
+        icon="pi pi-plus"
+        label="Nouvel événement"
+        size="small"
+        @click="openCreateDialog"
+      />
     </div>
 
     <div v-if="agendaStore.isLoading" class="flex items-center justify-center py-12">
@@ -35,8 +41,12 @@
           <div
             v-for="item in group.items"
             :key="item.id"
-            class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0"
-            :class="sourceBorderClass(item.source)"
+            class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors"
+            :class="[
+              sourceBorderClass(item.source),
+              item.source === 'manual' ? 'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700' : ''
+            ]"
+            @click="handleItemClick(item)"
           >
             <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 w-12 flex-shrink-0 pt-0.5">
               {{ formatTime(item.datetime) }}
@@ -60,10 +70,7 @@
                 {{ item.description }}
               </div>
 
-              <div
-                v-if="metadataLine(item)"
-                class="text-xs text-surface-400 mt-1"
-              >
+              <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
                 {{ metadataLine(item) }}
               </div>
             </div>
@@ -71,18 +78,31 @@
         </div>
       </div>
     </div>
+
+    <AgendaEntryDrawer
+      v-model:visible="dialogVisible"
+      :bandSpaceId="route.params.id"
+      :agendaItem="dialogItem"
+    />
+    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
+import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
 import ProgressSpinner from 'primevue/progressspinner'
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { formatDateCompactWithYear } from '../../utils/date.js'
 
 const route = useRoute()
 const agendaStore = useBandAgendaStore()
+
+const dialogVisible = ref(false)
+const dialogItem = ref(null)
 
 const groupedItems = computed(() => {
   const groups = new Map()
@@ -109,6 +129,17 @@ watch(
     }
   }
 )
+
+function openCreateDialog() {
+  dialogItem.value = null
+  dialogVisible.value = true
+}
+
+function handleItemClick(item) {
+  if (item.source !== 'manual') return
+  dialogItem.value = item
+  dialogVisible.value = true
+}
 
 function formatDateLabel(dateString) {
   return formatDateCompactWithYear(dateString)
