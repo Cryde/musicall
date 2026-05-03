@@ -21,22 +21,18 @@ export default {
 
   create(bandSpaceId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_notes_post', { bandSpaceId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_notes_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
 
   update(bandSpaceId, noteId, data) {
     return axios
-      .patch(
-        Routing.generate('api_band_space_notes_patch', { bandSpaceId, id: noteId }),
-        data,
-        { headers: { 'Content-Type': 'application/merge-patch+json' } }
-      )
+      .patch(Routing.generate('api_band_space_notes_patch', { bandSpaceId, id: noteId }), data, {
+        headers: { 'Content-Type': 'application/merge-patch+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },

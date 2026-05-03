@@ -14,10 +14,10 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 
 const props = defineProps({

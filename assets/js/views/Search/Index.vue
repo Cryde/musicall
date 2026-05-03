@@ -367,8 +367,8 @@
 <script setup>
 defineOptions({ name: 'MusicianSearch' })
 
-import { useDebounceFn, useMediaQuery, useTitle } from '@vueuse/core'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import { useDebounceFn, useMediaQuery, useTitle } from '@vueuse/core'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
@@ -417,8 +417,8 @@ const selectedLocation = ref(null)
 const locationSuggestions = ref([])
 const selectSearchType = ref(null)
 const selectSearchTypeOption = [
-    { key: 2, name: 'Musiciens' },
-    { key: 1, name: 'Groupe' }
+  { key: 2, name: 'Musiciens' },
+  { key: 1, name: 'Groupe' }
 ]
 
 const showAnnounceModal = ref(false)
@@ -656,8 +656,8 @@ function initializeFiltersFromUrl() {
   // Location (lat, lng, location name)
   if (query.lat && query.lng && query.location) {
     selectedLocation.value = {
-      latitude: parseFloat(query.lat),
-      longitude: parseFloat(query.lng),
+      latitude: Number.parseFloat(query.lat),
+      longitude: Number.parseFloat(query.lng),
       name: query.location
     }
   }
@@ -691,7 +691,7 @@ async function search() {
   const searchFilters = {
     type: selectSearchType.value?.name || null,
     instrument: selectedInstrument.value?.musician_name || null,
-    styles: selectedStyles.value.map(s => s.name).join(', ') || null,
+    styles: selectedStyles.value.map((s) => s.name).join(', ') || null,
     location: selectedLocation.value?.name || null
   }
   trackUmamiEvent('musician-search-submit', searchFilters)
@@ -735,7 +735,7 @@ async function loadMore() {
   isLoadingMore.value = false
 }
 
-function openAuthModal(variant, musicianName = null) {
+function openAuthModal(variant, _musicianName = null) {
   authModalVariant.value = variant
   authModalMessage.value = ''
   showAuthModal.value = true

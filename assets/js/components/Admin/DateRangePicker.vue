@@ -14,7 +14,7 @@
         <div class="flex flex-col gap-1 p-3 sm:border-r border-b sm:border-b-0 border-surface-200 dark:border-surface-700 min-w-0 sm:min-w-44">
           <span class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1 px-2">Période</span>
           <button
-            v-for="preset in presets"
+            v-for="preset in effectivePresets"
             :key="preset.key"
             type="button"
             :class="[
@@ -46,12 +46,20 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import {
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+  subDays,
+  subYears
+} from 'date-fns'
+import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
-import { format, subDays, subYears, startOfDay, startOfWeek, startOfMonth, startOfYear } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   from: { type: Date, required: true },
@@ -72,18 +80,27 @@ const defaultPresets = [
   { key: '7d', label: '7 derniers jours', from: () => subDays(today, 6), to: () => today },
   { key: '14d', label: '14 derniers jours', from: () => subDays(today, 13), to: () => today },
   { key: '30d', label: '30 derniers jours', from: () => subDays(today, 29), to: () => today },
-  { key: 'this_week', label: 'Cette semaine', from: () => startOfWeek(today, { locale: fr }), to: () => today },
+  {
+    key: 'this_week',
+    label: 'Cette semaine',
+    from: () => startOfWeek(today, { locale: fr }),
+    to: () => today
+  },
   { key: 'this_month', label: 'Ce mois', from: () => startOfMonth(today), to: () => today },
   { key: 'this_year', label: 'Cette année', from: () => startOfYear(today), to: () => today },
   { key: '1y', label: 'Dernière année', from: () => subYears(today, 1), to: () => today },
   { key: '2y', label: '2 dernières années', from: () => subYears(today, 2), to: () => today },
-  { key: 'all', label: 'Depuis le début', from: () => new Date(2008, 3, 30), to: () => today },
+  { key: 'all', label: 'Depuis le début', from: () => new Date(2008, 3, 30), to: () => today }
 ]
 
-const presets = computed(() => props.presets ?? defaultPresets)
+const effectivePresets = computed(() => props.presets ?? defaultPresets)
 
 const buttonLabel = computed(() => {
-  return format(props.from, 'd MMM yyyy', { locale: fr }) + ' – ' + format(props.to, 'd MMM yyyy', { locale: fr })
+  return (
+    format(props.from, 'd MMM yyyy', { locale: fr }) +
+    ' – ' +
+    format(props.to, 'd MMM yyyy', { locale: fr })
+  )
 })
 
 function toggle(event) {

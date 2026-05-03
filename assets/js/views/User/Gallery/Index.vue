@@ -145,6 +145,7 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
@@ -156,7 +157,6 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserGalleriesStore } from '../../../store/gallery/userGalleries.js'

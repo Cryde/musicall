@@ -526,7 +526,9 @@ function loadDateFilteredData() {
   const to = formatDate(dateTo.value)
   dashboardStore.loadUserMetrics(from, to)
   const metricNames = ['registrations', 'logins', 'messages']
-  metricNames.forEach((metric) => dashboardStore.loadTimeSeries(metric, from, to))
+  for (const metric of metricNames) {
+    dashboardStore.loadTimeSeries(metric, from, to)
+  }
 }
 
 function getRetentionClass(value) {

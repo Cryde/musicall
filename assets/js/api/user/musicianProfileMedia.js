@@ -12,16 +12,12 @@ export default {
 
   addMedia(data) {
     return axios
-      .post(
-        Routing.generate('api_musician_profile_media_create'),
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/ld+json',
-            Accept: 'application/ld+json'
-          }
+      .post(Routing.generate('api_musician_profile_media_create'), data, {
+        headers: {
+          'Content-Type': 'application/ld+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },

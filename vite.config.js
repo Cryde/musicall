@@ -20,7 +20,7 @@ export default defineConfig({
       input: {
         app: './assets/js/app.js',
         styles: './assets/style/style.css'
-      },
+      }
     }
   },
   server: {

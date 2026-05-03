@@ -180,20 +180,23 @@ function getPlatformIcon(platform) {
   return platformIcons[platform] || 'pi-link'
 }
 
-watch(() => props.visible, async (visible) => {
-  if (visible) {
-    isLoading.value = true
-    addLinkError.value = ''
-    newLinkPlatform.value = null
-    newLinkUrl.value = ''
+watch(
+  () => props.visible,
+  async (visible) => {
+    if (visible) {
+      isLoading.value = true
+      addLinkError.value = ''
+      newLinkPlatform.value = null
+      newLinkUrl.value = ''
 
-    try {
-      await userProfileStore.loadSocialLinks()
-    } finally {
-      isLoading.value = false
+      try {
+        await userProfileStore.loadSocialLinks()
+      } finally {
+        isLoading.value = false
+      }
     }
   }
-})
+)
 
 function handleClose() {
   emit('update:visible', false)

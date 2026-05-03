@@ -3,7 +3,14 @@
 import axios from 'axios'
 
 export default {
-  searchAnnounces({ instrument = null, styles = null, type = null, latitude = null, longitude = null, page = 1 }) {
+  searchAnnounces({
+    instrument = null,
+    styles = null,
+    type = null,
+    latitude = null,
+    longitude = null,
+    page = 1
+  }) {
     const params = { page }
     if (type !== null) {
       params.type = type

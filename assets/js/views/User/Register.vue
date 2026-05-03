@@ -229,6 +229,7 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -236,12 +237,11 @@ import Divider from 'primevue/divider'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import securityApi from '../../api/user/security.js'
-import emailVerificationApi from '../../api/user/emailVerification.js'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
+import emailVerificationApi from '../../api/user/emailVerification.js'
+import securityApi from '../../api/user/security.js'
 import OtpInput from '../../components/Auth/OtpInput.vue'
 
 useTitle('Créer un compte - MusicAll')

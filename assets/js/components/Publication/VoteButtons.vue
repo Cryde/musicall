@@ -27,9 +27,9 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia'
 import Button from 'primevue/button'
 import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
 import { usePublicationStore } from '../../store/publication/publication.js'
 
 const props = defineProps({

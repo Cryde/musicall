@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
-import bandSpaceTasksApi from '../../api/bandSpace/band-space-tasks.js'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
+import bandSpaceTasksApi from '../../api/bandSpace/band-space-tasks.js'
 import { useUserSecurityStore } from '../user/security.js'
 
 export const useBandTasksStore = defineStore('bandTasks', () => {
@@ -34,15 +34,15 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     const userSecurityStore = useUserSecurityStore()
     const currentUserId = userSecurityStore.userProfile?.id
 
-    const filtered = tasks.value
-      .filter((task) => {
-        if (task.archive_datetime) return false
-        if (filters.categoryId && task.category_id !== filters.categoryId) return false
-        if (filters.assigneeId && !task.assignees.some((a) => a.id === filters.assigneeId)) return false
-        if (filters.priority && task.priority !== filters.priority) return false
-        if (filters.myTasks && !task.assignees.some((a) => a.id === currentUserId)) return false
-        return true
-      })
+    const filtered = tasks.value.filter((task) => {
+      if (task.archive_datetime) return false
+      if (filters.categoryId && task.category_id !== filters.categoryId) return false
+      if (filters.assigneeId && !task.assignees.some((a) => a.id === filters.assigneeId))
+        return false
+      if (filters.priority && task.priority !== filters.priority) return false
+      if (filters.myTasks && !task.assignees.some((a) => a.id === currentUserId)) return false
+      return true
+    })
 
     const sortByPosition = (a, b) => a.position - b.position
 

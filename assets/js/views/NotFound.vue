@@ -135,13 +135,13 @@
 </template>
 
 <script setup>
-import { useTitle } from '@vueuse/core'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import AuthRequiredModal from '../components/Auth/AuthRequiredModal.vue'
-import AddAnnounceModal from './User/Announce/AddAnnounceModal.vue'
 import { useUserSecurityStore } from '../store/user/security.js'
+import AddAnnounceModal from './User/Announce/AddAnnounceModal.vue'
 
 useTitle('Page introuvable - MusicAll')
 
@@ -170,36 +170,33 @@ const pageTitles = [
   'Oups, fausse note !',
   'Cette page a joué en do quand il fallait jouer en ré',
   'Ce solo était pas prévu',
-  'Quelqu\'un a débranché l\'ampli',
-  'Le bassiste s\'est encore perdu',
+  "Quelqu'un a débranché l'ampli",
+  "Le bassiste s'est encore perdu"
 ]
 const pageTitle = pageTitles[Math.floor(Math.random() * pageTitles.length)]
 
 // Messages for playing
 const playMessages = {
-  playing: [
-    'Pas mal du tout !',
-    'Joli !',
-    'Vous avez du talent !',
-    'La musique adoucit les 404',
-  ],
+  playing: ['Pas mal du tout !', 'Joli !', 'Vous avez du talent !', 'La musique adoucit les 404'],
   longPlay: [
     'Prêt·e à trouver un groupe ?',
-    'Un vrai concert ! Mais la page n\'est toujours pas là...',
-    'Vous devriez poster une annonce !',
-  ],
+    "Un vrai concert ! Mais la page n'est toujours pas là...",
+    'Vous devriez poster une annonce !'
+  ]
 }
 
 function updatePlayMessage() {
   if (playStartTime.value) {
     const playDuration = (Date.now() - playStartTime.value) / 1000
     if (playDuration > 10 && notesPlayed.value >= 10) {
-      playMessage.value = playMessages.longPlay[Math.floor(Math.random() * playMessages.longPlay.length)]
+      playMessage.value =
+        playMessages.longPlay[Math.floor(Math.random() * playMessages.longPlay.length)]
       return
     }
   }
   if (notesPlayed.value >= 5) {
-    playMessage.value = playMessages.playing[Math.floor(Math.random() * playMessages.playing.length)]
+    playMessage.value =
+      playMessages.playing[Math.floor(Math.random() * playMessages.playing.length)]
   }
 }
 
@@ -209,10 +206,10 @@ const whiteKeys = [
   { note: 'D4', frequency: 293.66, keyLabel: 'Z' },
   { note: 'E4', frequency: 329.63, keyLabel: 'E' },
   { note: 'F4', frequency: 349.23, keyLabel: 'R' },
-  { note: 'G4', frequency: 392.00, keyLabel: 'T' },
-  { note: 'A4', frequency: 440.00, keyLabel: 'Y' },
+  { note: 'G4', frequency: 392.0, keyLabel: 'T' },
+  { note: 'A4', frequency: 440.0, keyLabel: 'Y' },
   { note: 'B4', frequency: 493.88, keyLabel: 'U' },
-  { note: 'C5', frequency: 523.25, keyLabel: 'I' },
+  { note: 'C5', frequency: 523.25, keyLabel: 'I' }
 ]
 
 const blackKeys = [
@@ -220,28 +217,28 @@ const blackKeys = [
   { note: 'D#4', frequency: 311.13, keyLabel: '3' },
   null, // No black key between E and F
   { note: 'F#4', frequency: 369.99, keyLabel: '5' },
-  { note: 'G#4', frequency: 415.30, keyLabel: '6' },
+  { note: 'G#4', frequency: 415.3, keyLabel: '6' },
   { note: 'A#4', frequency: 466.16, keyLabel: '7' },
-  null, // No black key between B and C
+  null // No black key between B and C
 ]
 
 const blackKeyPositions = computed(() => blackKeys)
 
 // AZERTY keyboard mapping
 const keyMap = {
-  'a': whiteKeys[0], // C4
-  'z': whiteKeys[1], // D4
-  'e': whiteKeys[2], // E4
-  'r': whiteKeys[3], // F4
-  't': whiteKeys[4], // G4
-  'y': whiteKeys[5], // A4
-  'u': whiteKeys[6], // B4
-  'i': whiteKeys[7], // C5
-  '2': blackKeys[0], // C#4
-  '3': blackKeys[1], // D#4
-  '5': blackKeys[3], // F#4
-  '6': blackKeys[4], // G#4
-  '7': blackKeys[5], // A#4
+  a: whiteKeys[0], // C4
+  z: whiteKeys[1], // D4
+  e: whiteKeys[2], // E4
+  r: whiteKeys[3], // F4
+  t: whiteKeys[4], // G4
+  y: whiteKeys[5], // A4
+  u: whiteKeys[6], // B4
+  i: whiteKeys[7], // C5
+  2: blackKeys[0], // C#4
+  3: blackKeys[1], // D#4
+  5: blackKeys[3], // F#4
+  6: blackKeys[4], // G#4
+  7: blackKeys[5] // A#4
 }
 
 // Smoke on the Water detection (G4, Bb4, C5, G4, Bb4, Db5, C5)
@@ -253,13 +250,13 @@ function getBlackKeyOffset(index) {
   const baseWidth = pianoRef.value ? pianoRef.value.querySelector('button')?.offsetWidth || 48 : 48
   const blackWidth = baseWidth * 0.6
   const offsets = [
-    baseWidth - blackWidth / 2,           // C#
-    baseWidth * 2 - blackWidth / 2,       // D#
-    0,                                     // (no key)
-    baseWidth * 4 - blackWidth / 2,       // F#
-    baseWidth * 5 - blackWidth / 2,       // G#
-    baseWidth * 6 - blackWidth / 2,       // A#
-    0,                                     // (no key)
+    baseWidth - blackWidth / 2, // C#
+    baseWidth * 2 - blackWidth / 2, // D#
+    0, // (no key)
+    baseWidth * 4 - blackWidth / 2, // F#
+    baseWidth * 5 - blackWidth / 2, // G#
+    baseWidth * 6 - blackWidth / 2, // A#
+    0 // (no key)
   ]
   return offsets[index] || 0
 }
@@ -328,10 +325,12 @@ function stopNote(note) {
 function checkEasterEgg() {
   // Check for Smoke on the Water pattern
   const lastThree = recentNotes.value.slice(-3)
-  if (lastThree.length === 3 &&
-      lastThree[0] === smokeOnTheWaterPattern[0] &&
-      lastThree[1] === smokeOnTheWaterPattern[1] &&
-      lastThree[2] === smokeOnTheWaterPattern[2]) {
+  if (
+    lastThree.length === 3 &&
+    lastThree[0] === smokeOnTheWaterPattern[0] &&
+    lastThree[1] === smokeOnTheWaterPattern[1] &&
+    lastThree[2] === smokeOnTheWaterPattern[2]
+  ) {
     easterEggMessage.value = '🎸 Smoke on the Water ! Deep Purple serait fier !'
     trackUmamiEvent('404-easter-egg', { song: 'smoke-on-the-water' })
     setTimeout(() => {

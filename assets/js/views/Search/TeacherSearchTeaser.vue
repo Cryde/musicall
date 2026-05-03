@@ -169,13 +169,12 @@ import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import teacherProfileApi from '../../api/user/teacherProfile.js'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
-import { useUserSecurityStore } from '../../store/user/security.js'
-
 import heroImage1 from '../../../image/teacher-teaser/1.webp'
 import heroImage2 from '../../../image/teacher-teaser/2.webp'
 import heroImage3 from '../../../image/teacher-teaser/3.webp'
+import teacherProfileApi from '../../api/user/teacherProfile.js'
+import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
 useTitle('Trouver un professeur de musique - MusicAll')
 

@@ -54,9 +54,9 @@
 <script setup>
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
+import VoteButtonsList from '../../components/Publication/VoteButtonsList.vue'
 import relativeDateFilter from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
-import VoteButtonsList from '../../components/Publication/VoteButtonsList.vue'
 
 const props = defineProps({
   toRoute: { type: Object, required: true },
@@ -69,7 +69,7 @@ const props = defineProps({
   slug: { type: String, default: null },
   upvotes: { type: Number, default: 0 },
   downvotes: { type: Number, default: 0 },
-  userVote: { type: Number, default: null },
+  userVote: { type: Number, default: null }
 })
 
 const authorName = computed(() => displayName(props.author))

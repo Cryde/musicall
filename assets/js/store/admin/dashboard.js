@@ -47,7 +47,11 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
       timeSeries[metric] = { data: result, isLoading: false, error: null }
     } catch (e) {
       console.error(`Failed to load time series for ${metric}:`, e)
-      timeSeries[metric] = { data: null, isLoading: false, error: 'Impossible de charger les données' }
+      timeSeries[metric] = {
+        data: null,
+        isLoading: false,
+        error: 'Impossible de charger les données'
+      }
     }
   }
 
@@ -69,7 +73,9 @@ export const useAdminDashboardStore = defineStore('adminDashboard', () => {
     contentOverview.value = null
     generalError.value = null
     usersError.value = null
-    Object.keys(timeSeries).forEach((key) => delete timeSeries[key])
+    for (const key of Object.keys(timeSeries)) {
+      delete timeSeries[key]
+    }
   }
 
   return {

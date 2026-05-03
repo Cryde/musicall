@@ -119,11 +119,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'

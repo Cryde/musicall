@@ -305,9 +305,11 @@ function getPlatformIcon(platform) {
 }
 
 const hasChanges = computed(() => {
-  return displayName.value !== originalDisplayName.value ||
+  return (
+    displayName.value !== originalDisplayName.value ||
     bio.value !== originalBio.value ||
     location.value !== originalLocation.value
+  )
 })
 
 const canAddLink = computed(() => {

@@ -25,21 +25,21 @@ const route = useRoute()
 
 // Context zones: routes where specific components should remain cached
 const musicianSearchContext = [
-    'app_search_musician',
-    'app_search_guitarist',
-    'app_search_drummer',
-    'app_search_bassist',
-    'app_search_singer',
-    'app_search_pianist',
-    'app_user_public_profile',
-    'app_user_musician_profile'
+  'app_search_musician',
+  'app_search_guitarist',
+  'app_search_drummer',
+  'app_search_bassist',
+  'app_search_singer',
+  'app_search_pianist',
+  'app_user_public_profile',
+  'app_user_musician_profile'
 ]
 
 // Dynamic include list based on current route context
 const keepAliveIncludes = computed(() => {
-    if (musicianSearchContext.includes(route.name)) {
-        return ['MusicianSearch']
-    }
-    return []
+  if (musicianSearchContext.includes(route.name)) {
+    return ['MusicianSearch']
+  }
+  return []
 })
 </script>

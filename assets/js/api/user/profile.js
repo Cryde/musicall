@@ -11,23 +11,17 @@ export default {
   },
 
   getMyProfile() {
-    return axios
-      .get(Routing.generate('api_user_profile_get'))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_user_profile_get')).then((resp) => resp.data)
   },
 
   updateMyProfile(data) {
     return axios
-      .patch(
-        Routing.generate('api_user_profile_edit'),
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/merge-patch+json',
-            Accept: 'application/ld+json'
-          }
+      .patch(Routing.generate('api_user_profile_edit'), data, {
+        headers: {
+          'Content-Type': 'application/merge-patch+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -40,16 +34,12 @@ export default {
 
   addSocialLink(data) {
     return axios
-      .post(
-        Routing.generate('api_user_social_links_post'),
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/ld+json',
-            Accept: 'application/ld+json'
-          }
+      .post(Routing.generate('api_user_social_links_post'), data, {
+        headers: {
+          'Content-Type': 'application/ld+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },

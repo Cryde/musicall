@@ -67,11 +67,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Paginator from 'primevue/paginator'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'

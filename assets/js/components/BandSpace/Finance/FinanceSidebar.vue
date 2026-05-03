@@ -76,7 +76,7 @@ function contributionPercent(amount) {
 function formatEntryAmount(entry) {
   if (entry.amount != null) return formatAmount(entry.amount)
   if (entry.amount_min != null && entry.amount_max != null) {
-    return formatAmount(entry.amount_min) + ' - ' + formatAmount(entry.amount_max)
+    return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
   }
   return formatAmount(0)
 }
@@ -87,7 +87,6 @@ function statusDotClass(status) {
       return 'bg-green-500'
     case 'committed':
       return 'bg-orange-500'
-    case 'planned':
     default:
       return 'bg-surface-400'
   }

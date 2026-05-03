@@ -163,7 +163,8 @@ function handleUpdateEmoji(emoji) {
 
 function handleDelete(noteId) {
   confirm.require({
-    message: 'Êtes-vous sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées.',
+    message:
+      'Êtes-vous sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées.',
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',

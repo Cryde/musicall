@@ -126,6 +126,7 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useDebounceFn } from '@vueuse/core'
 import AutoComplete from 'primevue/autocomplete'
 import Avatar from 'primevue/avatar'
@@ -133,7 +134,6 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import userSearchApi from '../../api/search/user.js'
@@ -166,7 +166,9 @@ const isRecipientDeleted = computed(() => {
 
 const canSend = computed(() => {
   const hasRecipient = props.selectedRecipient || recipient.value
-  return content.value.trim().length > 0 && hasRecipient && !isSending.value && !isRecipientDeleted.value
+  return (
+    content.value.trim().length > 0 && hasRecipient && !isSending.value && !isRecipientDeleted.value
+  )
 })
 
 watch(

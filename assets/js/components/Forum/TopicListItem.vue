@@ -69,7 +69,9 @@ const props = defineProps({
 
 const isPinned = computed(() => props.topic.type === 1)
 const authorName = computed(() => displayName(props.topic.author))
-const lastPostCreatorName = computed(() => props.topic.last_post ? displayName(props.topic.last_post.creator) : '')
+const lastPostCreatorName = computed(() =>
+  props.topic.last_post ? displayName(props.topic.last_post.creator) : ''
+)
 
 const containerClass = computed(() => [
   'flex flex-col md:flex-row md:items-center py-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 gap-2 md:gap-4',

@@ -4,20 +4,20 @@
 export const STUDENT_LEVEL_LABELS = {
   beginner: 'Débutant',
   intermediate: 'Intermédiaire',
-  advanced: 'Avancé',
+  advanced: 'Avancé'
 }
 
 export const AGE_GROUP_LABELS = {
   children: 'Enfants',
   teenagers: 'Adolescents',
   adults: 'Adultes',
-  seniors: 'Seniors',
+  seniors: 'Seniors'
 }
 
 export const LOCATION_TYPE_LABELS = {
   teacher_place: 'Chez le professeur',
   student_place: "Chez l'élève",
-  online: 'En ligne',
+  online: 'En ligne'
 }
 
 export const SESSION_DURATION_LABELS = {
@@ -25,7 +25,7 @@ export const SESSION_DURATION_LABELS = {
   '45min': '45 minutes',
   '1h': '1 heure',
   '1h30': '1h30',
-  '2h': '2 heures',
+  '2h': '2 heures'
 }
 
 export const DAY_OF_WEEK_LABELS = {
@@ -35,14 +35,14 @@ export const DAY_OF_WEEK_LABELS = {
   thursday: 'Jeudi',
   friday: 'Vendredi',
   saturday: 'Samedi',
-  sunday: 'Dimanche',
+  sunday: 'Dimanche'
 }
 
 export const MEDIA_PLATFORM_LABELS = {
   youtube: 'YouTube',
   soundcloud: 'SoundCloud',
   spotify: 'Spotify',
-  deezer: 'Deezer',
+  deezer: 'Deezer'
 }
 
 export const SOCIAL_PLATFORM_LABELS = {
@@ -54,7 +54,7 @@ export const SOCIAL_PLATFORM_LABELS = {
   soundcloud: 'SoundCloud',
   spotify: 'Spotify',
   bandcamp: 'Bandcamp',
-  tiktok: 'TikTok',
+  tiktok: 'TikTok'
 }
 
 // Helper functions to get labels

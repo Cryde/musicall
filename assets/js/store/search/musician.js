@@ -22,7 +22,14 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
       currentPage.value = 1
     }
 
-    const data = await searchApi.searchAnnounces({ instrument, styles, type, latitude, longitude, page })
+    const data = await searchApi.searchAnnounces({
+      instrument,
+      styles,
+      type,
+      latitude,
+      longitude,
+      page
+    })
 
     if (append) {
       announces.value = [...announces.value, ...data.member]

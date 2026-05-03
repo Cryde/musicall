@@ -184,6 +184,8 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import { format } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
@@ -194,11 +196,9 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { format } from 'date-fns'
 import { computed, reactive, ref, watch } from 'vue'
-import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
+import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 import SplitManager from './SplitManager.vue'
 
 const props = defineProps({
@@ -243,9 +243,7 @@ const transitionMap = {
     { value: 'paid', label: 'Marquer comme Payé', severity: 'success' },
     { value: 'planned', label: 'Annuler → Prévu', severity: 'secondary' }
   ],
-  paid: [
-    { value: 'committed', label: 'Rouvrir → Engagé', severity: 'warn' }
-  ]
+  paid: [{ value: 'committed', label: 'Rouvrir → Engagé', severity: 'warn' }]
 }
 
 const availableTransitions = computed(() => transitionMap[form.status] ?? [])
@@ -289,14 +287,17 @@ const effectiveAmountEuros = computed(() => {
   return null
 })
 
-watch(() => form.amountMode, (newMode, oldMode) => {
-  if (oldMode === 'exact') {
-    form.amountEuros = null
-  } else {
-    form.amountMinEuros = null
-    form.amountMaxEuros = null
+watch(
+  () => form.amountMode,
+  (_newMode, oldMode) => {
+    if (oldMode === 'exact') {
+      form.amountEuros = null
+    } else {
+      form.amountMinEuros = null
+      form.amountMaxEuros = null
+    }
   }
-})
+)
 
 watch(
   () => props.visible,
@@ -311,8 +312,10 @@ watch(
       if (props.entry.amount_min != null || props.entry.amount_max != null) {
         form.amountMode = 'range'
         form.amountEuros = null
-        form.amountMinEuros = props.entry.amount_min != null ? centsToCurrency(props.entry.amount_min) : null
-        form.amountMaxEuros = props.entry.amount_max != null ? centsToCurrency(props.entry.amount_max) : null
+        form.amountMinEuros =
+          props.entry.amount_min != null ? centsToCurrency(props.entry.amount_min) : null
+        form.amountMaxEuros =
+          props.entry.amount_max != null ? centsToCurrency(props.entry.amount_max) : null
       } else {
         form.amountMode = 'exact'
         form.amountEuros = props.entry.amount != null ? centsToCurrency(props.entry.amount) : null
@@ -352,7 +355,6 @@ function statusBadgeClass(status) {
       return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
     case 'committed':
       return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-    case 'planned':
     default:
       return 'bg-surface-200 text-surface-600 dark:bg-surface-700 dark:text-surface-300'
   }
@@ -389,9 +391,18 @@ function buildPayload() {
     label: form.label,
     type: form.type,
     status: form.status,
-    amount: form.amountMode === 'exact' && form.amountEuros != null ? currencyToCents(form.amountEuros) : null,
-    amount_min: form.amountMode === 'range' && form.amountMinEuros != null ? currencyToCents(form.amountMinEuros) : null,
-    amount_max: form.amountMode === 'range' && form.amountMaxEuros != null ? currencyToCents(form.amountMaxEuros) : null,
+    amount:
+      form.amountMode === 'exact' && form.amountEuros != null
+        ? currencyToCents(form.amountEuros)
+        : null,
+    amount_min:
+      form.amountMode === 'range' && form.amountMinEuros != null
+        ? currencyToCents(form.amountMinEuros)
+        : null,
+    amount_max:
+      form.amountMode === 'range' && form.amountMaxEuros != null
+        ? currencyToCents(form.amountMaxEuros)
+        : null,
     date: form.date ? format(form.date, 'yyyy-MM-dd') : null,
     scope: form.scope
   }
@@ -430,7 +441,12 @@ async function handleSave() {
           await splitManager.syncSplits(entryId)
         }
       } catch {
-        toast.add({ severity: 'warn', summary: 'Attention', detail: 'L\u2019entrée a été enregistrée mais la répartition a échoué', life: 5000 })
+        toast.add({
+          severity: 'warn',
+          summary: 'Attention',
+          detail: 'L\u2019entrée a été enregistrée mais la répartition a échoué',
+          life: 5000
+        })
       }
     }
 

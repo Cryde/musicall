@@ -126,8 +126,8 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, watch } from 'vue'
-import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
+import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -185,7 +185,8 @@ watch(
       form.categoryId = props.recurrence.category_id ?? null
       form.label = props.recurrence.label ?? ''
       form.type = props.recurrence.type ?? 'expense'
-      form.amountEuros = props.recurrence.amount != null ? centsToCurrency(props.recurrence.amount) : null
+      form.amountEuros =
+        props.recurrence.amount != null ? centsToCurrency(props.recurrence.amount) : null
       form.scope = props.recurrence.scope ?? 'band'
       form.interval = props.recurrence.interval ?? 'monthly'
       form.startDate = props.recurrence.start_date ? new Date(props.recurrence.start_date) : null
@@ -233,7 +234,12 @@ async function handleSave() {
 
     emit('saved')
   } catch {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\u2019enregistrer la récurrence', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible d\u2019enregistrer la récurrence',
+      life: 5000
+    })
   }
 }
 
@@ -250,7 +256,12 @@ function handleDelete() {
         await financeStore.deleteRecurrence(props.bandSpaceId, props.recurrence.id)
         emit('deleted')
       } catch {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer la récurrence', life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de supprimer la récurrence',
+          life: 5000
+        })
       }
     }
   })
@@ -263,7 +274,12 @@ async function handleToggleActive() {
     })
     emit('saved')
   } catch {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de modifier le statut de la récurrence', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de modifier le statut de la récurrence',
+      life: 5000
+    })
   }
 }
 </script>

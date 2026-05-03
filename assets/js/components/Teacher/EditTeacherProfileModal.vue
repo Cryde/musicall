@@ -603,7 +603,7 @@ const ageGroupOptions = [
 
 const locationTypeOptions = [
   { value: 'teacher_place', label: 'Chez le professeur' },
-  { value: 'student_place', label: 'Chez l\'élève' },
+  { value: 'student_place', label: "Chez l'élève" },
   { value: 'online', label: 'En ligne' }
 ]
 
@@ -641,12 +641,15 @@ const isVisible = computed({
   set: (value) => emit('update:visible', value)
 })
 
-watch(() => props.visible, (visible) => {
-  if (visible) {
-    initForm()
-    loadAttributesIfNeeded()
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible) {
+      initForm()
+      loadAttributesIfNeeded()
+    }
   }
-})
+)
 
 function initForm() {
   error.value = ''
@@ -658,9 +661,8 @@ function initForm() {
     ageGroups.value = props.teacherProfile.age_groups || []
     courseTitle.value = props.teacherProfile.course_title || ''
     offersTrial.value = props.teacherProfile.offers_trial || false
-    trialPriceDisplay.value = props.teacherProfile.trial_price != null
-      ? props.teacherProfile.trial_price / 100
-      : null
+    trialPriceDisplay.value =
+      props.teacherProfile.trial_price != null ? props.teacherProfile.trial_price / 100 : null
 
     // Initialize locations
     locations.value = (props.teacherProfile.locations || []).map((loc) => ({
@@ -825,13 +827,15 @@ async function handleSave() {
   error.value = ''
   isSaving.value = true
 
-  const trialPriceCents = trialPriceDisplay.value != null
-    ? Math.round(trialPriceDisplay.value * 100)
-    : null
+  const trialPriceCents =
+    trialPriceDisplay.value != null ? Math.round(trialPriceDisplay.value * 100) : null
 
   // Build pricing input array (only for selected durations with a price)
   const pricingInput = selectedDurations.value
-    .filter((duration) => pricingByDuration.value[duration] != null && pricingByDuration.value[duration] > 0)
+    .filter(
+      (duration) =>
+        pricingByDuration.value[duration] != null && pricingByDuration.value[duration] > 0
+    )
     .map((duration) => ({
       duration,
       price: Math.round(pricingByDuration.value[duration] * 100)
@@ -851,7 +855,7 @@ async function handleSave() {
     .filter((loc) => loc.type)
     .map((loc) => ({
       type: loc.type,
-      address: loc.type === 'teacher_place' ? (loc.address || null) : null,
+      address: loc.type === 'teacher_place' ? loc.address || null : null,
       city: loc.city || null,
       country: loc.country || null,
       latitude: loc.latitude || null,
@@ -861,7 +865,7 @@ async function handleSave() {
 
   // Build packages input array
   const packagesInput = packages.value
-    .filter((pkg) => pkg.title && pkg.title.trim())
+    .filter((pkg) => pkg.title?.trim())
     .map((pkg) => ({
       title: pkg.title.trim(),
       description: pkg.description ? pkg.description.trim() : null,
@@ -871,7 +875,7 @@ async function handleSave() {
 
   // Build social links input array
   const socialLinksInput = socialLinks.value
-    .filter((link) => link.platform && link.url && link.url.trim())
+    .filter((link) => link.platform && link.url?.trim())
     .map((link) => ({
       platform: link.platform,
       url: link.url.trim()

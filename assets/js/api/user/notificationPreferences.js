@@ -12,16 +12,12 @@ export default {
 
   updatePreferences(data) {
     return axios
-      .patch(
-        Routing.generate('api_user_notification_preferences_edit'),
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/merge-patch+json',
-            Accept: 'application/ld+json'
-          }
+      .patch(Routing.generate('api_user_notification_preferences_edit'), data, {
+        headers: {
+          'Content-Type': 'application/merge-patch+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   }

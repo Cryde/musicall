@@ -40,7 +40,8 @@ export const useUserAnnounceStore = defineStore('userAnnounce', () => {
       return true
     } catch (e) {
       if (e.response?.status === 429) {
-        saveError.value = 'Trop d\'annonces créées. Veuillez patienter avant d\'en publier une nouvelle.'
+        saveError.value =
+          "Trop d'annonces créées. Veuillez patienter avant d'en publier une nouvelle."
       } else {
         try {
           handleApiError(e)

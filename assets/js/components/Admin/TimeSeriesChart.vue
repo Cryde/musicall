@@ -33,13 +33,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { format, parseISO } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import Card from 'primevue/card'
 import Chart from 'primevue/chart'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import { format, parseISO } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { computed } from 'vue'
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -66,7 +66,7 @@ const chartData = computed(() => {
       {
         label: props.title,
         data,
-        backgroundColor: props.color + '20',
+        backgroundColor: `${props.color}20`,
         borderColor: props.color,
         borderWidth: 2,
         fill: true,

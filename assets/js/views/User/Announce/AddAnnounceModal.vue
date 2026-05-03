@@ -287,6 +287,7 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useDebounceFn } from '@vueuse/core'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
@@ -300,10 +301,9 @@ import StepPanel from 'primevue/steppanel'
 import StepPanels from 'primevue/steppanels'
 import Stepper from 'primevue/stepper'
 import Textarea from 'primevue/textarea'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, ref, watch } from 'vue'
-import MusicianProfileStepContent from '../../../components/User/Announce/MusicianProfileStepContent.vue'
 import geocodingApi from '../../../api/geocoding.js'
+import MusicianProfileStepContent from '../../../components/User/Announce/MusicianProfileStepContent.vue'
 import { useUserAnnounceStore } from '../../../store/announce/userAnnounce.js'
 import { useInstrumentStore } from '../../../store/attribute/instrument.js'
 import { useStyleStore } from '../../../store/attribute/style.js'

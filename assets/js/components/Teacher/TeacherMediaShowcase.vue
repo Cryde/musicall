@@ -225,7 +225,7 @@ const newMediaTitle = ref('')
 const urlError = ref('')
 const deletingId = ref(null)
 
-const isLoading = computed(() => props.isOwnProfile ? mediaStore.isLoading : false)
+const isLoading = computed(() => (props.isOwnProfile ? mediaStore.isLoading : false))
 const isAdding = computed(() => mediaStore.isAdding)
 
 const media = computed(() => {
@@ -252,19 +252,27 @@ watch(newMediaUrl, () => {
 
 function getPlatformSeverity(platform) {
   switch (platform) {
-    case 'youtube': return 'danger'
-    case 'soundcloud': return 'warn'
-    case 'spotify': return 'success'
-    default: return 'info'
+    case 'youtube':
+      return 'danger'
+    case 'soundcloud':
+      return 'warn'
+    case 'spotify':
+      return 'success'
+    default:
+      return 'info'
   }
 }
 
 function getPlatformIcon(platform) {
   switch (platform) {
-    case 'youtube': return 'pi pi-youtube'
-    case 'soundcloud': return 'pi pi-cloud'
-    case 'spotify': return 'pi pi-spotify'
-    default: return 'pi pi-video'
+    case 'youtube':
+      return 'pi pi-youtube'
+    case 'soundcloud':
+      return 'pi pi-cloud'
+    case 'spotify':
+      return 'pi pi-spotify'
+    default:
+      return 'pi pi-video'
   }
 }
 

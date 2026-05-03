@@ -59,11 +59,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Divider from 'primevue/divider'
 import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'

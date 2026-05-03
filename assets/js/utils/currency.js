@@ -1,6 +1,6 @@
 export function formatAmount(cents) {
   const value = cents ?? 0
-  return (value / 100).toFixed(2).replace('.', ',') + ' \u20AC'
+  return `${(value / 100).toFixed(2).replace('.', ',')} \u20AC`
 }
 
 export function centsToCurrency(cents) {

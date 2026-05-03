@@ -50,9 +50,9 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Dialog from 'primevue/dialog'
 import Divider from 'primevue/divider'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -113,13 +113,16 @@ const googleAuthUrl = computed(() => {
   return Routing.generate('oauth_google_start', { return_url: currentReturnUrl.value })
 })
 
-watch(() => props.visible, (newValue, oldValue) => {
-  if (newValue) {
-    trackUmamiEvent('auth-modal-shown', { variant: props.variant })
-  } else if (oldValue) {
-    trackUmamiEvent('auth-modal-closed', { variant: props.variant })
+watch(
+  () => props.visible,
+  (newValue, oldValue) => {
+    if (newValue) {
+      trackUmamiEvent('auth-modal-shown', { variant: props.variant })
+    } else if (oldValue) {
+      trackUmamiEvent('auth-modal-closed', { variant: props.variant })
+    }
   }
-})
+)
 
 function handleLogin() {
   emit('update:visible', false)

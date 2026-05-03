@@ -105,9 +105,9 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, ref, watch } from 'vue'
 import NotificationToggle from '../../../components/settings/NotificationToggle.vue'
 import { useNotificationPreferencesStore } from '../../../store/user/notificationPreferences.js'

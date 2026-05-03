@@ -105,7 +105,7 @@ const overflowCount = computed(() => Math.max(0, props.task.assignees.length - M
 
 const categoryStyle = computed(() => {
   if (!props.categoryColor) return {}
-  return { backgroundColor: props.categoryColor + '20', color: props.categoryColor }
+  return { backgroundColor: `${props.categoryColor}20`, color: props.categoryColor }
 })
 
 const isPastDue = computed(() => {

@@ -381,10 +381,10 @@ import {
   getLocationTypeLabel,
   getSessionDurationLabel,
   getSocialPlatformLabel,
-  getStudentLevelLabel,
+  getStudentLevelLabel
 } from '../../../constants/teacherProfile.js'
-import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
 
 const route = useRoute()
@@ -412,7 +412,10 @@ function handleBack() {
       if (window.history.length > 1) {
         router.back()
       } else {
-        router.push({ name: 'app_user_public_profile', params: { username: route.params.username } })
+        router.push({
+          name: 'app_user_public_profile',
+          params: { username: route.params.username }
+        })
       }
   }
 }
@@ -459,7 +462,7 @@ const shareTitle = computed(() => {
 useTitle(pageTitle)
 
 function formatPrice(cents) {
-  return (cents / 100).toFixed(0) + '€'
+  return `${(cents / 100).toFixed(0)}€`
 }
 
 function getStudentLevelSeverity(level) {
@@ -561,11 +564,14 @@ function handleContact() {
   showMessageModal.value = true
 }
 
-watch(() => route.params.username, (newUsername) => {
-  if (newUsername) {
-    loadProfile()
+watch(
+  () => route.params.username,
+  (newUsername) => {
+    if (newUsername) {
+      loadProfile()
+    }
   }
-})
+)
 
 onMounted(() => {
   loadProfile()

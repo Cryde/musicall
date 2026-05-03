@@ -137,16 +137,25 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import {
+  endOfMonth,
+  endOfYear,
+  format,
+  parseISO,
+  startOfDay,
+  startOfMonth,
+  startOfYear,
+  subMonths,
+  subYears
+} from 'date-fns'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { endOfMonth, endOfYear, format, startOfDay, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns'
-import { parseISO } from 'date-fns'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useRoute } from 'vue-router'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import CreateCategoryDialog from '../../components/BandSpace/Finance/CreateCategoryDialog.vue'
@@ -170,14 +179,14 @@ const today = startOfDay(new Date())
 function quarterStart(date, offset = 0) {
   const q = Math.floor(date.getMonth() / 3) + offset
   const year = date.getFullYear() + Math.floor(q / 4)
-  const month = ((q % 4) + 4) % 4 * 3
+  const month = (((q % 4) + 4) % 4) * 3
   return startOfMonth(new Date(year, month, 1))
 }
 
 function quarterEnd(date, offset = 0) {
   const q = Math.floor(date.getMonth() / 3) + offset
   const year = date.getFullYear() + Math.floor(q / 4)
-  const month = ((q % 4) + 4) % 4 * 3 + 2
+  const month = (((q % 4) + 4) % 4) * 3 + 2
   return endOfMonth(new Date(year, month, 1))
 }
 
@@ -187,13 +196,48 @@ const financePresets = computed(() => {
   const maxDate = summary?.max_date ? parseISO(summary.max_date) : endOfYear(today)
 
   return [
-    { key: 'this_month', label: 'Ce mois', from: () => startOfMonth(today), to: () => endOfMonth(today) },
-    { key: 'last_month', label: 'Mois dernier', from: () => startOfMonth(subMonths(today, 1)), to: () => endOfMonth(subMonths(today, 1)) },
-    { key: 'this_quarter', label: 'Ce trimestre', from: () => quarterStart(today), to: () => quarterEnd(today) },
-    { key: 'last_quarter', label: 'Trimestre dernier', from: () => quarterStart(today, -1), to: () => quarterEnd(today, -1) },
-    { key: 'this_year', label: 'Cette année', from: () => startOfYear(today), to: () => endOfYear(today) },
-    { key: 'last_year', label: 'Année dernière', from: () => startOfYear(subYears(today, 1)), to: () => endOfYear(subYears(today, 1)) },
-    { key: 'all', label: 'Depuis le début', from: () => minDate, to: () => maxDate > endOfYear(today) ? maxDate : endOfYear(today) },
+    {
+      key: 'this_month',
+      label: 'Ce mois',
+      from: () => startOfMonth(today),
+      to: () => endOfMonth(today)
+    },
+    {
+      key: 'last_month',
+      label: 'Mois dernier',
+      from: () => startOfMonth(subMonths(today, 1)),
+      to: () => endOfMonth(subMonths(today, 1))
+    },
+    {
+      key: 'this_quarter',
+      label: 'Ce trimestre',
+      from: () => quarterStart(today),
+      to: () => quarterEnd(today)
+    },
+    {
+      key: 'last_quarter',
+      label: 'Trimestre dernier',
+      from: () => quarterStart(today, -1),
+      to: () => quarterEnd(today, -1)
+    },
+    {
+      key: 'this_year',
+      label: 'Cette année',
+      from: () => startOfYear(today),
+      to: () => endOfYear(today)
+    },
+    {
+      key: 'last_year',
+      label: 'Année dernière',
+      from: () => startOfYear(subYears(today, 1)),
+      to: () => endOfYear(subYears(today, 1))
+    },
+    {
+      key: 'all',
+      label: 'Depuis le début',
+      from: () => minDate,
+      to: () => (maxDate > endOfYear(today) ? maxDate : endOfYear(today))
+    }
   ]
 })
 
@@ -217,10 +261,13 @@ restoreDateRange()
 watch(
   () => [financeStore.dateFrom, financeStore.dateTo],
   ([from, to]) => {
-    localStorage.setItem(dateRangeStorageKey, JSON.stringify({
-      from: format(from, 'yyyy-MM-dd'),
-      to: format(to, 'yyyy-MM-dd')
-    }))
+    localStorage.setItem(
+      dateRangeStorageKey,
+      JSON.stringify({
+        from: format(from, 'yyyy-MM-dd'),
+        to: format(to, 'yyyy-MM-dd')
+      })
+    )
   }
 )
 
@@ -303,13 +350,19 @@ async function handleCategoryCreated({ name, parentId }) {
     trackUmamiEvent('finance-category-create', { has_parent: !!parentId })
     toast.add({ severity: 'success', summary: 'Catégorie créée', life: 3000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de créer la catégorie', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de créer la catégorie',
+      life: 5000
+    })
   }
 }
 
 function handleDeleteCategory(categoryId) {
   confirm.require({
-    message: 'Es-tu sûr de vouloir supprimer cette catégorie ? Les entrées et récurrences associées seront également supprimées.',
+    message:
+      'Es-tu sûr de vouloir supprimer cette catégorie ? Les entrées et récurrences associées seront également supprimées.',
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
@@ -321,7 +374,12 @@ function handleDeleteCategory(categoryId) {
         trackUmamiEvent('finance-category-delete')
         toast.add({ severity: 'success', summary: 'Catégorie supprimée', life: 3000 })
       } catch {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer la catégorie', life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de supprimer la catégorie',
+          life: 5000
+        })
       }
     }
   })
@@ -338,7 +396,9 @@ function handleEditRecurrence(recurrence) {
 }
 
 function handleRecurrenceSaved() {
-  trackUmamiEvent(editingRecurrence.value ? 'finance-recurrence-update' : 'finance-recurrence-create')
+  trackUmamiEvent(
+    editingRecurrence.value ? 'finance-recurrence-update' : 'finance-recurrence-create'
+  )
   recurrenceDrawerVisible.value = false
   editingRecurrence.value = null
   toast.add({ severity: 'success', summary: 'Récurrence enregistrée', life: 3000 })

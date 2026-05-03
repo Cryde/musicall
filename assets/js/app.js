@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { createApp } from 'vue'
 import '../style/style.css'
+import { VueUmamiPlugin } from '@jaseeey/vue-umami-plugin'
 import { createHead } from '@unhead/vue/client'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -12,7 +13,6 @@ import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import router from './router/index.js'
 import MusicAllPreset from './theme/musicAllPreset.js'
-import { VueUmamiPlugin } from '@jaseeey/vue-umami-plugin';
 
 // Initialize dark mode before app mounts (detects system preference or uses saved cookie)
 const { initialize: initDarkMode } = useDarkMode()
@@ -82,13 +82,13 @@ app.use(PrimeVue, {
 })
 
 if (import.meta.env.VITE_UMAMI_SITE_ID) {
-    app.use(
-        VueUmamiPlugin({
-            websiteID: import.meta.env.VITE_UMAMI_SITE_ID,
-            scriptSrc: import.meta.env.VITE_UMAMI_SITE_SCRIPT,
-            router,
-        })
-    );
+  app.use(
+    VueUmamiPlugin({
+      websiteID: import.meta.env.VITE_UMAMI_SITE_ID,
+      scriptSrc: import.meta.env.VITE_UMAMI_SITE_SCRIPT,
+      router
+    })
+  )
 }
 app.directive('ripple', Ripple)
 app.directive('tooltip', Tooltip)

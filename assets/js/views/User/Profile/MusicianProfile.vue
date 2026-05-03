@@ -277,7 +277,10 @@ function handleBack() {
       if (window.history.length > 1) {
         router.back()
       } else {
-        router.push({ name: 'app_user_public_profile', params: { username: route.params.username } })
+        router.push({
+          name: 'app_user_public_profile',
+          params: { username: route.params.username }
+        })
       }
   }
 }
@@ -379,11 +382,14 @@ function handleContact() {
   showMessageModal.value = true
 }
 
-watch(() => route.params.username, (newUsername) => {
-  if (newUsername) {
-    loadProfile()
+watch(
+  () => route.params.username,
+  (newUsername) => {
+    if (newUsername) {
+      loadProfile()
+    }
   }
-})
+)
 
 onMounted(() => {
   loadProfile()

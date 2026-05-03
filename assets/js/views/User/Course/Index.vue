@@ -325,7 +325,7 @@ function handleView(course) {
   router.push({ name: 'app_course_show', params: { slug: course.slug } })
 }
 
-function handleEdit(course) {
+function handleEdit(_course) {
   // TODO: Implement edit page
   toast.add({
     severity: 'info',
@@ -335,7 +335,7 @@ function handleEdit(course) {
   })
 }
 
-function handleSubmit(course) {
+function handleSubmit(_course) {
   // TODO: Implement submit functionality
   toast.add({
     severity: 'info',

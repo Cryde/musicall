@@ -29,7 +29,7 @@ export default {
     }
 
     return axios
-      .get(Routing.generate('api_user_publications_get_collection') + '?' + params.toString())
+      .get(`${Routing.generate('api_user_publications_get_collection')}?${params.toString()}`)
       .then((resp) => resp.data)
   },
 

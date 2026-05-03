@@ -29,8 +29,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
-import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
+import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
 defineProps({
   disabled: {

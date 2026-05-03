@@ -250,9 +250,9 @@
 
 <script setup>
 import Placeholder from '@tiptap/extension-placeholder'
-import { Table } from '@tiptap/extension-table/table'
 import { TableCell } from '@tiptap/extension-table/cell'
 import { TableRow } from '@tiptap/extension-table/row'
+import { Table } from '@tiptap/extension-table/table'
 import TextAlign from '@tiptap/extension-text-align'
 import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'

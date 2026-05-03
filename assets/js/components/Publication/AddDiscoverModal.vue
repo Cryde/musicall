@@ -94,6 +94,7 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useDebounceFn } from '@vueuse/core'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -101,7 +102,6 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { ERROR_CODES } from '../../constants/errorCodes.js'
 import { useVideoStore } from '../../store/publication/video.js'
@@ -195,7 +195,10 @@ watch(videoUrl, (newUrl) => {
   }
 
   // Auto-prepend https:// if user pastes a URL without scheme
-  if (!trimmedUrl.match(/^https?:\/\//) && (trimmedUrl.includes('youtube') || trimmedUrl.includes('youtu.be'))) {
+  if (
+    !trimmedUrl.match(/^https?:\/\//) &&
+    (trimmedUrl.includes('youtube') || trimmedUrl.includes('youtu.be'))
+  ) {
     videoUrl.value = `https://${trimmedUrl}`
     return
   }

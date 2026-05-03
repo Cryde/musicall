@@ -182,12 +182,15 @@ const isVisible = computed({
   set: (value) => emit('update:visible', value)
 })
 
-watch(() => props.visible, (visible) => {
-  if (visible) {
-    initForm()
-    loadAttributesIfNeeded()
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible) {
+      initForm()
+      loadAttributesIfNeeded()
+    }
   }
-})
+)
 
 function initForm() {
   error.value = ''

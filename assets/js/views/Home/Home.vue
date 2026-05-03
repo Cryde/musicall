@@ -337,14 +337,14 @@ import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import AnnounceCardSkeleton from '../../components/Skeleton/AnnounceCardSkeleton.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../../constants/types.js'
+import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { formatStyles, hasMoreStyles } from '../../utils/styles.js'
-import relativeDate from '../../helper/date/relative-date.js'
-import { displayName } from '../../helper/user/displayName.js'
 import PublicationListItem from '../Publication/PublicationListItem.vue'
 import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 
@@ -396,7 +396,9 @@ function isOwnAnnounce(announce) {
 
 function getProfileRoute(announce) {
   const route = {
-    name: announce.author.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
+    name: announce.author.has_musician_profile
+      ? 'app_user_musician_profile'
+      : 'app_user_public_profile',
     params: { username: announce.author.username }
   }
   // Add from query param for contextual back navigation

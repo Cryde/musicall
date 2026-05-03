@@ -54,11 +54,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 import { useCommentStore } from '../../store/comment/comment.js'
 import { useUserSecurityStore } from '../../store/user/security.js'

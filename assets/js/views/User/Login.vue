@@ -114,6 +114,7 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
@@ -122,7 +123,6 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Password from 'primevue/password'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserSecurityStore } from '../../store/user/security.js'
@@ -140,7 +140,8 @@ const returnUrl = computed(() => route.query.return_url || null)
 const oauthError = computed(() => route.query.oauth_error)
 
 const oauthErrorMessages = {
-  email_exists: 'Cette adresse email est déjà associée à un compte. Connectez-vous avec votre mot de passe puis liez votre compte social dans les paramètres.',
+  email_exists:
+    'Cette adresse email est déjà associée à un compte. Connectez-vous avec votre mot de passe puis liez votre compte social dans les paramètres.',
   oauth_failed: 'La connexion a échoué. Veuillez réessayer.'
 }
 

@@ -44,10 +44,10 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
@@ -117,9 +117,10 @@ async function handleSubmit() {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: error.response?.status === 429
-        ? 'Veuillez patienter avant de poster un nouveau message.'
-        : "Une erreur est survenue lors de l'envoi du message",
+      detail:
+        error.response?.status === 429
+          ? 'Veuillez patienter avant de poster un nouveau message.'
+          : "Une erreur est survenue lors de l'envoi du message",
       life: 5000
     })
   } finally {

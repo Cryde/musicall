@@ -14,11 +14,9 @@ export default {
 
   createCategory(bandSpaceId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_finance_categories_post', { bandSpaceId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_finance_categories_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -26,7 +24,10 @@ export default {
   updateCategory(bandSpaceId, categoryId, data) {
     return axios
       .patch(
-        Routing.generate('api_band_space_finance_categories_patch', { bandSpaceId, id: categoryId }),
+        Routing.generate('api_band_space_finance_categories_patch', {
+          bandSpaceId,
+          id: categoryId
+        }),
         data,
         { headers: { 'Content-Type': 'application/merge-patch+json' } }
       )
@@ -36,7 +37,12 @@ export default {
 
   deleteCategory(bandSpaceId, categoryId) {
     return axios
-      .delete(Routing.generate('api_band_space_finance_categories_delete', { bandSpaceId, id: categoryId }))
+      .delete(
+        Routing.generate('api_band_space_finance_categories_delete', {
+          bandSpaceId,
+          id: categoryId
+        })
+      )
       .catch(handleApiError)
   },
 
@@ -45,7 +51,9 @@ export default {
     if (from) params.from = from
     if (to) params.to = to
     return axios
-      .get(Routing.generate('api_band_space_finance_entries_get_collection', { bandSpaceId }), { params })
+      .get(Routing.generate('api_band_space_finance_entries_get_collection', { bandSpaceId }), {
+        params
+      })
       .then((resp) => resp.data)
       .then((resp) => resp.member)
       .catch(handleApiError)
@@ -53,11 +61,9 @@ export default {
 
   createEntry(bandSpaceId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_finance_entries_post', { bandSpaceId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_finance_entries_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -75,13 +81,20 @@ export default {
 
   deleteEntry(bandSpaceId, entryId) {
     return axios
-      .delete(Routing.generate('api_band_space_finance_entries_delete', { bandSpaceId, id: entryId }))
+      .delete(
+        Routing.generate('api_band_space_finance_entries_delete', { bandSpaceId, id: entryId })
+      )
       .catch(handleApiError)
   },
 
   getSplits(bandSpaceId, entryId) {
     return axios
-      .get(Routing.generate('api_band_space_finance_entry_splits_get_collection', { bandSpaceId, entryId }))
+      .get(
+        Routing.generate('api_band_space_finance_entry_splits_get_collection', {
+          bandSpaceId,
+          entryId
+        })
+      )
       .then((resp) => resp.data)
       .then((resp) => resp.member)
       .catch(handleApiError)
@@ -100,7 +113,13 @@ export default {
 
   deleteSplit(bandSpaceId, entryId, splitId) {
     return axios
-      .delete(Routing.generate('api_band_space_finance_entry_splits_delete', { bandSpaceId, entryId, id: splitId }))
+      .delete(
+        Routing.generate('api_band_space_finance_entry_splits_delete', {
+          bandSpaceId,
+          entryId,
+          id: splitId
+        })
+      )
       .catch(handleApiError)
   },
 
@@ -124,11 +143,9 @@ export default {
 
   createRecurrence(bandSpaceId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_finance_recurrences_post', { bandSpaceId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_finance_recurrences_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -136,7 +153,10 @@ export default {
   updateRecurrence(bandSpaceId, recurrenceId, data) {
     return axios
       .patch(
-        Routing.generate('api_band_space_finance_recurrences_patch', { bandSpaceId, id: recurrenceId }),
+        Routing.generate('api_band_space_finance_recurrences_patch', {
+          bandSpaceId,
+          id: recurrenceId
+        }),
         data,
         { headers: { 'Content-Type': 'application/merge-patch+json' } }
       )
@@ -146,7 +166,12 @@ export default {
 
   deleteRecurrence(bandSpaceId, recurrenceId) {
     return axios
-      .delete(Routing.generate('api_band_space_finance_recurrences_delete', { bandSpaceId, id: recurrenceId }))
+      .delete(
+        Routing.generate('api_band_space_finance_recurrences_delete', {
+          bandSpaceId,
+          id: recurrenceId
+        })
+      )
       .catch(handleApiError)
   },
 

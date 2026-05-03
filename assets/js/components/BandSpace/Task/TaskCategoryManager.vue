@@ -114,7 +114,9 @@ function cancelRename() {
 async function saveRename(category) {
   if (!editingName.value.trim()) return
   try {
-    await tasksStore.updateCategory(props.bandSpaceId, category.id, { name: editingName.value.trim() })
+    await tasksStore.updateCategory(props.bandSpaceId, category.id, {
+      name: editingName.value.trim()
+    })
     cancelRename()
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
@@ -137,9 +139,10 @@ async function handleCreate() {
 
 function handleDelete(category) {
   const linkedCount = tasksStore.tasks.filter((t) => t.category_id === category.id).length
-  const message = linkedCount > 0
-    ? `Supprimer la catégorie "${category.name}" ? ${linkedCount} tâche(s) deviendront sans catégorie.`
-    : `Supprimer la catégorie "${category.name}" ?`
+  const message =
+    linkedCount > 0
+      ? `Supprimer la catégorie "${category.name}" ? ${linkedCount} tâche(s) deviendront sans catégorie.`
+      : `Supprimer la catégorie "${category.name}" ?`
 
   confirm.require({
     message,

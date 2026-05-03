@@ -15,8 +15,8 @@ export const useCommentStore = defineStore('comment', () => {
 
     try {
       const response = await commentApi.getComments(id)
-      comments.value = response['hydra:member'] || response['member'] || []
-      totalComments.value = response['hydra:totalItems'] || response['totalItems'] || 0
+      comments.value = response['hydra:member'] || response.member || []
+      totalComments.value = response['hydra:totalItems'] || response.totalItems || 0
     } finally {
       isLoading.value = false
     }

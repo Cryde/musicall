@@ -1,7 +1,7 @@
+import { identifyUmamiSession } from '@jaseeey/vue-umami-plugin'
 import * as Cookies from 'es-cookie'
 import { jwtDecode } from 'jwt-decode'
 import { defineStore } from 'pinia'
-import { identifyUmamiSession } from '@jaseeey/vue-umami-plugin'
 import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import router from '../../router/index.js'

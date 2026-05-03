@@ -19,7 +19,7 @@ const AVATAR_COLORS = [
   '#14b8a6', // teal
   '#06b6d4', // cyan
   '#0ea5e9', // sky
-  '#3b82f6', // blue
+  '#3b82f6' // blue
 ]
 
 /**
@@ -29,7 +29,7 @@ function hashString(str) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash // Convert to 32bit integer
   }
   return Math.abs(hash)

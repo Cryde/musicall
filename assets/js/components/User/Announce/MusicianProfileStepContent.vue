@@ -295,7 +295,9 @@ const instrumentsCollapsed = ref(true)
 const stylesCollapsed = ref(true)
 
 // Simplified flow: musician searching for band - only need skill level
-const isSimplifiedFlow = computed(() => props.announcementType === 'band' && props.selectedInstrument)
+const isSimplifiedFlow = computed(
+  () => props.announcementType === 'band' && props.selectedInstrument
+)
 const simplifiedSkillLevel = ref(null)
 
 const instrumentOptions = computed(() => instrumentStore.instruments || [])
@@ -321,13 +323,13 @@ const messages = computed(() => {
       return {
         title: 'Créez votre profil musicien en un clic',
         subtitle: 'Votre annonce contient déjà toutes les infos, il ne manque que votre niveau !',
-        cta: 'Un profil complet augmente vos chances d\'être contacté'
+        cta: "Un profil complet augmente vos chances d'être contacté"
       }
     }
     return {
       title: 'Complétez votre profil musicien',
       subtitle: 'Montrez aux groupes vos compétences et votre expérience',
-      cta: 'Un profil complet augmente vos chances d\'être contacté'
+      cta: "Un profil complet augmente vos chances d'être contacté"
     }
   }
   return {
@@ -338,12 +340,12 @@ const messages = computed(() => {
 })
 
 function getAvailabilityLabel(value) {
-  const option = availabilityOptions.find(o => o.value === value)
+  const option = availabilityOptions.find((o) => o.value === value)
   return option?.label || value
 }
 
 function getSkillLevelLabel(value) {
-  const option = skillLevelOptions.find(o => o.value === value)
+  const option = skillLevelOptions.find((o) => o.value === value)
   return option?.label || value
 }
 
@@ -355,11 +357,15 @@ watch(isEditing, (editing) => {
 })
 
 // Initialize form when profile is loaded and no existing profile (create mode)
-watch(() => musicianProfileStore.profile, (profile) => {
-  if (!profile && !isEditing.value) {
-    initForm()
-  }
-}, { immediate: true })
+watch(
+  () => musicianProfileStore.profile,
+  (profile) => {
+    if (!profile && !isEditing.value) {
+      initForm()
+    }
+  },
+  { immediate: true }
+)
 
 function initForm() {
   error.value = ''
@@ -417,11 +423,13 @@ async function handleSave() {
     // Simplified flow: use announcement data + selected skill level
     data = {
       availability_status: 'looking_for_band',
-      instruments: [{
-        instrument_id: props.selectedInstrument.id,
-        skill_level: simplifiedSkillLevel.value
-      }],
-      style_ids: props.selectedStyles.map(s => s.id)
+      instruments: [
+        {
+          instrument_id: props.selectedInstrument.id,
+          skill_level: simplifiedSkillLevel.value
+        }
+      ],
+      style_ids: props.selectedStyles.map((s) => s.id)
     }
   } else {
     // Full form flow

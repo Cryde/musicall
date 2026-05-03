@@ -167,10 +167,10 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
-import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
-import { useUserSecurityStore } from '../../../store/user/security.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
+import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
+import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -187,9 +187,7 @@ const inviteSuccess = ref('')
 
 const isMe = (member) => member.username === userSecurityStore.user?.username
 
-const adminCount = computed(
-  () => settingsStore.members.filter((m) => m.role === 'admin').length
-)
+const adminCount = computed(() => settingsStore.members.filter((m) => m.role === 'admin').length)
 const isOnlyAdmin = computed(() => {
   const me = settingsStore.members.find((m) => isMe(m))
   return me?.role === 'admin' && adminCount.value === 1
@@ -218,7 +216,7 @@ async function handleInvite() {
 function handleCancelInvitation(invitation) {
   confirm.require({
     message: `Annuler l'invitation envoyée à ${invitation.email} ?`,
-    header: 'Confirmer l\'annulation',
+    header: "Confirmer l'annulation",
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Non',
     acceptLabel: 'Oui, annuler',
@@ -237,7 +235,11 @@ function handleCancelInvitation(invitation) {
 async function handlePromote(member) {
   try {
     await settingsStore.updateRole(bandSpaceId, member.id, 'admin')
-    toast.add({ severity: 'success', summary: `${member.username} est maintenant admin`, life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: `${member.username} est maintenant admin`,
+      life: 3000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }
@@ -246,7 +248,11 @@ async function handlePromote(member) {
 async function handleDemote(member) {
   try {
     await settingsStore.updateRole(bandSpaceId, member.id, 'user')
-    toast.add({ severity: 'success', summary: `${member.username} est maintenant membre`, life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: `${member.username} est maintenant membre`,
+      life: 3000
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: e.message, life: 5000 })
   }
@@ -255,7 +261,7 @@ async function handleDemote(member) {
 function handleKick(member) {
   confirm.require({
     message: `Êtes-vous sûr de vouloir exclure ${member.username} ?`,
-    header: 'Confirmer l\'exclusion',
+    header: "Confirmer l'exclusion",
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
     acceptLabel: 'Exclure',

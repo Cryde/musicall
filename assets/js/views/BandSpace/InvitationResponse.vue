@@ -50,8 +50,8 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
-import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
+import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
 const route = useRoute()
 const router = useRouter()

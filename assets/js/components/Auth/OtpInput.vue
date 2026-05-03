@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, nextTick } from 'vue'
+import { nextTick, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   hasError: { type: Boolean, default: false },

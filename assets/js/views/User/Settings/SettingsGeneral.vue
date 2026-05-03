@@ -307,13 +307,13 @@ const USERNAME_REGEX = /^[a-zA-Z0-9._]+$/
 
 function validateUsername(username) {
   if (!username || username.length < 3) {
-    return 'Le nom d\'utilisateur doit au moins contenir 3 caractères'
+    return "Le nom d'utilisateur doit au moins contenir 3 caractères"
   }
   if (username.length > 40) {
-    return 'Le nom d\'utilisateur doit contenir maximum 40 caractères'
+    return "Le nom d'utilisateur doit contenir maximum 40 caractères"
   }
   if (!USERNAME_REGEX.test(username)) {
-    return 'Nom d\'utilisateur invalide : seuls les lettres, chiffres, points et underscores sont autorisés.'
+    return "Nom d'utilisateur invalide : seuls les lettres, chiffres, points et underscores sont autorisés."
   }
   return null
 }
@@ -344,7 +344,7 @@ watch(newUsername, (value) => {
       const result = await securityApi.checkUsernameAvailability(trimmed)
       isUsernameAvailable.value = result.available
       if (!result.available) {
-        usernameError.value = 'Ce nom d\'utilisateur est déjà pris'
+        usernameError.value = "Ce nom d'utilisateur est déjà pris"
       }
     } catch {
       // Ignore errors, validation will happen on submit
@@ -365,7 +365,7 @@ async function saveUsername() {
   }
 
   if (trimmed === userSettingsStore.userProfile?.username) {
-    usernameError.value = 'Le nouveau nom d\'utilisateur doit être différent de l\'actuel'
+    usernameError.value = "Le nouveau nom d'utilisateur doit être différent de l'actuel"
     return
   }
 
@@ -375,8 +375,8 @@ async function saveUsername() {
     newUsername.value = ''
     toast.add({
       severity: 'success',
-      summary: 'Nom d\'utilisateur modifié',
-      detail: 'Votre nom d\'utilisateur a été mis à jour avec succès',
+      summary: "Nom d'utilisateur modifié",
+      detail: "Votre nom d'utilisateur a été mis à jour avec succès",
       life: 5000
     })
   } catch (error) {
@@ -460,10 +460,16 @@ const deleteAccountError = ref('')
 const isDeletingAccount = ref(false)
 
 function normalize(str) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
 }
 
-const isConfirmationValid = computed(() => normalize(deleteAccountConfirmation.value) === 'supprimer definitivement')
+const isConfirmationValid = computed(
+  () => normalize(deleteAccountConfirmation.value) === 'supprimer definitivement'
+)
 
 async function handleDeleteAccount() {
   deleteAccountError.value = ''

@@ -96,10 +96,10 @@
 
 <script setup>
 import Accordion from 'primevue/accordion'
-import Button from 'primevue/button'
 import AccordionContent from 'primevue/accordioncontent'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionPanel from 'primevue/accordionpanel'
+import Button from 'primevue/button'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { effectiveAmount } from '../../../utils/currency.js'
@@ -129,9 +129,13 @@ function loadOpenPanels() {
 
 const openPanels = ref(loadOpenPanels())
 
-watch(openPanels, (value) => {
-  localStorage.setItem(storageKey, JSON.stringify(value))
-}, { deep: true })
+watch(
+  openPanels,
+  (value) => {
+    localStorage.setItem(storageKey, JSON.stringify(value))
+  },
+  { deep: true }
+)
 
 const poleStats = computed(() => {
   const stats = new Map()
@@ -142,7 +146,9 @@ const poleStats = computed(() => {
     }
     const bandEntries = entries.filter((e) => e.scope !== 'personal')
     const total = bandEntries.reduce((sum, e) => sum + effectiveAmount(e), 0)
-    const paid = bandEntries.filter((e) => e.status === 'paid').reduce((sum, e) => sum + effectiveAmount(e), 0)
+    const paid = bandEntries
+      .filter((e) => e.status === 'paid')
+      .reduce((sum, e) => sum + effectiveAmount(e), 0)
     const percent = total === 0 ? 0 : Math.min(Math.round((paid / total) * 100), 100)
     stats.set(pole.id, { count: entries.length, total, paid, percent })
   }

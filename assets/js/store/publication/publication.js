@@ -31,7 +31,7 @@ export const usePublicationStore = defineStore('publicaton', () => {
         ...publication.value,
         upvotes: voteData.upvotes,
         downvotes: voteData.downvotes,
-        user_vote: voteData.user_vote,
+        user_vote: voteData.user_vote
       }
     }
   }

@@ -5,9 +5,7 @@ import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
   getFeaturedTeachers() {
-    return axios
-      .get(Routing.generate('api_teachers_featured'))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_teachers_featured')).then((resp) => resp.data)
   },
 
   getPublicTeacherProfile(username) {
@@ -17,46 +15,34 @@ export default {
   },
 
   getMyTeacherProfile() {
-    return axios
-      .get(Routing.generate('api_teacher_profile_edit_get'))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_teacher_profile_edit_get')).then((resp) => resp.data)
   },
 
   createTeacherProfile(data) {
     return axios
-      .post(
-        Routing.generate('api_teacher_profile_create'),
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/ld+json',
-            Accept: 'application/ld+json'
-          }
+      .post(Routing.generate('api_teacher_profile_create'), data, {
+        headers: {
+          'Content-Type': 'application/ld+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
 
   updateTeacherProfile(data) {
     return axios
-      .patch(
-        Routing.generate('api_teacher_profile_edit'),
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/merge-patch+json',
-            Accept: 'application/ld+json'
-          }
+      .patch(Routing.generate('api_teacher_profile_edit'), data, {
+        headers: {
+          'Content-Type': 'application/merge-patch+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
 
   deleteTeacherProfile() {
-    return axios
-      .delete(Routing.generate('api_teacher_profile_delete'))
-      .catch(handleApiError)
+    return axios.delete(Routing.generate('api_teacher_profile_delete')).catch(handleApiError)
   }
 }

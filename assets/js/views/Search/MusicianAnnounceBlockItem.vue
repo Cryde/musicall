@@ -93,8 +93,8 @@
 </template>
 
 <script setup lang="ts">
-import Avatar from 'primevue/avatar'
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
+import Avatar from 'primevue/avatar'
 import { computed, ref } from 'vue'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../../components/Message/SendMessageModal.vue'
@@ -104,13 +104,13 @@ import { getAvatarStyle } from '../../utils/avatar.js'
 import { hasMoreStyles, MAX_VISIBLE_STYLES } from '../../utils/styles.js'
 
 const props = defineProps({
-    type: { type: Number, required: true },
-    user: { type: Object, required: true },
-    instrument: { type: String, required: true },
-    styles: { type: Array, required: true },
-    location_name: { type: String, required: true },
-    distance: { type: [Number, String], default: null },
-    from: { type: String, default: null }
+  type: { type: Number, required: true },
+  user: { type: Object, required: true },
+  instrument: { type: String, required: true },
+  styles: { type: Array, required: true },
+  location_name: { type: String, required: true },
+  distance: { type: [Number, String], default: null },
+  from: { type: String, default: null }
 })
 
 const userName = computed(() => displayName(props.user))
@@ -125,29 +125,29 @@ const showAuthModal = ref(false)
 const isOwnAnnounce = computed(() => userSecurityStore.userProfile?.id === props.user.id)
 
 const profileRoute = computed(() => {
-    const route = {
-        name: props.user.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
-        params: { username: props.user.username }
-    }
-    // Add from query param for contextual back navigation
-    if (props.from) {
-        route.query = { from: props.from }
-    }
-    return route
+  const route = {
+    name: props.user.has_musician_profile ? 'app_user_musician_profile' : 'app_user_public_profile',
+    params: { username: props.user.username }
+  }
+  // Add from query param for contextual back navigation
+  if (props.from) {
+    route.query = { from: props.from }
+  }
+  return route
 })
 
 const formattedDistance = computed(() => {
-    if (!props.distance) return ''
-    const dist = Number(props.distance)
-    return dist < 10 ? `${dist.toFixed(1)} km` : `${Math.round(dist)} km`
+  if (!props.distance) return ''
+  const dist = Number(props.distance)
+  return dist < 10 ? `${dist.toFixed(1)} km` : `${Math.round(dist)} km`
 })
 
 function handleContact() {
-    trackUmamiEvent('musician-result-contact')
-    if (!userSecurityStore.isAuthenticated) {
-        showAuthModal.value = true
-        return
-    }
-    showMessageModal.value = true
+  trackUmamiEvent('musician-result-contact')
+  if (!userSecurityStore.isAuthenticated) {
+    showAuthModal.value = true
+    return
+  }
+  showMessageModal.value = true
 }
 </script>

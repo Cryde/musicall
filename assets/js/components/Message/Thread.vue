@@ -114,12 +114,12 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Textarea from 'primevue/textarea'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, nextTick, ref, watch } from 'vue'
 import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'

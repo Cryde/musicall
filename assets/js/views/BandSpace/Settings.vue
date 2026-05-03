@@ -37,8 +37,8 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
+import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
 
 const sections = [
   { key: 'members', label: 'Membres' },

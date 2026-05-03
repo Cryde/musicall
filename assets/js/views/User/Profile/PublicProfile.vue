@@ -351,30 +351,30 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../../components/Auth/AuthRequiredModal.vue'
+import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
 import SendMessageModal from '../../../components/Message/SendMessageModal.vue'
+import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
+import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
 import EditProfileModal from '../../../components/User/Profile/EditProfileModal.vue'
 import EditSocialLinksModal from '../../../components/User/Profile/EditSocialLinksModal.vue'
 import MusicianAnnounceItem from '../../../components/User/Profile/MusicianAnnounceItem.vue'
-import EditMusicianProfileModal from '../../../components/User/Profile/EditMusicianProfileModal.vue'
-import EditTeacherProfileModal from '../../../components/Teacher/EditTeacherProfileModal.vue'
-import MusicNotesIcon from '../../../components/Icons/MusicNotesIcon.vue'
-import CoverPictureModal from '../Settings/CoverPictureModal.vue'
-import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
+import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useUserProfileStore } from '../../../store/user/profile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
-import { useMusicianProfileStore } from '../../../store/user/musicianProfile.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'
 import { getAvatarStyle } from '../../../utils/avatar.js'
+import CoverPictureModal from '../Settings/CoverPictureModal.vue'
+import ProfilePictureModal from '../Settings/ProfilePictureModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -579,11 +579,14 @@ function handleTeacherProfileCreated() {
   })
 }
 
-watch(() => route.params.username, (newUsername) => {
-  if (newUsername) {
-    loadProfile()
+watch(
+  () => route.params.username,
+  (newUsername) => {
+    if (newUsername) {
+      loadProfile()
+    }
   }
-})
+)
 
 onMounted(() => {
   loadProfile()

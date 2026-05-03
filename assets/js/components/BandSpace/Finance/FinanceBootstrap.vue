@@ -47,7 +47,12 @@ async function handleBootstrap() {
     emit('bootstrapped')
     toast.add({ severity: 'success', summary: 'Catégories créées', life: 3000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de créer les catégories', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de créer les catégories',
+      life: 5000
+    })
   }
 }
 </script>

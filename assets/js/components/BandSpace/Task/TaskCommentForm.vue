@@ -75,7 +75,11 @@ function handleInput() {
   const textBefore = content.value.slice(0, cursorPos)
   const atIndex = textBefore.lastIndexOf('@')
 
-  if (atIndex !== -1 && !textBefore.slice(atIndex).includes(' ') && !textBefore.slice(atIndex).includes('[')) {
+  if (
+    atIndex !== -1 &&
+    !textBefore.slice(atIndex).includes(' ') &&
+    !textBefore.slice(atIndex).includes('[')
+  ) {
     const query = textBefore.slice(atIndex + 1)
     suggestions.value = getSuggestions(query, props.members)
     showSuggestions.value = suggestions.value.length > 0

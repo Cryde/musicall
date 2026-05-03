@@ -157,9 +157,9 @@
     </nav>
 </template>
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Menu from 'primevue/menu'
 import OverlayBadge from 'primevue/overlaybadge'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
@@ -221,7 +221,9 @@ const isSearchActive = computed(() => {
 function handleClickOutside(event) {
   if (!searchDropdownVisible.value) return
   // searchDropdownWrapper is an array because it's inside v-for
-  const wrapper = Array.isArray(searchDropdownWrapper.value) ? searchDropdownWrapper.value[0] : searchDropdownWrapper.value
+  const wrapper = Array.isArray(searchDropdownWrapper.value)
+    ? searchDropdownWrapper.value[0]
+    : searchDropdownWrapper.value
   if (wrapper && !wrapper.contains(event.target)) {
     searchDropdownVisible.value = false
   }
@@ -254,7 +256,10 @@ const menuItems = computed(() => {
       label: 'Mon profil',
       icon: 'pi pi-user',
       command: () => {
-        router.push({ name: 'app_user_public_profile', params: { username: userSecurityStore.user.username } })
+        router.push({
+          name: 'app_user_public_profile',
+          params: { username: userSecurityStore.user.username }
+        })
       }
     },
     {

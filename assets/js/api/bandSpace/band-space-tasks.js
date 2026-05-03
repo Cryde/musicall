@@ -24,22 +24,18 @@ export default {
 
   createTask(bandSpaceId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_tasks_post', { bandSpaceId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_tasks_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
 
   updateTask(bandSpaceId, taskId, data) {
     return axios
-      .patch(
-        Routing.generate('api_band_space_tasks_patch', { bandSpaceId, id: taskId }),
-        data,
-        { headers: { 'Content-Type': 'application/merge-patch+json' } }
-      )
+      .patch(Routing.generate('api_band_space_tasks_patch', { bandSpaceId, id: taskId }), data, {
+        headers: { 'Content-Type': 'application/merge-patch+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -60,11 +56,9 @@ export default {
 
   createCategory(bandSpaceId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_task_categories_post', { bandSpaceId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_task_categories_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -82,7 +76,9 @@ export default {
 
   deleteCategory(bandSpaceId, categoryId) {
     return axios
-      .delete(Routing.generate('api_band_space_task_categories_delete', { bandSpaceId, id: categoryId }))
+      .delete(
+        Routing.generate('api_band_space_task_categories_delete', { bandSpaceId, id: categoryId })
+      )
       .catch(handleApiError)
   },
 
@@ -117,11 +113,9 @@ export default {
 
   createComment(bandSpaceId, taskId, data) {
     return axios
-      .post(
-        Routing.generate('api_band_space_task_comments_post', { bandSpaceId, taskId }),
-        data,
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
+      .post(Routing.generate('api_band_space_task_comments_post', { bandSpaceId, taskId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },
@@ -155,7 +149,9 @@ export default {
 
   getActivities(bandSpaceId, taskId) {
     return axios
-      .get(Routing.generate('api_band_space_task_activities_get_collection', { bandSpaceId, taskId }))
+      .get(
+        Routing.generate('api_band_space_task_activities_get_collection', { bandSpaceId, taskId })
+      )
       .then((resp) => resp.data)
       .then((resp) => resp.member)
       .catch(handleApiError)

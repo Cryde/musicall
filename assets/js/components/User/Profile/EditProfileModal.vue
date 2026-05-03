@@ -144,15 +144,18 @@ const isVisible = computed({
   set: (value) => emit('update:visible', value)
 })
 
-watch(() => props.visible, (visible) => {
-  if (visible) {
-    displayName.value = props.initialDisplayName || ''
-    bio.value = props.initialBio || ''
-    location.value = props.initialLocation || ''
-    isPublic.value = props.initialIsPublic
-    error.value = ''
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible) {
+      displayName.value = props.initialDisplayName || ''
+      bio.value = props.initialBio || ''
+      location.value = props.initialLocation || ''
+      isPublic.value = props.initialIsPublic
+      error.value = ''
+    }
   }
-})
+)
 
 function handleClose() {
   error.value = ''

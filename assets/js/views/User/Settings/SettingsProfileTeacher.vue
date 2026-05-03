@@ -394,7 +394,7 @@ import {
   getDayOfWeekLabel,
   getSessionDurationLabel,
   getSocialPlatformLabel,
-  getStudentLevelLabel,
+  getStudentLevelLabel
 } from '../../../constants/teacherProfile.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { useTeacherProfileStore } from '../../../store/user/teacherProfile.js'

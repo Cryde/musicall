@@ -98,11 +98,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import { MasonryWall } from '@yeger/vue-masonry-wall'
 import { format, parseISO } from 'date-fns'
 import ProgressSpinner from 'primevue/progressspinner'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ShareButton from '../../components/ShareButton.vue'

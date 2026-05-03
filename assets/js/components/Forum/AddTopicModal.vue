@@ -72,11 +72,11 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
-import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { computed, ref, watch } from 'vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import MessageEditor from './MessageEditor.vue'
@@ -144,9 +144,10 @@ async function handleSubmit() {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: error.response?.status === 429
-        ? 'Veuillez patienter quelques minutes avant de créer un nouveau sujet.'
-        : 'Une erreur est survenue lors de la création du sujet',
+      detail:
+        error.response?.status === 429
+          ? 'Veuillez patienter quelques minutes avant de créer un nouveau sujet.'
+          : 'Une erreur est survenue lors de la création du sujet',
       life: 5000
     })
   } finally {

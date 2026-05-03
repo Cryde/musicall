@@ -59,11 +59,11 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import BandNavigation from '../../components/BandSpace/BandNavigation.vue'
 import BandSpaceSelector from '../../components/BandSpace/BandSpaceSelector.vue'
 import CreateBandSpaceModal from '../../components/BandSpace/CreateBandSpaceModal.vue'
 import UserMenu from '../../components/BandSpace/UserMenu.vue'
-import { ref } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'

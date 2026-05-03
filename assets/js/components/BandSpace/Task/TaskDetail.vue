@@ -382,9 +382,7 @@ async function saveTextFields() {
 }
 
 async function saveDueDate() {
-  const value = editDueDate.value
-    ? new Date(editDueDate.value).toISOString().split('T')[0]
-    : null
+  const value = editDueDate.value ? new Date(editDueDate.value).toISOString().split('T')[0] : null
   await saveField('due_date', value)
 }
 
