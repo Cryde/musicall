@@ -42,4 +42,59 @@ class VoteRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getResult()[0] ?? null;
     }
+
+    /**
+     * @param int[] $voteCacheIds
+     * @return array<int, int>  vote_cache_id => value
+     */
+    public function findValuesByUserAndVoteCacheIds(User $user, array $voteCacheIds): array
+    {
+        if ($voteCacheIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('vote')
+            ->select('IDENTITY(vote.voteCache) AS vote_cache_id, vote.value')
+            ->where('vote.user = :user')
+            ->andWhere('vote.voteCache IN (:vote_cache_ids)')
+            ->setParameter('user', $user)
+            ->setParameter('vote_cache_ids', $voteCacheIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $byCacheId = [];
+        foreach ($rows as $row) {
+            $byCacheId[(int) $row['vote_cache_id']] = (int) $row['value'];
+        }
+
+        return $byCacheId;
+    }
+
+    /**
+     * @param int[] $voteCacheIds
+     * @return array<int, int>  vote_cache_id => value
+     */
+    public function findValuesByIdentifierAndVoteCacheIds(string $identifier, array $voteCacheIds): array
+    {
+        if ($voteCacheIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('vote')
+            ->select('IDENTITY(vote.voteCache) AS vote_cache_id, vote.value')
+            ->where('vote.identifier = :identifier')
+            ->andWhere('vote.user IS NULL')
+            ->andWhere('vote.voteCache IN (:vote_cache_ids)')
+            ->setParameter('identifier', $identifier)
+            ->setParameter('vote_cache_ids', $voteCacheIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $byCacheId = [];
+        foreach ($rows as $row) {
+            $byCacheId[(int) $row['vote_cache_id']] = (int) $row['value'];
+        }
+
+        return $byCacheId;
+    }
 }

@@ -2,46 +2,27 @@
 
 namespace App\Entity\Comment;
 
-use ApiPlatform\OpenApi\Model\Operation;
 use DateTimeInterface;
 use DateTime;
-use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use App\Contracts\Metric\VotableInterface;
 use App\Entity\Metric\VoteCache;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
-#[ApiResource(operations: [
-    new Get(
-        openapi: new Operation(tags: ['Comment']),
-        normalizationContext: ['groups' => [Comment::ITEM]]
-    ),
-    new GetCollection(
-        openapi: new Operation(tags: ['Comment']),
-        normalizationContext: ['groups' => [Comment::LIST]],
-        name: 'api_comments_get_collection'
-    ),
-])]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['thread' => SearchFilterInterface::STRATEGY_EXACT])]
 class Comment implements VotableInterface
 {
+    // Kept for backwards compatibility with #[Groups] references on User and other entities
+    // until the Publication / ForumPost migrations land.
     const LIST = 'COMMENT_LIST';
     const ITEM = 'COMMENT_ITEM';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: Types::INTEGER)]
-    #[Groups([Comment::ITEM, Comment::LIST])]
     public int $id;
 
     #[Assert\NotNull]
@@ -52,16 +33,13 @@ class Comment implements VotableInterface
     #[Assert\NotNull]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([Comment::ITEM, Comment::LIST])]
     public User $author;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([Comment::ITEM, Comment::LIST])]
     public DateTimeInterface $creationDatetime;
 
     #[Assert\NotBlank(message: 'Le commentaire est vide')]
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([Comment::ITEM, Comment::LIST])]
     public string $content {
         set(string $value) {
             $this->content = trim($value);
@@ -84,17 +62,5 @@ class Comment implements VotableInterface
     public function getVotableType(): string
     {
         return 'app_comment';
-    }
-
-    #[Groups([Comment::LIST, Comment::ITEM])]
-    public function getUpvotes(): int
-    {
-        return $this->voteCache->upvoteCount ?? 0;
-    }
-
-    #[Groups([Comment::LIST, Comment::ITEM])]
-    public function getDownvotes(): int
-    {
-        return $this->voteCache->downvoteCount ?? 0;
     }
 }

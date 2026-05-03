@@ -82,7 +82,7 @@ const authorName = computed(() => displayName(props.comment.author))
 
 const localUpvotes = ref(props.comment.upvotes ?? 0)
 const localDownvotes = ref(props.comment.downvotes ?? 0)
-const localUserVote = ref(null)
+const localUserVote = ref(props.comment.user_vote ?? null)
 const isVoting = ref(false)
 
 const score = computed(() => localUpvotes.value - localDownvotes.value)

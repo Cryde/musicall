@@ -5,8 +5,9 @@ namespace App\State\Processor\Comment;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Comment\CommentCreation;
-use App\Entity\Comment\Comment;
+use App\ApiResource\Comment\CommentResource;
 use App\Entity\User;
+use App\Service\Builder\Comment\CommentBuilder;
 use App\Service\Procedure\Comment\CreateCommentProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -14,19 +15,20 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * @implements ProcessorInterface<CommentCreation, Comment>
+ * @implements ProcessorInterface<CommentCreation, CommentResource>
  */
 readonly class PostCommentProcessor implements ProcessorInterface
 {
     public function __construct(
         private Security $security,
         private CreateCommentProcedure $createCommentProcedure,
+        private CommentBuilder $commentBuilder,
         #[Target('comment_post')]
         private RateLimiterFactoryInterface $commentPostLimiter,
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Comment
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CommentResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
@@ -35,6 +37,8 @@ readonly class PostCommentProcessor implements ProcessorInterface
         $user = $this->security->getUser();
         $this->commentPostLimiter->create($user->getUserIdentifier())->consume()->ensureAccepted();
 
-        return $this->createCommentProcedure->process($user, $data);
+        $comment = $this->createCommentProcedure->process($user, $data);
+
+        return $this->commentBuilder->buildItem($comment);
     }
 }

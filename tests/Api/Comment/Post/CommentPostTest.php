@@ -40,15 +40,18 @@ with multiline",
             '@id' => '/api/comments/' . $comments[0]->id,
             '@type' => 'Comment',
             'id' => $comments[0]->id,
+            'thread_id' => $commentThread->id,
             'author' => [
-                '@id' => '/api/users/' . $user1->id,
-                '@type' => 'User',
+                'id' => $user1->id,
                 'username' => 'base_user_1',
+                'profile_picture_url' => null,
+                'deletion_datetime' => null,
             ],
             'creation_datetime' => $comments[0]->creationDatetime->format('c'),
             'content' => "This is a comment<br />\nwith multiline",
             'upvotes' => 0,
             'downvotes' => 0,
+            'user_vote' => null,
         ]);
     }
 
