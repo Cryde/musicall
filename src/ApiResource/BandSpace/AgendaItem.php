@@ -42,6 +42,7 @@ class AgendaItem
     public string $source;
     public string $sourceId;
     public string $datetime;
+    public ?string $endDatetime = null;
     public string $title;
     public ?string $description = null;
 

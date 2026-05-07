@@ -71,6 +71,18 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             }
         }
 
+        if (array_key_exists('end_datetime', $payload) || array_key_exists('endDatetime', $payload)) {
+            if ($data->endDatetime === null) {
+                $entry->endDatetime = null;
+            } else {
+                try {
+                    $entry->endDatetime = new DateTimeImmutable($data->endDatetime);
+                } catch (\Exception) {
+                    throw new BadRequestHttpException('Date de fin invalide');
+                }
+            }
+        }
+
         $this->entityManager->flush();
 
         return $this->agendaEntryBuilder->buildItem($entry);

@@ -88,6 +88,9 @@ class AgendaEntryResource
     #[Assert\NotBlank(message: 'Veuillez spécifier une date et heure')]
     public string $eventDatetime;
 
+    #[Assert\GreaterThan(propertyPath: 'eventDatetime', message: 'La fin doit être postérieure au début')]
+    public ?string $endDatetime = null;
+
     public ?string $creatorId = null;
     public ?string $creatorUsername = null;
     public string $creationDatetime;

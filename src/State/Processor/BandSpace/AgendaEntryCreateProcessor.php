@@ -47,6 +47,15 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
             throw new BadRequestHttpException('Date et heure invalides');
         }
 
+        $endDatetime = null;
+        if ($data->endDatetime !== null) {
+            try {
+                $endDatetime = new DateTimeImmutable($data->endDatetime);
+            } catch (\Exception) {
+                throw new BadRequestHttpException('Date de fin invalide');
+            }
+        }
+
         $entry = new AgendaEntry();
         $entry->bandSpace = $bandSpace;
         $entry->creator = $user;
@@ -54,6 +63,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         $entry->description = $data->description;
         $entry->location = $data->location;
         $entry->eventDatetime = $eventDatetime;
+        $entry->endDatetime = $endDatetime;
 
         $this->entityManager->persist($entry);
         $this->entityManager->flush();

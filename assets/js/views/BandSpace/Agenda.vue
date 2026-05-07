@@ -86,8 +86,8 @@
               :class="sourceBorderClass(item.source)"
               @click="handleItemClick(item)"
             >
-              <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 w-12 flex-shrink-0 pt-0.5">
-                {{ formatTime(item.datetime) }}
+              <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
+                {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
               </span>
 
               <div class="flex-1 min-w-0">
@@ -145,6 +145,7 @@ import {
   endOfMonth,
   endOfWeek,
   format,
+  parseISO,
   startOfDay,
   startOfMonth,
   startOfWeek
@@ -268,7 +269,7 @@ const filteredItems = computed(() =>
 const groupedItems = computed(() => {
   const groups = new Map()
   for (const item of filteredItems.value) {
-    const date = item.datetime.substring(0, 10)
+    const date = format(parseISO(item.datetime), 'yyyy-MM-dd')
     if (!groups.has(date)) {
       groups.set(date, [])
     }
@@ -284,6 +285,7 @@ const calendarEvents = computed(() =>
       id: item.id,
       title: item.title,
       start: item.datetime,
+      end: item.end_datetime ?? undefined,
       allDay: item.source === 'finance',
       backgroundColor: colors.bg,
       borderColor: colors.border,
@@ -428,7 +430,7 @@ function formatDateLabel(dateString) {
 }
 
 function formatTime(datetimeString) {
-  return datetimeString.substring(11, 16)
+  return format(parseISO(datetimeString), 'HH:mm')
 }
 
 function sourceLabel(source) {

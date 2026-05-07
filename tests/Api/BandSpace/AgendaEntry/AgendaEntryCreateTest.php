@@ -51,6 +51,7 @@ class AgendaEntryCreateTest extends ApiTestCase
             'description' => null,
             'location' => null,
             'event_datetime' => '2026-06-15T20:00:00+00:00',
+            'end_datetime' => null,
             'creator_id' => $user->_real()->id,
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -92,9 +93,89 @@ class AgendaEntryCreateTest extends ApiTestCase
             'description' => 'Apporter le matériel à 18h',
             'location' => 'Zenith de Paris',
             'event_datetime' => '2026-07-20T21:30:00+00:00',
+            'end_datetime' => null,
             'creator_id' => $user->_real()->id,
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_create_agenda_entry_with_end_datetime(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            [
+                'title' => 'Concert',
+                'eventDatetime' => '2026-07-20T20:00:00+00:00',
+                'endDatetime' => '2026-07-20T23:00:00+00:00',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $entries = $repo->findByBandSpace($bandSpace->_real());
+        $entry = $entries[0];
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->_real()->id,
+            'title' => 'Concert',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-07-20T20:00:00+00:00',
+            'end_datetime' => '2026-07-20T23:00:00+00:00',
+            'creator_id' => $user->_real()->id,
+            'creator_username' => $user->_real()->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_create_agenda_entry_rejects_end_before_start(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            [
+                'title' => 'Concert',
+                'eventDatetime' => '2026-07-20T20:00:00+00:00',
+                'endDatetime' => '2026-07-20T19:00:00+00:00',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/778b7ae0-84d3-481a-9dec-35fdb64b1d78',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'end_datetime',
+                    'message' => 'La fin doit être postérieure au début',
+                    'code' => '778b7ae0-84d3-481a-9dec-35fdb64b1d78',
+                ],
+            ],
+            'detail' => 'end_datetime: La fin doit être postérieure au début',
+            'type' => '/validation_errors/778b7ae0-84d3-481a-9dec-35fdb64b1d78',
+            'title' => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'description' => 'end_datetime: La fin doit être postérieure au début',
         ]);
     }
 

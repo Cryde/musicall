@@ -81,6 +81,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source' => 'manual',
                     'source_id' => $manual->_real()->id,
                     'datetime' => '2026-06-15T20:00:00+00:00',
+                    'end_datetime' => null,
                     'title' => 'Répétition',
                     'description' => 'Préparer le set',
                     'metadata' => ['location' => 'Studio'],
@@ -93,6 +94,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source' => 'task',
                     'source_id' => $task->_real()->id,
                     'datetime' => '2026-06-20T12:00:00+00:00',
+                    'end_datetime' => null,
                     'title' => 'Acheter cordes',
                     'description' => null,
                     'metadata' => [
@@ -109,6 +111,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source' => 'finance',
                     'source_id' => $finance->_real()->id,
                     'datetime' => '2026-06-25T00:00:00+00:00',
+                    'end_datetime' => null,
                     'title' => 'Location salle',
                     'description' => null,
                     'metadata' => [

@@ -49,6 +49,7 @@ readonly class AgendaAggregator
         $item->source = 'manual';
         $item->sourceId = (string) $entry->id;
         $item->datetime = $entry->eventDatetime->format(DateTimeInterface::ATOM);
+        $item->endDatetime = $entry->endDatetime?->format(DateTimeInterface::ATOM);
         $item->title = $entry->title;
         $item->description = $entry->description;
         $item->metadata = [

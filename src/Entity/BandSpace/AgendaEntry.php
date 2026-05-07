@@ -47,6 +47,9 @@ class AgendaEntry
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public DateTimeImmutable $eventDatetime;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $endDatetime = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 

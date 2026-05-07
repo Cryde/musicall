@@ -49,6 +49,23 @@
       </div>
 
       <div class="flex flex-col gap-1">
+        <label for="agenda-end-datetime" class="text-sm font-medium">Fin (optionnel)</label>
+        <DatePicker
+          id="agenda-end-datetime"
+          v-model="form.endDatetime"
+          showTime
+          hourFormat="24"
+          dateFormat="dd/mm/yy"
+          showIcon
+          showButtonBar
+          :class="{ 'p-invalid': fieldErrors.endDatetime }"
+        />
+        <small v-if="fieldErrors.endDatetime" class="text-red-500">
+          {{ fieldErrors.endDatetime }}
+        </small>
+      </div>
+
+      <div class="flex flex-col gap-1">
         <label for="agenda-location" class="text-sm font-medium">Lieu</label>
         <InputText
           id="agenda-location"
@@ -122,12 +139,14 @@ const confirm = useConfirm()
 const formError = ref(null)
 const fieldErrors = reactive({
   title: null,
-  eventDatetime: null
+  eventDatetime: null,
+  endDatetime: null
 })
 
 const form = reactive({
   title: '',
   eventDatetime: null,
+  endDatetime: null,
   location: '',
   description: ''
 })
@@ -140,15 +159,18 @@ watch(isVisible, (visible) => {
   formError.value = null
   fieldErrors.title = null
   fieldErrors.eventDatetime = null
+  fieldErrors.endDatetime = null
 
   if (props.agendaItem && props.agendaItem.source === 'manual') {
     form.title = props.agendaItem.title ?? ''
     form.eventDatetime = props.agendaItem.datetime ? new Date(props.agendaItem.datetime) : null
+    form.endDatetime = props.agendaItem.end_datetime ? new Date(props.agendaItem.end_datetime) : null
     form.location = props.agendaItem.metadata?.location ?? ''
     form.description = props.agendaItem.description ?? ''
   } else {
     form.title = ''
     form.eventDatetime = props.initialDatetime ? new Date(props.initialDatetime) : null
+    form.endDatetime = null
     form.location = ''
     form.description = ''
   }
@@ -158,10 +180,17 @@ async function handleSubmit() {
   formError.value = null
   fieldErrors.title = null
   fieldErrors.eventDatetime = null
+  fieldErrors.endDatetime = null
+
+  if (form.endDatetime && form.eventDatetime && form.endDatetime <= form.eventDatetime) {
+    fieldErrors.endDatetime = 'La fin doit être postérieure au début'
+    return
+  }
 
   const payload = {
     title: form.title.trim(),
     eventDatetime: form.eventDatetime ? form.eventDatetime.toISOString() : null,
+    endDatetime: form.endDatetime ? form.endDatetime.toISOString() : null,
     location: form.location.trim() === '' ? null : form.location.trim(),
     description: form.description.trim() === '' ? null : form.description.trim()
   }
@@ -179,8 +208,11 @@ async function handleSubmit() {
       if (error.violationsByField.title) {
         fieldErrors.title = error.violationsByField.title[0].message
       }
-      if (error.violationsByField.eventDatetime) {
-        fieldErrors.eventDatetime = error.violationsByField.eventDatetime[0].message
+      if (error.violationsByField.event_datetime) {
+        fieldErrors.eventDatetime = error.violationsByField.event_datetime[0].message
+      }
+      if (error.violationsByField.end_datetime) {
+        fieldErrors.endDatetime = error.violationsByField.end_datetime[0].message
       }
     }
     formError.value = error?.message ?? 'Impossible d’enregistrer l’événement'
