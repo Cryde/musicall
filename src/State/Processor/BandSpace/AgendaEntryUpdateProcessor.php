@@ -83,6 +83,17 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             }
         }
 
+        if (array_key_exists('is_all_day', $payload) || array_key_exists('isAllDay', $payload)) {
+            $entry->isAllDay = (bool) $data->isAllDay;
+        }
+
+        if ($entry->isAllDay) {
+            $entry->eventDatetime = new DateTimeImmutable($entry->eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');
+            $entry->endDatetime = $entry->endDatetime !== null
+                ? new DateTimeImmutable($entry->endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
+                : null;
+        }
+
         $this->entityManager->flush();
 
         return $this->agendaEntryBuilder->buildItem($entry);

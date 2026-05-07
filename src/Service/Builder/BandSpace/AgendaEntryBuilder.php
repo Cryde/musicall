@@ -29,6 +29,7 @@ readonly class AgendaEntryBuilder
         $dto->location = $entity->location;
         $dto->eventDatetime = $entity->eventDatetime->format(\DateTimeInterface::ATOM);
         $dto->endDatetime = $entity->endDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->isAllDay = $entity->isAllDay;
         $dto->creatorId = $entity->creator !== null ? (string) $entity->creator->id : null;
         $dto->creatorUsername = $entity->creator?->username;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);

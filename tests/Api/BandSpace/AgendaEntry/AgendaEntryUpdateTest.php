@@ -55,6 +55,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'location' => null,
             'event_datetime' => '2026-06-20T18:30:00+00:00',
             'end_datetime' => null,
+            'is_all_day' => false,
             'creator_id' => $user->_real()->id,
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -95,6 +96,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'location' => 'Salle B',
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
+            'is_all_day' => false,
             'creator_id' => $user->_real()->id,
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -135,6 +137,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'location' => null,
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => '2026-06-15T23:00:00+00:00',
+            'is_all_day' => false,
             'creator_id' => $user->_real()->id,
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -176,6 +179,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'location' => null,
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
+            'is_all_day' => false,
             'creator_id' => $user->_real()->id,
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -218,6 +222,48 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'title' => 'An error occurred',
             '@context' => '/api/contexts/ConstraintViolation',
             'description' => 'end_datetime: La fin doit être postérieure au début',
+        ]);
+    }
+
+    public function test_update_toggle_all_day_normalizes_time(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Tournée',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-06-15 14:00:00', new \DateTimeZone('UTC')),
+            'endDatetime' => new DateTimeImmutable('2026-06-17 22:30:00', new \DateTimeZone('UTC')),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->_real()->id,
+            ['isAllDay' => true],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->_real()->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->_real()->id,
+            'band_space_id' => $bandSpace->_real()->id,
+            'title' => 'Tournée',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-06-15T00:00:00+00:00',
+            'end_datetime' => '2026-06-17T00:00:00+00:00',
+            'is_all_day' => true,
+            'creator_id' => $user->_real()->id,
+            'creator_username' => $user->_real()->username,
+            'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
 

@@ -50,6 +50,9 @@ class AgendaEntry
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $endDatetime = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    public bool $isAllDay = false;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 

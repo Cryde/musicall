@@ -91,6 +91,8 @@ class AgendaEntryResource
     #[Assert\GreaterThan(propertyPath: 'eventDatetime', message: 'La fin doit être postérieure au début')]
     public ?string $endDatetime = null;
 
+    public bool $isAllDay = false;
+
     public ?string $creatorId = null;
     public ?string $creatorUsername = null;
     public string $creationDatetime;

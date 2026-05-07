@@ -56,6 +56,13 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
             }
         }
 
+        if ($data->isAllDay) {
+            $eventDatetime = new DateTimeImmutable($eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');
+            $endDatetime = $endDatetime !== null
+                ? new DateTimeImmutable($endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
+                : null;
+        }
+
         $entry = new AgendaEntry();
         $entry->bandSpace = $bandSpace;
         $entry->creator = $user;
@@ -64,6 +71,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         $entry->location = $data->location;
         $entry->eventDatetime = $eventDatetime;
         $entry->endDatetime = $endDatetime;
+        $entry->isAllDay = $data->isAllDay;
 
         $this->entityManager->persist($entry);
         $this->entityManager->flush();

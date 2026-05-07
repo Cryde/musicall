@@ -30,14 +30,19 @@
         <small v-if="fieldErrors.title" class="text-red-500">{{ fieldErrors.title }}</small>
       </div>
 
+      <div class="flex items-center gap-2">
+        <Checkbox v-model="form.isAllDay" inputId="agenda-all-day" binary />
+        <label for="agenda-all-day" class="text-sm font-medium select-none">Toute la journée</label>
+      </div>
+
       <div class="flex flex-col gap-1">
         <label for="agenda-datetime" class="text-sm font-medium">
-          Date et heure <span class="text-red-500">*</span>
+          {{ form.isAllDay ? 'Date' : 'Date et heure' }} <span class="text-red-500">*</span>
         </label>
         <DatePicker
           id="agenda-datetime"
           v-model="form.eventDatetime"
-          showTime
+          :showTime="!form.isAllDay"
           hourFormat="24"
           dateFormat="dd/mm/yy"
           showIcon
@@ -49,11 +54,13 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label for="agenda-end-datetime" class="text-sm font-medium">Fin (optionnel)</label>
+        <label for="agenda-end-datetime" class="text-sm font-medium">
+          {{ form.isAllDay ? 'Dernier jour (optionnel)' : 'Fin (optionnel)' }}
+        </label>
         <DatePicker
           id="agenda-end-datetime"
           v-model="form.endDatetime"
-          showTime
+          :showTime="!form.isAllDay"
           hourFormat="24"
           dateFormat="dd/mm/yy"
           showIcon
@@ -115,12 +122,14 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
+import { format } from 'date-fns'
 import { computed, reactive, ref, watch } from 'vue'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 
@@ -147,6 +156,7 @@ const form = reactive({
   title: '',
   eventDatetime: null,
   endDatetime: null,
+  isAllDay: false,
   location: '',
   description: ''
 })
@@ -165,12 +175,14 @@ watch(isVisible, (visible) => {
     form.title = props.agendaItem.title ?? ''
     form.eventDatetime = props.agendaItem.datetime ? new Date(props.agendaItem.datetime) : null
     form.endDatetime = props.agendaItem.end_datetime ? new Date(props.agendaItem.end_datetime) : null
+    form.isAllDay = !!props.agendaItem.is_all_day
     form.location = props.agendaItem.metadata?.location ?? ''
     form.description = props.agendaItem.description ?? ''
   } else {
     form.title = ''
     form.eventDatetime = props.initialDatetime ? new Date(props.initialDatetime) : null
     form.endDatetime = null
+    form.isAllDay = false
     form.location = ''
     form.description = ''
   }
@@ -187,10 +199,20 @@ async function handleSubmit() {
     return
   }
 
+  const serializeStart = () => {
+    if (!form.eventDatetime) return null
+    return form.isAllDay ? format(form.eventDatetime, 'yyyy-MM-dd') : form.eventDatetime.toISOString()
+  }
+  const serializeEnd = () => {
+    if (!form.endDatetime) return null
+    return form.isAllDay ? format(form.endDatetime, 'yyyy-MM-dd') : form.endDatetime.toISOString()
+  }
+
   const payload = {
     title: form.title.trim(),
-    eventDatetime: form.eventDatetime ? form.eventDatetime.toISOString() : null,
-    endDatetime: form.endDatetime ? form.endDatetime.toISOString() : null,
+    eventDatetime: serializeStart(),
+    endDatetime: serializeEnd(),
+    isAllDay: form.isAllDay,
     location: form.location.trim() === '' ? null : form.location.trim(),
     description: form.description.trim() === '' ? null : form.description.trim()
   }

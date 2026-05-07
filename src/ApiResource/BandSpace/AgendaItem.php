@@ -43,6 +43,7 @@ class AgendaItem
     public string $sourceId;
     public string $datetime;
     public ?string $endDatetime = null;
+    public bool $isAllDay = false;
     public string $title;
     public ?string $description = null;
 

@@ -82,6 +82,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source_id' => $manual->_real()->id,
                     'datetime' => '2026-06-15T20:00:00+00:00',
                     'end_datetime' => null,
+                    'is_all_day' => false,
                     'title' => 'Répétition',
                     'description' => 'Préparer le set',
                     'metadata' => ['location' => 'Studio'],
@@ -95,6 +96,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source_id' => $task->_real()->id,
                     'datetime' => '2026-06-20T12:00:00+00:00',
                     'end_datetime' => null,
+                    'is_all_day' => false,
                     'title' => 'Acheter cordes',
                     'description' => null,
                     'metadata' => [
@@ -113,6 +115,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source_id' => $finance->_real()->id,
                     'datetime' => '2026-06-25T00:00:00+00:00',
                     'end_datetime' => null,
+                    'is_all_day' => false,
                     'title' => 'Location salle',
                     'description' => null,
                     'metadata' => [
@@ -178,6 +181,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'source_id' => $task->_real()->id,
                     'datetime' => '2026-06-20T12:00:00+00:00',
                     'end_datetime' => null,
+                    'is_all_day' => false,
                     'title' => 'Acheter cordes',
                     'description' => null,
                     'metadata' => [

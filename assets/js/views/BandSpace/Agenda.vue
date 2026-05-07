@@ -87,7 +87,12 @@
               @click="handleItemClick(item)"
             >
               <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
-                {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
+                <template v-if="isAllDayItem(item)">
+                  <span class="italic text-xs">Toute la journée</span>
+                </template>
+                <template v-else>
+                  {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
+                </template>
               </span>
 
               <div class="flex-1 min-w-0">
@@ -310,8 +315,8 @@ const calendarEvents = computed(() =>
       id: item.id,
       title: item.title,
       start: item.datetime,
-      end: item.end_datetime ?? undefined,
-      allDay: item.source === 'finance' || item.source === 'task',
+      end: calendarEnd(item),
+      allDay: isAllDayItem(item),
       backgroundColor: colors.bg,
       borderColor: colors.border,
       classNames: ['agenda-event-clickable'],
@@ -456,6 +461,17 @@ function formatDateLabel(dateString) {
 
 function formatTime(datetimeString) {
   return format(parseISO(datetimeString), 'HH:mm')
+}
+
+function calendarEnd(item) {
+  if (!item.end_datetime) return undefined
+  if (!item.is_all_day) return item.end_datetime
+  // FullCalendar all-day events use exclusive end: bump last-day-inclusive to the day after.
+  return format(addDays(parseISO(item.end_datetime), 1), "yyyy-MM-dd")
+}
+
+function isAllDayItem(item) {
+  return item.is_all_day || item.source === 'finance' || item.source === 'task'
 }
 
 function sourceLabel(source) {
