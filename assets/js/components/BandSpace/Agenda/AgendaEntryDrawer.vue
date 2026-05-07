@@ -39,15 +39,24 @@
         <label for="agenda-datetime" class="text-sm font-medium">
           {{ form.isAllDay ? 'Date' : 'Date et heure' }} <span class="text-red-500">*</span>
         </label>
-        <DatePicker
-          id="agenda-datetime"
-          v-model="form.eventDatetime"
-          :showTime="!form.isAllDay"
-          hourFormat="24"
-          dateFormat="dd/mm/yy"
-          showIcon
-          :class="{ 'p-invalid': fieldErrors.eventDatetime }"
-        />
+        <div class="flex gap-2">
+          <DatePicker
+            id="agenda-datetime"
+            v-model="form.eventDatetime"
+            dateFormat="dd/mm/yy"
+            showIcon
+            class="flex-1 min-w-0"
+            :class="{ 'p-invalid': fieldErrors.eventDatetime }"
+          />
+          <InputMask
+            v-if="!form.isAllDay"
+            v-model="eventTimeText"
+            mask="99:99"
+            placeholder="HH:MM"
+            class="w-24 flex-shrink-0"
+            aria-label="Heure de début"
+          />
+        </div>
         <small v-if="fieldErrors.eventDatetime" class="text-red-500">
           {{ fieldErrors.eventDatetime }}
         </small>
@@ -57,17 +66,26 @@
         <label for="agenda-end-datetime" class="text-sm font-medium">
           {{ form.isAllDay ? 'Dernier jour (optionnel)' : 'Fin (optionnel)' }}
         </label>
-        <DatePicker
-          id="agenda-end-datetime"
-          v-model="form.endDatetime"
-          :showTime="!form.isAllDay"
-          hourFormat="24"
-          dateFormat="dd/mm/yy"
-          showIcon
-          showButtonBar
-          :minDate="form.eventDatetime ?? undefined"
-          :class="{ 'p-invalid': fieldErrors.endDatetime }"
-        />
+        <div class="flex gap-2">
+          <DatePicker
+            id="agenda-end-datetime"
+            v-model="form.endDatetime"
+            dateFormat="dd/mm/yy"
+            showIcon
+            showButtonBar
+            :minDate="form.eventDatetime ?? undefined"
+            class="flex-1 min-w-0"
+            :class="{ 'p-invalid': fieldErrors.endDatetime }"
+          />
+          <InputMask
+            v-if="!form.isAllDay"
+            v-model="endTimeText"
+            mask="99:99"
+            placeholder="HH:MM"
+            class="w-24 flex-shrink-0"
+            aria-label="Heure de fin"
+          />
+        </div>
         <small v-if="fieldErrors.endDatetime" class="text-red-500">
           {{ fieldErrors.endDatetime }}
         </small>
@@ -126,6 +144,7 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
+import InputMask from 'primevue/inputmask'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
@@ -163,6 +182,34 @@ const form = reactive({
 })
 
 const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.source === 'manual')
+
+const eventTimeText = computed({
+  get: () => (form.eventDatetime ? format(form.eventDatetime, 'HH:mm') : ''),
+  set: (val) => {
+    const parsed = parseTimeText(val)
+    if (!parsed || !form.eventDatetime) return
+    form.eventDatetime = withTime(form.eventDatetime, parsed.hours, parsed.minutes)
+  }
+})
+
+const endTimeText = computed({
+  get: () => (form.endDatetime ? format(form.endDatetime, 'HH:mm') : ''),
+  set: (val) => {
+    const parsed = parseTimeText(val)
+    if (!parsed || !form.endDatetime) return
+    form.endDatetime = withTime(form.endDatetime, parsed.hours, parsed.minutes)
+  }
+})
+
+function parseTimeText(val) {
+  if (!val || typeof val !== 'string') return null
+  const match = val.match(/^(\d{1,2}):(\d{2})$/)
+  if (!match) return null
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null
+  return { hours, minutes }
+}
 
 let skipShiftEnd = false
 
