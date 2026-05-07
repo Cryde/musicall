@@ -111,6 +111,25 @@
                 <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
                   {{ metadataLine(item) }}
                 </div>
+
+                <div
+                  v-if="item.source === 'task' && item.metadata?.assignees?.length"
+                  class="flex items-center gap-1 mt-1.5"
+                >
+                  <Avatar
+                    v-for="a in item.metadata.assignees.slice(0, 3)"
+                    :key="a.id"
+                    :username="a.username"
+                    :picture-url="a.profile_picture_url"
+                    size="sm"
+                  />
+                  <span
+                    v-if="item.metadata.assignees.length > 3"
+                    class="text-xs font-medium text-surface-500 dark:text-surface-400"
+                  >
+                    +{{ item.metadata.assignees.length - 3 }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -122,7 +141,11 @@
       v-else
       class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
     >
-      <FullCalendar :key="viewMode" :options="calendarOptions" />
+      <FullCalendar :key="viewMode" :options="calendarOptions">
+        <template #eventContent="arg">
+          <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
+        </template>
+      </FullCalendar>
     </div>
 
     <AgendaEntryDrawer
@@ -158,6 +181,8 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
+import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
+import Avatar from '../../components/User/Avatar.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { formatDateCompactWithYear } from '../../utils/date.js'
 
@@ -286,7 +311,7 @@ const calendarEvents = computed(() =>
       title: item.title,
       start: item.datetime,
       end: item.end_datetime ?? undefined,
-      allDay: item.source === 'finance',
+      allDay: item.source === 'finance' || item.source === 'task',
       backgroundColor: colors.bg,
       borderColor: colors.border,
       classNames: ['agenda-event-clickable'],

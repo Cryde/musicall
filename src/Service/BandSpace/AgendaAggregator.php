@@ -7,9 +7,11 @@ use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\BandSpace\Task;
+use App\Entity\User;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\TaskRepository;
+use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -19,6 +21,7 @@ readonly class AgendaAggregator
         private AgendaEntryRepository $agendaEntryRepository,
         private TaskRepository $taskRepository,
         private FinanceEntryRepository $financeEntryRepository,
+        private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
     ) {
     }
 
@@ -73,6 +76,13 @@ readonly class AgendaAggregator
             'status' => $task->status->value,
             'priority' => $task->priority->value,
             'category_name' => $task->category?->name,
+            'assignees' => array_values($task->assignees->map(
+                fn(User $user): array => [
+                    'id' => (string) $user->id,
+                    'username' => $user->username,
+                    'profile_picture_url' => $this->profilePictureUrlBuilder->build($user),
+                ]
+            )->toArray()),
         ];
 
         return $item;

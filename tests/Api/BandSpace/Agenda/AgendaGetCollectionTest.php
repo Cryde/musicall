@@ -101,6 +101,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                         'status' => 'todo',
                         'priority' => 'high',
                         'category_name' => null,
+                        'assignees' => [],
                     ],
                 ],
                 [
@@ -122,6 +123,74 @@ class AgendaGetCollectionTest extends ApiTestCase
                         'amount_min' => null,
                         'amount_max' => null,
                         'category_name' => 'Logistique',
+                    ],
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_task_metadata_includes_assignees(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $assignee = UserFactory::new()->create(['username' => 'drummer_42', 'email' => 'drummer@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $assignee])->create();
+
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Acheter cordes',
+            'description' => null,
+            'status' => TaskStatus::Todo,
+            'priority' => TaskPriority::Normal,
+            'dueDate' => new DateTimeImmutable('2026-06-20 12:00:00', new \DateTimeZone('UTC')),
+        ])->create();
+        $task->_real()->assignees->add($assignee->_real());
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $taskId = 'task-' . $task->_real()->id;
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/agenda_items/id=' . $taskId . ';bandSpaceId=' . $bandSpace->_real()->id,
+                    '@type' => 'AgendaItem',
+                    'id' => $taskId,
+                    'band_space_id' => $bandSpace->_real()->id,
+                    'source' => 'task',
+                    'source_id' => $task->_real()->id,
+                    'datetime' => '2026-06-20T12:00:00+00:00',
+                    'end_datetime' => null,
+                    'title' => 'Acheter cordes',
+                    'description' => null,
+                    'metadata' => [
+                        'status' => 'todo',
+                        'priority' => 'normal',
+                        'category_name' => null,
+                        'assignees' => [
+                            [
+                                'id' => $assignee->_real()->id,
+                                'username' => 'drummer_42',
+                                'profile_picture_url' => null,
+                            ],
+                        ],
                     ],
                 ],
             ],
