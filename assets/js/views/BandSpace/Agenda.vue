@@ -1,43 +1,49 @@
 <template>
-  <div class="p-4">
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-2xl font-bold">Agenda</h1>
+  <div class="p-3 sm:p-4">
+    <div class="flex items-center justify-between gap-2 mb-4">
+      <h1 class="text-xl sm:text-2xl font-bold">Agenda</h1>
       <Button
         icon="pi pi-plus"
         label="Nouvel événement"
         size="small"
+        :pt="{ label: { class: 'hidden sm:inline' } }"
+        aria-label="Nouvel événement"
         @click="openCreateDialog"
       />
     </div>
 
-    <div class="flex flex-wrap items-center gap-3 mb-4">
+    <div class="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-center">
       <DateRangePicker
         :from="dateFrom"
         :to="dateTo"
         :presets="agendaPresets"
         @apply="handleDateRangeApply"
       />
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 -mx-3 px-3 overflow-x-auto sm:overflow-visible sm:mx-0 sm:px-0">
         <button
           v-for="src in sourceOptions"
           :key="src.key"
           type="button"
-          class="text-xs font-medium px-2.5 py-1 rounded-full transition-all min-w-20 text-center tabular-nums"
+          class="text-xs font-medium px-2.5 py-1 rounded-full transition-all text-center tabular-nums whitespace-nowrap sm:min-w-20"
           :class="selectedSources.has(src.key) ? src.activeClass : src.inactiveClass"
           @click="toggleSource(src.key)"
         >
           {{ src.label }} · {{ countsBySource[src.key] }}
         </button>
       </div>
-      <div class="flex items-center gap-1 ml-auto">
+      <div class="flex items-center gap-1 sm:ml-auto">
         <Button
           v-for="mode in viewModeOptions"
           :key="mode.key"
+          :icon="mode.icon"
           :label="mode.label"
           size="small"
           :severity="viewMode === mode.key ? 'primary' : 'secondary'"
           :outlined="viewMode !== mode.key"
           :text="viewMode !== mode.key"
+          :pt="{ label: { class: 'hidden sm:inline' } }"
+          :aria-label="mode.label"
+          :title="mode.label"
           @click="viewMode = mode.key"
         />
       </div>
@@ -142,15 +148,17 @@
       </div>
     </template>
 
-    <div
-      v-else
-      class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
-    >
-      <FullCalendar :key="viewMode" :options="calendarOptions">
-        <template #eventContent="arg">
-          <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
-        </template>
-      </FullCalendar>
+    <div v-else class="overflow-x-auto">
+      <div
+        class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
+        :class="{ 'min-w-[680px]': viewMode === 'timeGridWeek' }"
+      >
+        <FullCalendar :key="viewMode" :options="calendarOptions">
+          <template #eventContent="arg">
+            <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
+          </template>
+        </FullCalendar>
+      </div>
     </div>
 
     <AgendaEntryDrawer
@@ -205,10 +213,10 @@ const dateTo = ref(addDays(today, 30))
 
 const viewMode = ref('list')
 const viewModeOptions = [
-  { key: 'list', label: 'Liste' },
-  { key: 'dayGridMonth', label: 'Mois' },
-  { key: 'timeGridWeek', label: 'Semaine' },
-  { key: 'timeGridDay', label: 'Jour' }
+  { key: 'list', label: 'Liste', icon: 'pi pi-list' },
+  { key: 'dayGridMonth', label: 'Mois', icon: 'pi pi-calendar' },
+  { key: 'timeGridWeek', label: 'Semaine', icon: 'pi pi-calendar-clock' },
+  { key: 'timeGridDay', label: 'Jour', icon: 'pi pi-clock' }
 ]
 
 const agendaPresets = [
