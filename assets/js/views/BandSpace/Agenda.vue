@@ -82,11 +82,8 @@
             <div
               v-for="item in group.items"
               :key="item.id"
-              class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors"
-              :class="[
-                sourceBorderClass(item.source),
-                item.source === 'manual' ? 'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700' : ''
-              ]"
+              class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700"
+              :class="sourceBorderClass(item.source)"
               @click="handleItemClick(item)"
             >
               <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 w-12 flex-shrink-0 pt-0.5">
@@ -157,13 +154,14 @@ import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import { formatDateCompactWithYear } from '../../utils/date.js'
 
 const route = useRoute()
+const router = useRouter()
 const agendaStore = useBandAgendaStore()
 
 const dialogVisible = ref(false)
@@ -289,7 +287,7 @@ const calendarEvents = computed(() =>
       allDay: item.source === 'finance',
       backgroundColor: colors.bg,
       borderColor: colors.border,
-      classNames: item.source === 'manual' ? ['agenda-event-clickable'] : [],
+      classNames: ['agenda-event-clickable'],
       extendedProps: { item }
     }
   })
@@ -363,19 +361,32 @@ function openCreateDialog() {
 }
 
 function handleItemClick(item) {
-  if (item.source !== 'manual') return
-  dialogItem.value = item
-  dialogInitialDatetime.value = null
-  dialogVisible.value = true
-}
-
-function handleEventClick(info) {
-  const item = info.event.extendedProps.item
-  if (item && item.source === 'manual') {
+  if (!item) return
+  if (item.source === 'manual') {
     dialogItem.value = item
     dialogInitialDatetime.value = null
     dialogVisible.value = true
+    return
   }
+  if (item.source === 'task') {
+    router.push({
+      name: 'app_band_tasks',
+      params: { id: route.params.id },
+      query: { task: item.source_id }
+    })
+    return
+  }
+  if (item.source === 'finance') {
+    router.push({
+      name: 'app_band_finance',
+      params: { id: route.params.id },
+      query: { entry: item.source_id }
+    })
+  }
+}
+
+function handleEventClick(info) {
+  handleItemClick(info.event.extendedProps.item)
 }
 
 function handleDateClick(info) {

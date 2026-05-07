@@ -22,6 +22,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   const recurrences = ref([])
   const dateFrom = ref(startOfYear(new Date()))
   const dateTo = ref(endOfYear(new Date()))
+  const activeEntry = ref(null)
   let entriesRequestId = 0
   let summaryRequestId = 0
 
@@ -268,12 +269,30 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     }
   }
 
+  async function setActiveEntry(entryId, bandSpaceId = null) {
+    if (!entryId) {
+      activeEntry.value = null
+      return
+    }
+    const fromList = entries.value.find((e) => String(e.id) === String(entryId))
+    if (fromList) {
+      activeEntry.value = fromList
+      return
+    }
+    if (!bandSpaceId) {
+      activeEntry.value = null
+      return
+    }
+    activeEntry.value = await bandSpaceFinanceApi.getEntry(bandSpaceId, entryId)
+  }
+
   function clear() {
     categories.value = []
     entries.value = []
     recurrences.value = []
     summary.value = null
     loadError.value = null
+    activeEntry.value = null
   }
 
   return {
@@ -291,6 +310,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     recurrences: readonly(recurrences),
     dateFrom: readonly(dateFrom),
     dateTo: readonly(dateTo),
+    activeEntry: readonly(activeEntry),
     categoryTree,
     entriesByDate,
     entriesByCategory,
@@ -309,6 +329,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     updateRecurrence,
     deleteRecurrence,
     bootstrap,
+    setActiveEntry,
     clear
   }
 })

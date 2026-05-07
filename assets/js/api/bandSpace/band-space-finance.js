@@ -59,6 +59,13 @@ export default {
       .catch(handleApiError)
   },
 
+  getEntry(bandSpaceId, entryId) {
+    return axios
+      .get(Routing.generate('api_band_space_finance_entries_get_item', { bandSpaceId, id: entryId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   createEntry(bandSpaceId, data) {
     return axios
       .post(Routing.generate('api_band_space_finance_entries_post', { bandSpaceId }), data, {

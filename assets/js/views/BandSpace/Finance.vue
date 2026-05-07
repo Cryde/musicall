@@ -156,7 +156,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import CreateCategoryDialog from '../../components/BandSpace/Finance/CreateCategoryDialog.vue'
 import FinanceBootstrap from '../../components/BandSpace/Finance/FinanceBootstrap.vue'
@@ -170,6 +170,7 @@ import RecurrenceList from '../../components/BandSpace/Finance/RecurrenceList.vu
 import { useBandSpaceFinanceStore } from '../../store/bandSpace/bandSpaceFinance.js'
 
 const route = useRoute()
+const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
@@ -292,6 +293,39 @@ onMounted(() => {
   financeStore.loadEntries(bandSpaceId)
   financeStore.loadSummary(bandSpaceId)
   financeStore.loadRecurrences(bandSpaceId)
+})
+
+watch(
+  () => route.query.entry,
+  async (entryId) => {
+    if (!entryId) {
+      editingEntry.value = null
+      drawerVisible.value = false
+      financeStore.setActiveEntry(null)
+      return
+    }
+    try {
+      await financeStore.setActiveEntry(entryId, bandSpaceId)
+      if (financeStore.activeEntry) {
+        editingEntry.value = financeStore.activeEntry
+        drawerCategoryId.value = financeStore.activeEntry.category_id
+        drawerVisible.value = true
+      } else {
+        toast.add({ severity: 'error', summary: 'Entrée introuvable', life: 4000 })
+        router.replace({ query: { ...route.query, entry: undefined } })
+      }
+    } catch {
+      toast.add({ severity: 'error', summary: 'Erreur de chargement', life: 4000 })
+      router.replace({ query: { ...route.query, entry: undefined } })
+    }
+  },
+  { immediate: true }
+)
+
+watch(drawerVisible, (val) => {
+  if (!val && route.query.entry) {
+    router.replace({ query: { ...route.query, entry: undefined } })
+  }
 })
 
 onUnmounted(() => {
