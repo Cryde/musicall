@@ -299,14 +299,42 @@ const filteredItems = computed(() =>
 const groupedItems = computed(() => {
   const groups = new Map()
   for (const item of filteredItems.value) {
-    const date = format(parseISO(item.datetime), 'yyyy-MM-dd')
-    if (!groups.has(date)) {
-      groups.set(date, [])
+    for (const date of itemDateKeys(item)) {
+      if (!groups.has(date)) {
+        groups.set(date, [])
+      }
+      groups.get(date).push(item)
     }
-    groups.get(date).push(item)
   }
-  return Array.from(groups, ([date, items]) => ({ date, items }))
+  // Sort days ascending, then within each day put all-day items first, then by start time.
+  const sortedKeys = Array.from(groups.keys()).sort()
+  return sortedKeys.map((date) => ({
+    date,
+    items: groups.get(date).sort((a, b) => {
+      const aAllDay = isAllDayItem(a)
+      const bAllDay = isAllDayItem(b)
+      if (aAllDay !== bAllDay) return aAllDay ? -1 : 1
+      return a.datetime.localeCompare(b.datetime)
+    })
+  }))
 })
+
+function itemDateKeys(item) {
+  const startKey = format(parseISO(item.datetime), 'yyyy-MM-dd')
+  // Only all-day events expand across days — a timed multi-day event would mislead with
+  // its start-day time range showing on every intermediate day.
+  if (!item.is_all_day || !item.end_datetime) return [startKey]
+  const endKey = format(parseISO(item.end_datetime), 'yyyy-MM-dd')
+  if (endKey === startKey) return [startKey]
+  const keys = []
+  let cursor = parseISO(item.datetime)
+  const end = parseISO(item.end_datetime)
+  while (cursor <= end) {
+    keys.push(format(cursor, 'yyyy-MM-dd'))
+    cursor = addDays(cursor, 1)
+  }
+  return keys
+}
 
 const calendarEvents = computed(() =>
   filteredItems.value.map((item) => {

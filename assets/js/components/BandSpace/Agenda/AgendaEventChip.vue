@@ -70,6 +70,6 @@ const location = computed(() =>
 )
 
 const assignees = computed(() => props.item.metadata?.assignees ?? [])
-const visibleAssignees = computed(() => assignees.value.slice(0, 2))
-const hiddenAssigneeCount = computed(() => Math.max(0, assignees.value.length - 2))
+const visibleAssignees = computed(() => assignees.value.slice(0, 3))
+const hiddenAssigneeCount = computed(() => Math.max(0, assignees.value.length - 3))
 </script>

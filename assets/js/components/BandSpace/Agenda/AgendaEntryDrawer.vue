@@ -65,6 +65,7 @@
           dateFormat="dd/mm/yy"
           showIcon
           showButtonBar
+          :minDate="form.eventDatetime ?? undefined"
           :class="{ 'p-invalid': fieldErrors.endDatetime }"
         />
         <small v-if="fieldErrors.endDatetime" class="text-red-500">
@@ -130,7 +131,7 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { format } from 'date-fns'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 
 const props = defineProps({
@@ -163,6 +164,38 @@ const form = reactive({
 
 const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.source === 'manual')
 
+let skipShiftEnd = false
+
+watch(
+  () => form.isAllDay,
+  (allDay, wasAllDay) => {
+    if (wasAllDay && !allDay) {
+      // Coming back from all-day: seed sensible default times so users don't see 00:00.
+      if (form.eventDatetime) form.eventDatetime = withTime(form.eventDatetime, 9, 0)
+      if (form.endDatetime) form.endDatetime = withTime(form.endDatetime, 10, 0)
+    }
+  }
+)
+
+watch(
+  () => form.eventDatetime,
+  (newStart, oldStart) => {
+    if (skipShiftEnd) return
+    if (!newStart || !oldStart || !form.endDatetime) return
+    // Preserve the original duration when the start moves, so the end follows.
+    const delta = newStart.getTime() - oldStart.getTime()
+    if (delta !== 0) {
+      form.endDatetime = new Date(form.endDatetime.getTime() + delta)
+    }
+  }
+)
+
+function withTime(date, hours, minutes) {
+  const next = new Date(date)
+  next.setHours(hours, minutes, 0, 0)
+  return next
+}
+
 watch(isVisible, (visible) => {
   if (!visible) return
 
@@ -171,6 +204,7 @@ watch(isVisible, (visible) => {
   fieldErrors.eventDatetime = null
   fieldErrors.endDatetime = null
 
+  skipShiftEnd = true
   if (props.agendaItem && props.agendaItem.source === 'manual') {
     form.title = props.agendaItem.title ?? ''
     form.eventDatetime = props.agendaItem.datetime ? new Date(props.agendaItem.datetime) : null
@@ -186,6 +220,9 @@ watch(isVisible, (visible) => {
     form.location = ''
     form.description = ''
   }
+  nextTick(() => {
+    skipShiftEnd = false
+  })
 })
 
 async function handleSubmit() {

@@ -23,12 +23,15 @@ class AgendaEntryRepository extends ServiceEntityRepository
      */
     public function findUpcomingForBand(BandSpace $bandSpace, DateTimeInterface $from, DateTimeInterface $to): array
     {
+        // Overlap semantics: an entry intersects [from, to] iff it starts no later than `to`
+        // and its effective end (endDatetime, falling back to eventDatetime for point events)
+        // is no earlier than `from`.
         return $this->createQueryBuilder('a')
             ->addSelect('c')
             ->leftJoin('a.creator', 'c')
             ->where('a.bandSpace = :bandSpace')
-            ->andWhere('a.eventDatetime >= :from')
             ->andWhere('a.eventDatetime <= :to')
+            ->andWhere('COALESCE(a.endDatetime, a.eventDatetime) >= :from')
             ->setParameter('bandSpace', $bandSpace)
             ->setParameter('from', $from)
             ->setParameter('to', $to)

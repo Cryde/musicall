@@ -282,6 +282,66 @@ class AgendaGetCollectionTest extends ApiTestCase
         $this->assertSame('manual-' . $inWindow->_real()->id, $payload['member'][0]['id']);
     }
 
+    public function test_includes_multi_day_event_overlapping_window(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        // Starts before window, ends inside → should appear
+        $startsBefore = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Starts before',
+            'eventDatetime' => new DateTimeImmutable('2026-05-28 00:00:00', new \DateTimeZone('UTC')),
+            'endDatetime' => new DateTimeImmutable('2026-06-02 00:00:00', new \DateTimeZone('UTC')),
+            'isAllDay' => true,
+        ])->create();
+        // Starts inside, ends after window → should appear
+        $endsAfter = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Ends after',
+            'eventDatetime' => new DateTimeImmutable('2026-06-28 00:00:00', new \DateTimeZone('UTC')),
+            'endDatetime' => new DateTimeImmutable('2026-07-03 00:00:00', new \DateTimeZone('UTC')),
+            'isAllDay' => true,
+        ])->create();
+        // Fully spans the window → should appear
+        $fullyContains = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Fully spans',
+            'eventDatetime' => new DateTimeImmutable('2026-05-15 00:00:00', new \DateTimeZone('UTC')),
+            'endDatetime' => new DateTimeImmutable('2026-07-15 00:00:00', new \DateTimeZone('UTC')),
+            'isAllDay' => true,
+        ])->create();
+        // Fully before window → must NOT appear
+        AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Fully before',
+            'eventDatetime' => new DateTimeImmutable('2026-05-15 00:00:00', new \DateTimeZone('UTC')),
+            'endDatetime' => new DateTimeImmutable('2026-05-20 00:00:00', new \DateTimeZone('UTC')),
+            'isAllDay' => true,
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertSame(3, $payload['totalItems']);
+        $ids = array_column($payload['member'], 'id');
+        $this->assertContains('manual-' . $startsBefore->_real()->id, $ids);
+        $this->assertContains('manual-' . $endsAfter->_real()->id, $ids);
+        $this->assertContains('manual-' . $fullyContains->_real()->id, $ids);
+    }
+
     public function test_excludes_other_band_items(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

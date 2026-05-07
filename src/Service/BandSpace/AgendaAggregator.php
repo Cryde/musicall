@@ -71,6 +71,8 @@ readonly class AgendaAggregator
         $item->source = 'task';
         $item->sourceId = (string) $task->id;
         $item->datetime = $task->dueDate?->format(DateTimeInterface::ATOM) ?? '';
+        $item->endDatetime = null;
+        $item->isAllDay = false;
         $item->title = $task->title;
         $item->description = $task->description;
         $item->metadata = [
@@ -97,6 +99,8 @@ readonly class AgendaAggregator
         $item->source = 'finance';
         $item->sourceId = (string) $entry->id;
         $item->datetime = DateTimeImmutable::createFromInterface($entry->date)->setTime(0, 0)->format(DateTimeInterface::ATOM);
+        $item->endDatetime = null;
+        $item->isAllDay = false;
         $item->title = $entry->label;
         $item->description = null;
         $item->metadata = [
