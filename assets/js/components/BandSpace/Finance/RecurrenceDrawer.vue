@@ -125,6 +125,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
+import { format } from 'date-fns'
 import { computed, reactive, watch } from 'vue'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
@@ -211,8 +212,8 @@ function buildPayload() {
     scope: form.scope,
     interval: form.interval,
     amount: form.amountEuros != null ? currencyToCents(form.amountEuros) : null,
-    start_date: form.startDate ? form.startDate.toISOString().split('T')[0] : null,
-    end_date: form.endDate ? form.endDate.toISOString().split('T')[0] : null
+    start_date: form.startDate ? format(form.startDate, 'yyyy-MM-dd') : null,
+    end_date: form.endDate ? format(form.endDate, 'yyyy-MM-dd') : null
   }
 
   if (!isEditMode.value) {

@@ -75,6 +75,7 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
+import { format } from 'date-fns'
 import { computed, reactive, watch } from 'vue'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 
@@ -143,8 +144,7 @@ async function handleSubmit() {
   if (form.categoryId) payload.category_id = form.categoryId
   if (form.assigneeIds.length > 0) payload.assignee_ids = form.assigneeIds
   if (form.dueDate) {
-    const d = new Date(form.dueDate)
-    payload.due_date = d.toISOString().split('T')[0]
+    payload.due_date = format(form.dueDate, 'yyyy-MM-dd')
   }
 
   try {

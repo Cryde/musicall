@@ -204,6 +204,7 @@ import Skeleton from 'primevue/skeleton'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
+import { format } from 'date-fns'
 import { computed, ref, watch } from 'vue'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
@@ -382,7 +383,7 @@ async function saveTextFields() {
 }
 
 async function saveDueDate() {
-  const value = editDueDate.value ? new Date(editDueDate.value).toISOString().split('T')[0] : null
+  const value = editDueDate.value ? format(editDueDate.value, 'yyyy-MM-dd') : null
   await saveField('due_date', value)
 }
 
