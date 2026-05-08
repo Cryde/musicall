@@ -8,7 +8,7 @@
             <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4">
               <nav class="flex flex-row lg:flex-col gap-1">
                 <button
-                  v-for="section in sections"
+                  v-for="section in visibleSections"
                   :key="section.key"
                   @click="activeSection = section.key"
                   :class="[
@@ -27,6 +27,7 @@
           <!-- Content area -->
           <div class="flex-1 min-w-0">
             <MembersSection v-if="activeSection === 'members'" />
+            <ActivitySection v-else-if="activeSection === 'activity' && isAdmin" />
             <ComingSoonSection v-else :title="activeSectionLabel" />
           </div>
         </div>
@@ -36,19 +37,36 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
+import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 
-const sections = [
-  { key: 'members', label: 'Membres' },
-  { key: 'general', label: 'Général' },
-  { key: 'danger', label: 'Zone de danger' }
+const { currentSpace } = useBandSpaceNavigation()
+
+const isAdmin = computed(() => currentSpace.value?.role === 'admin')
+
+const allSections = [
+  { key: 'members', label: 'Membres', adminOnly: false },
+  { key: 'activity', label: "Journal d'activité", adminOnly: true },
+  { key: 'general', label: 'Général', adminOnly: false },
+  { key: 'danger', label: 'Zone de danger', adminOnly: false }
 ]
+
+const visibleSections = computed(() =>
+  allSections.filter((s) => !s.adminOnly || isAdmin.value)
+)
 
 const activeSection = ref('members')
 
 const activeSectionLabel = computed(
-  () => sections.find((s) => s.key === activeSection.value)?.label ?? ''
+  () => allSections.find((s) => s.key === activeSection.value)?.label ?? ''
 )
+
+watch(visibleSections, (sections) => {
+  if (!sections.find((s) => s.key === activeSection.value)) {
+    activeSection.value = sections[0]?.key ?? 'members'
+  }
+})
 </script>
