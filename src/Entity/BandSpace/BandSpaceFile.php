@@ -40,6 +40,10 @@ class BandSpaceFile
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     public ?BandSpaceFolder $folder = null;
 
+    #[ORM\ManyToOne(targetEntity: BandSpaceFileVersion::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?BandSpaceFileVersion $currentVersion = null;
+
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $originalName;
 
