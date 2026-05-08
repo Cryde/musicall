@@ -92,6 +92,35 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $tagIds
+     *
+     * @return array<string, int> tag id => active file count
+     */
+    public function countByTagIds(array $tagIds): array
+    {
+        if (count($tagIds) === 0) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('bsf')
+            ->select('t.id AS tag_id', 'COUNT(DISTINCT bsf.id) AS file_count')
+            ->innerJoin('bsf.tags', 't')
+            ->where('t.id IN (:tagIds)')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->groupBy('t.id')
+            ->setParameter('tagIds', $tagIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['tag_id']] = (int) $row['file_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
      * @return array<int, array{id: string, name: string}> root → leaf
      */
     public function buildFolderPath(?BandSpaceFolder $folder): array
