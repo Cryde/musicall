@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace\AgendaEntry;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -57,6 +59,13 @@ class AgendaEntryCreateTest extends ApiTestCase
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_created', $activities[0]->type);
+        $this->assertSame(['title' => 'Répétition générale'], $activities[0]->payload);
+        $this->assertSame($user->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_create_agenda_entry_with_all_fields(): void

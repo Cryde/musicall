@@ -6,8 +6,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -22,6 +24,7 @@ readonly class AgendaEntryDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private AgendaEntryRepository $agendaEntryRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -42,6 +45,15 @@ readonly class AgendaEntryDeleteProcessor implements ProcessorInterface
         if (!$entry) {
             throw new NotFoundHttpException('Événement introuvable');
         }
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Agenda,
+            type: 'entry_deleted',
+            resourceId: $entry->id,
+            actor: $user,
+            payload: ['title' => $entry->title],
+        );
 
         $this->entityManager->remove($entry);
         $this->entityManager->flush();

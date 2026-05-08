@@ -8,7 +8,9 @@ use App\ApiResource\BandSpace\AgendaEntryCreate;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\AgendaEntryBuilder;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +27,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private AgendaEntryBuilder $agendaEntryBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -74,6 +77,16 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         $entry->isAllDay = $data->isAllDay;
 
         $this->entityManager->persist($entry);
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Agenda,
+            type: 'entry_created',
+            resourceId: $entry->id,
+            actor: $user,
+            payload: ['title' => $entry->title],
+        );
         $this->entityManager->flush();
 
         return $this->agendaEntryBuilder->buildItem($entry);

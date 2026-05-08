@@ -2,6 +2,8 @@
 
 namespace App\Tests\Api\BandSpace\AgendaEntry;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\AgendaEntryFactory;
@@ -60,6 +62,11 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->_real()->id);
+        $types = array_map(fn($a) => $a->type, $activities);
+        $this->assertEqualsCanonicalizing(['title_changed', 'event_datetime_changed'], $types);
     }
 
     public function test_update_agenda_entry_partial_keeps_other_fields(): void
@@ -101,6 +108,12 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('location_changed', $activities[0]->type);
+        $this->assertSame(['from' => 'Salle A', 'to' => 'Salle B'], $activities[0]->payload);
     }
 
     public function test_update_set_end_datetime(): void
@@ -142,6 +155,15 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('end_datetime_changed', $activities[0]->type);
+        $this->assertSame(
+            ['from' => null, 'to' => '2026-06-15T23:00:00+00:00'],
+            $activities[0]->payload,
+        );
     }
 
     public function test_update_clear_end_datetime(): void
@@ -184,6 +206,15 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('end_datetime_changed', $activities[0]->type);
+        $this->assertSame(
+            ['from' => '2026-06-15T23:00:00+00:00', 'to' => null],
+            $activities[0]->payload,
+        );
     }
 
     public function test_update_rejects_end_before_start(): void
@@ -265,6 +296,41 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'creator_username' => $user->_real()->username,
             'creation_datetime' => $entry->_real()->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->_real()->id);
+        $types = array_map(fn($a) => $a->type, $activities);
+        $this->assertEqualsCanonicalizing(
+            ['is_all_day_changed', 'event_datetime_changed', 'end_datetime_changed'],
+            $types,
+        );
+    }
+
+    public function test_update_no_change_records_no_activity(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Concert',
+            'eventDatetime' => new DateTimeImmutable('2026-06-15 20:00:00', new \DateTimeZone('UTC')),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->_real()->id,
+            ['title' => 'Concert'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->_real()->id);
+        $this->assertCount(0, $activities);
     }
 
     public function test_update_agenda_entry_validation_empty_title(): void

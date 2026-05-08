@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace\AgendaEntry;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\AgendaEntryFactory;
@@ -23,7 +25,11 @@ class AgendaEntryDeleteTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        $entry = AgendaEntryFactory::new(['bandSpace' => $bandSpace, 'creator' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Concert annulé',
+        ])->create();
         $entryId = $entry->_real()->id;
 
         $this->client->loginUser($user->_real());
@@ -38,6 +44,12 @@ class AgendaEntryDeleteTest extends ApiTestCase
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
         $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $bandSpace->_real()));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_deleted', $activities[0]->type);
+        $this->assertSame(['title' => 'Concert annulé'], $activities[0]->payload);
     }
 
     public function test_delete_agenda_entry_not_member(): void
