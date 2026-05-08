@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -46,6 +48,12 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
         $this->assertNull($noteRepository->find($noteId));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $noteId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('note_deleted', $activities[0]->type);
+        $this->assertSame(['title' => 'To Delete'], $activities[0]->payload);
     }
 
     public function test_delete_note_cascades_children(): void

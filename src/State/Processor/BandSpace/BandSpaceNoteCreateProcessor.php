@@ -8,9 +8,12 @@ use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
 use App\ApiResource\BandSpace\BandSpaceNoteCreate;
 use App\Entity\BandSpace\BandSpaceNote;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceNoteBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -28,6 +31,7 @@ readonly class BandSpaceNoteCreateProcessor implements ProcessorInterface
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private BandSpaceNoteRepository $bandSpaceNoteRepository,
         private BandSpaceNoteBuilder $bandSpaceNoteBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -64,6 +68,16 @@ readonly class BandSpaceNoteCreateProcessor implements ProcessorInterface
         $note->position = $this->bandSpaceNoteRepository->getNextPosition($bandSpace, $parent);
 
         $this->entityManager->persist($note);
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Notes,
+            type: BandSpaceNoteActivityType::Created,
+            resourceId: $note->id,
+            actor: $user,
+            payload: ['title' => $note->title],
+        );
         $this->entityManager->flush();
 
         return $this->bandSpaceNoteBuilder->buildItem($note);

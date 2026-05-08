@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -50,6 +52,12 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@type' => 'BandSpaceNote',
             'title' => 'New Title',
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('note_renamed', $activities[0]->type);
+        $this->assertSame(['from' => 'Old Title', 'to' => 'New Title'], $activities[0]->payload);
     }
 
     public function test_update_content(): void
@@ -84,6 +92,12 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@type' => 'BandSpaceNote',
             'content' => $content,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('note_content_updated', $activities[0]->type);
+        $this->assertNull($activities[0]->payload);
     }
 
     public function test_update_position(): void
@@ -115,6 +129,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@type' => 'BandSpaceNote',
             'position' => 5,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id);
+        $this->assertCount(0, $activities);
     }
 
     public function test_update_emoji(): void
@@ -142,6 +160,12 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             '@type' => 'BandSpaceNote',
             'emoji' => '🎵',
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Notes, $note->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('note_emoji_changed', $activities[0]->type);
+        $this->assertSame(['from' => null, 'to' => '🎵'], $activities[0]->payload);
     }
 
     public function test_update_emoji_to_null(): void

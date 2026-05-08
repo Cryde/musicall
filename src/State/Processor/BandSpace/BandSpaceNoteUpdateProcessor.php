@@ -6,9 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceNoteBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +31,7 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private BandSpaceNoteRepository $bandSpaceNoteRepository,
         private BandSpaceNoteBuilder $bandSpaceNoteBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -57,6 +61,10 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
+        $oldTitle = $note->title;
+        $oldEmoji = $note->emoji;
+        $oldContent = $note->content;
+
         if (array_key_exists('title', $requestPayload)) {
             $note->title = $data->title;
         }
@@ -74,6 +82,38 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         }
 
         $note->updateDatetime = new DateTime();
+
+        if ($oldTitle !== $note->title) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Notes,
+                type: BandSpaceNoteActivityType::Renamed,
+                resourceId: $note->id,
+                actor: $user,
+                payload: ['from' => $oldTitle, 'to' => $note->title],
+            );
+        }
+
+        if ($oldEmoji !== $note->emoji) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Notes,
+                type: BandSpaceNoteActivityType::EmojiChanged,
+                resourceId: $note->id,
+                actor: $user,
+                payload: ['from' => $oldEmoji, 'to' => $note->emoji],
+            );
+        }
+
+        if ($oldContent !== $note->content) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Notes,
+                type: BandSpaceNoteActivityType::ContentUpdated,
+                resourceId: $note->id,
+                actor: $user,
+            );
+        }
 
         $this->entityManager->flush();
 

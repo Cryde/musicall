@@ -6,9 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceNote;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -24,6 +27,7 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
         private BandSpaceRepository $bandSpaceRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private BandSpaceNoteRepository $bandSpaceNoteRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -49,6 +53,15 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
         if (!$note) {
             throw new NotFoundHttpException('Note not found');
         }
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Notes,
+            type: BandSpaceNoteActivityType::Deleted,
+            resourceId: $note->id,
+            actor: $user,
+            payload: ['title' => $note->title],
+        );
 
         $this->entityManager->remove($note);
         $this->entityManager->flush();

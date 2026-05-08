@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -60,6 +62,13 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'creation_datetime' => $note->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('note_created', $activities[0]->type);
+        $this->assertSame(['title' => 'My New Note'], $activities[0]->payload);
+        $this->assertSame($user->id, $activities[0]->actor?->id);
     }
 
     public function test_create_note_with_parent(): void

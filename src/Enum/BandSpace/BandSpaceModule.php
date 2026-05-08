@@ -8,4 +8,5 @@ enum BandSpaceModule: string
     case Task = 'task';
     case Finance = 'finance';
     case Agenda = 'agenda';
+    case Notes = 'notes';
 }
