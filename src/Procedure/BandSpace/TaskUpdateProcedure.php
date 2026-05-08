@@ -6,12 +6,13 @@ use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
-use App\Service\BandSpace\TaskActivityRecorder;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,7 +27,7 @@ readonly class TaskUpdateProcedure
         private TaskCategoryRepository $taskCategoryRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private UserRepository $userRepository,
-        private TaskActivityRecorder $taskActivityRecorder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
     ) {
     }
 
@@ -96,10 +97,14 @@ readonly class TaskUpdateProcedure
         } else {
             $task->completedDatetime = null;
         }
-        $this->taskActivityRecorder->record($task, $user, 'status_changed', [
-            'from' => $oldStatus,
-            'to' => $newStatus,
-        ]);
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'status_changed',
+            resourceId: $task->id,
+            actor: $user,
+            payload: ['from' => $oldStatus, 'to' => $newStatus],
+        );
     }
 
     private function applyDueDateChange(Task $task, ?string $newDueDate, User $user): void
@@ -110,10 +115,14 @@ readonly class TaskUpdateProcedure
         }
 
         $task->dueDate = $newDueDate !== null ? new DateTimeImmutable($newDueDate) : null;
-        $this->taskActivityRecorder->record($task, $user, 'due_date_changed', [
-            'from' => $oldDueDate,
-            'to' => $newDueDate,
-        ]);
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'due_date_changed',
+            resourceId: $task->id,
+            actor: $user,
+            payload: ['from' => $oldDueDate, 'to' => $newDueDate],
+        );
     }
 
     private function applyCategoryChange(Task $task, ?string $newCategoryId, BandSpace $bandSpace, User $user): void
@@ -132,10 +141,14 @@ readonly class TaskUpdateProcedure
             return;
         }
 
-        $this->taskActivityRecorder->record($task, $user, 'category_changed', [
-            'from' => $oldCategoryId,
-            'to' => $newCategoryId,
-        ]);
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'category_changed',
+            resourceId: $task->id,
+            actor: $user,
+            payload: ['from' => $oldCategoryId, 'to' => $newCategoryId],
+        );
     }
 
     /**
@@ -157,10 +170,17 @@ readonly class TaskUpdateProcedure
             foreach ($task->assignees as $assignee) {
                 if ((string) $assignee->id === $removedId) {
                     $task->assignees->removeElement($assignee);
-                    $this->taskActivityRecorder->record($task, $user, 'assignee_removed', [
-                        'assignee_id' => $assignee->id,
-                        'assignee_username' => $assignee->username,
-                    ]);
+                    $this->bandSpaceActivityRecorder->record(
+                        bandSpace: $task->bandSpace,
+                        module: BandSpaceModule::Task,
+                        type: 'assignee_removed',
+                        resourceId: $task->id,
+                        actor: $user,
+                        payload: [
+                            'assignee_id' => $assignee->id,
+                            'assignee_username' => $assignee->username,
+                        ],
+                    );
                     break;
                 }
             }
@@ -178,10 +198,17 @@ readonly class TaskUpdateProcedure
             }
 
             $task->assignees->add($assignee);
-            $this->taskActivityRecorder->record($task, $user, 'assignee_added', [
-                'assignee_id' => $assignee->id,
-                'assignee_username' => $assignee->username,
-            ]);
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $task->bandSpace,
+                module: BandSpaceModule::Task,
+                type: 'assignee_added',
+                resourceId: $task->id,
+                actor: $user,
+                payload: [
+                    'assignee_id' => $assignee->id,
+                    'assignee_username' => $assignee->username,
+                ],
+            );
         }
     }
 
@@ -195,7 +222,13 @@ readonly class TaskUpdateProcedure
                 throw new HttpException(422, 'Seules les tâches terminées peuvent être archivées');
             }
             $task->archiveDatetime = new DateTimeImmutable();
-            $this->taskActivityRecorder->record($task, $user, 'task_archived');
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $task->bandSpace,
+                module: BandSpaceModule::Task,
+                type: 'task_archived',
+                resourceId: $task->id,
+                actor: $user,
+            );
 
             return;
         }
@@ -204,6 +237,12 @@ readonly class TaskUpdateProcedure
             return;
         }
         $task->archiveDatetime = null;
-        $this->taskActivityRecorder->record($task, $user, 'task_unarchived');
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'task_unarchived',
+            resourceId: $task->id,
+            actor: $user,
+        );
     }
 }

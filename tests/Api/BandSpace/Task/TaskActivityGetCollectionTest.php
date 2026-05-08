@@ -4,10 +4,12 @@ namespace App\Tests\Api\BandSpace\Task;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
-use App\Tests\Factory\BandSpace\TaskActivityFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
+use Ramsey\Uuid\Uuid;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -25,8 +27,10 @@ class TaskActivityGetCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        TaskActivityFactory::new([
-            'task' => $task,
+        BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Task,
+            'resourceId' => Uuid::fromString((string) $task->_real()->id),
             'actor' => $user,
             'type' => 'status_changed',
             'payload' => ['from' => 'todo', 'to' => 'in_progress'],

@@ -8,11 +8,12 @@ use App\ApiResource\BandSpace\Task\TaskCommentCreate;
 use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\BandSpace\TaskComment;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\TaskRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\MentionParserService;
-use App\Service\BandSpace\TaskActivityRecorder;
 use App\Service\Builder\BandSpace\TaskCommentBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -30,7 +31,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         private TaskRepository $taskRepository,
         private UserRepository $userRepository,
         private MentionParserService $mentionParserService,
-        private TaskActivityRecorder $taskActivityRecorder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskCommentBuilder $taskCommentBuilder,
         private Security $security,
     ) {
@@ -60,15 +61,28 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
 
         $this->entityManager->persist($comment);
 
-        $this->taskActivityRecorder->record($task, $user, 'comment_added');
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'comment_added',
+            resourceId: $task->id,
+            actor: $user,
+        );
 
         $mentionedUuids = $this->mentionParserService->extractMentions($data->content);
         $mentionedMembers = $this->userRepository->findActiveBandSpaceMembersByIds($bandSpace, $mentionedUuids);
         foreach ($mentionedMembers as $mentionedUser) {
-            $this->taskActivityRecorder->record($task, $user, 'mention', [
-                'mentioned_user_id' => $mentionedUser->id,
-                'mentioned_username' => $mentionedUser->username,
-            ]);
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $task->bandSpace,
+                module: BandSpaceModule::Task,
+                type: 'mention',
+                resourceId: $task->id,
+                actor: $user,
+                payload: [
+                    'mentioned_user_id' => $mentionedUser->id,
+                    'mentioned_username' => $mentionedUser->username,
+                ],
+            );
         }
 
         $this->entityManager->flush();

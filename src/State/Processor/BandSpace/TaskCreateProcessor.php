@@ -8,13 +8,14 @@ use App\ApiResource\BandSpace\Task\TaskCreate;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\BandSpace\TaskActivityRecorder;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -33,7 +34,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
         private TaskCategoryRepository $taskCategoryRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private UserRepository $userRepository,
-        private TaskActivityRecorder $taskActivityRecorder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -89,10 +90,17 @@ readonly class TaskCreateProcessor implements ProcessorInterface
                 }
 
                 $task->assignees->add($assignee);
-                $this->taskActivityRecorder->record($task, $user, 'assignee_added', [
-                    'assignee_id' => $assignee->id,
-                    'assignee_username' => $assignee->username,
-                ]);
+                $this->bandSpaceActivityRecorder->record(
+                    bandSpace: $task->bandSpace,
+                    module: BandSpaceModule::Task,
+                    type: 'assignee_added',
+                    resourceId: $task->id,
+                    actor: $user,
+                    payload: [
+                        'assignee_id' => $assignee->id,
+                        'assignee_username' => $assignee->username,
+                    ],
+                );
             }
         }
 

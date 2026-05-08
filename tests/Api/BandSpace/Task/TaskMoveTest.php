@@ -3,7 +3,8 @@
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\TaskStatus;
-use App\Repository\BandSpace\TaskActivityRepository;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -65,8 +66,8 @@ class TaskMoveTest extends ApiTestCase
         $this->assertSame(0, $taskRepo->find($firstId)->position);
         $this->assertSame(2, $taskRepo->find($secondId)->position);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($moved->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $moved->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('status_changed', $activities[0]->type);
         $this->assertSame(['from' => 'todo', 'to' => 'in_progress'], $activities[0]->payload);
@@ -107,8 +108,8 @@ class TaskMoveTest extends ApiTestCase
         $this->assertSame(1, $taskRepo->find($aId)->position);
         $this->assertSame(0, $taskRepo->find($bId)->position);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $this->assertCount(0, $activityRepo->findByTask($taskA->_real()));
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $taskA->_real()->id));
     }
 
     public function test_move_task_to_done_sets_completed_datetime(): void
@@ -256,7 +257,7 @@ class TaskMoveTest extends ApiTestCase
         $this->assertSame(0, $taskRepo->find($siblingId)->position);
         $this->assertSame(5, $taskRepo->find($foreignId)->position);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $this->assertCount(0, $activityRepo->findByTask($moved->_real()));
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $moved->_real()->id));
     }
 }

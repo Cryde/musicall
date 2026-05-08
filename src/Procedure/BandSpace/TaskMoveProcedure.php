@@ -5,9 +5,10 @@ namespace App\Procedure\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\TaskRepository;
-use App\Service\BandSpace\TaskActivityRecorder;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,7 +19,7 @@ readonly class TaskMoveProcedure
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TaskRepository $taskRepository,
-        private TaskActivityRecorder $taskActivityRecorder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
     ) {
     }
 
@@ -55,10 +56,14 @@ readonly class TaskMoveProcedure
                 } else {
                     $task->completedDatetime = null;
                 }
-                $this->taskActivityRecorder->record($task, $user, 'status_changed', [
-                    'from' => $oldStatus,
-                    'to' => $newStatus,
-                ]);
+                $this->bandSpaceActivityRecorder->record(
+                    bandSpace: $task->bandSpace,
+                    module: BandSpaceModule::Task,
+                    type: 'status_changed',
+                    resourceId: $task->id,
+                    actor: $user,
+                    payload: ['from' => $oldStatus, 'to' => $newStatus],
+                );
             }
 
             foreach ($positions as $item) {

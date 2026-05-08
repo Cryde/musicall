@@ -3,7 +3,8 @@
 namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\Task\TaskActivityResource;
-use App\Entity\BandSpace\TaskActivity;
+use App\Entity\BandSpace\BandSpaceActivity;
+use App\Entity\BandSpace\Task;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class TaskActivityBuilder
@@ -14,23 +15,33 @@ readonly class TaskActivityBuilder
     }
 
     /**
-     * @param TaskActivity[] $entities
+     * @param BandSpaceActivity[] $entities
      * @return TaskActivityResource[]
      */
-    public function buildFromList(array $entities): array
+    public function buildFromList(Task $task, array $entities): array
     {
-        return array_map(
-            fn(TaskActivity $entity): TaskActivityResource => $this->buildItem($entity),
-            $entities
-        );
+        $result = [];
+        foreach ($entities as $entity) {
+            if ($entity->actor === null) {
+                // Orphan rows (actor was deleted) are skipped to keep the wire shape stable.
+                continue;
+            }
+            $result[] = $this->buildItem($task, $entity);
+        }
+
+        return $result;
     }
 
-    public function buildItem(TaskActivity $entity): TaskActivityResource
+    public function buildItem(Task $task, BandSpaceActivity $entity): TaskActivityResource
     {
+        if ($entity->actor === null) {
+            throw new \LogicException('Cannot build TaskActivityResource for a BandSpaceActivity with a null actor.');
+        }
+
         $dto = new TaskActivityResource();
         $dto->id = (string) $entity->id;
-        $dto->bandSpaceId = (string) $entity->task->bandSpace->id;
-        $dto->taskId = (string) $entity->task->id;
+        $dto->bandSpaceId = (string) $task->bandSpace->id;
+        $dto->taskId = (string) $task->id;
         $dto->actorId = (string) $entity->actor->id;
         $dto->actorUsername = $entity->actor->username;
         $dto->actorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->actor);

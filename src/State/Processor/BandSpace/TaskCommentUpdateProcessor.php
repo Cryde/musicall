@@ -6,10 +6,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\BandSpace\TaskActivityRecorder;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\TaskCommentBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,7 +28,7 @@ readonly class TaskCommentUpdateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
-        private TaskActivityRecorder $taskActivityRecorder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskCommentBuilder $taskCommentBuilder,
         private Security $security,
     ) {
@@ -62,9 +63,14 @@ readonly class TaskCommentUpdateProcessor implements ProcessorInterface
         $comment->content = $data->content;
         $comment->updateDatetime = new DateTime();
 
-        $this->taskActivityRecorder->record($task, $user, 'comment_edited', [
-            'comment_id' => (string) $comment->id,
-        ]);
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'comment_edited',
+            resourceId: $task->id,
+            actor: $user,
+            payload: ['comment_id' => (string) $comment->id],
+        );
 
         $this->entityManager->flush();
 

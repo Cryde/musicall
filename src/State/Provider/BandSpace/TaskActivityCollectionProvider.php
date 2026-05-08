@@ -6,7 +6,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Task\TaskActivityResource;
 use App\Entity\User;
-use App\Repository\BandSpace\TaskActivityRepository;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskActivityBuilder;
@@ -22,7 +23,7 @@ readonly class TaskActivityCollectionProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
-        private TaskActivityRepository $taskActivityRepository,
+        private BandSpaceActivityRepository $bandSpaceActivityRepository,
         private TaskActivityBuilder $taskActivityBuilder,
         private Security $security,
     ) {
@@ -45,8 +46,12 @@ readonly class TaskActivityCollectionProvider implements ProviderInterface
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
-        $activities = $this->taskActivityRepository->findByTask($task);
+        $activities = $this->bandSpaceActivityRepository->findForResource(
+            $bandSpace,
+            BandSpaceModule::Task,
+            (string) $task->id,
+        );
 
-        return $this->taskActivityBuilder->buildFromList($activities);
+        return $this->taskActivityBuilder->buildFromList($task, $activities);
     }
 }

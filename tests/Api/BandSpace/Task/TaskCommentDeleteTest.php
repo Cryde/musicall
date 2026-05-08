@@ -3,7 +3,8 @@
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\Role;
-use App\Repository\BandSpace\TaskActivityRepository;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -43,8 +44,8 @@ class TaskCommentDeleteTest extends ApiTestCase
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
         $this->assertNull($commentRepo->find($commentId));
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_deleted', $activities[0]->type);
         $this->assertSame(['comment_id' => $commentId], $activities[0]->payload);
@@ -74,8 +75,8 @@ class TaskCommentDeleteTest extends ApiTestCase
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
         $this->assertNull($commentRepo->find($commentId));
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_deleted', $activities[0]->type);
     }

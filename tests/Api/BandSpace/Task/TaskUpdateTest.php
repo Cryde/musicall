@@ -3,7 +3,8 @@
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\TaskStatus;
-use App\Repository\BandSpace\TaskActivityRepository;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -41,8 +42,8 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains(['status' => 'in_progress']);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('status_changed', $activities[0]->type);
         $this->assertSame(['from' => 'todo', 'to' => 'in_progress'], $activities[0]->payload);
@@ -176,8 +177,8 @@ class TaskUpdateTest extends ApiTestCase
             'comment_count' => 0,
         ]);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('task_archived', $activities[0]->type);
     }
@@ -207,8 +208,8 @@ class TaskUpdateTest extends ApiTestCase
         $refreshed = $repo->find($task->_real()->id);
         $this->assertNull($refreshed->archiveDatetime);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $this->assertCount(0, $activityRepo->findByTask($task->_real()));
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id));
     }
 
     public function test_unarchive_records_activity(): void
@@ -262,8 +263,8 @@ class TaskUpdateTest extends ApiTestCase
             'comment_count' => 0,
         ]);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('task_unarchived', $activities[0]->type);
     }

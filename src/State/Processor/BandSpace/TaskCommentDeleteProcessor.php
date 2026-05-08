@@ -6,11 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\BandSpace\TaskActivityRecorder;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -26,7 +27,7 @@ readonly class TaskCommentDeleteProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
-        private TaskActivityRecorder $taskActivityRecorder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -58,9 +59,14 @@ readonly class TaskCommentDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul l\'auteur ou un administrateur peut supprimer ce commentaire');
         }
 
-        $this->taskActivityRecorder->record($task, $user, 'comment_deleted', [
-            'comment_id' => (string) $comment->id,
-        ]);
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $task->bandSpace,
+            module: BandSpaceModule::Task,
+            type: 'comment_deleted',
+            resourceId: $task->id,
+            actor: $user,
+            payload: ['comment_id' => (string) $comment->id],
+        );
 
         $this->entityManager->remove($comment);
         $this->entityManager->flush();

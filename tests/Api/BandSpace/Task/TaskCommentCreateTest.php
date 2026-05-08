@@ -2,7 +2,8 @@
 
 namespace App\Tests\Api\BandSpace\Task;
 
-use App\Repository\BandSpace\TaskActivityRepository;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -56,8 +57,8 @@ class TaskCommentCreateTest extends ApiTestCase
             'update_datetime' => null,
         ]);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_added', $activities[0]->type);
     }
@@ -81,8 +82,8 @@ class TaskCommentCreateTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(2, $activities);
 
         $types = array_map(fn($a) => $a->type, $activities);
@@ -111,8 +112,8 @@ class TaskCommentCreateTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(3, $activities);
 
         $mentionedIds = array_map(
@@ -142,8 +143,8 @@ class TaskCommentCreateTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $activityRepo = self::getContainer()->get(TaskActivityRepository::class);
-        $activities = $activityRepo->findByTask($task->_real());
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_added', $activities[0]->type);
     }
