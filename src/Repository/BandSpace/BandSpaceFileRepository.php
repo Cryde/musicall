@@ -2,8 +2,12 @@
 
 namespace App\Repository\BandSpace;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\BandSpace\BandSpaceFolder;
+use App\Repository\BandSpace\Filter\BandSpaceFileFilter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,5 +18,147 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, BandSpaceFile::class);
+    }
+
+    /**
+     * @return BandSpaceFile[]
+     */
+    public function findByBandSpace(BandSpace $bandSpace, BandSpaceFileFilter $filter): array
+    {
+        $qb = $this->buildBandSpaceQuery($bandSpace, $filter)
+            ->addSelect('u', 'f', 'cv', 't')
+            ->leftJoin('bsf.createdBy', 'u')
+            ->leftJoin('bsf.folder', 'f')
+            ->leftJoin('bsf.tags', 't');
+
+        $this->applySort($qb, $filter);
+
+        $qb->setMaxResults($filter->limit)
+            ->setFirstResult($filter->offset);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countByBandSpace(BandSpace $bandSpace, BandSpaceFileFilter $filter): int
+    {
+        $qb = $this->buildBandSpaceQuery($bandSpace, $filter)
+            ->select('COUNT(DISTINCT bsf.id)');
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceFile
+    {
+        return $this->createQueryBuilder('bsf')
+            ->addSelect('u', 'f', 'cv', 't')
+            ->leftJoin('bsf.createdBy', 'u')
+            ->leftJoin('bsf.folder', 'f')
+            ->leftJoin('bsf.currentVersion', 'cv')
+            ->leftJoin('bsf.tags', 't')
+            ->where('bsf.id = :id')
+            ->andWhere('bsf.bandSpace = :bandSpace')
+            ->setParameter('id', $id)
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param string[] $fileIds
+     *
+     * @return array<string, int> file id => version count
+     */
+    public function countVersionsByFileIds(array $fileIds): array
+    {
+        if (count($fileIds) === 0) {
+            return [];
+        }
+
+        $rows = $this->getEntityManager()->createQueryBuilder()
+            ->select('IDENTITY(v.bandSpaceFile) AS file_id', 'COUNT(v.id) AS version_count')
+            ->from('App\Entity\BandSpace\BandSpaceFileVersion', 'v')
+            ->where('v.bandSpaceFile IN (:fileIds)')
+            ->groupBy('v.bandSpaceFile')
+            ->setParameter('fileIds', $fileIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['file_id']] = (int) $row['version_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @return array<int, array{id: string, name: string}> root → leaf
+     */
+    public function buildFolderPath(?BandSpaceFolder $folder): array
+    {
+        $path = [];
+        while ($folder !== null) {
+            array_unshift($path, ['id' => (string) $folder->id, 'name' => $folder->name]);
+            $folder = $folder->parent;
+        }
+
+        return $path;
+    }
+
+    private function buildBandSpaceQuery(BandSpace $bandSpace, BandSpaceFileFilter $filter): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('bsf')
+            ->leftJoin('bsf.currentVersion', 'cv')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace);
+
+        if ($filter->folderId !== null) {
+            $qb->andWhere('bsf.folder = :folderId')
+                ->setParameter('folderId', $filter->folderId);
+        }
+
+        if ($filter->tagId !== null) {
+            $qb->andWhere(':tagId MEMBER OF bsf.tags')
+                ->setParameter('tagId', $filter->tagId);
+        }
+
+        if ($filter->source !== null) {
+            if ($filter->source === 'manual') {
+                $qb->andWhere('bsf.attachedSourceType IS NULL');
+            } else {
+                $qb->andWhere('bsf.attachedSourceType = :source')
+                    ->setParameter('source', $filter->source);
+            }
+        }
+
+        $trimmedQuery = $filter->query !== null ? trim($filter->query) : '';
+        if ($trimmedQuery !== '') {
+            $qb->andWhere('LOWER(bsf.originalName) LIKE :query')
+                ->setParameter('query', '%' . mb_strtolower($trimmedQuery) . '%');
+        }
+
+        if ($filter->mime !== null && $filter->mime !== '') {
+            $qb->andWhere('cv.mimeType LIKE :mime')
+                ->setParameter('mime', $filter->mime . '%');
+        }
+
+        if ($filter->uploaderId !== null) {
+            $qb->andWhere('bsf.createdBy = :uploaderId')
+                ->setParameter('uploaderId', $filter->uploaderId);
+        }
+
+        return $qb;
+    }
+
+    private function applySort(QueryBuilder $qb, BandSpaceFileFilter $filter): void
+    {
+        $direction = strtolower($filter->order) === 'asc' ? 'ASC' : 'DESC';
+
+        match ($filter->sort) {
+            'name' => $qb->orderBy('bsf.originalName', $direction),
+            'size' => $qb->orderBy('cv.size', $direction),
+            default => $qb->orderBy('bsf.creationDatetime', $direction),
+        };
     }
 }
