@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntrySplitRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -82,6 +84,20 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'creation_datetime' => $split->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('split_added', $activities[0]->type);
+        $this->assertSame(
+            [
+                'split_id' => (string) $split->id,
+                'member_id' => (string) $membership->id,
+                'member_username' => $user->username,
+                'amount' => 25000,
+            ],
+            $activities[0]->payload,
+        );
     }
 
     public function test_create_split_not_member(): void

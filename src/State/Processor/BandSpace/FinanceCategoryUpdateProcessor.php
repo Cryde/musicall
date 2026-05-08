@@ -6,8 +6,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +29,7 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -47,6 +51,8 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
+
+        $oldName = $category->name;
 
         if (array_key_exists('name', $requestPayload)) {
             $category->name = $data->name;
@@ -75,6 +81,17 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
         }
 
         $category->updateDatetime = new DateTime();
+
+        if ($oldName !== $category->name) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::CategoryRenamed,
+                resourceId: $category->id,
+                actor: $user,
+                payload: ['from' => $oldName, 'to' => $category->name],
+            );
+        }
 
         $this->entityManager->flush();
 

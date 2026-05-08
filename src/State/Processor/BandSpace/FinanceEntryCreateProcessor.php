@@ -8,12 +8,15 @@ use App\ApiResource\BandSpace\Finance\FinanceEntryCreate;
 use App\ApiResource\BandSpace\Finance\FinanceEntryResource;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceEntryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -30,6 +33,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
         private FinanceCategoryRepository $financeCategoryRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private FinanceEntryBuilder $financeEntryBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -72,6 +76,21 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
         }
 
         $this->entityManager->persist($entry);
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::EntryCreated,
+            resourceId: $entry->id,
+            actor: $user,
+            payload: [
+                'label' => $entry->label,
+                'amount' => $entry->amount,
+                'type' => $entry->type->value,
+                'status' => $entry->status->value,
+            ],
+        );
         $this->entityManager->flush();
 
         return $this->financeEntryBuilder->buildItem($entry);

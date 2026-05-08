@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Validator\BandSpace\FinanceAmountRangeValidator;
 use App\Tests\ApiTestAssertionsTrait;
@@ -89,6 +91,15 @@ class FinanceEntryCreateTest extends ApiTestCase
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_created', $activities[0]->type);
+        $this->assertSame(
+            ['label' => 'Mixage', 'amount' => 50000, 'type' => 'expense', 'status' => 'planned'],
+            $activities[0]->payload,
+        );
     }
 
     public function test_create_income_entry(): void

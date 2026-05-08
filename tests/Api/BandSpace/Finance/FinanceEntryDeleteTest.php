@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -62,6 +64,12 @@ class FinanceEntryDeleteTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
         $this->assertNull($entryRepository->find($entryId));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_deleted', $activities[0]->type);
+        $this->assertSame(['label' => 'Mixage', 'amount' => 50000], $activities[0]->payload);
     }
 
     public function test_delete_entry_not_member(): void

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -58,6 +60,12 @@ class FinanceCategoryCreateTest extends ApiTestCase
             'creation_datetime' => $category->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $category->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('category_created', $activities[0]->type);
+        $this->assertSame(['name' => 'Clips'], $activities[0]->payload);
     }
 
     public function test_create_category_with_parent(): void

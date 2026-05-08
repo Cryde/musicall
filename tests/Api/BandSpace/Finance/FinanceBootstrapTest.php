@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -53,6 +55,14 @@ class FinanceBootstrapTest extends ApiTestCase
         $this->assertContains('Matériel', $names);
         $this->assertContains('Identité visuelle', $names);
         $this->assertContains('Distribution & Admin', $names);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findBy(
+            ['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Finance],
+        );
+        $this->assertCount(1, $activities);
+        $this->assertSame('categories_bootstrapped', $activities[0]->type);
+        $this->assertSame(['count' => 8], $activities[0]->payload);
     }
 
     public function test_bootstrap_idempotent(): void

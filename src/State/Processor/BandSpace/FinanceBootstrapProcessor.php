@@ -8,8 +8,11 @@ use App\ApiResource\BandSpace\Finance\FinanceBootstrapRequest;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Entity\BandSpace\FinanceCategory;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -35,6 +38,7 @@ readonly class FinanceBootstrapProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -67,6 +71,15 @@ readonly class FinanceBootstrapProcessor implements ProcessorInterface
             $categories[] = $category;
         }
 
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::CategoriesBootstrapped,
+            actor: $user,
+            payload: ['count' => count($categories)],
+        );
         $this->entityManager->flush();
 
         return $this->financeCategoryBuilder->buildFromList($categories);

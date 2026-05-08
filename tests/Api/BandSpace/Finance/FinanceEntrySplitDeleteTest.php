@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntrySplitRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -66,6 +68,13 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $splitRepository = self::getContainer()->get(FinanceEntrySplitRepository::class);
         $this->assertNull($splitRepository->find($splitId));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('split_removed', $activities[0]->type);
+        $this->assertSame($splitId, $activities[0]->payload['split_id'] ?? null);
+        $this->assertSame(25000, $activities[0]->payload['amount'] ?? null);
     }
 
     public function test_delete_split_not_member(): void

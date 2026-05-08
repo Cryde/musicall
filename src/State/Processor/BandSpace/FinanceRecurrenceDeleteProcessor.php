@@ -6,9 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceRecurrenceResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +25,7 @@ readonly class FinanceRecurrenceDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -49,6 +53,15 @@ readonly class FinanceRecurrenceDeleteProcessor implements ProcessorInterface
             ->setParameter('recurrence', $recurrence)
             ->setParameter('status', FinanceEntryStatus::Planned)
             ->execute();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::RecurrenceDeleted,
+            resourceId: $recurrence->id,
+            actor: $user,
+            payload: ['label' => $recurrence->label],
+        );
 
         $this->entityManager->remove($recurrence);
         $this->entityManager->flush();

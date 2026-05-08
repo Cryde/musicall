@@ -8,8 +8,11 @@ use App\ApiResource\BandSpace\Finance\FinanceCategoryCreate;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Entity\BandSpace\FinanceCategory;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -25,6 +28,7 @@ readonly class FinanceCategoryCreateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -54,6 +58,16 @@ readonly class FinanceCategoryCreateProcessor implements ProcessorInterface
         $category->position = $this->financeCategoryRepository->getNextPosition($bandSpace, $parent);
 
         $this->entityManager->persist($category);
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::CategoryCreated,
+            resourceId: $category->id,
+            actor: $user,
+            payload: ['name' => $category->name],
+        );
         $this->entityManager->flush();
 
         return $this->financeCategoryBuilder->buildItem($category);

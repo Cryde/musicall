@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Validator\BandSpace\RecurrenceEndDateValidator;
 use App\Validator\BandSpace\RecurrenceNoOverlapValidator;
@@ -87,6 +89,15 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creation_datetime' => $responseData['creation_datetime'],
             'update_datetime' => null,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $recurrenceId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('recurrence_created', $activities[0]->type);
+        $this->assertSame(
+            ['label' => 'Loyer salle', 'amount' => 50000, 'interval' => 'monthly', 'generated_entries' => 6],
+            $activities[0]->payload,
+        );
     }
 
     public function test_create_recurrence_not_member(): void

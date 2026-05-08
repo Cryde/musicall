@@ -7,12 +7,15 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceRecurrenceResource;
 use App\Entity\BandSpace\FinanceRecurrence;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Enum\BandSpace\RecurrenceInterval;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\RecurrenceEntryGenerator;
 use App\Service\Builder\BandSpace\FinanceRecurrenceBuilder;
 use DateTime;
@@ -32,6 +35,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private FinanceRecurrenceBuilder $financeRecurrenceBuilder,
         private RecurrenceEntryGenerator $recurrenceEntryGenerator,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -53,6 +57,13 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
+
+        $oldLabel = $recurrence->label;
+        $oldType = $recurrence->type;
+        $oldAmount = $recurrence->amount;
+        $oldScope = $recurrence->scope;
+        $oldInterval = $recurrence->interval;
+        $oldIsActive = $recurrence->isActive;
 
         if (array_key_exists('label', $requestPayload)) {
             $recurrence->label = $data->label;
@@ -78,11 +89,16 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
             $recurrence->isActive = $data->isActive;
         }
 
+        $endDateChanged = false;
+        $oldEndDateString = $recurrence->endDate->format('Y-m-d');
+        $newEndDateString = $oldEndDateString;
         if (array_key_exists('end_date', $requestPayload)) {
             $oldEndDate = $recurrence->endDate;
             $newEndDate = new DateTime($data->endDate);
 
             $recurrence->endDate = $newEndDate;
+            $newEndDateString = $newEndDate->format('Y-m-d');
+            $endDateChanged = $oldEndDateString !== $newEndDateString;
 
             if ($newEndDate > $oldEndDate) {
                 $fromDate = $this->nextIntervalDate($oldEndDate, $recurrence->interval);
@@ -108,9 +124,90 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
 
         $recurrence->updateDatetime = new DateTime();
 
+        $this->recordChanges(
+            $recurrence,
+            $user,
+            $oldLabel,
+            $oldType,
+            $oldAmount,
+            $oldScope,
+            $oldInterval,
+            $oldIsActive,
+            $endDateChanged,
+            $oldEndDateString,
+            $newEndDateString,
+        );
+
         $this->entityManager->flush();
 
         return $this->financeRecurrenceBuilder->buildItem($recurrence);
+    }
+
+    private function recordChanges(
+        FinanceRecurrence $recurrence,
+        User $user,
+        string $oldLabel,
+        FinanceEntryType $oldType,
+        int $oldAmount,
+        FinanceEntryScope $oldScope,
+        RecurrenceInterval $oldInterval,
+        bool $oldIsActive,
+        bool $endDateChanged,
+        string $oldEndDateString,
+        string $newEndDateString,
+    ): void {
+        $bandSpace = $recurrence->category->bandSpace;
+
+        if ($oldIsActive !== $recurrence->isActive) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: $recurrence->isActive
+                    ? BandSpaceFinanceActivityType::RecurrenceStarted
+                    : BandSpaceFinanceActivityType::RecurrenceStopped,
+                resourceId: $recurrence->id,
+                actor: $user,
+            );
+        }
+
+        if ($endDateChanged) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::RecurrenceEndDateChanged,
+                resourceId: $recurrence->id,
+                actor: $user,
+                payload: ['from' => $oldEndDateString, 'to' => $newEndDateString],
+            );
+        }
+
+        $changedFields = [];
+        if ($oldLabel !== $recurrence->label) {
+            $changedFields[] = 'label';
+        }
+        if ($oldType !== $recurrence->type) {
+            $changedFields[] = 'type';
+        }
+        if ($oldAmount !== $recurrence->amount) {
+            $changedFields[] = 'amount';
+        }
+        if ($oldScope !== $recurrence->scope) {
+            $changedFields[] = 'scope';
+        }
+        if ($oldInterval !== $recurrence->interval) {
+            $changedFields[] = 'interval';
+        }
+
+        if ($changedFields !== []) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::RecurrenceUpdated,
+                resourceId: $recurrence->id,
+                actor: $user,
+                payload: ['changed_fields' => $changedFields],
+            );
+        }
     }
 
     private function nextIntervalDate(\DateTimeInterface $date, RecurrenceInterval $interval): \DateTimeInterface

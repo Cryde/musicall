@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -57,6 +59,12 @@ class FinanceCategoryUpdateTest extends ApiTestCase
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => $category->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $category->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('category_renamed', $activities[0]->type);
+        $this->assertSame(['from' => 'Clips', 'to' => 'Concerts'], $activities[0]->payload);
     }
 
     public function test_update_category_position(): void

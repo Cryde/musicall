@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Enum\BandSpace\RecurrenceInterval;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -120,6 +122,12 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         $paidEntryAfter = $entryRepository->find($paidEntryId);
         $this->assertNotNull($paidEntryAfter);
         $this->assertNull($paidEntryAfter->recurrence);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $recurrenceId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('recurrence_deleted', $activities[0]->type);
+        $this->assertSame(['label' => 'Loyer salle'], $activities[0]->payload);
     }
 
     public function test_delete_recurrence_not_member(): void

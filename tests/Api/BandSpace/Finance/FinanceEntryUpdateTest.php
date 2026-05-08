@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -91,6 +93,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creation_datetime' => '2024-02-01T10:00:00+00:00',
             'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_label_changed', $activities[0]->type);
+        $this->assertSame(['from' => 'Ancien libellé', 'to' => 'Nouveau libellé'], $activities[0]->payload);
     }
 
     public function test_update_entry_status(): void
@@ -159,6 +167,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creation_datetime' => '2024-02-01T10:00:00+00:00',
             'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_status_changed', $activities[0]->type);
+        $this->assertSame(['from' => 'planned', 'to' => 'paid'], $activities[0]->payload);
     }
 
     public function test_update_entry_amount(): void
@@ -227,6 +241,12 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creation_datetime' => '2024-02-01T10:00:00+00:00',
             'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_amount_changed', $activities[0]->type);
+        $this->assertSame(['from' => 50000, 'to' => 75000], $activities[0]->payload);
     }
 
     /**

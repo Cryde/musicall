@@ -6,8 +6,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -21,6 +24,7 @@ readonly class FinanceCategoryDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -39,6 +43,15 @@ readonly class FinanceCategoryDeleteProcessor implements ProcessorInterface
         if (!$category) {
             throw new NotFoundHttpException('Catégorie introuvable');
         }
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::CategoryDeleted,
+            resourceId: $category->id,
+            actor: $user,
+            payload: ['name' => $category->name],
+        );
 
         $this->entityManager->remove($category);
         $this->entityManager->flush();

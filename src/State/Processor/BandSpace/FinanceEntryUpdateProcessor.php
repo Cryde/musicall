@@ -5,7 +5,10 @@ namespace App\State\Processor\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceEntryResource;
+use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use App\Enum\BandSpace\FinanceEntryStatus;
@@ -15,6 +18,7 @@ use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceEntrySplitRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceEntryBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +41,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private FinanceEntrySplitRepository $financeEntrySplitRepository,
         private FinanceEntryBuilder $financeEntryBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -62,6 +67,13 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
+
+        $oldStatus = $entry->status;
+        $oldLabel = $entry->label;
+        $oldAmount = $entry->amount;
+        $oldDate = $entry->date->format('Y-m-d');
+        $oldCategoryId = (string) $entry->category->id;
+        $oldCategoryName = $entry->category->name;
 
         if (array_key_exists('status', $requestPayload)) {
             $newStatus = FinanceEntryStatus::from($data->status);
@@ -136,6 +148,17 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
 
         $entry->updateDatetime = new DateTime();
 
+        $this->recordChanges(
+            $entry,
+            $user,
+            $oldStatus,
+            $oldLabel,
+            $oldAmount,
+            $oldDate,
+            $oldCategoryId,
+            $oldCategoryName,
+        );
+
         $this->entityManager->flush();
 
         $splitWarning = false;
@@ -145,5 +168,78 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         }
 
         return $this->financeEntryBuilder->buildItem($entry, $splitWarning);
+    }
+
+    private function recordChanges(
+        FinanceEntry $entry,
+        User $user,
+        FinanceEntryStatus $oldStatus,
+        string $oldLabel,
+        ?int $oldAmount,
+        string $oldDate,
+        string $oldCategoryId,
+        string $oldCategoryName,
+    ): void {
+        if ($oldStatus !== $entry->status) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $entry->category->bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryStatusChanged,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: ['from' => $oldStatus->value, 'to' => $entry->status->value],
+            );
+        }
+
+        if ($oldLabel !== $entry->label) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $entry->category->bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryLabelChanged,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: ['from' => $oldLabel, 'to' => $entry->label],
+            );
+        }
+
+        if ($oldAmount !== $entry->amount) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $entry->category->bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryAmountChanged,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: ['from' => $oldAmount, 'to' => $entry->amount],
+            );
+        }
+
+        $newDate = $entry->date->format('Y-m-d');
+        if ($oldDate !== $newDate) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $entry->category->bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryDateChanged,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: ['from' => $oldDate, 'to' => $newDate],
+            );
+        }
+
+        $newCategoryId = (string) $entry->category->id;
+        if ($oldCategoryId !== $newCategoryId) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $entry->category->bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryCategoryChanged,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: [
+                    'from_id' => $oldCategoryId,
+                    'from_name' => $oldCategoryName,
+                    'to_id' => $newCategoryId,
+                    'to_name' => $entry->category->name,
+                ],
+            );
+        }
     }
 }

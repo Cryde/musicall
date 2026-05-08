@@ -8,11 +8,14 @@ use App\ApiResource\BandSpace\Finance\FinanceRecurrenceCreate;
 use App\ApiResource\BandSpace\Finance\FinanceRecurrenceResource;
 use App\Entity\BandSpace\FinanceRecurrence;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Enum\BandSpace\RecurrenceInterval;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\RecurrenceEntryGenerator;
 use App\Service\Builder\BandSpace\FinanceRecurrenceBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,6 +33,7 @@ readonly class FinanceRecurrenceCreateProcessor implements ProcessorInterface
         private FinanceCategoryRepository $financeCategoryRepository,
         private FinanceRecurrenceBuilder $financeRecurrenceBuilder,
         private RecurrenceEntryGenerator $recurrenceEntryGenerator,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -69,6 +73,21 @@ readonly class FinanceRecurrenceCreateProcessor implements ProcessorInterface
             $this->entityManager->persist($entry);
         }
 
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::RecurrenceCreated,
+            resourceId: $recurrence->id,
+            actor: $user,
+            payload: [
+                'label' => $recurrence->label,
+                'amount' => $recurrence->amount,
+                'interval' => $recurrence->interval->value,
+                'generated_entries' => count($entries),
+            ],
+        );
         $this->entityManager->flush();
 
         return $this->financeRecurrenceBuilder->buildItem($recurrence);

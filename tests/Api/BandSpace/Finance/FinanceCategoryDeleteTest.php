@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace\Finance;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -46,6 +48,12 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $repo = self::getContainer()->get(FinanceCategoryRepository::class);
         $this->assertNull($repo->find($categoryId));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $categoryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('category_deleted', $activities[0]->type);
+        $this->assertSame(['name' => 'To Delete'], $activities[0]->payload);
     }
 
     public function test_delete_category_not_member(): void

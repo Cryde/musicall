@@ -6,10 +6,13 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Finance\FinanceEntryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFinanceActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -25,6 +28,7 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private FinanceEntryRepository $financeEntryRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -51,6 +55,15 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
         if ($entry->status === FinanceEntryStatus::Paid) {
             throw new UnprocessableEntityHttpException('Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.');
         }
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Finance,
+            type: BandSpaceFinanceActivityType::EntryDeleted,
+            resourceId: $entry->id,
+            actor: $user,
+            payload: ['label' => $entry->label, 'amount' => $entry->amount],
+        );
 
         $this->entityManager->remove($entry);
         $this->entityManager->flush();
