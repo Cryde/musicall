@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -40,6 +42,16 @@ class BandSpaceLeaveTest extends ApiTestCase
 
         $membershipRepository = self::getContainer()->get(BandSpaceMembershipRepository::class);
         $this->assertFalse($membershipRepository->isMember($bandSpace->_real(), $member->_real()));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $member->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('member_left', $activities[0]->type);
+        $this->assertSame(
+            ['target_user_id' => $member->_real()->id, 'target_username' => 'member_user'],
+            $activities[0]->payload,
+        );
+        $this->assertSame($member->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_admin_can_leave_when_other_admins_exist(): void

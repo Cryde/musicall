@@ -2,8 +2,10 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -49,6 +51,13 @@ class BandSpaceInvitationDeclineTest extends ApiTestCase
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
         $updated = $invitationRepo->find($invitation->_real()->id);
         $this->assertSame(InvitationStatus::Declined, $updated->status);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('invitation_declined', $activities[0]->type);
+        $this->assertSame(['email' => 'invitee@example.com'], $activities[0]->payload);
+        $this->assertSame($invitee->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_decline_wrong_user(): void

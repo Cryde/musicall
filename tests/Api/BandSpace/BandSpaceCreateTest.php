@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -58,6 +60,13 @@ class BandSpaceCreateTest extends ApiTestCase
             'name' => 'The Rockers',
             'role' => 'admin',
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $bandSpace->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('band_created', $activities[0]->type);
+        $this->assertSame(['name' => 'The Rockers'], $activities[0]->payload);
+        $this->assertSame($user->id, $activities[0]->actor?->id);
     }
 
     public function testCreateBandSpaceWithoutNameFails(): void

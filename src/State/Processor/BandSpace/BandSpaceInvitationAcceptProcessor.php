@@ -7,11 +7,14 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Invitation\BandSpaceInvitationAccept;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -28,6 +31,7 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceInvitationRepository $bandSpaceInvitationRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -78,6 +82,20 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
         } catch (UniqueConstraintViolationException) {
             throw new ConflictHttpException('Vous êtes déjà membre de ce Band Space');
         }
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $invitation->bandSpace,
+            module: BandSpaceModule::Settings,
+            type: BandSpaceSettingsActivityType::InvitationAccepted,
+            resourceId: $invitation->id,
+            actor: $user,
+            payload: [
+                'email' => $invitation->email,
+                'invited_user_id' => $user->id,
+                'invited_username' => $user->username,
+            ],
+        );
+        $this->entityManager->flush();
 
         $dto = new BandSpaceInvitationAccept();
         $dto->token = $invitation->token;

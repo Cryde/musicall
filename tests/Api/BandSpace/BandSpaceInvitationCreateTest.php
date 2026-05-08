@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -51,6 +53,16 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
             'expiration_datetime' => $invitation->expirationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('invitation_sent', $activities[0]->type);
+        $this->assertSame(
+            ['email' => 'newuser@example.com', 'invited_user_id' => null, 'invited_username' => null],
+            $activities[0]->payload,
+        );
+        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_create_invitation_by_email_for_existing_user(): void

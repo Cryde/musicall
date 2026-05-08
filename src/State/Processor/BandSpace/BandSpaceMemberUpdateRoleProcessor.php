@@ -6,10 +6,13 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceMemberBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -27,6 +30,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         private BandSpaceAdminChecker $adminChecker,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private BandSpaceMemberBuilder $bandSpaceMemberBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -53,6 +57,8 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
+        $oldRole = $membership->role;
+
         if (array_key_exists('role', $requestPayload)) {
             $newRole = Role::from($data->role);
 
@@ -72,6 +78,22 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
                 $membership->status = MembershipStatus::Active;
                 $membership->leftDatetime = null;
             }
+        }
+
+        if ($oldRole !== $membership->role) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Settings,
+                type: BandSpaceSettingsActivityType::MemberRoleChanged,
+                resourceId: $membership->user->id,
+                actor: $user,
+                payload: [
+                    'from' => $oldRole->value,
+                    'to' => $membership->role->value,
+                    'target_user_id' => $membership->user->id,
+                    'target_username' => $membership->user->username,
+                ],
+            );
         }
 
         $this->entityManager->flush();

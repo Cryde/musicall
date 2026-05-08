@@ -8,10 +8,13 @@ use App\ApiResource\BandSpace\Invitation\BandSpaceInvitationCreate;
 use App\ApiResource\BandSpace\Invitation\BandSpaceInvitationResource;
 use App\Entity\BandSpace\BandSpaceInvitation;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceInvitationBuilder;
 use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationExistingUserEmail;
 use App\Service\Mail\Brevo\BandSpace\BandSpaceInvitationNewUserEmail;
@@ -38,6 +41,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         private BandSpaceInvitationExistingUserEmail $existingUserEmail,
         private BandSpaceInvitationNewUserEmail $newUserEmail,
         private RouterInterface $router,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         #[Target('band_space_invitation')]
         private RateLimiterFactoryInterface $bandSpaceInvitationLimiter,
@@ -87,6 +91,20 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         $invitation->existingUser = $existingUser;
 
         $this->entityManager->persist($invitation);
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Settings,
+            type: BandSpaceSettingsActivityType::InvitationSent,
+            resourceId: $invitation->id,
+            actor: $currentUser,
+            payload: [
+                'email' => $email,
+                'invited_user_id' => $existingUser?->id,
+                'invited_username' => $existingUser?->username,
+            ],
+        );
         $this->entityManager->flush();
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);

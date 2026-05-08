@@ -79,18 +79,18 @@ class BandSpaceInvitationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function markExpired(): int
+    /**
+     * @return BandSpaceInvitation[]
+     */
+    public function findExpiredPending(): array
     {
         return $this->createQueryBuilder('i')
-            ->update()
-            ->set('i.status', ':expiredStatus')
             ->where('i.status = :pendingStatus')
             ->andWhere('i.expirationDatetime <= :now')
-            ->setParameter('expiredStatus', InvitationStatus::Expired->value)
-            ->setParameter('pendingStatus', InvitationStatus::Pending->value)
+            ->setParameter('pendingStatus', InvitationStatus::Pending)
             ->setParameter('now', new \DateTime())
             ->getQuery()
-            ->execute();
+            ->getResult();
     }
 
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceInvitation

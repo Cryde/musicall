@@ -7,12 +7,15 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -29,6 +32,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         private BandSpaceAdminChecker $adminChecker,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -60,6 +64,18 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         $membership->leftDatetime = new DateTime();
 
         $this->deactivatePersonalRecurrences($membership);
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Settings,
+            type: BandSpaceSettingsActivityType::MemberRemoved,
+            resourceId: $membership->user->id,
+            actor: $user,
+            payload: [
+                'target_user_id' => $membership->user->id,
+                'target_username' => $membership->user->username,
+            ],
+        );
 
         $this->entityManager->flush();
     }

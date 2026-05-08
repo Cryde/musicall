@@ -2,8 +2,10 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -44,6 +46,13 @@ class BandSpaceInvitationDeleteTest extends ApiTestCase
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
         $updated = $invitationRepo->find($invitation->_real()->id);
         $this->assertSame(InvitationStatus::Expired, $updated->status);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('invitation_revoked', $activities[0]->type);
+        $this->assertSame(['email' => 'invited@example.com'], $activities[0]->payload);
+        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_non_admin_cannot_cancel_invitation(): void

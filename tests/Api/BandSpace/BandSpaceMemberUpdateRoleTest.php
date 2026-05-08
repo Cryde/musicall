@@ -2,7 +2,9 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -49,6 +51,21 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             'status' => 'active',
             'left_datetime' => null,
         ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $member->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('member_role_changed', $activities[0]->type);
+        $this->assertSame(
+            [
+                'from' => 'user',
+                'to' => 'admin',
+                'target_user_id' => $member->_real()->id,
+                'target_username' => 'member_user',
+            ],
+            $activities[0]->payload,
+        );
+        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_demote_admin_to_user(): void

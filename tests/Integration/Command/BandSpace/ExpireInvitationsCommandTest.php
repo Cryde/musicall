@@ -2,8 +2,10 @@
 
 namespace App\Tests\Integration\Command\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
@@ -66,6 +68,16 @@ class ExpireInvitationsCommandTest extends KernelTestCase
 
         $valid = $repo->find($validInvitation->_real()->id);
         $this->assertSame(InvitationStatus::Pending, $valid->status);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $expiredInvitation->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('invitation_expired', $activities[0]->type);
+        $this->assertSame(['email' => 'expired@example.com'], $activities[0]->payload);
+        $this->assertNull($activities[0]->actor);
+
+        $validActivities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $validInvitation->_real()->id);
+        $this->assertCount(0, $validActivities);
     }
 
     public function test_does_not_touch_already_accepted_invitations(): void

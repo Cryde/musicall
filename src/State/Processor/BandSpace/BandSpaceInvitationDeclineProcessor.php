@@ -5,8 +5,11 @@ namespace App\State\Processor\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -20,6 +23,7 @@ readonly class BandSpaceInvitationDeclineProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceInvitationRepository $bandSpaceInvitationRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -45,6 +49,16 @@ readonly class BandSpaceInvitationDeclineProcessor implements ProcessorInterface
         }
 
         $invitation->status = InvitationStatus::Declined;
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $invitation->bandSpace,
+            module: BandSpaceModule::Settings,
+            type: BandSpaceSettingsActivityType::InvitationDeclined,
+            resourceId: $invitation->id,
+            actor: $user,
+            payload: ['email' => $invitation->email],
+        );
+
         $this->entityManager->flush();
     }
 }

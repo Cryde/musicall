@@ -6,9 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Invitation\BandSpaceInvitationResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +25,7 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceAdminChecker $adminChecker,
         private BandSpaceInvitationRepository $bandSpaceInvitationRepository,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -46,6 +50,16 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
         }
 
         $invitation->status = InvitationStatus::Expired;
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Settings,
+            type: BandSpaceSettingsActivityType::InvitationRevoked,
+            resourceId: $invitation->id,
+            actor: $user,
+            payload: ['email' => $invitation->email],
+        );
+
         $this->entityManager->flush();
     }
 }

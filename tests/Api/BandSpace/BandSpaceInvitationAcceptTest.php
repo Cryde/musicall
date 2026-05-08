@@ -2,8 +2,10 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -56,6 +58,16 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
         $this->assertTrue($membershipRepo->isMember($bandSpace->_real(), $invitee->_real()));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->_real()->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('invitation_accepted', $activities[0]->type);
+        $this->assertSame(
+            ['email' => 'invitee@example.com', 'invited_user_id' => $invitee->_real()->id, 'invited_username' => 'invitee'],
+            $activities[0]->payload,
+        );
+        $this->assertSame($invitee->_real()->id, $activities[0]->actor?->id);
     }
 
     public function test_accept_invitation_email_match(): void

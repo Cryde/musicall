@@ -9,7 +9,10 @@ use App\ApiResource\BandSpace\BandSpaceCreate;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\Role;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -22,6 +25,7 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceBuilder $bandSpaceBuilder,
+        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
     ) {
     }
@@ -50,6 +54,16 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
         // Persist entities
         $this->entityManager->persist($bandSpace);
         $this->entityManager->persist($creatorMembership);
+        $this->entityManager->flush();
+
+        $this->bandSpaceActivityRecorder->record(
+            bandSpace: $bandSpace,
+            module: BandSpaceModule::Settings,
+            type: BandSpaceSettingsActivityType::BandCreated,
+            resourceId: $bandSpace->id,
+            actor: $user,
+            payload: ['name' => $bandSpace->name],
+        );
         $this->entityManager->flush();
 
         return $this->bandSpaceBuilder->buildItem($bandSpace, Role::Admin);
