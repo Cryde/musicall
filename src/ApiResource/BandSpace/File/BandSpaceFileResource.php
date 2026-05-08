@@ -8,9 +8,11 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\File\BandSpaceFileDeleteProcessor;
+use App\State\Processor\BandSpace\File\BandSpaceFileUpdateProcessor;
 use App\State\Provider\BandSpace\File\BandSpaceFileCollectionProvider;
 use App\State\Provider\BandSpace\File\BandSpaceFileItemProvider;
 
@@ -50,6 +52,18 @@ use App\State\Provider\BandSpace\File\BandSpaceFileItemProvider;
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_files_get_item',
             provider: BandSpaceFileItemProvider::class,
+        ),
+        new Patch(
+            uriTemplate: '/band_spaces/{bandSpaceId}/files/{id}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_files_patch',
+            provider: BandSpaceFileItemProvider::class,
+            processor: BandSpaceFileUpdateProcessor::class,
         ),
         new Delete(
             uriTemplate: '/band_spaces/{bandSpaceId}/files/{id}',
