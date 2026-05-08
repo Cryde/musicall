@@ -66,6 +66,16 @@ vich_uploader:
                 options: { path: '/images/user/profile' }
             inject_on_load: true
 
+        # this is used to store band-space files (the actual upload field lives on BandSpaceFileVersion)
+        band_space_file:
+            upload_destination: oneup_flysystem.musicall_filesystem
+            uri_prefix: ''
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+            directory_namer:
+                service: App\Service\DirectoryNamer\StaticDirectoryNamer
+                options: { property: 'bandSpaceFile.bandSpace.id', path: '/band_space_files' }
+
         # this is used to store user cover picture (public profile)
         user_cover_picture:
             upload_destination: oneup_flysystem.musicall_filesystem
