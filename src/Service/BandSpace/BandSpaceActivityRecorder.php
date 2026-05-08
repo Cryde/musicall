@@ -6,6 +6,7 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use BackedEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -23,7 +24,7 @@ readonly class BandSpaceActivityRecorder
     public function record(
         BandSpace $bandSpace,
         BandSpaceModule $module,
-        string $type,
+        BackedEnum|string $type,
         UuidInterface|string|null $resourceId = null,
         ?User $actor = null,
         ?array $payload = null,
@@ -33,7 +34,7 @@ readonly class BandSpaceActivityRecorder
         $activity->module = $module;
         $activity->resourceId = is_string($resourceId) ? Uuid::fromString($resourceId) : $resourceId;
         $activity->actor = $actor;
-        $activity->type = $type;
+        $activity->type = $type instanceof BackedEnum ? (string) $type->value : $type;
         $activity->payload = $payload;
 
         $this->entityManager->persist($activity);

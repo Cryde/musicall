@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\AgendaEntryCreate;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -82,7 +83,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Agenda,
-            type: 'entry_created',
+            type: BandSpaceAgendaActivityType::EntryCreated,
             resourceId: $entry->id,
             actor: $user,
             payload: ['title' => $entry->title],

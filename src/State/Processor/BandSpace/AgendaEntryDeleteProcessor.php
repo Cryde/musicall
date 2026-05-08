@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -49,7 +50,7 @@ readonly class AgendaEntryDeleteProcessor implements ProcessorInterface
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Agenda,
-            type: 'entry_deleted',
+            type: BandSpaceAgendaActivityType::EntryDeleted,
             resourceId: $entry->id,
             actor: $user,
             payload: ['title' => $entry->title],

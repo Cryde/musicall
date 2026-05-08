@@ -7,6 +7,7 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
@@ -100,7 +101,7 @@ readonly class TaskUpdateProcedure
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
-            type: 'status_changed',
+            type: BandSpaceTaskActivityType::StatusChanged,
             resourceId: $task->id,
             actor: $user,
             payload: ['from' => $oldStatus, 'to' => $newStatus],
@@ -118,7 +119,7 @@ readonly class TaskUpdateProcedure
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
-            type: 'due_date_changed',
+            type: BandSpaceTaskActivityType::DueDateChanged,
             resourceId: $task->id,
             actor: $user,
             payload: ['from' => $oldDueDate, 'to' => $newDueDate],
@@ -144,7 +145,7 @@ readonly class TaskUpdateProcedure
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
-            type: 'category_changed',
+            type: BandSpaceTaskActivityType::CategoryChanged,
             resourceId: $task->id,
             actor: $user,
             payload: ['from' => $oldCategoryId, 'to' => $newCategoryId],
@@ -173,7 +174,7 @@ readonly class TaskUpdateProcedure
                     $this->bandSpaceActivityRecorder->record(
                         bandSpace: $task->bandSpace,
                         module: BandSpaceModule::Task,
-                        type: 'assignee_removed',
+                        type: BandSpaceTaskActivityType::AssigneeRemoved,
                         resourceId: $task->id,
                         actor: $user,
                         payload: [
@@ -201,7 +202,7 @@ readonly class TaskUpdateProcedure
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $task->bandSpace,
                 module: BandSpaceModule::Task,
-                type: 'assignee_added',
+                type: BandSpaceTaskActivityType::AssigneeAdded,
                 resourceId: $task->id,
                 actor: $user,
                 payload: [
@@ -225,7 +226,7 @@ readonly class TaskUpdateProcedure
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $task->bandSpace,
                 module: BandSpaceModule::Task,
-                type: 'task_archived',
+                type: BandSpaceTaskActivityType::TaskArchived,
                 resourceId: $task->id,
                 actor: $user,
             );
@@ -240,7 +241,7 @@ readonly class TaskUpdateProcedure
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
-            type: 'task_unarchived',
+            type: BandSpaceTaskActivityType::TaskUnarchived,
             resourceId: $task->id,
             actor: $user,
         );

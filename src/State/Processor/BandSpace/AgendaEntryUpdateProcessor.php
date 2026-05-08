@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -136,7 +137,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->bandSpace,
                 module: BandSpaceModule::Agenda,
-                type: 'title_changed',
+                type: BandSpaceAgendaActivityType::TitleChanged,
                 resourceId: $entry->id,
                 actor: $user,
                 payload: ['from' => $oldTitle, 'to' => $entry->title],
@@ -147,7 +148,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->bandSpace,
                 module: BandSpaceModule::Agenda,
-                type: 'description_changed',
+                type: BandSpaceAgendaActivityType::DescriptionChanged,
                 resourceId: $entry->id,
                 actor: $user,
             );
@@ -157,7 +158,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->bandSpace,
                 module: BandSpaceModule::Agenda,
-                type: 'location_changed',
+                type: BandSpaceAgendaActivityType::LocationChanged,
                 resourceId: $entry->id,
                 actor: $user,
                 payload: ['from' => $oldLocation, 'to' => $entry->location],
@@ -168,7 +169,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->bandSpace,
                 module: BandSpaceModule::Agenda,
-                type: 'event_datetime_changed',
+                type: BandSpaceAgendaActivityType::EventDatetimeChanged,
                 resourceId: $entry->id,
                 actor: $user,
                 payload: [
@@ -184,7 +185,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->bandSpace,
                 module: BandSpaceModule::Agenda,
-                type: 'end_datetime_changed',
+                type: BandSpaceAgendaActivityType::EndDatetimeChanged,
                 resourceId: $entry->id,
                 actor: $user,
                 payload: [
@@ -198,7 +199,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->bandSpace,
                 module: BandSpaceModule::Agenda,
-                type: 'is_all_day_changed',
+                type: BandSpaceAgendaActivityType::IsAllDayChanged,
                 resourceId: $entry->id,
                 actor: $user,
                 payload: ['from' => $oldIsAllDay, 'to' => $entry->isAllDay],

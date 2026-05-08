@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
@@ -62,7 +63,7 @@ readonly class TaskCommentDeleteProcessor implements ProcessorInterface
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
-            type: 'comment_deleted',
+            type: BandSpaceTaskActivityType::CommentDeleted,
             resourceId: $task->id,
             actor: $user,
             payload: ['comment_id' => (string) $comment->id],

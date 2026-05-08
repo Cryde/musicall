@@ -9,6 +9,7 @@ use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\BandSpace\TaskComment;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Repository\BandSpace\TaskRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -64,7 +65,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
-            type: 'comment_added',
+            type: BandSpaceTaskActivityType::CommentAdded,
             resourceId: $task->id,
             actor: $user,
         );
@@ -75,7 +76,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $task->bandSpace,
                 module: BandSpaceModule::Task,
-                type: 'mention',
+                type: BandSpaceTaskActivityType::Mention,
                 resourceId: $task->id,
                 actor: $user,
                 payload: [

@@ -9,6 +9,7 @@ use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
@@ -93,7 +94,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
                 $this->bandSpaceActivityRecorder->record(
                     bandSpace: $task->bandSpace,
                     module: BandSpaceModule::Task,
-                    type: 'assignee_added',
+                    type: BandSpaceTaskActivityType::AssigneeAdded,
                     resourceId: $task->id,
                     actor: $user,
                     payload: [

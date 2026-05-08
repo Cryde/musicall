@@ -6,6 +6,7 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -59,7 +60,7 @@ readonly class TaskMoveProcedure
                 $this->bandSpaceActivityRecorder->record(
                     bandSpace: $task->bandSpace,
                     module: BandSpaceModule::Task,
-                    type: 'status_changed',
+                    type: BandSpaceTaskActivityType::StatusChanged,
                     resourceId: $task->id,
                     actor: $user,
                     payload: ['from' => $oldStatus, 'to' => $newStatus],
