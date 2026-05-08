@@ -7,6 +7,8 @@ use App\Repository\BandSpace\BandSpaceFileRepository;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
@@ -68,8 +70,16 @@ class BandSpaceFile
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     public ?DateTimeInterface $updateDatetime = null;
 
+    /**
+     * @var Collection<int, BandSpaceFileTag>
+     */
+    #[ORM\ManyToMany(targetEntity: BandSpaceFileTag::class)]
+    #[ORM\JoinTable(name: 'band_space_file_to_tag')]
+    public Collection $tags;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+        $this->tags = new ArrayCollection();
     }
 }
