@@ -188,7 +188,8 @@ import Avatar from '../../User/Avatar.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
 
 const props = defineProps({
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  autoStartRename: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close', 'share', 'versions', 'deleted'])
@@ -270,6 +271,9 @@ watch(
       initialTagIds.value = (f.tags || []).map((t) => t.id)
       selectedTagIds.value = [...initialTagIds.value]
       renameValue.value = f.original_name
+      if (props.autoStartRename) {
+        isRenaming.value = true
+      }
     }
   },
   { immediate: true }

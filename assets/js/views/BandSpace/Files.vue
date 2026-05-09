@@ -75,10 +75,15 @@
 
         <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
           <FileList
+            :band-space-id="bandSpaceId"
             :files="filesStore.files"
             :is-loading="filesStore.isLoadingFiles"
             :empty-message="emptyMessage"
             @select="handleFileSelect"
+            @open-rename="handleOpenRename"
+            @open-share="handleOpenShare"
+            @open-versions="handleOpenVersions"
+            @open-move="handleOpenMove"
           />
         </div>
       </section>
@@ -95,6 +100,7 @@
       v-if="bandSpaceId"
       v-model:visible="detailVisible"
       :band-space-id="bandSpaceId"
+      :auto-start-rename="autoStartRename"
       @close="handleDrawerClose"
       @deleted="handleFileDeleted"
       @share="handleOpenShare"
@@ -115,6 +121,13 @@
       :file-id="versionPanelFileId"
       :file-name="versionPanelFileName"
     />
+
+    <FileMoveDialog
+      v-if="bandSpaceId && moveDialogFile"
+      v-model:visible="moveDialogVisible"
+      :band-space-id="bandSpaceId"
+      :file="moveDialogFile"
+    />
   </div>
 </template>
 
@@ -128,6 +141,7 @@ import { useRoute, useRouter } from 'vue-router'
 import FileDetailDrawer from '../../components/BandSpace/Files/FileDetailDrawer.vue'
 import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
+import FileMoveDialog from '../../components/BandSpace/Files/FileMoveDialog.vue'
 import FileShareDialog from '../../components/BandSpace/Files/FileShareDialog.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
@@ -151,6 +165,9 @@ const shareDialogFileId = ref(null)
 const versionPanelVisible = ref(false)
 const versionPanelFileId = ref(null)
 const versionPanelFileName = ref('')
+const moveDialogVisible = ref(false)
+const moveDialogFile = ref(null)
+const autoStartRename = ref(false)
 
 const bandSpaceId = computed(() => route.params.id)
 
@@ -231,7 +248,20 @@ function handleOpenVersions(file) {
   versionPanelVisible.value = true
 }
 
+function handleOpenRename(file) {
+  if (!file) return
+  autoStartRename.value = true
+  router.push({ query: { ...route.query, file: file.id } })
+}
+
+function handleOpenMove(file) {
+  if (!file) return
+  moveDialogFile.value = file
+  moveDialogVisible.value = true
+}
+
 function handleDrawerClose() {
+  autoStartRename.value = false
   if (route.query.file) {
     router.replace({ query: { ...route.query, file: undefined } })
   }

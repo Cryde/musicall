@@ -9,6 +9,7 @@
       @dragover.prevent="handleDragOver"
       @dragleave="handleDragLeave"
       @drop.prevent="handleDrop"
+      @contextmenu="openContextMenu"
     >
       <button
         type="button"
@@ -60,10 +61,13 @@
       @delete="(node) => emit('delete', node)"
       @drop-on-folder="(payload) => emit('drop-on-folder', payload)"
     />
+
+    <ContextMenu ref="contextMenuRef" :model="contextMenuItems" />
   </div>
 </template>
 
 <script setup>
+import ContextMenu from 'primevue/contextmenu'
 import { computed, ref } from 'vue'
 import { canDrop, collectFolderAndDescendants } from '../../../composables/useFolderDragDrop.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
@@ -80,6 +84,30 @@ const emit = defineEmits(['select', 'create-sub', 'edit', 'delete', 'drop-on-fol
 const filesStore = useBandFilesStore()
 
 const isDropTarget = ref(false)
+const contextMenuRef = ref(null)
+
+const contextMenuItems = computed(() => [
+  { label: 'Ouvrir', icon: 'pi pi-folder-open', command: () => emit('select', props.folder.id) },
+  {
+    label: 'Nouveau sous-dossier',
+    icon: 'pi pi-plus',
+    disabled: !canCreateSub.value,
+    command: () => emit('create-sub', props.folder)
+  },
+  { label: 'Renommer / déplacer', icon: 'pi pi-pencil', command: () => emit('edit', props.folder) },
+  { separator: true },
+  {
+    label: 'Supprimer',
+    icon: 'pi pi-trash',
+    class: 'p-menuitem-danger',
+    command: () => emit('delete', props.folder)
+  }
+])
+
+function openContextMenu(event) {
+  event.preventDefault()
+  contextMenuRef.value?.show(event)
+}
 
 const rowClasses = computed(() => {
   if (isDropTarget.value) {

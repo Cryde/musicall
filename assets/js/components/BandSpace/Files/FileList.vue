@@ -28,6 +28,7 @@
         class="grid grid-cols-12 gap-2 px-3 py-2 items-center text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
         :draggable="true"
         @click="emit('select', file)"
+        @contextmenu="(event) => openContextMenu(event, file)"
         @dragstart="(event) => handleDragStart(event, file)"
         @dragend="handleDragEnd"
       >
@@ -55,15 +56,23 @@
         </div>
       </div>
     </div>
+
+    <ContextMenu ref="contextMenuRef" :model="contextMenuItems" />
   </div>
 </template>
 
 <script setup>
+import ContextMenu from 'primevue/contextmenu'
 import Skeleton from 'primevue/skeleton'
 import Tag from 'primevue/tag'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
+import { computed, ref } from 'vue'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 
-defineProps({
+const props = defineProps({
+  bandSpaceId: { type: String, required: true },
   files: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
   emptyMessage: {
@@ -72,9 +81,77 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'open-share', 'open-versions', 'open-rename', 'open-move'])
 
 const filesStore = useBandFilesStore()
+const userSecurityStore = useUserSecurityStore()
+const confirm = useConfirm()
+const toast = useToast()
+
+const contextMenuRef = ref(null)
+const contextMenuFile = ref(null)
+
+const canDeleteContextFile = computed(() => {
+  const f = contextMenuFile.value
+  if (!f) return false
+  const userId = userSecurityStore.userProfile?.id
+  return f.created_by?.id === userId
+})
+
+const contextMenuItems = computed(() => {
+  const f = contextMenuFile.value
+  if (!f) return []
+  return [
+    { label: 'Ouvrir', icon: 'pi pi-eye', command: () => emit('select', f) },
+    {
+      label: 'Télécharger',
+      icon: 'pi pi-download',
+      command: () => f.download_url && window.open(f.download_url, '_blank', 'noopener')
+    },
+    { label: 'Renommer', icon: 'pi pi-pencil', command: () => emit('open-rename', f) },
+    { label: 'Partager', icon: 'pi pi-share-alt', command: () => emit('open-share', f) },
+    { label: 'Versions', icon: 'pi pi-history', command: () => emit('open-versions', f) },
+    { label: 'Déplacer', icon: 'pi pi-arrows-h', command: () => emit('open-move', f) },
+    { separator: true },
+    {
+      label: 'Supprimer',
+      icon: 'pi pi-trash',
+      class: 'p-menuitem-danger',
+      disabled: !canDeleteContextFile.value,
+      command: () => confirmDelete(f)
+    }
+  ]
+})
+
+function openContextMenu(event, file) {
+  event.preventDefault()
+  contextMenuFile.value = file
+  contextMenuRef.value?.show(event)
+}
+
+function confirmDelete(file) {
+  confirm.require({
+    message: `Supprimer définitivement « ${file.original_name} » ?`,
+    header: 'Confirmer la suppression',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Supprimer',
+    rejectLabel: 'Annuler',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await filesStore.deleteFile(props.bandSpaceId, file.id)
+        toast.add({ severity: 'success', summary: 'Fichier supprimé', life: 3000 })
+      } catch (e) {
+        toast.add({
+          severity: 'error',
+          summary: 'Suppression impossible',
+          detail: e.message,
+          life: 5000
+        })
+      }
+    }
+  })
+}
 
 function handleDragStart(event, file) {
   filesStore.startDrag({
