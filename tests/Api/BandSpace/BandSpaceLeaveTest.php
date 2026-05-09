@@ -29,10 +29,10 @@ class BandSpaceLeaveTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/leave',
+            '/api/band_spaces/' . $bandSpace->id . '/leave',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -41,17 +41,17 @@ class BandSpaceLeaveTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $membershipRepository = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertFalse($membershipRepository->isMember($bandSpace->_real(), $member->_real()));
+        $this->assertFalse($membershipRepository->isMember($bandSpace, $member));
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $member->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $member->id);
         $this->assertCount(1, $activities);
         $this->assertSame('member_left', $activities[0]->type);
         $this->assertSame(
-            ['target_user_id' => $member->_real()->id, 'target_username' => 'member_user'],
+            ['target_user_id' => $member->id, 'target_username' => 'member_user'],
             $activities[0]->payload,
         );
-        $this->assertSame($member->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($member->id, $activities[0]->actor?->id);
     }
 
     public function test_admin_can_leave_when_other_admins_exist(): void
@@ -63,10 +63,10 @@ class BandSpaceLeaveTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin1, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin2, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin1->_real());
+        $this->client->loginUser($admin1);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/leave',
+            '/api/band_spaces/' . $bandSpace->id . '/leave',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -84,10 +84,10 @@ class BandSpaceLeaveTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/leave',
+            '/api/band_spaces/' . $bandSpace->id . '/leave',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -114,10 +114,10 @@ class BandSpaceLeaveTest extends ApiTestCase
 
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($outsider->_real());
+        $this->client->loginUser($outsider);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/leave',
+            '/api/band_spaces/' . $bandSpace->id . '/leave',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']

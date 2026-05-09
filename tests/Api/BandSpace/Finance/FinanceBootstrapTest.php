@@ -29,8 +29,8 @@ class FinanceBootstrapTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -75,8 +75,8 @@ class FinanceBootstrapTest extends ApiTestCase
         FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
         FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Clips', 'position' => 1])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -101,8 +101,8 @@ class FinanceBootstrapTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -125,8 +125,8 @@ class FinanceBootstrapTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

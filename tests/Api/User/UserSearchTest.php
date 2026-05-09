@@ -16,9 +16,9 @@ class UserSearchTest extends ApiTestCase
 
     public function test_users_search(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'test1', 'email' => 'base_user1@email.com'])->_real();
-        $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'test2', 'email' => 'base_user2@email.com'])->_real();
-        UserFactory::new()->asBaseUser()->create(['username' => 'other', 'email' => 'base_user3@email.com'])->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'test1', 'email' => 'base_user1@email.com']);
+        $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'test2', 'email' => 'base_user2@email.com']);
+        UserFactory::new()->asBaseUser()->create(['username' => 'other', 'email' => 'base_user3@email.com']);
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/users/search?search=test');
@@ -52,7 +52,7 @@ class UserSearchTest extends ApiTestCase
 
     public function test_users_search_excludes_deleted_accounts(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'test1', 'email' => 'base_user1@email.com'])->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'test1', 'email' => 'base_user1@email.com']);
         UserFactory::new()->asBaseUser()->create([
             'username' => 'test_deleted',
             'email' => 'deleted@email.com',
@@ -84,7 +84,7 @@ class UserSearchTest extends ApiTestCase
 
     public function test_users_search_with_invalid_search(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/users/search?search=te');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

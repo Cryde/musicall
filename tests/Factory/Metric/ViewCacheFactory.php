@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Metric;
 
 use App\Entity\Metric\ViewCache;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class ViewCacheFactory extends PersistentProxyObjectFactory
+final class ViewCacheFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

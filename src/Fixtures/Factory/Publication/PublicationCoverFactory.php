@@ -4,14 +4,14 @@ namespace App\Fixtures\Factory\Publication;
 
 use App\Entity\Image\PublicationCover;
 use App\Fixtures\Publication\FakeImageGeneratorStory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<PublicationCover>
+ * @extends PersistentObjectFactory<PublicationCover>
  */
-final class PublicationCoverFactory extends PersistentProxyObjectFactory
+final class PublicationCoverFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

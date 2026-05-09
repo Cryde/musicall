@@ -37,8 +37,8 @@ class TopicGetTest extends ApiTestCase
             'author' => $author,
         ])->create();
 
-        $topicId = $topic->_real()->id;
-        $forumId = $forum->_real()->id;
+        $topicId = $topic->id;
+        $forumId = $forum->id;
 
         $this->client->request('GET', '/api/forums/topics/test-topic-title');
         $this->assertResponseIsSuccessful();

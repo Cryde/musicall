@@ -26,9 +26,9 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/folders',
@@ -84,9 +84,9 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2026-04-04 10:00:00'),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/folders',
@@ -102,26 +102,26 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             'totalItems' => 2,
             'member' => [
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders/' . $live->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders/' . $live->id,
                     '@type' => 'BandSpaceFolder',
-                    'id' => $live->_real()->id,
+                    'id' => $live->id,
                     'band_space_id' => $bandSpaceId,
                     'name' => 'Live',
                     'parent_id' => null,
                     'depth' => 0,
                     'children' => [
                         [
-                            'id' => $live2026->_real()->id,
+                            'id' => $live2026->id,
                             'band_space_id' => $bandSpaceId,
                             'name' => '2026',
-                            'parent_id' => $live->_real()->id,
+                            'parent_id' => $live->id,
                             'depth' => 1,
                             'children' => [
                                 [
-                                    'id' => $paris->_real()->id,
+                                    'id' => $paris->id,
                                     'band_space_id' => $bandSpaceId,
                                     'name' => 'paris',
-                                    'parent_id' => $live2026->_real()->id,
+                                    'parent_id' => $live2026->id,
                                     'depth' => 2,
                                     'children' => [],
                                     'creation_datetime' => '2026-04-03T10:00:00+00:00',
@@ -136,9 +136,9 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                     'update_datetime' => null,
                 ],
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders/' . $riders->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders/' . $riders->id,
                     '@type' => 'BandSpaceFolder',
-                    'id' => $riders->_real()->id,
+                    'id' => $riders->id,
                     'band_space_id' => $bandSpaceId,
                     'name' => 'Riders',
                     'parent_id' => null,
@@ -186,9 +186,9 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         // Manual file — must not appear in any virtual folder
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/folders',
@@ -218,10 +218,10 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

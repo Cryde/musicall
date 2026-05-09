@@ -45,12 +45,12 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
+        $searchModel->instrument = $guitar;
 
         $results = $this->repository->findByCriteria($searchModel, null);
 
         $this->assertCount(1, $results);
-        $this->assertSame($announce1->_real(), $results[0]);
+        $this->assertSame($announce1, $results[0]);
     }
 
     public function test_find_by_criteria_filters_by_type(): void
@@ -72,12 +72,12 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
+        $searchModel->instrument = $guitar;
 
         $results = $this->repository->findByCriteria($searchModel, null);
 
         $this->assertCount(1, $results);
-        $this->assertSame($musicianAnnounce->_real(), $results[0]);
+        $this->assertSame($musicianAnnounce, $results[0]);
     }
 
     public function test_find_by_criteria_filters_by_styles(): void
@@ -101,13 +101,13 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
-        $searchModel->styles = [$rock->_real()];
+        $searchModel->instrument = $guitar;
+        $searchModel->styles = [$rock];
 
         $results = $this->repository->findByCriteria($searchModel, null);
 
         $this->assertCount(1, $results);
-        $this->assertSame($announce1->_real(), $results[0]);
+        $this->assertSame($announce1, $results[0]);
     }
 
     public function test_find_by_criteria_excludes_current_user_announces(): void
@@ -131,12 +131,12 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
+        $searchModel->instrument = $guitar;
 
-        $results = $this->repository->findByCriteria($searchModel, $user1->_real());
+        $results = $this->repository->findByCriteria($searchModel, $user1);
 
         $this->assertCount(1, $results);
-        $this->assertSame($announce2->_real(), $results[0]);
+        $this->assertSame($announce2, $results[0]);
     }
 
     public function test_find_by_criteria_with_latitude_longitude_calculates_distance(): void
@@ -166,7 +166,7 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
+        $searchModel->instrument = $guitar;
         $searchModel->latitude = 48.8566; // Coordonnées de Paris
         $searchModel->longitude = 2.3522;
 
@@ -174,8 +174,8 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $this->assertCount(2, $results);
 
-        $this->assertSame($announceParٍis->_real()->id, $results[0][0]->id);
-        $this->assertSame($announceMarseille->_real()->id, $results[1][0]->id);
+        $this->assertSame($announceParٍis->id, $results[0][0]->id);
+        $this->assertSame($announceMarseille->id, $results[1][0]->id);
 
         $this->assertArrayHasKey('distance', $results[0]);
         $this->assertArrayHasKey('distance', $results[1]);
@@ -202,14 +202,14 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
+        $searchModel->instrument = $guitar;
 
         $results = $this->repository->findByCriteria($searchModel, null);
 
         $this->assertCount(2, $results);
 
-        $this->assertSame($announce2->_real(), $results[0]);
-        $this->assertSame($announce1->_real(), $results[1]);
+        $this->assertSame($announce2, $results[0]);
+        $this->assertSame($announce1, $results[1]);
     }
 
     public function test_find_by_criteria_respects_limit(): void
@@ -227,7 +227,7 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
+        $searchModel->instrument = $guitar;
 
         $results = $this->repository->findByCriteria($searchModel, null, 5);
 
@@ -262,13 +262,13 @@ class MusicianAnnounceRepositoryTest extends KernelTestCase
 
         $searchModel = new MusicianSearch();
         $searchModel->type = MusicianAnnounce::TYPE_MUSICIAN;
-        $searchModel->instrument = $guitar->_real();
-        $searchModel->styles = [$rock->_real(), $metal->_real()];
+        $searchModel->instrument = $guitar;
+        $searchModel->styles = [$rock, $metal];
 
         $results = $this->repository->findByCriteria($searchModel, null);
 
         $this->assertCount(2, $results);
-        $this->assertSame($announce1->_real(), $results[0]);
-        $this->assertSame($announce2->_real(), $results[1]);
+        $this->assertSame($announce1, $results[0]);
+        $this->assertSame($announce2, $results[1]);
     }
 }

@@ -57,10 +57,10 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
             'instrument' => $guitar,
         ]);
 
-        $realProfile = $teacherProfile->_disableAutoRefresh()->_real();
+        $realProfile = $teacherProfile;
 
         // Add style
-        $realProfile->addStyle($rock->_real());
+        $realProfile->addStyle($rock);
 
         // Add location
         $location = new TeacherProfileLocation();
@@ -94,11 +94,11 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
         $package->price = 40000;
         $realProfile->addPackage($package);
 
-        $teacherProfile->_enableAutoRefresh()->_save();
+        \Zenstruck\Foundry\Persistence\save($teacherProfile);
 
-        $profileId = $teacherProfile->_real()->id;
+        $profileId = $teacherProfile->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/teacher-profile');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -181,7 +181,7 @@ class TeacherProfilePrivateGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/teacher-profile');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([

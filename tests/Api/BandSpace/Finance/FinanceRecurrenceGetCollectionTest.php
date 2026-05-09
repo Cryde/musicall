@@ -63,11 +63,11 @@ class FinanceRecurrenceGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $recurrence1 = $recurrence1->_real();
-        $recurrence2 = $recurrence2->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $recurrence1 = $recurrence1;
+        $recurrence2 = $recurrence2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences');
@@ -128,8 +128,8 @@ class FinanceRecurrenceGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences');
@@ -147,8 +147,8 @@ class FinanceRecurrenceGetCollectionTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences');

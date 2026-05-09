@@ -24,7 +24,7 @@ class UserSocialLinkGetTest extends ApiTestCase
             'email' => 'nolinksuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/profile/social-links');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -55,7 +55,7 @@ class UserSocialLinkGetTest extends ApiTestCase
             'url' => 'https://www.instagram.com/testuser',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/profile/social-links');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -64,17 +64,17 @@ class UserSocialLinkGetTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/user_social_link_resources/' . $link1->_real()->id,
+                    '@id' => '/api/user_social_link_resources/' . $link1->id,
                     '@type' => 'UserSocialLinkResource',
-                    'id' => $link1->_real()->id,
+                    'id' => $link1->id,
                     'platform' => 'youtube',
                     'platform_label' => 'YouTube',
                     'url' => 'https://www.youtube.com/@testchannel',
                 ],
                 [
-                    '@id' => '/api/user_social_link_resources/' . $link2->_real()->id,
+                    '@id' => '/api/user_social_link_resources/' . $link2->id,
                     '@type' => 'UserSocialLinkResource',
-                    'id' => $link2->_real()->id,
+                    'id' => $link2->id,
                     'platform' => 'instagram',
                     'platform_label' => 'Instagram',
                     'url' => 'https://www.instagram.com/testuser',

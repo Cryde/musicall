@@ -31,12 +31,12 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         $child = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => '2026', 'parent' => $parent])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $parent])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $parentId = $parent->_real()->id;
-        $childId = $child->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $parentId = $parent->id;
+        $childId = $child->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
             '/api/band_spaces/' . $bandSpaceId . '/folders/' . $parentId,
@@ -74,12 +74,12 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         $fileInParent = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'folder' => $parent])->create();
         $fileInChild = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'folder' => $child])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $parentId = $parent->_real()->id;
-        $childId = $child->_real()->id;
-        $fileIds = [$fileInParent->_real()->id, $fileInChild->_real()->id];
+        $bandSpaceId = $bandSpace->id;
+        $parentId = $parent->id;
+        $childId = $child->id;
+        $fileIds = [$fileInParent->id, $fileInChild->id];
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
             '/api/band_spaces/' . $bandSpaceId . '/folders/' . $parentId . '?strategy=cascade',
@@ -113,10 +113,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id . '?strategy=cascade',
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id . '?strategy=cascade',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -144,10 +144,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -173,10 +173,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);

@@ -49,9 +49,9 @@ class BandSpaceFileShareCollectionTest extends ApiTestCase
             'expiryDatetime' => new \DateTimeImmutable('-1 hour'),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/shares',
@@ -73,9 +73,9 @@ class BandSpaceFileShareCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/shares',
@@ -100,10 +100,10 @@ class BandSpaceFileShareCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/shares',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

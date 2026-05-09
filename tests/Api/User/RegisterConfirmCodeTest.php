@@ -54,7 +54,7 @@ class RegisterConfirmCodeTest extends ApiTestCase
 
         // verification code is marked as used
         $verificationCodeRepository = static::getContainer()->get(EmailVerificationCodeRepository::class);
-        $verificationCode = $verificationCodeRepository->findOneBy(['user' => $user->_real()]);
+        $verificationCode = $verificationCodeRepository->findOneBy(['user' => $user]);
         $this->assertNotNull($verificationCode->usedDatetime);
 
         // welcome email was sent
@@ -96,7 +96,7 @@ class RegisterConfirmCodeTest extends ApiTestCase
 
         // attempts incremented
         $verificationCodeRepository = static::getContainer()->get(EmailVerificationCodeRepository::class);
-        $verificationCode = $verificationCodeRepository->findOneBy(['user' => $user->_real()]);
+        $verificationCode = $verificationCodeRepository->findOneBy(['user' => $user]);
         $this->assertSame(1, $verificationCode->attempts);
 
         $this->assertEmailCount(0);

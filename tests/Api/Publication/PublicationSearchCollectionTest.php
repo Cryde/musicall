@@ -50,7 +50,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create()->_real(),
+            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create(),
             'thread'              => $thread,
         ])->create();
 
@@ -67,7 +67,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
             'title'               => 'Titre de la publication 2',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
-            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create()->_real(),
+            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create(),
             'thread'              => $thread,
         ])->create();
 
@@ -75,21 +75,21 @@ class PublicationSearchCollectionTest extends ApiTestCase
         $pub3 = PublicationFactory::new([
             'title' => 'find me 3',
             'author' => $author, 'status' => Publication::STATUS_DRAFT, 'subCategory' => $sub,
-            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create()->_real(),
+            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create(),
             'thread'              => $thread,
         ])->create();
         // not taken (status):
         $pub4 = PublicationFactory::new([
             'title' => 'find me 4',
             'author' => $author, 'status' => Publication::STATUS_PENDING, 'subCategory' => $sub,
-            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create()->_real(),
+            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create(),
             'thread'              => $thread,
         ])->create();
         // not taken (wrong title):
         $pub5 = PublicationFactory::new([
             'title' => 'hello world',
             'author' => $author, 'status' => Publication::STATUS_ONLINE, 'subCategory' => $sub2,
-            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create()->_real(),
+            'cover'               => PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create(),
             'thread'              => $thread,
         ])->create();
 
@@ -100,11 +100,11 @@ class PublicationSearchCollectionTest extends ApiTestCase
             'term' => 'find me'
         ]);
 
-        $subCatId = $sub->_real()->id;
-        $threadId = $thread->_real()->id;
+        $subCatId = $sub->id;
+        $threadId = $thread->id;
         $this->assertResponseIsSuccessful();
         foreach ($objectToDelete as $item) {
-            $item->_delete();
+            \Zenstruck\Foundry\Persistence\delete($item);
         }
 
         $this->assertJsonEquals([

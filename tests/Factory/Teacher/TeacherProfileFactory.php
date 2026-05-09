@@ -7,12 +7,12 @@ namespace App\Tests\Factory\Teacher;
 use App\Entity\Teacher\TeacherProfile;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<TeacherProfile>
+ * @extends PersistentObjectFactory<TeacherProfile>
  */
-final class TeacherProfileFactory extends PersistentProxyObjectFactory
+final class TeacherProfileFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

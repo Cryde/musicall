@@ -26,6 +26,10 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $context
+     * @return array<array-key, mixed>|string|int|float|bool|\ArrayObject<array-key, mixed>|null
+     */
     public function normalize(mixed $publication, ?string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
     {
         $context[self::ALREADY_CALLED] = true;

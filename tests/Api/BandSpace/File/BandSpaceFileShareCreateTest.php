@@ -30,10 +30,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
 
         $expiry = (new \DateTimeImmutable('+7 days'))->format(\DateTimeInterface::ATOM);
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/shares',
             ['expiryDatetime' => $expiry],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -52,14 +52,14 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
 
         /** @var BandSpaceFileShareRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileShareRepository::class);
-        $shares = $repo->findBy(['bandSpaceFile' => $file->_real()]);
+        $shares = $repo->findBy(['bandSpaceFile' => $file]);
         $this->assertCount(1, $shares);
         $this->assertNull($shares[0]->passwordHash);
         $this->assertSame(64, strlen($shares[0]->tokenHash));
 
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::File, $file->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $file->id);
         $shared = array_values(array_filter($activities, fn ($a): bool => $a->type === 'shared'));
         $this->assertCount(1, $shared);
         $this->assertFalse($shared[0]->payload['has_password']);
@@ -72,10 +72,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/shares',
             [
                 'expiryDatetime' => (new \DateTimeImmutable('+1 day'))->format(\DateTimeInterface::ATOM),
                 'password' => 'secret-pwd',
@@ -89,7 +89,7 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
 
         /** @var BandSpaceFileShareRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileShareRepository::class);
-        $shares = $repo->findBy(['bandSpaceFile' => $file->_real()]);
+        $shares = $repo->findBy(['bandSpaceFile' => $file]);
         $this->assertNotNull($shares[0]->passwordHash);
         $this->assertNotSame('secret-pwd', $shares[0]->passwordHash);
     }
@@ -101,10 +101,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/shares',
             ['expiryDatetime' => (new \DateTimeImmutable('+1 day'))->format(\DateTimeInterface::ATOM)],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -130,10 +130,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/shares',
             ['expiryDatetime' => (new \DateTimeImmutable('+1 day'))->format(\DateTimeInterface::ATOM)],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -157,10 +157,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/00000000-0000-0000-0000-000000000000/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/00000000-0000-0000-0000-000000000000/shares',
             ['expiryDatetime' => (new \DateTimeImmutable('+1 day'))->format(\DateTimeInterface::ATOM)],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -185,10 +185,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/shares',
             ['expiryDatetime' => (new \DateTimeImmutable('-1 day'))->format(\DateTimeInterface::ATOM)],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -213,10 +213,10 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/shares',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/shares',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

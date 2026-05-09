@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Fixtures\Factory\Teacher;
 
 use App\Entity\Teacher\TeacherProfileInstrument;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<TeacherProfileInstrument>
+ * @extends PersistentObjectFactory<TeacherProfileInstrument>
  */
-final class TeacherProfileInstrumentFactory extends PersistentProxyObjectFactory
+final class TeacherProfileInstrumentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

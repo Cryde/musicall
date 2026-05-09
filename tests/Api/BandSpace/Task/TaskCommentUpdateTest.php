@@ -34,10 +34,10 @@ class TaskCommentUpdateTest extends ApiTestCase
             'content' => 'Premier jet',
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             ['content' => 'Version corrigée'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -45,20 +45,20 @@ class TaskCommentUpdateTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             '@type' => 'TaskComment',
-            'id' => $comment->_real()->id,
+            'id' => $comment->id,
             'content' => 'Version corrigée',
         ]);
 
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
-        $refreshed = $commentRepo->find($comment->_real()->id);
+        $refreshed = $commentRepo->find($comment->id);
         $this->assertSame('Version corrigée', $refreshed->content);
         $this->assertNotNull($refreshed->updateDatetime);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_edited', $activities[0]->type);
-        $this->assertSame(['comment_id' => (string) $comment->_real()->id], $activities[0]->payload);
+        $this->assertSame(['comment_id' => (string) $comment->id], $activities[0]->payload);
     }
 
     public function test_admin_cannot_edit_other_users_comment(): void
@@ -71,10 +71,10 @@ class TaskCommentUpdateTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $author])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $author, 'content' => 'Original'])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             ['content' => 'Réécrit par admin'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -82,7 +82,7 @@ class TaskCommentUpdateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
 
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
-        $this->assertSame('Original', $commentRepo->find($comment->_real()->id)->content);
+        $this->assertSame('Original', $commentRepo->find($comment->id)->content);
     }
 
     public function test_other_member_cannot_edit_comment(): void
@@ -95,10 +95,10 @@ class TaskCommentUpdateTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $author])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $author])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             ['content' => 'Bidouille'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -115,10 +115,10 @@ class TaskCommentUpdateTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $author])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $author])->create();
 
-        $this->client->loginUser($stranger->_real());
+        $this->client->loginUser($stranger);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             ['content' => 'Hack'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -134,10 +134,10 @@ class TaskCommentUpdateTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             ['content' => ''],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

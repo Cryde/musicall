@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Publication;
 
 use App\Entity\Image\GalleryImage;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class GalleryImageFactory extends PersistentProxyObjectFactory
+final class GalleryImageFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

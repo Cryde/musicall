@@ -28,7 +28,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'newlinkuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'youtube',
             'url' => 'https://www.youtube.com/@mychannel',
@@ -50,7 +50,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'youtubeuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'youtube',
             'url' => 'https://www.youtube.com/@user',
@@ -71,7 +71,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'soundclouduser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'soundcloud',
             'url' => 'https://soundcloud.com/user',
@@ -92,7 +92,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'instagramuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'instagram',
             'url' => 'https://www.instagram.com/user',
@@ -113,7 +113,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'twitteruser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'twitter',
             'url' => 'https://twitter.com/user',
@@ -134,7 +134,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'websiteuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'website',
             'url' => 'https://www.mywebsite.com',
@@ -155,7 +155,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'invalidplatform@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'invalidplatform',
             'url' => 'https://www.example.com',
@@ -181,7 +181,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'invalidurluser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'youtube',
             'url' => 'not-a-valid-url',
@@ -214,7 +214,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'emptyurluser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'youtube',
             'url' => '',
@@ -247,7 +247,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'email' => 'emptyplatformuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => '',
             'url' => 'https://www.youtube.com/@user',
@@ -287,7 +287,7 @@ class UserSocialLinkPostTest extends ApiTestCase
             'url' => 'https://www.youtube.com/@existingchannel',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'youtube',
             'url' => 'https://www.youtube.com/@newchannel',
@@ -315,7 +315,7 @@ class UserSocialLinkPostTest extends ApiTestCase
 
         $longUrl = 'https://www.youtube.com/' . str_repeat('a', 500);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/profile/social-links', [
             'platform' => 'youtube',
             'url' => $longUrl,

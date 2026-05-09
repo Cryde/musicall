@@ -5,14 +5,14 @@ namespace App\Fixtures\Factory\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Enum\BandSpace\Role;
 use App\Fixtures\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<BandSpaceMembership>
+ * @extends PersistentObjectFactory<BandSpaceMembership>
  */
-final class BandSpaceMembershipFactory extends PersistentProxyObjectFactory
+final class BandSpaceMembershipFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

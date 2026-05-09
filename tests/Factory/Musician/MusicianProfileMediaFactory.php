@@ -6,12 +6,12 @@ namespace App\Tests\Factory\Musician;
 
 use App\Entity\Musician\MusicianProfileMedia;
 use App\Enum\Musician\MediaPlatform;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<MusicianProfileMedia>
+ * @extends PersistentObjectFactory<MusicianProfileMedia>
  */
-final class MusicianProfileMediaFactory extends PersistentProxyObjectFactory
+final class MusicianProfileMediaFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

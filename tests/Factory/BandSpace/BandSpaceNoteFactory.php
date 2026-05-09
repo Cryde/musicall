@@ -3,12 +3,12 @@
 namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\BandSpaceNote;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceNote>
+ * @extends PersistentObjectFactory<BandSpaceNote>
  */
-final class BandSpaceNoteFactory extends PersistentProxyObjectFactory
+final class BandSpaceNoteFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

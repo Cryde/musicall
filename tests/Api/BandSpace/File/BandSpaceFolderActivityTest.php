@@ -26,10 +26,10 @@ class BandSpaceFolderActivityTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
             ['name' => 'Live'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -37,7 +37,7 @@ class BandSpaceFolderActivityTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $rows = $repo->findBy(['bandSpace' => $bandSpace->_real(), 'module' => BandSpaceModule::File]);
+        $rows = $repo->findBy(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::File]);
         $this->assertCount(1, $rows);
         $this->assertSame('folder_created', $rows[0]->type);
         $this->assertSame('Live', $rows[0]->payload['name']);
@@ -52,10 +52,10 @@ class BandSpaceFolderActivityTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
             ['name' => 'Concerts'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -63,7 +63,7 @@ class BandSpaceFolderActivityTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
 
         $repo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $rows = $repo->findBy(['bandSpace' => $bandSpace->_real(), 'type' => 'folder_renamed']);
+        $rows = $repo->findBy(['bandSpace' => $bandSpace, 'type' => 'folder_renamed']);
         $this->assertCount(1, $rows);
         $this->assertSame('Live', $rows[0]->payload['from']);
         $this->assertSame('Concerts', $rows[0]->payload['to']);
@@ -79,21 +79,21 @@ class BandSpaceFolderActivityTest extends ApiTestCase
         $studio = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Studio'])->create();
         $sub = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Recordings', 'parent' => $live])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $sub->_real()->id,
-            ['parent_id' => $studio->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $sub->id,
+            ['parent_id' => $studio->id],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
         $this->assertResponseIsSuccessful();
 
         $repo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $rows = $repo->findBy(['bandSpace' => $bandSpace->_real(), 'type' => 'folder_moved']);
+        $rows = $repo->findBy(['bandSpace' => $bandSpace, 'type' => 'folder_moved']);
         $this->assertCount(1, $rows);
-        $this->assertSame($live->_real()->id, $rows[0]->payload['from_parent_id']);
-        $this->assertSame($studio->_real()->id, $rows[0]->payload['to_parent_id']);
+        $this->assertSame($live->id, $rows[0]->payload['from_parent_id']);
+        $this->assertSame($studio->id, $rows[0]->payload['to_parent_id']);
     }
 
     public function test_delete_folder_records_activity_with_strategy(): void
@@ -104,16 +104,16 @@ class BandSpaceFolderActivityTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Trash'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $repo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $rows = $repo->findBy(['bandSpace' => $bandSpace->_real(), 'type' => 'folder_archived']);
+        $rows = $repo->findBy(['bandSpace' => $bandSpace, 'type' => 'folder_archived']);
         $this->assertCount(1, $rows);
         $this->assertSame('Trash', $rows[0]->payload['name']);
         $this->assertSame('move_to_root', $rows[0]->payload['strategy']);

@@ -40,7 +40,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'user' => $user,
             'availabilityStatus' => AvailabilityStatus::AVAILABLE_FOR_SESSIONS,
             'creationDatetime' => new \DateTimeImmutable('2024-01-15T10:00:00+00:00'),
-            'styles' => [$rock->_real()],
+            'styles' => [$rock],
         ]);
 
         MusicianProfileInstrumentFactory::new()->create([
@@ -49,19 +49,19 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $musicianAnnounce = MusicianAnnounceFactory::new()->asBand()->create([
-            'author' => $user->_real(),
+            'author' => $user,
             'instrument' => $drum,
             'locationName' => 'Paris',
             'creationDatetime' => new \DateTime('2024-06-01T12:00:00+00:00'),
-            'styles' => [$rock->_real(), $jazz->_real()],
+            'styles' => [$rock, $jazz],
         ]);
 
         $media1 = MusicianProfileMediaFactory::new()->asYouTube()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'title' => 'My YouTube Video',
             'url' => 'https://www.youtube.com/watch?v=abc123',
             'embedId' => 'abc123',
@@ -69,7 +69,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
         ]);
 
         $media2 = MusicianProfileMediaFactory::new()->asSpotify()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'title' => 'My Spotify Track',
             'url' => 'https://open.spotify.com/track/xyz789',
             'embedId' => 'track/xyz789',
@@ -106,7 +106,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'musician_announces' => [
                 [
                     '@type' => 'PublicProfileAnnounce',
-                    'id' => $musicianAnnounce->_real()->id,
+                    'id' => $musicianAnnounce->id,
                     'creation_datetime' => '2024-06-01T12:00:00+00:00',
                     'type' => 2,
                     'instrument_name' => 'Batteur',
@@ -117,7 +117,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'media' => [
                 [
                     '@type' => 'MusicianProfileMedia',
-                    'id' => $media1->_real()->id,
+                    'id' => $media1->id,
                     'platform' => 'youtube',
                     'platform_label' => 'YouTube',
                     'url' => 'https://www.youtube.com/watch?v=abc123',
@@ -127,7 +127,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
                 ],
                 [
                     '@type' => 'MusicianProfileMedia',
-                    'id' => $media2->_real()->id,
+                    'id' => $media2->id,
                     'platform' => 'spotify',
                     'platform_label' => 'Spotify',
                     'url' => 'https://open.spotify.com/track/xyz789',
@@ -154,8 +154,8 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $this->client->request('GET', '/api/user/profile/minimalmusicianuser/musician');
 
@@ -227,8 +227,8 @@ class PublicMusicianProfileGetTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         // No login - public endpoint
         $this->client->request('GET', '/api/user/profile/publicaccessuser/musician');

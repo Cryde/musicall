@@ -40,7 +40,7 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attachedFile,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($entry->_real()->id),
+            'sourceId' => Uuid::fromString($entry->id),
             'attachedBy' => $user,
         ]);
         $otherFile = BandSpaceFileFactory::new([
@@ -51,14 +51,14 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $otherFile,
             'sourceType' => 'finance',
-            'sourceId' => Uuid::fromString($otherEntry->_real()->id),
+            'sourceId' => Uuid::fromString($otherEntry->id),
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $entry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -70,7 +70,7 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         $this->assertSame('attached.pdf', $response['member'][0]['original_name']);
         $this->assertCount(1, $response['member'][0]['attachments']);
         $this->assertSame('finance', $response['member'][0]['attachments'][0]['source_type']);
-        $this->assertSame($entry->_real()->id, $response['member'][0]['attachments'][0]['source_id']);
+        $this->assertSame($entry->id, $response['member'][0]['attachments'][0]['source_id']);
     }
 
     public function test_list_unknown_entry_returns_404(): void
@@ -79,10 +79,10 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/00000000-0000-0000-0000-000000000000/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/00000000-0000-0000-0000-000000000000/files',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -110,10 +110,10 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace])->create();
         $entry = FinanceEntryFactory::new(['category' => $category, 'scope' => FinanceEntryScope::Band])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $entry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

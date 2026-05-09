@@ -122,7 +122,7 @@ class BandSpaceFilePublicShareMetadataTest extends ApiTestCase
             'size' => 42,
         ])->create();
 
-        $file->_real()->currentVersion = $version->_real();
+        $file->currentVersion = $version;
 
         $token = bin2hex(random_bytes(16));
         $attributes = [

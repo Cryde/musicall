@@ -58,8 +58,8 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'type'                => Publication::TYPE_TEXT,
         ])->create();
         $cover = PublicationCoverFactory::createOne(['imageName' => 'cover-publication', 'imageSize' => 10, 'publication' => $publication1]);
-        $publication1->_real()->cover = $cover->_real();
-        $publication1->_save();
+        $publication1->cover = $cover;
+        \Zenstruck\Foundry\Persistence\save($publication1);
 
         $result = $this->botMetaDataGenerator->getMetaData('/publications/cool-slug-for-publication');
         $this->assertSame([
@@ -113,8 +113,8 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'type'                => Publication::TYPE_TEXT,
         ])->create();
         $cover = PublicationCoverFactory::createOne(['imageName' => 'cover-course', 'imageSize' => 10, 'publication' => $course]);
-        $course->_real()->cover = $cover->_real();
-        $course->_save();
+        $course->cover = $cover;
+        \Zenstruck\Foundry\Persistence\save($course);
 
         $result = $this->botMetaDataGenerator->getMetaData('/cours/apprendre-la-guitare');
         $this->assertSame([
@@ -167,14 +167,14 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'slug'                => 'cool-slug-for-gallery',
         ])->create();
         $cover = GalleryImageFactory::createOne(['imageName' => 'cover-gallery', 'imageSize' => 10, 'gallery' => $gallery]);
-        $gallery->_real()->coverImage = $cover->_real();
-        $gallery->_save();
+        $gallery->coverImage = $cover;
+        \Zenstruck\Foundry\Persistence\save($gallery);
 
         $result = $this->botMetaDataGenerator->getMetaData('/photos/cool-slug-for-gallery');
         $this->assertSame([
             'title'       => 'Ceci est titre gallery',
             'description' => 'Petite description de la gallery 1',
-            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/cover-gallery',
+            'cover'       => 'http://localhost/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->id . '/cover-gallery',
         ], $result);
     }
 
@@ -273,8 +273,8 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     {
         $user = UserFactory::new(['username' => 'musicien_photo'])->create();
         $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-musicien.jpg', 'imageSize' => 10]);
-        $user->_real()->profilePicture = $profilePicture->_real();
-        $user->_save();
+        $user->profilePicture = $profilePicture;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         MusicianProfileFactory::createOne(['user' => $user]);
 
@@ -356,10 +356,10 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     public function test_get_metadata_for_user_profile_public(): void
     {
         $user = UserFactory::new(['username' => 'jean_dupont'])->create();
-        $user->_real()->profile->displayName = 'Jean Dupont';
-        $user->_real()->profile->bio = 'Guitariste passionné depuis 10 ans.';
-        $user->_real()->profile->isPublic = true;
-        $user->_save();
+        $user->profile->displayName = 'Jean Dupont';
+        $user->profile->bio = 'Guitariste passionné depuis 10 ans.';
+        $user->profile->isPublic = true;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $result = $this->botMetaDataGenerator->getMetaData('/u/jean_dupont');
         $this->assertSame([
@@ -372,8 +372,8 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     public function test_get_metadata_for_user_profile_private(): void
     {
         $user = UserFactory::new(['username' => 'utilisateur_prive'])->create();
-        $user->_real()->profile->isPublic = false;
-        $user->_save();
+        $user->profile->isPublic = false;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $result = $this->botMetaDataGenerator->getMetaData('/u/utilisateur_prive');
         $this->assertSame([
@@ -385,11 +385,11 @@ class BotMetaDataGeneratorTest extends KernelTestCase
     public function test_get_metadata_for_user_profile_with_picture(): void
     {
         $user = UserFactory::new(['username' => 'marie_photo'])->create();
-        $user->_real()->profile->displayName = 'Marie Martin';
-        $user->_real()->profile->isPublic = true;
+        $user->profile->displayName = 'Marie Martin';
+        $user->profile->isPublic = true;
         $profilePicture = UserProfilePictureFactory::createOne(['imageName' => 'photo-marie.jpg', 'imageSize' => 10]);
-        $user->_real()->profilePicture = $profilePicture->_real();
-        $user->_save();
+        $user->profilePicture = $profilePicture;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $result = $this->botMetaDataGenerator->getMetaData('/u/marie_photo');
         $this->assertSame([

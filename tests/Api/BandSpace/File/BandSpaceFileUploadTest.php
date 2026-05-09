@@ -29,10 +29,10 @@ class BandSpaceFileUploadTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -41,7 +41,7 @@ class BandSpaceFileUploadTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $files = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $files = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $files);
 
         /** @var BandSpaceFile $file */
@@ -65,13 +65,13 @@ class BandSpaceFileUploadTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [
-                'folderId' => $folder->_real()->id,
-                'tagIds' => [$tag1->_real()->id, $tag2->_real()->id],
+                'folderId' => $folder->id,
+                'tagIds' => [$tag1->id, $tag2->id],
             ],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -80,13 +80,13 @@ class BandSpaceFileUploadTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $files = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $files = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $files);
 
         /** @var BandSpaceFile $file */
         $file = $files[0];
         $this->assertNotNull($file->folder);
-        $this->assertSame($folder->_real()->id, $file->folder->id);
+        $this->assertSame($folder->id, $file->folder->id);
         $this->assertCount(2, $file->tags);
     }
 
@@ -98,10 +98,10 @@ class BandSpaceFileUploadTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.sh', 'sample.sh', 'application/x-sh', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -126,10 +126,10 @@ class BandSpaceFileUploadTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             [],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -164,10 +164,10 @@ class BandSpaceFileUploadTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],

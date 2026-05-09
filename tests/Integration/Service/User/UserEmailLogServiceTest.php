@@ -25,7 +25,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_log_creates_email_log_entry(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->assertSame(0, $this->getRepository()->count());
 
@@ -43,7 +43,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_log_creates_entry_with_reference_id(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $announceId = 'announce-uuid-123';
 
         $this->getService()->log($user, UserEmailType::ANNOUNCE_RENEWAL_REMINDER, $announceId);
@@ -55,7 +55,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_log_creates_entry_with_metadata(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $metadata = ['announce_title' => 'Guitariste cherche groupe'];
 
         $this->getService()->log($user, UserEmailType::ANNOUNCE_RENEWAL_REMINDER, 'announce-123', $metadata);
@@ -67,14 +67,14 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_has_been_sent_returns_false_when_no_log_exists(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->assertFalse($this->getService()->hasBeenSent($user, UserEmailType::PROFILE_COMPLETENESS));
     }
 
     public function test_has_been_sent_returns_true_when_log_exists(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->getService()->log($user, UserEmailType::PROFILE_COMPLETENESS);
 
@@ -83,7 +83,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_has_been_sent_checks_reference_id(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->getService()->log($user, UserEmailType::ANNOUNCE_RENEWAL_REMINDER, 'announce-1');
 
@@ -93,8 +93,8 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_has_been_sent_is_user_specific(): void
     {
-        $user1 = UserFactory::new()->create()->_real();
-        $user2 = UserFactory::new()->create()->_real();
+        $user1 = UserFactory::new()->create();
+        $user2 = UserFactory::new()->create();
 
         $this->getService()->log($user1, UserEmailType::WELCOME);
 
@@ -104,7 +104,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_has_been_sent_since_returns_false_when_log_is_older(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->getService()->log($user, UserEmailType::INACTIVITY_REMINDER);
 
@@ -114,7 +114,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_has_been_sent_since_returns_true_when_log_is_recent(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->getService()->log($user, UserEmailType::INACTIVITY_REMINDER);
 
@@ -124,7 +124,7 @@ class UserEmailLogServiceTest extends KernelTestCase
 
     public function test_has_been_sent_since_checks_reference_id(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $yesterday = new DateTimeImmutable('-1 day');
 
         $this->getService()->log($user, UserEmailType::ANNOUNCE_RENEWAL_REMINDER, 'announce-1');

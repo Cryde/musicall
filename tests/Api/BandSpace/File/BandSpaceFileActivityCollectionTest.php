@@ -33,7 +33,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'uploaded',
-            'resourceId' => Uuid::fromString($file->_real()->id),
+            'resourceId' => Uuid::fromString($file->id),
             'actor' => $user,
             'payload' => ['original_name' => 'test.pdf', 'size' => 1024, 'mime_type' => 'application/pdf'],
             'creationDatetime' => new \DateTime('2026-05-01 10:00:00'),
@@ -43,7 +43,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'renamed',
-            'resourceId' => Uuid::fromString($file->_real()->id),
+            'resourceId' => Uuid::fromString($file->id),
             'actor' => $user,
             'payload' => ['from' => 'a.pdf', 'to' => 'b.pdf'],
             'creationDatetime' => new \DateTime('2026-05-02 10:00:00'),
@@ -54,15 +54,15 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'uploaded',
-            'resourceId' => Uuid::fromString($otherFile->_real()->id),
+            'resourceId' => Uuid::fromString($otherFile->id),
             'actor' => $user,
             'creationDatetime' => new \DateTime('2026-05-03 10:00:00'),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId . '/activities',
@@ -85,10 +85,10 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/00000000-0000-0000-0000-000000000000/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/files/00000000-0000-0000-0000-000000000000/activities',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -114,10 +114,10 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/activities',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

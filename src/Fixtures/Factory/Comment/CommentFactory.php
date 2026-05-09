@@ -4,14 +4,14 @@ namespace App\Fixtures\Factory\Comment;
 
 use App\Entity\Comment\Comment;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<Comment>
+ * @extends PersistentObjectFactory<Comment>
  */
-final class CommentFactory extends PersistentProxyObjectFactory
+final class CommentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

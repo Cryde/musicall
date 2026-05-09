@@ -23,7 +23,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'email' => 'notifuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/notification-preferences');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -48,7 +48,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
         ]);
 
         $preference = new UserNotificationPreference();
-        $preference->user = $user->_real();
+        $preference->user = $user;
         $preference->siteNews = false;
         $preference->weeklyRecap = true;
         $preference->messageReceived = false;
@@ -56,10 +56,10 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
         $preference->forumReply = false;
         $preference->marketing = true;
         $preference->activityReminder = false;
-        $user->_real()->notificationPreference = $preference;
-        $user->_save();
+        $user->notificationPreference = $preference;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/notification-preferences');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([

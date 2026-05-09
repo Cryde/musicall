@@ -43,10 +43,10 @@ class TeacherProfileMediaTest extends ApiTestCase
             'position' => 1,
         ]);
 
-        $media1Id = $media1->_real()->id;
-        $media2Id = $media2->_real()->id;
+        $media1Id = $media1->id;
+        $media2Id = $media2->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/teacher-profile/media');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -84,7 +84,7 @@ class TeacherProfileMediaTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         TeacherProfileFactory::new()->create(['user' => $user]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/teacher-profile/media');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -100,7 +100,7 @@ class TeacherProfileMediaTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/teacher-profile/media');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -128,10 +128,10 @@ class TeacherProfileMediaTest extends ApiTestCase
             'teacherProfile' => $teacherProfile,
         ]);
 
-        $mediaId = $media->_real()->id;
+        $mediaId = $media->id;
         $this->assertNotNull($mediaRepository->find($mediaId));
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/teacher-profile/media/' . $mediaId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -143,7 +143,7 @@ class TeacherProfileMediaTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         TeacherProfileFactory::new()->create(['user' => $user]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         // Use a valid UUID format that doesn't exist
         $this->client->request('DELETE', '/api/user/teacher-profile/media/00000000-0000-0000-0000-000000000000');
 
@@ -168,10 +168,10 @@ class TeacherProfileMediaTest extends ApiTestCase
             'teacherProfile' => $teacherProfile1,
         ]);
 
-        $mediaId = $media->_real()->id;
+        $mediaId = $media->id;
 
         // User2 tries to delete User1's media
-        $this->client->loginUser($user2->_real());
+        $this->client->loginUser($user2);
         $this->client->request('DELETE', '/api/user/teacher-profile/media/' . $mediaId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -189,7 +189,7 @@ class TeacherProfileMediaTest extends ApiTestCase
             'teacherProfile' => $teacherProfile,
         ]);
 
-        $mediaId = $media->_real()->id;
+        $mediaId = $media->id;
 
         $this->client->request('DELETE', '/api/user/teacher-profile/media/' . $mediaId);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -202,7 +202,7 @@ class TeacherProfileMediaTest extends ApiTestCase
             'email' => 'no_profile@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         // Use a valid UUID format
         $this->client->request('DELETE', '/api/user/teacher-profile/media/00000000-0000-0000-0000-000000000000');
 

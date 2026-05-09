@@ -54,9 +54,9 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce2->_real()->id,
+                    '@id' => '/api/musician_announces/' . $user1Announce2->id,
                     '@type' => 'MusicianAnnounce',
-                    'id' => $user1Announce2->_real()->id,
+                    'id' => $user1Announce2->id,
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'type' => 2,
                     'instrument' => [
@@ -80,15 +80,15 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'note' => 'note announce 2',
                     'author' => [
                         '@type' => 'Author',
-                        'id' => $user1->_real()->id,
+                        'id' => $user1->id,
                         'username' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],
                 ],
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce1->_real()->id,
+                    '@id' => '/api/musician_announces/' . $user1Announce1->id,
                     '@type' => 'MusicianAnnounce',
-                    'id' => $user1Announce1->_real()->id,
+                    'id' => $user1Announce1->id,
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'type' => 1,
                     'instrument' => [
@@ -107,7 +107,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                     'note' => 'note announce 1',
                     'author' => [
                         '@type' => 'Author',
-                        'id' => $user1->_real()->id,
+                        'id' => $user1->id,
                         'username' => 'base_user_1',
                         'has_musician_profile' => false,
                     ],

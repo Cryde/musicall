@@ -35,9 +35,9 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'title' => 'To Delete',
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note = $note;
         $noteId = (string) $note->id;
 
         $this->client->loginUser($user);
@@ -49,6 +49,7 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
         $this->assertNull($noteRepository->find($noteId));
 
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $noteId);
         $this->assertCount(1, $activities);
@@ -73,11 +74,11 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'parent' => $parentNote,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $parentNote = $parentNote->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $parentNote = $parentNote;
         $parentNoteId = (string) $parentNote->id;
-        $childId = (string) $childNote->_real()->id;
+        $childId = (string) $childNote->id;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $parentNoteId);
@@ -96,8 +97,8 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/nonexistent-id');
@@ -117,9 +118,9 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'title' => 'Protected Note',
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
@@ -142,9 +143,9 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'title' => 'Protected Note',
         ])->create();
 
-        $inactiveUser = $inactiveUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $inactiveUser = $inactiveUser;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
@@ -154,8 +155,8 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
 
     public function test_delete_unauthenticated(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
-        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Note'])->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Note'])->create();
 
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);

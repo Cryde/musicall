@@ -7,14 +7,14 @@ namespace App\Fixtures\Factory\Teacher;
 use App\Entity\Teacher\TeacherProfile;
 use App\Enum\Teacher\AgeGroup;
 use App\Enum\Teacher\StudentLevel;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<TeacherProfile>
+ * @extends PersistentObjectFactory<TeacherProfile>
  */
-final class TeacherProfileFactory extends PersistentProxyObjectFactory
+final class TeacherProfileFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

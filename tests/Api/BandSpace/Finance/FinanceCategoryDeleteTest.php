@@ -35,9 +35,9 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             'name' => 'To Delete',
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
         $categoryId = (string) $category->id;
 
         $this->client->loginUser($user);
@@ -46,6 +46,7 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $repo = self::getContainer()->get(FinanceCategoryRepository::class);
         $this->assertNull($repo->find($categoryId));
 
@@ -68,9 +69,9 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             'name' => 'Protected Category',
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
@@ -95,9 +96,9 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             'name' => 'Protected Category',
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);

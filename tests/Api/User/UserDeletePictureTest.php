@@ -23,12 +23,12 @@ class UserDeletePictureTest extends ApiTestCase
 
     public function test_delete_picture(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $profilePicture = UserProfilePictureFactory::new()->create([
             'user' => $user,
             'imageName' => 'test-picture.jpg',
             'imageSize' => 12345,
-        ])->_real();
+        ]);
         $user->profilePicture = $profilePicture;
 
         // Flush to persist the bidirectional relationship
@@ -63,7 +63,7 @@ class UserDeletePictureTest extends ApiTestCase
 
     public function test_delete_picture_user_has_no_picture(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         // pretest
         $this->assertNull($user->profilePicture);

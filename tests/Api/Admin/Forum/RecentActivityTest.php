@@ -18,7 +18,7 @@ class RecentActivityTest extends ApiTestCase
 
     public function test_returns_empty_lists_when_no_data(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/forum/recent-activity');
@@ -67,7 +67,7 @@ class RecentActivityTest extends ApiTestCase
             'updateDatetime' => null,
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/forum/recent-activity');
 
         $this->assertResponseIsSuccessful();
@@ -118,7 +118,7 @@ class RecentActivityTest extends ApiTestCase
             'updateDatetime' => null,
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/forum/recent-activity');
 
         $this->assertResponseIsSuccessful();
@@ -151,7 +151,7 @@ class RecentActivityTest extends ApiTestCase
             ])->create();
         }
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/forum/recent-activity');
 
         $this->assertResponseIsSuccessful();
@@ -162,7 +162,7 @@ class RecentActivityTest extends ApiTestCase
 
     public function test_forbidden_for_non_admin(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/admin/forum/recent-activity');

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Factory\User;
 
 use App\Entity\SocialAccount;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<SocialAccount>
+ * @extends PersistentObjectFactory<SocialAccount>
  */
-final class SocialAccountFactory extends PersistentProxyObjectFactory
+final class SocialAccountFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

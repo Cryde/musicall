@@ -4,9 +4,9 @@ namespace App\Tests\Factory\Attribute;
 
 use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Style;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class StyleFactory extends PersistentProxyObjectFactory
+final class StyleFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

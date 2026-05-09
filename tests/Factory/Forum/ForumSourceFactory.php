@@ -4,9 +4,9 @@ namespace App\Tests\Factory\Forum;
 
 use Zenstruck\Foundry\Factory;
 use App\Entity\Forum\ForumSource;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class ForumSourceFactory extends PersistentProxyObjectFactory
+final class ForumSourceFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

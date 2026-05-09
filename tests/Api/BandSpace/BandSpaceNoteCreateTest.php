@@ -29,8 +29,8 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -83,9 +83,9 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $parentNote = $parentNote->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $parentNote = $parentNote;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -116,8 +116,8 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -140,8 +140,8 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -161,8 +161,8 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -185,8 +185,8 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $inactiveUser = $inactiveUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $inactiveUser = $inactiveUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($inactiveUser);
         $this->client->jsonRequest(
@@ -213,11 +213,11 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace1->_real()->id . '/notes',
-            ['title' => 'Child', 'parent_id' => (string) $noteInOtherSpace->_real()->id],
+            '/api/band_spaces/' . $bandSpace1->id . '/notes',
+            ['title' => 'Child', 'parent_id' => (string) $noteInOtherSpace->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -230,10 +230,10 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes',
+            '/api/band_spaces/' . $bandSpace->id . '/notes',
             ['title' => 'Child', 'parent_id' => 'not-a-uuid'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -271,11 +271,11 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         ])->create();
 
         // Try to create level 4 — should fail
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes',
-            ['title' => 'Level 4', 'parent_id' => (string) $level3->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/notes',
+            ['title' => 'Level 4', 'parent_id' => (string) $level3->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -321,11 +321,11 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         ])->create();
 
         // Create level 3 under level 2 — should succeed (depth = 3 is the max allowed)
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes',
-            ['title' => 'Level 3', 'parent_id' => (string) $level2->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/notes',
+            ['title' => 'Level 3', 'parent_id' => (string) $level2->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -334,7 +334,7 @@ class BandSpaceNoteCreateTest extends ApiTestCase
 
     public function test_create_note_unauthenticated(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
 
         $this->client->request(
             'POST',

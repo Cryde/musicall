@@ -24,7 +24,7 @@ class MusicianProfileStory extends Story
         foreach ($users as $user) {
             // Get random styles for this profile
             $styles = StyleStory::getRandomRange(StyleStory::ATTRIBUTES_STYLES, 1, 4);
-            $styleEntities = array_map(fn($style) => $style->_real(), $styles);
+            $styleEntities = array_map(fn($style) => $style, $styles);
 
             // Create musician profile for the user with styles
             $musicianProfile = MusicianProfileFactory::new()->create([

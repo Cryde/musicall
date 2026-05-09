@@ -3,12 +3,12 @@
 namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\FinanceCategory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<FinanceCategory>
+ * @extends PersistentObjectFactory<FinanceCategory>
  */
-final class FinanceCategoryFactory extends PersistentProxyObjectFactory
+final class FinanceCategoryFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

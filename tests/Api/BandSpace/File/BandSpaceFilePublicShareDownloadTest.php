@@ -52,6 +52,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         /** @var BandSpaceFileShareRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileShareRepository::class);
         $reloaded = $repo->find($shareId);
@@ -179,7 +180,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
             'storagePath' => $storagePath,
         ])->create();
 
-        $file->_real()->currentVersion = $version->_real();
+        $file->currentVersion = $version;
 
         $token = bin2hex(random_bytes(16));
         $attributes = [
@@ -201,14 +202,14 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
 
         /** @var FilesystemOperator $fs */
         $fs = self::getContainer()->get('oneup_flysystem.musicall_filesystem');
-        $fs->write('/band_space_files/' . $bandSpace->_real()->id . '/' . $storagePath, self::FILE_CONTENT);
+        $fs->write('/band_space_files/' . $bandSpace->id . '/' . $storagePath, self::FILE_CONTENT);
 
         return [
-            'bandSpace' => $bandSpace->_real(),
-            'file' => $file->_real(),
+            'bandSpace' => $bandSpace,
+            'file' => $file,
             'token' => $token,
-            'shareId' => $share->_real()->id,
-            'fileId' => $file->_real()->id,
+            'shareId' => $share->id,
+            'fileId' => $file->id,
         ];
     }
 }

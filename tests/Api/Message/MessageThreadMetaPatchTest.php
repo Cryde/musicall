@@ -22,7 +22,7 @@ class MessageThreadMetaPatchTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $meta = MessageThreadMetaFactory::new(['user' => $user1])->create();
 
-        $this->client->jsonRequest('PATCH', '/api/message_thread_metas/' . $meta->_real()->id, [
+        $this->client->jsonRequest('PATCH', '/api/message_thread_metas/' . $meta->id, [
             'is_read'    => true,
             'is_deleted' => true, // shouldn't change anything
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -37,24 +37,24 @@ class MessageThreadMetaPatchTest extends ApiTestCase
         $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
         // pretest
-        $result = $messageMetaRepository->find($meta->_real()->id);
+        $result = $messageMetaRepository->find($meta->id);
         $this->assertFalse($result->isRead);
         $this->assertFalse($result->isDeleted);
 
-        $this->client->loginUser($user1->_real());
-        $this->client->jsonRequest('PATCH', '/api/message_thread_metas/' . $meta->_real()->id, [
+        $this->client->loginUser($user1);
+        $this->client->jsonRequest('PATCH', '/api/message_thread_metas/' . $meta->id, [
             'is_read' => true,
             'is_deleted' => true // shouldn't change anything
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT'=>'application/ld+json']);
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MessageThreadMeta',
-            '@id' => '/api/message_thread_metas/' . $meta->_real()->id,
+            '@id' => '/api/message_thread_metas/' . $meta->id,
             '@type' => 'MessageThreadMeta',
-            'id' => $meta->_real()->id
+            'id' => $meta->id
         ]);
 
-        $result = $messageMetaRepository->find($meta->_real()->id);
+        $result = $messageMetaRepository->find($meta->id);
         $this->assertTrue($result->isRead);
         $this->assertFalse($result->isDeleted);
     }

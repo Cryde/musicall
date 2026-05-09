@@ -32,14 +32,14 @@ class TaskMoveTest extends ApiTestCase
         $first = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
         $second = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 1])->create();
 
-        $movedId = (string) $moved->_real()->id;
-        $firstId = (string) $first->_real()->id;
-        $secondId = (string) $second->_real()->id;
+        $movedId = (string) $moved->id;
+        $firstId = (string) $first->id;
+        $secondId = (string) $second->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
                 'task_id' => $movedId,
                 'status' => 'in_progress',
@@ -60,6 +60,7 @@ class TaskMoveTest extends ApiTestCase
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $taskRepo = self::getContainer()->get(TaskRepository::class);
         $this->assertSame(TaskStatus::InProgress, $taskRepo->find($movedId)->status);
         $this->assertSame(1, $taskRepo->find($movedId)->position);
@@ -67,7 +68,7 @@ class TaskMoveTest extends ApiTestCase
         $this->assertSame(2, $taskRepo->find($secondId)->position);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $moved->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $moved->id);
         $this->assertCount(1, $activities);
         $this->assertSame('status_changed', $activities[0]->type);
         $this->assertSame(['from' => 'todo', 'to' => 'in_progress'], $activities[0]->payload);
@@ -82,13 +83,13 @@ class TaskMoveTest extends ApiTestCase
         $taskA = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
         $taskB = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 1])->create();
 
-        $aId = (string) $taskA->_real()->id;
-        $bId = (string) $taskB->_real()->id;
+        $aId = (string) $taskA->id;
+        $bId = (string) $taskB->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
                 'task_id' => $aId,
                 'status' => 'todo',
@@ -104,12 +105,13 @@ class TaskMoveTest extends ApiTestCase
         $this->assertJsonContains(['id' => $aId, 'status' => 'todo', 'position' => 1]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $taskRepo = self::getContainer()->get(TaskRepository::class);
         $this->assertSame(1, $taskRepo->find($aId)->position);
         $this->assertSame(0, $taskRepo->find($bId)->position);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $this->assertCount(0, $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $taskA->_real()->id));
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $taskA->id));
     }
 
     public function test_move_task_to_done_sets_completed_datetime(): void
@@ -118,12 +120,12 @@ class TaskMoveTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
-        $taskId = (string) $task->_real()->id;
+        $taskId = (string) $task->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
                 'task_id' => $taskId,
                 'status' => 'done',
@@ -146,15 +148,15 @@ class TaskMoveTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'status' => TaskStatus::Todo, 'position' => 0])->create();
 
-        $this->client->loginUser($stranger->_real());
+        $this->client->loginUser($stranger);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
-                'task_id' => (string) $task->_real()->id,
+                'task_id' => (string) $task->id,
                 'status' => 'in_progress',
                 'positions' => [
-                    ['id' => (string) $task->_real()->id, 'position' => 0],
+                    ['id' => (string) $task->id, 'position' => 0],
                 ],
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -170,15 +172,15 @@ class TaskMoveTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
-                'task_id' => (string) $task->_real()->id,
+                'task_id' => (string) $task->id,
                 'status' => 'archived',
                 'positions' => [
-                    ['id' => (string) $task->_real()->id, 'position' => 0],
+                    ['id' => (string) $task->id, 'position' => 0],
                 ],
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -195,15 +197,15 @@ class TaskMoveTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
         $other = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
-                'task_id' => (string) $task->_real()->id,
+                'task_id' => (string) $task->id,
                 'status' => 'in_progress',
                 'positions' => [
-                    ['id' => (string) $other->_real()->id, 'position' => 0],
+                    ['id' => (string) $other->id, 'position' => 0],
                 ],
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -213,8 +215,8 @@ class TaskMoveTest extends ApiTestCase
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $taskRepo = self::getContainer()->get(TaskRepository::class);
-        $this->assertSame(TaskStatus::Todo, $taskRepo->find((string) $task->_real()->id)->status);
-        $this->assertSame(0, $taskRepo->find((string) $task->_real()->id)->position);
+        $this->assertSame(TaskStatus::Todo, $taskRepo->find((string) $task->id)->status);
+        $this->assertSame(0, $taskRepo->find((string) $task->id)->position);
     }
 
     public function test_move_task_atomic_when_position_references_foreign_band_space(): void
@@ -228,14 +230,14 @@ class TaskMoveTest extends ApiTestCase
         $sibling = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
         $foreign = TaskFactory::new(['bandSpace' => $foreignBandSpace, 'status' => TaskStatus::InProgress, 'position' => 5])->create();
 
-        $movedId = (string) $moved->_real()->id;
-        $siblingId = (string) $sibling->_real()->id;
-        $foreignId = (string) $foreign->_real()->id;
+        $movedId = (string) $moved->id;
+        $siblingId = (string) $sibling->id;
+        $foreignId = (string) $foreign->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/move',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
             [
                 'task_id' => $movedId,
                 'status' => 'in_progress',
@@ -251,6 +253,7 @@ class TaskMoveTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $taskRepo = self::getContainer()->get(TaskRepository::class);
         $this->assertSame(TaskStatus::Todo, $taskRepo->find($movedId)->status);
         $this->assertSame(0, $taskRepo->find($movedId)->position);
@@ -258,6 +261,6 @@ class TaskMoveTest extends ApiTestCase
         $this->assertSame(5, $taskRepo->find($foreignId)->position);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $this->assertCount(0, $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $moved->_real()->id));
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $moved->id));
     }
 }

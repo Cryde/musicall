@@ -32,17 +32,17 @@ class CourseCategoryTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [
                 [
-                    '@id'      => '/api/course_categories/' . $course1->_real()->id,
+                    '@id'      => '/api/course_categories/' . $course1->id,
                     '@type'    => 'CourseCategory',
-                    'id'       => $course1->_real()->id,
+                    'id'       => $course1->id,
                     'title'    => 'Cours',
                     'slug'     => 'cours',
                     'position' => 1,
                 ],
                 [
-                    '@id'      => '/api/course_categories/' . $course2->_real()->id,
+                    '@id'      => '/api/course_categories/' . $course2->id,
                     '@type'    => 'CourseCategory',
-                    'id'       => $course2->_real()->id,
+                    'id'       => $course2->id,
                     'title'    => 'Théorie',
                     'slug'     => 'theorie',
                     'position' => 2,

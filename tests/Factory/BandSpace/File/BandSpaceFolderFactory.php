@@ -5,12 +5,12 @@ namespace App\Tests\Factory\BandSpace\File;
 use App\Entity\BandSpace\BandSpaceFolder;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceFolder>
+ * @extends PersistentObjectFactory<BandSpaceFolder>
  */
-final class BandSpaceFolderFactory extends PersistentProxyObjectFactory
+final class BandSpaceFolderFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

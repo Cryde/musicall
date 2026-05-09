@@ -17,8 +17,7 @@ class UserPasswordChangeTest extends ApiTestCase
 
     public function test_password_change(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'token' => 'token-abc', 'resetRequestDatetime' => new \DateTime('2 minutes ago')])
-            ->_disableAutoRefresh();
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'token' => 'token-abc', 'resetRequestDatetime' => new \DateTime('2 minutes ago')]);
 
         $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->password);
 
@@ -34,8 +33,7 @@ class UserPasswordChangeTest extends ApiTestCase
 
     public function test_password_change_with_too_old_token(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'token' => 'token-abc', 'resetRequestDatetime' => new \DateTime('17 minutes ago')])
-            ->_disableAutoRefresh();
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com', 'token' => 'token-abc', 'resetRequestDatetime' => new \DateTime('17 minutes ago')]);
 
         $this->assertSame(UserFactory::DEFAULT_PASSWORD, $user->password);
 

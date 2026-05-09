@@ -21,7 +21,7 @@ class MessageUserPostTest extends ApiTestCase
 
     public function test_not_logged(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
         $this->client->jsonRequest('POST', '/api/messages/user', [
             'recipient' => '/api/users/' . $user1->id,
             'content'   => 'content',
@@ -36,8 +36,8 @@ class MessageUserPostTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
-        $user1 = $user1->_real();
-        $user2 = $user2->_real();
+        $user1 = $user1;
+        $user2 = $user2;
 
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user1]));
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user2]));
@@ -90,9 +90,9 @@ class MessageUserPostTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user1 = $user1->_real();
-        $user2 = $user2->_real();
-        $thread = $thread->_real();
+        $user1 = $user1;
+        $user2 = $user2;
+        $thread = $thread;
 
         // we already have meta thread per user
         $this->assertCount(1, $messageThreadMetaRepository->findBy(['user' => $user1]));
@@ -139,8 +139,8 @@ class MessageUserPostTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
-        $user1 = $user1->_real();
-        $user2 = $user2->_real();
+        $user1 = $user1;
+        $user2 = $user2;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
@@ -169,12 +169,12 @@ class MessageUserPostTest extends ApiTestCase
 
     public function test_cannot_message_deleted_user(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create([
             'username' => 'deleted_user',
             'email' => 'deleted@email.com',
             'deletionDatetime' => new \DateTimeImmutable(),
-        ])->_real();
+        ]);
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [
@@ -203,7 +203,7 @@ class MessageUserPostTest extends ApiTestCase
 
     public function test_cannot_message_self(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com'])->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [

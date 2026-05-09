@@ -23,7 +23,7 @@ class UserChangeUsernameTest extends ApiTestCase
 
     public function test_change_username(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $oldUsername = $user->username;
 
         $this->client->loginUser($user);
@@ -53,7 +53,7 @@ class UserChangeUsernameTest extends ApiTestCase
     public function test_change_username_already_taken(): void
     {
         UserFactory::new()->create(['username' => 'taken_username']);
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'taken_username'], self::SERVER_PARAMS);
@@ -73,7 +73,7 @@ class UserChangeUsernameTest extends ApiTestCase
 
     public function test_change_username_same_as_current(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => $user->username], self::SERVER_PARAMS);
@@ -93,7 +93,7 @@ class UserChangeUsernameTest extends ApiTestCase
 
     public function test_change_username_too_short(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'ab'], self::SERVER_PARAMS);
@@ -120,7 +120,7 @@ class UserChangeUsernameTest extends ApiTestCase
 
     public function test_change_username_too_long(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => str_repeat('a', 41)], self::SERVER_PARAMS);
@@ -147,7 +147,7 @@ class UserChangeUsernameTest extends ApiTestCase
 
     public function test_change_username_invalid_characters(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'invalid@username!'], self::SERVER_PARAMS);
@@ -176,7 +176,7 @@ class UserChangeUsernameTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create([
             'usernameChangedDatetime' => new \DateTimeImmutable('-10 days'),
-        ])->_real();
+        ]);
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'new_username'], self::SERVER_PARAMS);
@@ -205,7 +205,7 @@ class UserChangeUsernameTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create([
             'usernameChangedDatetime' => new \DateTimeImmutable('-31 days'),
-        ])->_real();
+        ]);
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/change_username', ['newUsername' => 'new_username'], self::SERVER_PARAMS);

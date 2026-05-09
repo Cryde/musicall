@@ -20,7 +20,7 @@ class GalleryPendingListTest extends ApiTestCase
 
     public function test_get_pending_galleries_as_admin(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         GalleryFactory::new([
             'author' => $admin,
@@ -48,9 +48,9 @@ class GalleryPendingListTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [
                 [
-                    '@id'                  => '/api/galleries/' . $gallery->_real()->id,
+                    '@id'                  => '/api/galleries/' . $gallery->id,
                     '@type'                => 'Gallery',
-                    'id'                   => $gallery->_real()->id,
+                    'id'                   => $gallery->id,
                     'title'                => 'Ma galerie photo',
                     'publication_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'               => [
@@ -80,7 +80,7 @@ class GalleryPendingListTest extends ApiTestCase
 
     public function test_get_pending_galleries_as_normal_user(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/admin/galleries/pending');

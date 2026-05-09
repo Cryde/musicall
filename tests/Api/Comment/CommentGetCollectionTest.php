@@ -25,16 +25,16 @@ class CommentGetCollectionTest extends ApiTestCase
         $author = UserFactory::new()->create(['username' => 'author', 'email' => 'author@test.com']);
         $comment = CommentFactory::new(['thread' => $thread, 'author' => $author, 'content' => 'Salut'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/comments?thread=' . $thread->_real()->id,
+            '/api/comments?thread=' . $thread->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
-        $refreshed = self::getContainer()->get(CommentRepository::class)->find($comment->_real()->id);
+        $refreshed = self::getContainer()->get(CommentRepository::class)->find($comment->id);
         $this->assertJsonEquals($this->expectedCollection($thread, $comment, $author, $refreshed, 0, 0, null));
     }
 
@@ -49,8 +49,8 @@ class CommentGetCollectionTest extends ApiTestCase
             'author' => $author,
             'content' => 'Salut',
         ])->create();
-        $comment->_real()->voteCache = $voteCache->_real();
-        $comment->_save();
+        $comment->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($comment);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -58,19 +58,19 @@ class CommentGetCollectionTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_comment',
-            'entityId' => (string) $comment->_real()->id,
+            'entityId' => (string) $comment->id,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/comments?thread=' . $thread->_real()->id,
+            '/api/comments?thread=' . $thread->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
-        $refreshed = self::getContainer()->get(CommentRepository::class)->find($comment->_real()->id);
+        $refreshed = self::getContainer()->get(CommentRepository::class)->find($comment->id);
         $this->assertJsonEquals($this->expectedCollection($thread, $comment, $author, $refreshed, 1, 0, 1));
     }
 
@@ -82,13 +82,13 @@ class CommentGetCollectionTest extends ApiTestCase
 
         $this->client->jsonRequest(
             'GET',
-            '/api/comments?thread=' . $thread->_real()->id,
+            '/api/comments?thread=' . $thread->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
-        $refreshed = self::getContainer()->get(CommentRepository::class)->find($comment->_real()->id);
+        $refreshed = self::getContainer()->get(CommentRepository::class)->find($comment->id);
         $this->assertJsonEquals($this->expectedCollection($thread, $comment, $author, $refreshed, 0, 0, null));
     }
 
@@ -108,12 +108,12 @@ class CommentGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    '@id' => '/api/comments/' . $comment->_real()->id,
+                    '@id' => '/api/comments/' . $comment->id,
                     '@type' => 'Comment',
-                    'id' => $comment->_real()->id,
-                    'thread_id' => $thread->_real()->id,
+                    'id' => $comment->id,
+                    'thread_id' => $thread->id,
                     'author' => [
-                        'id' => $author->_real()->id,
+                        'id' => $author->id,
                         'username' => 'author',
                         'profile_picture_url' => null,
                         'deletion_datetime' => null,
@@ -126,7 +126,7 @@ class CommentGetCollectionTest extends ApiTestCase
                 ],
             ],
             'view' => [
-                '@id' => '/api/comments?thread=' . $thread->_real()->id,
+                '@id' => '/api/comments?thread=' . $thread->id,
                 '@type' => 'PartialCollectionView',
             ],
         ];

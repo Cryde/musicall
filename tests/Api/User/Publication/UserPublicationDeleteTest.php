@@ -33,7 +33,7 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -55,9 +55,9 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $publicationId = $publication->_real()->id;
+        $publicationId = $publication->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/publications/' . $publicationId);
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
@@ -77,8 +77,8 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
+        $this->client->loginUser($user2);
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You are not the owner of this publication',
@@ -99,8 +99,8 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft publications',
@@ -121,8 +121,8 @@ class UserPublicationDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/publications/' . $publication->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft publications',
@@ -133,7 +133,7 @@ class UserPublicationDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/publications/999999');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonContains([

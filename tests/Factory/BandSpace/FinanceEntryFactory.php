@@ -6,12 +6,12 @@ use App\Entity\BandSpace\FinanceEntry;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<FinanceEntry>
+ * @extends PersistentObjectFactory<FinanceEntry>
  */
-final class FinanceEntryFactory extends PersistentProxyObjectFactory
+final class FinanceEntryFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

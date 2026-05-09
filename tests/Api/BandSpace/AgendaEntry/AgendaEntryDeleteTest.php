@@ -30,12 +30,12 @@ class AgendaEntryDeleteTest extends ApiTestCase
             'creator' => $user,
             'title' => 'Concert annulé',
         ])->create();
-        $entryId = $entry->_real()->id;
+        $entryId = $entry->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entryId,
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -43,10 +43,10 @@ class AgendaEntryDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
-        $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $bandSpace->_real()));
+        $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $bandSpace));
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entryId);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Agenda, $entryId);
         $this->assertCount(1, $activities);
         $this->assertSame('entry_deleted', $activities[0]->type);
         $this->assertSame(['title' => 'Concert annulé'], $activities[0]->payload);
@@ -60,10 +60,10 @@ class AgendaEntryDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $entry = AgendaEntryFactory::new(['bandSpace' => $bandSpace, 'creator' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -77,10 +77,10 @@ class AgendaEntryDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/00000000-0000-0000-0000-000000000000',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/00000000-0000-0000-0000-000000000000',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

@@ -43,9 +43,9 @@ class TeacherProfileEditTest extends ApiTestCase
         $rock = StyleFactory::new()->asRock()->create();
         $metal = StyleFactory::new()->asMetal()->create();
 
-        $this->assertNull($teacherProfileRepository->findOneBy(['user' => $user->_real()]));
+        $this->assertNull($teacherProfileRepository->findOneBy(['user' => $user]));
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             'description' => 'Nouveau profil de professeur de guitare',
             'years_of_experience' => 8,
@@ -54,8 +54,8 @@ class TeacherProfileEditTest extends ApiTestCase
             'course_title' => 'Cours de guitare rock',
             'offers_trial' => true,
             'trial_price' => 15,
-            'instrument_ids' => [$guitar->_real()->id, $drum->_real()->id],
-            'style_ids' => [$rock->_real()->id, $metal->_real()->id],
+            'instrument_ids' => [$guitar->id, $drum->id],
+            'style_ids' => [$rock->id, $metal->id],
             'locations' => [
                 ['type' => 'teacher_place', 'address' => '10 rue de la Musique', 'city' => 'Paris', 'country' => 'France', 'latitude' => 48.8566, 'longitude' => 2.3522],
                 ['type' => 'online'],
@@ -78,7 +78,7 @@ class TeacherProfileEditTest extends ApiTestCase
         // Decode response to get the actual IDs (order may differ from Doctrine collection)
         $responseData = json_decode($this->client->getResponse()->getContent(), true);
 
-        $profile = $teacherProfileRepository->findOneBy(['user' => $user->_real()]);
+        $profile = $teacherProfileRepository->findOneBy(['user' => $user]);
         $this->assertNotNull($profile);
 
         $this->assertJsonEquals([
@@ -111,12 +111,12 @@ class TeacherProfileEditTest extends ApiTestCase
                 ],
             ],
             'instruments' => [
-                ['instrument_id' => $guitar->_real()->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
-                ['instrument_id' => $drum->_real()->id, 'instrument_name' => 'Batteur', '@type' => 'TeacherProfileInstrument'],
+                ['instrument_id' => $guitar->id, 'instrument_name' => 'Guitariste', '@type' => 'TeacherProfileInstrument'],
+                ['instrument_id' => $drum->id, 'instrument_name' => 'Batteur', '@type' => 'TeacherProfileInstrument'],
             ],
             'styles' => [
-                ['id' => $rock->_real()->id, 'name' => 'Rock', '@type' => 'TeacherProfileStyle'],
-                ['id' => $metal->_real()->id, 'name' => 'Metal', '@type' => 'TeacherProfileStyle'],
+                ['id' => $rock->id, 'name' => 'Rock', '@type' => 'TeacherProfileStyle'],
+                ['id' => $metal->id, 'name' => 'Metal', '@type' => 'TeacherProfileStyle'],
             ],
             'pricing' => [
                 ['id' => $responseData['pricing'][0]['id'], 'duration' => '30min', 'price' => 25, '@type' => 'TeacherProfilePricing'],
@@ -147,9 +147,9 @@ class TeacherProfileEditTest extends ApiTestCase
         $guitar = InstrumentFactory::new()->asGuitar()->create();
         TeacherProfileFactory::new()->create(['user' => $user]);
 
-        $guitarId = $guitar->_real()->id;
+        $guitarId = $guitar->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             'description' => 'Tentative de création',
             'yearsOfExperience' => 5,
@@ -163,7 +163,7 @@ class TeacherProfileEditTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             // Missing required fields: description, yearsOfExperience, instrumentIds
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -207,11 +207,11 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             'description' => 'Mon profil',
             'yearsOfExperience' => 80,
-            'instrumentIds' => [$guitar->_real()->id],
+            'instrumentIds' => [$guitar->id],
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -239,11 +239,11 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             'description' => 'Mon profil',
             'yearsOfExperience' => -5,
-            'instrumentIds' => [$guitar->_real()->id],
+            'instrumentIds' => [$guitar->id],
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -271,11 +271,11 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             'description' => 'Mon profil',
             'yearsOfExperience' => 5,
-            'instrumentIds' => [$guitar->_real()->id],
+            'instrumentIds' => [$guitar->id],
             'studentLevels' => ['invalid_level'],
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
@@ -304,11 +304,11 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
         $user = UserFactory::new()->asBaseUser()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/teacher-profile', [
             'description' => 'Mon profil',
             'yearsOfExperience' => 5,
-            'instrumentIds' => [$guitar->_real()->id],
+            'instrumentIds' => [$guitar->id],
             'ageGroups' => ['invalid_age'],
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
@@ -368,46 +368,46 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
         ]);
 
         // Add initial style
-        $teacherProfile->_real()->addStyle($rock->_real());
+        $teacherProfile->addStyle($rock);
 
         // Add initial location
         $initialLocation = new TeacherProfileLocation();
-        $initialLocation->teacherProfile = $teacherProfile->_real();
+        $initialLocation->teacherProfile = $teacherProfile;
         $initialLocation->type = LocationType::TEACHER_PLACE;
         $initialLocation->address = '5 rue Initiale';
         $initialLocation->city = 'Lyon';
         $initialLocation->country = 'France';
-        $teacherProfile->_real()->addLocation($initialLocation);
+        $teacherProfile->addLocation($initialLocation);
 
         // Add initial pricing
         $initialPricing = new TeacherProfilePricing();
-        $initialPricing->teacherProfile = $teacherProfile->_real();
+        $initialPricing->teacherProfile = $teacherProfile;
         $initialPricing->duration = SessionDuration::THIRTY_MINUTES;
         $initialPricing->price = 20;
-        $teacherProfile->_real()->addPricing($initialPricing);
+        $teacherProfile->addPricing($initialPricing);
 
         // Add initial availability
         $initialAvailability = new TeacherAvailability();
-        $initialAvailability->teacherProfile = $teacherProfile->_real();
+        $initialAvailability->teacherProfile = $teacherProfile;
         $initialAvailability->dayOfWeek = DayOfWeek::TUESDAY;
         $initialAvailability->startTime = new \DateTimeImmutable('10:00');
         $initialAvailability->endTime = new \DateTimeImmutable('12:00');
-        $teacherProfile->_real()->addAvailability($initialAvailability);
+        $teacherProfile->addAvailability($initialAvailability);
 
         // Add initial package
         $initialPackage = new TeacherProfilePackage();
-        $initialPackage->teacherProfile = $teacherProfile->_real();
+        $initialPackage->teacherProfile = $teacherProfile;
         $initialPackage->title = 'Pack initial';
         $initialPackage->description = 'Description initiale';
         $initialPackage->sessionsCount = 3;
         $initialPackage->price = 50;
-        $teacherProfile->_real()->addPackage($initialPackage);
+        $teacherProfile->addPackage($initialPackage);
 
         $entityManager->flush();
 
-        $profileId = $teacherProfile->_real()->id;
+        $profileId = $teacherProfile->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/teacher-profile', [
             'description' => 'Nouveau profil mis à jour complètement',
             'years_of_experience' => 12,
@@ -416,8 +416,8 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
             'course_title' => 'Cours de batterie et piano jazz',
             'offers_trial' => false,
             'trial_price' => null,
-            'instrument_ids' => [$drum->_real()->id, $piano->_real()->id],
-            'style_ids' => [$metal->_real()->id, $jazz->_real()->id],
+            'instrument_ids' => [$drum->id, $piano->id],
+            'style_ids' => [$metal->id, $jazz->id],
             'locations' => [
                 ['type' => 'student_place', 'address' => '20 avenue Nouvelle', 'city' => 'Marseille', 'country' => 'France', 'latitude' => 43.2965, 'longitude' => 5.3698, 'radius' => 15],
                 ['type' => 'online'],
@@ -473,12 +473,12 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
                 ],
             ],
             'instruments' => [
-                ['instrument_id' => $drum->_real()->id, 'instrument_name' => 'Batteur', '@type' => 'TeacherProfileInstrument'],
-                ['instrument_id' => $piano->_real()->id, 'instrument_name' => 'Pianiste', '@type' => 'TeacherProfileInstrument'],
+                ['instrument_id' => $drum->id, 'instrument_name' => 'Batteur', '@type' => 'TeacherProfileInstrument'],
+                ['instrument_id' => $piano->id, 'instrument_name' => 'Pianiste', '@type' => 'TeacherProfileInstrument'],
             ],
             'styles' => [
-                ['id' => $metal->_real()->id, 'name' => 'Metal', '@type' => 'TeacherProfileStyle'],
-                ['id' => $jazz->_real()->id, 'name' => 'Jazz', '@type' => 'TeacherProfileStyle'],
+                ['id' => $metal->id, 'name' => 'Metal', '@type' => 'TeacherProfileStyle'],
+                ['id' => $jazz->id, 'name' => 'Jazz', '@type' => 'TeacherProfileStyle'],
             ],
             'pricing' => [
                 ['id' => $responseData['pricing'][0]['id'], 'duration' => '1h', 'price' => 50, '@type' => 'TeacherProfilePricing'],

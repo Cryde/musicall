@@ -3,12 +3,12 @@
 namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\TaskCategory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<TaskCategory>
+ * @extends PersistentObjectFactory<TaskCategory>
  */
-final class TaskCategoryFactory extends PersistentProxyObjectFactory
+final class TaskCategoryFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

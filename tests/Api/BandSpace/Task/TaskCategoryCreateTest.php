@@ -24,10 +24,10 @@ class TaskCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories',
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories',
             ['name' => 'Répétitions'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -35,16 +35,16 @@ class TaskCategoryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(TaskCategoryRepository::class);
-        $categories = $repo->findByBandSpace($bandSpace->_real());
+        $categories = $repo->findByBandSpace($bandSpace);
         $this->assertCount(1, $categories);
 
         $category = $categories[0];
         $this->assertJsonEquals([
             '@context' => '/api/contexts/TaskCategory',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $category->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
             '@type' => 'TaskCategory',
             'id' => $category->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'name' => 'Répétitions',
             'color' => '#FF6B6B',
             'creation_datetime' => $category->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -59,10 +59,10 @@ class TaskCategoryCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         TaskCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'First', 'color' => '#FF6B6B'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories',
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories',
             ['name' => 'Second'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -77,10 +77,10 @@ class TaskCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories',
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories',
             ['name' => ''],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -95,10 +95,10 @@ class TaskCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories',
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories',
             ['name' => 'Forbidden'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

@@ -41,7 +41,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
         $musicianProfile = MusicianProfileFactory::new()->create([
             'user' => $user,
             'availabilityStatus' => AvailabilityStatus::LOOKING_FOR_BAND,
-            'styles' => [$rock->_real()],
+            'styles' => [$rock],
         ]);
 
         MusicianProfileInstrumentFactory::new()->create([
@@ -50,12 +50,12 @@ class MusicianProfileDeleteTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $profileId = $musicianProfile->_real()->id;
+        $profileId = $musicianProfile->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/musician-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -74,7 +74,7 @@ class MusicianProfileDeleteTest extends ApiTestCase
             'email' => 'noprofileuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/musician-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -109,27 +109,27 @@ class MusicianProfileDeleteTest extends ApiTestCase
         ]);
 
         $media1 = MusicianProfileMediaFactory::new()->asYouTube()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'position' => 0,
         ]);
 
         $media2 = MusicianProfileMediaFactory::new()->asSpotify()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'position' => 1,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $profileId = $musicianProfile->_real()->id;
-        $media1Id = $media1->_real()->id;
-        $media2Id = $media2->_real()->id;
+        $profileId = $musicianProfile->id;
+        $media1Id = $media1->id;
+        $media2Id = $media2->id;
 
         /** @var MusicianProfileMediaRepository $mediaRepository */
         $mediaRepository = static::getContainer()->get(MusicianProfileMediaRepository::class);
         $this->assertCount(2, $mediaRepository->findBy(['musicianProfile' => $profileId]));
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/musician-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -155,26 +155,26 @@ class MusicianProfileDeleteTest extends ApiTestCase
 
         $musicianProfile = MusicianProfileFactory::new()->create([
             'user' => $user,
-            'viewCache' => $viewCache->_real(),
+            'viewCache' => $viewCache,
         ]);
 
         // Create views associated with the profile's viewCache
         ViewFactory::new()->create([
-            'viewCache' => $viewCache->_real(),
+            'viewCache' => $viewCache,
             'identifier' => 'view1',
         ]);
 
         ViewFactory::new()->create([
-            'viewCache' => $viewCache->_real(),
+            'viewCache' => $viewCache,
             'identifier' => 'view2',
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $profileId = $musicianProfile->_real()->id;
+        $profileId = $musicianProfile->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/musician-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);

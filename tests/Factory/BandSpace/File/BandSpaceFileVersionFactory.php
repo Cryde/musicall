@@ -4,12 +4,12 @@ namespace App\Tests\Factory\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceFileVersion>
+ * @extends PersistentObjectFactory<BandSpaceFileVersion>
  */
-final class BandSpaceFileVersionFactory extends PersistentProxyObjectFactory
+final class BandSpaceFileVersionFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

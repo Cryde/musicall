@@ -57,7 +57,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'editionDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2024-01-03T10:00:00+00:00'),
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?sortBy=creation_datetime&sortOrder=desc');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
@@ -66,9 +66,9 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/user_publications/' . $publication2->_real()->id,
+                    '@id' => '/api/user_publications/' . $publication2->id,
                     '@type' => 'UserPublication',
-                    'id' => $publication2->_real()->id,
+                    'id' => $publication2->id,
                     'title' => 'Publication 2',
                     'slug' => 'publication-2',
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -79,15 +79,15 @@ class UserPublicationGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserPublicationCategory',
-                        'id' => $category->_real()->id,
+                        'id' => $category->id,
                         'title' => 'News',
                         'slug' => 'news',
                     ],
                 ],
                 [
-                    '@id' => '/api/user_publications/' . $publication1->_real()->id,
+                    '@id' => '/api/user_publications/' . $publication1->id,
                     '@type' => 'UserPublication',
-                    'id' => $publication1->_real()->id,
+                    'id' => $publication1->id,
                     'title' => 'Publication 1',
                     'slug' => 'publication-1',
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -98,7 +98,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserPublicationCategory',
-                        'id' => $category->_real()->id,
+                        'id' => $category->id,
                         'title' => 'News',
                         'slug' => 'news',
                     ],
@@ -133,14 +133,14 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->request('GET', '/api/user/publications');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $user1Publication->_real()->id,
+                    'id' => $user1Publication->id,
                     'title' => 'User 1 Publication',
                 ],
             ],
@@ -175,14 +175,14 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $publication->_real()->id,
+                    'id' => $publication->id,
                     'title' => 'Publication',
                 ],
             ],
@@ -212,14 +212,14 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?status=' . Publication::STATUS_DRAFT);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $draftPublication->_real()->id,
+                    'id' => $draftPublication->id,
                     'title' => 'Draft Publication',
                 ],
             ],
@@ -250,14 +250,14 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications?category=' . $newsCategory->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications?category=' . $newsCategory->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $newsPublication->_real()->id,
+                    'id' => $newsPublication->id,
                     'title' => 'News Publication',
                 ],
             ],
@@ -280,7 +280,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             ]);
         }
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?itemsPerPage=10');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
@@ -307,7 +307,7 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             ]);
         }
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?itemsPerPage=10&page=2');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
@@ -343,18 +343,18 @@ class UserPublicationGetCollectionTest extends ApiTestCase
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2024-01-02T10:00:00+00:00'),
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?sortBy=title&sortOrder=asc');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 2,
             'member' => [
                 [
-                    'id' => $alphaPublication->_real()->id,
+                    'id' => $alphaPublication->id,
                     'title' => 'Alpha Publication',
                 ],
                 [
-                    'id' => $zebraPublication->_real()->id,
+                    'id' => $zebraPublication->id,
                     'title' => 'Zebra Publication',
                 ],
             ],

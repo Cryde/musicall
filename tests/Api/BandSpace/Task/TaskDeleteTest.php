@@ -25,10 +25,10 @@ class TaskDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -45,10 +45,10 @@ class TaskDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $creator])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -65,10 +65,10 @@ class TaskDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $creator])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

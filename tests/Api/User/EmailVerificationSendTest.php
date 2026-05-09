@@ -68,7 +68,7 @@ class EmailVerificationSendTest extends ApiTestCase
         $this->assertCount(2, $allCodes);
 
         // only the new code is unused
-        $unusedCode = $verificationCodeRepository->findLatestUnusedForUser($user->_real());
+        $unusedCode = $verificationCodeRepository->findLatestUnusedForUser($user);
         $this->assertNotNull($unusedCode);
         $this->assertSame(0, $unusedCode->attempts);
     }

@@ -23,9 +23,9 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'email' => 'newprefuser@test.com',
         ]);
 
-        $this->assertNull($user->_real()->notificationPreference);
+        $this->assertNull($user->notificationPreference);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/notification-preferences', [
             'site_news' => false,
             'marketing' => true,
@@ -45,8 +45,8 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'activity_reminder' => true,
         ]);
 
-        $user->_refresh();
-        $this->assertNotNull($user->_real()->notificationPreference);
+        $reloaded = self::getContainer()->get(\App\Repository\UserRepository::class)->find($user->id);
+        $this->assertNotNull($reloaded->notificationPreference);
     }
 
     public function test_patch_notification_preferences_updates_existing_entity(): void
@@ -57,7 +57,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         ]);
 
         $preference = new UserNotificationPreference();
-        $preference->user = $user->_real();
+        $preference->user = $user;
         $preference->siteNews = true;
         $preference->weeklyRecap = true;
         $preference->messageReceived = true;
@@ -65,10 +65,10 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
         $preference->forumReply = true;
         $preference->marketing = false;
         $preference->activityReminder = true;
-        $user->_real()->notificationPreference = $preference;
-        $user->_save();
+        $user->notificationPreference = $preference;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/notification-preferences', [
             'message_received' => false,
             'forum_reply' => false,
@@ -96,7 +96,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'email' => 'allfielduser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/notification-preferences', [
             'site_news' => false,
             'weekly_recap' => false,

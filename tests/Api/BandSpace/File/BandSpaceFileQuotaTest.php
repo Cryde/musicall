@@ -29,9 +29,9 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/files/quota',
@@ -59,10 +59,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['quotaBytesOverride' => 1024])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/quota',
+            '/api/band_spaces/' . $bandSpace->id . '/files/quota',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -102,10 +102,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $archivedFile, 'versionNumber' => 1, 'size' => 5_000])->create();
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $archivedFile, 'versionNumber' => 2, 'size' => 5_000])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/quota',
+            '/api/band_spaces/' . $bandSpace->id . '/files/quota',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -133,10 +133,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 1, 'size' => 80])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/quota',
+            '/api/band_spaces/' . $bandSpace->id . '/files/quota',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -155,10 +155,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/quota',
+            '/api/band_spaces/' . $bandSpace->id . '/files/quota',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -186,10 +186,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $existing, 'versionNumber' => 1, 'size' => 80])->create();
 
         // sample.txt is 30 bytes; 80 + 30 = 110 > 100 → 422
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true)],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -211,10 +211,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $existing, 'versionNumber' => 1, 'size' => 60])->create();
 
         // sample.txt is 30 bytes; 60 + 30 = 90 < 100 (allowed) but 90/100 >= 0.80 → warning header
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true)],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -230,10 +230,10 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['quotaBytesOverride' => 10_000])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
             [],
             ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true)],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -252,13 +252,13 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $v1 = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 1, 'size' => 80])->create();
 
-        $file->_real()->currentVersion = $v1->_real();
+        $file->currentVersion = $v1;
         self::getContainer()->get(EntityManagerInterface::class)->flush();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/versions',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/versions',
             [],
             ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true)],
             ['CONTENT_TYPE' => 'multipart/form-data'],

@@ -48,10 +48,10 @@ class PublicationStory extends Story
             $votedPublications = (array) array_rand($publications, min($voteCount, count($publications)));
 
             foreach ($votedPublications as $index) {
-                $publication = $publications[$index]->_real();
+                $publication = $publications[$index];
                 $voteCache = $publication->voteCache;
                 if (!$voteCache) {
-                    $voteCache = VoteCacheFactory::new()->create()->_real();
+                    $voteCache = VoteCacheFactory::new()->create();
                     $publication->voteCache = $voteCache;
                 }
 

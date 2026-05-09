@@ -25,19 +25,19 @@ class ForumPostVoteTest extends ApiTestCase
     public function test_post_vote_upvote(): void
     {
         $forumPost = $this->createForumPost();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
+            '/api/forums/posts/' . $forumPost->id . '/vote',
             ['user_vote' => 1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumPostVoteSummary',
-            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->_real()->id,
+            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->id,
             '@type' => 'ForumPostVoteSummary',
             'upvotes' => 1,
             'downvotes' => 0,
@@ -50,8 +50,8 @@ class ForumPostVoteTest extends ApiTestCase
         $forumPost = $this->createForumPost();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $forumPost->_real()->voteCache = $voteCache->_real();
-        $forumPost->_save();
+        $forumPost->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($forumPost);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -59,20 +59,20 @@ class ForumPostVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_forum_post',
-            'entityId' => $forumPost->_real()->id,
+            'entityId' => $forumPost->id,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
+            '/api/forums/posts/' . $forumPost->id . '/vote',
             ['user_vote' => 1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumPostVoteSummary',
-            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->_real()->id,
+            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->id,
             '@type' => 'ForumPostVoteSummary',
             'upvotes' => 0,
             'downvotes' => 0,
@@ -85,8 +85,8 @@ class ForumPostVoteTest extends ApiTestCase
         $forumPost = $this->createForumPost();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $forumPost->_real()->voteCache = $voteCache->_real();
-        $forumPost->_save();
+        $forumPost->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($forumPost);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -94,20 +94,20 @@ class ForumPostVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_forum_post',
-            'entityId' => $forumPost->_real()->id,
+            'entityId' => $forumPost->id,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
+            '/api/forums/posts/' . $forumPost->id . '/vote',
             ['user_vote' => -1],
             self::SERVER_PARAMS
         );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ForumPostVoteSummary',
-            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->_real()->id,
+            '@id' => '/api/forum_post_vote_summaries/' . $forumPost->id,
             '@type' => 'ForumPostVoteSummary',
             'upvotes' => 0,
             'downvotes' => 1,
@@ -117,7 +117,7 @@ class ForumPostVoteTest extends ApiTestCase
 
     public function test_vote_on_nonexistent_post(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -142,12 +142,12 @@ class ForumPostVoteTest extends ApiTestCase
     public function test_post_vote_invalid_value(): void
     {
         $forumPost = $this->createForumPost();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/forums/posts/' . $forumPost->_real()->id . '/vote',
+            '/api/forums/posts/' . $forumPost->id . '/vote',
             ['user_vote' => 5],
             self::SERVER_PARAMS
         );

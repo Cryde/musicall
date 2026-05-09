@@ -40,7 +40,7 @@ class PublicationGetTest extends ApiTestCase
             'title'               => 'Titre de la publication',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => $viewCache,
-            'cover'               => $cover->_real(),
+            'cover'               => $cover,
             'thread'              => $thread,
         ])->create();
         $this->client->request('GET', '/api/publications/titre-de-la-publication');
@@ -60,7 +60,7 @@ class PublicationGetTest extends ApiTestCase
             'publication_datetime' => '2022-01-02T02:03:04+00:00',
             'category'             => [
                 '@type'    => 'Category',
-                'id'       => $sub->_real()->id,
+                'id'       => $sub->id,
                 'title'    => 'Chroniques',
                 'slug'     => 'chroniques',
             ],
@@ -71,7 +71,7 @@ class PublicationGetTest extends ApiTestCase
             ],
             'thread'               => [
                 '@type'    => 'Thread',
-                'id'       => $thread->_real()->id,
+                'id'       => $thread->id,
             ],
             'type'                 => [
                 '@type'    => 'Type',

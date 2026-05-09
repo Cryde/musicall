@@ -16,7 +16,7 @@ class UserLoginTest extends ApiTestCase
 
     public function test_login(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
 
         $this->client->jsonRequest('POST', '/api/login_check', [
             'username' => $user1->username,
@@ -30,7 +30,7 @@ class UserLoginTest extends ApiTestCase
 
     public function test_login_with_user_not_confirmed(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['confirmationDatetime' => null])->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create(['confirmationDatetime' => null]);
 
         $this->client->jsonRequest('POST', '/api/login_check', [
             'username' => $user1->username,
@@ -46,7 +46,7 @@ class UserLoginTest extends ApiTestCase
 
     public function test_login_with_bad_password(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
 
         $this->client->jsonRequest('POST', '/api/login_check', [
             'username' => $user1->username,

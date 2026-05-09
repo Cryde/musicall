@@ -39,10 +39,10 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note1 = $note1->_real();
-        $note2 = $note2->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note1 = $note1;
+        $note2 = $note2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
@@ -92,8 +92,8 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
@@ -115,8 +115,8 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
@@ -134,8 +134,8 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $inactiveUser = $inactiveUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $inactiveUser = $inactiveUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
@@ -145,7 +145,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
 
     public function test_get_collection_unauthenticated(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
 
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
 
@@ -166,9 +166,9 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');

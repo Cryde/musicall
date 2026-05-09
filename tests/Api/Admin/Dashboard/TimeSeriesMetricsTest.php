@@ -23,7 +23,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_registrations(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $today = new \DateTimeImmutable();
         $todayStr = $today->format('Y-m-d');
@@ -59,7 +59,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_comments(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $today = new \DateTimeImmutable();
         $todayStr = $today->format('Y-m-d');
@@ -93,7 +93,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_forum_posts(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $today = new \DateTimeImmutable();
         $todayStr = $today->format('Y-m-d');
@@ -125,7 +125,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_musician_announces(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $today = new \DateTimeImmutable();
         $todayStr = $today->format('Y-m-d');
@@ -177,7 +177,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_as_normal_user(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($user);
@@ -187,7 +187,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_missing_metric(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);
@@ -197,7 +197,7 @@ class TimeSeriesMetricsTest extends ApiTestCase
 
     public function test_get_time_series_invalid_metric(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);

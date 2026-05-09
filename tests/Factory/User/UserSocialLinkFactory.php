@@ -6,12 +6,12 @@ namespace App\Tests\Factory\User;
 
 use App\Entity\User\UserSocialLink;
 use App\Enum\SocialPlatform;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<UserSocialLink>
+ * @extends PersistentObjectFactory<UserSocialLink>
  */
-final class UserSocialLinkFactory extends PersistentProxyObjectFactory
+final class UserSocialLinkFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -30,17 +30,17 @@ class TaskActivityGetCollectionTest extends ApiTestCase
         BandSpaceActivityFactory::new([
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::Task,
-            'resourceId' => Uuid::fromString((string) $task->_real()->id),
+            'resourceId' => Uuid::fromString((string) $task->id),
             'actor' => $user,
             'type' => 'status_changed',
             'payload' => ['from' => 'todo', 'to' => 'in_progress'],
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/activities',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -51,8 +51,8 @@ class TaskActivityGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 [
-                    'actor_id' => $user->_real()->id,
-                    'actor_username' => $user->_real()->username,
+                    'actor_id' => $user->id,
+                    'actor_username' => $user->username,
                     'actor_profile_picture_url' => null,
                     'type' => 'status_changed',
                 ],
@@ -68,10 +68,10 @@ class TaskActivityGetCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/activities',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

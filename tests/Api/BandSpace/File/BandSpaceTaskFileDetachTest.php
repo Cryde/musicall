@@ -33,25 +33,25 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($task->_real()->id),
+            'sourceId' => Uuid::fromString($task->id),
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files/' . $file->id,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $fileRepo->find($file->_real()->id);
+        $reloaded = $fileRepo->find($file->id);
         $this->assertNotNull($reloaded);
         $this->assertNull($reloaded->archiveDatetime);
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
-        $this->assertNull($attachmentRepo->findOneByFileAndSource($reloaded, 'task', $task->_real()->id));
+        $this->assertNull($attachmentRepo->findOneByFileAndSource($reloaded, 'task', $task->id));
     }
 
     public function test_detach_with_archive_query_archives_file(): void
@@ -65,20 +65,20 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($task->_real()->id),
+            'sourceId' => Uuid::fromString($task->id),
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files/' . $file->_real()->id . '?archive=true',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files/' . $file->id . '?archive=true',
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $repo->find($file->_real()->id);
+        $reloaded = $repo->find($file->id);
         $this->assertNotNull($reloaded);
         $this->assertNotNull($reloaded->archiveDatetime);
     }
@@ -95,14 +95,14 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($otherTask->_real()->id),
+            'sourceId' => Uuid::fromString($otherTask->id),
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files/' . $file->id,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -130,14 +130,14 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($task->_real()->id),
+            'sourceId' => Uuid::fromString($task->id),
             'attachedBy' => $member,
         ]);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files/' . $file->id,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);

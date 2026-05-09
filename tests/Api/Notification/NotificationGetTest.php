@@ -32,7 +32,7 @@ class NotificationGetTest extends ApiTestCase
 
     public function test_get_notification(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
 
@@ -57,7 +57,7 @@ class NotificationGetTest extends ApiTestCase
 
     public function test_get_notification_with_role_admin(): void
     {
-        $user1 = UserFactory::new()->asAdminUser()->create()->_real();
+        $user1 = UserFactory::new()->asAdminUser()->create();
 
         $thread = MessageThreadFactory::new()->create();
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'isRead' => 0])->create();
@@ -83,7 +83,7 @@ class NotificationGetTest extends ApiTestCase
 
     public function test_get_notification_with_role_admin_and_no_notifications(): void
     {
-        $user1 = UserFactory::new()->asAdminUser()->create()->_real();
+        $user1 = UserFactory::new()->asAdminUser()->create();
 
         $thread = MessageThreadFactory::new()->create();
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'isRead' => 0])->create();

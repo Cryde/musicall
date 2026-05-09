@@ -193,12 +193,6 @@
             "config/routes/liip_imagine.yaml"
         ]
     },
-    "mailjet/mailjet-apiv3-php": {
-        "version": "v1.4.1"
-    },
-    "masterminds/html5": {
-        "version": "2.7.5"
-    },
     "mockery/mockery": {
         "version": "1.4.4"
     },
@@ -262,6 +256,18 @@
     },
     "phar-io/version": {
         "version": "3.1.0"
+    },
+    "php-http/discovery": {
+        "version": "1.20",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.18",
+            "ref": "f45b5dd173a27873ab19f5e3180b2f661c21de02"
+        },
+        "files": [
+            "config/packages/http_discovery.yaml"
+        ]
     },
     "phpdocumentor/reflection-common": {
         "version": "1.0.1"

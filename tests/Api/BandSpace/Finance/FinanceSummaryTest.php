@@ -30,9 +30,9 @@ class FinanceSummaryTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $membership = $membership->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $membership = $membership;
 
         $this->client->loginUser($user);
         $this->client->request(
@@ -97,10 +97,10 @@ class FinanceSummaryTest extends ApiTestCase
             'date' => new \DateTime('2024-06-20'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $membership = $membership->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $membership = $membership;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request(
@@ -175,10 +175,10 @@ class FinanceSummaryTest extends ApiTestCase
             'date' => new \DateTime('2024-02-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $membership = $membership->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $membership = $membership;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request(
@@ -226,8 +226,8 @@ class FinanceSummaryTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->request(
@@ -251,8 +251,8 @@ class FinanceSummaryTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request(

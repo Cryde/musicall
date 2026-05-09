@@ -29,7 +29,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -45,15 +45,15 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $images = $galleryImageRepository->findBy(['gallery' => $gallery->_real()]);
+        $images = $galleryImageRepository->findBy(['gallery' => $gallery]);
         $this->assertCount(1, $images);
 
         $this->assertJsonContains([
@@ -75,8 +75,8 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($otherUser);
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -91,8 +91,8 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -103,7 +103,7 @@ class UserGalleryUploadImageTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('POST', '/api/user/galleries/999999/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
@@ -119,8 +119,8 @@ class UserGalleryUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-too-big.jpg', 'image-too-big.jpg');
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 
@@ -152,8 +152,8 @@ class UserGalleryUploadImageTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/galleries/' . $gallery->_real()->id . '/upload-image', [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/galleries/' . $gallery->id . '/upload-image', [], [], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 

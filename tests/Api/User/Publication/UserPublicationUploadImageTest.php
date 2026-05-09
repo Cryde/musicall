@@ -31,7 +31,7 @@ class UserPublicationUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -48,8 +48,8 @@ class UserPublicationUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 
@@ -77,8 +77,8 @@ class UserPublicationUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($otherUser);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -95,8 +95,8 @@ class UserPublicationUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -107,7 +107,7 @@ class UserPublicationUploadImageTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('POST', '/api/user/publications/999999/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
@@ -125,8 +125,8 @@ class UserPublicationUploadImageTest extends ApiTestCase
         ]);
 
         $file = new UploadedFile(__DIR__ . '/fixtures/image-too-big.jpg', 'image-too-big.jpg');
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/upload-image', [], ['imageFile' => $file], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/upload-image', [], ['imageFile' => $file], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 
@@ -160,8 +160,8 @@ class UserPublicationUploadImageTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/upload-image', [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/upload-image', [], [], [
             'CONTENT_TYPE' => 'multipart/form-data',
         ]);
 

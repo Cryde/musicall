@@ -25,9 +25,9 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/tags',
@@ -73,17 +73,17 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
         BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'tags' => new ArrayCollection([$tagAcoustic->_real(), $tagSetlists->_real()]),
+            'tags' => new ArrayCollection([$tagAcoustic, $tagSetlists]),
         ])->create();
         BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'tags' => new ArrayCollection([$tagSetlists->_real()]),
+            'tags' => new ArrayCollection([$tagSetlists]),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
             '/api/band_spaces/' . $bandSpaceId . '/tags',
@@ -99,9 +99,9 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
             'totalItems' => 3,
             'member' => [
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagAcoustic->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagAcoustic->id,
                     '@type' => 'BandSpaceFileTag',
-                    'id' => $tagAcoustic->_real()->id,
+                    'id' => $tagAcoustic->id,
                     'band_space_id' => $bandSpaceId,
                     'name' => 'Acoustic',
                     'color_hex' => '#0099CC',
@@ -109,9 +109,9 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
                     'creation_datetime' => '2026-04-01T10:00:00+00:00',
                 ],
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagRiders->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagRiders->id,
                     '@type' => 'BandSpaceFileTag',
-                    'id' => $tagRiders->_real()->id,
+                    'id' => $tagRiders->id,
                     'band_space_id' => $bandSpaceId,
                     'name' => 'Riders',
                     'color_hex' => null,
@@ -119,9 +119,9 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
                     'creation_datetime' => '2026-04-02T10:00:00+00:00',
                 ],
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagSetlists->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagSetlists->id,
                     '@type' => 'BandSpaceFileTag',
-                    'id' => $tagSetlists->_real()->id,
+                    'id' => $tagSetlists->id,
                     'band_space_id' => $bandSpaceId,
                     'name' => 'Setlists',
                     'color_hex' => '#FF6600',
@@ -143,19 +143,19 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
         BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'tags' => new ArrayCollection([$tag->_real()]),
+            'tags' => new ArrayCollection([$tag]),
         ])->create();
         BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'tags' => new ArrayCollection([$tag->_real()]),
+            'tags' => new ArrayCollection([$tag]),
             'archiveDatetime' => new \DateTime('2026-05-01'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -173,10 +173,10 @@ class BandSpaceFileTagCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

@@ -28,8 +28,8 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     public function test_record_persists_activity_with_all_fields(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
         $resourceId = Uuid::uuid4();
 
         $activity = $this->getRecorder()->record(
@@ -54,7 +54,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     public function test_record_accepts_string_resource_id_and_normalises_to_uuid(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
         $resourceIdString = Uuid::uuid4()->toString();
 
         $activity = $this->getRecorder()->record(
@@ -71,7 +71,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     public function test_record_supports_anonymous_actor(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
 
         $activity = $this->getRecorder()->record(
             bandSpace: $bandSpace,
@@ -89,7 +89,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     public function test_record_supports_null_resource_id_and_null_payload(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
 
         $activity = $this->getRecorder()->record(
             bandSpace: $bandSpace,
@@ -106,7 +106,7 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
 
     public function test_find_for_resource_returns_only_matching_activities_newest_first(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
         $fileId = Uuid::uuid4();
         $otherFileId = Uuid::uuid4();
 

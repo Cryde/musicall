@@ -26,9 +26,9 @@ class UserProfilePatchTest extends ApiTestCase
         $profile = $user->profile;
         $profile->displayName = 'Original Name';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'display_name' => 'Jean Dupont',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -53,9 +53,9 @@ class UserProfilePatchTest extends ApiTestCase
         $profile->bio = 'Original bio';
         $profile->location = 'Original location';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'bio' => 'Updated bio content',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -80,9 +80,9 @@ class UserProfilePatchTest extends ApiTestCase
         $profile->bio = 'My bio';
         $profile->location = 'Old City';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'location' => 'New City, Country',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -105,9 +105,9 @@ class UserProfilePatchTest extends ApiTestCase
         ]);
         $profile = $user->profile;
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'is_public' => false,
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -131,9 +131,9 @@ class UserProfilePatchTest extends ApiTestCase
         $profile->bio = 'Old bio';
         $profile->location = 'Old location';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'bio' => 'New bio',
             'location' => 'New location',
@@ -158,7 +158,7 @@ class UserProfilePatchTest extends ApiTestCase
             'email' => 'longdisplaynameuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'display_name' => str_repeat('a', 101),
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -190,7 +190,7 @@ class UserProfilePatchTest extends ApiTestCase
             'email' => 'longbiouser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'bio' => str_repeat('a', 2001),
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -222,7 +222,7 @@ class UserProfilePatchTest extends ApiTestCase
             'email' => 'longlocationuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'location' => str_repeat('a', 256),
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -255,9 +255,9 @@ class UserProfilePatchTest extends ApiTestCase
         ]);
         $profile = $user->profile;
         $profile->bio = 'Existing bio';
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/profile', [
             'bio' => null,
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);

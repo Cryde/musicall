@@ -4,9 +4,9 @@ namespace App\Tests\Factory\Message;
 
 use App\Entity\Message\MessageThreadMeta;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class MessageThreadMetaFactory extends PersistentProxyObjectFactory
+final class MessageThreadMetaFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

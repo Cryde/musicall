@@ -39,11 +39,11 @@ class ForumTopicPostPostTest extends ApiTestCase
         $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
 
         //pretest
-        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->_real()]));
+        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1]));
         $this->assertCount(0, $forumPostRepository->findAll());
 
         $userId = $user1->id;
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [
                 "title" => "Title for this new topic",
@@ -53,7 +53,7 @@ class ForumTopicPostPostTest extends ApiTestCase
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseIsSuccessful();
-        $results = $forumTopicRepository->findBy(['forum' => $forum1->_real()]);
+        $results = $forumTopicRepository->findBy(['forum' => $forum1]);
         $this->assertCount(1, $results);
         $this->assertCount(1, $forumPostRepository->findBy(['topic' => $results[0]]));
         $posts = $forumPostRepository->findBy(['topic' => $results[0]]);
@@ -96,10 +96,10 @@ class ForumTopicPostPostTest extends ApiTestCase
         $forum1 = ForumFactory::new(['forumCategory' => $forumCategory1, 'position' => 20])->create();
 
         //pretest
-        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1->_real()]));
+        $this->assertCount(0, $forumTopicRepository->findBy(['forum' => $forum1]));
         $this->assertCount(0, $forumPostRepository->findAll());
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/topic/post',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -137,7 +137,7 @@ message: Cette valeur ne doit pas être vide.',
             '@context' => '/api/contexts/ConstraintViolation',
         ]);
 
-        $results = $forumTopicRepository->findBy(['forum' => $forum1->_real()]);
+        $results = $forumTopicRepository->findBy(['forum' => $forum1]);
         $this->assertCount(0, $results);
         $this->assertCount(0, $forumPostRepository->findAll());
     }

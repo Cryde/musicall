@@ -35,9 +35,9 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -73,9 +73,9 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $content = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Updated content']]]]];
 
@@ -112,9 +112,9 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -147,10 +147,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             ['emoji' => '🎵'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -162,7 +162,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Notes, $note->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id);
         $this->assertCount(1, $activities);
         $this->assertSame('note_emoji_changed', $activities[0]->type);
         $this->assertSame(['from' => null, 'to' => '🎵'], $activities[0]->payload);
@@ -181,10 +181,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             [],
             [],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
@@ -212,10 +212,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             [],
             [],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
@@ -235,8 +235,8 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -261,10 +261,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             ['title' => ''],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -301,10 +301,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             ['title' => str_repeat('a', 256)],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -355,10 +355,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             ],
         ];
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             ['content' => $xssContent],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -393,10 +393,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             ['position' => -1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -433,9 +433,9 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'title' => 'My Note',
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -463,9 +463,9 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'title' => 'My Note',
         ])->create();
 
-        $inactiveUser = $inactiveUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $inactiveUser = $inactiveUser;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($inactiveUser);
         $this->client->jsonRequest(
@@ -492,10 +492,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             ['title' => 'Hacked'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -505,8 +505,8 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
 
     public function test_update_unauthenticated(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
-        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Note', 'position' => 0])->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Note', 'position' => 0])->create();
 
         $this->client->jsonRequest(
             'PATCH',

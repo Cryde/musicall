@@ -5,12 +5,12 @@ namespace App\Tests\Factory\BandSpace;
 use App\Entity\BandSpace\BandSpaceInvitation;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceInvitation>
+ * @extends PersistentObjectFactory<BandSpaceInvitation>
  */
-final class BandSpaceInvitationFactory extends PersistentProxyObjectFactory
+final class BandSpaceInvitationFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

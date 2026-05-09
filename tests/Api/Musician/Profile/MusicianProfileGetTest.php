@@ -35,7 +35,7 @@ class MusicianProfileGetTest extends ApiTestCase
         $musicianProfile = MusicianProfileFactory::new()->create([
             'user' => $user,
             'availabilityStatus' => AvailabilityStatus::LOOKING_FOR_BAND,
-            'styles' => [$rock->_real()],
+            'styles' => [$rock],
         ]);
 
         MusicianProfileInstrumentFactory::new()->create([
@@ -44,11 +44,11 @@ class MusicianProfileGetTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
-        $profileId = $musicianProfile->_real()->id;
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        $profileId = $musicianProfile->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/musician-profile');
 
         $this->assertResponseIsSuccessful();
@@ -92,11 +92,11 @@ class MusicianProfileGetTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
-        $profileId = $musicianProfile->_real()->id;
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        $profileId = $musicianProfile->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/musician-profile');
 
         $this->assertResponseIsSuccessful();
@@ -118,7 +118,7 @@ class MusicianProfileGetTest extends ApiTestCase
             'email' => 'noprofileuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/musician-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

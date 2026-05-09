@@ -31,9 +31,9 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'platform' => SocialPlatform::YOUTUBE,
             'url' => 'https://www.youtube.com/@todelete',
         ]);
-        $linkId = $link->_real()->id;
+        $linkId = $link->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/profile/social-links/' . $linkId);
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
@@ -45,7 +45,7 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'email' => 'deletenotfound@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/profile/social-links/999999');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
@@ -78,8 +78,8 @@ class UserSocialLinkDeleteTest extends ApiTestCase
             'url' => 'https://www.youtube.com/@ownerchannel',
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('DELETE', '/api/user/profile/social-links/' . $link->_real()->id);
+        $this->client->loginUser($otherUser);
+        $this->client->request('DELETE', '/api/user/profile/social-links/' . $link->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',

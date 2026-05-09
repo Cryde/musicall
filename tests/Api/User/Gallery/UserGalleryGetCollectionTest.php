@@ -53,7 +53,7 @@ class UserGalleryGetCollectionTest extends ApiTestCase
         GalleryImageFactory::new(['gallery' => $gallery2])->create();
         GalleryImageFactory::new(['gallery' => $gallery2])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/galleries');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -64,8 +64,8 @@ class UserGalleryGetCollectionTest extends ApiTestCase
             'member' => [
                 [
                     '@type' => 'UserGallery',
-                    '@id' => '/api/user_galleries/' . $gallery2->_real()->id,
-                    'id' => $gallery2->_real()->id,
+                    '@id' => '/api/user_galleries/' . $gallery2->id,
+                    'id' => $gallery2->id,
                     'title' => 'Gallery 2',
                     'slug' => 'gallery-2',
                     'status' => Gallery::STATUS_ONLINE,
@@ -76,8 +76,8 @@ class UserGalleryGetCollectionTest extends ApiTestCase
                 ],
                 [
                     '@type' => 'UserGallery',
-                    '@id' => '/api/user_galleries/' . $gallery1->_real()->id,
-                    'id' => $gallery1->_real()->id,
+                    '@id' => '/api/user_galleries/' . $gallery1->id,
+                    'id' => $gallery1->id,
                     'title' => 'Gallery 1',
                     'slug' => 'gallery-1',
                     'status' => Gallery::STATUS_DRAFT,
@@ -111,7 +111,7 @@ class UserGalleryGetCollectionTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->request('GET', '/api/user/galleries');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -122,8 +122,8 @@ class UserGalleryGetCollectionTest extends ApiTestCase
             'member' => [
                 [
                     '@type' => 'UserGallery',
-                    '@id' => '/api/user_galleries/' . $user1Gallery->_real()->id,
-                    'id' => $user1Gallery->_real()->id,
+                    '@id' => '/api/user_galleries/' . $user1Gallery->id,
+                    'id' => $user1Gallery->id,
                     'title' => 'User 1 Gallery',
                     'slug' => 'user-1-gallery',
                     'status' => Gallery::STATUS_DRAFT,

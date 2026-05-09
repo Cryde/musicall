@@ -4,12 +4,12 @@ namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\AgendaEntry;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<AgendaEntry>
+ * @extends PersistentObjectFactory<AgendaEntry>
  */
-final class AgendaEntryFactory extends PersistentProxyObjectFactory
+final class AgendaEntryFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

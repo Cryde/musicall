@@ -23,7 +23,7 @@ class PublicationVideoPostTest extends ApiTestCase
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -65,7 +65,7 @@ description: Cette valeur ne doit pas être vide.',
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [
                 'url' => 'wrong_url',
@@ -97,7 +97,7 @@ description: Cette valeur ne doit pas être vide.',
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [
                 'url' => 'https://musicall.com',
@@ -143,9 +143,9 @@ description: Cette valeur ne doit pas être vide.',
             'title'               => 'Titre de la publication 1',
             'type'                => Publication::TYPE_VIDEO,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-        ])->create()->_real();
+        ])->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/publications/video/add',
             [
                 'url' => 'https://www.youtube.com/watch?v=kcelgrGY1h8',

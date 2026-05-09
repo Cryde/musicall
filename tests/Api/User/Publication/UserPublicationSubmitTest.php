@@ -31,7 +31,7 @@ class UserPublicationSubmitTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/submit', [], [], [
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/submit', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -55,20 +55,20 @@ class UserPublicationSubmitTest extends ApiTestCase
             'cover' => $cover,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('POST', '/api/user/publications/' . $publication->_real()->id . '/submit', [], [
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/user/publications/' . $publication->id . '/submit', [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
 
         $this->assertResponseIsSuccessful();
 
-        $updatedPublication = $publicationRepository->find($publication->_real()->id);
+        $updatedPublication = $publicationRepository->find($publication->id);
         $this->assertEquals(Publication::STATUS_PENDING, $updatedPublication->status);
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
-            'id' => $publication->_real()->id,
+            'id' => $publication->id,
             'status_id' => Publication::STATUS_PENDING,
             'status_label' => 'En validation',
         ]);
@@ -85,8 +85,8 @@ class UserPublicationSubmitTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/submit', [], [], [
+        $this->client->loginUser($otherUser);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/submit', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -104,8 +104,8 @@ class UserPublicationSubmitTest extends ApiTestCase
             'status' => Publication::STATUS_PENDING,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/submit', [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/submit', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -123,8 +123,8 @@ class UserPublicationSubmitTest extends ApiTestCase
             'status' => Publication::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('POST', '/api/user/publications/' . $publication->_real()->id . '/submit', [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/user/publications/' . $publication->id . '/submit', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -136,7 +136,7 @@ class UserPublicationSubmitTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('POST', '/api/user/publications/999999/submit', [], [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',

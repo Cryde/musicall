@@ -28,14 +28,14 @@ class BandSpaceFileDeleteTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         /** @var BandSpaceFileRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $repo->find($file->_real()->id);
+        $reloaded = $repo->find($file->id);
         $this->assertNotNull($reloaded);
         $this->assertNotNull($reloaded->archiveDatetime);
     }
@@ -50,8 +50,8 @@ class BandSpaceFileDeleteTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $uploader])->create();
 
-        $this->client->loginUser($admin->_real());
-        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
@@ -66,8 +66,8 @@ class BandSpaceFileDeleteTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $uploader])->create();
 
-        $this->client->loginUser($other->_real());
-        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($other);
+        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -94,8 +94,8 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('-1 day'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
@@ -124,10 +124,10 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -146,7 +146,7 @@ class BandSpaceFileDeleteTest extends ApiTestCase
 
         /** @var BandSpaceFileRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $repo->find($file->_real()->id);
+        $reloaded = $repo->find($file->id);
         $this->assertNotNull($reloaded);
         $this->assertNull($reloaded->archiveDatetime);
     }
@@ -165,10 +165,10 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

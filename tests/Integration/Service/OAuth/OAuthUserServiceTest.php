@@ -29,7 +29,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
     public function test_find_or_create_user_returns_existing_user_when_social_account_exists(): void
     {
-        $existingUser = UserFactory::new()->asBaseUser()->create()->_real();
+        $existingUser = UserFactory::new()->asBaseUser()->create();
         SocialAccountFactory::new()->create([
             'user' => $existingUser,
             'provider' => SocialAccount::PROVIDER_GOOGLE,
@@ -58,7 +58,7 @@ class OAuthUserServiceTest extends KernelTestCase
 
     public function test_find_or_create_user_links_social_account_to_logged_in_user(): void
     {
-        $currentUser = UserFactory::new()->asBaseUser()->create()->_real();
+        $currentUser = UserFactory::new()->asBaseUser()->create();
 
         // pretest
         $this->assertSame(1, $this->getUserRepository()->count());

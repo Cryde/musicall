@@ -51,10 +51,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -125,10 +125,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -199,10 +199,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -286,9 +286,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -332,10 +332,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $membership = $membership->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $membership = $membership;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -384,10 +384,10 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $otherCategory = $otherCategory->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $otherCategory = $otherCategory;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -431,9 +431,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -468,9 +468,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -507,9 +507,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'member' => $ownerMembership,
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -546,11 +546,11 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $owner = $owner->_real();
-        $bandSpace = $bandSpace->_real();
-        $ownerMembership = $ownerMembership->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $owner = $owner;
+        $bandSpace = $bandSpace;
+        $ownerMembership = $ownerMembership;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($owner);
         $this->client->jsonRequest(
@@ -584,9 +584,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -620,9 +620,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -656,9 +656,9 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

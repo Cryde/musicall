@@ -41,10 +41,10 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',
@@ -54,7 +54,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile->_real()]);
+        $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianProfileMedia',
             '@id' => '/api/musician_profile_media/' . $media->id,
@@ -83,10 +83,10 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',
@@ -99,7 +99,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile->_real()]);
+        $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianProfileMedia',
             '@id' => '/api/musician_profile_media/' . $media->id,
@@ -128,22 +128,22 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         // Create first media
         MusicianProfileMediaFactory::new()->asYouTube()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'position' => 0,
         ]);
 
         // Create second media
         MusicianProfileMediaFactory::new()->asSpotify()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'position' => 1,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',
@@ -153,7 +153,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile->_real(), 'position' => 2]);
+        $media = $mediaRepository->findOneBy(['musicianProfile' => $musicianProfile, 'position' => 2]);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianProfileMedia',
             '@id' => '/api/musician_profile_media/' . $media->id,
@@ -191,7 +191,7 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'email' => 'noprofileuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',
@@ -223,10 +223,10 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',
@@ -265,10 +265,10 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',
@@ -307,18 +307,18 @@ class MusicianProfileMediaPostTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         // Create 6 media items (the max limit)
         for ($i = 0; $i < 6; $i++) {
             MusicianProfileMediaFactory::new()->asYouTube()->create([
-                'musicianProfile' => $musicianProfile->_real(),
+                'musicianProfile' => $musicianProfile,
                 'position' => $i,
             ]);
         }
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/user/musician-profile/media',

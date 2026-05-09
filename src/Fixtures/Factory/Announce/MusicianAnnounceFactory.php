@@ -6,14 +6,14 @@ use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Factory;
 use App\Entity\Musician\MusicianAnnounce;
 use App\Tests\Factory\Attribute\InstrumentFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<MusicianAnnounce>
+ * @extends PersistentObjectFactory<MusicianAnnounce>
  */
-final class MusicianAnnounceFactory extends PersistentProxyObjectFactory
+final class MusicianAnnounceFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

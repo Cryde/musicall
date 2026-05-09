@@ -5,12 +5,12 @@ namespace App\Tests\Factory\User;
 use App\Entity\User;
 use App\Entity\User\UserProfile;
 use DateTime;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<User>
+ * @extends PersistentObjectFactory<User>
  */
-final class UserFactory extends PersistentProxyObjectFactory
+final class UserFactory extends PersistentObjectFactory
 {
     const string DEFAULT_PASSWORD = '$2y$04$v1LqXePkM/bTdPJSmZnbNuNM3ogkQoUJvQpVvoxT7VF1PItj1c8HO'; // it's 'password'
 

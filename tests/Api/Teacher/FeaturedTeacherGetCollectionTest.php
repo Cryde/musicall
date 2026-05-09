@@ -68,12 +68,12 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
                     'instruments'  => [
                         [
                             '@type'           => 'TeacherProfileInstrument',
-                            'instrument_id'   => (string) $guitar->_real()->id,
+                            'instrument_id'   => (string) $guitar->id,
                             'instrument_name' => 'Guitare',
                         ],
                         [
                             '@type'           => 'TeacherProfileInstrument',
-                            'instrument_id'   => (string) $piano->_real()->id,
+                            'instrument_id'   => (string) $piano->id,
                             'instrument_name' => 'Piano',
                         ],
                     ],
@@ -87,7 +87,7 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
                     'instruments'  => [
                         [
                             '@type'           => 'TeacherProfileInstrument',
-                            'instrument_id'   => (string) $piano->_real()->id,
+                            'instrument_id'   => (string) $piano->id,
                             'instrument_name' => 'Piano',
                         ],
                     ],

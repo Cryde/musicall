@@ -16,7 +16,6 @@ services:
             APP_ENV: 'dev'
             # we need localhost for google oauth...
             SERVER_NAME: 'musicall.local, localhost'
-            APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
             # comment the following line in production, it allows to have nice human-readable logs in dev
         tty: true
         networks:

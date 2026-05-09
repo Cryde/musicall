@@ -51,9 +51,9 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
         $entryId = (string) $entry->id;
 
         $this->client->loginUser($user);
@@ -62,6 +62,7 @@ class FinanceEntryDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
         $this->assertNull($entryRepository->find($entryId));
 
@@ -96,9 +97,9 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -135,9 +136,9 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -166,9 +167,9 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -212,9 +213,9 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);

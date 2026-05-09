@@ -28,10 +28,10 @@ class TaskCategoryDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $category->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -47,13 +47,13 @@ class TaskCategoryDeleteTest extends ApiTestCase
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'category' => $category, 'createdBy' => $user])->create();
 
-        $categoryId = (string) $category->_real()->id;
-        $taskId = (string) $task->_real()->id;
+        $categoryId = (string) $category->id;
+        $taskId = (string) $task->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $categoryId,
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $categoryId,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -73,10 +73,10 @@ class TaskCategoryDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $category->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

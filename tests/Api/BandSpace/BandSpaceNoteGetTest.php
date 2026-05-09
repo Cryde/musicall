@@ -35,9 +35,9 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
@@ -66,8 +66,8 @@ class BandSpaceNoteGetTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/nonexistent-id');
@@ -77,8 +77,8 @@ class BandSpaceNoteGetTest extends ApiTestCase
 
     public function test_get_item_unauthenticated(): void
     {
-        $bandSpace = BandSpaceFactory::new()->create()->_real();
-        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Note'])->create()->_real();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Note'])->create();
 
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -93,9 +93,9 @@ class BandSpaceNoteGetTest extends ApiTestCase
 
         $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Secret Note'])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
@@ -115,9 +115,9 @@ class BandSpaceNoteGetTest extends ApiTestCase
 
         $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Secret Note'])->create();
 
-        $inactiveUser = $inactiveUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $note = $note->_real();
+        $inactiveUser = $inactiveUser;
+        $bandSpace = $bandSpace;
+        $note = $note;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);

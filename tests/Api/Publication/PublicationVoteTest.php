@@ -24,7 +24,7 @@ class PublicationVoteTest extends ApiTestCase
     public function test_post_vote_upvote(): void
     {
         $this->createOnlinePublication();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -47,7 +47,7 @@ class PublicationVoteTest extends ApiTestCase
     public function test_post_vote_downvote(): void
     {
         $this->createOnlinePublication();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -72,8 +72,8 @@ class PublicationVoteTest extends ApiTestCase
         $publication = $this->createOnlinePublication();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $publication->_real()->voteCache = $voteCache->_real();
-        $publication->_save();
+        $publication->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($publication);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -81,10 +81,10 @@ class PublicationVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_publication',
-            'entityId' => (string) $publication->_real()->id,
+            'entityId' => (string) $publication->id,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/publications/test-publication/vote',
@@ -107,8 +107,8 @@ class PublicationVoteTest extends ApiTestCase
         $publication = $this->createOnlinePublication();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $publication->_real()->voteCache = $voteCache->_real();
-        $publication->_save();
+        $publication->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($publication);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -116,11 +116,11 @@ class PublicationVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_publication',
-            'entityId' => (string) $publication->_real()->id,
+            'entityId' => (string) $publication->id,
         ])->create();
 
         // POST same value = toggle off
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/publications/test-publication/vote',
@@ -193,7 +193,7 @@ class PublicationVoteTest extends ApiTestCase
     public function test_post_vote_invalid_value(): void
     {
         $this->createOnlinePublication();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -225,7 +225,7 @@ class PublicationVoteTest extends ApiTestCase
     public function test_post_vote_no_value(): void
     {
         $this->createOnlinePublication();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -256,7 +256,7 @@ class PublicationVoteTest extends ApiTestCase
 
     public function test_vote_on_nonexistent_publication(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

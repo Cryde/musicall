@@ -31,10 +31,10 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -43,7 +43,7 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $files = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $files = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $files);
 
         /** @var BandSpaceFile $file */
@@ -51,7 +51,7 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
         $this->assertSame('sample.txt', $file->originalName);
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
-        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'task', $task->_real()->id);
+        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'task', $task->id);
         $this->assertNotNull($attachment);
     }
 
@@ -66,10 +66,10 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $taskInOtherBand->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $taskInOtherBand->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -98,10 +98,10 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],

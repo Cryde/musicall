@@ -52,7 +52,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
             'voteCache'           => $voteCache1,
-        ])->create()->_real();
+        ])->create();
 
         // pub2: has votes (1 up, 2 down), current user did NOT vote
         $voteCache2 = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 2])->create();
@@ -75,7 +75,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
             'voteCache'           => $voteCache2,
-        ])->create()->_real();
+        ])->create();
 
         // not taken (status) :
         PublicationFactory::new([
@@ -90,7 +90,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'author' => $author, 'status' => Publication::STATUS_ONLINE, 'subCategory' => $sub2,
         ])->create();
 
-        $this->client->loginUser($currentUser->_real());
+        $this->client->loginUser($currentUser);
         $this->client->request('GET', '/api/publications', [
             'order' => ['publication_datetime' => 'asc'],
             'sub_category.slug' => 'chroniques'
@@ -109,7 +109,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'title'                => 'Titre de la publication 2',
                     'sub_category'         => [
                         '@type' => 'SubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
@@ -136,7 +136,7 @@ class PublicationGetCollectionTest extends ApiTestCase
                     'title'                => 'Titre de la publication 1',
                     'sub_category'         => [
                         '@type' => 'SubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',

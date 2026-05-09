@@ -7,15 +7,15 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use Zenstruck\Foundry\Factory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 use function Symfony\Component\String\u;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<Publication>
+ * @extends PersistentObjectFactory<Publication>
  */
-final class PublicationFactory extends PersistentProxyObjectFactory
+final class PublicationFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

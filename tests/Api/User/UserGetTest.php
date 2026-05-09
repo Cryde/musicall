@@ -26,7 +26,7 @@ class UserGetTest extends ApiTestCase
 
     public function test_get_self(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/users/self');
@@ -47,7 +47,7 @@ class UserGetTest extends ApiTestCase
 
     public function test_get_self_as_admin(): void
     {
-        $user1 = UserFactory::new()->asAdminUser()->create()->_real();
+        $user1 = UserFactory::new()->asAdminUser()->create();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/users/self');
@@ -69,7 +69,7 @@ class UserGetTest extends ApiTestCase
 
     public function test_get_item(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
 
         $this->client->request('GET', '/api/users/' . $user1->id);
         $this->assertResponseIsSuccessful();

@@ -4,9 +4,9 @@ namespace App\Tests\Factory\Message;
 
 use App\Entity\Message\Message;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class MessageFactory extends PersistentProxyObjectFactory
+final class MessageFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

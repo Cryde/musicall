@@ -6,12 +6,12 @@ namespace App\Tests\Factory\User;
 
 use App\Entity\User\UserEmailLog;
 use App\Enum\User\UserEmailType;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<UserEmailLog>
+ * @extends PersistentObjectFactory<UserEmailLog>
  */
-final class UserEmailLogFactory extends PersistentProxyObjectFactory
+final class UserEmailLogFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

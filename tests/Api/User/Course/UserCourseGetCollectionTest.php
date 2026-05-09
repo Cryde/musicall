@@ -57,7 +57,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'editionDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2024-01-03T10:00:00+00:00'),
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?sortBy=creation_datetime&sortOrder=desc');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
@@ -66,9 +66,9 @@ class UserCourseGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/user_courses/' . $course2->_real()->id,
+                    '@id' => '/api/user_courses/' . $course2->id,
                     '@type' => 'UserCourse',
-                    'id' => $course2->_real()->id,
+                    'id' => $course2->id,
                     'title' => 'Course 2',
                     'slug' => 'course-2',
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
@@ -79,15 +79,15 @@ class UserCourseGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserCourseCategory',
-                        'id' => $category->_real()->id,
+                        'id' => $category->id,
                         'title' => 'Guitare',
                         'slug' => 'guitare',
                     ],
                 ],
                 [
-                    '@id' => '/api/user_courses/' . $course1->_real()->id,
+                    '@id' => '/api/user_courses/' . $course1->id,
                     '@type' => 'UserCourse',
-                    'id' => $course1->_real()->id,
+                    'id' => $course1->id,
                     'title' => 'Course 1',
                     'slug' => 'course-1',
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -98,7 +98,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
                     'type_label' => 'text',
                     'category' => [
                         '@type' => 'UserCourseCategory',
-                        'id' => $category->_real()->id,
+                        'id' => $category->id,
                         'title' => 'Guitare',
                         'slug' => 'guitare',
                     ],
@@ -133,14 +133,14 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->request('GET', '/api/user/courses');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $user1Course->_real()->id,
+                    'id' => $user1Course->id,
                     'title' => 'User 1 Course',
                 ],
             ],
@@ -171,14 +171,14 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $course->_real()->id,
+                    'id' => $course->id,
                     'title' => 'Course',
                 ],
             ],
@@ -208,14 +208,14 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?status=' . Publication::STATUS_DRAFT);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $draftCourse->_real()->id,
+                    'id' => $draftCourse->id,
                     'title' => 'Draft Course',
                 ],
             ],
@@ -251,14 +251,14 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/courses?category=' . $guitarCategory->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/courses?category=' . $guitarCategory->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
                 [
-                    'id' => $guitarCourse->_real()->id,
+                    'id' => $guitarCourse->id,
                     'title' => 'Guitar Course',
                 ],
             ],
@@ -281,7 +281,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             ]);
         }
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?itemsPerPage=10');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
@@ -308,7 +308,7 @@ class UserCourseGetCollectionTest extends ApiTestCase
             ]);
         }
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?itemsPerPage=10&page=2');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
@@ -344,18 +344,18 @@ class UserCourseGetCollectionTest extends ApiTestCase
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2024-01-02T10:00:00+00:00'),
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?sortBy=title&sortOrder=asc');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'totalItems' => 2,
             'member' => [
                 [
-                    'id' => $alphaCourse->_real()->id,
+                    'id' => $alphaCourse->id,
                     'title' => 'Alpha Course',
                 ],
                 [
-                    'id' => $zebraCourse->_real()->id,
+                    'id' => $zebraCourse->id,
                     'title' => 'Zebra Course',
                 ],
             ],

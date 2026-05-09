@@ -57,7 +57,7 @@ class AnnounceSearchTest extends ApiTestCase
             ->asMusician()
             ->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/musicians/search',
@@ -79,13 +79,13 @@ class AnnounceSearchTest extends ApiTestCase
         $this->assertCount(2, $response['member']);
 
         // First result (newest) should be Lyon
-        $this->assertEquals($announce2->_real()->id, $response['member'][0]['id']);
+        $this->assertEquals($announce2->id, $response['member'][0]['id']);
         $this->assertEquals('Lyon', $response['member'][0]['location_name']);
         $this->assertEquals('olivia', $response['member'][0]['user']['username']);
         $this->assertEquals('Guitariste', $response['member'][0]['instrument']['name']);
 
         // Second result should be Paris
-        $this->assertEquals($announce1->_real()->id, $response['member'][1]['id']);
+        $this->assertEquals($announce1->id, $response['member'][1]['id']);
         $this->assertEquals('Paris', $response['member'][1]['location_name']);
         $this->assertEquals('philip', $response['member'][1]['user']['username']);
     }
@@ -124,7 +124,7 @@ class AnnounceSearchTest extends ApiTestCase
                 'creationDatetime' => new \DateTime('2022-01-01T00:00:00+00:00')
             ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/musicians/search',
@@ -175,7 +175,7 @@ class AnnounceSearchTest extends ApiTestCase
             ->asMusician()
             ->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/musicians/search',
@@ -190,14 +190,14 @@ class AnnounceSearchTest extends ApiTestCase
 
         $response = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertCount(1, $response['member']);
-        $this->assertEquals($announce1->_real()->id, $response['member'][0]['id']);
+        $this->assertEquals($announce1->id, $response['member'][0]['id']);
     }
 
     public function test_search_musicians_without_parameters_returns_success(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/musicians/search',

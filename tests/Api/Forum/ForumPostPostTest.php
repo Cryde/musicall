@@ -47,11 +47,11 @@ class ForumPostPostTest extends ApiTestCase
         ])->create();
 
         //pretest
-        $this->assertCount(0, $forumPostRepository->findBy(['topic' => $topic->_real()]));
+        $this->assertCount(0, $forumPostRepository->findBy(['topic' => $topic]));
         $this->assertSame(10, $topic->postNumber);
         $this->assertSame(5, $forum1->postNumber);
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 "content" => "test content for new message",
@@ -60,7 +60,7 @@ class ForumPostPostTest extends ApiTestCase
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
         $this->assertResponseIsSuccessful();
-        $results = $forumPostRepository->findBy(['topic' => $topic->_real()]);
+        $results = $forumPostRepository->findBy(['topic' => $topic]);
         $this->assertCount(1, $results);
         $userId = $user1->id;
         $this->assertJsonEquals([
@@ -80,8 +80,8 @@ class ForumPostPostTest extends ApiTestCase
         ]);
 
         // Verify counters are incremented
-        $topic->_refresh();
-        $forum1->_refresh();
+        \Zenstruck\Foundry\Persistence\refresh($topic);
+        \Zenstruck\Foundry\Persistence\refresh($forum1);
         $this->assertSame(11, $topic->postNumber);
         $this->assertSame(6, $forum1->postNumber);
         $this->assertSame($results[0]->id, $topic->lastPost->id);
@@ -101,7 +101,7 @@ class ForumPostPostTest extends ApiTestCase
             'title' => 'Topic title',
         ])->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => '',
@@ -149,7 +149,7 @@ class ForumPostPostTest extends ApiTestCase
             'title' => 'Topic title',
         ])->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => 'short',
@@ -182,7 +182,7 @@ class ForumPostPostTest extends ApiTestCase
     {
         $user1 = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => 'This is a valid content message',
@@ -225,7 +225,7 @@ class ForumPostPostTest extends ApiTestCase
             'isLocked' => true,
         ])->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/forum/posts',
             [
                 'content' => 'This is a valid content message',

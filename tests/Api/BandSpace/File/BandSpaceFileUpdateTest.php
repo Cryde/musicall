@@ -36,10 +36,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
             'originalName' => 'old.pdf',
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId,
@@ -51,7 +51,7 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $response = $this->getResponseAsArray();
         $this->assertSame('new.pdf', $response['original_name']);
 
-        $this->assertActivityRecorded($bandSpace->_real(), $fileId, 'renamed', ['from' => 'old.pdf', 'to' => 'new.pdf']);
+        $this->assertActivityRecorded($bandSpace, $fileId, 'renamed', ['from' => 'old.pdf', 'to' => 'new.pdf']);
     }
 
     public function test_rename_strips_path_separators(): void
@@ -62,10 +62,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['originalName' => '../../etc/passwd.txt'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -84,11 +84,11 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Live'])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
-        $folderId = $folder->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $fileId = $file->id;
+        $folderId = $folder->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId,
@@ -100,7 +100,7 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $response = $this->getResponseAsArray();
         $this->assertSame($folderId, $response['folder_id']);
 
-        $this->assertActivityRecorded($bandSpace->_real(), $fileId, 'moved', [
+        $this->assertActivityRecorded($bandSpace, $fileId, 'moved', [
             'from_folder_id' => null,
             'to_folder_id' => $folderId,
             'to_folder_name' => 'Live',
@@ -120,10 +120,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
             'folder' => $folder,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['folderId' => null],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -143,11 +143,11 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $foreignFolder = BandSpaceFolderFactory::new(['bandSpace' => $otherBand, 'createdBy' => $user, 'name' => 'X'])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
-            ['folderId' => $foreignFolder->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
+            ['folderId' => $foreignFolder->id],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -177,17 +177,17 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $file = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'tags' => new ArrayCollection([$tagKept->_real(), $tagRemoved->_real()]),
+            'tags' => new ArrayCollection([$tagKept, $tagRemoved]),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId,
-            ['tagIds' => [$tagKept->_real()->id, $tagAdded->_real()->id]],
+            ['tagIds' => [$tagKept->id, $tagAdded->id]],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -195,16 +195,16 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $response = $this->getResponseAsArray();
         $tagIdsInResponse = array_map(fn (array $t): string => $t['id'], $response['tags']);
         sort($tagIdsInResponse);
-        $expected = [$tagKept->_real()->id, $tagAdded->_real()->id];
+        $expected = [$tagKept->id, $tagAdded->id];
         sort($expected);
         $this->assertSame($expected, $tagIdsInResponse);
 
-        $this->assertActivityRecorded($bandSpace->_real(), $fileId, 'untagged', [
-            'tag_id' => $tagRemoved->_real()->id,
+        $this->assertActivityRecorded($bandSpace, $fileId, 'untagged', [
+            'tag_id' => $tagRemoved->id,
             'tag_name' => 'remove',
         ]);
-        $this->assertActivityRecorded($bandSpace->_real(), $fileId, 'tagged', [
-            'tag_id' => $tagAdded->_real()->id,
+        $this->assertActivityRecorded($bandSpace, $fileId, 'tagged', [
+            'tag_id' => $tagAdded->id,
             'tag_name' => 'add',
         ]);
     }
@@ -217,10 +217,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['tagIds' => [Uuid::uuid4()->toString()]],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -246,10 +246,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['attachedSourceType' => 'task', 'attachedSourceId' => Uuid::uuid4()->toString()],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -281,10 +281,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
             'originalName' => 'shared.pdf',
         ])->create();
 
-        $this->client->loginUser($editor->_real());
+        $this->client->loginUser($editor);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['originalName' => 'edited.pdf'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -303,10 +303,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['originalName' => 'hacked.pdf'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -336,10 +336,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('2026-01-01'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id,
             ['originalName' => 'whatever.pdf'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -368,12 +368,12 @@ class BandSpaceFileUpdateTest extends ApiTestCase
             'createdBy' => $user,
             'originalName' => 'unchanged.pdf',
         ])->create();
-        $fileId = $file->_real()->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $fileId,
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $fileId,
             ['originalName' => 'unchanged.pdf'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

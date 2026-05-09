@@ -27,10 +27,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'newuser@example.com'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -38,16 +38,16 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $invitation = $invitationRepo->findPendingByEmailAndBandSpace('newuser@example.com', $bandSpace->_real());
+        $invitation = $invitationRepo->findPendingByEmailAndBandSpace('newuser@example.com', $bandSpace);
         $this->assertNotNull($invitation);
         $this->assertNull($invitation->existingUser);
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitation',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations/' . $invitation->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
             '@type' => 'BandSpaceInvitation',
             'id' => $invitation->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'email' => 'newuser@example.com',
             'status' => 'pending',
             'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -55,14 +55,14 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $invitation->id);
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_sent', $activities[0]->type);
         $this->assertSame(
             ['email' => 'newuser@example.com', 'invited_user_id' => null, 'invited_username' => null],
             $activities[0]->payload,
         );
-        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($admin->id, $activities[0]->actor?->id);
     }
 
     public function test_create_invitation_by_email_for_existing_user(): void
@@ -72,10 +72,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'existing@example.com'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -83,17 +83,17 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $invitation = $invitationRepo->findPendingByEmailAndBandSpace('existing@example.com', $bandSpace->_real());
+        $invitation = $invitationRepo->findPendingByEmailAndBandSpace('existing@example.com', $bandSpace);
         $this->assertNotNull($invitation);
         $this->assertNotNull($invitation->existingUser);
-        $this->assertSame($existingUser->_real()->id, $invitation->existingUser->id);
+        $this->assertSame($existingUser->id, $invitation->existingUser->id);
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitation',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations/' . $invitation->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
             '@type' => 'BandSpaceInvitation',
             'id' => $invitation->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'email' => 'existing@example.com',
             'status' => 'pending',
             'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -108,10 +108,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'guitarist42'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -119,16 +119,16 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $invitation = $invitationRepo->findPendingByEmailAndBandSpace('guitarist@example.com', $bandSpace->_real());
+        $invitation = $invitationRepo->findPendingByEmailAndBandSpace('guitarist@example.com', $bandSpace);
         $this->assertNotNull($invitation);
-        $this->assertSame($targetUser->_real()->id, $invitation->existingUser->id);
+        $this->assertSame($targetUser->id, $invitation->existingUser->id);
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitation',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations/' . $invitation->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
             '@type' => 'BandSpaceInvitation',
             'id' => $invitation->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'email' => 'guitarist@example.com',
             'status' => 'pending',
             'creation_datetime' => $invitation->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -142,10 +142,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'nonexistent_user'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -178,10 +178,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'member'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -207,10 +207,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'member@example.com'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -241,10 +241,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'invited@example.com'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -270,10 +270,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'newuser@example.com'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -297,10 +297,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => ''],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -331,11 +331,11 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
-            ['identifier' => $admin->_real()->email],
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => $admin->email],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -358,11 +358,11 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
-            ['identifier' => $admin->_real()->username],
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => $admin->username],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -385,10 +385,10 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
             ['identifier' => 'not-a-valid@'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

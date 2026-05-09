@@ -39,9 +39,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -114,9 +114,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -157,9 +157,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -200,9 +200,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'endDate' => new \DateTime('2024-12-31'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -254,9 +254,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -308,9 +308,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

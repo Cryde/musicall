@@ -29,12 +29,12 @@ class TaskCommentDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $user])->create();
-        $commentId = (string) $comment->_real()->id;
+        $commentId = (string) $comment->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $commentId,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $commentId,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -45,7 +45,7 @@ class TaskCommentDeleteTest extends ApiTestCase
         $this->assertNull($commentRepo->find($commentId));
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_deleted', $activities[0]->type);
         $this->assertSame(['comment_id' => $commentId], $activities[0]->payload);
@@ -60,12 +60,12 @@ class TaskCommentDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $author])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $author])->create();
-        $commentId = (string) $comment->_real()->id;
+        $commentId = (string) $comment->id;
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $commentId,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $commentId,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -76,7 +76,7 @@ class TaskCommentDeleteTest extends ApiTestCase
         $this->assertNull($commentRepo->find($commentId));
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_deleted', $activities[0]->type);
     }
@@ -91,10 +91,10 @@ class TaskCommentDeleteTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $author])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $author])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -102,7 +102,7 @@ class TaskCommentDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
 
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
-        $this->assertNotNull($commentRepo->find($comment->_real()->id));
+        $this->assertNotNull($commentRepo->find($comment->id));
     }
 
     public function test_non_member_cannot_delete_comment(): void
@@ -114,10 +114,10 @@ class TaskCommentDeleteTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $author])->create();
         $comment = TaskCommentFactory::new(['task' => $task, 'author' => $author])->create();
 
-        $this->client->loginUser($stranger->_real());
+        $this->client->loginUser($stranger);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

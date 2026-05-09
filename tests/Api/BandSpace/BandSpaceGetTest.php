@@ -25,8 +25,8 @@ class BandSpaceGetTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);
@@ -44,7 +44,7 @@ class BandSpaceGetTest extends ApiTestCase
 
     public function test_get_item_not_found(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/xxx');
@@ -69,8 +69,8 @@ class BandSpaceGetTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);
@@ -98,8 +98,8 @@ class BandSpaceGetTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $inactiveUser = $inactiveUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $inactiveUser = $inactiveUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);

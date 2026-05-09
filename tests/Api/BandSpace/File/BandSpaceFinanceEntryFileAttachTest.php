@@ -38,10 +38,10 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'invoice.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $entry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -50,14 +50,14 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $files = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $files = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $files);
 
         /** @var BandSpaceFile $file */
         $file = $files[0];
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
-        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'finance', $entry->_real()->id);
+        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'finance', $entry->id);
         $this->assertNotNull($attachment);
     }
 
@@ -76,10 +76,10 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($owner->_real());
+        $this->client->loginUser($owner);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $entry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -105,10 +105,10 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $entry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -142,10 +142,10 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $foreignEntry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $foreignEntry->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -179,10 +179,10 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/entries/' . $entry->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],

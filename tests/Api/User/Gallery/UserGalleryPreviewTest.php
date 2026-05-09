@@ -27,7 +27,7 @@ class UserGalleryPreviewTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/preview');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -49,15 +49,15 @@ class UserGalleryPreviewTest extends ApiTestCase
         GalleryImageFactory::new(['gallery' => $gallery, 'imageName' => 'image1.jpg'])->create();
         GalleryImageFactory::new(['gallery' => $gallery, 'imageName' => 'image2.jpg'])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/preview');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserGalleryPreview',
-            '@id' => '/api/user/galleries/' . $gallery->_real()->id . '/preview',
+            '@id' => '/api/user/galleries/' . $gallery->id . '/preview',
             '@type' => 'UserGalleryPreview',
-            'id' => $gallery->_real()->id,
+            'id' => $gallery->id,
             'title' => 'My Gallery',
             'slug' => 'my-gallery',
             'description' => 'A great description',
@@ -67,14 +67,14 @@ class UserGalleryPreviewTest extends ApiTestCase
             'author_username' => 'base_admin',
             'images' => [
                 [
-                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->_real()->id . '/image1.jpg',
-                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/image1.jpg',
-                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/image1.jpg',
+                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->id . '/image1.jpg',
+                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->id . '/image1.jpg',
+                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->id . '/image1.jpg',
                 ],
                 [
-                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
-                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
-                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->_real()->id . '/image2.jpg',
+                    'small' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_small/images/gallery/' . $gallery->id . '/image2.jpg',
+                    'medium' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery->id . '/image2.jpg',
+                    'full' => 'http://musicall.test/media/cache/resolve/gallery_image_filter_full/images/gallery/' . $gallery->id . '/image2.jpg',
                 ],
             ],
         ]);
@@ -92,15 +92,15 @@ class UserGalleryPreviewTest extends ApiTestCase
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2024-01-01T10:00:00+00:00'),
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/preview');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserGalleryPreview',
-            '@id' => '/api/user/galleries/' . $gallery->_real()->id . '/preview',
+            '@id' => '/api/user/galleries/' . $gallery->id . '/preview',
             '@type' => 'UserGalleryPreview',
-            'id' => $gallery->_real()->id,
+            'id' => $gallery->id,
             'title' => 'My Pending Gallery',
             'slug' => 'my-pending-gallery',
             'description' => 'Pending description',
@@ -121,8 +121,8 @@ class UserGalleryPreviewTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/preview');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -145,8 +145,8 @@ class UserGalleryPreviewTest extends ApiTestCase
             'status' => Gallery::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/galleries/' . $gallery->_real()->id . '/preview');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/preview');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -165,7 +165,7 @@ class UserGalleryPreviewTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/galleries/999999/preview');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

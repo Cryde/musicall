@@ -25,13 +25,13 @@ class TeacherProfileDeleteTest extends ApiTestCase
 
         TeacherProfileFactory::new()->create(['user' => $user]);
 
-        $this->assertNotNull($teacherProfileRepository->findOneBy(['user' => $user->_real()]));
+        $this->assertNotNull($teacherProfileRepository->findOneBy(['user' => $user]));
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/teacher-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
-        $this->assertNull($teacherProfileRepository->findOneBy(['user' => $user->_real()]));
+        $this->assertNull($teacherProfileRepository->findOneBy(['user' => $user]));
     }
 
     public function test_delete_teacher_profile_not_logged_in(): void
@@ -44,7 +44,7 @@ class TeacherProfileDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/teacher-profile');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

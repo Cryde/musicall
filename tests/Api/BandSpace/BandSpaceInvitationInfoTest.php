@@ -32,14 +32,14 @@ class BandSpaceInvitationInfoTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->request('GET', '/api/band_spaces/invitations/' . $invitation->_real()->token . '/info');
+        $this->client->request('GET', '/api/band_spaces/invitations/' . $invitation->token . '/info');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitationInfo',
-            '@id' => '/api/band_spaces/invitations/' . $invitation->_real()->token . '/info',
+            '@id' => '/api/band_spaces/invitations/' . $invitation->token . '/info',
             '@type' => 'BandSpaceInvitationInfo',
-            'token' => $invitation->_real()->token,
+            'token' => $invitation->token,
             'email' => 'invited@example.com',
             'band_space_name' => 'The Rockers',
         ]);
@@ -75,7 +75,7 @@ class BandSpaceInvitationInfoTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('-1 day'),
         ])->create();
 
-        $this->client->request('GET', '/api/band_spaces/invitations/' . $invitation->_real()->token . '/info');
+        $this->client->request('GET', '/api/band_spaces/invitations/' . $invitation->token . '/info');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
@@ -94,7 +94,7 @@ class BandSpaceInvitationInfoTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->request('GET', '/api/band_spaces/invitations/' . $invitation->_real()->token . '/info');
+        $this->client->request('GET', '/api/band_spaces/invitations/' . $invitation->token . '/info');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }

@@ -25,10 +25,10 @@ class BandSpaceFileTagUpdateTest extends ApiTestCase
 
         $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Setlists'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             ['name' => 'Setlist'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -50,10 +50,10 @@ class BandSpaceFileTagUpdateTest extends ApiTestCase
             'colorHex' => '#000000',
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             ['colorHex' => '#FF6600'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -75,10 +75,10 @@ class BandSpaceFileTagUpdateTest extends ApiTestCase
             'colorHex' => '#000000',
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             ['colorHex' => null],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -97,10 +97,10 @@ class BandSpaceFileTagUpdateTest extends ApiTestCase
         BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Riders'])->create();
         $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Setlists'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             ['name' => 'riders'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -126,10 +126,10 @@ class BandSpaceFileTagUpdateTest extends ApiTestCase
 
         $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Riders'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             ['colorHex' => 'not-a-color'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -156,10 +156,10 @@ class BandSpaceFileTagUpdateTest extends ApiTestCase
 
         $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Riders'])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             ['name' => 'Forbidden'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

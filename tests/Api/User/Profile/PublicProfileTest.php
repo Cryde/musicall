@@ -32,7 +32,7 @@ class PublicProfileTest extends ApiTestCase
         $profile->bio = 'Test bio content';
         $profile->location = 'Paris, France';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $this->client->request('GET', '/api/user/profile/publicuser');
         $this->assertResponseIsSuccessful();
@@ -61,7 +61,7 @@ class PublicProfileTest extends ApiTestCase
         $profile = $user->profile;
         $profile->bio = 'Musician bio';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
         UserSocialLinkFactory::new()->create([
             'profile' => $profile,
@@ -101,7 +101,7 @@ class PublicProfileTest extends ApiTestCase
         ]);
         $profile = $user->profile;
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $instrument = InstrumentFactory::new()->asGuitar()->create();
         $style = StyleFactory::new()->create(['name' => 'Rock']);
@@ -128,7 +128,7 @@ class PublicProfileTest extends ApiTestCase
             'musician_announces' => [
                 [
                     '@type' => 'PublicProfileAnnounce',
-                    'id' => $announce->_real()->id,
+                    'id' => $announce->id,
                     'creation_datetime' => '2024-01-15T10:30:00+00:00',
                     'type' => MusicianAnnounce::TYPE_MUSICIAN,
                     'instrument_name' => 'Guitariste',
@@ -165,7 +165,7 @@ class PublicProfileTest extends ApiTestCase
         ]);
         $profile = $user->profile;
         $profile->isPublic = false;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $this->client->request('GET', '/api/user/profile/privateuser');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -191,7 +191,7 @@ class PublicProfileTest extends ApiTestCase
         $profile->bio = null;
         $profile->location = null;
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $this->client->request('GET', '/api/user/profile/emptyprofile');
         $this->assertResponseIsSuccessful();

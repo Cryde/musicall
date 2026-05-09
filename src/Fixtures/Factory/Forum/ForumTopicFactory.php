@@ -7,15 +7,14 @@ namespace App\Fixtures\Factory\Forum;
 use App\Entity\Forum\Forum;
 use App\Entity\Forum\ForumTopic;
 use App\Fixtures\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
-use Zenstruck\Foundry\Persistence\Proxy;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<ForumTopic>
+ * @extends PersistentObjectFactory<ForumTopic>
  */
-final class ForumTopicFactory extends PersistentProxyObjectFactory
+final class ForumTopicFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
@@ -34,9 +33,9 @@ final class ForumTopicFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<Forum>|Forum $forum
+     * @param Forum $forum
      */
-    public function withForum(Proxy|Forum $forum): self
+    public function withForum(Forum $forum): self
     {
         return $this->with(['forum' => $forum]);
     }

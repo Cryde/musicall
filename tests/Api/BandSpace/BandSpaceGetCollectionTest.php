@@ -33,9 +33,9 @@ class BandSpaceGetCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace1, 'user' => $user])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace2, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace1 = $bandSpace1->_real();
-        $bandSpace2 = $bandSpace2->_real();
+        $user = $user;
+        $bandSpace1 = $bandSpace1;
+        $bandSpace2 = $bandSpace2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces');
@@ -68,7 +68,7 @@ class BandSpaceGetCollectionTest extends ApiTestCase
 
     public function test_get_collection_empty(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces');
@@ -94,8 +94,8 @@ class BandSpaceGetCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $userBandSpace, 'user' => $user])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $otherBandSpace, 'user' => $otherUser])->create();
 
-        $user = $user->_real();
-        $userBandSpace = $userBandSpace->_real();
+        $user = $user;
+        $userBandSpace = $userBandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces');

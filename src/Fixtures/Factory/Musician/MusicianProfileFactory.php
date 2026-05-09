@@ -6,14 +6,14 @@ namespace App\Fixtures\Factory\Musician;
 
 use App\Entity\Musician\MusicianProfile;
 use App\Enum\Musician\AvailabilityStatus;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<MusicianProfile>
+ * @extends PersistentObjectFactory<MusicianProfile>
  */
-final class MusicianProfileFactory extends PersistentProxyObjectFactory
+final class MusicianProfileFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

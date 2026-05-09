@@ -28,7 +28,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
 
     public function test_get_content_overview_as_admin(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);
@@ -53,7 +53,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
 
     public function test_get_content_overview_with_data(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
@@ -66,7 +66,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
             'subCategory' => $sub,
             'publicationDatetime' => new \DateTime(),
             'viewCache' => $viewCache,
-        ])->create()->_real();
+        ])->create();
 
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/content-overview?from=' . $today . '&to=' . $today);
@@ -101,7 +101,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
 
     public function test_get_content_overview_with_forum_and_announces(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         // Forum data: 2 topics today, 3 posts today (assigned to a shared topic)
@@ -181,7 +181,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
 
     public function test_get_content_overview_as_normal_user(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($user);
@@ -191,7 +191,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
 
     public function test_get_content_overview_missing_from(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);
@@ -201,7 +201,7 @@ class ContentOverviewMetricsTest extends ApiTestCase
 
     public function test_get_content_overview_missing_to(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);

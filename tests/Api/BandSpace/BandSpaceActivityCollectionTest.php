@@ -43,10 +43,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2026-04-02 10:00:00'),
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -60,8 +60,8 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         $this->assertSame('finance', $data['member'][0]['module']);
         $this->assertSame('status_changed', $data['member'][1]['type']);
         $this->assertSame('task', $data['member'][1]['module']);
-        $this->assertSame($admin->_real()->id, $data['member'][0]['actor']['id']);
-        $this->assertSame($admin->_real()->username, $data['member'][0]['actor']['username']);
+        $this->assertSame($admin->id, $data['member'][0]['actor']['id']);
+        $this->assertSame($admin->username, $data['member'][0]['actor']['username']);
     }
 
     public function test_filter_by_module(): void
@@ -74,10 +74,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Finance, 'type' => 'entry_created', 'actor' => $admin])->create();
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Agenda, 'type' => 'entry_created', 'actor' => $admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities?module[]=task&module[]=agenda',
+            '/api/band_spaces/' . $bandSpace->id . '/activities?module[]=task&module[]=agenda',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -101,10 +101,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'type' => 'status_changed', 'actor' => $admin])->create();
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'type' => 'comment_added', 'actor' => $member])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities?actor_id=' . $member->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/activities?actor_id=' . $member->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -113,7 +113,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame(1, $data['totalItems']);
         $this->assertSame('comment_added', $data['member'][0]['type']);
-        $this->assertSame($member->_real()->id, $data['member'][0]['actor']['id']);
+        $this->assertSame($member->id, $data['member'][0]['actor']['id']);
     }
 
     public function test_filter_by_type(): void
@@ -125,10 +125,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'type' => 'status_changed', 'actor' => $admin])->create();
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'type' => 'comment_added', 'actor' => $admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities?type=status_changed',
+            '/api/band_spaces/' . $bandSpace->id . '/activities?type=status_changed',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -149,10 +149,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'type' => 'status_changed', 'actor' => $admin, 'creationDatetime' => new \DateTime('2026-03-15 10:00:00')])->create();
         BandSpaceActivityFactory::new(['bandSpace' => $bandSpace, 'module' => BandSpaceModule::Task, 'type' => 'status_changed', 'actor' => $admin, 'creationDatetime' => new \DateTime('2026-06-01 10:00:00')])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities?from=2026-02-01T00:00:00%2B00:00&to=2026-04-01T00:00:00%2B00:00',
+            '/api/band_spaces/' . $bandSpace->id . '/activities?from=2026-02-01T00:00:00%2B00:00&to=2026-04-01T00:00:00%2B00:00',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -176,10 +176,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
             'actor' => null,
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -198,10 +198,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -215,10 +215,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => UserFactory::new()->create(['username' => 'admin', 'email' => 'a@a.com']), 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($stranger->_real());
+        $this->client->loginUser($stranger);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -242,10 +242,10 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
             ])->create();
         }
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/activities?page=1',
+            '/api/band_spaces/' . $bandSpace->id . '/activities?page=1',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

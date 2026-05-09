@@ -23,7 +23,7 @@ class CommentVoteTest extends ApiTestCase
     public function test_post_vote_upvote(): void
     {
         $comment = $this->createComment();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -48,8 +48,8 @@ class CommentVoteTest extends ApiTestCase
         $comment = $this->createComment();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $comment->_real()->voteCache = $voteCache->_real();
-        $comment->_save();
+        $comment->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($comment);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -57,10 +57,10 @@ class CommentVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_comment',
-            'entityId' => (string) $comment->_real()->id,
+            'entityId' => (string) $comment->id,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/comments/' . $comment->id . '/vote',
@@ -83,8 +83,8 @@ class CommentVoteTest extends ApiTestCase
         $comment = $this->createComment();
         $user = UserFactory::new()->asBaseUser()->create();
         $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
-        $comment->_real()->voteCache = $voteCache->_real();
-        $comment->_save();
+        $comment->voteCache = $voteCache;
+        \Zenstruck\Foundry\Persistence\save($comment);
 
         VoteFactory::new([
             'voteCache' => $voteCache,
@@ -92,10 +92,10 @@ class CommentVoteTest extends ApiTestCase
             'value' => 1,
             'identifier' => 'test-identifier',
             'entityType' => 'app_comment',
-            'entityId' => (string) $comment->_real()->id,
+            'entityId' => (string) $comment->id,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/comments/' . $comment->id . '/vote',
@@ -115,7 +115,7 @@ class CommentVoteTest extends ApiTestCase
 
     public function test_vote_on_nonexistent_comment(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -140,7 +140,7 @@ class CommentVoteTest extends ApiTestCase
     public function test_post_vote_invalid_value(): void
     {
         $comment = $this->createComment();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

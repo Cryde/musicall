@@ -32,13 +32,13 @@ class BandSpaceFileRollbackTest extends ApiTestCase
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 1])->create();
         $v2 = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 2])->create();
 
-        $file->_real()->currentVersion = $v2->_real();
+        $file->currentVersion = $v2;
         self::getContainer()->get(EntityManagerInterface::class)->flush();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId . '/rollback',
@@ -51,6 +51,7 @@ class BandSpaceFileRollbackTest extends ApiTestCase
         $this->assertSame($fileId, $response['id']);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
 
         /** @var BandSpaceFileRepository $fileRepo */
         $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
@@ -61,7 +62,7 @@ class BandSpaceFileRollbackTest extends ApiTestCase
 
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::File, $fileId);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
         $rolledBack = array_values(array_filter($activities, fn ($a): bool => $a->type === 'rolled_back'));
         $this->assertCount(1, $rolledBack);
         $this->assertSame(['from_version_number' => 2, 'to_version_number' => 1], $rolledBack[0]->payload);
@@ -76,10 +77,10 @@ class BandSpaceFileRollbackTest extends ApiTestCase
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 1])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/rollback',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/rollback',
             ['versionNumber' => 99],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -106,13 +107,13 @@ class BandSpaceFileRollbackTest extends ApiTestCase
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $v1 = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 1])->create();
 
-        $file->_real()->currentVersion = $v1->_real();
+        $file->currentVersion = $v1;
         self::getContainer()->get(EntityManagerInterface::class)->flush();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/rollback',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/rollback',
             ['versionNumber' => 1],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -140,10 +141,10 @@ class BandSpaceFileRollbackTest extends ApiTestCase
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'versionNumber' => 1])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/rollback',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/rollback',
             ['versionNumber' => 1],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

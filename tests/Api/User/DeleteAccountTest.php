@@ -39,7 +39,7 @@ class DeleteAccountTest extends ApiTestCase
             'email' => 'base_user1@email.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/users/delete_account', [
             'password' => 'wrong_password',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -77,7 +77,7 @@ class DeleteAccountTest extends ApiTestCase
             'type' => 1,
         ]);
 
-        $realUser = $user->_real();
+        $realUser = $user;
         $userId = $realUser->id;
 
         $this->client->loginUser($realUser);
@@ -107,7 +107,7 @@ class DeleteAccountTest extends ApiTestCase
         $this->assertCount(0, $deletedUser->socialAccounts);
         // Publication still exists (FK intact)
         /** @var Publication $realPublication */
-        $realPublication = $publication->_real();
+        $realPublication = $publication;
         $this->assertSame('My publication', $realPublication->title);
         $this->assertSame($userId, $realPublication->author->id);
     }
@@ -120,7 +120,7 @@ class DeleteAccountTest extends ApiTestCase
             'password' => null,
         ]);
 
-        $realUser = $user->_real();
+        $realUser = $user;
         $userId = $realUser->id;
 
         $this->client->loginUser($realUser);

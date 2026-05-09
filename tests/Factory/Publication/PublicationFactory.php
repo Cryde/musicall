@@ -4,9 +4,9 @@ namespace App\Tests\Factory\Publication;
 
 use App\Entity\Publication;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class PublicationFactory extends PersistentProxyObjectFactory
+final class PublicationFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -41,7 +41,7 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
 
     public function test_command_creates_preference_with_all_disabled(): void
     {
-        $user = UserFactory::new()->create()->_real();
+        $user = UserFactory::new()->create();
 
         $this->assertNull($user->notificationPreference);
 
@@ -67,7 +67,7 @@ class DisableUserNotificationsCommandTest extends KernelTestCase
 
     public function test_command_updates_existing_preference_to_all_disabled(): void
     {
-        $user = UserFactory::new()->create()->_real();
+        $user = UserFactory::new()->create();
 
         // Create existing preference with some notifications enabled
         $preference = new UserNotificationPreference();

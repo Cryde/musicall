@@ -33,11 +33,11 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/attach',
-            ['sourceType' => 'task', 'sourceId' => $task->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'task', 'sourceId' => $task->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -45,9 +45,9 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
         $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $fileRepo->find($file->_real()->id);
+        $reloaded = $fileRepo->find($file->id);
         $this->assertNotNull($reloaded);
-        $attachment = $attachmentRepo->findOneByFileAndSource($reloaded, 'task', $task->_real()->id);
+        $attachment = $attachmentRepo->findOneByFileAndSource($reloaded, 'task', $task->id);
         $this->assertNotNull($attachment);
     }
 
@@ -62,15 +62,15 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => \Ramsey\Uuid\Uuid::fromString($task->_real()->id),
+            'sourceId' => \Ramsey\Uuid\Uuid::fromString($task->id),
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/attach',
-            ['sourceType' => 'task', 'sourceId' => $task->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'task', 'sourceId' => $task->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -93,11 +93,11 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         ])->create();
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $other])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/attach',
-            ['sourceType' => 'finance', 'sourceId' => $entry->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'finance', 'sourceId' => $entry->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 

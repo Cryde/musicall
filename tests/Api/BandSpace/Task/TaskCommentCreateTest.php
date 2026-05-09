@@ -27,10 +27,10 @@ class TaskCommentCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments',
             ['content' => 'Super, on avance bien !'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -38,19 +38,19 @@ class TaskCommentCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
-        $comments = $commentRepo->findByTask($task->_real());
+        $comments = $commentRepo->findByTask($task);
         $this->assertCount(1, $comments);
 
         $comment = $comments[0];
         $this->assertJsonEquals([
             '@context' => '/api/contexts/TaskComment',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments/' . $comment->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
             '@type' => 'TaskComment',
             'id' => $comment->id,
-            'band_space_id' => $bandSpace->_real()->id,
-            'task_id' => $task->_real()->id,
-            'author_id' => $user->_real()->id,
-            'author_username' => $user->_real()->username,
+            'band_space_id' => $bandSpace->id,
+            'task_id' => $task->id,
+            'author_id' => $user->id,
+            'author_username' => $user->username,
             'author_profile_picture_url' => null,
             'content' => 'Super, on avance bien !',
             'creation_datetime' => $comment->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -58,7 +58,7 @@ class TaskCommentCreateTest extends ApiTestCase
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_added', $activities[0]->type);
     }
@@ -72,18 +72,18 @@ class TaskCommentCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $mentioned])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments',
-            ['content' => 'Hey @[' . $mentioned->_real()->id . '] regarde ça'],
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments',
+            ['content' => 'Hey @[' . $mentioned->id . '] regarde ça'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(2, $activities);
 
         $types = array_map(fn($a) => $a->type, $activities);
@@ -102,18 +102,18 @@ class TaskCommentCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $bob])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments',
-            ['content' => 'cc @[' . $alice->_real()->id . '] et @[' . $bob->_real()->id . ']'],
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments',
+            ['content' => 'cc @[' . $alice->id . '] et @[' . $bob->id . ']'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(3, $activities);
 
         $mentionedIds = array_map(
@@ -121,8 +121,8 @@ class TaskCommentCreateTest extends ApiTestCase
             array_values(array_filter($activities, fn($a) => $a->type === 'mention'))
         );
         $this->assertCount(2, $mentionedIds);
-        $this->assertContains((string) $alice->_real()->id, $mentionedIds);
-        $this->assertContains((string) $bob->_real()->id, $mentionedIds);
+        $this->assertContains((string) $alice->id, $mentionedIds);
+        $this->assertContains((string) $bob->id, $mentionedIds);
     }
 
     public function test_create_comment_skips_mention_of_non_member(): void
@@ -133,18 +133,18 @@ class TaskCommentCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments',
-            ['content' => 'Salut @[' . $stranger->_real()->id . ']'],
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments',
+            ['content' => 'Salut @[' . $stranger->id . ']'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('comment_added', $activities[0]->type);
     }
@@ -157,10 +157,10 @@ class TaskCommentCreateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/comments',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments',
             ['content' => 'Forbidden comment'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

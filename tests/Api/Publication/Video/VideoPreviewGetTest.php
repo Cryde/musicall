@@ -38,7 +38,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=' . urlencode(self::VALID_YOUTUBE_URL),
@@ -74,7 +74,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview',
@@ -104,7 +104,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=carot',
@@ -134,7 +134,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=' . urlencode('https://google.com'),
@@ -180,7 +180,7 @@ class VideoPreviewGetTest extends ApiTestCase
             'viewCache' => ViewCacheFactory::new(['count' => 10])->create(),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=' . urlencode(self::VALID_YOUTUBE_URL),
@@ -210,7 +210,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=' . urlencode('https://www.youtube.com/watch?v=' . self::NON_EXISTING_VIDEO_ID),
@@ -233,7 +233,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=',
@@ -263,7 +263,7 @@ class VideoPreviewGetTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
             '/api/publications/video/preview?url=' . urlencode('https://youtu.be/' . self::SHORT_VIDEO_ID),

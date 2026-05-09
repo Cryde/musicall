@@ -37,10 +37,10 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($invitee->_real());
+        $this->client->loginUser($invitee);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/accept',
+            '/api/band_spaces/invitations/' . $invitation->token . '/accept',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -49,25 +49,25 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitationAccept',
-            '@id' => '/api/band_space_invitation_accepts/' . $invitation->_real()->token,
+            '@id' => '/api/band_space_invitation_accepts/' . $invitation->token,
             '@type' => 'BandSpaceInvitationAccept',
-            'token' => $invitation->_real()->token,
-            'band_space_id' => $bandSpace->_real()->id,
+            'token' => $invitation->token,
+            'band_space_id' => $bandSpace->id,
             'band_space_name' => 'The Rockers',
         ]);
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertTrue($membershipRepo->isMember($bandSpace->_real(), $invitee->_real()));
+        $this->assertTrue($membershipRepo->isMember($bandSpace, $invitee));
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $invitation->id);
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_accepted', $activities[0]->type);
         $this->assertSame(
-            ['email' => 'invitee@example.com', 'invited_user_id' => $invitee->_real()->id, 'invited_username' => 'invitee'],
+            ['email' => 'invitee@example.com', 'invited_user_id' => $invitee->id, 'invited_username' => 'invitee'],
             $activities[0]->payload,
         );
-        $this->assertSame($invitee->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($invitee->id, $activities[0]->actor?->id);
     }
 
     public function test_accept_invitation_email_match(): void
@@ -85,10 +85,10 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($invitee->_real());
+        $this->client->loginUser($invitee);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/accept',
+            '/api/band_spaces/invitations/' . $invitation->token . '/accept',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -97,15 +97,15 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitationAccept',
-            '@id' => '/api/band_space_invitation_accepts/' . $invitation->_real()->token,
+            '@id' => '/api/band_space_invitation_accepts/' . $invitation->token,
             '@type' => 'BandSpaceInvitationAccept',
-            'token' => $invitation->_real()->token,
-            'band_space_id' => $bandSpace->_real()->id,
+            'token' => $invitation->token,
+            'band_space_id' => $bandSpace->id,
             'band_space_name' => 'Jazz Band',
         ]);
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertTrue($membershipRepo->isMember($bandSpace->_real(), $invitee->_real()));
+        $this->assertTrue($membershipRepo->isMember($bandSpace, $invitee));
     }
 
     public function test_accept_expired_invitation(): void
@@ -123,10 +123,10 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('-1 day'),
         ])->create();
 
-        $this->client->loginUser($invitee->_real());
+        $this->client->loginUser($invitee);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/accept',
+            '/api/band_spaces/invitations/' . $invitation->token . '/accept',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -161,10 +161,10 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($wrongUser->_real());
+        $this->client->loginUser($wrongUser);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/accept',
+            '/api/band_spaces/invitations/' . $invitation->token . '/accept',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -199,10 +199,10 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($invitee->_real());
+        $this->client->loginUser($invitee);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/accept',
+            '/api/band_spaces/invitations/' . $invitation->token . '/accept',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']

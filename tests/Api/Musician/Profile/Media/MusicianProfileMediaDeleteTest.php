@@ -29,16 +29,16 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         $media = MusicianProfileMediaFactory::new()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'title' => 'Media to delete',
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->id);
 
         $this->assertResponseIsSuccessful();
     }
@@ -58,19 +58,19 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
         $musicianProfile1 = MusicianProfileFactory::new()->create(['user' => $user1]);
         $musicianProfile2 = MusicianProfileFactory::new()->create(['user' => $user2]);
 
-        $user1->musicianProfile = $musicianProfile1->_real();
-        $user1->_save();
-        $user2->musicianProfile = $musicianProfile2->_real();
-        $user2->_save();
+        $user1->musicianProfile = $musicianProfile1;
+        \Zenstruck\Foundry\Persistence\save($user1);
+        $user2->musicianProfile = $musicianProfile2;
+        \Zenstruck\Foundry\Persistence\save($user2);
 
         $media = MusicianProfileMediaFactory::new()->create([
-            'musicianProfile' => $musicianProfile1->_real(),
+            'musicianProfile' => $musicianProfile1,
             'title' => 'User1 Media',
         ]);
 
         // Login as user2 and try to delete user1's media
-        $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->_real()->id);
+        $this->client->loginUser($user2);
+        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -96,10 +96,10 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/musician-profile/media/00000000-0000-0000-0000-000000000000');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -135,16 +135,16 @@ class MusicianProfileMediaDeleteTest extends ApiTestCase
         ]);
 
         $musicianProfile1 = MusicianProfileFactory::new()->create(['user' => $user1]);
-        $user1->musicianProfile = $musicianProfile1->_real();
-        $user1->_save();
+        $user1->musicianProfile = $musicianProfile1;
+        \Zenstruck\Foundry\Persistence\save($user1);
 
         $media = MusicianProfileMediaFactory::new()->create([
-            'musicianProfile' => $musicianProfile1->_real(),
+            'musicianProfile' => $musicianProfile1,
         ]);
 
         // Login as user2 who has no musician profile
-        $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->_real()->id);
+        $this->client->loginUser($user2);
+        $this->client->request('DELETE', '/api/user/musician-profile/media/' . $media->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([

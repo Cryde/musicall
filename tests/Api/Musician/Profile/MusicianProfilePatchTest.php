@@ -35,11 +35,11 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
-        $musicianProfile->_refresh();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'availability_status' => 'not_available',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -49,7 +49,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/MusicianProfileEdit',
             '@id' => '/api/user/musician-profile',
             '@type' => 'MusicianProfileEdit',
-            'id' => $musicianProfile->_real()->id,
+            'id' => $musicianProfile->id,
             'availability_status' => 'not_available',
             'availability_status_label' => 'Non disponible',
             'instruments' => [],
@@ -80,15 +80,15 @@ class MusicianProfilePatchTest extends ApiTestCase
             'skillLevel' => SkillLevel::BEGINNER,
         ]);
 
-        $musicianProfile->_refresh();
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'instruments' => [
                 [
-                    'instrument_id' => $drum->_real()->id,
+                    'instrument_id' => $drum->id,
                     'skill_level' => 'professional',
                 ],
             ],
@@ -99,13 +99,13 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/MusicianProfileEdit',
             '@id' => '/api/user/musician-profile',
             '@type' => 'MusicianProfileEdit',
-            'id' => $musicianProfile->_real()->id,
+            'id' => $musicianProfile->id,
             'availability_status' => 'looking_for_band',
             'availability_status_label' => 'Cherche un groupe',
             'instruments' => [
                 [
                     '@type' => 'MusicianProfileEditInstrument',
-                    'instrument_id' => $drum->_real()->id,
+                    'instrument_id' => $drum->id,
                     'instrument_name' => 'Batteur',
                     'skill_level' => 'professional',
                     'skill_level_label' => 'Professionnel',
@@ -130,16 +130,16 @@ class MusicianProfilePatchTest extends ApiTestCase
         $musicianProfile = MusicianProfileFactory::new()->create([
             'user' => $user,
             'availabilityStatus' => null,
-            'styles' => [$rock->_real()],
+            'styles' => [$rock],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
-        $musicianProfile->_refresh();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
-            'style_ids' => [$jazz->_real()->id, $metal->_real()->id],
+            'style_ids' => [$jazz->id, $metal->id],
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
@@ -147,18 +147,18 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/MusicianProfileEdit',
             '@id' => '/api/user/musician-profile',
             '@type' => 'MusicianProfileEdit',
-            'id' => $musicianProfile->_real()->id,
+            'id' => $musicianProfile->id,
             'instruments' => [],
             'style_ids' => [],
             'styles' => [
                 [
                     '@type' => 'MusicianProfileEditStyle',
-                    'id' => $jazz->_real()->id,
+                    'id' => $jazz->id,
                     'name' => 'Jazz',
                 ],
                 [
                     '@type' => 'MusicianProfileEditStyle',
-                    'id' => $metal->_real()->id,
+                    'id' => $metal->id,
                     'name' => 'Metal',
                 ],
             ],
@@ -186,11 +186,11 @@ class MusicianProfilePatchTest extends ApiTestCase
             'skillLevel' => SkillLevel::ADVANCED,
         ]);
 
-        $musicianProfile->_refresh();
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'instruments' => [],
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -200,7 +200,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/MusicianProfileEdit',
             '@id' => '/api/user/musician-profile',
             '@type' => 'MusicianProfileEdit',
-            'id' => $musicianProfile->_real()->id,
+            'id' => $musicianProfile->id,
             'availability_status' => 'open_to_collaborations',
             'availability_status_label' => 'Ouvert aux collaborations',
             'instruments' => [],
@@ -222,13 +222,13 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
-        $musicianProfile->_refresh();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
 
         $nonExistentId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'instruments' => [
                 [
@@ -243,7 +243,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/MusicianProfileEdit',
             '@id' => '/api/user/musician-profile',
             '@type' => 'MusicianProfileEdit',
-            'id' => $musicianProfile->_real()->id,
+            'id' => $musicianProfile->id,
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
@@ -263,13 +263,13 @@ class MusicianProfilePatchTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
-        $musicianProfile->_refresh();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
+        \Zenstruck\Foundry\Persistence\refresh($musicianProfile);
 
         $nonExistentId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'style_ids' => [$nonExistentId],
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -279,7 +279,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/MusicianProfileEdit',
             '@id' => '/api/user/musician-profile',
             '@type' => 'MusicianProfileEdit',
-            'id' => $musicianProfile->_real()->id,
+            'id' => $musicianProfile->id,
             'instruments' => [],
             'style_ids' => [],
             'styles' => [],
@@ -293,7 +293,7 @@ class MusicianProfilePatchTest extends ApiTestCase
             'email' => 'noprofileuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/musician-profile', [
             'availability_status' => 'looking_for_band',
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);

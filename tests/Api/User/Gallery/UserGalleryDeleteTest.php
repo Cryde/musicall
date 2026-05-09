@@ -27,7 +27,7 @@ class UserGalleryDeleteTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->_real()->id);
+        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -43,9 +43,9 @@ class UserGalleryDeleteTest extends ApiTestCase
             'author' => $user,
             'status' => Gallery::STATUS_DRAFT,
         ]);
-        $galleryId = $gallery->_real()->id;
+        $galleryId = $gallery->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/galleries/' . $galleryId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -63,8 +63,8 @@ class UserGalleryDeleteTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->_real()->id);
+        $this->client->loginUser($otherUser);
+        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -78,7 +78,7 @@ class UserGalleryDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/galleries/999999');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -97,8 +97,8 @@ class UserGalleryDeleteTest extends ApiTestCase
             'status' => Gallery::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/galleries/' . $gallery->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([

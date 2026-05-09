@@ -50,20 +50,20 @@ class BandSpaceInvitationGetCollectionTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($admin->_real());
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations');
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/invitations');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceInvitation',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations',
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations/' . $invitation->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id,
                     '@type' => 'BandSpaceInvitation',
-                    'id' => $invitation->_real()->id,
-                    'band_space_id' => $bandSpace->_real()->id,
+                    'id' => $invitation->id,
+                    'band_space_id' => $bandSpace->id,
                     'email' => 'pending@example.com',
                     'status' => 'pending',
                     'creation_datetime' => '2026-06-01T12:00:00+00:00',
@@ -82,8 +82,8 @@ class BandSpaceInvitationGetCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations');
+        $this->client->loginUser($member);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/invitations');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([

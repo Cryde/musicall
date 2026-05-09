@@ -4,15 +4,14 @@ namespace App\Fixtures\Factory\Forum;
 
 use App\Entity\Forum\Forum;
 use App\Entity\Forum\ForumCategory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
-use Zenstruck\Foundry\Persistence\Proxy;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<Forum>
+ * @extends PersistentObjectFactory<Forum>
  */
-final class ForumFactory extends PersistentProxyObjectFactory
+final class ForumFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
@@ -30,17 +29,17 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function withForumCategory(Proxy|ForumCategory $forumCategory): self
+    public function withForumCategory(ForumCategory $forumCategory): self
     {
         return $this->with(['forumCategory' => $forumCategory]);
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asPresentation(Proxy|ForumCategory $forumCategory): self
+    public function asPresentation(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -52,9 +51,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asDiscussionGenerale(Proxy|ForumCategory $forumCategory): self
+    public function asDiscussionGenerale(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -66,9 +65,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asTheorieMusicale(Proxy|ForumCategory $forumCategory): self
+    public function asTheorieMusicale(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -80,9 +79,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asInformatiqueMusicale(Proxy|ForumCategory $forumCategory): self
+    public function asInformatiqueMusicale(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -94,9 +93,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asPromotion(Proxy|ForumCategory $forumCategory): self
+    public function asPromotion(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -108,9 +107,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asPetitesAnnonces(Proxy|ForumCategory $forumCategory): self
+    public function asPetitesAnnonces(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -122,9 +121,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asVideos(Proxy|ForumCategory $forumCategory): self
+    public function asVideos(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -136,9 +135,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asAudio(Proxy|ForumCategory $forumCategory): self
+    public function asAudio(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -150,9 +149,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asSuggestions(Proxy|ForumCategory $forumCategory): self
+    public function asSuggestions(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,
@@ -164,9 +163,9 @@ final class ForumFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param Proxy<ForumCategory>|ForumCategory $forumCategory
+     * @param ForumCategory $forumCategory
      */
-    public function asBugs(Proxy|ForumCategory $forumCategory): self
+    public function asBugs(ForumCategory $forumCategory): self
     {
         return $this->with([
             'forumCategory' => $forumCategory,

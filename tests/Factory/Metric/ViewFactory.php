@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Metric;
 
 use App\Entity\Metric\View;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class ViewFactory extends PersistentProxyObjectFactory
+final class ViewFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

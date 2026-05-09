@@ -36,22 +36,22 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
         ])->create();
 
-        $this->client->loginUser($admin->_real());
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/members');
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/members');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceMember',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/members',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members',
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $adminMembership->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $adminMembership->id,
                     '@type' => 'BandSpaceMember',
-                    'id' => $adminMembership->_real()->id,
-                    'band_space_id' => $bandSpace->_real()->id,
-                    'user_id' => $admin->_real()->id,
-                    'username' => $admin->_real()->username,
+                    'id' => $adminMembership->id,
+                    'band_space_id' => $bandSpace->id,
+                    'user_id' => $admin->id,
+                    'username' => $admin->username,
                     'role' => 'admin',
                     'profile_picture_url' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
@@ -59,11 +59,11 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
                     'left_datetime' => null,
                 ],
                 [
-                    '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $memberMembership->_real()->id,
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id,
                     '@type' => 'BandSpaceMember',
-                    'id' => $memberMembership->_real()->id,
-                    'band_space_id' => $bandSpace->_real()->id,
-                    'user_id' => $member->_real()->id,
+                    'id' => $memberMembership->id,
+                    'band_space_id' => $bandSpace->id,
+                    'user_id' => $member->id,
                     'username' => 'member_user',
                     'role' => 'user',
                     'profile_picture_url' => null,
@@ -85,8 +85,8 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/members');
+        $this->client->loginUser($member);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/members');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -109,8 +109,8 @@ class BandSpaceMemberGetCollectionTest extends ApiTestCase
 
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($outsider->_real());
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/members');
+        $this->client->loginUser($outsider);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/members');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([

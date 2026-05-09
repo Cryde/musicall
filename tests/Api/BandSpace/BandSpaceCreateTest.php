@@ -30,7 +30,7 @@ class BandSpaceCreateTest extends ApiTestCase
         $existingBandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $existingBandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
+        $user = $user;
 
         // Verify one band space exists initially
         $result = $bandSpaceRepository->findByUser($user);
@@ -72,7 +72,7 @@ class BandSpaceCreateTest extends ApiTestCase
     public function testCreateBandSpaceWithoutNameFails(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
-        $user = $user->_real();
+        $user = $user;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

@@ -3,14 +3,14 @@
 namespace App\Fixtures\Factory\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<BandSpace>
+ * @extends PersistentObjectFactory<BandSpace>
  */
-final class BandSpaceFactory extends PersistentProxyObjectFactory
+final class BandSpaceFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

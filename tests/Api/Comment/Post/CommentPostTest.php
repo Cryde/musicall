@@ -21,8 +21,8 @@ class CommentPostTest extends ApiTestCase
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $commentThread = CommentThreadFactory::new()->create();
 
-        $user1 = $user1->_real();
-        $commentThread = $commentThread->_real();
+        $user1 = $user1;
+        $commentThread = $commentThread;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/comments', [
@@ -59,7 +59,7 @@ with multiline",
     {
         $commentThread = CommentThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->_real()->id,
+            'thread'  => '/api/comment_threads/' . $commentThread->id,
             'content' => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -69,7 +69,7 @@ with multiline",
     {
         $commentThread = CommentThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/comments', [
-            'thread'  => '/api/comment_threads/' . $commentThread->_real()->id,
+            'thread'  => '/api/comment_threads/' . $commentThread->id,
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

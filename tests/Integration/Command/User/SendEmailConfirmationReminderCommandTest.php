@@ -273,7 +273,7 @@ class SendEmailConfirmationReminderCommandTest extends KernelTestCase
         $user = UserFactory::new()->create([
             'confirmationDatetime' => null,
             'creationDatetime' => new \DateTime(sprintf('-%d days', $daysAgo)),
-        ])->_real();
+        ]);
 
         return $user;
     }

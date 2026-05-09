@@ -28,10 +28,10 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         $this->client->disableReboot();
         [$user, $bandSpace, $file, , ] = $this->setupFileWithTwoVersions(currentVersionNumber: 2);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/download',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
         );
 
         $this->assertResponseIsSuccessful();
@@ -48,10 +48,10 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         $this->client->disableReboot();
         [$user, $bandSpace, $file, , ] = $this->setupFileWithTwoVersions(currentVersionNumber: 2);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/versions/1/download',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/versions/1/download',
         );
 
         $this->assertResponseIsSuccessful();
@@ -63,10 +63,10 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         $this->client->disableReboot();
         [$user, $bandSpace, $file] = $this->setupFileWithTwoVersions(currentVersionNumber: 1);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/versions/99/download',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/versions/99/download',
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -88,10 +88,10 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         [, $bandSpace, $file] = $this->setupFileWithTwoVersions(currentVersionNumber: 1);
         $other = UserFactory::new()->asBaseUser()->create(['username' => 'other', 'email' => 'other@test.com']);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/download',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -142,12 +142,12 @@ class BandSpaceFileDownloadTest extends ApiTestCase
             'storagePath' => $v2StoragePath,
         ])->create();
 
-        $file->_real()->currentVersion = $currentVersionNumber === 2 ? $v2->_real() : $v1->_real();
+        $file->currentVersion = $currentVersionNumber === 2 ? $v2 : $v1;
         self::getContainer()->get(EntityManagerInterface::class)->flush();
 
         /** @var FilesystemOperator $fs */
         $fs = self::getContainer()->get('oneup_flysystem.musicall_filesystem');
-        $bandSpaceId = $bandSpace->_real()->id;
+        $bandSpaceId = $bandSpace->id;
         $fs->write('/band_space_files/' . $bandSpaceId . '/' . $v1StoragePath, self::V1_CONTENT);
         $fs->write('/band_space_files/' . $bandSpaceId . '/' . $v2StoragePath, self::V2_CONTENT);
 

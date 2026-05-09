@@ -5,12 +5,12 @@ namespace App\Tests\Factory\BandSpace\File;
 use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Tests\Factory\User\UserFactory;
 use Ramsey\Uuid\Uuid;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceFileAttachment>
+ * @extends PersistentObjectFactory<BandSpaceFileAttachment>
  */
-final class BandSpaceFileAttachmentFactory extends PersistentProxyObjectFactory
+final class BandSpaceFileAttachmentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

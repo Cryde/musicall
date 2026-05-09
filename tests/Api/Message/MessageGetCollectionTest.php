@@ -35,8 +35,8 @@ class MessageGetCollectionTest extends ApiTestCase
             'content'          => 'last message from user 1',
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
         ])->create(); // should be the last message in the order
-        $thread->_real()->lastMessage = $message1->_real();
-        $thread->_save();
+        $thread->lastMessage = $message1;
+        \Zenstruck\Foundry\Persistence\save($thread);
         $message2 = MessageFactory::new([
             'author'           => $user1, 'thread' => $thread,
             'content'          => 'first message from user 1',
@@ -57,15 +57,15 @@ class MessageGetCollectionTest extends ApiTestCase
             'content'          => 'other message',
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2021-01-02T02:03:04+00:00'),
         ])->create(); // this message is in another thread
-        $thread2->_real()->lastMessage = $otherMessage->_real();
+        $thread2->lastMessage = $otherMessage;
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
         //this is other thread participant
         MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user2])->create();
-        $thread = $thread->_real();
-        $user1 = $user1->_real();
-        $user2 = $user2->_real();
+        $thread = $thread;
+        $user1 = $user1;
+        $user2 = $user2;
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]=desc');
@@ -76,7 +76,7 @@ class MessageGetCollectionTest extends ApiTestCase
             '@type'            => 'Collection',
             'member'     => [
                 [
-                    '@id' => '/api/messages/' . $message2->_real()->id,
+                    '@id' => '/api/messages/' . $message2->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2023-01-02T02:03:04+00:00',
                     'author'            => [
@@ -88,7 +88,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'first message from user 1',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message3->_real()->id,
+                    '@id' => '/api/messages/' . $message3->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'author'            => [
@@ -100,7 +100,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'second message from user 2',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message4->_real()->id,
+                    '@id' => '/api/messages/' . $message4->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2021-01-02T02:03:04+00:00',
                     'author'            => [
@@ -112,7 +112,7 @@ class MessageGetCollectionTest extends ApiTestCase
                     'content'           => 'third message from user 1',
                 ],
                 [
-                    '@id' => '/api/messages/' . $message1->_real()->id,
+                    '@id' => '/api/messages/' . $message1->id,
                     '@type' => 'Message',
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'            => [
@@ -158,11 +158,11 @@ class MessageGetCollectionTest extends ApiTestCase
             'thread' => $thread,
             'content' => '<img src=x onerror="alert(1)"><a href="javascript:alert(1)">click</a><script>alert(1)</script>',
         ])->create();
-        $thread->_real()->lastMessage = $message->_real();
-        $thread->_save();
+        $thread->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($thread);
 
-        $this->client->loginUser($user1->_real());
-        $this->client->request('GET', '/api/messages/' . $thread->_real()->id);
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/messages/' . $thread->id);
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'member' => [
@@ -183,9 +183,9 @@ class MessageGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
 
-        $thread = $thread->_real();
+        $thread = $thread;
 
-        $this->client->loginUser($user3->_real()); // user3 is not part of this thread
+        $this->client->loginUser($user3); // user3 is not part of this thread
         $this->client->request('GET', '/api/messages/' . $thread->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([

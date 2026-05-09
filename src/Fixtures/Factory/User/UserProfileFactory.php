@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Fixtures\Factory\User;
 
 use App\Entity\User\UserProfile;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<UserProfile>
+ * @extends PersistentObjectFactory<UserProfile>
  */
-final class UserProfileFactory extends PersistentProxyObjectFactory
+final class UserProfileFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -29,26 +29,26 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $memberMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $memberMembership->_real()->id
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $membershipRepository = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertFalse($membershipRepository->isMember($bandSpace->_real(), $member->_real()));
+        $this->assertFalse($membershipRepository->isMember($bandSpace, $member));
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $member->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $member->id);
         $this->assertCount(1, $activities);
         $this->assertSame('member_removed', $activities[0]->type);
         $this->assertSame(
-            ['target_user_id' => $member->_real()->id, 'target_username' => 'member_user'],
+            ['target_user_id' => $member->id, 'target_username' => 'member_user'],
             $activities[0]->payload,
         );
-        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($admin->id, $activities[0]->actor?->id);
     }
 
     public function test_cannot_kick_self(): void
@@ -58,10 +58,10 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
 
         $adminMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $adminMembership->_real()->id
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $adminMembership->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
@@ -86,10 +86,10 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
         $adminMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $adminMembership->_real()->id
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $adminMembership->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -115,10 +115,10 @@ class BandSpaceMemberDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace1, 'user' => $admin, 'role' => Role::Admin])->create();
         $memberMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace2, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace1->_real()->id . '/members/' . $memberMembership->_real()->id
+            '/api/band_spaces/' . $bandSpace1->id . '/members/' . $memberMembership->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

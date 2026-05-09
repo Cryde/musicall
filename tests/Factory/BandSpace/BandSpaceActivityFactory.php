@@ -4,12 +4,12 @@ namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\BandSpaceActivity;
 use App\Enum\BandSpace\BandSpaceModule;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceActivity>
+ * @extends PersistentObjectFactory<BandSpaceActivity>
  */
-final class BandSpaceActivityFactory extends PersistentProxyObjectFactory
+final class BandSpaceActivityFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

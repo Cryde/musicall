@@ -50,10 +50,10 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $membership = $membership->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $membership = $membership;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -121,10 +121,10 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $membership = $membership->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $membership = $membership;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -163,10 +163,10 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $membership = $membership->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $membership = $membership;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -208,10 +208,10 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'amount' => 8000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $membership2 = $membership2->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $membership2 = $membership2;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -244,10 +244,10 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $membership = $membership->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $membership = $membership;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -299,10 +299,10 @@ class FinanceEntrySplitCreateTest extends ApiTestCase
             'member' => $membership,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $membership = $membership->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $membership = $membership;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

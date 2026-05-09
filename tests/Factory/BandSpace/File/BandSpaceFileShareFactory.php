@@ -4,13 +4,12 @@ namespace App\Tests\Factory\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFileShare;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
-use Zenstruck\Foundry\Persistence\Proxy;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceFileShare>
+ * @extends PersistentObjectFactory<BandSpaceFileShare>
  */
-final class BandSpaceFileShareFactory extends PersistentProxyObjectFactory
+final class BandSpaceFileShareFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
@@ -33,7 +32,7 @@ final class BandSpaceFileShareFactory extends PersistentProxyObjectFactory
      *
      * @param array<string, mixed> $attributes
      *
-     * @return BandSpaceFileShare&Proxy<BandSpaceFileShare>
+     * @return BandSpaceFileShare
      */
     public static function createOneWithToken(string $clearToken, array $attributes = []): mixed
     {

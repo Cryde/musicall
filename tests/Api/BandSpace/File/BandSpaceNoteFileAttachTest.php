@@ -31,10 +31,10 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.png', 'cover.png', 'image/png', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -46,7 +46,7 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
         $this->assertSame(1, $response['current_version_number']);
 
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $files = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $files = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $files);
 
         /** @var BandSpaceFile $file */
@@ -54,7 +54,7 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
         $this->assertSame('cover.png', $file->originalName);
 
         $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
-        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'note', $note->_real()->id);
+        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'note', $note->id);
         $this->assertNotNull($attachment);
     }
 
@@ -68,10 +68,10 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -91,10 +91,10 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.png', 'cover.png', 'image/png', null, true);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $foreignNote->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $foreignNote->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -123,10 +123,10 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
 
         $upload = new UploadedFile(__DIR__ . '/fixtures/sample.png', 'cover.png', 'image/png', null, true);
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/notes/' . $note->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id . '/files',
             [],
             ['uploadedFile' => $upload],
             ['CONTENT_TYPE' => 'multipart/form-data'],

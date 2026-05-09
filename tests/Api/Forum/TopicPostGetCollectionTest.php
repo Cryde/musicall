@@ -75,9 +75,9 @@ class TopicPostGetCollectionTest extends ApiTestCase
             'member' => [
                 // Ordered by creationDatetime ASC
                 [
-                    '@id' => '/api/topic_posts/' . $post1->_real()->id,
+                    '@id' => '/api/topic_posts/' . $post1->id,
                     '@type' => 'TopicPost',
-                    'id' => $post1->_real()->id,
+                    'id' => $post1->id,
                     'creation_datetime' => '2024-01-05T10:00:00+00:00',
                     'update_datetime' => null,
                     'content' => 'First post content here',
@@ -93,9 +93,9 @@ class TopicPostGetCollectionTest extends ApiTestCase
                     'user_vote' => null,
                 ],
                 [
-                    '@id' => '/api/topic_posts/' . $post2->_real()->id,
+                    '@id' => '/api/topic_posts/' . $post2->id,
                     '@type' => 'TopicPost',
-                    'id' => $post2->_real()->id,
+                    'id' => $post2->id,
                     'creation_datetime' => '2024-01-10T15:00:00+00:00',
                     'update_datetime' => null,
                     'content' => 'Second post content here',
@@ -111,9 +111,9 @@ class TopicPostGetCollectionTest extends ApiTestCase
                     'user_vote' => null,
                 ],
                 [
-                    '@id' => '/api/topic_posts/' . $post3->_real()->id,
+                    '@id' => '/api/topic_posts/' . $post3->id,
                     '@type' => 'TopicPost',
-                    'id' => $post3->_real()->id,
+                    'id' => $post3->id,
                     'creation_datetime' => '2024-01-15T20:00:00+00:00',
                     'update_datetime' => null,
                     'content' => 'Third post content here',

@@ -33,9 +33,9 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
@@ -62,8 +62,8 @@ class FinanceCategoryGetItemTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/nonexistent-id');
@@ -84,9 +84,9 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
@@ -112,9 +112,9 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);

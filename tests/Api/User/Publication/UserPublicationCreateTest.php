@@ -34,23 +34,23 @@ class UserPublicationCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $category = PublicationSubCategoryFactory::new()->asNews()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => 'My New Publication',
-            'categoryId' => $category->_real()->id,
+            'categoryId' => $category->id,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $publications = $publicationRepository->findBy(['author' => $user->_real()]);
+        $publications = $publicationRepository->findBy(['author' => $user]);
         $this->assertCount(1, $publications);
 
         $createdPublication = $publications[0];
         $this->assertEquals('My New Publication', $createdPublication->title);
         $this->assertEquals(Publication::STATUS_DRAFT, $createdPublication->status);
         $this->assertEquals(Publication::TYPE_TEXT, $createdPublication->type);
-        $this->assertEquals($category->_real()->id, $createdPublication->subCategory->id);
+        $this->assertEquals($category->id, $createdPublication->subCategory->id);
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
@@ -59,7 +59,7 @@ class UserPublicationCreateTest extends ApiTestCase
             'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
-                'id' => $category->_real()->id,
+                'id' => $category->id,
                 'title' => 'News',
             ],
         ]);
@@ -70,10 +70,10 @@ class UserPublicationCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $category = PublicationSubCategoryFactory::new()->asNews()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => '',
-            'categoryId' => $category->_real()->id,
+            'categoryId' => $category->id,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -84,10 +84,10 @@ class UserPublicationCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $category = PublicationSubCategoryFactory::new()->asNews()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => 'ab',
-            'categoryId' => $category->_real()->id,
+            'categoryId' => $category->id,
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -97,7 +97,7 @@ class UserPublicationCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => 'My New Publication',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -109,7 +109,7 @@ class UserPublicationCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/publications', [
             'title' => 'My New Publication',
             'categoryId' => 999999,

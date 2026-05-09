@@ -29,8 +29,8 @@ class FinanceCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -80,9 +80,9 @@ class FinanceCategoryCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $parentCategory = $parentCategory->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $parentCategory = $parentCategory;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -143,11 +143,11 @@ class FinanceCategoryCreateTest extends ApiTestCase
         ])->create();
 
         // Try to create level 3 (grandchild under child) — should fail
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/finance/categories',
-            ['name' => 'Mixage', 'parent_id' => (string) $child->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/finance/categories',
+            ['name' => 'Mixage', 'parent_id' => (string) $child->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -178,8 +178,8 @@ class FinanceCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -202,8 +202,8 @@ class FinanceCategoryCreateTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -222,8 +222,8 @@ class FinanceCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

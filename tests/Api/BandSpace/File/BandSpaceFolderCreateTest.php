@@ -24,10 +24,10 @@ class BandSpaceFolderCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
             ['name' => 'Setlists'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -47,18 +47,18 @@ class BandSpaceFolderCreateTest extends ApiTestCase
 
         $parent = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
-            ['name' => '2026', 'parentId' => $parent->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
+            ['name' => '2026', 'parentId' => $parent->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $response = $this->getResponseAsArray();
         $this->assertSame('2026', $response['name']);
-        $this->assertSame($parent->_real()->id, $response['parent_id']);
+        $this->assertSame($parent->id, $response['parent_id']);
         $this->assertSame(1, $response['depth']);
     }
 
@@ -70,10 +70,10 @@ class BandSpaceFolderCreateTest extends ApiTestCase
 
         BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Setlists'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
             ['name' => 'setlists'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -107,11 +107,11 @@ class BandSpaceFolderCreateTest extends ApiTestCase
             ])->create();
         }
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
-            ['name' => 'too-deep', 'parentId' => $parent->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
+            ['name' => 'too-deep', 'parentId' => $parent->id],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -134,10 +134,10 @@ class BandSpaceFolderCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders',
+            '/api/band_spaces/' . $bandSpace->id . '/folders',
             ['name' => 'Riders'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -145,7 +145,7 @@ class BandSpaceFolderCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(BandSpaceFolderRepository::class);
-        $folders = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $folders = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $folders);
         $this->assertSame('Riders', $folders[0]->name);
     }

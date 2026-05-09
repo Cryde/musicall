@@ -24,10 +24,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => 'Riders'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -45,10 +45,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => 'Setlists', 'colorHex' => '#FF6600'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -67,10 +67,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
 
         BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Riders'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => 'riders'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -94,10 +94,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => 'BadColor', 'colorHex' => 'FF6600'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -115,10 +115,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => ''],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -133,10 +133,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => 'Forbidden'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -160,10 +160,10 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags',
+            '/api/band_spaces/' . $bandSpace->id . '/tags',
             ['name' => 'Acoustic', 'colorHex' => '#0099CC'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -172,7 +172,7 @@ class BandSpaceFileTagCreateTest extends ApiTestCase
 
         /** @var BandSpaceFileTagRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileTagRepository::class);
-        $tags = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
+        $tags = $repo->findBy(['bandSpace' => $bandSpace]);
         $this->assertCount(1, $tags);
         $this->assertSame('Acoustic', $tags[0]->name);
         $this->assertSame('#0099CC', $tags[0]->colorHex);

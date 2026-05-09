@@ -37,11 +37,11 @@ class ForumGetTest extends ApiTestCase
             '@context' => '/api/contexts/Forum',
             '@id' => '/api/forum/forum-title',
             '@type' => 'Forum',
-            'id' => $forum->_real()->id,
+            'id' => $forum->id,
             'title' => 'Forum title',
             'forum_category' => [
                 '@type' => 'ForumCategory',
-                'id' => $forumCategory->_real()->id,
+                'id' => $forumCategory->id,
                 'title' => 'Forum category title',
             ],
         ]);

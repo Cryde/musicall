@@ -29,7 +29,7 @@ class GalleryGetCollectionTest extends ApiTestCase
             'slug'                => 'gallery-slug-1',
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 1',
-        ])->create()->_real();
+        ])->create();
         GalleryImageFactory::new(['gallery' => $gallery1])->create();
         $gallery2 = GalleryFactory::new([
             'author'              => $author,
@@ -38,11 +38,11 @@ class GalleryGetCollectionTest extends ApiTestCase
             'slug'                => 'gallery-slug-2',
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 2',
-        ])->create()->_real();
+        ])->create();
 
         // not taken (status) :
-        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_PENDING,])->create()->_real();
-        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_DRAFT,])->create()->_real();
+        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_PENDING,])->create();
+        GalleryFactory::new(['author' => $author, 'status' => Gallery::STATUS_DRAFT,])->create();
 
         $this->client->request('GET', '/api/galleries', [
             'order' => ['publication_datetime' => 'asc'],
@@ -61,7 +61,7 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'title'                => 'Title gallery 2',
                     'publication_datetime' => '2000-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -77,7 +77,7 @@ class GalleryGetCollectionTest extends ApiTestCase
                     'title'                => 'Title gallery 1',
                     'publication_datetime' => '2020-01-02T02:03:04+00:00',
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

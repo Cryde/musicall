@@ -33,7 +33,7 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_first_view_creates_view_cache_and_increments_count(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
+        $publication = PublicationFactory::new()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->assertNull($publication->viewCache);
@@ -46,7 +46,7 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_view_stores_entity_type_and_entity_id(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
+        $publication = PublicationFactory::new()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->viewProcedure->process($publication, $request);
@@ -61,7 +61,7 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_anonymous_duplicate_view_within_24_hours_is_not_counted(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
+        $publication = PublicationFactory::new()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->viewProcedure->process($publication, $request);
@@ -74,7 +74,7 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_anonymous_view_from_different_ip_is_counted(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
+        $publication = PublicationFactory::new()->create();
 
         $this->viewProcedure->process($publication, $this->createRequest('192.168.1.1'));
         $this->assertSame(1, $publication->viewCache->count);
@@ -86,8 +86,8 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_logged_in_user_duplicate_view_within_24_hours_is_not_counted(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $publication = PublicationFactory::new()->create();
+        $user = UserFactory::new()->asBaseUser()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->viewProcedure->process($publication, $request, $user);
@@ -100,9 +100,9 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_different_logged_in_users_are_counted_separately(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
-        $user2 = UserFactory::new()->asAdminUser()->create()->_real();
+        $publication = PublicationFactory::new()->create();
+        $user1 = UserFactory::new()->asBaseUser()->create();
+        $user2 = UserFactory::new()->asAdminUser()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->viewProcedure->process($publication, $request, $user1);
@@ -115,8 +115,8 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_logged_in_user_view_after_24_hours_is_counted(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $publication = PublicationFactory::new()->create();
+        $user = UserFactory::new()->asBaseUser()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->viewProcedure->process($publication, $request, $user);
@@ -136,7 +136,7 @@ class ViewProcedureTest extends KernelTestCase
 
     public function test_anonymous_view_after_24_hours_is_counted(): void
     {
-        $publication = PublicationFactory::new()->create()->_real();
+        $publication = PublicationFactory::new()->create();
         $request = $this->createRequest('192.168.1.1');
 
         $this->viewProcedure->process($publication, $request);

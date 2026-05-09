@@ -47,10 +47,10 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-15 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -88,8 +88,8 @@ class FinanceEntryGetItemTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/nonexistent-id');
@@ -116,9 +116,9 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -150,9 +150,9 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);

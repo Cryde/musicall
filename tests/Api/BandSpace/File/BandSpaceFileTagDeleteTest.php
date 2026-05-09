@@ -31,14 +31,14 @@ class BandSpaceFileTagDeleteTest extends ApiTestCase
         $file = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'tags' => new ArrayCollection([$tag->_real()]),
+            'tags' => new ArrayCollection([$tag]),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $tagId = $tag->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $tagId = $tag->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
             '/api/band_spaces/' . $bandSpaceId . '/tags/' . $tagId,
@@ -67,10 +67,10 @@ class BandSpaceFileTagDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/00000000-0000-0000-0000-000000000000',
+            '/api/band_spaces/' . $bandSpace->id . '/tags/00000000-0000-0000-0000-000000000000',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -97,10 +97,10 @@ class BandSpaceFileTagDeleteTest extends ApiTestCase
 
         $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'Riders'])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tags/' . $tag->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tags/' . $tag->id,
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

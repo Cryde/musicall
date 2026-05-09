@@ -28,7 +28,7 @@ class UserGallerySubmitTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -47,20 +47,20 @@ class UserGallerySubmitTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
         $coverImage = GalleryImageFactory::new(['gallery' => $gallery])->create();
-        $gallery->_real()->coverImage = $coverImage->_real();
-        $gallery->_save();
+        $gallery->coverImage = $coverImage;
+        \Zenstruck\Foundry\Persistence\save($gallery);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
 
-        $updatedGallery = $galleryRepository->find($gallery->_real()->id);
+        $updatedGallery = $galleryRepository->find($gallery->id);
         $this->assertEquals(Gallery::STATUS_PENDING, $updatedGallery->status);
 
         $this->assertJsonContains([
             '@type' => 'UserGallery',
-            'id' => $gallery->_real()->id,
+            'id' => $gallery->id,
             'status' => Gallery::STATUS_PENDING,
             'status_label' => 'En validation',
         ]);
@@ -75,8 +75,8 @@ class UserGallerySubmitTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($otherUser);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -94,8 +94,8 @@ class UserGallerySubmitTest extends ApiTestCase
             'status' => Gallery::STATUS_PENDING,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -113,8 +113,8 @@ class UserGallerySubmitTest extends ApiTestCase
             'status' => Gallery::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
@@ -128,7 +128,7 @@ class UserGallerySubmitTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('PATCH', '/api/user/galleries/999999/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -149,11 +149,11 @@ class UserGallerySubmitTest extends ApiTestCase
             'status' => Gallery::STATUS_DRAFT,
         ]);
         $coverImage = GalleryImageFactory::new(['gallery' => $gallery])->create();
-        $gallery->_real()->coverImage = $coverImage->_real();
-        $gallery->_save();
+        $gallery->coverImage = $coverImage;
+        \Zenstruck\Foundry\Persistence\save($gallery);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
@@ -179,8 +179,8 @@ class UserGallerySubmitTest extends ApiTestCase
             'coverImage' => null,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->_real()->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([

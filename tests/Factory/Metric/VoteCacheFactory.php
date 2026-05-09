@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Metric;
 
 use App\Entity\Metric\VoteCache;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class VoteCacheFactory extends PersistentProxyObjectFactory
+final class VoteCacheFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

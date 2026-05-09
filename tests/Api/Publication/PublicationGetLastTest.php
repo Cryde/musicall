@@ -61,7 +61,7 @@ class PublicationGetLastTest extends ApiTestCase
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
             'voteCache'           => $voteCache2,
-        ])->create()->_real();
+        ])->create();
 
         // pub3: has votes (5 up, 0 down), current user voted up
         $voteCache3 = VoteCacheFactory::new(['upvoteCount' => 5, 'downvoteCount' => 0])->create();
@@ -81,7 +81,7 @@ class PublicationGetLastTest extends ApiTestCase
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 30])->create(),
             'voteCache'           => $voteCache3,
-        ])->create()->_real();
+        ])->create();
 
         // pub4: has votes (0 up, 3 down), current user did NOT vote
         $voteCache4 = VoteCacheFactory::new(['upvoteCount' => 0, 'downvoteCount' => 3])->create();
@@ -101,7 +101,7 @@ class PublicationGetLastTest extends ApiTestCase
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 40])->create(),
             'voteCache'           => $voteCache4,
-        ])->create()->_real();
+        ])->create();
 
         // pub5: no votes
         $pub5 = PublicationFactory::new([
@@ -114,7 +114,7 @@ class PublicationGetLastTest extends ApiTestCase
             'title'               => 'Publication 5',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 50])->create(),
-        ])->create()->_real();
+        ])->create();
 
         // This one should not appear (not online)
         PublicationFactory::new([
@@ -123,7 +123,7 @@ class PublicationGetLastTest extends ApiTestCase
             'subCategory' => $sub,
         ])->create();
 
-        $this->client->loginUser($currentUser->_real());
+        $this->client->loginUser($currentUser);
         $this->client->request('GET', '/api/last-publications');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -137,16 +137,16 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub5->id,
                     'title'                => 'Publication 5',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -166,16 +166,16 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub4->id,
                     'title'                => 'Publication 4',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -195,16 +195,16 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub3->id,
                     'title'                => 'Publication 3',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -224,16 +224,16 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub2->id,
                     'title'                => 'Publication 2',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

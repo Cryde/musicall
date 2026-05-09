@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\User;
 
 use App\Entity\Image\UserProfilePicture;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class UserProfilePictureFactory extends PersistentProxyObjectFactory
+final class UserProfilePictureFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

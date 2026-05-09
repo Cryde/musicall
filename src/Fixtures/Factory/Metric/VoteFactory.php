@@ -3,14 +3,14 @@
 namespace App\Fixtures\Factory\Metric;
 
 use App\Entity\Metric\Vote;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<Vote>
+ * @extends PersistentObjectFactory<Vote>
  */
-final class VoteFactory extends PersistentProxyObjectFactory
+final class VoteFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -19,7 +19,7 @@ class UserUsernameAvailabilityTest extends ApiTestCase
 
     public function test_username_available(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('GET', '/api/users/username-availability/available_username', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -37,7 +37,7 @@ class UserUsernameAvailabilityTest extends ApiTestCase
     public function test_username_not_available(): void
     {
         UserFactory::new()->create(['username' => 'taken_username']);
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest('GET', '/api/users/username-availability/taken_username', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);

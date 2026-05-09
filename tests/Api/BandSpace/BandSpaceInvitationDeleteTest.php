@@ -35,24 +35,24 @@ class BandSpaceInvitationDeleteTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations/' . $invitation->_real()->id
+            '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $updated = $invitationRepo->find($invitation->_real()->id);
+        $updated = $invitationRepo->find($invitation->id);
         $this->assertSame(InvitationStatus::Expired, $updated->status);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $invitation->id);
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_revoked', $activities[0]->type);
         $this->assertSame(['email' => 'invited@example.com'], $activities[0]->payload);
-        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($admin->id, $activities[0]->actor?->id);
     }
 
     public function test_non_admin_cannot_cancel_invitation(): void
@@ -70,10 +70,10 @@ class BandSpaceInvitationDeleteTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/invitations/' . $invitation->_real()->id
+            '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
@@ -103,10 +103,10 @@ class BandSpaceInvitationDeleteTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->request(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace1->_real()->id . '/invitations/' . $invitation->_real()->id
+            '/api/band_spaces/' . $bandSpace1->id . '/invitations/' . $invitation->id
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);

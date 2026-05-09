@@ -29,7 +29,7 @@ class UserPublicationPreviewTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/preview');
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -48,13 +48,13 @@ class UserPublicationPreviewTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/preview');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseIsSuccessful();
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationPreview',
-            'id' => $publication->_real()->id,
+            'id' => $publication->id,
             'title' => 'Test Draft Publication',
             'slug' => 'test-draft-publication',
             'short_description' => 'Short desc',
@@ -63,7 +63,7 @@ class UserPublicationPreviewTest extends ApiTestCase
             'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
-                'id' => $category->_real()->id,
+                'id' => $category->id,
                 'title' => 'News',
             ],
             'author' => [
@@ -88,13 +88,13 @@ class UserPublicationPreviewTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/preview');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseIsSuccessful();
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationPreview',
-            'id' => $publication->_real()->id,
+            'id' => $publication->id,
             'title' => 'Test Pending Publication',
             'status_id' => Publication::STATUS_PENDING,
             'status_label' => 'En validation',
@@ -116,8 +116,8 @@ class UserPublicationPreviewTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/preview');
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -131,8 +131,8 @@ class UserPublicationPreviewTest extends ApiTestCase
             'status' => Publication::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/preview');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -140,7 +140,7 @@ class UserPublicationPreviewTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications/999999/preview');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }

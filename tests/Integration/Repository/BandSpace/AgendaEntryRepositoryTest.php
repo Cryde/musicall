@@ -39,13 +39,13 @@ class AgendaEntryRepositoryTest extends KernelTestCase
         ]);
 
         $results = $repo->findUpcomingForBand(
-            $band->_real(),
+            $band,
             new DateTimeImmutable('2026-06-01 00:00:00'),
             new DateTimeImmutable('2026-06-30 23:59:59'),
         );
 
         $this->assertCount(1, $results);
-        $this->assertSame($inWindow->_real(), $results[0]);
+        $this->assertSame($inWindow, $results[0]);
     }
 
     public function test_find_upcoming_for_band_orders_by_event_datetime_asc(): void
@@ -68,14 +68,14 @@ class AgendaEntryRepositoryTest extends KernelTestCase
         ]);
 
         $results = $repo->findUpcomingForBand(
-            $band->_real(),
+            $band,
             new DateTimeImmutable('2026-06-01 00:00:00'),
             new DateTimeImmutable('2026-06-30 23:59:59'),
         );
 
         $this->assertCount(3, $results);
-        $this->assertSame($earlier->_real(), $results[0]);
-        $this->assertSame($middle->_real(), $results[1]);
-        $this->assertSame($later->_real(), $results[2]);
+        $this->assertSame($earlier, $results[0]);
+        $this->assertSame($middle, $results[1]);
+        $this->assertSame($later, $results[2]);
     }
 }

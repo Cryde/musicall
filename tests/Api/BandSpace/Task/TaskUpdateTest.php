@@ -34,10 +34,10 @@ class TaskUpdateTest extends ApiTestCase
             'status' => TaskStatus::Todo,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['status' => 'in_progress'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -46,7 +46,7 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertJsonContains(['status' => 'in_progress']);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('status_changed', $activities[0]->type);
         $this->assertSame(['from' => 'todo', 'to' => 'in_progress'], $activities[0]->payload);
@@ -64,10 +64,10 @@ class TaskUpdateTest extends ApiTestCase
             'status' => TaskStatus::Todo,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['title' => 'Updated title'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -89,14 +89,14 @@ class TaskUpdateTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $file,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($task->_real()->id),
+            'sourceId' => Uuid::fromString($task->id),
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['description' => 'Une description'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -116,17 +116,17 @@ class TaskUpdateTest extends ApiTestCase
             'status' => TaskStatus::Todo,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['status' => 'done'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
         $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
-        $refreshed = $repo->find($task->_real()->id);
+        $refreshed = $repo->find($task->id);
         $this->assertNotNull($refreshed->completedDatetime);
     }
 
@@ -142,17 +142,17 @@ class TaskUpdateTest extends ApiTestCase
             'completedDatetime' => new \DateTimeImmutable('2026-01-01 10:00:00'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['status' => 'in_progress'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
         $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
-        $refreshed = $repo->find($task->_real()->id);
+        $refreshed = $repo->find($task->id);
         $this->assertNull($refreshed->completedDatetime);
     }
 
@@ -168,10 +168,10 @@ class TaskUpdateTest extends ApiTestCase
             'status' => TaskStatus::Done,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['archived' => true],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -179,22 +179,22 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
 
         $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
-        $refreshed = $repo->find($task->_real()->id);
+        $refreshed = $repo->find($task->id);
         $this->assertNotNull($refreshed->archiveDatetime);
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Task',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             '@type' => 'Task',
-            'id' => (string) $task->_real()->id,
-            'band_space_id' => (string) $bandSpace->_real()->id,
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
             'title' => 'Mix final',
             'description' => null,
             'status' => 'done',
             'priority' => 'normal',
             'due_date' => null,
-            'created_by_id' => (string) $user->_real()->id,
-            'created_by_username' => $user->_real()->username,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
             'category_id' => null,
             'category_name' => null,
             'assignees' => [],
@@ -208,7 +208,7 @@ class TaskUpdateTest extends ApiTestCase
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('task_archived', $activities[0]->type);
     }
@@ -224,10 +224,10 @@ class TaskUpdateTest extends ApiTestCase
             'status' => TaskStatus::Todo,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['archived' => true],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -235,11 +235,11 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
 
         $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
-        $refreshed = $repo->find($task->_real()->id);
+        $refreshed = $repo->find($task->id);
         $this->assertNull($refreshed->archiveDatetime);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $this->assertCount(0, $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id));
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id));
     }
 
     public function test_unarchive_records_activity(): void
@@ -255,10 +255,10 @@ class TaskUpdateTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['archived' => false],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -266,22 +266,22 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
 
         $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
-        $refreshed = $repo->find($task->_real()->id);
+        $refreshed = $repo->find($task->id);
         $this->assertNull($refreshed->archiveDatetime);
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Task',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             '@type' => 'Task',
-            'id' => (string) $task->_real()->id,
-            'band_space_id' => (string) $bandSpace->_real()->id,
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
             'title' => 'Master cassette',
             'description' => null,
             'status' => 'done',
             'priority' => 'normal',
             'due_date' => null,
-            'created_by_id' => (string) $user->_real()->id,
-            'created_by_username' => $user->_real()->username,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
             'category_id' => null,
             'category_name' => null,
             'assignees' => [],
@@ -295,7 +295,7 @@ class TaskUpdateTest extends ApiTestCase
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Task, $task->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
         $this->assertCount(1, $activities);
         $this->assertSame('task_unarchived', $activities[0]->type);
     }
@@ -308,10 +308,10 @@ class TaskUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
             ['title' => 'Hacked'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

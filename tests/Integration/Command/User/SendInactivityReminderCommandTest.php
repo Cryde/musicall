@@ -198,6 +198,6 @@ class SendInactivityReminderCommandTest extends KernelTestCase
         return UserFactory::new()->create([
             'confirmationDatetime' => new \DateTime('-1 year'),
             'lastLoginDatetime' => new \DateTime(sprintf('-%d days', $daysAgo)),
-        ])->_real();
+        ]);
     }
 }

@@ -36,7 +36,7 @@ class PublicationRelatedTest extends ApiTestCase
             'title'               => 'Current Publication',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 10])->create(),
-        ])->create()->_real();
+        ])->create();
 
         // Related publications (same subcategory)
         $related1 = PublicationFactory::new([
@@ -49,7 +49,7 @@ class PublicationRelatedTest extends ApiTestCase
             'title'               => 'Related Publication 1',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 20])->create(),
-        ])->create()->_real();
+        ])->create();
 
         $related2 = PublicationFactory::new([
             'author'              => $author,
@@ -61,7 +61,7 @@ class PublicationRelatedTest extends ApiTestCase
             'title'               => 'Related Publication 2',
             'type'                => Publication::TYPE_TEXT,
             'viewCache'           => ViewCacheFactory::new(['count' => 30])->create(),
-        ])->create()->_real();
+        ])->create();
 
         // Publication in different subcategory (should NOT appear)
         PublicationFactory::new([
@@ -97,16 +97,16 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $related1->id,
                     'title'                => 'Related Publication 1',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $subChronique->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $subChronique->_real()->id,
+                        'id'         => $subChronique->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
@@ -126,16 +126,16 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $related2->id,
                     'title'                => 'Related Publication 2',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $subChronique->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $subChronique->_real()->id,
+                        'id'         => $subChronique->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->_real()->id,
+                        '@id'      => '/api/users/' . $author->id,
                         '@type'    => 'User',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,

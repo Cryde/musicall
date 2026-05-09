@@ -3,12 +3,12 @@
 namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\FinanceEntrySplit;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<FinanceEntrySplit>
+ * @extends PersistentObjectFactory<FinanceEntrySplit>
  */
-final class FinanceEntrySplitFactory extends PersistentProxyObjectFactory
+final class FinanceEntrySplitFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

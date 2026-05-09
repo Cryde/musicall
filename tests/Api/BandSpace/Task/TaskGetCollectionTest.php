@@ -36,10 +36,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -59,10 +59,10 @@ class TaskGetCollectionTest extends ApiTestCase
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Done])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?status=todo',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?status=todo',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -79,10 +79,10 @@ class TaskGetCollectionTest extends ApiTestCase
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'priority' => TaskPriority::Normal])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'priority' => TaskPriority::Urgent])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?priority=urgent',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?priority=urgent',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -100,10 +100,10 @@ class TaskGetCollectionTest extends ApiTestCase
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'category' => $category])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'category' => null])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?category_id=' . $category->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?category_id=' . $category->id,
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -134,10 +134,10 @@ class TaskGetCollectionTest extends ApiTestCase
         TaskCommentFactory::new(['task' => $taskWithComments, 'author' => $user])->create();
         TaskCommentFactory::new(['task' => $taskWithComments, 'author' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -145,8 +145,8 @@ class TaskGetCollectionTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'member' => [
-                ['id' => $taskWithComments->_real()->id, 'comment_count' => 2],
-                ['id' => $taskWithoutComments->_real()->id, 'comment_count' => 0],
+                ['id' => $taskWithComments->id, 'comment_count' => 2],
+                ['id' => $taskWithoutComments->id, 'comment_count' => 0],
             ],
         ]);
     }
@@ -180,7 +180,7 @@ class TaskGetCollectionTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('-1 day'),
         ])->create();
 
-        $taskUuid = Uuid::fromString($taskWithFiles->_real()->id);
+        $taskUuid = Uuid::fromString($taskWithFiles->id);
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $activeFile1,
             'sourceType' => 'task',
@@ -200,10 +200,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -211,8 +211,8 @@ class TaskGetCollectionTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'member' => [
-                ['id' => $taskWithFiles->_real()->id, 'file_count' => 2],
-                ['id' => $taskWithoutFiles->_real()->id, 'file_count' => 0],
+                ['id' => $taskWithFiles->id, 'file_count' => 2],
+                ['id' => $taskWithoutFiles->id, 'file_count' => 0],
             ],
         ]);
     }
@@ -229,10 +229,10 @@ class TaskGetCollectionTest extends ApiTestCase
         ])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Mastering'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?query=mixage',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?query=mixage',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -241,7 +241,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
-                ['id' => $matching->_real()->id],
+                ['id' => $matching->id],
             ],
         ]);
     }
@@ -264,10 +264,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'description' => 'Autre sujet',
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?query=pavel',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?query=pavel',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -276,7 +276,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
-                ['id' => $matching->_real()->id],
+                ['id' => $matching->id],
             ],
         ]);
     }
@@ -292,10 +292,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'title' => 'Highlight Clip',
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?query=HIGHLIGHT',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?query=HIGHLIGHT',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -322,10 +322,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'status' => TaskStatus::Done,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?query=mixage&status=todo',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?query=mixage&status=todo',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -365,10 +365,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'dueDate' => null,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?overdue=1',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?overdue=1',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -377,7 +377,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $this->assertJsonContains([
             'totalItems' => 1,
             'member' => [
-                ['id' => $overdueTodo->_real()->id],
+                ['id' => $overdueTodo->id],
             ],
         ]);
     }
@@ -409,10 +409,10 @@ class TaskGetCollectionTest extends ApiTestCase
             'dueDate' => new \DateTimeImmutable('2026-06-01 00:00:00'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks?due_date_from=2026-05-01&due_date_to=2026-05-31',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?due_date_from=2026-05-01&due_date_to=2026-05-31',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -422,8 +422,8 @@ class TaskGetCollectionTest extends ApiTestCase
 
         $body = json_decode($this->client->getResponse()->getContent(), true);
         $ids = array_column($body['member'], 'id');
-        $this->assertContains($inRangeStart->_real()->id, $ids);
-        $this->assertContains($inRangeEnd->_real()->id, $ids);
+        $this->assertContains($inRangeStart->id, $ids);
+        $this->assertContains($inRangeEnd->id, $ids);
     }
 
     public function test_get_tasks_not_member(): void
@@ -433,10 +433,10 @@ class TaskGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

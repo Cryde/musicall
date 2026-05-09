@@ -3,14 +3,14 @@
 namespace App\Fixtures\Factory\Forum;
 
 use App\Entity\Forum\ForumSource;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<ForumSource>
+ * @extends PersistentObjectFactory<ForumSource>
  */
-final class ForumSourceFactory extends PersistentProxyObjectFactory
+final class ForumSourceFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -4,9 +4,9 @@ namespace App\Tests\Factory\Attribute;
 
 use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Instrument;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class InstrumentFactory extends PersistentProxyObjectFactory
+final class InstrumentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

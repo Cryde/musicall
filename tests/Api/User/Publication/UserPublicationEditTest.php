@@ -29,7 +29,7 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
@@ -48,13 +48,13 @@ class UserPublicationEditTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/edit');
         $this->assertResponseIsSuccessful();
 
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
-            'id' => $publication->_real()->id,
+            'id' => $publication->id,
             'title' => 'Test Publication',
             'slug' => 'test-publication',
             'short_description' => 'Short desc',
@@ -63,7 +63,7 @@ class UserPublicationEditTest extends ApiTestCase
             'status_label' => 'Brouillon',
             'category' => [
                 '@type' => 'UserPublicationCategory',
-                'id' => $category->_real()->id,
+                'id' => $category->id,
                 'title' => 'News',
             ],
         ]);
@@ -80,8 +80,8 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -95,8 +95,8 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('GET', '/api/user/publications/' . $publication->_real()->id . '/edit');
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/user/publications/' . $publication->id . '/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
@@ -104,7 +104,7 @@ class UserPublicationEditTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications/999999/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
@@ -119,7 +119,7 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -140,8 +140,8 @@ class UserPublicationEditTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([
@@ -153,7 +153,7 @@ class UserPublicationEditTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             '@type' => 'UserPublicationEdit',
-            'id' => $publication->_real()->id,
+            'id' => $publication->id,
             'title' => 'Updated Title',
             'short_description' => 'Updated desc',
             'content' => '<p>Updated content</p>',
@@ -175,8 +175,8 @@ class UserPublicationEditTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([
@@ -202,8 +202,8 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $this->client->loginUser($otherUser->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
+        $this->client->loginUser($otherUser);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([
@@ -223,8 +223,8 @@ class UserPublicationEditTest extends ApiTestCase
             'status' => Publication::STATUS_ONLINE,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('PATCH', '/api/user/publications/' . $publication->_real()->id, [], [], [
+        $this->client->loginUser($user);
+        $this->client->request('PATCH', '/api/user/publications/' . $publication->id, [], [], [
             'CONTENT_TYPE' => 'application/merge-patch+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ], json_encode([

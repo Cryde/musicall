@@ -19,12 +19,12 @@ class PublicationSubCategoryTest extends ApiTestCase
     {
         $sub = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
 
-        $this->client->request('GET', '/api/publication_sub_categories/' . $sub->_real()->id);
+        $this->client->request('GET', '/api/publication_sub_categories/' . $sub->id);
         $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/PublicationSubCategory',
-            '@id'      => '/api/publication_sub_categories/' . $sub->_real()->id,
+            '@id'      => '/api/publication_sub_categories/' . $sub->id,
             '@type'    => 'PublicationSubCategory',
         ]); // empty for now (no data)
     }

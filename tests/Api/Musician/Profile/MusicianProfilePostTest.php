@@ -31,16 +31,16 @@ class MusicianProfilePostTest extends ApiTestCase
         $rock = StyleFactory::new()->asRock()->create();
         $jazz = StyleFactory::new()->asJazz()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/musician-profile', [
             'availability_status' => 'looking_for_band',
             'instruments' => [
                 [
-                    'instrument_id' => $guitar->_real()->id,
+                    'instrument_id' => $guitar->id,
                     'skill_level' => 'advanced',
                 ],
             ],
-            'style_ids' => [$rock->_real()->id, $jazz->_real()->id],
+            'style_ids' => [$rock->id, $jazz->id],
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -58,11 +58,11 @@ class MusicianProfilePostTest extends ApiTestCase
             'instruments' => [
                 [
                     '@type' => 'MusicianProfileEditInstrument',
-                    'instrument_id' => $guitar->_real()->id,
+                    'instrument_id' => $guitar->id,
                     'skill_level' => 'advanced',
                 ],
             ],
-            'style_ids' => [$rock->_real()->id, $jazz->_real()->id],
+            'style_ids' => [$rock->id, $jazz->id],
             'styles' => [],
         ]);
     }
@@ -74,7 +74,7 @@ class MusicianProfilePostTest extends ApiTestCase
             'email' => 'minimalcreateuser@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/musician-profile', [
             'availability_status' => null,
             'instruments' => [],
@@ -110,10 +110,10 @@ class MusicianProfilePostTest extends ApiTestCase
             'styles' => [],
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/musician-profile', [
             'availability_status' => 'not_available',
             'instruments' => [],

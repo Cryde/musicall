@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Publication;
 
 use App\Entity\Image\PublicationCover;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class PublicationCoverFactory extends PersistentProxyObjectFactory
+final class PublicationCoverFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

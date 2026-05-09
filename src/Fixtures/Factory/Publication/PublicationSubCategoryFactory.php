@@ -4,14 +4,14 @@ namespace App\Fixtures\Factory\Publication;
 
 use App\Entity\PublicationSubCategory;
 use Zenstruck\Foundry\Factory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<PublicationSubCategory>
+ * @extends PersistentObjectFactory<PublicationSubCategory>
  */
-final class PublicationSubCategoryFactory extends PersistentProxyObjectFactory
+final class PublicationSubCategoryFactory extends PersistentObjectFactory
 {
     public static function class(): string
     {

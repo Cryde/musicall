@@ -29,38 +29,38 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
         // Store IDs before creating media
         $userId = $user->id;
 
         // Create media and store their IDs
         $media1Id = MusicianProfileMediaFactory::new()->asYouTube()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'title' => 'My YouTube Video',
             'url' => 'https://www.youtube.com/watch?v=abc123',
             'embedId' => 'abc123',
             'position' => 0,
-        ])->_real()->id;
+        ])->id;
 
         $media2Id = MusicianProfileMediaFactory::new()->asSpotify()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'title' => 'My Spotify Track',
             'url' => 'https://open.spotify.com/track/xyz789',
             'embedId' => 'track/xyz789',
             'position' => 1,
-        ])->_real()->id;
+        ])->id;
 
         $media3Id = MusicianProfileMediaFactory::new()->asSoundCloud()->create([
-            'musicianProfile' => $musicianProfile->_real(),
+            'musicianProfile' => $musicianProfile,
             'title' => 'My SoundCloud Track',
             'url' => 'https://soundcloud.com/artist/track',
             'embedId' => 'artist/track',
             'position' => 2,
-        ])->_real()->id;
+        ])->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/musician-profile/media');
 
         $this->assertResponseIsSuccessful();
@@ -118,10 +118,10 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'user' => $user,
         ]);
 
-        $user->musicianProfile = $musicianProfile->_real();
-        $user->_save();
+        $user->musicianProfile = $musicianProfile;
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/musician-profile/media');
 
         $this->assertResponseIsSuccessful();
@@ -141,7 +141,7 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
             'email' => 'userwithouprofile@test.com',
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/musician-profile/media');
 
         $this->assertResponseIsSuccessful();
@@ -180,21 +180,21 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
         $musicianProfile1 = MusicianProfileFactory::new()->create(['user' => $user1]);
         $musicianProfile2 = MusicianProfileFactory::new()->create(['user' => $user2]);
 
-        $user1->musicianProfile = $musicianProfile1->_real();
-        $user1->_save();
-        $user2->musicianProfile = $musicianProfile2->_real();
-        $user2->_save();
+        $user1->musicianProfile = $musicianProfile1;
+        \Zenstruck\Foundry\Persistence\save($user1);
+        $user2->musicianProfile = $musicianProfile2;
+        \Zenstruck\Foundry\Persistence\save($user2);
 
         $media1Id = MusicianProfileMediaFactory::new()->asYouTube()->create([
-            'musicianProfile' => $musicianProfile1->_real(),
+            'musicianProfile' => $musicianProfile1,
             'title' => 'User1 Media',
             'url' => 'https://www.youtube.com/watch?v=user1video',
             'embedId' => 'user1video',
             'position' => 0,
-        ])->_real()->id;
+        ])->id;
 
         MusicianProfileMediaFactory::new()->asSpotify()->create([
-            'musicianProfile' => $musicianProfile2->_real(),
+            'musicianProfile' => $musicianProfile2,
             'title' => 'User2 Media',
             'url' => 'https://open.spotify.com/track/user2track',
             'embedId' => 'track/user2track',
@@ -202,7 +202,7 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
         ]);
 
         // Login as user1
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->request('GET', '/api/user/musician-profile/media');
 
         $this->assertResponseIsSuccessful();

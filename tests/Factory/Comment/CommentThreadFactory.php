@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Comment;
 
 use App\Entity\Comment\CommentThread;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class CommentThreadFactory extends PersistentProxyObjectFactory
+final class CommentThreadFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

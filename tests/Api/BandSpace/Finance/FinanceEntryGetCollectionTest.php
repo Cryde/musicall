@@ -49,10 +49,10 @@ class FinanceEntryGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries');
@@ -122,10 +122,10 @@ class FinanceEntryGetCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $category = $category->_real();
-        $entry = $entry->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $category = $category;
+        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries');
@@ -171,8 +171,8 @@ class FinanceEntryGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries');
@@ -190,8 +190,8 @@ class FinanceEntryGetCollectionTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries');

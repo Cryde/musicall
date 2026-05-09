@@ -49,10 +49,10 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $dispatcher->dispatch(new UserRegisteredEvent($newUser));
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertTrue($membershipRepo->isMember($bandSpace->_real(), $newUser));
+        $this->assertTrue($membershipRepo->isMember($bandSpace, $newUser));
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $updated = $invitationRepo->find($invitation->_real()->id);
+        $updated = $invitationRepo->find($invitation->id);
         $this->assertSame(InvitationStatus::Accepted, $updated->status);
         $this->assertSame($newUser->id, $updated->existingUser->id);
     }
@@ -91,8 +91,8 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $dispatcher->dispatch(new UserRegisteredEvent($newUser));
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertTrue($membershipRepo->isMember($bandSpace1->_real(), $newUser));
-        $this->assertTrue($membershipRepo->isMember($bandSpace2->_real(), $newUser));
+        $this->assertTrue($membershipRepo->isMember($bandSpace1, $newUser));
+        $this->assertTrue($membershipRepo->isMember($bandSpace2, $newUser));
     }
 
     public function test_ignores_expired_invitations(): void
@@ -121,7 +121,7 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $dispatcher->dispatch(new UserRegisteredEvent($newUser));
 
         $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
-        $this->assertFalse($membershipRepo->isMember($bandSpace->_real(), $newUser));
+        $this->assertFalse($membershipRepo->isMember($bandSpace, $newUser));
     }
 
     public function test_no_pending_invitations(): void

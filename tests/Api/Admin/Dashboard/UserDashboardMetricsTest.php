@@ -21,7 +21,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_as_admin(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);
@@ -54,7 +54,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_with_recent_registrations(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $user1 = UserFactory::new()->with([
             'creationDatetime' => new \DateTime(),
@@ -62,7 +62,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             'username' => 'today_user_1',
             'password' => UserFactory::DEFAULT_PASSWORD,
             'confirmationDatetime' => new \DateTime(),
-        ])->create()->_real();
+        ])->create();
 
         $user2 = UserFactory::new()->with([
             'creationDatetime' => new \DateTime(),
@@ -70,7 +70,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             'username' => 'today_user_2',
             'password' => UserFactory::DEFAULT_PASSWORD,
             'confirmationDatetime' => new \DateTime(),
-        ])->create()->_real();
+        ])->create();
 
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
@@ -88,7 +88,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_with_top_messagers(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $messager = UserFactory::new()->with([
             'creationDatetime' => new \DateTime('-30 days'),
@@ -96,7 +96,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             'username' => 'top_messager',
             'password' => UserFactory::DEFAULT_PASSWORD,
             'confirmationDatetime' => new \DateTime('-30 days'),
-        ])->create()->_real();
+        ])->create();
 
         $thread = MessageThreadFactory::new()->create();
         for ($i = 0; $i < 5; $i++) {
@@ -122,7 +122,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_with_unconfirmed_accounts(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         UserFactory::new()->with([
@@ -145,7 +145,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_with_emails_sent(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         // 2 welcome emails + 1 inactivity reminder today
@@ -200,7 +200,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_as_normal_user(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($user);
@@ -210,7 +210,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_missing_from(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);
@@ -220,7 +220,7 @@ class UserDashboardMetricsTest extends ApiTestCase
 
     public function test_get_user_dashboard_metrics_missing_to(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
         $today = (new \DateTimeImmutable())->format('Y-m-d');
 
         $this->client->loginUser($admin);

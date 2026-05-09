@@ -41,19 +41,19 @@ class BandSpaceFileGetItemTest extends ApiTestCase
             'mimeType' => 'audio/flac',
             'size' => 4_096_000,
         ])->create();
-        $file->_real()->currentVersion = $version->_real();
-        $file->_real()->tags->add($tag->_real());
-        $file->_save();
+        $file->currentVersion = $version;
+        $file->tags->add($tag);
+        \Zenstruck\Foundry\Persistence\save($file);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
         $this->assertSame('master.flac', $response['original_name']);
         $this->assertSame(4_096_000, $response['size']);
         $this->assertSame('audio/flac', $response['mime_type']);
-        $this->assertSame($folder->_real()->id, $response['folder_id']);
+        $this->assertSame($folder->id, $response['folder_id']);
         $this->assertCount(1, $response['folder_path']);
         $this->assertSame('Setlists', $response['folder_path'][0]['name']);
         $this->assertCount(1, $response['tags']);
@@ -70,10 +70,10 @@ class BandSpaceFileGetItemTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/00000000-0000-0000-0000-000000000000',
+            '/api/band_spaces/' . $bandSpace->id . '/files/00000000-0000-0000-0000-000000000000',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -100,8 +100,8 @@ class BandSpaceFileGetItemTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
 
-        $this->client->loginUser($other->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($other);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([
@@ -128,8 +128,8 @@ class BandSpaceFileGetItemTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('-1 day'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([

@@ -95,11 +95,11 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $recurrence = $recurrence->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $recurrence = $recurrence;
         $recurrenceId = (string) $recurrence->id;
-        $paidEntryId = (string) $paidEntry->_real()->id;
+        $paidEntryId = (string) $paidEntry->id;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrenceId);
@@ -108,6 +108,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
 
         $em = self::getContainer()->get(EntityManagerInterface::class);
         $em->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
 
         // Recurrence should be deleted
         $recurrenceRepository = self::getContainer()->get(FinanceRecurrenceRepository::class);
@@ -157,9 +158,9 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $recurrence = $recurrence->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $recurrence = $recurrence;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrence->id);
@@ -199,9 +200,9 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $recurrence = $recurrence->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $recurrence = $recurrence;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrence->id);

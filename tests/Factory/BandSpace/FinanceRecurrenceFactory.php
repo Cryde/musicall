@@ -6,12 +6,12 @@ use App\Entity\BandSpace\FinanceRecurrence;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Enum\BandSpace\RecurrenceInterval;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<FinanceRecurrence>
+ * @extends PersistentObjectFactory<FinanceRecurrence>
  */
-final class FinanceRecurrenceFactory extends PersistentProxyObjectFactory
+final class FinanceRecurrenceFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

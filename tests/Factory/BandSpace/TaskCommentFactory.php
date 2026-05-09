@@ -4,12 +4,12 @@ namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\TaskComment;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<TaskComment>
+ * @extends PersistentObjectFactory<TaskComment>
  */
-final class TaskCommentFactory extends PersistentProxyObjectFactory
+final class TaskCommentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -6,12 +6,12 @@ use App\Entity\BandSpace\Task;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<Task>
+ * @extends PersistentObjectFactory<Task>
  */
-final class TaskFactory extends PersistentProxyObjectFactory
+final class TaskFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

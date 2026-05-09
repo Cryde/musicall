@@ -14,7 +14,7 @@ class UserChangePictureTest extends ApiTestCase
 
     public function test_change_picture(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
         $file = new UploadedFile(__DIR__ . '/fixtures/image-ok.jpeg', 'image-ok.jpeg');
 
         $this->assertNull($user1->profilePicture);
@@ -29,7 +29,7 @@ class UserChangePictureTest extends ApiTestCase
 
     public function test_change_picture_too_big(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
         $file = new UploadedFile(__DIR__ . '/fixtures/image-too-big.jpg', 'image-too-big.jpg');
 
         $this->client->loginUser($user1);
@@ -58,7 +58,7 @@ class UserChangePictureTest extends ApiTestCase
 
     public function test_change_picture_too_small(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
         $file = new UploadedFile(__DIR__ . '/fixtures/image-too-small.jpeg', 'image-too-small.jpeg');
 
         $this->client->loginUser($user1);

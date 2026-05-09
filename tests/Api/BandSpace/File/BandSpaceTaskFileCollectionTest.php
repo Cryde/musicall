@@ -37,7 +37,7 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $attachedFile,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($task->_real()->id),
+            'sourceId' => Uuid::fromString($task->id),
             'attachedBy' => $user,
         ]);
         $otherFile = BandSpaceFileFactory::new([
@@ -48,7 +48,7 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $otherFile,
             'sourceType' => 'task',
-            'sourceId' => Uuid::fromString($otherTask->_real()->id),
+            'sourceId' => Uuid::fromString($otherTask->id),
             'attachedBy' => $user,
         ]);
         BandSpaceFileFactory::new([
@@ -57,10 +57,10 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
             'originalName' => 'manual.pdf',
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -72,7 +72,7 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         $this->assertSame('attached.pdf', $response['member'][0]['original_name']);
         $this->assertCount(1, $response['member'][0]['attachments']);
         $this->assertSame('task', $response['member'][0]['attachments'][0]['source_type']);
-        $this->assertSame($task->_real()->id, $response['member'][0]['attachments'][0]['source_id']);
+        $this->assertSame($task->id, $response['member'][0]['attachments'][0]['source_id']);
     }
 
     public function test_list_unknown_task_returns_404(): void
@@ -81,10 +81,10 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/00000000-0000-0000-0000-000000000000/files',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/00000000-0000-0000-0000-000000000000/files',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -110,10 +110,10 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id . '/files',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

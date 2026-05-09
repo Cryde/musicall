@@ -33,7 +33,7 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
+        $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
             'code' => 401,
@@ -55,9 +55,9 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $courseId = $course->_real()->id;
+        $courseId = $course->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/courses/' . $courseId);
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
@@ -77,8 +77,8 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user2->_real());
-        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
+        $this->client->loginUser($user2);
+        $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You are not the owner of this course',
@@ -99,8 +99,8 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft courses',
@@ -121,8 +121,8 @@ class UserCourseDeleteTest extends ApiTestCase
             'type' => Publication::TYPE_TEXT,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->request('DELETE', '/api/user/courses/' . $course->_real()->id);
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonContains([
             'detail' => 'You can only delete draft courses',
@@ -133,7 +133,7 @@ class UserCourseDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/courses/999999');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonContains([

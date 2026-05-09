@@ -6,14 +6,14 @@ namespace App\Fixtures\Factory\Musician;
 
 use App\Entity\Musician\MusicianProfileInstrument;
 use App\Enum\Musician\SkillLevel;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<MusicianProfileInstrument>
+ * @extends PersistentObjectFactory<MusicianProfileInstrument>
  */
-final class MusicianProfileInstrumentFactory extends PersistentProxyObjectFactory
+final class MusicianProfileInstrumentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

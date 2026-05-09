@@ -29,11 +29,11 @@ class BandSpaceFileCollectionTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'rider.pdf'])->create();
         $version = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $file, 'mimeType' => 'application/pdf'])->create();
-        $file->_real()->currentVersion = $version->_real();
-        $file->_save();
+        $file->currentVersion = $version;
+        \Zenstruck\Foundry\Persistence\save($file);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -52,8 +52,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $folder, 'originalName' => 'in-folder.pdf'])->create();
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'in-root.pdf'])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?folder_id=' . $folder->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?folder_id=' . $folder->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -69,13 +69,13 @@ class BandSpaceFileCollectionTest extends ApiTestCase
 
         $tag = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => 'masters'])->create();
         $tagged = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'tagged.pdf'])->create();
-        $tagged->_real()->tags->add($tag->_real());
-        $tagged->_save();
+        $tagged->tags->add($tag);
+        \Zenstruck\Foundry\Persistence\save($tagged);
 
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'untagged.pdf'])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?tag_id=' . $tag->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?tag_id=' . $tag->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -115,10 +115,10 @@ class BandSpaceFileCollectionTest extends ApiTestCase
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files?source=finance&finance_entry_id=' . $entryId,
+            '/api/band_spaces/' . $bandSpace->id . '/files?source=finance&finance_entry_id=' . $entryId,
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -148,8 +148,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
             'attachedBy' => $user,
         ]);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?source=manual', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?source=manual', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -166,8 +166,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'master-2025.flac'])->create();
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'rider.pdf'])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?query=master', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?query=master', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -183,16 +183,16 @@ class BandSpaceFileCollectionTest extends ApiTestCase
 
         $audio = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'master.flac'])->create();
         $audioVersion = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $audio, 'mimeType' => 'audio/flac'])->create();
-        $audio->_real()->currentVersion = $audioVersion->_real();
-        $audio->_save();
+        $audio->currentVersion = $audioVersion;
+        \Zenstruck\Foundry\Persistence\save($audio);
 
         $pdf = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'rider.pdf'])->create();
         $pdfVersion = BandSpaceFileVersionFactory::new(['bandSpaceFile' => $pdf, 'mimeType' => 'application/pdf'])->create();
-        $pdf->_real()->currentVersion = $pdfVersion->_real();
-        $pdf->_save();
+        $pdf->currentVersion = $pdfVersion;
+        \Zenstruck\Foundry\Persistence\save($pdf);
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?mime=audio/', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?mime=audio/', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -211,8 +211,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $alice, 'originalName' => 'alice.pdf'])->create();
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $bob, 'originalName' => 'bob.pdf'])->create();
 
-        $this->client->loginUser($alice->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?uploader_id=' . $bob->_real()->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($alice);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?uploader_id=' . $bob->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -234,8 +234,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
             ])->create();
         }
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?page=2', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?page=2', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -257,8 +257,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
             'archiveDatetime' => new \DateTimeImmutable('-1 day'),
         ])->create();
 
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
@@ -273,8 +273,8 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
-        $this->client->loginUser($other->_real());
-        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->client->loginUser($other);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals([

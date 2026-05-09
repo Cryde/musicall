@@ -22,7 +22,7 @@ class MessagePostInThreadTest extends ApiTestCase
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->_real()->id,
+            'thread'  => '/api/message_threads/' . $thread->id,
             'content' => 'content',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -40,8 +40,8 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user1 = $user1->_real();
-        $thread = $thread->_real();
+        $user1 = $user1;
+        $thread = $thread;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -83,8 +83,8 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user3 = $user3->_real();
-        $thread = $thread->_real();
+        $user3 = $user3;
+        $thread = $thread;
 
         $this->client->loginUser($user3);
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -119,8 +119,8 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user1 = $user1->_real();
-        $thread = $thread->_real();
+        $user1 = $user1;
+        $thread = $thread;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -151,7 +151,7 @@ class MessagePostInThreadTest extends ApiTestCase
     {
         $thread = MessageThreadFactory::new()->create();
         $this->client->jsonRequest('POST', '/api/messages', [
-            'thread'  => '/api/message_threads/' . $thread->_real()->id,
+            'thread'  => '/api/message_threads/' . $thread->id,
             'content' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);

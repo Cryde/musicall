@@ -3,14 +3,14 @@
 namespace App\Fixtures\Factory\Comment;
 
 use App\Entity\Comment\CommentThread;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<CommentThread>
+ * @extends PersistentObjectFactory<CommentThread>
  */
-final class CommentThreadFactory extends PersistentProxyObjectFactory
+final class CommentThreadFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

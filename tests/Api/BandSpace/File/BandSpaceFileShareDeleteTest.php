@@ -37,11 +37,11 @@ class BandSpaceFileShareDeleteTest extends ApiTestCase
             'expiryDatetime' => new \DateTimeImmutable('+1 day'),
         ])->create();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $shareId = $share->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $shareId = $share->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
             '/api/band_spaces/' . $bandSpaceId . '/shares/' . $shareId,
@@ -52,6 +52,7 @@ class BandSpaceFileShareDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         /** @var BandSpaceFileShareRepository $repo */
         $repo = self::getContainer()->get(BandSpaceFileShareRepository::class);
         $reloaded = $repo->find($shareId);
@@ -60,7 +61,7 @@ class BandSpaceFileShareDeleteTest extends ApiTestCase
 
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::File, $fileId);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
         $revoked = array_values(array_filter($activities, fn ($a): bool => $a->type === 'share_revoked'));
         $this->assertCount(1, $revoked);
         $this->assertSame($shareId, $revoked[0]->payload['share_id']);
@@ -79,10 +80,10 @@ class BandSpaceFileShareDeleteTest extends ApiTestCase
             'expiryDatetime' => new \DateTimeImmutable('+1 day'),
         ])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/shares/' . $share->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/shares/' . $share->id,
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -106,10 +107,10 @@ class BandSpaceFileShareDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/shares/00000000-0000-0000-0000-000000000000',
+            '/api/band_spaces/' . $bandSpace->id . '/shares/00000000-0000-0000-0000-000000000000',
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

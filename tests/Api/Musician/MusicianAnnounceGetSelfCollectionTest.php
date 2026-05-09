@@ -51,7 +51,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
         MusicianAnnounceFactory::new()->create(['author' => $user2,]);
         MusicianAnnounceFactory::new()->create(['author' => $user2,]);
 
-        $user1 = $user1->_real();
+        $user1 = $user1;
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/musician_announces/self');
@@ -63,9 +63,9 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'member' => [
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce2->_real()->id,
+                    '@id' => '/api/musician_announces/' . $user1Announce2->id,
                     '@type' => 'MusicianAnnounce',
-                    'id' => $user1Announce2->_real()->id,
+                    'id' => $user1Announce2->id,
                     'creation_datetime' => '2022-01-02T02:03:04+00:00',
                     'type' => 2,
                     'instrument' => [
@@ -95,9 +95,9 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/musician_announces/' . $user1Announce1->_real()->id,
+                    '@id' => '/api/musician_announces/' . $user1Announce1->id,
                     '@type' => 'MusicianAnnounce',
-                    'id' => $user1Announce1->_real()->id,
+                    'id' => $user1Announce1->id,
                     'creation_datetime' => '2020-01-02T02:03:04+00:00',
                     'type' => 1,
                     'instrument' => [

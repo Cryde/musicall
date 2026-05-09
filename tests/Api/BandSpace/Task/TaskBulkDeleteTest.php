@@ -26,13 +26,13 @@ class TaskBulkDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task1 = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $task2 = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        $task1Id = $task1->_real()->id;
-        $task2Id = $task2->_real()->id;
+        $task1Id = $task1->id;
+        $task2Id = $task2->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/bulk_delete',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
             ['task_ids' => [$task1Id, $task2Id]],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -53,12 +53,12 @@ class TaskBulkDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $creator])->create();
-        $taskId = $task->_real()->id;
+        $taskId = $task->id;
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/bulk_delete',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
             ['task_ids' => [$taskId]],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -79,13 +79,13 @@ class TaskBulkDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
         $ownTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
         $foreignTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $creator])->create();
-        $ownId = $ownTask->_real()->id;
-        $foreignId = $foreignTask->_real()->id;
+        $ownId = $ownTask->id;
+        $foreignId = $foreignTask->id;
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/bulk_delete',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
             ['task_ids' => [$ownId, $foreignId]],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -105,11 +105,11 @@ class TaskBulkDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/bulk_delete',
-            ['task_ids' => [$task->_real()->id, '00000000-0000-0000-0000-000000000000']],
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
+            ['task_ids' => [$task->id, '00000000-0000-0000-0000-000000000000']],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -124,11 +124,11 @@ class TaskBulkDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/bulk_delete',
-            ['task_ids' => [$task->_real()->id]],
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
+            ['task_ids' => [$task->id]],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -141,10 +141,10 @@ class TaskBulkDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/bulk_delete',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
             ['task_ids' => []],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

@@ -28,10 +28,10 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin, 'creationDatetime' => new \DateTime('2024-01-01 10:00:00')])->create();
         $memberMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User, 'creationDatetime' => new \DateTime('2024-01-02 10:00:00')])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $memberMembership->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id,
             ['role' => 'admin'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -39,11 +39,11 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceMember',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $memberMembership->_real()->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id,
             '@type' => 'BandSpaceMember',
-            'id' => $memberMembership->_real()->id,
-            'band_space_id' => $bandSpace->_real()->id,
-            'user_id' => $member->_real()->id,
+            'id' => $memberMembership->id,
+            'band_space_id' => $bandSpace->id,
+            'user_id' => $member->id,
             'username' => 'member_user',
             'role' => 'admin',
             'profile_picture_url' => null,
@@ -53,19 +53,19 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $member->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $member->id);
         $this->assertCount(1, $activities);
         $this->assertSame('member_role_changed', $activities[0]->type);
         $this->assertSame(
             [
                 'from' => 'user',
                 'to' => 'admin',
-                'target_user_id' => $member->_real()->id,
+                'target_user_id' => $member->id,
                 'target_username' => 'member_user',
             ],
             $activities[0]->payload,
         );
-        $this->assertSame($admin->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($admin->id, $activities[0]->actor?->id);
     }
 
     public function test_demote_admin_to_user(): void
@@ -77,10 +77,10 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin1, 'role' => Role::Admin, 'creationDatetime' => new \DateTime('2024-01-01 10:00:00')])->create();
         $admin2Membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin2, 'role' => Role::Admin, 'creationDatetime' => new \DateTime('2024-01-02 10:00:00')])->create();
 
-        $this->client->loginUser($admin1->_real());
+        $this->client->loginUser($admin1);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $admin2Membership->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $admin2Membership->id,
             ['role' => 'user'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -88,11 +88,11 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceMember',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $admin2Membership->_real()->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $admin2Membership->id,
             '@type' => 'BandSpaceMember',
-            'id' => $admin2Membership->_real()->id,
-            'band_space_id' => $bandSpace->_real()->id,
-            'user_id' => $admin2->_real()->id,
+            'id' => $admin2Membership->id,
+            'band_space_id' => $bandSpace->id,
+            'user_id' => $admin2->id,
             'username' => 'admin2',
             'role' => 'user',
             'profile_picture_url' => null,
@@ -109,10 +109,10 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
 
         $adminMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $adminMembership->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $adminMembership->id,
             ['role' => 'user'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -139,10 +139,10 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
         $adminMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
 
-        $this->client->loginUser($member->_real());
+        $this->client->loginUser($member);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/members/' . $adminMembership->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $adminMembership->id,
             ['role' => 'user'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

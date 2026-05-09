@@ -2,3 +2,5 @@ parameters:
     level: 8
     paths:
         - src
+    excludePaths:
+        - src/Command/ElasticSearch/ElasticSearchIndexManageCommand.php

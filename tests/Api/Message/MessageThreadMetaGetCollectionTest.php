@@ -38,8 +38,8 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             'thread' => $thread,
             'content' => 'basic_content with <b>html</b> in it'
         ])->create();
-        $thread->_real()->lastMessage = $message->_real();
-        $thread->_save();
+        $thread->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($thread);
         $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
         // thread between user2 & user3 : shouldn't appear in the response
@@ -47,11 +47,11 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user2])->create();
         MessageParticipantFactory::new(['thread' => $otherThread, 'participant' => $user3])->create();
         $message2 = MessageFactory::new(['author' => $user2, 'thread' => $otherThread, 'content' => ''])->create();
-        $otherThread->_real()->lastMessage = $message2->_real();
-        $otherThread->_save();
+        $otherThread->lastMessage = $message2;
+        \Zenstruck\Foundry\Persistence\save($otherThread);
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $otherThread])->create();
 
-        $this->client->loginUser($user1->_real());
+        $this->client->loginUser($user1);
         $this->client->request('GET', '/api/message_thread_metas', );
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -60,44 +60,44 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
             '@type'            => 'Collection',
             'member'     => [
                 [
-                    '@id' => '/api/message_thread_metas/' . $meta->_real()->id,
+                    '@id' => '/api/message_thread_metas/' . $meta->id,
                     '@type' => 'MessageThreadMeta',
-                    'id'      => $meta->_real()->id,
+                    'id'      => $meta->id,
                     'is_read' => false,
                     'thread'  => [
-                        '@id' => '/api/message_threads/' . $thread->_real()->id,
+                        '@id' => '/api/message_threads/' . $thread->id,
                         '@type' => 'MessageThread',
-                        'id'                   => $thread->_real()->id,
+                        'id'                   => $thread->id,
                         'message_participants' => [
                             [
-                                '@id' => '/api/message_participants/' . $mp1->_real()->id,
+                                '@id' => '/api/message_participants/' . $mp1->id,
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
-                                    '@id' => '/api/users/' . $user1->_real()->id,
+                                    '@id' => '/api/users/' . $user1->id,
                                     '@type' => 'User',
                                     'username' => 'base_user_1',
-                                    'id'       => $user1->_real()->id,
+                                    'id'       => $user1->id,
                                 ],
                             ], [
-                                '@id' => '/api/message_participants/' . $mp2->_real()->id,
+                                '@id' => '/api/message_participants/' . $mp2->id,
                                 '@type' => 'MessageParticipant',
                                 'participant' => [
-                                    '@id' => '/api/users/' . $user2->_real()->id,
+                                    '@id' => '/api/users/' . $user2->id,
                                     '@type' => 'User',
                                     'username' => 'base_user_2',
-                                    'id'       => $user2->_real()->id,
+                                    'id'       => $user2->id,
                                 ],
                             ],
                         ],
                         'last_message'         => [
-                            '@id' => '/api/messages/' . $message->_real()->id,
+                            '@id' => '/api/messages/' . $message->id,
                             '@type' => 'Message',
-                            'creation_datetime' => $message->_real()->creationDatetime->format('c'),
+                            'creation_datetime' => $message->creationDatetime->format('c'),
                             'author'            => [
-                                '@id' => '/api/users/' . $user1->_real()->id,
+                                '@id' => '/api/users/' . $user1->id,
                                 '@type' => 'User',
                                 'username' => 'base_user_1',
-                                'id'       => $user1->_real()->id,
+                                'id'       => $user1->id,
                             ],
                             'content'           => 'basic_content with  in it',
                         ],

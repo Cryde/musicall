@@ -18,7 +18,7 @@ class GeneralDashboardMetricsTest extends ApiTestCase
 
     public function test_get_general_dashboard_metrics_as_admin(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/general');
@@ -46,7 +46,7 @@ class GeneralDashboardMetricsTest extends ApiTestCase
 
     public function test_get_general_dashboard_metrics_as_normal_user(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/admin/dashboard/general');

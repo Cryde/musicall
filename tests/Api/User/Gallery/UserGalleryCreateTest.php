@@ -32,7 +32,7 @@ class UserGalleryCreateTest extends ApiTestCase
         $galleryRepository = self::getContainer()->get(GalleryRepository::class);
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/galleries', [
             'title' => 'My New Gallery',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -40,7 +40,7 @@ class UserGalleryCreateTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $galleries = $galleryRepository->findBy(['author' => $user->_real()]);
+        $galleries = $galleryRepository->findBy(['author' => $user]);
         $this->assertCount(1, $galleries);
 
         $createdGallery = $galleries[0];
@@ -61,7 +61,7 @@ class UserGalleryCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/galleries', [
             'title' => '',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
@@ -95,7 +95,7 @@ class UserGalleryCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest('POST', '/api/user/galleries', [
             'title' => 'ab',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);

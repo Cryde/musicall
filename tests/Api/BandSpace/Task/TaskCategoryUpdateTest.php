@@ -25,10 +25,10 @@ class TaskCategoryUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace, 'color' => '#FF6B6B'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $category->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
             ['color' => '#123ABC'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -37,7 +37,7 @@ class TaskCategoryUpdateTest extends ApiTestCase
         $this->assertJsonContains(['color' => '#123ABC']);
 
         $repo = self::getContainer()->get(TaskCategoryRepository::class);
-        $reloaded = $repo->findOneByIdAndBandSpace($category->_real()->id, $bandSpace->_real());
+        $reloaded = $repo->findOneByIdAndBandSpace($category->id, $bandSpace);
         $this->assertSame('#123ABC', $reloaded->color);
     }
 
@@ -48,10 +48,10 @@ class TaskCategoryUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace, 'color' => '#FF6B6B'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $category->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
             ['color' => 'not_a_color'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -59,7 +59,7 @@ class TaskCategoryUpdateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
 
         $repo = self::getContainer()->get(TaskCategoryRepository::class);
-        $reloaded = $repo->findOneByIdAndBandSpace($category->_real()->id, $bandSpace->_real());
+        $reloaded = $repo->findOneByIdAndBandSpace($category->id, $bandSpace);
         $this->assertSame('#FF6B6B', $reloaded->color);
     }
 
@@ -71,10 +71,10 @@ class TaskCategoryUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/task-categories/' . $category->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
             ['name' => 'Hijacked'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

@@ -54,10 +54,10 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'amount' => 25000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $split = $split->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $split = $split;
         $splitId = (string) $split->id;
 
         $this->client->loginUser($user);
@@ -66,6 +66,7 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
         $splitRepository = self::getContainer()->get(FinanceEntrySplitRepository::class);
         $this->assertNull($splitRepository->find($splitId));
 
@@ -104,10 +105,10 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'amount' => 25000,
         ])->create();
 
-        $otherUser = $otherUser->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $split = $split->_real();
+        $otherUser = $otherUser;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $split = $split;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
@@ -141,10 +142,10 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'amount' => 25000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $split = $split->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $split = $split;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
@@ -194,10 +195,10 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'amount' => 25000,
         ])->create();
 
-        $user = $user->_real();
-        $bandSpace = $bandSpace->_real();
-        $entry = $entry->_real();
-        $split = $split->_real();
+        $user = $user;
+        $bandSpace = $bandSpace;
+        $entry = $entry;
+        $split = $split;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);

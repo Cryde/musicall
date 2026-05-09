@@ -36,13 +36,13 @@ class MusicianAIFinderTest extends KernelTestCase
         $drum = InstrumentFactory::new()->asDrum()->create();
         $guitar = InstrumentFactory::new()->asGuitar()->create();
 
-        $finder = $this->buildMusicianFilterGeneratorOk($drum->_real(), [$rock->_real()]);
+        $finder = $this->buildMusicianFilterGeneratorOk($drum, [$rock]);
 
         $result = $finder->find('Je recherche un batteur pour mon groupe de pop rock à Paris');
         $this->assertSame(1, $result->type);
-        $this->assertSame($drum->_real()->id, $result->instrument);
+        $this->assertSame($drum->id, $result->instrument);
         $this->assertCount(1, $result->styles);
-        $this->assertSame($rock->_real()->id, $result->styles[0]);
+        $this->assertSame($rock->id, $result->styles[0]);
         $this->assertSame(48.856614, $result->latitude);
         $this->assertSame(2.3522219, $result->longitude);
     }

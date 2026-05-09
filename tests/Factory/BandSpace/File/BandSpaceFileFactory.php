@@ -5,12 +5,12 @@ namespace App\Tests\Factory\BandSpace\File;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<BandSpaceFile>
+ * @extends PersistentObjectFactory<BandSpaceFile>
  */
-final class BandSpaceFileFactory extends PersistentProxyObjectFactory
+final class BandSpaceFileFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
@@ -23,7 +23,7 @@ final class BandSpaceFileFactory extends PersistentProxyObjectFactory
     }
 
     /**
-     * @param array{type: string, id: string|\Ramsey\Uuid\UuidInterface, attachedBy?: \App\Entity\User|\Zenstruck\Foundry\Persistence\Proxy<\App\Entity\User>} $source
+     * @param array{type: string, id: string|\Ramsey\Uuid\UuidInterface, attachedBy?: \App\Entity\User} $source
      */
     public function withAttachment(array $source): self
     {

@@ -6,12 +6,12 @@ namespace App\Tests\Factory\Teacher;
 
 use App\Entity\Teacher\TeacherProfileInstrument;
 use App\Tests\Factory\Attribute\InstrumentFactory;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<TeacherProfileInstrument>
+ * @extends PersistentObjectFactory<TeacherProfileInstrument>
  */
-final class TeacherProfileInstrumentFactory extends PersistentProxyObjectFactory
+final class TeacherProfileInstrumentFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

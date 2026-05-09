@@ -55,31 +55,31 @@ class AgendaGetCollectionTest extends ApiTestCase
             'date' => new \DateTime('2026-06-25', new \DateTimeZone('UTC')),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
-        $manualId = 'manual-' . $manual->_real()->id;
-        $taskId = 'task-' . $task->_real()->id;
-        $financeId = 'finance-' . $finance->_real()->id;
+        $manualId = 'manual-' . $manual->id;
+        $taskId = 'task-' . $task->id;
+        $financeId = 'finance-' . $finance->id;
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaItem',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
             '@type' => 'Collection',
             'totalItems' => 3,
             'member' => [
                 [
-                    '@id' => '/api/agenda_items/id=' . $manualId . ';bandSpaceId=' . $bandSpace->_real()->id,
+                    '@id' => '/api/agenda_items/id=' . $manualId . ';bandSpaceId=' . $bandSpace->id,
                     '@type' => 'AgendaItem',
                     'id' => $manualId,
-                    'band_space_id' => $bandSpace->_real()->id,
+                    'band_space_id' => $bandSpace->id,
                     'source' => 'manual',
-                    'source_id' => $manual->_real()->id,
+                    'source_id' => $manual->id,
                     'datetime' => '2026-06-15T20:00:00+00:00',
                     'end_datetime' => null,
                     'is_all_day' => false,
@@ -88,12 +88,12 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'metadata' => ['location' => 'Studio'],
                 ],
                 [
-                    '@id' => '/api/agenda_items/id=' . $taskId . ';bandSpaceId=' . $bandSpace->_real()->id,
+                    '@id' => '/api/agenda_items/id=' . $taskId . ';bandSpaceId=' . $bandSpace->id,
                     '@type' => 'AgendaItem',
                     'id' => $taskId,
-                    'band_space_id' => $bandSpace->_real()->id,
+                    'band_space_id' => $bandSpace->id,
                     'source' => 'task',
-                    'source_id' => $task->_real()->id,
+                    'source_id' => $task->id,
                     'datetime' => '2026-06-20T12:00:00+00:00',
                     'end_datetime' => null,
                     'is_all_day' => false,
@@ -107,22 +107,22 @@ class AgendaGetCollectionTest extends ApiTestCase
                     ],
                 ],
                 [
-                    '@id' => '/api/agenda_items/id=' . $financeId . ';bandSpaceId=' . $bandSpace->_real()->id,
+                    '@id' => '/api/agenda_items/id=' . $financeId . ';bandSpaceId=' . $bandSpace->id,
                     '@type' => 'AgendaItem',
                     'id' => $financeId,
-                    'band_space_id' => $bandSpace->_real()->id,
+                    'band_space_id' => $bandSpace->id,
                     'source' => 'finance',
-                    'source_id' => $finance->_real()->id,
+                    'source_id' => $finance->id,
                     'datetime' => '2026-06-25T00:00:00+00:00',
                     'end_datetime' => null,
                     'is_all_day' => false,
                     'title' => 'Location salle',
                     'description' => null,
                     'metadata' => [
-                        'type' => $finance->_real()->type->value,
-                        'status' => $finance->_real()->status->value,
-                        'scope' => $finance->_real()->scope->value,
-                        'amount' => $finance->_real()->amount,
+                        'type' => $finance->type->value,
+                        'status' => $finance->status->value,
+                        'scope' => $finance->scope->value,
+                        'amount' => $finance->amount,
                         'amount_min' => null,
                         'amount_max' => null,
                         'category_name' => 'Logistique',
@@ -130,7 +130,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                 ],
             ],
             'view' => [
-                '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
                 '@type' => 'PartialCollectionView',
             ],
         ]);
@@ -153,32 +153,32 @@ class AgendaGetCollectionTest extends ApiTestCase
             'priority' => TaskPriority::Normal,
             'dueDate' => new DateTimeImmutable('2026-06-20 12:00:00', new \DateTimeZone('UTC')),
         ])->create();
-        $task->_real()->assignees->add($assignee->_real());
+        $task->assignees->add($assignee);
         self::getContainer()->get('doctrine')->getManager()->flush();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
         $this->assertResponseIsSuccessful();
-        $taskId = 'task-' . $task->_real()->id;
+        $taskId = 'task-' . $task->id;
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaItem',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
             '@type' => 'Collection',
             'totalItems' => 1,
             'member' => [
                 [
-                    '@id' => '/api/agenda_items/id=' . $taskId . ';bandSpaceId=' . $bandSpace->_real()->id,
+                    '@id' => '/api/agenda_items/id=' . $taskId . ';bandSpaceId=' . $bandSpace->id,
                     '@type' => 'AgendaItem',
                     'id' => $taskId,
-                    'band_space_id' => $bandSpace->_real()->id,
+                    'band_space_id' => $bandSpace->id,
                     'source' => 'task',
-                    'source_id' => $task->_real()->id,
+                    'source_id' => $task->id,
                     'datetime' => '2026-06-20T12:00:00+00:00',
                     'end_datetime' => null,
                     'is_all_day' => false,
@@ -190,7 +190,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                         'category_name' => null,
                         'assignees' => [
                             [
-                                'id' => $assignee->_real()->id,
+                                'id' => $assignee->id,
                                 'username' => 'drummer_42',
                                 'profile_picture_url' => null,
                             ],
@@ -199,7 +199,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                 ],
             ],
             'view' => [
-                '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
                 '@type' => 'PartialCollectionView',
             ],
         ]);
@@ -234,10 +234,10 @@ class AgendaGetCollectionTest extends ApiTestCase
             'dueDate' => null,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -268,10 +268,10 @@ class AgendaGetCollectionTest extends ApiTestCase
             'eventDatetime' => new DateTimeImmutable('2026-06-15 20:00:00', new \DateTimeZone('UTC')),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -279,7 +279,7 @@ class AgendaGetCollectionTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $payload = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame(1, $payload['totalItems']);
-        $this->assertSame('manual-' . $inWindow->_real()->id, $payload['member'][0]['id']);
+        $this->assertSame('manual-' . $inWindow->id, $payload['member'][0]['id']);
     }
 
     public function test_includes_multi_day_event_overlapping_window(): void
@@ -325,10 +325,10 @@ class AgendaGetCollectionTest extends ApiTestCase
             'isAllDay' => true,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -337,9 +337,9 @@ class AgendaGetCollectionTest extends ApiTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame(3, $payload['totalItems']);
         $ids = array_column($payload['member'], 'id');
-        $this->assertContains('manual-' . $startsBefore->_real()->id, $ids);
-        $this->assertContains('manual-' . $endsAfter->_real()->id, $ids);
-        $this->assertContains('manual-' . $fullyContains->_real()->id, $ids);
+        $this->assertContains('manual-' . $startsBefore->id, $ids);
+        $this->assertContains('manual-' . $endsAfter->id, $ids);
+        $this->assertContains('manual-' . $fullyContains->id, $ids);
     }
 
     public function test_excludes_other_band_items(): void
@@ -354,10 +354,10 @@ class AgendaGetCollectionTest extends ApiTestCase
             'eventDatetime' => new DateTimeImmutable('2026-06-15 20:00:00', new \DateTimeZone('UTC')),
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -388,10 +388,10 @@ class AgendaGetCollectionTest extends ApiTestCase
             'eventDatetime' => $farFuture,
         ])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -409,10 +409,10 @@ class AgendaGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -426,10 +426,10 @@ class AgendaGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'GET',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda?from=not-a-date',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=not-a-date',
             [],
             ['HTTP_ACCEPT' => 'application/ld+json']
         );

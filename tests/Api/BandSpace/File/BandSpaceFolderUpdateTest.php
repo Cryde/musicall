@@ -27,10 +27,10 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Setlists'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
             ['name' => 'Setlist'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -49,17 +49,17 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
         $newParent = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Live'])->create();
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Setlists'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
-            ['parentId' => $newParent->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
+            ['parentId' => $newParent->id],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
-        $this->assertSame($newParent->_real()->id, $response['parent_id']);
+        $this->assertSame($newParent->id, $response['parent_id']);
         $this->assertSame(1, $response['depth']);
     }
 
@@ -72,10 +72,10 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
         $parent = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Live'])->create();
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Setlists', 'parent' => $parent])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
             ['parentId' => null],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -94,11 +94,11 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Setlists'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
-            ['parentId' => $folder->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
+            ['parentId' => $folder->id],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -124,11 +124,11 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
         $root = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Live'])->create();
         $child = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => '2026', 'parent' => $root])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $root->_real()->id,
-            ['parentId' => $child->_real()->id],
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $root->id,
+            ['parentId' => $child->id],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
 
@@ -154,10 +154,10 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
         BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Setlists'])->create();
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Riders'])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
             ['name' => 'Setlists'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -175,10 +175,10 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
             ['name' => 'Hijacked'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );
@@ -206,10 +206,10 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
 
-        $this->client->loginUser($admin->_real());
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'PATCH',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
             ['name' => 'Concerts'],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
         );

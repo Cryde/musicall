@@ -4,14 +4,14 @@ namespace App\Fixtures\Factory\Attribute;
 
 use Zenstruck\Foundry\Factory;
 use App\Entity\Attribute\Style;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
  * @codeCoverageIgnore
  *
- * @extends PersistentProxyObjectFactory<Style>
+ * @extends PersistentObjectFactory<Style>
  */
-final class StyleFactory extends PersistentProxyObjectFactory
+final class StyleFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

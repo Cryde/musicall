@@ -22,7 +22,7 @@ class PublicationPendingListTest extends ApiTestCase
 
     public function test_get_pending_publications_as_admin(): void
     {
-        $admin = UserFactory::new()->asAdminUser()->create()->_real();
+        $admin = UserFactory::new()->asAdminUser()->create();
 
         $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
         PublicationFactory::new([
@@ -61,14 +61,14 @@ class PublicationPendingListTest extends ApiTestCase
             '@type'      => 'Collection',
             'member'     => [
                 [
-                    '@id'                  => '/api/publications/' . $publication->_real()->slug,
+                    '@id'                  => '/api/publications/' . $publication->slug,
                     '@type'                => 'Publication',
-                    'id'                   => $publication->_real()->id,
+                    'id'                   => $publication->id,
                     'title'                => 'Titre de la publication',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->_real()->id,
+                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
                         '@type'      => 'PublicationSubCategory',
-                        'id'         => $sub->_real()->id,
+                        'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
                         'type_label' => 'publication',
@@ -106,7 +106,7 @@ class PublicationPendingListTest extends ApiTestCase
 
     public function test_get_pending_publications_as_normal_user(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create()->_real();
+        $user1 = UserFactory::new()->asBaseUser()->create();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/admin/publications/pending');

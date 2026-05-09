@@ -6,12 +6,12 @@ namespace App\Tests\Factory\User;
 
 use App\Entity\User\EmailVerificationCode;
 use DateTimeImmutable;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<EmailVerificationCode>
+ * @extends PersistentObjectFactory<EmailVerificationCode>
  */
-final class EmailVerificationCodeFactory extends PersistentProxyObjectFactory
+final class EmailVerificationCodeFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

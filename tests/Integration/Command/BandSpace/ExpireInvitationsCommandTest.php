@@ -63,20 +63,20 @@ class ExpireInvitationsCommandTest extends KernelTestCase
 
         $repo = self::getContainer()->get(BandSpaceInvitationRepository::class);
 
-        $expired = $repo->find($expiredInvitation->_real()->id);
+        $expired = $repo->find($expiredInvitation->id);
         $this->assertSame(InvitationStatus::Expired, $expired->status);
 
-        $valid = $repo->find($validInvitation->_real()->id);
+        $valid = $repo->find($validInvitation->id);
         $this->assertSame(InvitationStatus::Pending, $valid->status);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $expiredInvitation->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $expiredInvitation->id);
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_expired', $activities[0]->type);
         $this->assertSame(['email' => 'expired@example.com'], $activities[0]->payload);
         $this->assertNull($activities[0]->actor);
 
-        $validActivities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $validInvitation->_real()->id);
+        $validActivities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $validInvitation->id);
         $this->assertCount(0, $validActivities);
     }
 
@@ -101,7 +101,7 @@ class ExpireInvitationsCommandTest extends KernelTestCase
         $this->assertStringContainsString('0 invitation(s) marquée(s) comme expirée(s)', $output);
 
         $repo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $accepted = $repo->find($acceptedInvitation->_real()->id);
+        $accepted = $repo->find($acceptedInvitation->id);
         $this->assertSame(InvitationStatus::Accepted, $accepted->status);
     }
 

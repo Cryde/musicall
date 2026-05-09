@@ -43,13 +43,13 @@ class BandSpaceFileVersionUploadTest extends ApiTestCase
             'size' => 30,
         ])->create();
 
-        $file->_real()->currentVersion = $v1->_real();
+        $file->currentVersion = $v1;
         self::getContainer()->get(EntityManagerInterface::class)->flush();
 
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
+        $bandSpaceId = $bandSpace->id;
+        $fileId = $file->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
             '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId . '/versions',
@@ -65,6 +65,7 @@ class BandSpaceFileVersionUploadTest extends ApiTestCase
         $this->assertSame('text/plain', $response['mime_type']);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
 
         /** @var BandSpaceFileRepository $fileRepo */
         $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
@@ -79,7 +80,7 @@ class BandSpaceFileVersionUploadTest extends ApiTestCase
 
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::File, $fileId);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
         $versionAdded = array_values(array_filter($activities, fn ($a): bool => $a->type === 'version_added'));
         $this->assertCount(1, $versionAdded);
         $this->assertSame(2, $versionAdded[0]->payload['version_number']);
@@ -92,10 +93,10 @@ class BandSpaceFileVersionUploadTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/00000000-0000-0000-0000-000000000000/versions',
+            '/api/band_spaces/' . $bandSpace->id . '/files/00000000-0000-0000-0000-000000000000/versions',
             [],
             ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true)],
             ['CONTENT_TYPE' => 'multipart/form-data'],
@@ -123,10 +124,10 @@ class BandSpaceFileVersionUploadTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner])->create();
 
-        $this->client->loginUser($other->_real());
+        $this->client->loginUser($other);
         $this->client->request(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id . '/versions',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/versions',
             [],
             ['uploadedFile' => new UploadedFile(__DIR__ . '/fixtures/sample-v2.txt', 'sample-v2.txt', 'text/plain', null, true)],
             ['CONTENT_TYPE' => 'multipart/form-data'],

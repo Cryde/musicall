@@ -12,7 +12,6 @@ use App\Fixtures\Factory\Forum\ForumPostFactory;
 use App\Fixtures\Factory\Forum\ForumSourceFactory;
 use App\Fixtures\Factory\Forum\ForumTopicFactory;
 use App\Fixtures\User\UserStory;
-use Zenstruck\Foundry\Persistence\Proxy;
 use Zenstruck\Foundry\Story;
 
 /** @codeCoverageIgnore */
@@ -76,9 +75,9 @@ class ForumStory extends Story
     }
 
     /**
-     * @param Proxy<Forum> $forum
+     * @param Forum $forum
      */
-    private function createTopicsForPresentationForum(Proxy $forum): void
+    private function createTopicsForPresentationForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
 
@@ -126,9 +125,9 @@ class ForumStory extends Story
     }
 
     /**
-     * @param Proxy<Forum> $forum
+     * @param Forum $forum
      */
-    private function createTopicsForDiscussionForum(Proxy $forum): void
+    private function createTopicsForDiscussionForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
 
@@ -160,9 +159,9 @@ class ForumStory extends Story
     }
 
     /**
-     * @param Proxy<Forum> $forum
+     * @param Forum $forum
      */
-    private function createTopicsForTheorieForum(Proxy $forum): void
+    private function createTopicsForTheorieForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
 
@@ -204,9 +203,9 @@ class ForumStory extends Story
     }
 
     /**
-     * @param Proxy<Forum> $forum
+     * @param Forum $forum
      */
-    private function createTopicsForSuggestionsForum(Proxy $forum): void
+    private function createTopicsForSuggestionsForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
 
@@ -242,12 +241,12 @@ class ForumStory extends Story
     }
 
     /**
-     * @param Proxy<ForumTopic> $topic
+     * @param ForumTopic $topic
      */
-    private function createPostsForTopic(Proxy $topic, int $count): void
+    private function createPostsForTopic(ForumTopic $topic, int $count): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
-        $topicCreationDate = \DateTime::createFromInterface($topic->_real()->creationDatetime);
+        $topicCreationDate = \DateTime::createFromInterface($topic->creationDatetime);
         $lastPost = null;
 
         for ($i = 0; $i < $count; $i++) {
@@ -269,30 +268,30 @@ class ForumStory extends Story
         }
 
         // Update topic with last post and post count
-        $topic->_real()->postNumber = $count;
+        $topic->postNumber = $count;
         if ($lastPost) {
-            $topic->_real()->lastPost = $lastPost->_real();
+            $topic->lastPost = $lastPost;
         }
-        $topic->_save();
+        \Zenstruck\Foundry\Persistence\save($topic);
     }
 
     /**
-     * @param Proxy<Forum> $forum
+     * @param Forum $forum
      */
-    private function updateForumCounts(Proxy $forum): void
+    private function updateForumCounts(Forum $forum): void
     {
         $topicCount = 0;
         $postCount = 0;
 
         foreach ($this->getPool(self::TOPICS) as $topic) {
-            if ($topic->_real()->forum->id === $forum->_real()->id) {
+            if ($topic->forum->id === $forum->id) {
                 $topicCount++;
-                $postCount += $topic->_real()->postNumber;
+                $postCount += $topic->postNumber;
             }
         }
 
-        $forum->_real()->topicNumber = $topicCount;
-        $forum->_real()->postNumber = $postCount;
-        $forum->_save();
+        $forum->topicNumber = $topicCount;
+        $forum->postNumber = $postCount;
+        \Zenstruck\Foundry\Persistence\save($forum);
     }
 }

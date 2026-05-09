@@ -33,7 +33,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
     {
         $this->mockRemoteFileDownloader();
 
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $category = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
 
         $addVideo = new AddVideo();
@@ -51,7 +51,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertSame(2, $result->type); // 2 = Publication::TYPE_VIDEO
         $this->assertSame(1, $result->status); // 1 = Publication::STATUS_ONLINE
         $this->assertSame('v-the-video-title', $result->slug);
-        $this->assertSame($category->_real()->slug, $result->subCategory->slug);
+        $this->assertSame($category->slug, $result->subCategory->slug);
         $this->assertNotNull($result->viewCache);
         $this->assertNotNull($result->thread);
     }
@@ -60,7 +60,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
     {
         $this->mockRemoteFileDownloader();
 
-        $user = UserFactory::new()->asBaseUser()->create()->_real();
+        $user = UserFactory::new()->asBaseUser()->create();
         $category = PublicationSubCategoryFactory::new()->asDecouvertes()->create();
         $news = PublicationSubCategoryFactory::new()->asNews()->create();
 
@@ -68,7 +68,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $addVideo->url = self::VIDEO_URL;
         $addVideo->title = 'The video title';
         $addVideo->description = 'The video description';
-        $addVideo->category = $news->_real(); // only "course" category are accepted
+        $addVideo->category = $news; // only "course" category are accepted
 
         $result = $this->getPublicationVideoCreationProcedure()->process($addVideo, $user);
 
@@ -80,7 +80,7 @@ class PublicationVideoCreationProcedureTest extends KernelTestCase
         $this->assertSame(2, $result->type); // 2 = Publication::TYPE_VIDEO
         $this->assertSame(1, $result->status); // 1 = Publication::STATUS_ONLINE
         $this->assertSame('v-the-video-title', $result->slug);
-        $this->assertSame($category->_real()->slug, $result->subCategory->slug);
+        $this->assertSame($category->slug, $result->subCategory->slug);
         $this->assertNotNull($result->viewCache);
         $this->assertNotNull($result->thread);
     }

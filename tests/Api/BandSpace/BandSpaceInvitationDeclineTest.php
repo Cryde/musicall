@@ -37,10 +37,10 @@ class BandSpaceInvitationDeclineTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($invitee->_real());
+        $this->client->loginUser($invitee);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/decline',
+            '/api/band_spaces/invitations/' . $invitation->token . '/decline',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -49,15 +49,15 @@ class BandSpaceInvitationDeclineTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
-        $updated = $invitationRepo->find($invitation->_real()->id);
+        $updated = $invitationRepo->find($invitation->id);
         $this->assertSame(InvitationStatus::Declined, $updated->status);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Settings, $invitation->_real()->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $invitation->id);
         $this->assertCount(1, $activities);
         $this->assertSame('invitation_declined', $activities[0]->type);
         $this->assertSame(['email' => 'invitee@example.com'], $activities[0]->payload);
-        $this->assertSame($invitee->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($invitee->id, $activities[0]->actor?->id);
     }
 
     public function test_decline_wrong_user(): void
@@ -76,10 +76,10 @@ class BandSpaceInvitationDeclineTest extends ApiTestCase
             'expirationDatetime' => (new \DateTime())->modify('+7 days'),
         ])->create();
 
-        $this->client->loginUser($wrongUser->_real());
+        $this->client->loginUser($wrongUser);
         $this->client->request(
             'POST',
-            '/api/band_spaces/invitations/' . $invitation->_real()->token . '/decline',
+            '/api/band_spaces/invitations/' . $invitation->token . '/decline',
             [],
             [],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']

@@ -30,14 +30,14 @@ class TaskReorderTest extends ApiTestCase
         $b = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 1])->create();
         $c = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 2])->create();
 
-        $aId = (string) $a->_real()->id;
-        $bId = (string) $b->_real()->id;
-        $cId = (string) $c->_real()->id;
+        $aId = (string) $a->id;
+        $bId = (string) $b->id;
+        $cId = (string) $c->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/reorder',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/reorder',
             [
                 'positions' => [
                     ['id' => $cId, 'position' => 0],
@@ -66,13 +66,13 @@ class TaskReorderTest extends ApiTestCase
         $todo = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
         $inProgress = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
 
-        $todoId = (string) $todo->_real()->id;
-        $inProgressId = (string) $inProgress->_real()->id;
+        $todoId = (string) $todo->id;
+        $inProgressId = (string) $inProgress->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/reorder',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/reorder',
             [
                 'positions' => [
                     ['id' => $todoId, 'position' => 5],
@@ -98,13 +98,13 @@ class TaskReorderTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'status' => TaskStatus::Todo, 'position' => 0])->create();
 
-        $this->client->loginUser($stranger->_real());
+        $this->client->loginUser($stranger);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/reorder',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/reorder',
             [
                 'positions' => [
-                    ['id' => (string) $task->_real()->id, 'position' => 0],
+                    ['id' => (string) $task->id, 'position' => 0],
                 ],
             ],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
@@ -123,13 +123,13 @@ class TaskReorderTest extends ApiTestCase
         $own = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
         $foreign = TaskFactory::new(['bandSpace' => $foreignBandSpace, 'status' => TaskStatus::Todo, 'position' => 5])->create();
 
-        $ownId = (string) $own->_real()->id;
-        $foreignId = (string) $foreign->_real()->id;
+        $ownId = (string) $own->id;
+        $foreignId = (string) $foreign->id;
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/reorder',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/reorder',
             [
                 'positions' => [
                     ['id' => $ownId, 'position' => 0],
@@ -153,10 +153,10 @@ class TaskReorderTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/reorder',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/reorder',
             ['positions' => []],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );

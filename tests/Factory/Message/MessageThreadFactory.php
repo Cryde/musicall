@@ -3,9 +3,9 @@
 namespace App\Tests\Factory\Message;
 
 use App\Entity\Message\MessageThread;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-final class MessageThreadFactory extends PersistentProxyObjectFactory
+final class MessageThreadFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

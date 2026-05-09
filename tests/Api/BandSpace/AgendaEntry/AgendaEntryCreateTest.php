@@ -25,10 +25,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Répétition générale',
                 'eventDatetime' => '2026-06-15T20:00:00+00:00',
@@ -39,33 +39,33 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
-        $entries = $repo->findByBandSpace($bandSpace->_real());
+        $entries = $repo->findByBandSpace($bandSpace);
         $this->assertCount(1, $entries);
 
         $entry = $entries[0];
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaEntry',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
             '@type' => 'AgendaEntry',
             'id' => $entry->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Répétition générale',
             'description' => null,
             'location' => null,
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
-            'creator_id' => $user->_real()->id,
-            'creator_username' => $user->_real()->username,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
-        $activities = $activityRepo->findForResource($bandSpace->_real(), BandSpaceModule::Agenda, $entry->id);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Agenda, $entry->id);
         $this->assertCount(1, $activities);
         $this->assertSame('entry_created', $activities[0]->type);
         $this->assertSame(['title' => 'Répétition générale'], $activities[0]->payload);
-        $this->assertSame($user->_real()->id, $activities[0]->actor?->id);
+        $this->assertSame($user->id, $activities[0]->actor?->id);
     }
 
     public function test_create_agenda_entry_with_all_fields(): void
@@ -74,10 +74,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Concert au Zenith',
                 'description' => 'Apporter le matériel à 18h',
@@ -90,23 +90,23 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
-        $entries = $repo->findByBandSpace($bandSpace->_real());
+        $entries = $repo->findByBandSpace($bandSpace);
         $entry = $entries[0];
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaEntry',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
             '@type' => 'AgendaEntry',
             'id' => $entry->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Concert au Zenith',
             'description' => 'Apporter le matériel à 18h',
             'location' => 'Zenith de Paris',
             'event_datetime' => '2026-07-20T21:30:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
-            'creator_id' => $user->_real()->id,
-            'creator_username' => $user->_real()->username,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -117,10 +117,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Concert',
                 'eventDatetime' => '2026-07-20T20:00:00+00:00',
@@ -132,23 +132,23 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
-        $entries = $repo->findByBandSpace($bandSpace->_real());
+        $entries = $repo->findByBandSpace($bandSpace);
         $entry = $entries[0];
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaEntry',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
             '@type' => 'AgendaEntry',
             'id' => $entry->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Concert',
             'description' => null,
             'location' => null,
             'event_datetime' => '2026-07-20T20:00:00+00:00',
             'end_datetime' => '2026-07-20T23:00:00+00:00',
             'is_all_day' => false,
-            'creator_id' => $user->_real()->id,
-            'creator_username' => $user->_real()->username,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -159,10 +159,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Concert',
                 'eventDatetime' => '2026-07-20T20:00:00+00:00',
@@ -197,10 +197,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Off',
                 'eventDatetime' => '2026-08-15',
@@ -212,23 +212,23 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
-        $entries = $repo->findByBandSpace($bandSpace->_real());
+        $entries = $repo->findByBandSpace($bandSpace);
         $entry = $entries[0];
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaEntry',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
             '@type' => 'AgendaEntry',
             'id' => $entry->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Off',
             'description' => null,
             'location' => null,
             'event_datetime' => '2026-08-15T00:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => true,
-            'creator_id' => $user->_real()->id,
-            'creator_username' => $user->_real()->username,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -239,10 +239,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Hellfest',
                 'eventDatetime' => '2026-06-19T15:30:00+02:00',
@@ -255,23 +255,23 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
-        $entries = $repo->findByBandSpace($bandSpace->_real());
+        $entries = $repo->findByBandSpace($bandSpace);
         $entry = $entries[0];
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/AgendaEntry',
-            '@id' => '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries/' . $entry->id,
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
             '@type' => 'AgendaEntry',
             'id' => $entry->id,
-            'band_space_id' => $bandSpace->_real()->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Hellfest',
             'description' => null,
             'location' => null,
             'event_datetime' => '2026-06-19T00:00:00+00:00',
             'end_datetime' => '2026-06-21T00:00:00+00:00',
             'is_all_day' => true,
-            'creator_id' => $user->_real()->id,
-            'creator_username' => $user->_real()->username,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
@@ -282,10 +282,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => '',
                 'eventDatetime' => '2026-06-15T20:00:00+00:00',
@@ -302,10 +302,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             ['title' => 'Sans date'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
@@ -320,10 +320,10 @@ class AgendaEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $this->client->loginUser($otherUser->_real());
+        $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'POST',
-            '/api/band_spaces/' . $bandSpace->_real()->id . '/agenda-entries',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
             [
                 'title' => 'Forbidden',
                 'eventDatetime' => '2026-06-15T20:00:00+00:00',

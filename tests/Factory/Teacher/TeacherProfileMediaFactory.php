@@ -7,12 +7,12 @@ namespace App\Tests\Factory\Teacher;
 use App\Entity\Teacher\TeacherProfileMedia;
 use App\Enum\Musician\MediaPlatform;
 use DateTimeImmutable;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<TeacherProfileMedia>
+ * @extends PersistentObjectFactory<TeacherProfileMedia>
  */
-final class TeacherProfileMediaFactory extends PersistentProxyObjectFactory
+final class TeacherProfileMediaFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {

@@ -25,9 +25,9 @@ class UserProfileGetTest extends ApiTestCase
         $profile->bio = 'My bio';
         $profile->location = 'Lyon, France';
         $profile->isPublic = true;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/profile');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -49,9 +49,9 @@ class UserProfileGetTest extends ApiTestCase
         $profile = $user->profile;
         $profile->bio = 'Private bio';
         $profile->isPublic = false;
-        $user->_save();
+        \Zenstruck\Foundry\Persistence\save($user);
 
-        $this->client->loginUser($user->_real());
+        $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/profile');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([

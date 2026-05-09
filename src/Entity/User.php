@@ -68,7 +68,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
     #[Assert\Length(min: 3, minMessage: 'Le mot de passe doit au moins contenir 3 caractères')]
-    public string $plainPassword;
+    public ?string $plainPassword = null;
 
     /** @var string[] */
     #[ORM\Column(type: Types::JSON)]
@@ -93,10 +93,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public DateTime $creationDatetime;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    public ?DateTimeInterface $lastLoginDatetime;
+    public ?DateTimeInterface $lastLoginDatetime = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    public ?int $oldId;
+    public ?int $oldId = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     public ?DateTimeInterface $confirmationDatetime = null;
@@ -105,7 +105,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public ?string $token = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    public ?DateTimeInterface $resetRequestDatetime;
+    public ?DateTimeInterface $resetRequestDatetime = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $usernameChangedDatetime = null;
@@ -123,7 +123,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public UserProfile $profile;
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: MusicianProfile::class, cascade: ['persist', 'remove'])]
-    public ?MusicianProfile $musicianProfile {
+    public ?MusicianProfile $musicianProfile = null {
         set(?MusicianProfile $value) {
             if ($value !== null && $value->user !== $this) {
                 $value->user = $this;
@@ -133,7 +133,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserNotificationPreference::class, cascade: ['persist', 'remove'])]
-    public ?UserNotificationPreference $notificationPreference {
+    public ?UserNotificationPreference $notificationPreference = null {
         set(?UserNotificationPreference $value) {
             if ($value !== null) {
                 $value->user = $this;
@@ -143,7 +143,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: TeacherProfile::class, cascade: ['persist', 'remove'])]
-    public ?TeacherProfile $teacherProfile {
+    public ?TeacherProfile $teacherProfile = null {
         set(?TeacherProfile $value) {
             if ($value !== null && $value->user !== $this) {
                 $value->user = $this;
@@ -188,6 +188,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function eraseCredentials(): void
     {
+    }
+
+    /**
+     * @return array{id: string, username: string, password: ?string, roles: array<string>}
+     */
+    public function __serialize(): array
+    {
+        // try to remove that once we remove all the normalizer / denormalizer
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'password' => $this->password,
+            'roles' => $this->roles,
+        ];
+    }
+
+    /**
+     * @param array{id: string, username: string, password: ?string, roles: array<string>} $data
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->id = $data['id'];
+        $this->username = $data['username'];
+        $this->password = $data['password'];
+        $this->roles = $data['roles'];
     }
 
     public function addPublication(Publication $publication): self
