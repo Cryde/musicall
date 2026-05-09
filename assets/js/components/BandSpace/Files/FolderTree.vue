@@ -1,6 +1,12 @@
 <template>
   <div class="flex flex-col gap-1">
-    <div class="flex items-center justify-between gap-2 mb-1 px-2">
+    <div
+      class="flex items-center justify-between gap-2 mb-1 px-2 rounded-md transition-colors duration-150"
+      :class="rootDropClasses"
+      @dragover.prevent="handleRootDragOver"
+      @dragleave="handleRootDragLeave"
+      @drop.prevent="handleRootDrop"
+    >
       <button
         type="button"
         class="flex items-center gap-2 flex-1 min-w-0 px-1 py-1.5 rounded-md text-sm text-left transition-colors duration-150"
@@ -29,6 +35,7 @@
       @create-sub="openCreateSub"
       @edit="openEdit"
       @delete="openDelete"
+      @drop-on-folder="handleDropOnFolder"
     />
 
     <div
@@ -71,7 +78,11 @@
 
 <script setup>
 import Button from 'primevue/button'
+import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
+import { canDrop } from '../../../composables/useFolderDragDrop.js'
+import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import FolderDeleteDialog from './FolderDeleteDialog.vue'
 import FolderEditDialog from './FolderEditDialog.vue'
 import FolderTreeNode from './FolderTreeNode.vue'
@@ -86,6 +97,9 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
+const filesStore = useBandFilesStore()
+const toast = useToast()
+
 const editDialogVisible = ref(false)
 const editMode = ref('create-root')
 const editTarget = ref(null)
@@ -93,6 +107,69 @@ const editParentId = ref(null)
 
 const deleteDialogVisible = ref(false)
 const deleteTarget = ref(null)
+
+const isRootDropTarget = ref(false)
+
+const rootDropClasses = computed(() =>
+  isRootDropTarget.value ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400' : ''
+)
+
+function handleRootDragOver(event) {
+  if (!filesStore.dragSource) return
+  if (!canDrop(filesStore.dragSource, null)) {
+    event.dataTransfer.dropEffect = 'none'
+    return
+  }
+  event.dataTransfer.dropEffect = 'move'
+  isRootDropTarget.value = true
+}
+
+function handleRootDragLeave() {
+  isRootDropTarget.value = false
+}
+
+function handleRootDrop() {
+  isRootDropTarget.value = false
+  if (!filesStore.dragSource || !canDrop(filesStore.dragSource, null)) return
+  applyMove(filesStore.dragSource, null)
+}
+
+function handleDropOnFolder({ targetFolderId, source }) {
+  applyMove(source, targetFolderId)
+}
+
+async function applyMove(source, targetFolderId) {
+  if (!props.bandSpaceId) return
+  try {
+    if (source.type === 'folder') {
+      await filesStore.updateFolder(props.bandSpaceId, source.id, { parent_id: targetFolderId })
+      toast.add({
+        severity: 'success',
+        summary: 'Dossier déplacé',
+        life: 2500
+      })
+    } else if (source.type === 'file') {
+      await bandSpaceFilesApi.updateFile(props.bandSpaceId, source.id, {
+        folder_id: targetFolderId
+      })
+      filesStore.fetchFiles(props.bandSpaceId)
+      toast.add({
+        severity: 'success',
+        summary: 'Fichier déplacé',
+        life: 2500
+      })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Déplacement impossible',
+      detail: e.message,
+      life: 5000
+    })
+  } finally {
+    filesStore.endDrag()
+  }
+}
 
 function openCreateRoot() {
   editMode.value = 'create-root'

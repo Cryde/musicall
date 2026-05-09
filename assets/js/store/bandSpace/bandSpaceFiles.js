@@ -15,6 +15,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const fileActivities = ref([])
   const shares = ref([])
   const versions = ref([])
+  // Drag-and-drop source. { type: 'folder'|'file', id, parentId, descendantIds: string[] }
+  const dragSource = ref(null)
 
   const filters = reactive({
     query: '',
@@ -328,6 +330,14 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     activeFolderId.value = folderId
   }
 
+  function startDrag(source) {
+    dragSource.value = source
+  }
+
+  function endDrag() {
+    dragSource.value = null
+  }
+
   function clear() {
     files.value = []
     totalFiles.value = 0
@@ -375,6 +385,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     isLoadingVersions: readonly(isLoadingVersions),
     isUploadingVersion: readonly(isUploadingVersion),
     isRollingBack: readonly(isRollingBack),
+    dragSource: readonly(dragSource),
+    startDrag,
+    endDrag,
     isLoadingActiveFile: readonly(isLoadingActiveFile),
     isLoadingActivities: readonly(isLoadingActivities),
     isSavingFile: readonly(isSavingFile),

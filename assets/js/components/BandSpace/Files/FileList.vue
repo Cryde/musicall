@@ -4,66 +4,64 @@
       <Skeleton v-for="i in 4" :key="i" width="100%" height="3rem" borderRadius="0.5rem" />
     </div>
 
-    <div v-else-if="files.length === 0" class="flex flex-col items-center justify-center py-16 text-center text-surface-400">
+    <div
+      v-else-if="files.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-center text-surface-400"
+    >
       <i class="pi pi-folder-open text-5xl mb-4"></i>
       <p class="text-sm italic">{{ emptyMessage }}</p>
     </div>
 
-    <DataTable
-      v-else
-      :value="files"
-      data-key="id"
-      :show-headers="true"
-      class="text-sm"
-      selection-mode="single"
-      @row-click="handleRowClick"
-      :pt="{
-        bodyRow: { class: 'hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer' }
-      }"
-    >
-      <Column field="original_name" header="Nom">
-        <template #body="{ data }">
-          <div class="flex items-center gap-2 min-w-0">
-            <i :class="iconForMime(data.mime_type)" class="text-lg text-surface-500"></i>
-            <span class="truncate font-medium">{{ data.original_name }}</span>
-          </div>
-        </template>
-      </Column>
+    <div v-else class="flex flex-col">
+      <div
+        class="hidden md:grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wide text-surface-400 border-b border-surface-200 dark:border-surface-700"
+      >
+        <div class="col-span-6">Nom</div>
+        <div class="col-span-2">Taille</div>
+        <div class="col-span-2">Étiquettes</div>
+        <div class="col-span-2">Ajouté le</div>
+      </div>
 
-      <Column field="size" header="Taille" headerStyle="width:8rem">
-        <template #body="{ data }">
-          <span class="tabular-nums text-surface-600 dark:text-surface-300">{{ formatSize(data.size) }}</span>
-        </template>
-      </Column>
+      <div
+        v-for="file in files"
+        :key="file.id"
+        class="grid grid-cols-12 gap-2 px-3 py-2 items-center text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
+        :draggable="true"
+        @click="emit('select', file)"
+        @dragstart="(event) => handleDragStart(event, file)"
+        @dragend="handleDragEnd"
+      >
+        <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
+          <i :class="iconForMime(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
+          <span class="truncate font-medium">{{ file.original_name }}</span>
+        </div>
 
-      <Column field="tags" header="Étiquettes" headerStyle="width:14rem">
-        <template #body="{ data }">
-          <div class="flex flex-wrap gap-1">
-            <Tag
-              v-for="tag in data.tags"
-              :key="tag.id"
-              :value="tag.name"
-              :style="tagStyle(tag.color_hex)"
-              class="text-xs"
-            />
-          </div>
-        </template>
-      </Column>
+        <div class="col-span-4 md:col-span-2 tabular-nums text-surface-600 dark:text-surface-300">
+          {{ formatSize(file.size) }}
+        </div>
 
-      <Column field="creation_datetime" header="Ajouté le" headerStyle="width:10rem">
-        <template #body="{ data }">
-          <span class="text-surface-600 dark:text-surface-300">{{ formatDate(data.creation_datetime) }}</span>
-        </template>
-      </Column>
-    </DataTable>
+        <div class="col-span-4 md:col-span-2 flex flex-wrap gap-1">
+          <Tag
+            v-for="tag in file.tags"
+            :key="tag.id"
+            :value="tag.name"
+            :style="tagStyle(tag.color_hex)"
+            class="text-xs"
+          />
+        </div>
+
+        <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
+          {{ formatDate(file.creation_datetime) }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import Column from 'primevue/column'
-import DataTable from 'primevue/datatable'
 import Skeleton from 'primevue/skeleton'
 import Tag from 'primevue/tag'
+import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 defineProps({
   files: { type: Array, required: true },
@@ -76,8 +74,20 @@ defineProps({
 
 const emit = defineEmits(['select'])
 
-function handleRowClick(event) {
-  emit('select', event.data)
+const filesStore = useBandFilesStore()
+
+function handleDragStart(event, file) {
+  filesStore.startDrag({
+    type: 'file',
+    id: file.id,
+    folderId: file.folder_id ?? null
+  })
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', file.id)
+}
+
+function handleDragEnd() {
+  filesStore.endDrag()
 }
 
 function iconForMime(mime) {

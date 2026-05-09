@@ -3,6 +3,12 @@
     <div
       class="group relative flex items-center h-8 px-2 rounded-md text-sm transition-colors duration-150"
       :class="rowClasses"
+      :draggable="true"
+      @dragstart="handleDragStart"
+      @dragend="handleDragEnd"
+      @dragover.prevent="handleDragOver"
+      @dragleave="handleDragLeave"
+      @drop.prevent="handleDrop"
     >
       <button
         type="button"
@@ -52,12 +58,15 @@
       @create-sub="(node) => emit('create-sub', node)"
       @edit="(node) => emit('edit', node)"
       @delete="(node) => emit('delete', node)"
+      @drop-on-folder="(payload) => emit('drop-on-folder', payload)"
     />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { canDrop, collectFolderAndDescendants } from '../../../composables/useFolderDragDrop.js'
+import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const MAX_DEPTH = 6
 
@@ -66,13 +75,62 @@ const props = defineProps({
   activeId: { type: String, default: null }
 })
 
-const emit = defineEmits(['select', 'create-sub', 'edit', 'delete'])
+const emit = defineEmits(['select', 'create-sub', 'edit', 'delete', 'drop-on-folder'])
+
+const filesStore = useBandFilesStore()
+
+const isDropTarget = ref(false)
 
 const rowClasses = computed(() => {
+  if (isDropTarget.value) {
+    return 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400 text-surface-900 dark:text-surface-100'
+  }
   return props.activeId === props.folder.id
     ? 'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-medium'
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
 })
 
 const canCreateSub = computed(() => (props.folder.depth ?? 0) < MAX_DEPTH - 1)
+
+function handleDragStart(event) {
+  // Collect descendant ids (including self) to prevent dropping on a descendant
+  const descendantIds = collectFolderAndDescendants([props.folder], props.folder.id)
+  filesStore.startDrag({
+    type: 'folder',
+    id: props.folder.id,
+    parentId: props.folder.parent_id ?? null,
+    descendantIds
+  })
+  // Required for Firefox to fire drag events
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', props.folder.id)
+}
+
+function handleDragEnd() {
+  filesStore.endDrag()
+  isDropTarget.value = false
+}
+
+function handleDragOver(event) {
+  if (!filesStore.dragSource) return
+  if (!canDrop(filesStore.dragSource, props.folder.id)) {
+    event.dataTransfer.dropEffect = 'none'
+    return
+  }
+  event.dataTransfer.dropEffect = 'move'
+  isDropTarget.value = true
+}
+
+function handleDragLeave() {
+  isDropTarget.value = false
+}
+
+function handleDrop() {
+  isDropTarget.value = false
+  if (!canDrop(filesStore.dragSource, props.folder.id)) return
+  emit('drop-on-folder', {
+    targetFolderId: props.folder.id,
+    source: { ...filesStore.dragSource }
+  })
+}
 </script>
