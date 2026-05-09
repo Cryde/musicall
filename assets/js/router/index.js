@@ -69,7 +69,7 @@ const routes = [
       {
         path: ':id/files',
         name: 'app_band_files',
-        component: () => import('../views/BandSpace/Empty.vue')
+        component: () => import('../views/BandSpace/Files.vue')
       },
       {
         path: ':id/taches',

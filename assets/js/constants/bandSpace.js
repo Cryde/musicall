@@ -29,6 +29,7 @@ export const NAVIGATION_ITEMS = Object.freeze([
   { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD },
   { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA },
   { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES },
+  { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES },
   { label: 'Tâches', route: BAND_SPACE_ROUTES.TASKS },
   { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE },
   { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS }
