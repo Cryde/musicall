@@ -336,9 +336,11 @@ function flushPendingSave() {
 }
 
 // Track image src URLs so we can fire detach for any image removed from the
-// editor. The download URL embeds the file's UUID after `/files/`.
+// editor. The download URL embeds the file's UUID after `/files/`. Matches
+// both the legacy current-version path (`/files/{uuid}/download`) and the
+// pinned per-version path (`/files/{uuid}/versions/{n}/download`).
 const trackedImageSrcs = ref(new Set())
-const FILE_ID_RE = /\/files\/([0-9a-f-]{36})\/download/i
+const FILE_ID_RE = /\/files\/([0-9a-f-]{36})(?:\/versions\/\d+)?\/download/i
 
 function collectImageSrcs(json) {
   const out = new Set()
@@ -431,12 +433,25 @@ async function handleImageInput(event) {
   if (imageInputRef.value) imageInputRef.value.value = ''
 }
 
+function buildPinnedImageSrc(uploaded) {
+  if (!uploaded?.id) return null
+  if (uploaded.current_version_number) {
+    return Routing.generate('api_band_space_files_version_download', {
+      bandSpaceId: props.bandSpaceId,
+      id: uploaded.id,
+      versionNumber: uploaded.current_version_number
+    })
+  }
+  return uploaded.download_url ?? null
+}
+
 async function uploadAndInsertImage(file) {
   isUploadingImage.value = true
   try {
     const result = await bandSpaceNoteImagesApi.upload(props.bandSpaceId, props.note.id, file)
-    if (result?.file?.download_url) {
-      editor.value?.chain().focus().setImage({ src: result.file.download_url }).run()
+    const pinnedSrc = buildPinnedImageSrc(result?.file)
+    if (pinnedSrc) {
+      editor.value?.chain().focus().setImage({ src: pinnedSrc }).run()
     }
     if (result?.quotaApproaching) {
       toast.add({

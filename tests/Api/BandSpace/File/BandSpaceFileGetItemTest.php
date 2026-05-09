@@ -37,6 +37,7 @@ class BandSpaceFileGetItemTest extends ApiTestCase
         ])->create();
         $version = BandSpaceFileVersionFactory::new([
             'bandSpaceFile' => $file,
+            'versionNumber' => 3,
             'mimeType' => 'audio/flac',
             'size' => 4_096_000,
         ])->create();
@@ -58,6 +59,7 @@ class BandSpaceFileGetItemTest extends ApiTestCase
         $this->assertCount(1, $response['tags']);
         $this->assertSame('masters', $response['tags'][0]['name']);
         $this->assertSame(1, $response['version_count']);
+        $this->assertSame(3, $response['current_version_number']);
         $this->assertSame('alice', $response['created_by']['username']);
         $this->assertStringContainsString('/download', $response['download_url']);
     }

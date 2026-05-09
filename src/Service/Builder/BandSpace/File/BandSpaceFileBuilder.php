@@ -70,6 +70,7 @@ readonly class BandSpaceFileBuilder
         $dto->currentVersionId = $entity->currentVersion !== null
             ? (string) $entity->currentVersion->id
             : null;
+        $dto->currentVersionNumber = $entity->currentVersion?->versionNumber;
 
         $dto->versionCount = $versionCount ?? $this->fileRepository->countVersionsByFileIds([(string) $entity->id])[(string) $entity->id] ?? 0;
 

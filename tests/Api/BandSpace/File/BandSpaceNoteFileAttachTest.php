@@ -42,6 +42,9 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['current_version_number']);
+
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
         $files = $repo->findBy(['bandSpace' => $bandSpace->_real()]);
         $this->assertCount(1, $files);
