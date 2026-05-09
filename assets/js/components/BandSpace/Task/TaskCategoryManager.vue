@@ -65,13 +65,11 @@
       </div>
     </div>
 
-    <ConfirmDialog />
   </Drawer>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Drawer from 'primevue/drawer'
 import InputText from 'primevue/inputtext'
 import { useConfirm } from 'primevue/useconfirm'

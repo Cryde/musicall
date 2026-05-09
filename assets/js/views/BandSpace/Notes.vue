@@ -70,14 +70,11 @@
       @created="handleCreateNote"
     />
 
-    <!-- Delete confirmation -->
-    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'

@@ -1,5 +1,4 @@
 <template>
-  <ConfirmDialog />
   <div
     v-if="tasksStore.isSelectionMode && tasksStore.selectedTaskIds.size > 0"
     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-900 dark:bg-surface-800 text-white rounded-xl shadow-xl px-4 py-2 flex items-center gap-3"
@@ -103,7 +102,6 @@
 
 <script setup>
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import MultiSelect from 'primevue/multiselect'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'

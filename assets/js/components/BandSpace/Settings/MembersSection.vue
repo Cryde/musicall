@@ -153,13 +153,11 @@
       </div>
     </div>
 
-    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'

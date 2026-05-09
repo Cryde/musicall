@@ -198,15 +198,12 @@
         />
       </div>
     </div>
-
-    <ConfirmDialog />
   </Drawer>
 </template>
 
 <script setup>
 import { format } from 'date-fns'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
 import Message from 'primevue/message'

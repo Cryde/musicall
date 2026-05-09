@@ -164,8 +164,9 @@
           icon="pi pi-trash"
           size="small"
           severity="danger"
-          :disabled="!canDelete"
+          :disabled="!canDelete || isAttachedToSource"
           :loading="filesStore.isDeletingFile"
+          v-tooltip.top="isAttachedToSource ? attachedSourceMessage : null"
           @click="confirmDelete"
         />
       </div>
@@ -214,6 +215,21 @@ const canDelete = computed(() => {
   if (!f) return false
   const userId = userSecurityStore.userProfile?.id
   return f.created_by?.id === userId
+})
+
+const isAttachedToSource = computed(() => Boolean(file.value?.attached_source_type))
+
+const attachedSourceMessage = computed(() => {
+  switch (file.value?.attached_source_type) {
+    case 'task':
+      return "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche."
+    case 'finance':
+      return "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée."
+    case 'note':
+      return "Ce fichier est attaché à une note. Détachez-le d'abord depuis la note."
+    default:
+      return "Ce fichier est attaché à une autre ressource. Détachez-le d'abord."
+  }
 })
 
 const folderOptions = computed(() => {

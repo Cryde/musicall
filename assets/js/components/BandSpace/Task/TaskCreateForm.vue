@@ -67,6 +67,7 @@
 </template>
 
 <script setup>
+import { format } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
@@ -75,7 +76,6 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
-import { format } from 'date-fns'
 import { computed, reactive, watch } from 'vue'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 

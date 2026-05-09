@@ -108,4 +108,78 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             'description' => 'Fichier introuvable',
         ]);
     }
+
+    public function test_delete_task_attached_file_returns_422(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $file = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => 'task',
+            'attachedSourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche.",
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche.",
+        ]);
+
+        /** @var BandSpaceFileRepository $repo */
+        $repo = self::getContainer()->get(BandSpaceFileRepository::class);
+        $reloaded = $repo->find($file->_real()->id);
+        $this->assertNotNull($reloaded);
+        $this->assertNull($reloaded->archiveDatetime);
+    }
+
+    public function test_delete_finance_attached_file_returns_422(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $file = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => 'finance',
+            'attachedSourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/files/' . $file->_real()->id,
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée.",
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée.",
+        ]);
+    }
 }

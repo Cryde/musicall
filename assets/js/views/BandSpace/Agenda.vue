@@ -167,7 +167,6 @@
       :agendaItem="dialogItem"
       :initialDatetime="dialogInitialDatetime"
     />
-    <ConfirmDialog />
   </div>
 </template>
 
@@ -188,7 +187,6 @@ import {
 } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -503,7 +501,7 @@ function calendarEnd(item) {
   if (!item.end_datetime) return undefined
   if (!item.is_all_day) return item.end_datetime
   // FullCalendar all-day events use exclusive end: bump last-day-inclusive to the day after.
-  return format(addDays(parseISO(item.end_datetime), 1), "yyyy-MM-dd")
+  return format(addDays(parseISO(item.end_datetime), 1), 'yyyy-MM-dd')
 }
 
 function isAllDayItem(item) {

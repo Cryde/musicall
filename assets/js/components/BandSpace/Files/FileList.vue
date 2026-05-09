@@ -98,9 +98,24 @@ const canDeleteContextFile = computed(() => {
   return f.created_by?.id === userId
 })
 
+const contextFileSourceLabel = computed(() => {
+  switch (contextMenuFile.value?.attached_source_type) {
+    case 'task':
+      return "Détachez-le d'abord depuis la tâche"
+    case 'finance':
+      return "Détachez-le d'abord depuis l'entrée"
+    case 'note':
+      return "Détachez-le d'abord depuis la note"
+    default:
+      return null
+  }
+})
+
 const contextMenuItems = computed(() => {
   const f = contextMenuFile.value
   if (!f) return []
+  const isAttached = Boolean(f.attached_source_type)
+  const deleteLabel = isAttached ? `Supprimer (${contextFileSourceLabel.value})` : 'Supprimer'
   return [
     { label: 'Ouvrir', icon: 'pi pi-eye', command: () => emit('select', f) },
     {
@@ -114,10 +129,10 @@ const contextMenuItems = computed(() => {
     { label: 'Déplacer', icon: 'pi pi-arrows-h', command: () => emit('open-move', f) },
     { separator: true },
     {
-      label: 'Supprimer',
+      label: deleteLabel,
       icon: 'pi pi-trash',
       class: 'p-menuitem-danger',
-      disabled: !canDeleteContextFile.value,
+      disabled: !canDeleteContextFile.value || isAttached,
       command: () => confirmDelete(f)
     }
   ]

@@ -132,7 +132,6 @@
       @deleted="handleRecurrenceDeleted"
     />
 
-    <ConfirmDialog />
   </div>
 </template>
 
@@ -150,7 +149,6 @@ import {
   subYears
 } from 'date-fns'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
