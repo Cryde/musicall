@@ -9,6 +9,7 @@ use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFolderActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -46,11 +47,16 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if ($folder === null) {
             throw new NotFoundHttpException('Dossier introuvable');
+        }
+
+        $isOwner = $folder->createdBy !== null && $folder->createdBy->id === $user->id;
+        if (!$isOwner && $membership->role !== Role::Admin) {
+            throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut modifier ce dossier');
         }
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];

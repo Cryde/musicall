@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -162,5 +163,57 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_rename_by_non_creator_non_admin_returns_403(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create(['username' => 'owner', 'email' => 'owner@test.com']);
+        $other = UserFactory::new()->asBaseUser()->create(['username' => 'other', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
+
+        $this->client->loginUser($other->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            ['name' => 'Hijacked'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Seul le créateur ou un administrateur peut modifier ce dossier',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Seul le créateur ou un administrateur peut modifier ce dossier',
+        ]);
+    }
+
+    public function test_rename_by_admin_non_creator_succeeds(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create(['username' => 'owner', 'email' => 'owner@test.com']);
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'admin', 'email' => 'admin@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
+
+        $this->client->loginUser($admin->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+            ['name' => 'Concerts'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
     }
 }

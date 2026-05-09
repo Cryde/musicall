@@ -133,4 +133,52 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
             'description' => 'Seul un administrateur peut supprimer un dossier en cascade',
         ]);
     }
+
+    public function test_delete_move_to_root_by_non_creator_non_admin_returns_403(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create(['username' => 'owner', 'email' => 'owner@test.com']);
+        $other = UserFactory::new()->asBaseUser()->create(['username' => 'other', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
+
+        $this->client->loginUser($other->_real());
+        $this->client->request(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Seul le créateur ou un administrateur peut supprimer ce dossier',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Seul le créateur ou un administrateur peut supprimer ce dossier',
+        ]);
+    }
+
+    public function test_delete_move_to_root_by_admin_non_creator_succeeds(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create(['username' => 'owner', 'email' => 'owner@test.com']);
+        $admin = UserFactory::new()->asBaseUser()->create(['username' => 'admin', 'email' => 'admin@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $owner, 'name' => 'Live'])->create();
+
+        $this->client->loginUser($admin->_real());
+        $this->client->request(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/folders/' . $folder->_real()->id,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+    }
 }
