@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, readonly, ref } from 'vue'
+import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceFilesApi from '../../api/bandSpace/band-space-files.js'
 
 export const useBandFilesStore = defineStore('bandFiles', () => {
@@ -10,6 +10,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const tags = ref([])
   const quota = ref(null)
   const activeFolderId = ref(null)
+  const activeFileId = ref(null)
+  const activeFileFull = ref(null)
+  const fileActivities = ref([])
 
   const filters = reactive({
     query: '',
@@ -24,10 +27,24 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const isLoadingFolders = ref(false)
   const isLoadingTags = ref(false)
   const isLoadingQuota = ref(false)
+  const isLoadingActiveFile = ref(false)
+  const isLoadingActivities = ref(false)
+  const isSavingFile = ref(false)
+  const isDeletingFile = ref(false)
   const loadError = ref(null)
+  const activeFileError = ref(null)
 
   let filesRequestId = 0
   let foldersRequestId = 0
+  let activeFileRequestId = 0
+  let activitiesRequestId = 0
+
+  const activeFile = computed(() => {
+    if (!activeFileId.value) return null
+    return activeFileFull.value && activeFileFull.value.id === activeFileId.value
+      ? activeFileFull.value
+      : files.value.find((f) => f.id === activeFileId.value) || null
+  })
 
   async function fetchFiles(bandSpaceId) {
     const requestId = ++filesRequestId
@@ -113,6 +130,83 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     return params
   }
 
+  async function fetchFileById(bandSpaceId, fileId) {
+    const requestId = ++activeFileRequestId
+    isLoadingActiveFile.value = true
+    activeFileError.value = null
+    try {
+      const fetched = await bandSpaceFilesApi.getFile(bandSpaceId, fileId)
+      if (requestId !== activeFileRequestId) return
+      activeFileFull.value = fetched
+      const idx = files.value.findIndex((f) => f.id === fetched.id)
+      if (idx !== -1) {
+        files.value = files.value.map((f) => (f.id === fetched.id ? fetched : f))
+      }
+    } catch (e) {
+      if (requestId !== activeFileRequestId) return
+      activeFileError.value = e.status === 404 ? 'Fichier introuvable' : e.message
+    } finally {
+      if (requestId === activeFileRequestId) {
+        isLoadingActiveFile.value = false
+      }
+    }
+  }
+
+  async function fetchFileActivities(bandSpaceId, fileId) {
+    const requestId = ++activitiesRequestId
+    isLoadingActivities.value = true
+    try {
+      const result = await bandSpaceFilesApi.getFileActivities(bandSpaceId, fileId)
+      if (requestId !== activitiesRequestId) return
+      fileActivities.value = result
+    } catch {
+      // silently fail
+    } finally {
+      if (requestId === activitiesRequestId) {
+        isLoadingActivities.value = false
+      }
+    }
+  }
+
+  async function updateFile(bandSpaceId, fileId, data) {
+    isSavingFile.value = true
+    try {
+      const updated = await bandSpaceFilesApi.updateFile(bandSpaceId, fileId, data)
+      files.value = files.value.map((f) => (f.id === fileId ? updated : f))
+      if (activeFileFull.value && activeFileFull.value.id === fileId) {
+        activeFileFull.value = updated
+      }
+      return updated
+    } finally {
+      isSavingFile.value = false
+    }
+  }
+
+  async function deleteFile(bandSpaceId, fileId) {
+    isDeletingFile.value = true
+    try {
+      await bandSpaceFilesApi.deleteFile(bandSpaceId, fileId)
+      files.value = files.value.filter((f) => f.id !== fileId)
+      totalFiles.value = Math.max(0, totalFiles.value - 1)
+      if (activeFileId.value === fileId) {
+        activeFileId.value = null
+        activeFileFull.value = null
+      }
+    } finally {
+      isDeletingFile.value = false
+    }
+  }
+
+  function setActiveFile(fileId) {
+    activeFileId.value = fileId || null
+    if (!fileId) {
+      activeFileFull.value = null
+      fileActivities.value = []
+      activeFileError.value = null
+      isLoadingActiveFile.value = false
+    }
+  }
+
   async function uploadFile(bandSpaceId, payload, onProgress) {
     const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress)
     files.value = [result.file, ...files.value]
@@ -143,6 +237,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     tags.value = []
     quota.value = null
     activeFolderId.value = null
+    activeFileId.value = null
+    activeFileFull.value = null
+    fileActivities.value = []
     filters.query = ''
     filters.mime = null
     filters.tagId = null
@@ -150,6 +247,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     filters.sort = 'date'
     filters.order = 'desc'
     loadError.value = null
+    activeFileError.value = null
   }
 
   return {
@@ -166,10 +264,23 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     isLoadingTags: readonly(isLoadingTags),
     isLoadingQuota: readonly(isLoadingQuota),
     loadError: readonly(loadError),
+    activeFileId: readonly(activeFileId),
+    activeFile,
+    fileActivities: readonly(fileActivities),
+    isLoadingActiveFile: readonly(isLoadingActiveFile),
+    isLoadingActivities: readonly(isLoadingActivities),
+    isSavingFile: readonly(isSavingFile),
+    isDeletingFile: readonly(isDeletingFile),
+    activeFileError: readonly(activeFileError),
     fetchFiles,
     fetchFolders,
     fetchTags,
     fetchQuota,
+    fetchFileById,
+    fetchFileActivities,
+    updateFile,
+    deleteFile,
+    setActiveFile,
     uploadFile,
     createTag,
     setFilter,

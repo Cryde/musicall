@@ -15,8 +15,10 @@
       data-key="id"
       :show-headers="true"
       class="text-sm"
+      selection-mode="single"
+      @row-click="handleRowClick"
       :pt="{
-        bodyRow: { class: 'hover:bg-surface-50 dark:hover:bg-surface-800/40' }
+        bodyRow: { class: 'hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer' }
       }"
     >
       <Column field="original_name" header="Nom">
@@ -71,6 +73,12 @@ defineProps({
     default: 'Aucun fichier dans ce dossier — commencez par en téléverser un.'
   }
 })
+
+const emit = defineEmits(['select'])
+
+function handleRowClick(event) {
+  emit('select', event.data)
+}
 
 function iconForMime(mime) {
   if (!mime) return 'pi pi-file'

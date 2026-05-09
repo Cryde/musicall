@@ -65,6 +65,7 @@
             :files="filesStore.files"
             :is-loading="filesStore.isLoadingFiles"
             :empty-message="emptyMessage"
+            @select="handleFileSelect"
           />
         </div>
       </section>
@@ -76,6 +77,14 @@
       :band-space-id="bandSpaceId"
       @saved="handleUploadSaved"
     />
+
+    <FileDetailDrawer
+      v-if="bandSpaceId"
+      v-model:visible="detailVisible"
+      :band-space-id="bandSpaceId"
+      @close="handleDrawerClose"
+      @deleted="handleFileDeleted"
+    />
   </div>
 </template>
 
@@ -85,7 +94,8 @@ import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import FileDetailDrawer from '../../components/BandSpace/Files/FileDetailDrawer.vue'
 import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
@@ -93,10 +103,12 @@ import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
 const filesStore = useBandFilesStore()
 
 const uploadDialogVisible = ref(false)
+const detailVisible = ref(false)
 
 const bandSpaceId = computed(() => route.params.id)
 
@@ -153,6 +165,38 @@ watch(bandSpaceId, () => {
   filesStore.clear()
   loadAll()
 })
+
+function handleFileSelect(file) {
+  router.push({ query: { ...route.query, file: file.id } })
+}
+
+function handleDrawerClose() {
+  if (route.query.file) {
+    router.replace({ query: { ...route.query, file: undefined } })
+  }
+}
+
+function handleFileDeleted() {
+  if (route.query.file) {
+    router.replace({ query: { ...route.query, file: undefined } })
+  }
+}
+
+watch(
+  () => route.query.file,
+  (fileId) => {
+    if (fileId && bandSpaceId.value) {
+      filesStore.setActiveFile(fileId)
+      filesStore.fetchFileById(bandSpaceId.value, fileId)
+      filesStore.fetchFileActivities(bandSpaceId.value, fileId)
+      detailVisible.value = true
+    } else {
+      filesStore.setActiveFile(null)
+      detailVisible.value = false
+    }
+  },
+  { immediate: true }
+)
 
 function handleUploadSaved({ quotaApproaching }) {
   toast.add({

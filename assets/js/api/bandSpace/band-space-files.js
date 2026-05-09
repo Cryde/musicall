@@ -26,6 +26,38 @@ export default {
       .catch(handleApiError)
   },
 
+  getFile(bandSpaceId, fileId) {
+    return axios
+      .get(Routing.generate('api_band_space_files_get_item', { bandSpaceId, id: fileId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  updateFile(bandSpaceId, fileId, data) {
+    return axios
+      .patch(Routing.generate('api_band_space_files_patch', { bandSpaceId, id: fileId }), data, {
+        headers: { 'Content-Type': 'application/merge-patch+json' }
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  deleteFile(bandSpaceId, fileId) {
+    return axios
+      .delete(Routing.generate('api_band_space_files_delete', { bandSpaceId, id: fileId }))
+      .catch(handleApiError)
+  },
+
+  getFileActivities(bandSpaceId, fileId) {
+    return axios
+      .get(
+        Routing.generate('api_band_space_file_activities_get_collection', { bandSpaceId, fileId })
+      )
+      .then((resp) => resp.data)
+      .then((resp) => resp.member)
+      .catch(handleApiError)
+  },
+
   getFolderTree(bandSpaceId) {
     return axios
       .get(Routing.generate('api_band_space_folders_get_collection', { bandSpaceId }))
