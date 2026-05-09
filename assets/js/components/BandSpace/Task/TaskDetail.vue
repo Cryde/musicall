@@ -140,6 +140,17 @@
       <!-- Separator -->
       <div class="border-t border-surface-200 dark:border-surface-700"></div>
 
+      <!-- Attached files -->
+      <AttachedFilesSection
+        v-if="task.id"
+        :band-space-id="bandSpaceId"
+        source-type="task"
+        :source-id="task.id"
+      />
+
+      <!-- Separator -->
+      <div class="border-t border-surface-200 dark:border-surface-700"></div>
+
       <!-- Comments -->
       <TaskCommentForm
         :members="members"
@@ -193,6 +204,7 @@
 </template>
 
 <script setup>
+import { format } from 'date-fns'
 import Button from 'primevue/button'
 import ConfirmDialog from 'primevue/confirmdialog'
 import DatePicker from 'primevue/datepicker'
@@ -204,10 +216,10 @@ import Skeleton from 'primevue/skeleton'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { format } from 'date-fns'
 import { computed, ref, watch } from 'vue'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import TaskActivityFeed from './TaskActivityFeed.vue'
 import TaskCommentForm from './TaskCommentForm.vue'
 import TaskCommentList from './TaskCommentList.vue'

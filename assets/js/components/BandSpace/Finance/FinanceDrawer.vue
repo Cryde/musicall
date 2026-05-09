@@ -154,6 +154,15 @@
         :disabled="isLocked"
       />
 
+      <div v-if="isEditMode && props.entry?.id" class="border-t border-surface-200 dark:border-surface-700 pt-4">
+        <AttachedFilesSection
+          :band-space-id="props.bandSpaceId"
+          source-type="finance"
+          :source-id="props.entry.id"
+          :can-attach="canEditEntry"
+        />
+      </div>
+
       <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-4">
         <Button
           v-if="canEditEntry && !isLocked"
@@ -199,6 +208,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref, watch } from 'vue'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
+import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import SplitManager from './SplitManager.vue'
 
 const props = defineProps({

@@ -181,5 +181,81 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  getAttachedFiles(bandSpaceId, sourceType, sourceId) {
+    const route =
+      sourceType === 'task'
+        ? Routing.generate('api_band_space_task_files_get_collection', {
+            bandSpaceId,
+            taskId: sourceId
+          })
+        : Routing.generate('api_band_space_finance_entry_files_get_collection', {
+            bandSpaceId,
+            entryId: sourceId
+          })
+
+    return axios
+      .get(route)
+      .then((resp) => resp.data)
+      .then((resp) => resp.member)
+      .catch(handleApiError)
+  },
+
+  attachFileUpload(bandSpaceId, sourceType, sourceId, file, onProgress) {
+    const formData = new FormData()
+    formData.append('uploadedFile', file)
+
+    const route =
+      sourceType === 'task'
+        ? Routing.generate('api_band_space_task_files_attach', { bandSpaceId, taskId: sourceId })
+        : Routing.generate('api_band_space_finance_entry_files_attach', {
+            bandSpaceId,
+            entryId: sourceId
+          })
+
+    return axios
+      .post(route, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            onProgress(percent)
+          }
+        }
+      })
+      .then((resp) => ({
+        file: resp.data,
+        quotaApproaching: resp.headers['x-quota-approaching'] === 'true'
+      }))
+      .catch(handleApiError)
+  },
+
+  attachExistingFile(bandSpaceId, fileId, sourceType, sourceId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_files_attach_existing', { bandSpaceId, fileId }),
+        { sourceType, sourceId },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  detachFromSource(bandSpaceId, sourceType, sourceId, fileId) {
+    const route =
+      sourceType === 'task'
+        ? Routing.generate('api_band_space_task_files_detach', {
+            bandSpaceId,
+            taskId: sourceId,
+            id: fileId
+          })
+        : Routing.generate('api_band_space_finance_entry_files_detach', {
+            bandSpaceId,
+            entryId: sourceId,
+            id: fileId
+          })
+
+    return axios.delete(route).catch(handleApiError)
   }
 }
