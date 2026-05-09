@@ -48,4 +48,13 @@ final class BandSpaceFileMimeAllowlist
     {
         return in_array($mimeType, self::ALLOWED, true);
     }
+
+    /**
+     * Whether the MIME type is an image suitable for embedding in a note.
+     * SVG is excluded — embedded scripts inside SVG are an XSS vector.
+     */
+    public static function isImage(string $mimeType): bool
+    {
+        return in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
+    }
 }

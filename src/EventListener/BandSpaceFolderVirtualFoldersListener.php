@@ -24,6 +24,7 @@ final readonly class BandSpaceFolderVirtualFoldersListener
     private const array SOURCE_LABELS = [
         'task' => 'Tâches',
         'finance' => 'Finances',
+        'note' => 'Notes',
     ];
 
     public function __construct(

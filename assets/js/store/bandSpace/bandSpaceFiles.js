@@ -130,6 +130,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       params.source = 'task'
     } else if (activeFolderId.value === 'virtual:finance') {
       params.source = 'finance'
+    } else if (activeFolderId.value === 'virtual:note') {
+      params.source = 'note'
     } else if (activeFolderId.value) {
       params.folderId = activeFolderId.value
     } else if (filters.source) {

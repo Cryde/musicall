@@ -89,6 +89,26 @@
           />
         </div>
 
+        <!-- Image -->
+        <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
+          <Button
+            v-tooltip.bottom="'Insérer une image'"
+            icon="pi pi-image"
+            severity="secondary"
+            text
+            size="small"
+            :disabled="isUploadingImage"
+            @click="triggerImagePicker"
+          />
+          <input
+            ref="imageInputRef"
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            class="hidden"
+            @change="handleImageInput"
+          />
+        </div>
+
         <!-- Lists -->
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
@@ -249,6 +269,7 @@
 </template>
 
 <script setup>
+import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import { TableCell } from '@tiptap/extension-table/cell'
 import { TableRow } from '@tiptap/extension-table/row'
@@ -259,17 +280,22 @@ import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
-import { onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
 
 const props = defineProps({
   note: { type: Object, required: true },
+  bandSpaceId: { type: String, required: true },
   saveStatus: { type: String, default: null }
 })
 
 const emit = defineEmits(['update-content', 'update-title', 'update-emoji'])
+
+const toast = useToast()
 
 const showEmojiPicker = ref(false)
 const emojiPickerRef = ref(null)
@@ -287,6 +313,7 @@ function debouncedSave(json) {
   cancelDebouncedSave()
   pendingContent = json
   saveTimeout = setTimeout(() => {
+    detachRemovedImages(json)
     emit('update-content', { noteId: props.note.id, content: json })
     pendingContent = null
   }, 2000)
@@ -302,10 +329,48 @@ function cancelDebouncedSave() {
 function flushPendingSave() {
   if (pendingContent) {
     cancelDebouncedSave()
+    detachRemovedImages(pendingContent)
     emit('update-content', { noteId: props.note.id, content: pendingContent })
     pendingContent = null
   }
 }
+
+// Track image src URLs so we can fire detach for any image removed from the
+// editor. The download URL embeds the file's UUID after `/files/`.
+const trackedImageSrcs = ref(new Set())
+const FILE_ID_RE = /\/files\/([0-9a-f-]{36})\/download/i
+
+function collectImageSrcs(json) {
+  const out = new Set()
+  const walk = (node) => {
+    if (!node) return
+    if (node.type === 'image' && node.attrs?.src) {
+      out.add(node.attrs.src)
+    }
+    if (Array.isArray(node.content)) {
+      node.content.forEach(walk)
+    }
+  }
+  walk(json)
+  return out
+}
+
+function detachRemovedImages(json) {
+  const current = collectImageSrcs(json)
+  const removed = [...trackedImageSrcs.value].filter((src) => !current.has(src))
+  trackedImageSrcs.value = current
+  for (const src of removed) {
+    const m = src.match(FILE_ID_RE)
+    if (!m) continue
+    bandSpaceNoteImagesApi.detach(props.bandSpaceId, props.note.id, m[1]).catch(() => {
+      // Silent: file may already be detached, or race with another tab.
+    })
+  }
+}
+
+onMounted(() => {
+  trackedImageSrcs.value = collectImageSrcs(props.note.content)
+})
 
 const editor = useEditor({
   extensions: [
@@ -320,7 +385,8 @@ const editor = useEditor({
     }),
     Table.configure({ resizable: true }),
     TableRow.extend({ content: 'tableCell*' }),
-    TableCell
+    TableCell,
+    Image.configure({ inline: false, allowBase64: false })
   ],
   content: props.note.content || '',
   onUpdate: ({ editor }) => {
@@ -346,6 +412,49 @@ function handleTitleBlur() {
   const trimmed = editableTitle.value.trim()
   if (trimmed && trimmed !== props.note.title) {
     emit('update-title', trimmed)
+  }
+}
+
+const imageInputRef = ref(null)
+const isUploadingImage = ref(false)
+
+function triggerImagePicker() {
+  if (isUploadingImage.value) return
+  imageInputRef.value?.click()
+}
+
+async function handleImageInput(event) {
+  const file = event.target.files?.[0]
+  if (file) {
+    await uploadAndInsertImage(file)
+  }
+  if (imageInputRef.value) imageInputRef.value.value = ''
+}
+
+async function uploadAndInsertImage(file) {
+  isUploadingImage.value = true
+  try {
+    const result = await bandSpaceNoteImagesApi.upload(props.bandSpaceId, props.note.id, file)
+    if (result?.file?.download_url) {
+      editor.value?.chain().focus().setImage({ src: result.file.download_url }).run()
+    }
+    if (result?.quotaApproaching) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Quota presque atteint',
+        detail: 'Vous avez atteint 80 % de votre quota de stockage.',
+        life: 6000
+      })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Téléversement impossible',
+      detail: e.message,
+      life: 5000
+    })
+  } finally {
+    isUploadingImage.value = false
   }
 }
 </script>

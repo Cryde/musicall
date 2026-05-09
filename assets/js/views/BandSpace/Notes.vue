@@ -49,6 +49,7 @@
         v-else-if="notesStore.selectedNote"
         :key="notesStore.selectedNoteId"
         :note="notesStore.selectedNote"
+        :band-space-id="bandSpaceId"
         :saveStatus="notesStore.saveStatus"
         @update-content="handleUpdateContent"
         @update-title="handleUpdateTitle"

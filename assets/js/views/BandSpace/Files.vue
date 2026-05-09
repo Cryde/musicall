@@ -68,6 +68,12 @@
               label="Téléverser"
               icon="pi pi-cloud-upload"
               size="small"
+              :disabled="isVirtualFolderActive"
+              v-tooltip.top="
+                isVirtualFolderActive
+                  ? 'Les dossiers virtuels sont remplis automatiquement par les attachements.'
+                  : null
+              "
               @click="uploadDialogVisible = true"
             />
           </div>
@@ -177,12 +183,20 @@ const showBreadcrumb = computed(() => {
   return typeof id === 'string' && !id.startsWith('virtual:')
 })
 
+const isVirtualFolderActive = computed(() => {
+  const id = filesStore.activeFolderId
+  return typeof id === 'string' && id.startsWith('virtual:')
+})
+
 const emptyMessage = computed(() => {
   if (filesStore.activeFolderId === 'virtual:task') {
     return 'Aucun fichier attaché à une tâche pour le moment.'
   }
   if (filesStore.activeFolderId === 'virtual:finance') {
     return 'Aucun fichier attaché à une entrée financière pour le moment.'
+  }
+  if (filesStore.activeFolderId === 'virtual:note') {
+    return 'Aucune image attachée à une note pour le moment.'
   }
   if (filesStore.activeFolderId !== null) {
     return 'Aucun fichier dans ce dossier — commencez par en téléverser un.'

@@ -45,6 +45,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             'virtualFolders' => [
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
+                ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
             ],
         ]);
     }
@@ -149,6 +150,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             'virtualFolders' => [
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
+                ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
             ],
         ]);
     }
@@ -213,6 +215,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             'virtualFolders' => [
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 2],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 1],
+                ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
             ],
         ]);
     }
