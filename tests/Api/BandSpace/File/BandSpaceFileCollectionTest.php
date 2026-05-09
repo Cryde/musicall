@@ -6,6 +6,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
@@ -91,20 +92,28 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $entryId = '11111111-1111-1111-1111-111111111111';
         $otherEntryId = '22222222-2222-2222-2222-222222222222';
 
-        BandSpaceFileFactory::new([
+        $matchingFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'matching.pdf',
-            'attachedSourceType' => 'finance',
-            'attachedSourceId' => $entryId,
         ])->create();
-        BandSpaceFileFactory::new([
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $matchingFile,
+            'sourceType' => 'finance',
+            'sourceId' => $entryId,
+            'attachedBy' => $user,
+        ]);
+        $otherFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'other-entry.pdf',
-            'attachedSourceType' => 'finance',
-            'attachedSourceId' => $otherEntryId,
         ])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $otherFile,
+            'sourceType' => 'finance',
+            'sourceId' => $otherEntryId,
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
@@ -127,13 +136,17 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'standalone.pdf'])->create();
-        BandSpaceFileFactory::new([
+        $attachedFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'attached-to-task.pdf',
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => '7e57d004-2b97-0e7a-b45f-5387367791cd',
         ])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attachedFile,
+            'sourceType' => 'task',
+            'sourceId' => \Ramsey\Uuid\Uuid::fromString('7e57d004-2b97-0e7a-b45f-5387367791cd'),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->_real()->id . '/files?source=manual', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);

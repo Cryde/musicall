@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\ApiResource\BandSpace\File\BandSpaceFileUpload;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
@@ -83,8 +84,6 @@ readonly class BandSpaceNoteFileAttachProcessor implements ProcessorInterface
         $file->bandSpace = $bandSpace;
         $file->createdBy = $user;
         $file->originalName = $originalName;
-        $file->attachedSourceType = 'note';
-        $file->attachedSourceId = Uuid::fromString((string) $note->id);
 
         $version = new BandSpaceFileVersion();
         $version->bandSpaceFile = $file;
@@ -94,8 +93,15 @@ readonly class BandSpaceNoteFileAttachProcessor implements ProcessorInterface
         $version->size = $size;
         $version->setUploadedFile($upload);
 
+        $attachment = new BandSpaceFileAttachment();
+        $attachment->bandSpaceFile = $file;
+        $attachment->sourceType = 'note';
+        $attachment->sourceId = Uuid::fromString((string) $note->id);
+        $attachment->attachedBy = $user;
+
         $this->entityManager->persist($file);
         $this->entityManager->persist($version);
+        $this->entityManager->persist($attachment);
         $this->entityManager->flush();
 
         $file->currentVersion = $version;

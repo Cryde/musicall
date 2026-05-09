@@ -2,11 +2,13 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -27,12 +29,13 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::fromString($task->_real()->id),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($task->_real()->id),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->request(
@@ -42,12 +45,13 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
-        $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $repo->find($file->_real()->id);
+        $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
+        $reloaded = $fileRepo->find($file->_real()->id);
         $this->assertNotNull($reloaded);
-        $this->assertNull($reloaded->attachedSourceType);
-        $this->assertNull($reloaded->attachedSourceId);
         $this->assertNull($reloaded->archiveDatetime);
+
+        $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $this->assertNull($attachmentRepo->findOneByFileAndSource($reloaded, 'task', $task->_real()->id));
     }
 
     public function test_detach_with_archive_query_archives_file(): void
@@ -57,12 +61,13 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::fromString($task->_real()->id),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($task->_real()->id),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->request(
@@ -75,8 +80,6 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         $repo = self::getContainer()->get(BandSpaceFileRepository::class);
         $reloaded = $repo->find($file->_real()->id);
         $this->assertNotNull($reloaded);
-        $this->assertNull($reloaded->attachedSourceType);
-        $this->assertNull($reloaded->attachedSourceId);
         $this->assertNotNull($reloaded->archiveDatetime);
     }
 
@@ -88,12 +91,13 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
 
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $otherTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::fromString($otherTask->_real()->id),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($otherTask->_real()->id),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->request(
@@ -122,12 +126,13 @@ class BandSpaceTaskFileDetachTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
 
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $member,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::fromString($task->_real()->id),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $member])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($task->_real()->id),
+            'attachedBy' => $member,
+        ]);
 
         $this->client->loginUser($other->_real());
         $this->client->request(

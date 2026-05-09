@@ -62,14 +62,6 @@ readonly class BandSpaceFileUpdateProcedure
 
         $this->guardForbiddenAttach($payload);
 
-        if (array_key_exists('attached_source_type', $payload) || array_key_exists('attachedSourceType', $payload)
-            || array_key_exists('attached_source_id', $payload) || array_key_exists('attachedSourceId', $payload)
-        ) {
-            if ($this->applyDetach($file, $user)) {
-                $changed = true;
-            }
-        }
-
         if ($changed) {
             $file->updateDatetime = new DateTime();
         }
@@ -212,32 +204,6 @@ readonly class BandSpaceFileUpdateProcedure
         return true;
     }
 
-    private function applyDetach(BandSpaceFile $file, User $user): bool
-    {
-        if ($file->attachedSourceType === null && $file->attachedSourceId === null) {
-            return false;
-        }
-
-        $payload = [
-            'from_source_type' => $file->attachedSourceType,
-            'from_source_id' => $file->attachedSourceId !== null ? (string) $file->attachedSourceId : null,
-        ];
-
-        $file->attachedSourceType = null;
-        $file->attachedSourceId = null;
-
-        $this->activityRecorder->record(
-            bandSpace: $file->bandSpace,
-            module: BandSpaceModule::File,
-            type: BandSpaceFileActivityType::Detached,
-            resourceId: (string) $file->id,
-            actor: $user,
-            payload: $payload,
-        );
-
-        return true;
-    }
-
     /**
      * @param array<string, mixed> $payload
      */
@@ -248,7 +214,7 @@ readonly class BandSpaceFileUpdateProcedure
 
         if ($type !== null || $id !== null) {
             throw new UnprocessableEntityHttpException(
-                "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche ou finance)",
+                "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche, entrée financière, note)",
             );
         }
     }

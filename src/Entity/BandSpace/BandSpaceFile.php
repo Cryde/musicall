@@ -17,7 +17,6 @@ use Ramsey\Uuid\UuidInterface;
 #[ORM\Entity(repositoryClass: BandSpaceFileRepository::class)]
 #[ORM\Table(name: 'band_space_file')]
 #[ORM\Index(columns: ['band_space_id', 'archive_datetime'], name: 'idx_band_space_file_band_archived')]
-#[ORM\Index(columns: ['attached_source_type', 'attached_source_id'], name: 'idx_band_space_file_attached_source')]
 class BandSpaceFile
 {
     #[ORM\Id]
@@ -48,18 +47,6 @@ class BandSpaceFile
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $originalName;
-
-    #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
-    public ?string $attachedSourceType = null;
-
-    #[ORM\Column(type: 'uuid', nullable: true)]
-    public UuidInterface|string|null $attachedSourceId = null {
-        get {
-            return is_string($this->attachedSourceId)
-                ? $this->attachedSourceId
-                : $this->attachedSourceId?->toString();
-        }
-    }
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $archiveDatetime = null;

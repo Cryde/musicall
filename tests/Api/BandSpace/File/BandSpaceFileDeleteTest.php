@@ -8,6 +8,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -115,12 +116,13 @@ class BandSpaceFileDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => \Ramsey\Uuid\Uuid::uuid4(),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
@@ -136,10 +138,10 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche.",
+            'detail' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la ressource concernée.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche.",
+            'description' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la ressource concernée.",
         ]);
 
         /** @var BandSpaceFileRepository $repo */
@@ -155,12 +157,13 @@ class BandSpaceFileDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'finance',
-            'attachedSourceId' => \Ramsey\Uuid\Uuid::uuid4(),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
@@ -176,10 +179,10 @@ class BandSpaceFileDeleteTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée.",
+            'detail' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée.",
+            'description' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis la ressource concernée.",
         ]);
     }
 }

@@ -22,6 +22,21 @@ final class BandSpaceFileFactory extends PersistentProxyObjectFactory
         ];
     }
 
+    /**
+     * @param array{type: string, id: string|\Ramsey\Uuid\UuidInterface, attachedBy?: \App\Entity\User|\Zenstruck\Foundry\Persistence\Proxy<\App\Entity\User>} $source
+     */
+    public function withAttachment(array $source): self
+    {
+        return $this->afterPersist(function (\App\Entity\BandSpace\BandSpaceFile $file) use ($source): void {
+            BandSpaceFileAttachmentFactory::createOne([
+                'bandSpaceFile' => $file,
+                'sourceType' => $source['type'],
+                'sourceId' => $source['id'],
+                'attachedBy' => $source['attachedBy'] ?? $file->createdBy,
+            ]);
+        });
+    }
+
     public static function class(): string
     {
         return BandSpaceFile::class;

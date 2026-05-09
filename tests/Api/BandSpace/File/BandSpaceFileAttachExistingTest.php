@@ -3,11 +3,13 @@
 namespace App\Tests\Api\BandSpace\File;
 
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
@@ -41,11 +43,12 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        $repo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $reloaded = $repo->find($file->_real()->id);
+        $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
+        $reloaded = $fileRepo->find($file->_real()->id);
         $this->assertNotNull($reloaded);
-        $this->assertSame('task', $reloaded->attachedSourceType);
-        $this->assertSame($task->_real()->id, (string) $reloaded->attachedSourceId);
+        $attachment = $attachmentRepo->findOneByFileAndSource($reloaded, 'task', $task->_real()->id);
+        $this->assertNotNull($attachment);
     }
 
     public function test_attach_existing_already_attached_returns_422(): void
@@ -55,12 +58,13 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => \Ramsey\Uuid\Uuid::fromString($task->_real()->id),
-        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => \Ramsey\Uuid\Uuid::fromString($task->_real()->id),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(

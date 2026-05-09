@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -47,9 +48,11 @@ class BandSpaceNoteFileAttachTest extends ApiTestCase
 
         /** @var BandSpaceFile $file */
         $file = $files[0];
-        $this->assertSame('note', $file->attachedSourceType);
-        $this->assertSame($note->_real()->id, (string) $file->attachedSourceId);
         $this->assertSame('cover.png', $file->originalName);
+
+        $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'note', $note->_real()->id);
+        $this->assertNotNull($attachment);
     }
 
     public function test_attach_non_image_returns_415(): void

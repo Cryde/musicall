@@ -138,6 +138,28 @@
         />
       </div>
 
+      <div v-if="attachments.length > 0" class="flex flex-col gap-1">
+        <label class="text-xs text-surface-400 uppercase tracking-wide">
+          Attaché à ({{ attachments.length }})
+        </label>
+        <div class="flex flex-col gap-1">
+          <div
+            v-for="att in attachments"
+            :key="`${att.source_type}-${att.source_id}`"
+            class="flex items-center gap-2 p-2 rounded-md border border-surface-200 dark:border-surface-700 text-sm"
+          >
+            <i :class="attachmentIcon(att.source_type)"></i>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-surface-400">{{ attachmentTypeLabel(att.source_type) }}</div>
+              <div class="truncate font-medium">{{ att.source_label }}</div>
+            </div>
+          </div>
+        </div>
+        <small class="text-xs text-surface-400 italic">
+          Pour détacher ce fichier, utilisez la ressource d'origine.
+        </small>
+      </div>
+
       <FileActivityFeed :activities="filesStore.fileActivities" />
     </div>
 
@@ -217,10 +239,17 @@ const canDelete = computed(() => {
   return f.created_by?.id === userId
 })
 
-const isAttachedToSource = computed(() => Boolean(file.value?.attached_source_type))
+const attachments = computed(() => file.value?.attachments ?? [])
+
+const isAttachedToSource = computed(() => attachments.value.length > 0)
 
 const attachedSourceMessage = computed(() => {
-  switch (file.value?.attached_source_type) {
+  const list = attachments.value
+  if (list.length === 0) return null
+  if (list.length > 1) {
+    return `Ce fichier est attaché à ${list.length} ressources. Détachez-le d'abord depuis chacune.`
+  }
+  switch (list[0].source_type) {
     case 'task':
       return "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche."
     case 'finance':
@@ -231,6 +260,32 @@ const attachedSourceMessage = computed(() => {
       return "Ce fichier est attaché à une autre ressource. Détachez-le d'abord."
   }
 })
+
+function attachmentIcon(sourceType) {
+  switch (sourceType) {
+    case 'task':
+      return 'pi pi-check-square text-blue-500'
+    case 'finance':
+      return 'pi pi-euro text-amber-600'
+    case 'note':
+      return 'pi pi-file-edit text-purple-500'
+    default:
+      return 'pi pi-link text-surface-500'
+  }
+}
+
+function attachmentTypeLabel(sourceType) {
+  switch (sourceType) {
+    case 'task':
+      return 'Tâche'
+    case 'finance':
+      return 'Entrée financière'
+    case 'note':
+      return 'Note'
+    default:
+      return 'Ressource'
+  }
+}
 
 const folderOptions = computed(() => {
   const out = [{ label: 'Racine', value: null }]

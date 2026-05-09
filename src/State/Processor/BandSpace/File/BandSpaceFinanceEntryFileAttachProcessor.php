@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\ApiResource\BandSpace\File\BandSpaceFileUpload;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
@@ -109,8 +110,6 @@ readonly class BandSpaceFinanceEntryFileAttachProcessor implements ProcessorInte
         $file->createdBy = $user;
         $file->originalName = $originalName;
         $file->folder = $folder;
-        $file->attachedSourceType = 'finance';
-        $file->attachedSourceId = Uuid::fromString((string) $entry->id);
         foreach ($tags as $tag) {
             $file->tags->add($tag);
         }
@@ -123,8 +122,15 @@ readonly class BandSpaceFinanceEntryFileAttachProcessor implements ProcessorInte
         $version->size = $size;
         $version->setUploadedFile($upload);
 
+        $attachment = new BandSpaceFileAttachment();
+        $attachment->bandSpaceFile = $file;
+        $attachment->sourceType = 'finance';
+        $attachment->sourceId = Uuid::fromString((string) $entry->id);
+        $attachment->attachedBy = $user;
+
         $this->entityManager->persist($file);
         $this->entityManager->persist($version);
+        $this->entityManager->persist($attachment);
         $this->entityManager->flush();
 
         $file->currentVersion = $version;

@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -47,9 +48,11 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
 
         /** @var BandSpaceFile $file */
         $file = $files[0];
-        $this->assertSame('task', $file->attachedSourceType);
-        $this->assertSame($task->_real()->id, (string) $file->attachedSourceId);
         $this->assertSame('sample.txt', $file->originalName);
+
+        $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'task', $task->_real()->id);
+        $this->assertNotNull($attachment);
     }
 
     public function test_attach_task_in_other_band_returns_404(): void

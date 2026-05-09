@@ -99,7 +99,12 @@ const canDeleteContextFile = computed(() => {
 })
 
 const contextFileSourceLabel = computed(() => {
-  switch (contextMenuFile.value?.attached_source_type) {
+  const attachments = contextMenuFile.value?.attachments ?? []
+  if (attachments.length === 0) return null
+  if (attachments.length > 1) {
+    return "Détachez-le d'abord depuis chaque ressource"
+  }
+  switch (attachments[0]?.source_type) {
     case 'task':
       return "Détachez-le d'abord depuis la tâche"
     case 'finance':
@@ -107,14 +112,14 @@ const contextFileSourceLabel = computed(() => {
     case 'note':
       return "Détachez-le d'abord depuis la note"
     default:
-      return null
+      return "Détachez-le d'abord depuis la ressource concernée"
   }
 })
 
 const contextMenuItems = computed(() => {
   const f = contextMenuFile.value
   if (!f) return []
-  const isAttached = Boolean(f.attached_source_type)
+  const isAttached = (f.attachments?.length ?? 0) > 0
   const deleteLabel = isAttached ? `Supprimer (${contextFileSourceLabel.value})` : 'Supprimer'
   return [
     { label: 'Ouvrir', icon: 'pi pi-eye', command: () => emit('select', f) },

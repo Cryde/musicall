@@ -4,6 +4,7 @@ namespace App\Tests\Api\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -54,8 +55,10 @@ class BandSpaceFinanceEntryFileAttachTest extends ApiTestCase
 
         /** @var BandSpaceFile $file */
         $file = $files[0];
-        $this->assertSame('finance', $file->attachedSourceType);
-        $this->assertSame($entry->_real()->id, (string) $file->attachedSourceId);
+
+        $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $attachment = $attachmentRepo->findOneByFileAndSource($file, 'finance', $entry->_real()->id);
+        $this->assertNotNull($attachment);
     }
 
     public function test_attach_personal_entry_by_owner(): void

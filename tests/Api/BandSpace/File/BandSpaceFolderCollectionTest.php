@@ -6,6 +6,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -161,39 +162,29 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::uuid4(),
-        ])->create();
-        BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::uuid4(),
-        ])->create();
-        BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'finance',
-            'attachedSourceId' => Uuid::uuid4(),
-        ])->create();
+        $task1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $task1, 'sourceType' => 'task', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
+        $task2 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $task2, 'sourceType' => 'task', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
+        $finance1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $finance1, 'sourceType' => 'finance', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
         // Archived attached file — must not count
-        BandSpaceFileFactory::new([
+        $archived = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::uuid4(),
             'archiveDatetime' => new \DateTimeImmutable(),
         ])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $archived, 'sourceType' => 'task', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
         // Manual file — must not appear in any virtual folder
-        BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => null,
-            'attachedSourceId' => null,
-        ])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
         $bandSpaceId = $bandSpace->_real()->id;
 

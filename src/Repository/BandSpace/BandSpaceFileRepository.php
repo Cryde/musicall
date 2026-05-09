@@ -126,27 +126,6 @@ class BandSpaceFileRepository extends ServiceEntityRepository
      *
      * @return array<string, int> source => file count
      */
-    public function countActiveByBandSpaceGroupedBySource(BandSpace $bandSpace): array
-    {
-        $rows = $this->createQueryBuilder('bsf')
-            ->select('bsf.attachedSourceType AS source', 'COUNT(bsf.id) AS file_count')
-            ->where('bsf.bandSpace = :bandSpace')
-            ->andWhere('bsf.archiveDatetime IS NULL')
-            ->andWhere('bsf.attachedSourceType IS NOT NULL')
-            ->groupBy('bsf.attachedSourceType')
-            ->orderBy('bsf.attachedSourceType', 'ASC')
-            ->setParameter('bandSpace', $bandSpace)
-            ->getQuery()
-            ->getArrayResult();
-
-        $counts = [];
-        foreach ($rows as $row) {
-            $counts[(string) $row['source']] = (int) $row['file_count'];
-        }
-
-        return $counts;
-    }
-
     /**
      * @return array<int, array{id: string, name: string}> root → leaf
      */
@@ -181,16 +160,29 @@ class BandSpaceFileRepository extends ServiceEntityRepository
 
         if ($filter->source !== null) {
             if ($filter->source === 'manual') {
-                $qb->andWhere('bsf.attachedSourceType IS NULL');
+                // Standalone files have no attachment row.
+                $qb->andWhere(
+                    'NOT EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attMan '
+                    . 'WHERE attMan.bandSpaceFile = bsf)'
+                );
             } else {
-                $qb->andWhere('bsf.attachedSourceType = :source')
-                    ->setParameter('source', $filter->source);
-            }
-        }
+                $qb->andWhere(
+                    'EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attSrc '
+                    . 'WHERE attSrc.bandSpaceFile = bsf AND attSrc.sourceType = :source'
+                    . ($filter->sourceId !== null ? ' AND attSrc.sourceId = :sourceId' : '')
+                    . ')'
+                )->setParameter('source', $filter->source);
 
-        if ($filter->sourceId !== null) {
-            $qb->andWhere('bsf.attachedSourceId = :sourceId')
-                ->setParameter('sourceId', $filter->sourceId);
+                if ($filter->sourceId !== null) {
+                    $qb->setParameter('sourceId', $filter->sourceId);
+                }
+            }
+        } elseif ($filter->sourceId !== null) {
+            // sourceId without source: scope by id only.
+            $qb->andWhere(
+                'EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attId '
+                . 'WHERE attId.bandSpaceFile = bsf AND attId.sourceId = :sourceId)'
+            )->setParameter('sourceId', $filter->sourceId);
         }
 
         $trimmedQuery = $filter->query !== null ? trim($filter->query) : '';

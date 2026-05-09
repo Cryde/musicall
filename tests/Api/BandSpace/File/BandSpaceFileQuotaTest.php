@@ -6,6 +6,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -83,11 +84,13 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $manualFile, 'versionNumber' => 2, 'size' => 200])->create();
 
         // Task-attached file: 50
-        $taskFile = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-        ])->create();
+        $taskFile = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $taskFile,
+            'sourceType' => 'task',
+            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'attachedBy' => $user,
+        ]);
         BandSpaceFileVersionFactory::new(['bandSpaceFile' => $taskFile, 'versionNumber' => 1, 'size' => 50])->create();
 
         // Archived file with two versions: should be EXCLUDED

@@ -173,8 +173,9 @@ class BandSpaceFileResource
     /** @var array<int, array{id: string, name: string, color_hex: string|null}> */
     public array $tags = [];
 
-    public ?string $attachedSourceType = null;
-    public ?string $attachedSourceId = null;
+    /** @var array<int, array{source_type: string, source_id: string, source_label: string}> */
+    public array $attachments = [];
+
     public ?string $currentVersionId = null;
     public int $versionCount = 0;
 

@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -29,6 +30,7 @@ readonly class BandSpaceNoteFileDetachProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceNoteRepository $noteRepository,
         private BandSpaceFileRepository $fileRepository,
+        private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
@@ -54,14 +56,14 @@ readonly class BandSpaceNoteFileDetachProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
-        if ($file->attachedSourceType !== 'note' || (string) $file->attachedSourceId !== (string) $note->id) {
+        $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'note', (string) $note->id);
+        if ($attachment === null) {
             throw new NotFoundHttpException("Le fichier n'est pas attaché à cette note");
         }
 
         $shouldArchive = $this->requestStack->getCurrentRequest()?->query->getBoolean('archive') ?? false;
 
-        $file->attachedSourceType = null;
-        $file->attachedSourceId = null;
+        $this->entityManager->remove($attachment);
         $file->updateDatetime = new \DateTime();
 
         $this->activityRecorder->record(

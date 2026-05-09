@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -28,6 +29,7 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFileRepository $fileRepository,
+        private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
     ) {
@@ -52,13 +54,10 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce fichier');
         }
 
-        if ($file->attachedSourceType !== null) {
-            throw new UnprocessableEntityHttpException(match ($file->attachedSourceType) {
-                'task' => "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche.",
-                'finance' => "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée.",
-                'note' => "Ce fichier est attaché à une note. Détachez-le d'abord depuis la note.",
-                default => "Ce fichier est attaché à une autre ressource. Détachez-le d'abord.",
-            });
+        $attachments = $this->attachmentRepository->findByFile($file);
+        if (count($attachments) > 0) {
+            $sourceTypes = array_unique(array_map(fn ($a): string => $a->sourceType, $attachments));
+            throw new UnprocessableEntityHttpException($this->buildAttachmentMessage($sourceTypes));
         }
 
         $file->archiveDatetime = new DateTimeImmutable();
@@ -73,5 +72,26 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
         );
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param string[] $sourceTypes
+     */
+    private function buildAttachmentMessage(array $sourceTypes): string
+    {
+        $labels = array_map(static fn (string $type): string => match ($type) {
+            'task' => 'une tâche',
+            'finance' => 'une entrée financière',
+            'note' => 'une note',
+            default => 'une autre ressource',
+        }, $sourceTypes);
+
+        $list = match (count($labels)) {
+            1 => $labels[0],
+            2 => $labels[0] . ' et ' . $labels[1],
+            default => implode(', ', array_slice($labels, 0, -1)) . ' et ' . end($labels),
+        };
+
+        return "Ce fichier est attaché à {$list}. Détachez-le d'abord depuis la ressource concernée.";
     }
 }

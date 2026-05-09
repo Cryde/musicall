@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -30,6 +31,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
         private BandSpaceMemberChecker $memberChecker,
         private FinanceEntryRepository $financeEntryRepository,
         private BandSpaceFileRepository $fileRepository,
+        private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
@@ -59,14 +61,14 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
-        if ($file->attachedSourceType !== 'finance' || (string) $file->attachedSourceId !== (string) $entry->id) {
+        $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'finance', (string) $entry->id);
+        if ($attachment === null) {
             throw new NotFoundHttpException("Le fichier n'est pas attaché à cette entrée");
         }
 
         $shouldArchive = $this->requestStack->getCurrentRequest()?->query->getBoolean('archive') ?? false;
 
-        $file->attachedSourceType = null;
-        $file->attachedSourceId = null;
+        $this->entityManager->remove($attachment);
         $file->updateDatetime = new \DateTime();
 
         $this->activityRecorder->record(

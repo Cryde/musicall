@@ -5,7 +5,11 @@ namespace App\Service\Builder\BandSpace\File;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileTag;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
+use App\Repository\BandSpace\BandSpaceNoteRepository;
+use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -13,6 +17,10 @@ readonly class BandSpaceFileBuilder
 {
     public function __construct(
         private BandSpaceFileRepository $fileRepository,
+        private BandSpaceFileAttachmentRepository $attachmentRepository,
+        private TaskRepository $taskRepository,
+        private FinanceEntryRepository $financeEntryRepository,
+        private BandSpaceNoteRepository $noteRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private UrlGeneratorInterface $urlGenerator,
     ) {
@@ -57,10 +65,8 @@ readonly class BandSpaceFileBuilder
             $entity->tags->toArray(),
         ));
 
-        $dto->attachedSourceType = $entity->attachedSourceType;
-        $dto->attachedSourceId = $entity->attachedSourceId !== null
-            ? (string) $entity->attachedSourceId
-            : null;
+        $dto->attachments = $this->buildAttachments($entity);
+
         $dto->currentVersionId = $entity->currentVersion !== null
             ? (string) $entity->currentVersion->id
             : null;
@@ -89,4 +95,68 @@ readonly class BandSpaceFileBuilder
 
         return $dto;
     }
+
+    /**
+     * @return array<int, array{source_type: string, source_id: string, source_label: string}>
+     */
+    private function buildAttachments(BandSpaceFile $file): array
+    {
+        $attachments = $this->attachmentRepository->findByFile($file);
+        if (count($attachments) === 0) {
+            return [];
+        }
+
+        $bandSpace = $file->bandSpace;
+        $taskIds = [];
+        $entryIds = [];
+        $noteIds = [];
+        foreach ($attachments as $a) {
+            match ($a->sourceType) {
+                'task' => $taskIds[] = (string) $a->sourceId,
+                'finance' => $entryIds[] = (string) $a->sourceId,
+                'note' => $noteIds[] = (string) $a->sourceId,
+                default => null,
+            };
+        }
+
+        $taskTitles = [];
+        if (count($taskIds) > 0) {
+            foreach ($this->taskRepository->findByIdsAndBandSpace(array_values(array_unique($taskIds)), $bandSpace) as $task) {
+                $taskTitles[(string) $task->id] = $task->title;
+            }
+        }
+
+        $entryLabels = [];
+        foreach ($entryIds as $entryId) {
+            $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
+            if ($entry !== null) {
+                $entryLabels[$entryId] = $entry->label;
+            }
+        }
+
+        $noteTitles = [];
+        foreach ($noteIds as $noteId) {
+            $note = $this->noteRepository->findOneByIdAndBandSpace($noteId, $bandSpace);
+            if ($note !== null) {
+                $noteTitles[$noteId] = $note->title;
+            }
+        }
+
+        return array_map(static function ($a) use ($taskTitles, $entryLabels, $noteTitles): array {
+            $sourceId = (string) $a->sourceId;
+            $label = match ($a->sourceType) {
+                'task' => $taskTitles[$sourceId] ?? '—',
+                'finance' => $entryLabels[$sourceId] ?? '—',
+                'note' => $noteTitles[$sourceId] ?? '—',
+                default => '—',
+            };
+
+            return [
+                'source_type' => $a->sourceType,
+                'source_id' => $sourceId,
+                'source_label' => $label,
+            ];
+        }, $attachments);
+    }
+
 }

@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\ApiResource\BandSpace\File\BandSpaceFileUpload;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\BandSpace\BandSpaceFolder;
@@ -115,8 +116,6 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
         $file->createdBy = $user;
         $file->originalName = $originalName;
         $file->folder = $folder;
-        $file->attachedSourceType = $attachedSourceType;
-        $file->attachedSourceId = $attachedSourceId !== null ? Uuid::fromString($attachedSourceId) : null;
         foreach ($tags as $tag) {
             $file->tags->add($tag);
         }
@@ -131,6 +130,16 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
 
         $this->entityManager->persist($file);
         $this->entityManager->persist($version);
+
+        if ($attachedSourceType !== null) {
+            $attachment = new BandSpaceFileAttachment();
+            $attachment->bandSpaceFile = $file;
+            $attachment->sourceType = $attachedSourceType;
+            $attachment->sourceId = Uuid::fromString($attachedSourceId);
+            $attachment->attachedBy = $user;
+            $this->entityManager->persist($attachment);
+        }
+
         $this->entityManager->flush();
 
         $file->currentVersion = $version;

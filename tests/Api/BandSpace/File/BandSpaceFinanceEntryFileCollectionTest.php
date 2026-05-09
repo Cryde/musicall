@@ -7,6 +7,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
@@ -31,20 +32,28 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         $entry = FinanceEntryFactory::new(['category' => $category, 'scope' => FinanceEntryScope::Band])->create();
         $otherEntry = FinanceEntryFactory::new(['category' => $category, 'scope' => FinanceEntryScope::Band])->create();
 
-        BandSpaceFileFactory::new([
+        $attachedFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'attached.pdf',
-            'attachedSourceType' => 'finance',
-            'attachedSourceId' => Uuid::fromString($entry->_real()->id),
         ])->create();
-        BandSpaceFileFactory::new([
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attachedFile,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString($entry->_real()->id),
+            'attachedBy' => $user,
+        ]);
+        $otherFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'on-other-entry.pdf',
-            'attachedSourceType' => 'finance',
-            'attachedSourceId' => Uuid::fromString($otherEntry->_real()->id),
         ])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $otherFile,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString($otherEntry->_real()->id),
+            'attachedBy' => $user,
+        ]);
 
         $this->client->loginUser($user->_real());
         $this->client->jsonRequest(
@@ -59,8 +68,9 @@ class BandSpaceFinanceEntryFileCollectionTest extends ApiTestCase
         $this->assertSame(1, $response['totalItems']);
         $this->assertCount(1, $response['member']);
         $this->assertSame('attached.pdf', $response['member'][0]['original_name']);
-        $this->assertSame('finance', $response['member'][0]['attached_source_type']);
-        $this->assertSame($entry->_real()->id, $response['member'][0]['attached_source_id']);
+        $this->assertCount(1, $response['member'][0]['attachments']);
+        $this->assertSame('finance', $response['member'][0]['attachments'][0]['source_type']);
+        $this->assertSame($entry->_real()->id, $response['member'][0]['attachments'][0]['source_id']);
     }
 
     public function test_list_unknown_entry_returns_404(): void

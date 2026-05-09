@@ -3,9 +3,9 @@
 namespace App\EventListener;
 
 use App\Entity\User;
-use App\Repository\BandSpace\BandSpaceFileRepository;
-use App\Repository\BandSpace\BandSpaceRepository;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\BandSpace\BandSpaceRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +30,7 @@ final readonly class BandSpaceFolderVirtualFoldersListener
     public function __construct(
         private BandSpaceRepository $bandSpaceRepository,
         private BandSpaceMembershipRepository $membershipRepository,
-        private BandSpaceFileRepository $fileRepository,
+        private BandSpaceFileAttachmentRepository $attachmentRepository,
         private Security $security,
     ) {
     }
@@ -76,7 +76,7 @@ final readonly class BandSpaceFolderVirtualFoldersListener
             return;
         }
 
-        $counts = $this->fileRepository->countActiveByBandSpaceGroupedBySource($bandSpace);
+        $counts = $this->attachmentRepository->countActiveByBandSpaceGroupedBySource($bandSpace);
 
         $virtualFolders = [];
         foreach (self::SOURCE_LABELS as $source => $label) {

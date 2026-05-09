@@ -238,42 +238,6 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         ]);
     }
 
-    public function test_detach_from_source(): void
-    {
-        $user = UserFactory::new()->asBaseUser()->create();
-        $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $sourceId = Uuid::uuid4()->toString();
-        $file = BandSpaceFileFactory::new([
-            'bandSpace' => $bandSpace,
-            'createdBy' => $user,
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => $sourceId,
-        ])->create();
-
-        $bandSpaceId = $bandSpace->_real()->id;
-        $fileId = $file->_real()->id;
-
-        $this->client->loginUser($user->_real());
-        $this->client->jsonRequest(
-            'PATCH',
-            '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId,
-            ['attachedSourceType' => null, 'attachedSourceId' => null],
-            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
-        );
-
-        $this->assertResponseIsSuccessful();
-        $response = $this->getResponseAsArray();
-        $this->assertNull($response['attached_source_type']);
-        $this->assertNull($response['attached_source_id']);
-
-        $this->assertActivityRecorded($bandSpace->_real(), $fileId, 'detached', [
-            'from_source_type' => 'task',
-            'from_source_id' => $sourceId,
-        ]);
-    }
-
     public function test_set_non_null_attachment_returns_422(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
@@ -296,10 +260,10 @@ class BandSpaceFileUpdateTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche ou finance)",
+            'detail' => "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche, entrée financière, note)",
             'status' => 422,
             'type' => '/errors/422',
-            'description' => "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche ou finance)",
+            'description' => "L'attachement à une ressource doit être effectué via les endpoints dédiés (tâche, entrée financière, note)",
         ]);
     }
 

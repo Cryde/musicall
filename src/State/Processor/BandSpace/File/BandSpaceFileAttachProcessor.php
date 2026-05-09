@@ -7,10 +7,12 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFileAttachInput;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\TaskRepository;
@@ -33,6 +35,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFileRepository $fileRepository,
+        private BandSpaceFileAttachmentRepository $attachmentRepository,
         private TaskRepository $taskRepository,
         private FinanceEntryRepository $financeEntryRepository,
         private BandSpaceActivityRecorder $activityRecorder,
@@ -56,10 +59,6 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
-        if ($file->attachedSourceType !== null) {
-            throw new UnprocessableEntityHttpException('Ce fichier est déjà attaché à une ressource. Détachez-le d\'abord.');
-        }
-
         if ($data->sourceId === null) {
             throw new UnprocessableEntityHttpException("L'identifiant de la source est requis");
         }
@@ -70,8 +69,22 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             default => throw new UnprocessableEntityHttpException('Type de source invalide'),
         };
 
-        $file->attachedSourceType = $data->sourceType;
-        $file->attachedSourceId = Uuid::fromString((string) $data->sourceId);
+        $existing = $this->attachmentRepository->findOneByFileAndSource(
+            $file,
+            (string) $data->sourceType,
+            (string) $data->sourceId,
+        );
+        if ($existing !== null) {
+            throw new UnprocessableEntityHttpException('Ce fichier est déjà attaché à cette ressource.');
+        }
+
+        $attachment = new BandSpaceFileAttachment();
+        $attachment->bandSpaceFile = $file;
+        $attachment->sourceType = (string) $data->sourceType;
+        $attachment->sourceId = Uuid::fromString((string) $data->sourceId);
+        $attachment->attachedBy = $user;
+        $this->entityManager->persist($attachment);
+
         $file->updateDatetime = new \DateTime();
 
         $this->activityRecorder->record(

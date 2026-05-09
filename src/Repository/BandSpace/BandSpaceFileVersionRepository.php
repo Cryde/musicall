@@ -78,19 +78,27 @@ class BandSpaceFileVersionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Active-version byte usage grouped by attached source type. Manual uploads
-     * (where attached_source_type IS NULL) are reported as `'manual'`.
+     * Active-version byte usage grouped by attached source type. Files with no
+     * attachment are reported as `'manual'`. A file attached to multiple sources
+     * contributes its total bytes to each source bucket — the sum may exceed
+     * the actual band quota usage.
      *
      * @return array<int, array{source: string, bytes: int}>
      */
     public function sumActiveBytesByBandSpaceGroupedBySource(BandSpace $bandSpace): array
     {
         $sql = <<<'SQL'
-            SELECT COALESCE(f.attached_source_type, 'manual') AS source, COALESCE(SUM(v.size), 0) AS bytes
-            FROM band_space_file_version v
-            INNER JOIN band_space_file f ON f.id = v.band_space_file_id
-            WHERE f.band_space_id = :bandSpaceId
-              AND f.archive_datetime IS NULL
+            SELECT COALESCE(a.source_type, 'manual') AS source,
+                   COALESCE(SUM(file_bytes.total), 0) AS bytes
+            FROM (
+                SELECT f.id AS file_id, COALESCE(SUM(v.size), 0) AS total
+                FROM band_space_file f
+                INNER JOIN band_space_file_version v ON v.band_space_file_id = f.id
+                WHERE f.band_space_id = :bandSpaceId
+                  AND f.archive_datetime IS NULL
+                GROUP BY f.id
+            ) file_bytes
+            LEFT JOIN band_space_file_attachment a ON a.band_space_file_id = file_bytes.file_id
             GROUP BY source
             ORDER BY source ASC
         SQL;

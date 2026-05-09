@@ -6,6 +6,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -28,20 +29,28 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $otherTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        BandSpaceFileFactory::new([
+        $attachedFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'attached.pdf',
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::fromString($task->_real()->id),
         ])->create();
-        BandSpaceFileFactory::new([
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attachedFile,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($task->_real()->id),
+            'attachedBy' => $user,
+        ]);
+        $otherFile = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'originalName' => 'on-other-task.pdf',
-            'attachedSourceType' => 'task',
-            'attachedSourceId' => Uuid::fromString($otherTask->_real()->id),
         ])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $otherFile,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($otherTask->_real()->id),
+            'attachedBy' => $user,
+        ]);
         BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
@@ -61,8 +70,9 @@ class BandSpaceTaskFileCollectionTest extends ApiTestCase
         $this->assertSame(1, $response['totalItems']);
         $this->assertCount(1, $response['member']);
         $this->assertSame('attached.pdf', $response['member'][0]['original_name']);
-        $this->assertSame('task', $response['member'][0]['attached_source_type']);
-        $this->assertSame($task->_real()->id, $response['member'][0]['attached_source_id']);
+        $this->assertCount(1, $response['member'][0]['attachments']);
+        $this->assertSame('task', $response['member'][0]['attachments'][0]['source_type']);
+        $this->assertSame($task->_real()->id, $response['member'][0]['attachments'][0]['source_id']);
     }
 
     public function test_list_unknown_task_returns_404(): void
