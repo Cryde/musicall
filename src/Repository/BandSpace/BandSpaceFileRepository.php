@@ -121,6 +121,33 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
+     * Active-file counts grouped by attached source type. Manual files
+     * (no attached source) are not returned. Order: source ASC.
+     *
+     * @return array<string, int> source => file count
+     */
+    public function countActiveByBandSpaceGroupedBySource(BandSpace $bandSpace): array
+    {
+        $rows = $this->createQueryBuilder('bsf')
+            ->select('bsf.attachedSourceType AS source', 'COUNT(bsf.id) AS file_count')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->andWhere('bsf.attachedSourceType IS NOT NULL')
+            ->groupBy('bsf.attachedSourceType')
+            ->orderBy('bsf.attachedSourceType', 'ASC')
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['source']] = (int) $row['file_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
      * @return array<int, array{id: string, name: string}> root → leaf
      */
     public function buildFolderPath(?BandSpaceFolder $folder): array
@@ -159,6 +186,11 @@ class BandSpaceFileRepository extends ServiceEntityRepository
                 $qb->andWhere('bsf.attachedSourceType = :source')
                     ->setParameter('source', $filter->source);
             }
+        }
+
+        if ($filter->sourceId !== null) {
+            $qb->andWhere('bsf.attachedSourceId = :sourceId')
+                ->setParameter('sourceId', $filter->sourceId);
         }
 
         $trimmedQuery = $filter->query !== null ? trim($filter->query) : '';

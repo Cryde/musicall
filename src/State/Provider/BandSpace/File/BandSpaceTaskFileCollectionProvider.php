@@ -10,23 +10,24 @@ use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\Filter\BandSpaceFileFilter;
+use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @implements ProviderInterface<BandSpaceFileResource>
  */
-readonly class BandSpaceFileCollectionProvider implements ProviderInterface
+readonly class BandSpaceTaskFileCollectionProvider implements ProviderInterface
 {
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
+        private TaskRepository $taskRepository,
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileBuilder $fileBuilder,
         private Security $security,
-        private RequestStack $requestStack,
         private Pagination $pagination,
     ) {
     }
@@ -40,11 +41,21 @@ readonly class BandSpaceFileCollectionProvider implements ProviderInterface
 
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
+        $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
+        if ($task === null) {
+            throw new NotFoundHttpException('Tâche introuvable');
+        }
+
         $page = $this->pagination->getPage($context);
         $itemsPerPage = $this->pagination->getLimit($operation, $context);
         $offset = $this->pagination->getOffset($operation, $context);
 
-        $filter = $this->buildFilter($itemsPerPage, $offset);
+        $filter = new BandSpaceFileFilter(
+            source: 'task',
+            sourceId: (string) $task->id,
+            limit: $itemsPerPage,
+            offset: $offset,
+        );
 
         $entities = $this->fileRepository->findByBandSpace($bandSpace, $filter);
         $totalItems = $this->fileRepository->countByBandSpace($bandSpace, $filter);
@@ -56,25 +67,6 @@ readonly class BandSpaceFileCollectionProvider implements ProviderInterface
             $page,
             $itemsPerPage,
             $totalItems,
-        );
-    }
-
-    private function buildFilter(int $limit, int $offset): BandSpaceFileFilter
-    {
-        $query = $this->requestStack->getCurrentRequest()?->query;
-
-        return new BandSpaceFileFilter(
-            folderId: $query?->getString('folder_id') ?: null,
-            tagId: $query?->getString('tag_id') ?: null,
-            source: $query?->getString('source') ?: null,
-            sourceId: $query?->getString('task_id') ?: null,
-            query: $query?->getString('query') ?: null,
-            mime: $query?->getString('mime') ?: null,
-            uploaderId: $query?->getString('uploader_id') ?: null,
-            sort: $query?->getString('sort') ?: 'date',
-            order: $query?->getString('order') ?: 'desc',
-            limit: $limit,
-            offset: $offset,
         );
     }
 }

@@ -6,8 +6,10 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -40,6 +42,10 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'totalItems' => 0,
             'member' => [],
+            'virtualFolders' => [
+                ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
+                ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
+            ],
         ]);
     }
 
@@ -139,6 +145,74 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                     'creation_datetime' => '2026-04-04T10:00:00+00:00',
                     'update_datetime' => null,
                 ],
+            ],
+            'virtualFolders' => [
+                ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
+                ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
+            ],
+        ]);
+    }
+
+    public function test_list_virtual_folders_count_active_attached_files(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => 'task',
+            'attachedSourceId' => Uuid::uuid4(),
+        ])->create();
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => 'task',
+            'attachedSourceId' => Uuid::uuid4(),
+        ])->create();
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => 'finance',
+            'attachedSourceId' => Uuid::uuid4(),
+        ])->create();
+        // Archived attached file — must not count
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => 'task',
+            'attachedSourceId' => Uuid::uuid4(),
+            'archiveDatetime' => new \DateTimeImmutable(),
+        ])->create();
+        // Manual file — must not appear in any virtual folder
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'attachedSourceType' => null,
+            'attachedSourceId' => null,
+        ])->create();
+
+        $bandSpaceId = $bandSpace->_real()->id;
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpaceId . '/folders',
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFolder',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders',
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
+            'virtualFolders' => [
+                ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 2],
+                ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 1],
             ],
         ]);
     }

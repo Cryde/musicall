@@ -11,6 +11,7 @@ final readonly class BandSpaceFileFilter
         public ?string $folderId = null,
         public ?string $tagId = null,
         public ?string $source = null,
+        public ?string $sourceId = null,
         public ?string $query = null,
         public ?string $mime = null,
         public ?string $uploaderId = null,

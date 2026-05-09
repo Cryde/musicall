@@ -13,8 +13,10 @@ use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\File\BandSpaceFileDeleteProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceFileUpdateProcessor;
+use App\State\Processor\BandSpace\File\BandSpaceTaskFileDetachProcessor;
 use App\State\Provider\BandSpace\File\BandSpaceFileCollectionProvider;
 use App\State\Provider\BandSpace\File\BandSpaceFileItemProvider;
+use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
 
 #[ApiResource(
     shortName: 'BandSpaceFile',
@@ -76,6 +78,33 @@ use App\State\Provider\BandSpace\File\BandSpaceFileItemProvider;
             name: 'api_band_space_files_delete',
             provider: BandSpaceFileItemProvider::class,
             processor: BandSpaceFileDeleteProcessor::class,
+        ),
+        new GetCollection(
+            uriTemplate: '/band_spaces/{bandSpaceId}/tasks/{taskId}/files',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'taskId' => new Link(fromClass: self::class, identifiers: ['taskId']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            paginationEnabled: true,
+            paginationItemsPerPage: 50,
+            paginationMaximumItemsPerPage: 200,
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_task_files_get_collection',
+            provider: BandSpaceTaskFileCollectionProvider::class,
+        ),
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/tasks/{taskId}/files/{id}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'taskId' => new Link(fromClass: self::class, identifiers: ['taskId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_task_files_detach',
+            provider: BandSpaceFileItemProvider::class,
+            processor: BandSpaceTaskFileDetachProcessor::class,
         ),
     ],
     normalizationContext: ['skip_null_values' => false],
