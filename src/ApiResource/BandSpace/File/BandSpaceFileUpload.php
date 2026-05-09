@@ -8,6 +8,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\State\Processor\BandSpace\File\BandSpaceFileUploadProcessor;
+use App\State\Processor\BandSpace\File\BandSpaceFinanceEntryFileAttachProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceTaskFileAttachProcessor;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -68,6 +69,31 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
             output: BandSpaceFileResource::class,
             name: 'api_band_space_task_files_attach',
             processor: BandSpaceTaskFileAttachProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/band_spaces/{bandSpaceId}/finance/entries/{entryId}/files',
+            inputFormats: ['multipart' => ['multipart/form-data']],
+            openapi: new Operation(
+                tags: ['Band Space File'],
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'uploadedFile' => ['type' => 'string', 'format' => 'binary'],
+                                    'folderId' => ['type' => 'string', 'nullable' => true],
+                                    'tagIds' => ['type' => 'array', 'items' => ['type' => 'string']],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+            security: "is_granted('ROLE_USER')",
+            output: BandSpaceFileResource::class,
+            name: 'api_band_space_finance_entry_files_attach',
+            processor: BandSpaceFinanceEntryFileAttachProcessor::class,
         ),
     ],
 )]

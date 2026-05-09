@@ -82,6 +82,44 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $this->assertSame('tagged.pdf', $response['member'][0]['original_name']);
     }
 
+    public function test_list_filtered_by_finance_entry_id(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $entryId = '11111111-1111-1111-1111-111111111111';
+        $otherEntryId = '22222222-2222-2222-2222-222222222222';
+
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'matching.pdf',
+            'attachedSourceType' => 'finance',
+            'attachedSourceId' => $entryId,
+        ])->create();
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'originalName' => 'other-entry.pdf',
+            'attachedSourceType' => 'finance',
+            'attachedSourceId' => $otherEntryId,
+        ])->create();
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/files?source=finance&finance_entry_id=' . $entryId,
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertSame('matching.pdf', $response['member'][0]['original_name']);
+    }
+
     public function test_list_filtered_by_source_manual_excludes_attached(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

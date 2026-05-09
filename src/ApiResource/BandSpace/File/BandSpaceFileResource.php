@@ -13,9 +13,11 @@ use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\File\BandSpaceFileDeleteProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceFileUpdateProcessor;
+use App\State\Processor\BandSpace\File\BandSpaceFinanceEntryFileDetachProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceTaskFileDetachProcessor;
 use App\State\Provider\BandSpace\File\BandSpaceFileCollectionProvider;
 use App\State\Provider\BandSpace\File\BandSpaceFileItemProvider;
+use App\State\Provider\BandSpace\File\BandSpaceFinanceEntryFileCollectionProvider;
 use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
 
 #[ApiResource(
@@ -37,6 +39,8 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
                 'folder_id' => new QueryParameter(key: 'folder_id'),
                 'tag_id' => new QueryParameter(key: 'tag_id'),
                 'source' => new QueryParameter(key: 'source'),
+                'task_id' => new QueryParameter(key: 'task_id'),
+                'finance_entry_id' => new QueryParameter(key: 'finance_entry_id'),
                 'query' => new QueryParameter(key: 'query'),
                 'mime' => new QueryParameter(key: 'mime'),
                 'uploader_id' => new QueryParameter(key: 'uploader_id'),
@@ -105,6 +109,33 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
             name: 'api_band_space_task_files_detach',
             provider: BandSpaceFileItemProvider::class,
             processor: BandSpaceTaskFileDetachProcessor::class,
+        ),
+        new GetCollection(
+            uriTemplate: '/band_spaces/{bandSpaceId}/finance/entries/{entryId}/files',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'entryId' => new Link(fromClass: self::class, identifiers: ['entryId']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            paginationEnabled: true,
+            paginationItemsPerPage: 50,
+            paginationMaximumItemsPerPage: 200,
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_finance_entry_files_get_collection',
+            provider: BandSpaceFinanceEntryFileCollectionProvider::class,
+        ),
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/finance/entries/{entryId}/files/{id}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'entryId' => new Link(fromClass: self::class, identifiers: ['entryId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_finance_entry_files_detach',
+            provider: BandSpaceFileItemProvider::class,
+            processor: BandSpaceFinanceEntryFileDetachProcessor::class,
         ),
     ],
     normalizationContext: ['skip_null_values' => false],
