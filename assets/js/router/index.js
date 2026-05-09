@@ -22,6 +22,11 @@ const routes = [
         path: 'decouvrir',
         component: () => import('../views/Discover/Index.vue')
       },
+      {
+        name: 'app_public_share',
+        path: 'shares/:token',
+        component: () => import('../views/PublicShare.vue')
+      },
       ...publication,
       ...course,
       ...search,

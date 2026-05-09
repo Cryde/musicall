@@ -43,7 +43,7 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
 
         $this->assertArrayHasKey('share_url', $response);
         $this->assertMatchesRegularExpression(
-            '#^https?://[^/]+/api/shares/[A-Za-z0-9_\-]+/download$#',
+            '#^https?://[^/]+/shares/[A-Za-z0-9_\-]+$#',
             $response['share_url'],
         );
         $this->assertSame($expiry, $response['expiry_datetime']);
