@@ -1,44 +1,45 @@
 <template>
   <div :style="{ paddingLeft: `${folder.depth * 12}px` }" class="flex flex-col gap-1">
     <div
-      class="group flex items-center gap-1 px-2 py-1.5 rounded-md text-sm transition-colors duration-150"
+      class="group relative flex items-center h-8 px-2 rounded-md text-sm transition-colors duration-150"
       :class="rowClasses"
     >
       <button
         type="button"
-        class="flex items-center gap-2 flex-1 min-w-0 text-left"
+        class="flex items-center gap-2 w-full min-w-0 text-left h-full pr-1 group-hover:pr-20"
         @click="emit('select', folder.id)"
       >
-        <i class="pi pi-folder text-surface-500"></i>
+        <i class="pi pi-folder text-surface-500 shrink-0"></i>
         <span class="truncate">{{ folder.name }}</span>
       </button>
-      <div class="hidden group-hover:flex items-center gap-0.5 shrink-0">
-        <Button
-          icon="pi pi-plus"
-          size="small"
-          text
-          rounded
+      <div
+        class="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5"
+      >
+        <button
+          type="button"
+          class="w-6 h-6 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 disabled:opacity-30 disabled:cursor-not-allowed"
           v-tooltip.top="canCreateSub ? 'Nouveau sous-dossier' : 'Profondeur maximale atteinte'"
           :disabled="!canCreateSub"
           @click.stop="emit('create-sub', folder)"
-        />
-        <Button
-          icon="pi pi-pencil"
-          size="small"
-          text
-          rounded
+        >
+          <i class="pi pi-plus text-xs"></i>
+        </button>
+        <button
+          type="button"
+          class="w-6 h-6 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
           v-tooltip.top="'Renommer / déplacer'"
           @click.stop="emit('edit', folder)"
-        />
-        <Button
-          icon="pi pi-trash"
-          size="small"
-          text
-          rounded
-          severity="danger"
+        >
+          <i class="pi pi-pencil text-xs"></i>
+        </button>
+        <button
+          type="button"
+          class="w-6 h-6 flex items-center justify-center rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
           v-tooltip.top="'Supprimer'"
           @click.stop="emit('delete', folder)"
-        />
+        >
+          <i class="pi pi-trash text-xs"></i>
+        </button>
       </div>
     </div>
 
@@ -56,7 +57,6 @@
 </template>
 
 <script setup>
-import Button from 'primevue/button'
 import { computed } from 'vue'
 
 const MAX_DEPTH = 6

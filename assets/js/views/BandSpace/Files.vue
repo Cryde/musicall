@@ -44,6 +44,17 @@
       </aside>
 
       <section class="flex-1 flex flex-col gap-4 min-w-0">
+        <div
+          v-if="showBreadcrumb"
+          class="bg-surface-0 dark:bg-surface-900 rounded-2xl px-4 py-3 border border-surface-200 dark:border-surface-700"
+        >
+          <FolderBreadcrumb
+            :folders="filesStore.folders"
+            :active-folder-id="filesStore.activeFolderId"
+            @select="handleFolderSelect"
+          />
+        </div>
+
         <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex-1 min-w-[200px]">
@@ -120,6 +131,7 @@ import FileList from '../../components/BandSpace/Files/FileList.vue'
 import FileShareDialog from '../../components/BandSpace/Files/FileShareDialog.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
+import FolderBreadcrumb from '../../components/BandSpace/Files/FolderBreadcrumb.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
@@ -141,6 +153,12 @@ const versionPanelFileId = ref(null)
 const versionPanelFileName = ref('')
 
 const bandSpaceId = computed(() => route.params.id)
+
+const showBreadcrumb = computed(() => {
+  const id = filesStore.activeFolderId
+  if (id === null) return true
+  return typeof id === 'string' && !id.startsWith('virtual:')
+})
 
 const emptyMessage = computed(() => {
   if (filesStore.activeFolderId === 'virtual:task') {
