@@ -70,6 +70,14 @@
           class="pi pi-align-left"
           title="Cette tâche a une description"
         />
+        <span
+          v-if="task.file_count > 0"
+          class="flex items-center gap-1"
+          :title="`${task.file_count} fichier${task.file_count > 1 ? 's' : ''} attaché${task.file_count > 1 ? 's' : ''}`"
+        >
+          <i class="pi pi-paperclip" />
+          {{ task.file_count }}
+        </span>
         <button
           v-if="task.comment_count > 0"
           type="button"

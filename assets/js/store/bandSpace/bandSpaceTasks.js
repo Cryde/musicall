@@ -172,6 +172,13 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     archivedTasks.value = archivedTasks.value.map(decrement)
   }
 
+  function bumpFileCount(taskId, delta) {
+    const apply = (t) =>
+      t.id === taskId ? { ...t, file_count: Math.max(0, (t.file_count ?? 0) + delta) } : t
+    tasks.value = tasks.value.map(apply)
+    archivedTasks.value = archivedTasks.value.map(apply)
+  }
+
   async function updateTask(bandSpaceId, taskId, data) {
     isSaving.value = true
     try {
@@ -387,6 +394,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     createComment,
     updateComment,
     deleteComment,
+    bumpFileCount,
     updateTask,
     updateTaskOptimistic,
     moveTaskToColumn,

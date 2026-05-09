@@ -9,8 +9,11 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -74,6 +77,32 @@ class TaskUpdateTest extends ApiTestCase
             'title' => 'Updated title',
             'status' => 'todo',
         ]);
+    }
+
+    public function test_update_response_preserves_file_count(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString($task->_real()->id),
+            'attachedBy' => $user,
+        ]);
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks/' . $task->_real()->id,
+            ['description' => 'Une description'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonContains(['file_count' => 1]);
     }
 
     public function test_completed_datetime_set_when_moving_to_done(): void
@@ -175,6 +204,7 @@ class TaskUpdateTest extends ApiTestCase
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
+            'file_count' => 0,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -261,6 +291,7 @@ class TaskUpdateTest extends ApiTestCase
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
+            'file_count' => 0,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);

@@ -83,6 +83,37 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $sourceIds
+     *
+     * @return array<string, int> source id => unique non-archived file count
+     */
+    public function countActiveBySourceIds(string $sourceType, array $sourceIds): array
+    {
+        if (count($sourceIds) === 0) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('a')
+            ->select('a.sourceId AS source_id', 'COUNT(DISTINCT a.bandSpaceFile) AS file_count')
+            ->innerJoin('a.bandSpaceFile', 'bsf')
+            ->where('a.sourceType = :sourceType')
+            ->andWhere('a.sourceId IN (:ids)')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->groupBy('a.sourceId')
+            ->setParameter('sourceType', $sourceType)
+            ->setParameter('ids', $sourceIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['source_id']] = (int) $row['file_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
      * Active-attachment counts per source type for the band, distinct by file id.
      * Mirrors the previous countActiveByBandSpaceGroupedBySource shape.
      *

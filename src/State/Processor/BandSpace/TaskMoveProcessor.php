@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\Task\TaskMove;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
 use App\Procedure\BandSpace\TaskMoveProcedure;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
@@ -23,6 +24,7 @@ readonly class TaskMoveProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskMoveProcedure $taskMoveProcedure,
         private TaskCommentRepository $taskCommentRepository,
+        private BandSpaceFileAttachmentRepository $fileAttachmentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -51,8 +53,14 @@ readonly class TaskMoveProcessor implements ProcessorInterface
             $user,
         );
 
-        $counts = $this->taskCommentRepository->countByTaskIds([(string) $task->id]);
+        $taskId = (string) $task->id;
+        $commentCounts = $this->taskCommentRepository->countByTaskIds([$taskId]);
+        $fileCounts = $this->fileAttachmentRepository->countActiveBySourceIds('task', [$taskId]);
 
-        return $this->taskBuilder->buildItem($task, $counts[(string) $task->id] ?? 0);
+        return $this->taskBuilder->buildItem(
+            $task,
+            $commentCounts[$taskId] ?? 0,
+            $fileCounts[$taskId] ?? 0,
+        );
     }
 }

@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -23,6 +24,7 @@ readonly class TaskItemProvider implements ProviderInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
+        private BandSpaceFileAttachmentRepository $fileAttachmentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -42,8 +44,14 @@ readonly class TaskItemProvider implements ProviderInterface
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
-        $counts = $this->taskCommentRepository->countByTaskIds([(string) $task->id]);
+        $taskId = (string) $task->id;
+        $commentCounts = $this->taskCommentRepository->countByTaskIds([$taskId]);
+        $fileCounts = $this->fileAttachmentRepository->countActiveBySourceIds('task', [$taskId]);
 
-        return $this->taskBuilder->buildItem($task, $counts[(string) $task->id] ?? 0);
+        return $this->taskBuilder->buildItem(
+            $task,
+            $commentCounts[$taskId] ?? 0,
+            $fileCounts[$taskId] ?? 0,
+        );
     }
 }

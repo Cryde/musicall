@@ -17,17 +17,22 @@ readonly class TaskBuilder
     /**
      * @param Task[] $entities
      * @param array<string, int> $commentCounts  task id => comment count, missing keys default to 0
+     * @param array<string, int> $fileCounts     task id => attached file count, missing keys default to 0
      * @return TaskResource[]
      */
-    public function buildFromList(array $entities, array $commentCounts = []): array
+    public function buildFromList(array $entities, array $commentCounts = [], array $fileCounts = []): array
     {
         return array_map(
-            fn(Task $entity): TaskResource => $this->buildItem($entity, $commentCounts[(string) $entity->id] ?? 0),
+            fn(Task $entity): TaskResource => $this->buildItem(
+                $entity,
+                $commentCounts[(string) $entity->id] ?? 0,
+                $fileCounts[(string) $entity->id] ?? 0,
+            ),
             $entities
         );
     }
 
-    public function buildItem(Task $entity, int $commentCount = 0): TaskResource
+    public function buildItem(Task $entity, int $commentCount = 0, int $fileCount = 0): TaskResource
     {
         $dto = new TaskResource();
         $dto->id = (string) $entity->id;
@@ -55,6 +60,7 @@ readonly class TaskBuilder
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
         $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
         $dto->commentCount = $commentCount;
+        $dto->fileCount = $fileCount;
 
         return $dto;
     }

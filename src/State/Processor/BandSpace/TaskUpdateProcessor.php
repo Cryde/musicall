@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
 use App\Procedure\BandSpace\TaskUpdateProcedure;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -25,6 +26,7 @@ readonly class TaskUpdateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
+        private BandSpaceFileAttachmentRepository $fileAttachmentRepository,
         private TaskUpdateProcedure $taskUpdateProcedure,
         private TaskBuilder $taskBuilder,
         private Security $security,
@@ -53,8 +55,14 @@ readonly class TaskUpdateProcessor implements ProcessorInterface
 
         $task = $this->taskUpdateProcedure->update($task, $payload, $data, $bandSpace, $user);
 
-        $counts = $this->taskCommentRepository->countByTaskIds([(string) $task->id]);
+        $taskId = (string) $task->id;
+        $commentCounts = $this->taskCommentRepository->countByTaskIds([$taskId]);
+        $fileCounts = $this->fileAttachmentRepository->countActiveBySourceIds('task', [$taskId]);
 
-        return $this->taskBuilder->buildItem($task, $counts[(string) $task->id] ?? 0);
+        return $this->taskBuilder->buildItem(
+            $task,
+            $commentCounts[$taskId] ?? 0,
+            $fileCounts[$taskId] ?? 0,
+        );
     }
 }

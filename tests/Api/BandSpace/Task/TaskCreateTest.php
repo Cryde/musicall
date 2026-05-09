@@ -62,6 +62,7 @@ class TaskCreateTest extends ApiTestCase
             'creation_datetime' => $task->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
             'comment_count' => 0,
+            'file_count' => 0,
         ]);
     }
 

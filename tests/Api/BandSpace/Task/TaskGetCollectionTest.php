@@ -8,10 +8,13 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskCategoryFactory;
 use App\Tests\Factory\BandSpace\TaskCommentFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -144,6 +147,72 @@ class TaskGetCollectionTest extends ApiTestCase
             'member' => [
                 ['id' => $taskWithComments->_real()->id, 'comment_count' => 2],
                 ['id' => $taskWithoutComments->_real()->id, 'comment_count' => 0],
+            ],
+        ]);
+    }
+
+    public function test_get_tasks_includes_file_count_excluding_archived(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $taskWithFiles = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'With files',
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2026-01-01 10:00:00'),
+        ])->create();
+        $taskWithoutFiles = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'No files',
+            'position' => 1,
+            'creationDatetime' => new \DateTime('2026-01-02 10:00:00'),
+        ])->create();
+
+        $activeFile1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $activeFile2 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $archivedFile = BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'archiveDatetime' => new \DateTimeImmutable('-1 day'),
+        ])->create();
+
+        $taskUuid = Uuid::fromString($taskWithFiles->_real()->id);
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $activeFile1,
+            'sourceType' => 'task',
+            'sourceId' => $taskUuid,
+            'attachedBy' => $user,
+        ]);
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $activeFile2,
+            'sourceType' => 'task',
+            'sourceId' => $taskUuid,
+            'attachedBy' => $user,
+        ]);
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $archivedFile,
+            'sourceType' => 'task',
+            'sourceId' => $taskUuid,
+            'attachedBy' => $user,
+        ]);
+
+        $this->client->loginUser($user->_real());
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->_real()->id . '/tasks',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonContains([
+            'member' => [
+                ['id' => $taskWithFiles->_real()->id, 'file_count' => 2],
+                ['id' => $taskWithoutFiles->_real()->id, 'file_count' => 0],
             ],
         ]);
     }

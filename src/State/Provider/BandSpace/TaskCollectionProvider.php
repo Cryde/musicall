@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\Filter\TaskFilter;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
@@ -25,6 +26,7 @@ readonly class TaskCollectionProvider implements ProviderInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
+        private BandSpaceFileAttachmentRepository $fileAttachmentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -63,8 +65,9 @@ readonly class TaskCollectionProvider implements ProviderInterface
 
         $taskIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);
         $commentCounts = $this->taskCommentRepository->countByTaskIds($taskIds);
+        $fileCounts = $this->fileAttachmentRepository->countActiveBySourceIds('task', $taskIds);
 
-        return $this->taskBuilder->buildFromList($tasks, $commentCounts);
+        return $this->taskBuilder->buildFromList($tasks, $commentCounts, $fileCounts);
     }
 
     private function parseDate(?string $value): ?DateTimeImmutable

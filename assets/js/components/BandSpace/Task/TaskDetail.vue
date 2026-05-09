@@ -146,6 +146,8 @@
         :band-space-id="bandSpaceId"
         source-type="task"
         :source-id="task.id"
+        @attached="tasksStore.bumpFileCount(task.id, 1)"
+        @detached="tasksStore.bumpFileCount(task.id, -1)"
       />
 
       <!-- Separator -->

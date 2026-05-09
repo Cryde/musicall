@@ -86,6 +86,8 @@ const props = defineProps({
   canAttach: { type: Boolean, default: true }
 })
 
+const emit = defineEmits(['attached', 'detached'])
+
 const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
@@ -142,6 +144,7 @@ function confirmDetach(file) {
           file.id
         )
         attachedFiles.value = attachedFiles.value.filter((f) => f.id !== file.id)
+        emit('detached', file.id)
         toast.add({
           severity: 'success',
           summary: 'Fichier détaché',
@@ -159,8 +162,9 @@ function confirmDetach(file) {
   })
 }
 
-function handleAttached() {
+function handleAttached(file) {
   loadFiles()
+  emit('attached', file?.id ?? null)
 }
 
 function iconForMime(mime) {
