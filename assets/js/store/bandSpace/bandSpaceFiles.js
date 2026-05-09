@@ -13,6 +13,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const activeFileId = ref(null)
   const activeFileFull = ref(null)
   const fileActivities = ref([])
+  const shares = ref([])
 
   const filters = reactive({
     query: '',
@@ -31,6 +32,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const isLoadingActivities = ref(false)
   const isSavingFile = ref(false)
   const isDeletingFile = ref(false)
+  const isLoadingShares = ref(false)
+  const isCreatingShare = ref(false)
   const loadError = ref(null)
   const activeFileError = ref(null)
 
@@ -207,6 +210,35 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     }
   }
 
+  async function fetchShares(bandSpaceId) {
+    isLoadingShares.value = true
+    try {
+      shares.value = await bandSpaceFilesApi.getShares(bandSpaceId)
+    } catch {
+      // silently fail
+    } finally {
+      isLoadingShares.value = false
+    }
+  }
+
+  async function createShare(bandSpaceId, fileId, data) {
+    isCreatingShare.value = true
+    try {
+      const created = await bandSpaceFilesApi.createShare(bandSpaceId, fileId, data)
+      // The list endpoint returns full BandSpaceFileShareResource entries; refetch
+      // to get the canonical row, but return the one-shot created payload to the caller.
+      fetchShares(bandSpaceId)
+      return created
+    } finally {
+      isCreatingShare.value = false
+    }
+  }
+
+  async function revokeShare(bandSpaceId, shareId) {
+    await bandSpaceFilesApi.revokeShare(bandSpaceId, shareId)
+    shares.value = shares.value.filter((s) => s.id !== shareId)
+  }
+
   async function uploadFile(bandSpaceId, payload, onProgress) {
     const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress)
     files.value = [result.file, ...files.value]
@@ -240,6 +272,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     activeFileId.value = null
     activeFileFull.value = null
     fileActivities.value = []
+    shares.value = []
     filters.query = ''
     filters.mime = null
     filters.tagId = null
@@ -267,6 +300,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     activeFileId: readonly(activeFileId),
     activeFile,
     fileActivities: readonly(fileActivities),
+    shares: readonly(shares),
+    isLoadingShares: readonly(isLoadingShares),
+    isCreatingShare: readonly(isCreatingShare),
     isLoadingActiveFile: readonly(isLoadingActiveFile),
     isLoadingActivities: readonly(isLoadingActivities),
     isSavingFile: readonly(isSavingFile),
@@ -283,6 +319,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     setActiveFile,
     uploadFile,
     createTag,
+    fetchShares,
+    createShare,
+    revokeShare,
     setFilter,
     setActiveFolder,
     clear

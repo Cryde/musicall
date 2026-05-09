@@ -114,5 +114,28 @@ export default {
       })
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  getShares(bandSpaceId) {
+    return axios
+      .get(Routing.generate('api_band_space_file_shares_get_collection', { bandSpaceId }))
+      .then((resp) => resp.data)
+      .then((resp) => resp.member)
+      .catch(handleApiError)
+  },
+
+  createShare(bandSpaceId, fileId, data) {
+    return axios
+      .post(Routing.generate('api_band_space_file_shares_post', { bandSpaceId, fileId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  revokeShare(bandSpaceId, shareId) {
+    return axios
+      .delete(Routing.generate('api_band_space_file_shares_delete', { bandSpaceId, id: shareId }))
+      .catch(handleApiError)
   }
 }

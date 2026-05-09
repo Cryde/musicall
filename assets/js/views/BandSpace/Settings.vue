@@ -28,6 +28,7 @@
           <div class="flex-1 min-w-0">
             <MembersSection v-if="activeSection === 'members'" />
             <ActivitySection v-else-if="activeSection === 'activity' && isAdmin" />
+            <ActiveSharesSection v-else-if="activeSection === 'shares'" />
             <ComingSoonSection v-else :title="activeSectionLabel" />
           </div>
         </div>
@@ -38,6 +39,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveSharesSection.vue'
 import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
@@ -50,13 +52,12 @@ const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 const allSections = [
   { key: 'members', label: 'Membres', adminOnly: false },
   { key: 'activity', label: "Journal d'activité", adminOnly: true },
+  { key: 'shares', label: 'Partages actifs', adminOnly: false },
   { key: 'general', label: 'Général', adminOnly: false },
   { key: 'danger', label: 'Zone de danger', adminOnly: false }
 ]
 
-const visibleSections = computed(() =>
-  allSections.filter((s) => !s.adminOnly || isAdmin.value)
-)
+const visibleSections = computed(() => allSections.filter((s) => !s.adminOnly || isAdmin.value))
 
 const activeSection = ref('members')
 
