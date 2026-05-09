@@ -30,6 +30,8 @@
           :folders="filesStore.folders"
           :virtual-folders="filesStore.virtualFolders"
           :active-folder-id="filesStore.activeFolderId"
+          :band-space-id="bandSpaceId"
+          :is-admin="isAdmin"
           @select="handleFolderSelect"
         />
 
@@ -119,12 +121,16 @@ import FileShareDialog from '../../components/BandSpace/Files/FileShareDialog.vu
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
+import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const filesStore = useBandFilesStore()
+const { currentSpace } = useBandSpaceNavigation()
+
+const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 
 const uploadDialogVisible = ref(false)
 const detailVisible = ref(false)

@@ -6,9 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFolderResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFolderActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -28,6 +31,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
+        private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -57,6 +61,18 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul un administrateur peut supprimer un dossier en cascade');
         }
 
+        $folderName = $folder->name;
+        $folderId = (string) $folder->id;
+
+        $this->activityRecorder->record(
+            $membership->bandSpace,
+            BandSpaceModule::File,
+            BandSpaceFolderActivityType::FolderArchived,
+            resourceId: $folderId,
+            actor: $user,
+            payload: ['name' => $folderName, 'strategy' => $strategy],
+        );
+
         $connection = $this->entityManager->getConnection();
         $connection->beginTransaction();
         try {
@@ -70,11 +86,11 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             } else {
                 $connection->executeStatement(
                     'UPDATE band_space_folder SET parent_id = NULL WHERE parent_id = :folderId',
-                    ['folderId' => (string) $folder->id],
+                    ['folderId' => $folderId],
                 );
                 $connection->executeStatement(
                     'UPDATE band_space_file SET folder_id = NULL WHERE folder_id = :folderId',
-                    ['folderId' => (string) $folder->id],
+                    ['folderId' => $folderId],
                 );
             }
 

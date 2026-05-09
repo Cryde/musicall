@@ -1,14 +1,24 @@
 <template>
   <div class="flex flex-col gap-1">
-    <button
-      type="button"
-      class="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
-      :class="rootButtonClasses"
-      @click="emit('select', null)"
-    >
-      <i class="pi pi-folder text-surface-500"></i>
-      <span class="flex-1 truncate">Tous les fichiers</span>
-    </button>
+    <div class="flex items-center justify-between gap-2 mb-1 px-2">
+      <button
+        type="button"
+        class="flex items-center gap-2 flex-1 min-w-0 px-1 py-1.5 rounded-md text-sm text-left transition-colors duration-150"
+        :class="rootButtonClasses"
+        @click="emit('select', null)"
+      >
+        <i class="pi pi-folder text-surface-500"></i>
+        <span class="flex-1 truncate">Tous les fichiers</span>
+      </button>
+      <Button
+        icon="pi pi-plus"
+        size="small"
+        text
+        rounded
+        v-tooltip.top="'Nouveau dossier'"
+        @click="openCreateRoot"
+      />
+    </div>
 
     <FolderTreeNode
       v-for="folder in folders"
@@ -16,6 +26,9 @@
       :folder="folder"
       :active-id="activeFolderId"
       @select="(id) => emit('select', id)"
+      @create-sub="openCreateSub"
+      @edit="openEdit"
+      @delete="openDelete"
     />
 
     <div
@@ -36,20 +49,76 @@
         <span class="text-xs text-surface-500 tabular-nums">{{ virtual.file_count }}</span>
       </button>
     </div>
+
+    <FolderEditDialog
+      v-if="bandSpaceId && editDialogVisible"
+      v-model:visible="editDialogVisible"
+      :band-space-id="bandSpaceId"
+      :mode="editMode"
+      :folder="editTarget"
+      :parent-id="editParentId"
+    />
+
+    <FolderDeleteDialog
+      v-if="bandSpaceId && deleteDialogVisible && deleteTarget"
+      v-model:visible="deleteDialogVisible"
+      :band-space-id="bandSpaceId"
+      :folder="deleteTarget"
+      :is-admin="isAdmin"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import Button from 'primevue/button'
+import { computed, ref } from 'vue'
+import FolderDeleteDialog from './FolderDeleteDialog.vue'
+import FolderEditDialog from './FolderEditDialog.vue'
 import FolderTreeNode from './FolderTreeNode.vue'
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
   virtualFolders: { type: Array, default: () => [] },
-  activeFolderId: { type: String, default: null }
+  activeFolderId: { type: String, default: null },
+  bandSpaceId: { type: String, default: null },
+  isAdmin: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['select'])
+
+const editDialogVisible = ref(false)
+const editMode = ref('create-root')
+const editTarget = ref(null)
+const editParentId = ref(null)
+
+const deleteDialogVisible = ref(false)
+const deleteTarget = ref(null)
+
+function openCreateRoot() {
+  editMode.value = 'create-root'
+  editTarget.value = null
+  editParentId.value = null
+  editDialogVisible.value = true
+}
+
+function openCreateSub(folder) {
+  editMode.value = 'create-sub'
+  editTarget.value = null
+  editParentId.value = folder.id
+  editDialogVisible.value = true
+}
+
+function openEdit(folder) {
+  editMode.value = 'edit'
+  editTarget.value = folder
+  editParentId.value = null
+  editDialogVisible.value = true
+}
+
+function openDelete(folder) {
+  deleteTarget.value = folder
+  deleteDialogVisible.value = true
+}
 
 const rootButtonClasses = computed(() => {
   return props.activeFolderId === null

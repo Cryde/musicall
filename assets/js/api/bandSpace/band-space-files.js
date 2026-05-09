@@ -65,6 +65,35 @@ export default {
       .catch(handleApiError)
   },
 
+  createFolder(bandSpaceId, data) {
+    return axios
+      .post(Routing.generate('api_band_space_folders_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  updateFolder(bandSpaceId, folderId, data) {
+    return axios
+      .patch(
+        Routing.generate('api_band_space_folders_patch', { bandSpaceId, id: folderId }),
+        data,
+        { headers: { 'Content-Type': 'application/merge-patch+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  deleteFolder(bandSpaceId, folderId, { strategy = 'move_to_root' } = {}) {
+    const baseUrl = Routing.generate('api_band_space_folders_delete', {
+      bandSpaceId,
+      id: folderId
+    })
+    const url = `${baseUrl}?strategy=${encodeURIComponent(strategy)}`
+    return axios.delete(url).catch(handleApiError)
+  },
+
   getTags(bandSpaceId) {
     return axios
       .get(Routing.generate('api_band_space_file_tags_get_collection', { bandSpaceId }))

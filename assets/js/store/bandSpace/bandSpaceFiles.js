@@ -137,6 +137,26 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     return params
   }
 
+  async function createFolder(bandSpaceId, data) {
+    await bandSpaceFilesApi.createFolder(bandSpaceId, data)
+    await fetchFolders(bandSpaceId)
+  }
+
+  async function updateFolder(bandSpaceId, folderId, data) {
+    await bandSpaceFilesApi.updateFolder(bandSpaceId, folderId, data)
+    await fetchFolders(bandSpaceId)
+  }
+
+  async function deleteFolder(bandSpaceId, folderId, options = {}) {
+    await bandSpaceFilesApi.deleteFolder(bandSpaceId, folderId, options)
+    await fetchFolders(bandSpaceId)
+    if (activeFolderId.value === folderId) {
+      activeFolderId.value = null
+      fetchFiles(bandSpaceId)
+    }
+    fetchQuota(bandSpaceId)
+  }
+
   async function fetchFileById(bandSpaceId, fileId) {
     const requestId = ++activeFileRequestId
     isLoadingActiveFile.value = true
@@ -377,6 +397,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     fetchVersions,
     uploadVersion,
     rollbackVersion,
+    createFolder,
+    updateFolder,
+    deleteFolder,
     setFilter,
     setActiveFolder,
     clear

@@ -8,8 +8,11 @@ use App\ApiResource\BandSpace\File\BandSpaceFolderCreate;
 use App\ApiResource\BandSpace\File\BandSpaceFolderResource;
 use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFolderActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\File\BandSpaceFolderBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -29,6 +32,7 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFolderBuilder $folderBuilder,
+        private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
     ) {
     }
@@ -67,6 +71,19 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
         $folder->createdBy = $user;
 
         $this->entityManager->persist($folder);
+        $this->entityManager->flush();
+
+        $this->activityRecorder->record(
+            $bandSpace,
+            BandSpaceModule::File,
+            BandSpaceFolderActivityType::FolderCreated,
+            resourceId: (string) $folder->id,
+            actor: $user,
+            payload: [
+                'name' => $folder->name,
+                'parent_id' => $parent !== null ? (string) $parent->id : null,
+            ],
+        );
         $this->entityManager->flush();
 
         return $this->folderBuilder->buildItem($folder, $depth);

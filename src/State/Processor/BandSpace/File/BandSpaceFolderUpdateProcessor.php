@@ -7,8 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFolderResource;
 use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceFolderActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\File\BandSpaceFolderBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +32,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFolderBuilder $folderBuilder,
+        private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -51,6 +55,11 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
+        $oldName = $folder->name;
+        $oldParentId = $folder->parent !== null ? (string) $folder->parent->id : null;
+        $renamed = false;
+        $moved = false;
+
         if (array_key_exists('name', $payload)) {
             $newName = trim((string) $payload['name']);
             if ($newName === '') {
@@ -60,6 +69,9 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
                 && $this->folderRepository->siblingNameExists($bandSpace, $folder->parent, $newName, $folder)
             ) {
                 throw new UnprocessableEntityHttpException('Un dossier avec ce nom existe déjà à cet emplacement');
+            }
+            if ($newName !== $folder->name) {
+                $renamed = true;
             }
             $folder->name = $newName;
         }
@@ -90,10 +102,37 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
                     throw new UnprocessableEntityHttpException('Un dossier avec ce nom existe déjà à cet emplacement');
                 }
                 $folder->parent = $newParent;
+                $moved = true;
             }
         }
 
         $folder->updateDatetime = new DateTime();
+
+        if ($renamed) {
+            $this->activityRecorder->record(
+                $bandSpace,
+                BandSpaceModule::File,
+                BandSpaceFolderActivityType::FolderRenamed,
+                resourceId: (string) $folder->id,
+                actor: $user,
+                payload: ['from' => $oldName, 'to' => $folder->name],
+            );
+        }
+
+        if ($moved) {
+            $this->activityRecorder->record(
+                $bandSpace,
+                BandSpaceModule::File,
+                BandSpaceFolderActivityType::FolderMoved,
+                resourceId: (string) $folder->id,
+                actor: $user,
+                payload: [
+                    'from_parent_id' => $oldParentId,
+                    'to_parent_id' => $folder->parent !== null ? (string) $folder->parent->id : null,
+                ],
+            );
+        }
+
         $this->entityManager->flush();
 
         return $this->folderBuilder->buildItem($folder, $this->folderRepository->computeDepth($folder));
