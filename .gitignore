@@ -15,6 +15,7 @@
 hosts.yml
 
 /public/images/
+/public/band_space_files/
 
 ###> liip/imagine-bundle ###
 /public/media/cache/
