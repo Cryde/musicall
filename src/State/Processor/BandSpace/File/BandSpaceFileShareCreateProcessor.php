@@ -17,12 +17,12 @@ use App\Service\BandSpace\File\FileShareTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * @implements ProcessorInterface<BandSpaceFileShareCreate, BandSpaceFileShareCreated>
@@ -36,8 +36,8 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
         private FileShareTokenService $tokenService,
         private PasswordHasherFactoryInterface $passwordHasherFactory,
         private BandSpaceActivityRecorder $activityRecorder,
-        private RequestStack $requestStack,
         private Security $security,
+        private UrlGeneratorInterface $urlGenerator,
         #[Target('band_space_file_share_create')]
         private RateLimiterFactoryInterface $shareCreateLimiter,
     ) {
@@ -91,9 +91,11 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
-        $request = $this->requestStack->getCurrentRequest();
-        $baseUrl = $request !== null ? $request->getSchemeAndHttpHost() : '';
-        $shareUrl = $baseUrl . '/shares/' . $tokenPair['token'];
+        $shareUrl = $this->urlGenerator->generate(
+            'api_band_space_file_shares_public_download',
+            ['token' => $tokenPair['token']],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
 
         $created = new BandSpaceFileShareCreated();
         $created->shareId = (string) $share->id;
