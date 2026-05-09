@@ -17,6 +17,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
@@ -25,6 +26,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
@@ -48,6 +50,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
         private BandSpaceFileBuilder $fileBuilder,
         private ValidatorInterface $validator,
         private Security $security,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -76,7 +79,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
             throw new BadRequestHttpException('Taille de fichier invalide');
         }
 
-        $this->quotaService->ensureCanUpload($bandSpace, $size);
+        $this->quotaService->assertCanUpload($bandSpace, $size);
 
         $originalName = $upload instanceof UploadedFile ? $upload->getClientOriginalName() : $upload->getFilename();
 
@@ -146,6 +149,13 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
         );
 
         $this->entityManager->flush();
+
+        if ($this->quotaService->isApproachingLimit($bandSpace)) {
+            $this->requestStack->getCurrentRequest()?->attributes->set(
+                BandSpaceFileQuotaApproachingHeaderListener::REQUEST_ATTRIBUTE,
+                true,
+            );
+        }
 
         return $this->fileBuilder->buildItem($file, versionCount: 1);
     }

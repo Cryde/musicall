@@ -13,12 +13,14 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\Builder\BandSpace\File\BandSpaceFileVersionBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -38,6 +40,7 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $activityRecorder,
         private BandSpaceFileVersionBuilder $versionBuilder,
         private Security $security,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -71,7 +74,7 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
             throw new BadRequestHttpException('Taille de fichier invalide');
         }
 
-        $this->quotaService->ensureCanUpload($bandSpace, $size);
+        $this->quotaService->assertCanUpload($bandSpace, $size);
 
         $nextVersionNumber = $this->versionRepository->findMaxVersionNumber($file) + 1;
 
@@ -102,6 +105,13 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
         );
 
         $this->entityManager->flush();
+
+        if ($this->quotaService->isApproachingLimit($bandSpace)) {
+            $this->requestStack->getCurrentRequest()?->attributes->set(
+                BandSpaceFileQuotaApproachingHeaderListener::REQUEST_ATTRIBUTE,
+                true,
+            );
+        }
 
         return $this->versionBuilder->buildItem($version, $nextVersionNumber);
     }

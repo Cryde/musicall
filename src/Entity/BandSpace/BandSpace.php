@@ -31,6 +31,9 @@ class BandSpace
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 
+    #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    public ?int $quotaBytesOverride = null;
+
     /**
      * @var Collection<int, BandSpaceMembership>
      */
