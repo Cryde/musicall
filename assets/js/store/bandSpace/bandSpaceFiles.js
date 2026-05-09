@@ -199,6 +199,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
         activeFileId.value = null
         activeFileFull.value = null
       }
+      fetchQuota(bandSpaceId)
     } finally {
       isDeletingFile.value = false
     }

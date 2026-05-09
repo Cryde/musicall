@@ -29,6 +29,7 @@
             <MembersSection v-if="activeSection === 'members'" />
             <ActivitySection v-else-if="activeSection === 'activity' && isAdmin" />
             <ActiveSharesSection v-else-if="activeSection === 'shares'" />
+            <QuotaIndicator v-else-if="activeSection === 'storage'" />
             <ComingSoonSection v-else :title="activeSectionLabel" />
           </div>
         </div>
@@ -39,6 +40,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import QuotaIndicator from '../../components/BandSpace/Files/QuotaIndicator.vue'
 import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveSharesSection.vue'
 import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
@@ -53,6 +55,7 @@ const allSections = [
   { key: 'members', label: 'Membres', adminOnly: false },
   { key: 'activity', label: "Journal d'activité", adminOnly: true },
   { key: 'shares', label: 'Partages actifs', adminOnly: false },
+  { key: 'storage', label: 'Stockage', adminOnly: false },
   { key: 'general', label: 'Général', adminOnly: false },
   { key: 'danger', label: 'Zone de danger', adminOnly: false }
 ]
