@@ -85,6 +85,7 @@
       @close="handleDrawerClose"
       @deleted="handleFileDeleted"
       @share="handleOpenShare"
+      @versions="handleOpenVersions"
     />
 
     <FileShareDialog
@@ -92,6 +93,14 @@
       v-model:visible="shareDialogVisible"
       :band-space-id="bandSpaceId"
       :file-id="shareDialogFileId"
+    />
+
+    <FileVersionPanel
+      v-if="bandSpaceId && versionPanelFileId"
+      v-model:visible="versionPanelVisible"
+      :band-space-id="bandSpaceId"
+      :file-id="versionPanelFileId"
+      :file-name="versionPanelFileName"
     />
   </div>
 </template>
@@ -108,6 +117,7 @@ import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
 import FileShareDialog from '../../components/BandSpace/Files/FileShareDialog.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
+import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
@@ -120,6 +130,9 @@ const uploadDialogVisible = ref(false)
 const detailVisible = ref(false)
 const shareDialogVisible = ref(false)
 const shareDialogFileId = ref(null)
+const versionPanelVisible = ref(false)
+const versionPanelFileId = ref(null)
+const versionPanelFileName = ref('')
 
 const bandSpaceId = computed(() => route.params.id)
 
@@ -185,6 +198,13 @@ function handleOpenShare(file) {
   if (!file) return
   shareDialogFileId.value = file.id
   shareDialogVisible.value = true
+}
+
+function handleOpenVersions(file) {
+  if (!file) return
+  versionPanelFileId.value = file.id
+  versionPanelFileName.value = file.original_name
+  versionPanelVisible.value = true
 }
 
 function handleDrawerClose() {

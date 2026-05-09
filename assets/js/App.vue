@@ -1,9 +1,11 @@
 <template>
     <router-view/>
+    <ConfirmDialog />
 </template>
 
 <script setup>
 import { storeToRefs } from 'pinia'
+import ConfirmDialog from 'primevue/confirmdialog'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserSecurityStore } from './store/user/security.js'

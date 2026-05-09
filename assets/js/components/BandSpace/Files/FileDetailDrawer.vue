@@ -171,13 +171,10 @@
       </div>
     </template>
   </Drawer>
-
-  <ConfirmDialog />
 </template>
 
 <script setup>
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Drawer from 'primevue/drawer'
 import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
@@ -235,7 +232,12 @@ const folderOptions = computed(() => {
 const previewComponent = computed(() => {
   const f = file.value
   if (!f?.mime_type) return null
-  const url = f.download_url
+  // Cache-bust on current_version_id so preview/audio/PDF refresh when a new
+  // version is uploaded or a previous one is restored.
+  const sep = f.download_url.includes('?') ? '&' : '?'
+  const url = f.current_version_id
+    ? `${f.download_url}${sep}v=${f.current_version_id}`
+    : f.download_url
   if (f.mime_type === 'application/pdf') {
     return {
       tag: 'embed',

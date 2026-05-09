@@ -137,5 +137,49 @@ export default {
     return axios
       .delete(Routing.generate('api_band_space_file_shares_delete', { bandSpaceId, id: shareId }))
       .catch(handleApiError)
+  },
+
+  getVersions(bandSpaceId, fileId) {
+    return axios
+      .get(Routing.generate('api_band_space_file_versions_get_collection', { bandSpaceId, fileId }))
+      .then((resp) => resp.data)
+      .then((resp) => resp.member)
+      .catch(handleApiError)
+  },
+
+  uploadVersion(bandSpaceId, fileId, file, onProgress) {
+    const formData = new FormData()
+    formData.append('uploadedFile', file)
+
+    return axios
+      .post(
+        Routing.generate('api_band_space_file_versions_upload', { bandSpaceId, fileId }),
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            if (onProgress && progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              onProgress(percent)
+            }
+          }
+        }
+      )
+      .then((resp) => ({
+        version: resp.data,
+        quotaApproaching: resp.headers['x-quota-approaching'] === 'true'
+      }))
+      .catch(handleApiError)
+  },
+
+  rollbackVersion(bandSpaceId, fileId, versionNumber) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_file_versions_rollback', { bandSpaceId, fileId }),
+        { versionNumber },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }

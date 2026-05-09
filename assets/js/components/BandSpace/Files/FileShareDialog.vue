@@ -143,8 +143,6 @@
       />
     </template>
   </Dialog>
-
-  <ConfirmDialog />
 </template>
 
 <script setup>
@@ -152,7 +150,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
-import ConfirmDialog from 'primevue/confirmdialog'
 import DatePicker from 'primevue/datepicker'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -192,14 +189,18 @@ const fileShares = computed(() =>
   filesStore.shares.filter((s) => s.file_id === props.fileId && s.is_active)
 )
 
-watch(visible, (open) => {
-  if (open) {
-    initDefaults()
-    if (filesStore.shares.length === 0) {
-      filesStore.fetchShares(props.bandSpaceId)
+watch(
+  visible,
+  (open) => {
+    if (open) {
+      initDefaults()
+      if (filesStore.shares.length === 0) {
+        filesStore.fetchShares(props.bandSpaceId)
+      }
     }
-  }
-})
+  },
+  { immediate: true }
+)
 
 function initDefaults() {
   const inSevenDays = new Date()

@@ -14,6 +14,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const activeFileFull = ref(null)
   const fileActivities = ref([])
   const shares = ref([])
+  const versions = ref([])
 
   const filters = reactive({
     query: '',
@@ -34,6 +35,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const isDeletingFile = ref(false)
   const isLoadingShares = ref(false)
   const isCreatingShare = ref(false)
+  const isLoadingVersions = ref(false)
+  const isUploadingVersion = ref(false)
+  const isRollingBack = ref(false)
   const loadError = ref(null)
   const activeFileError = ref(null)
 
@@ -239,6 +243,48 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     shares.value = shares.value.filter((s) => s.id !== shareId)
   }
 
+  async function fetchVersions(bandSpaceId, fileId) {
+    isLoadingVersions.value = true
+    try {
+      versions.value = await bandSpaceFilesApi.getVersions(bandSpaceId, fileId)
+    } catch {
+      versions.value = []
+    } finally {
+      isLoadingVersions.value = false
+    }
+  }
+
+  async function uploadVersion(bandSpaceId, fileId, file, onProgress) {
+    isUploadingVersion.value = true
+    try {
+      const result = await bandSpaceFilesApi.uploadVersion(bandSpaceId, fileId, file, onProgress)
+      // Refresh derived state
+      fetchQuota(bandSpaceId)
+      fetchVersions(bandSpaceId, fileId)
+      fetchFileById(bandSpaceId, fileId)
+      fetchFileActivities(bandSpaceId, fileId)
+      return result
+    } finally {
+      isUploadingVersion.value = false
+    }
+  }
+
+  async function rollbackVersion(bandSpaceId, fileId, versionNumber) {
+    isRollingBack.value = true
+    try {
+      const updated = await bandSpaceFilesApi.rollbackVersion(bandSpaceId, fileId, versionNumber)
+      files.value = files.value.map((f) => (f.id === fileId ? updated : f))
+      if (activeFileFull.value && activeFileFull.value.id === fileId) {
+        activeFileFull.value = updated
+      }
+      fetchVersions(bandSpaceId, fileId)
+      fetchFileActivities(bandSpaceId, fileId)
+      return updated
+    } finally {
+      isRollingBack.value = false
+    }
+  }
+
   async function uploadFile(bandSpaceId, payload, onProgress) {
     const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress)
     files.value = [result.file, ...files.value]
@@ -273,6 +319,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     activeFileFull.value = null
     fileActivities.value = []
     shares.value = []
+    versions.value = []
     filters.query = ''
     filters.mime = null
     filters.tagId = null
@@ -303,6 +350,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     shares: readonly(shares),
     isLoadingShares: readonly(isLoadingShares),
     isCreatingShare: readonly(isCreatingShare),
+    versions: readonly(versions),
+    isLoadingVersions: readonly(isLoadingVersions),
+    isUploadingVersion: readonly(isUploadingVersion),
+    isRollingBack: readonly(isRollingBack),
     isLoadingActiveFile: readonly(isLoadingActiveFile),
     isLoadingActivities: readonly(isLoadingActivities),
     isSavingFile: readonly(isSavingFile),
@@ -322,6 +373,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     fetchShares,
     createShare,
     revokeShare,
+    fetchVersions,
+    uploadVersion,
+    rollbackVersion,
     setFilter,
     setActiveFolder,
     clear

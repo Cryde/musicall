@@ -72,8 +72,6 @@
       </Column>
     </DataTable>
   </div>
-
-  <ConfirmDialog />
 </template>
 
 <script setup>
@@ -81,7 +79,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
-import ConfirmDialog from 'primevue/confirmdialog'
 import DataTable from 'primevue/datatable'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
