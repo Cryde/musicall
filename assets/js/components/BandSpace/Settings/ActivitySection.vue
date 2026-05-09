@@ -113,18 +113,18 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import Avatar from '../../User/Avatar.vue'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
+import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceActivityStore } from '../../../store/bandSpace/bandSpaceActivity.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
+import Avatar from '../../User/Avatar.vue'
 import { activitySentence as buildSentence } from './activitySentences.js'
 
 const route = useRoute()

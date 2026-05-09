@@ -48,27 +48,23 @@ const SENTENCES = {
     `a renommé l'événement de « ${a.payload?.from} » à « ${a.payload?.to} »`,
   'agenda.description_changed': () => "a modifié la description de l'événement",
   'agenda.location_changed': (a) =>
-    a.payload?.to
-      ? `a changé le lieu en « ${a.payload.to} »`
-      : 'a effacé le lieu',
+    a.payload?.to ? `a changé le lieu en « ${a.payload.to} »` : 'a effacé le lieu',
   'agenda.event_datetime_changed': () => "a modifié la date de début de l'événement",
   'agenda.end_datetime_changed': () => "a modifié la date de fin de l'événement",
   'agenda.is_all_day_changed': (a) =>
-    a.payload?.to ? "a basculé l'événement en journée entière" : "a quitté la journée entière",
+    a.payload?.to ? "a basculé l'événement en journée entière" : 'a quitté la journée entière',
 
   // Notes
   'notes.note_created': (a) => `a créé la note « ${a.payload?.title ?? 'Sans titre'} »`,
   'notes.note_deleted': (a) => `a supprimé la note « ${a.payload?.title ?? 'Sans titre'} »`,
-  'notes.note_renamed': (a) =>
-    `a renommé la note de « ${a.payload?.from} » à « ${a.payload?.to} »`,
+  'notes.note_renamed': (a) => `a renommé la note de « ${a.payload?.from} » à « ${a.payload?.to} »`,
   'notes.note_emoji_changed': () => "a modifié l'emoji de la note",
   'notes.note_content_updated': () => 'a modifié le contenu de la note',
 
   // Finance — entries
   'finance.entry_created': (a) =>
     `a créé l'entrée « ${a.payload?.label ?? '—'} » (${formatAmount(a.payload?.amount)})`,
-  'finance.entry_deleted': (a) =>
-    `a supprimé l'entrée « ${a.payload?.label ?? '—'} »`,
+  'finance.entry_deleted': (a) => `a supprimé l'entrée « ${a.payload?.label ?? '—'} »`,
   'finance.entry_status_changed': (a) =>
     `a changé le statut de ${financeStatus(a.payload?.from)} à ${financeStatus(a.payload?.to)}`,
   'finance.entry_label_changed': (a) =>
