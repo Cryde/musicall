@@ -63,6 +63,7 @@ security:
         - { path: ^/api/users/request-reset-password, role: PUBLIC_ACCESS }
         - { path: ^/api/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/shares/, role: PUBLIC_ACCESS }
 
 when@test:
     security:

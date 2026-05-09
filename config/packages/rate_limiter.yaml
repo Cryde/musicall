@@ -60,3 +60,13 @@ framework:
             limit: 10
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        band_space_file_share_create:
+            policy: sliding_window
+            limit: 10
+            interval: '5 minutes'
+            cache_pool: "rate_limiter.cache"
+        band_space_file_share_access:
+            policy: sliding_window
+            limit: 60
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
