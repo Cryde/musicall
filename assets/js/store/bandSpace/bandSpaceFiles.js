@@ -113,6 +113,20 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     return params
   }
 
+  async function uploadFile(bandSpaceId, payload, onProgress) {
+    const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress)
+    files.value = [result.file, ...files.value]
+    totalFiles.value = totalFiles.value + 1
+    fetchQuota(bandSpaceId)
+    return result
+  }
+
+  async function createTag(bandSpaceId, data) {
+    const created = await bandSpaceFilesApi.createTag(bandSpaceId, data)
+    tags.value = [...tags.value, created]
+    return created
+  }
+
   function setFilter(key, value) {
     filters[key] = value
   }
@@ -156,6 +170,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     fetchFolders,
     fetchTags,
     fetchQuota,
+    uploadFile,
+    createTag,
     setFilter,
     setActiveFolder,
     clear

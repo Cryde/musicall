@@ -46,5 +46,41 @@ export default {
       .get(Routing.generate('api_band_space_files_quota_get', { bandSpaceId }))
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  uploadFile(bandSpaceId, { file, folderId, tagIds }, onProgress) {
+    const formData = new FormData()
+    formData.append('uploadedFile', file)
+    if (folderId) formData.append('folderId', folderId)
+    if (tagIds && tagIds.length > 0) {
+      for (const tagId of tagIds) {
+        formData.append('tagIds[]', tagId)
+      }
+    }
+
+    return axios
+      .post(Routing.generate('api_band_space_files_upload', { bandSpaceId }), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            onProgress(percent)
+          }
+        }
+      })
+      .then((resp) => ({
+        file: resp.data,
+        quotaApproaching: resp.headers['x-quota-approaching'] === 'true'
+      }))
+      .catch(handleApiError)
+  },
+
+  createTag(bandSpaceId, data) {
+    return axios
+      .post(Routing.generate('api_band_space_file_tags_post', { bandSpaceId }), data, {
+        headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' }
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }

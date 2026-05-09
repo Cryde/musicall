@@ -43,11 +43,21 @@
 
       <section class="flex-1 flex flex-col gap-4 min-w-0">
         <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
-          <FileFilterBar
-            :filters="filesStore.filters"
-            :tags="filesStore.tags"
-            @update-filter="handleFilterUpdate"
-          />
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex-1 min-w-[200px]">
+              <FileFilterBar
+                :filters="filesStore.filters"
+                :tags="filesStore.tags"
+                @update-filter="handleFilterUpdate"
+              />
+            </div>
+            <Button
+              label="Téléverser"
+              icon="pi pi-cloud-upload"
+              size="small"
+              @click="uploadDialogVisible = true"
+            />
+          </div>
         </div>
 
         <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
@@ -59,6 +69,13 @@
         </div>
       </section>
     </div>
+
+    <FileUploadDialog
+      v-if="bandSpaceId"
+      v-model:visible="uploadDialogVisible"
+      :band-space-id="bandSpaceId"
+      @saved="handleUploadSaved"
+    />
   </div>
 </template>
 
@@ -66,15 +83,20 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
+import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
+const toast = useToast()
 const filesStore = useBandFilesStore()
+
+const uploadDialogVisible = ref(false)
 
 const bandSpaceId = computed(() => route.params.id)
 
@@ -131,4 +153,22 @@ watch(bandSpaceId, () => {
   filesStore.clear()
   loadAll()
 })
+
+function handleUploadSaved({ quotaApproaching }) {
+  toast.add({
+    severity: 'success',
+    summary: 'Fichier téléversé',
+    detail: 'Le fichier a bien été ajouté.',
+    life: 3000
+  })
+  if (quotaApproaching) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Quota presque atteint',
+      detail: 'Vous avez atteint 80 % de votre quota de stockage.',
+      life: 6000
+    })
+  }
+  filesStore.fetchFolders(bandSpaceId.value)
+}
 </script>
