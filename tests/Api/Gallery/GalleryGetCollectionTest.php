@@ -32,7 +32,9 @@ class GalleryGetCollectionTest extends ApiTestCase
             'status'              => Gallery::STATUS_ONLINE,
             'title'               => 'Title gallery 1',
         ])->create();
-        GalleryImageFactory::new(['gallery' => $gallery1])->create();
+        $cover1 = GalleryImageFactory::new(['imageName' => 'cover.jpg', 'gallery' => $gallery1])->create();
+        $gallery1->coverImage = $cover1;
+        \Zenstruck\Foundry\Persistence\save($gallery1);
         $gallery2 = GalleryFactory::new([
             'author'              => $author,
             'description'         => 'Description gallery 2',
@@ -84,7 +86,7 @@ class GalleryGetCollectionTest extends ApiTestCase
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
-                    'cover_image'          => null,
+                    'cover_image'          => 'http://musicall.test/media/cache/resolve/gallery_image_filter_medium/images/gallery/' . $gallery1->id . '/cover.jpg',
                     'slug'                 => 'gallery-slug-1',
                     'image_count'          => 1,
                 ],

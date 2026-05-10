@@ -6,7 +6,7 @@ namespace App\ApiResource\Admin\Gallery;
 
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\Entity\Gallery;
+use App\ApiResource\Publication\GalleryResource;
 use App\State\Provider\Admin\Gallery\AdminPendingGalleryProvider;
 
 #[GetCollection(
@@ -14,7 +14,7 @@ use App\State\Provider\Admin\Gallery\AdminPendingGalleryProvider;
     openapi: new Operation(tags: ['Admin Galleries']),
     shortName: 'Gallery',
     paginationEnabled: false,
-    normalizationContext: ['groups' => [Gallery::LIST], 'skip_null_values' => false],
+    normalizationContext: ['groups' => [GalleryResource::LIST], 'skip_null_values' => false],
     security: 'is_granted("ROLE_ADMIN")',
     name: 'api_admin_galleries_pending_list',
     provider: AdminPendingGalleryProvider::class,

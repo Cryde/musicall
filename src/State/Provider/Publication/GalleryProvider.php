@@ -11,6 +11,7 @@ use App\Repository\GalleryRepository;
 use App\Service\Builder\Publication\GalleryBuilder;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -39,7 +40,7 @@ readonly class GalleryProvider implements ProviderInterface
         if ($gallery->status === Gallery::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
-            if (($request = $this->requestStack->getCurrentRequest()) instanceof \Symfony\Component\HttpFoundation\Request) {
+            if (($request = $this->requestStack->getCurrentRequest()) instanceof Request) {
                 $this->viewProcedure->process($gallery, $request, $user);
             }
         }

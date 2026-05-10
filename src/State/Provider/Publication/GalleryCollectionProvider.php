@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\State\Provider\Admin\Gallery;
+namespace App\State\Provider\Publication;
 
+use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Publication\GalleryResource;
 use App\Entity\Gallery;
-use App\Repository\GalleryRepository;
 use App\Service\Builder\Publication\GalleryBuilder;
 
 /**
  * @implements ProviderInterface<GalleryResource>
  */
-readonly class AdminPendingGalleryProvider implements ProviderInterface
+readonly class GalleryCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        private GalleryRepository $galleryRepository,
+        private CollectionProvider $collectionProvider,
         private GalleryBuilder $galleryBuilder,
     ) {
     }
@@ -27,9 +27,12 @@ readonly class AdminPendingGalleryProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
+        /** @var iterable<Gallery> $entities */
+        $entities = $this->collectionProvider->provide($operation, $uriVariables, $context);
+
         return array_map(
             fn (Gallery $entity): GalleryResource => $this->galleryBuilder->buildResource($entity),
-            $this->galleryRepository->findBy(['status' => Gallery::STATUS_PENDING]),
+            is_array($entities) ? $entities : iterator_to_array($entities),
         );
     }
 }

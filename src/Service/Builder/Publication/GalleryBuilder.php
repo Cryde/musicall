@@ -3,6 +3,7 @@
 namespace App\Service\Builder\Publication;
 
 use App\ApiResource\Publication\GalleryImage;
+use App\ApiResource\Publication\GalleryResource;
 use App\ApiResource\Publication\Publication\Author;
 use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Category;
@@ -21,12 +22,37 @@ readonly class GalleryBuilder
     ) {
     }
 
+    public function buildResource(GalleryEntity $entity): GalleryResource
+    {
+        $dto = new GalleryResource();
+        $dto->id = (int) $entity->id;
+        $dto->title = $entity->title;
+        $dto->publicationDatetime = $entity->publicationDatetime;
+        $dto->author = $entity->author;
+        $dto->coverImage = $this->buildCoverImageUrl($entity->coverImage);
+        $dto->slug = $entity->slug;
+        $dto->imageCount = $entity->getImageCount();
+
+        return $dto;
+    }
+
+    private function buildCoverImageUrl(?GalleryImageEntity $coverImage): ?string
+    {
+        if (!$coverImage instanceof GalleryImageEntity) {
+            return null;
+        }
+
+        $path = $this->uploaderHelper->asset($coverImage, 'imageFile');
+
+        return $path ? $this->cacheManager->getBrowserPath($path, 'gallery_image_filter_medium') : null;
+    }
+
     public function buildFromEntity(GalleryEntity $galleryEntity): Gallery
     {
         $author = $galleryEntity->author;
         $coverImage = $galleryEntity->coverImage;
         $publicationDatetime = $galleryEntity->publicationDatetime;
-        assert($coverImage instanceof \App\Entity\Image\GalleryImage && $publicationDatetime instanceof \DateTimeInterface);
+        assert($coverImage instanceof GalleryImageEntity && $publicationDatetime instanceof \DateTimeInterface);
 
         $gallery = new Gallery();
         $gallery->slug = (string) $galleryEntity->slug;
@@ -66,7 +92,7 @@ readonly class GalleryBuilder
     public function buildImagesFromEntity(GalleryEntity $gallery): array
     {
         return array_map(
-            fn (GalleryImageEntity $image): \App\ApiResource\Publication\GalleryImage => $this->buildImageFromEntity($image),
+            fn (GalleryImageEntity $image): GalleryImage => $this->buildImageFromEntity($image),
             $gallery->images->toArray()
         );
     }

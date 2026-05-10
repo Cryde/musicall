@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Entity\Metric;
 
 use ApiPlatform\Metadata\Get;
-use App\Entity\Gallery;
 use DateTime;
 use App\Repository\Metric\ViewCacheRepository;
 use DateTimeInterface;
@@ -25,7 +24,6 @@ class ViewCache
     public int $id;
 
     #[ORM\Column(type: Types::INTEGER)]
-    #[Groups([Gallery::LIST])]
     public int $count = 0;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
