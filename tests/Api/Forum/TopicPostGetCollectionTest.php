@@ -10,6 +10,8 @@ use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumPostFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
+use App\Tests\Factory\Metric\VoteCacheFactory;
+use App\Tests\Factory\Metric\VoteFactory;
 use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -228,6 +230,185 @@ class TopicPostGetCollectionTest extends ApiTestCase
                 'last' => '/api/forums/topics/test-topic/posts?page=2',
                 'next' => '/api/forums/topics/test-topic/posts?page=2',
             ],
+        ]);
+    }
+
+    public function test_get_collection_user_vote_null_when_authenticated_user_has_not_voted(): void
+    {
+        $forumCategory = ForumCategoryFactory::new(['position' => 1])->create();
+        $forum = ForumFactory::new(['forumCategory' => $forumCategory, 'slug' => 'test-forum'])->create();
+
+        $author = UserFactory::new(['username' => 'topic_author'])->create();
+        $poster = UserFactory::new(['username' => 'poster'])->create();
+        $viewer = UserFactory::new(['username' => 'viewer'])->asBaseUser()->create();
+
+        $topic = ForumTopicFactory::new([
+            'forum' => $forum,
+            'title' => 'Test Topic',
+            'slug' => 'test-topic',
+            'author' => $author,
+        ])->create();
+
+        $voteCache = VoteCacheFactory::new(['upvoteCount' => 0, 'downvoteCount' => 0])->create();
+        $post = ForumPostFactory::new([
+            'topic' => $topic,
+            'creator' => $poster,
+            'content' => 'Post with no vote from viewer',
+            'creationDatetime' => new \DateTime('2024-01-05 10:00:00'),
+            'updateDatetime' => null,
+            'voteCache' => $voteCache,
+        ])->create();
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/forums/topics/test-topic/posts');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/forums/topics/test-topic/posts',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/topic_posts/' . $post->id,
+                    '@type' => 'TopicPost',
+                    'id' => $post->id,
+                    'creation_datetime' => '2024-01-05T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'content' => 'Post with no vote from viewer',
+                    'creator' => [
+                        '@type' => 'User',
+                        'id' => $poster->id,
+                        'username' => 'poster',
+                        'deletion_datetime' => null,
+                        'profile_picture' => null,
+                    ],
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_get_collection_user_vote_reflects_authenticated_user_upvote(): void
+    {
+        $forumCategory = ForumCategoryFactory::new(['position' => 1])->create();
+        $forum = ForumFactory::new(['forumCategory' => $forumCategory, 'slug' => 'test-forum'])->create();
+
+        $author = UserFactory::new(['username' => 'topic_author'])->create();
+        $poster = UserFactory::new(['username' => 'poster'])->create();
+        $viewer = UserFactory::new(['username' => 'viewer'])->asBaseUser()->create();
+
+        $topic = ForumTopicFactory::new([
+            'forum' => $forum,
+            'title' => 'Test Topic',
+            'slug' => 'test-topic',
+            'author' => $author,
+        ])->create();
+
+        $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
+        $post = ForumPostFactory::new([
+            'topic' => $topic,
+            'creator' => $poster,
+            'content' => 'Post upvoted by viewer',
+            'creationDatetime' => new \DateTime('2024-01-05 10:00:00'),
+            'updateDatetime' => null,
+            'voteCache' => $voteCache,
+        ])->create();
+
+        VoteFactory::new([
+            'voteCache' => $voteCache,
+            'user' => $viewer,
+            'value' => 1,
+            'identifier' => 'viewer-identifier',
+            'entityType' => 'app_forum_post',
+            'entityId' => $post->id,
+        ])->create();
+
+        $this->client->loginUser($viewer);
+        $this->client->request('GET', '/api/forums/topics/test-topic/posts');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/forums/topics/test-topic/posts',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/topic_posts/' . $post->id,
+                    '@type' => 'TopicPost',
+                    'id' => $post->id,
+                    'creation_datetime' => '2024-01-05T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'content' => 'Post upvoted by viewer',
+                    'creator' => [
+                        '@type' => 'User',
+                        'id' => $poster->id,
+                        'username' => 'poster',
+                        'deletion_datetime' => null,
+                        'profile_picture' => null,
+                    ],
+                    'upvotes' => 1,
+                    'downvotes' => 0,
+                    'user_vote' => 1,
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_get_collection_user_vote_null_for_anonymous_request(): void
+    {
+        $forumCategory = ForumCategoryFactory::new(['position' => 1])->create();
+        $forum = ForumFactory::new(['forumCategory' => $forumCategory, 'slug' => 'test-forum'])->create();
+
+        $author = UserFactory::new(['username' => 'topic_author'])->create();
+        $poster = UserFactory::new(['username' => 'poster'])->create();
+
+        $topic = ForumTopicFactory::new([
+            'forum' => $forum,
+            'title' => 'Test Topic',
+            'slug' => 'test-topic',
+            'author' => $author,
+        ])->create();
+
+        $voteCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
+        $post = ForumPostFactory::new([
+            'topic' => $topic,
+            'creator' => $poster,
+            'content' => 'Post seen by anonymous',
+            'creationDatetime' => new \DateTime('2024-01-05 10:00:00'),
+            'updateDatetime' => null,
+            'voteCache' => $voteCache,
+        ])->create();
+
+        // No login — anonymous request with no matching identifier vote in DB.
+        $this->client->request('GET', '/api/forums/topics/test-topic/posts');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/forums/topics/test-topic/posts',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/topic_posts/' . $post->id,
+                    '@type' => 'TopicPost',
+                    'id' => $post->id,
+                    'creation_datetime' => '2024-01-05T10:00:00+00:00',
+                    'update_datetime' => null,
+                    'content' => 'Post seen by anonymous',
+                    'creator' => [
+                        '@type' => 'User',
+                        'id' => $poster->id,
+                        'username' => 'poster',
+                        'deletion_datetime' => null,
+                        'profile_picture' => null,
+                    ],
+                    'upvotes' => 1,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                ],
+            ],
+            'totalItems' => 1,
         ]);
     }
 

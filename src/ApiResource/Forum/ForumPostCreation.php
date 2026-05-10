@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     uriTemplate: '/forum/posts',
     openapi: new Operation(tags: ['Forum']),
     security: "is_granted('IS_AUTHENTICATED_REMEMBERED')",
-    output: TopicPost::class,
+    output: ForumPostResource::class,
     name: 'api_forum_posts_post',
     processor: ForumPostCreationProcessor::class,
 )]

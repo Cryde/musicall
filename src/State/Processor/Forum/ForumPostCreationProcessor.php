@@ -7,7 +7,7 @@ namespace App\State\Processor\Forum;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Forum\ForumPostCreation;
-use App\ApiResource\Forum\TopicPost;
+use App\ApiResource\Forum\ForumPostResource;
 use App\Entity\User;
 use App\Service\Procedure\Forum\MessageCreationProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
- * @implements ProcessorInterface<ForumPostCreation, TopicPost>
+ * @implements ProcessorInterface<ForumPostCreation, ForumPostResource>
  */
 readonly class ForumPostCreationProcessor implements ProcessorInterface
 {
@@ -30,7 +30,7 @@ readonly class ForumPostCreationProcessor implements ProcessorInterface
     /**
      * @param ForumPostCreation $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TopicPost
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ForumPostResource
     {
         /** @var User $user */
         $user = $this->security->getUser();

@@ -4,9 +4,9 @@ namespace App\Service\Procedure\Forum;
 
 use App\ApiResource\Forum\Forum;
 use App\ApiResource\Forum\ForumTopic;
+use App\Entity\Forum\ForumPost;
 use App\Entity\User;
 use App\Repository\Forum\ForumRepository;
-use App\Service\Builder\Forum\ForumPostBuilder;
 use App\Service\Builder\Forum\ForumTopicBuilder;
 use App\Service\Builder\Forum\ForumTopicListBuilder;
 use App\Service\Slugifier;
@@ -19,7 +19,6 @@ class TopicCreationProcedure
     public function __construct(
         readonly private Security               $security,
         readonly private ForumTopicBuilder      $forumTopicBuilder,
-        readonly private ForumPostBuilder       $forumPostBuilder,
         readonly private ForumTopicListBuilder  $forumTopicListBuilder,
         readonly private Slugifier              $slugifier,
         readonly private ForumRepository        $forumRepository,
@@ -40,7 +39,10 @@ class TopicCreationProcedure
         $topic->slug = $this->slugifier->create($topic, 'title');
         $this->entityManager->persist($topic);
         // create the first post related to the topic
-        $post = $this->forumPostBuilder->build($topic, $user, $message);
+        $post = new ForumPost();
+        $post->topic = $topic;
+        $post->creator = $user;
+        $post->content = $message;
         $this->entityManager->persist($post);
         // set the post as the last post for this topic
         $topic->lastPost = $post;
