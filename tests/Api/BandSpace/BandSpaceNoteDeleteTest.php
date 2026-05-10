@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceNoteDeleteTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_delete_note(): void
@@ -34,10 +34,6 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'title' => 'To Delete',
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note = $note;
         $noteId = (string) $note->id;
 
         $this->client->loginUser($user);
@@ -73,10 +69,6 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'title' => 'Child',
             'parent' => $parentNote,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $parentNote = $parentNote;
         $parentNoteId = (string) $parentNote->id;
         $childId = (string) $childNote->id;
 
@@ -97,9 +89,6 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/nonexistent-id');
 
@@ -117,10 +106,6 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'title' => 'Protected Note',
         ])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
@@ -142,10 +127,6 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'title' => 'Protected Note',
         ])->create();
-
-        $inactiveUser = $inactiveUser;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);

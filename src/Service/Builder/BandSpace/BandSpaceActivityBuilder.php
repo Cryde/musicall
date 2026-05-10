@@ -31,11 +31,11 @@ readonly class BandSpaceActivityBuilder
         $dto->resourceId = $entity->resourceId?->toString();
         $dto->type = $entity->type;
         $dto->payload = $entity->payload;
-        $dto->actor = $entity->actor === null ? null : [
+        $dto->actor = $entity->actor instanceof \App\Entity\User ? [
             'id' => (string) $entity->actor->id,
             'username' => $entity->actor->username,
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->actor),
-        ];
+        ] : null;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
 
         return $dto;

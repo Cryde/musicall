@@ -41,7 +41,7 @@ class ForumCategory
     /**
      * @var Collection<int, Forum>
      */
-    #[ORM\OneToMany(mappedBy: 'forumCategory', targetEntity: Forum::class)]
+    #[ORM\OneToMany(targetEntity: Forum::class, mappedBy: 'forumCategory')]
     public Collection $forums;
 
     public function __construct()

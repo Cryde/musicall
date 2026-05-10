@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceCategoryDeleteTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_delete_category(): void
@@ -34,10 +34,6 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'name' => 'To Delete',
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
         $categoryId = (string) $category->id;
 
         $this->client->loginUser($user);
@@ -69,10 +65,6 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             'name' => 'Protected Category',
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
 
@@ -95,10 +87,6 @@ class FinanceCategoryDeleteTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'name' => 'Protected Category',
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);

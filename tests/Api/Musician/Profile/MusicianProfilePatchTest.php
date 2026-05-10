@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MusicianProfilePatchTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_patch_musician_profile_update_availability_status(): void

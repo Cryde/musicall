@@ -30,7 +30,7 @@ class MessageCollectionProvider implements ProviderInterface
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        if (!$thread = $this->messageThreadRepository->find($uriVariables['threadId'])) {
+        if (!($thread = $this->messageThreadRepository->find($uriVariables['threadId'])) instanceof \App\Entity\Message\MessageThread) {
             throw new NotFoundHttpException('Thread not found.');
         }
 

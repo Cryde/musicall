@@ -10,9 +10,9 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicationCategoryTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_publication_categories(): void

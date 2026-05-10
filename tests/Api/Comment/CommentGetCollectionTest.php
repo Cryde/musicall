@@ -13,9 +13,9 @@ use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class CommentGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_comments_user_vote_null_when_not_voted(): void

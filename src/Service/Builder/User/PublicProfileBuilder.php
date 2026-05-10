@@ -32,14 +32,14 @@ readonly class PublicProfileBuilder
         $dto = new PublicProfile();
 
         $dto->username = $user->username;
-        $dto->userId = (string) $user->id;
+        $dto->userId = $user->id;
         $dto->displayName = $profile->displayName;
         $dto->bio = $profile->bio;
         $dto->location = $profile->location;
         $dto->memberSince = $memberSince;
 
         // Profile picture
-        if ($user->profilePicture) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
@@ -48,7 +48,7 @@ readonly class PublicProfileBuilder
         }
 
         // Cover picture
-        if ($profile->coverPicture) {
+        if ($profile->coverPicture instanceof \App\Entity\Image\UserProfileCoverPicture) {
             $path = $this->uploaderHelper->asset($profile->coverPicture, 'imageFile');
             if ($path !== null) {
                 $dto->coverPictureUrl = $this->cacheManager->getBrowserPath($path, 'user_cover_picture');
@@ -63,10 +63,10 @@ readonly class PublicProfileBuilder
         $dto->musicianAnnounces = $this->buildAnnounces($announces);
 
         // Musician profile flag
-        $dto->hasMusicianProfile = $user->musicianProfile !== null;
+        $dto->hasMusicianProfile = $user->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
 
         // Teacher profile flag
-        $dto->hasTeacherProfile = $user->teacherProfile !== null;
+        $dto->hasTeacherProfile = $user->teacherProfile instanceof \App\Entity\Teacher\TeacherProfile;
 
         return $dto;
     }
@@ -97,11 +97,11 @@ readonly class PublicProfileBuilder
             $dto = new PublicProfileAnnounce();
             $dto->id = (string) $announce->id;
             $dto->creationDatetime = $announce->creationDatetime;
-            $dto->type = (int) $announce->type;
-            $dto->instrumentName = (string) $announce->instrument->musicianName;
-            $dto->locationName = (string) $announce->locationName;
+            $dto->type = $announce->type;
+            $dto->instrumentName = $announce->instrument->musicianName;
+            $dto->locationName = $announce->locationName;
             $dto->styles = array_map(
-                fn($style) => (string) $style->name,
+                fn(\App\Entity\Attribute\Style $style): string => $style->name,
                 $announce->styles->toArray()
             );
 

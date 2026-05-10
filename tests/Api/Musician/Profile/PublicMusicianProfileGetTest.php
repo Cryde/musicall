@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicMusicianProfileGetTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_public_musician_profile_success(): void
@@ -193,7 +193,7 @@ class PublicMusicianProfileGetTest extends ApiTestCase
 
     public function test_get_public_musician_profile_not_found(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create([
+        UserFactory::new()->asBaseUser()->create([
             'username' => 'userwithoutmusicianprofile',
             'email' => 'userwithoutmusicianprofile@test.com',
         ]);

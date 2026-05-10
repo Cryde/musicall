@@ -52,7 +52,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         [$bandSpace, $currentMembership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
-        if (!$recurrence) {
+        if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence) {
             throw new NotFoundHttpException('Récurrence introuvable');
         }
 

@@ -47,7 +47,7 @@ class MusicianSearchResultBuilder
         $announceMusician->styles = $this->buildStyles($musicianAnnounce->styles->toArray());
         $announceMusician->note = $this->appOnlybrSanitizer->sanitize((string) $musicianAnnounce->note);
         $announceMusician->locationName = $musicianAnnounce->locationName;
-        $announceMusician->type = (int) $musicianAnnounce->type;
+        $announceMusician->type = $musicianAnnounce->type;
         if ($distance !== null) {
             $announceMusician->distance = $distance / 1000;
         }
@@ -58,11 +58,11 @@ class MusicianSearchResultBuilder
     private function buildUser(UserEntity $userEntity): User
     {
         $user = new User();
-        $user->id = (string) $userEntity->id;
+        $user->id = $userEntity->id;
         $user->username = $userEntity->username;
         $user->deletionDatetime = $userEntity->deletionDatetime;
-        $user->hasMusicianProfile = $userEntity->musicianProfile !== null;
-        if ($userEntity->profilePicture) {
+        $user->hasMusicianProfile = $userEntity->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
+        if ($userEntity->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($userEntity->profilePicture, 'imageFile');
             if ($path !== null) {
                 $user->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
@@ -75,7 +75,7 @@ class MusicianSearchResultBuilder
     private function buildInstrument(InstrumentEntity $instrumentEntity): Instrument
     {
         $instrument = new Instrument();
-        $instrument->name = (string) $instrumentEntity->musicianName;
+        $instrument->name = $instrumentEntity->musicianName;
 
         return $instrument;
     }
@@ -89,7 +89,7 @@ class MusicianSearchResultBuilder
     {
         return array_map(static function (StyleEntity $styleEntity): Style {
             $style = new Style();
-            $style->name = (string) $styleEntity->name;
+            $style->name = $styleEntity->name;
 
             return $style;
         }, $styles);

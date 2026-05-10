@@ -14,9 +14,9 @@ use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicationRelatedTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_related_publications(): void
@@ -26,7 +26,7 @@ class PublicationRelatedTest extends ApiTestCase
         $author = UserFactory::new()->asAdminUser()->create();
 
         // Current publication we're viewing
-        $currentPub = PublicationFactory::new([
+        PublicationFactory::new([
             'author'              => $author,
             'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2024-01-01T00:00:00+00:00'),
             'shortDescription'    => 'Current publication',

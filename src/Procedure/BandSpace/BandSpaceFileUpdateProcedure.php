@@ -41,16 +41,12 @@ readonly class BandSpaceFileUpdateProcedure
     ): BandSpaceFile {
         $changed = false;
 
-        if (array_key_exists('original_name', $payload) || array_key_exists('originalName', $payload)) {
-            if ($this->applyRename($file, $data->originalName, $user)) {
-                $changed = true;
-            }
+        if ((array_key_exists('original_name', $payload) || array_key_exists('originalName', $payload)) && $this->applyRename($file, $data->originalName, $user)) {
+            $changed = true;
         }
 
-        if (array_key_exists('folder_id', $payload) || array_key_exists('folderId', $payload)) {
-            if ($this->applyMove($file, $data->folderId, $bandSpace, $user)) {
-                $changed = true;
-            }
+        if ((array_key_exists('folder_id', $payload) || array_key_exists('folderId', $payload)) && $this->applyMove($file, $data->folderId, $bandSpace, $user)) {
+            $changed = true;
         }
 
         if (array_key_exists('tag_ids', $payload) || array_key_exists('tagIds', $payload)) {
@@ -109,13 +105,13 @@ readonly class BandSpaceFileUpdateProcedure
         $newFolder = null;
         if ($folderId !== null && $folderId !== '') {
             $newFolder = $this->folderRepository->findOneByIdAndBandSpace($folderId, $bandSpace);
-            if ($newFolder === null) {
+            if (!$newFolder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
                 throw new UnprocessableEntityHttpException('Dossier introuvable dans ce Band Space');
             }
         }
 
-        $oldFolderId = $file->folder !== null ? (string) $file->folder->id : null;
-        $newFolderId = $newFolder !== null ? (string) $newFolder->id : null;
+        $oldFolderId = $file->folder instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $file->folder->id : null;
+        $newFolderId = $newFolder instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $newFolder->id : null;
         if ($oldFolderId === $newFolderId) {
             return false;
         }

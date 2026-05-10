@@ -35,7 +35,7 @@ readonly class TaskMoveProcedure
         User $user,
     ): Task {
         $task = $this->taskRepository->findOneByIdAndBandSpace($taskId, $bandSpace);
-        if (!$task) {
+        if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', $taskId));
         }
 
@@ -52,11 +52,7 @@ readonly class TaskMoveProcedure
             $oldStatus = $task->status->value;
             if ($oldStatus !== $newStatus) {
                 $task->status = TaskStatus::from($newStatus);
-                if ($task->status === TaskStatus::Done) {
-                    $task->completedDatetime = new DateTimeImmutable();
-                } else {
-                    $task->completedDatetime = null;
-                }
+                $task->completedDatetime = $task->status === TaskStatus::Done ? new DateTimeImmutable() : null;
                 $this->bandSpaceActivityRecorder->record(
                     bandSpace: $task->bandSpace,
                     module: BandSpaceModule::Task,

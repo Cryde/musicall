@@ -22,9 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceEntryCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_create_expense_entry(): void
@@ -39,10 +39,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -115,10 +111,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -181,11 +173,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-        $membership = $membership;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -242,9 +229,6 @@ class FinanceEntryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -277,10 +261,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -320,10 +300,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -355,10 +331,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -408,10 +380,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -460,10 +428,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -510,10 +474,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'name' => 'Concerts',
             'position' => 0,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -576,10 +536,6 @@ class FinanceEntryCreateTest extends ApiTestCase
             'name' => 'Studio',
             'position' => 0,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

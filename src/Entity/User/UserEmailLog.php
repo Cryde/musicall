@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 #[ORM\Entity(repositoryClass: UserEmailLogRepository::class)]
-#[ORM\Index(columns: ['user_id', 'email_type'], name: 'idx_user_email_type')]
+#[ORM\Index(name: 'idx_user_email_type', columns: ['user_id', 'email_type'])]
 class UserEmailLog
 {
     #[ORM\Id]

@@ -22,9 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceEntryUpdateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_update_entry_label(): void
@@ -50,11 +50,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -125,11 +120,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-        $entry = $entry;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
@@ -198,11 +188,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -286,10 +271,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
@@ -331,11 +312,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'scope' => FinanceEntryScope::Band,
             'amount' => 50000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $membership = $membership;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -384,11 +360,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $otherCategory = $otherCategory;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
@@ -431,10 +402,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
@@ -467,10 +434,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'amount' => 50000,
             'date' => new \DateTime('2024-01-15'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -507,10 +470,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'member' => $ownerMembership,
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'PATCH',
@@ -546,12 +505,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $owner = $owner;
-        $bandSpace = $bandSpace;
-        $ownerMembership = $ownerMembership;
-        $category = $category;
-        $entry = $entry;
-
         $this->client->loginUser($owner);
         $this->client->jsonRequest(
             'PATCH',
@@ -583,10 +536,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'amount' => 50000,
             'date' => new \DateTime('2024-01-15'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -620,10 +569,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'PATCH',
@@ -655,10 +600,6 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'amount' => 50000,
             'date' => new \DateTime('2024-01-15'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

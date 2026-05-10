@@ -32,7 +32,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PublicMusicianProfile
     {
-        if (!$user = $this->userRepository->findOneBy(['username' => $uriVariables['username'] ?? ''])) {
+        if (!($user = $this->userRepository->findOneBy(['username' => $uriVariables['username'] ?? ''])) instanceof \App\Entity\User) {
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
@@ -40,7 +40,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
-        if (!$musicianProfile = $user->musicianProfile) {
+        if (!($musicianProfile = $user->musicianProfile) instanceof \App\Entity\Musician\MusicianProfile) {
             throw new NotFoundHttpException('Profil musicien non trouvé');
         }
 
@@ -52,7 +52,7 @@ readonly class MusicianProfileProvider implements ProviderInterface
     private function trackView(MusicianProfile $profile, User $profileOwner): void
     {
         $request = $this->requestStack->getCurrentRequest();
-        if (!$request) {
+        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
             return;
         }
 

@@ -29,7 +29,7 @@ readonly class MusicianProfileMetaDataProvider implements BotMetaDataProviderInt
 
         $musicianProfile = $this->musicianProfileRepository->findByUsername($matches[1]);
 
-        if (!$musicianProfile) {
+        if (!$musicianProfile instanceof \App\Entity\Musician\MusicianProfile) {
             return [];
         }
 

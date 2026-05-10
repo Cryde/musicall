@@ -44,7 +44,7 @@ class MessageThread
     /**
      * @var Collection<int, Message>
      */
-    #[ORM\OneToMany(mappedBy: 'thread', targetEntity: Message::class)]
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'thread')]
     public Collection $messages;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -52,7 +52,7 @@ class MessageThread
     /**
      * @var Collection<int, MessageParticipant>
      */
-    #[ORM\OneToMany(mappedBy: 'thread', targetEntity: MessageParticipant::class)]
+    #[ORM\OneToMany(targetEntity: MessageParticipant::class, mappedBy: 'thread')]
     #[Groups([MessageThreadMeta::LIST])]
     public Collection $messageParticipants;
 

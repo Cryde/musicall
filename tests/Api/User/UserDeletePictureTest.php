@@ -15,11 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserDeletePictureTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
-    use ResetDatabase;
-    use Factories;
 
     public function test_delete_picture(): void
     {

@@ -12,9 +12,9 @@ use Symfony\Component\Validator\Constraints\Length;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserProfilePatchTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_patch_profile_update_display_name(): void

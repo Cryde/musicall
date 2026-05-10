@@ -62,7 +62,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
 
         if ($data->isAllDay) {
             $eventDatetime = new DateTimeImmutable($eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');
-            $endDatetime = $endDatetime !== null
+            $endDatetime = $endDatetime instanceof \DateTimeImmutable
                 ? new DateTimeImmutable($endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
                 : null;
         }

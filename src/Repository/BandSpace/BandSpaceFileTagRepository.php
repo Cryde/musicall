@@ -51,7 +51,7 @@ class BandSpaceFileTagRepository extends ServiceEntityRepository
             ->setParameter('name', $name)
             ->setMaxResults(1);
 
-        if ($exclude !== null) {
+        if ($exclude instanceof \App\Entity\BandSpace\BandSpaceFileTag) {
             $qb->andWhere('t.id <> :excludeId')
                 ->setParameter('excludeId', (string) $exclude->id);
         }

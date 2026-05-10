@@ -17,10 +17,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class SendEmailConfirmationReminderCommandTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     private CommandTester $commandTester;
 
     protected function setUp(): void

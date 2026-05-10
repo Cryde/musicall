@@ -24,7 +24,7 @@ readonly class AdminPublicationActionProvider implements ProviderInterface
     {
         $publication = $this->publicationRepository->find($uriVariables['id']);
 
-        if (!$publication) {
+        if (!$publication instanceof \App\Entity\Publication) {
             throw new NotFoundHttpException('Publication not found');
         }
 

@@ -31,7 +31,7 @@ readonly class BandSpaceNoteBuilder
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->title = $entity->title;
         $dto->emoji = $entity->emoji;
-        $dto->parentId = $entity->parent !== null ? (string) $entity->parent->id : null;
+        $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\BandSpaceNote ? (string) $entity->parent->id : null;
         $dto->position = $entity->position;
         $dto->content = null;
         $dto->hasChildren = !$entity->children->isEmpty();

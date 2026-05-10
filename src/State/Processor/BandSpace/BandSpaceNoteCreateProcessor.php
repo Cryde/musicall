@@ -45,7 +45,7 @@ readonly class BandSpaceNoteCreateProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships((string) $uriVariables['bandSpaceId']);
-        if (!$bandSpace) {
+        if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
             throw new NotFoundHttpException('Band space not found');
         }
 
@@ -56,7 +56,7 @@ readonly class BandSpaceNoteCreateProcessor implements ProcessorInterface
         $parent = null;
         if ($data->parentId !== null) {
             $parent = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->parentId, $bandSpace);
-            if (!$parent) {
+            if (!$parent instanceof \App\Entity\BandSpace\BandSpaceNote) {
                 throw new NotFoundHttpException('Parent note not found');
             }
         }

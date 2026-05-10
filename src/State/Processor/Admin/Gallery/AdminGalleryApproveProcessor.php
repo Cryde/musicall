@@ -27,7 +27,7 @@ readonly class AdminGalleryApproveProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
-        if (!$gallery = $this->galleryRepository->find($uriVariables['id'])) {
+        if (!($gallery = $this->galleryRepository->find($uriVariables['id'])) instanceof \App\Entity\Gallery) {
             throw new NotFoundHttpException('Gallery not found');
         }
 
@@ -37,7 +37,7 @@ readonly class AdminGalleryApproveProcessor implements ProcessorInterface
 
         $gallery->publicationDatetime = new \DateTime();
         $gallery->status = Gallery::STATUS_ONLINE;
-        $gallery->slug = $this->gallerySlug->create((string) $gallery->title);
+        $gallery->slug = $this->gallerySlug->create($gallery->title);
 
         $this->entityManager->flush();
 

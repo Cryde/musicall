@@ -47,17 +47,17 @@ readonly class BandSpaceTaskFileDetachProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
-        if ($task === null) {
+        if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
         $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'task', (string) $task->id);
-        if ($attachment === null) {
+        if (!$attachment instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
             throw new NotFoundHttpException("Le fichier n'est pas attaché à cette tâche");
         }
 

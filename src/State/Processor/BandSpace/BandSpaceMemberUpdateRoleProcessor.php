@@ -51,7 +51,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
             $bandSpace
         );
 
-        if (!$membership) {
+        if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             throw new NotFoundHttpException('Membre introuvable');
         }
 
@@ -73,11 +73,9 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
             $membership->role = $newRole;
         }
 
-        if (array_key_exists('status', $requestPayload)) {
-            if ($data->status === 'active' && $membership->status !== MembershipStatus::Active) {
-                $membership->status = MembershipStatus::Active;
-                $membership->leftDatetime = null;
-            }
+        if (array_key_exists('status', $requestPayload) && ($data->status === 'active' && $membership->status !== MembershipStatus::Active)) {
+            $membership->status = MembershipStatus::Active;
+            $membership->leftDatetime = null;
         }
 
         if ($oldRole !== $membership->role) {

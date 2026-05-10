@@ -10,9 +10,10 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class SoundCloudMetadataFetcherTest extends TestCase
 {
-    private HttpClientInterface $httpClient;
+    private \PHPUnit\Framework\MockObject\MockObject $httpClient;
     private SoundCloudMetadataFetcher $fetcher;
 
     protected function setUp(): void

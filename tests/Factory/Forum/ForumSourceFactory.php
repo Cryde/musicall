@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\Forum;
 
 use Zenstruck\Foundry\Factory;
@@ -17,7 +19,7 @@ final class ForumSourceFactory extends PersistentObjectFactory
         ];
     }
 
-    public function asRoot(): Factory
+    public function asRoot(): \App\Tests\Factory\Forum\ForumSourceFactory
     {
         return $this->with(['description' => 'Root source forum', 'slug' => 'root']);
     }

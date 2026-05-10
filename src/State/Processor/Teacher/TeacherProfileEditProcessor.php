@@ -70,15 +70,8 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             $profile->yearsOfExperience = $data->yearsOfExperience;
         }
 
-        // Student levels
-        if (!empty($data->studentLevels) || $data->studentLevels === []) {
-            $profile->studentLevels = $data->studentLevels;
-        }
-
-        // Age groups
-        if (!empty($data->ageGroups) || $data->ageGroups === []) {
-            $profile->ageGroups = $data->ageGroups;
-        }
+        $profile->studentLevels = $data->studentLevels;
+        $profile->ageGroups = $data->ageGroups;
 
         // Course title
         if ($data->courseTitle !== null) {
@@ -111,37 +104,31 @@ readonly class TeacherProfileEditProcessor implements ProcessorInterface
             $profile->addLocation($location);
         }
 
-        // Instruments (if provided)
-        if (!empty($data->instrumentIds) || $data->instrumentIds === []) {
-            // Remove existing instruments and flush first to avoid unique constraint violation
-            foreach ($profile->instruments->toArray() as $instrument) {
-                $profile->removeInstrument($instrument);
-            }
-            $this->entityManager->flush();
+        // Remove existing instruments and flush first to avoid unique constraint violation
+        foreach ($profile->instruments->toArray() as $instrument) {
+            $profile->removeInstrument($instrument);
+        }
+        $this->entityManager->flush();
 
-            foreach ($data->instrumentIds as $instrumentId) {
-                $instrument = $this->instrumentRepository->find($instrumentId);
-                if (!$instrument) {
-                    continue;
-                }
-
-                $profileInstrument = new TeacherProfileInstrument();
-                $profileInstrument->instrument = $instrument;
-                $profile->addInstrument($profileInstrument);
+        foreach ($data->instrumentIds as $instrumentId) {
+            $instrument = $this->instrumentRepository->find($instrumentId);
+            if (!$instrument instanceof \App\Entity\Attribute\Instrument) {
+                continue;
             }
+
+            $profileInstrument = new TeacherProfileInstrument();
+            $profileInstrument->instrument = $instrument;
+            $profile->addInstrument($profileInstrument);
         }
 
-        // Styles (if provided)
-        if (!empty($data->styleIds) || $data->styleIds === []) {
-            foreach ($profile->styles->toArray() as $style) {
-                $profile->removeStyle($style);
-            }
+        foreach ($profile->styles->toArray() as $style) {
+            $profile->removeStyle($style);
+        }
 
-            foreach ($data->styleIds as $styleId) {
-                $style = $this->styleRepository->find($styleId);
-                if ($style) {
-                    $profile->addStyle($style);
-                }
+        foreach ($data->styleIds as $styleId) {
+            $style = $this->styleRepository->find($styleId);
+            if ($style instanceof \App\Entity\Attribute\Style) {
+                $profile->addStyle($style);
             }
         }
 

@@ -20,7 +20,7 @@ readonly class UserDtoBuilder
     public function buildFromEntity(UserEntity $user): User
     {
         $dto = new User();
-        $dto->id = (string) $user->id;
+        $dto->id = $user->id;
         $dto->username = $user->username;
         $dto->deletionDatetime = $user->deletionDatetime;
         $dto->profilePicture = $this->buildProfilePicture($user);
@@ -34,7 +34,7 @@ readonly class UserDtoBuilder
     private function buildProfilePicture(UserEntity $user): ?array
     {
         $profilePicture = $user->profilePicture;
-        if (!$profilePicture) {
+        if (!$profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             return null;
         }
         if (!$path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {

@@ -55,7 +55,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
@@ -64,7 +64,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         }
 
         $sourceLabel = match ($data->sourceType) {
-            'task' => $this->resolveTask($data->sourceId, $bandSpace, $user),
+            'task' => $this->resolveTask($data->sourceId, $bandSpace),
             'finance' => $this->resolveFinanceEntry($data->sourceId, $bandSpace, $user),
             default => throw new UnprocessableEntityHttpException('Type de source invalide'),
         };
@@ -74,7 +74,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             (string) $data->sourceType,
             (string) $data->sourceId,
         );
-        if ($existing !== null) {
+        if ($existing instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
             throw new UnprocessableEntityHttpException('Ce fichier est déjà attaché à cette ressource.');
         }
 
@@ -105,10 +105,10 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         return $this->fileBuilder->buildItem($file);
     }
 
-    private function resolveTask(string $taskId, BandSpace $bandSpace, User $user): string
+    private function resolveTask(string $taskId, BandSpace $bandSpace): string
     {
         $task = $this->taskRepository->findOneByIdAndBandSpace($taskId, $bandSpace);
-        if ($task === null) {
+        if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
@@ -118,7 +118,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     private function resolveFinanceEntry(string $entryId, BandSpace $bandSpace, User $user): string
     {
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
-        if ($entry === null) {
+        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
             throw new NotFoundHttpException('Entrée introuvable');
         }
 

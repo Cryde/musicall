@@ -58,44 +58,38 @@ readonly class MusicianProfileEditProcessor implements ProcessorInterface
             $profile->availabilityStatus = $status;
         }
 
-        // Instruments (if provided)
-        if (!empty($data->instruments) || $data->instruments === []) {
-            // Remove existing instruments and flush first to avoid unique constraint violation
-            // (Doctrine processes INSERTs before DELETEs in the same flush)
-            foreach ($profile->instruments->toArray() as $instrument) {
-                $profile->removeInstrument($instrument);
+        // Remove existing instruments and flush first to avoid unique constraint violation
+        // (Doctrine processes INSERTs before DELETEs in the same flush)
+        foreach ($profile->instruments->toArray() as $instrument) {
+            $profile->removeInstrument($instrument);
+        }
+        $this->entityManager->flush();
+
+        foreach ($data->instruments as $instrumentInput) {
+            $instrument = $this->instrumentRepository->find($instrumentInput->instrumentId);
+            if (!$instrument instanceof \App\Entity\Attribute\Instrument) {
+                continue;
             }
-            $this->entityManager->flush();
 
-            foreach ($data->instruments as $instrumentInput) {
-                $instrument = $this->instrumentRepository->find($instrumentInput->instrumentId);
-                if (!$instrument) {
-                    continue;
-                }
-
-                $skillLevel = SkillLevel::tryFrom($instrumentInput->skillLevel);
-                if (!$skillLevel) {
-                    continue;
-                }
-
-                $profileInstrument = new MusicianProfileInstrument();
-                $profileInstrument->instrument = $instrument;
-                $profileInstrument->skillLevel = $skillLevel;
-                $profile->addInstrument($profileInstrument);
+            $skillLevel = SkillLevel::tryFrom($instrumentInput->skillLevel);
+            if (!$skillLevel) {
+                continue;
             }
+
+            $profileInstrument = new MusicianProfileInstrument();
+            $profileInstrument->instrument = $instrument;
+            $profileInstrument->skillLevel = $skillLevel;
+            $profile->addInstrument($profileInstrument);
         }
 
-        // Styles (if provided)
-        if (!empty($data->styleIds) || $data->styleIds === []) {
-            foreach ($profile->styles->toArray() as $style) {
-                $profile->removeStyle($style);
-            }
+        foreach ($profile->styles->toArray() as $style) {
+            $profile->removeStyle($style);
+        }
 
-            foreach ($data->styleIds as $styleId) {
-                $style = $this->styleRepository->find($styleId);
-                if ($style) {
-                    $profile->addStyle($style);
-                }
+        foreach ($data->styleIds as $styleId) {
+            $style = $this->styleRepository->find($styleId);
+            if ($style instanceof \App\Entity\Attribute\Style) {
+                $profile->addStyle($style);
             }
         }
 

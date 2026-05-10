@@ -112,7 +112,7 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     /**
      * @var Collection<int, PublicationImage>
      */
-    #[ORM\OneToMany(mappedBy: "publication", targetEntity: PublicationImage::class)]
+    #[ORM\OneToMany(targetEntity: PublicationImage::class, mappedBy: "publication")]
     public Collection $images;
 
     #[Assert\NotNull(message: 'Vous devez ajouter une image de cover', groups: ['publication'])]

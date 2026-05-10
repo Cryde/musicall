@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceNoteUpdateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_update_title(): void
@@ -34,10 +34,6 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -73,10 +69,6 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note = $note;
-
         $content = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Updated content']]]]];
 
         $this->client->loginUser($user);
@@ -111,10 +103,6 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'title' => 'My Note',
             'position' => 0,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -234,9 +222,6 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -433,10 +418,6 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'title' => 'My Note',
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $note = $note;
-
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'PATCH',
@@ -462,10 +443,6 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
         ])->create();
-
-        $inactiveUser = $inactiveUser;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($inactiveUser);
         $this->client->jsonRequest(

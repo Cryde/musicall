@@ -18,10 +18,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class SendInactivityReminderCommandTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     private CommandTester $commandTester;
 
     protected function setUp(): void
@@ -93,7 +92,7 @@ class SendInactivityReminderCommandTest extends KernelTestCase
 
     public function test_command_skips_already_notified_users(): void
     {
-        $user = $this->createInactiveUser(90);
+        $this->createInactiveUser(90);
 
         // First run - should send
         $this->commandTester->execute([]);

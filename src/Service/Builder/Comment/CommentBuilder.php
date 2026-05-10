@@ -25,7 +25,7 @@ readonly class CommentBuilder
         return array_map(
             fn(Comment $entity): CommentResource => $this->buildItem(
                 $entity,
-                $entity->voteCache !== null ? ($userVotesByCacheId[$entity->voteCache->id] ?? null) : null,
+                $entity->voteCache instanceof \App\Entity\Metric\VoteCache ? ($userVotesByCacheId[$entity->voteCache->id] ?? null) : null,
             ),
             $entities,
         );

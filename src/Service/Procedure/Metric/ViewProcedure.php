@@ -27,7 +27,7 @@ class ViewProcedure
     public function process(ViewableInterface $viewable, Request $request, ?User $user = null): void
     {
         $viewCache = $viewable->viewCache;
-        if (!$viewCache) {
+        if (!$viewCache instanceof \App\Entity\Metric\ViewCache) {
             $viewCache = $this->viewCacheDirector->build();
             $viewable->viewCache = $viewCache;
             $this->entityManager->persist($viewCache);
@@ -36,13 +36,13 @@ class ViewProcedure
 
         $datetime = new \DateTime(self::DATE_VALIDITY_PERIOD);
 
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             $view = $this->viewRepository->findOneByUserAndPeriod($viewCache, $user, $datetime);
         } else {
             $view = $this->viewRepository->findOneByIdentifierAndPeriod($viewCache, $this->requestIdentifier->fromRequest($request), $datetime);
         }
 
-        if (!$view) {
+        if (!$view instanceof \App\Entity\Metric\View) {
             $view = $this->viewDirector->build(
                 $viewCache,
                 $this->requestIdentifier->fromRequest($request),
@@ -52,7 +52,7 @@ class ViewProcedure
             );
             $this->entityManager->persist($view);
             $this->entityManager->refresh($viewCache);
-            $viewCache->count = $viewCache->count + 1;
+            $viewCache->count += 1;
             $this->entityManager->flush();
         }
     }

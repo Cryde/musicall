@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class VideoPreviewGetTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     private const string VALID_VIDEO_ID = DummyYoutubeRepository::VIDEO_ID_RICK_ASTLEY;

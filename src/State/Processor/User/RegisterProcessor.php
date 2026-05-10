@@ -40,7 +40,7 @@ readonly class RegisterProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        if ($this->security->getUser()) {
+        if ($this->security->getUser() instanceof \Symfony\Component\Security\Core\User\UserInterface) {
             throw new UserAlreadyLoggedException('Vous êtes déjà connecté');
         }
 

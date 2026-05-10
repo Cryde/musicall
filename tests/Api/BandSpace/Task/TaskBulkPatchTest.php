@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class TaskBulkPatchTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_bulk_archive_marks_done_tasks_archived(): void
@@ -159,7 +159,7 @@ class TaskBulkPatchTest extends ApiTestCase
         $repo = self::getContainer()->get(TaskRepository::class);
         foreach ([$task1, $task2] as $proxy) {
             $reloaded = $repo->find($proxy->id);
-            $ids = array_map(fn($u) => (string) $u->id, $reloaded->assignees->toArray());
+            $ids = array_map(fn($u): string => (string) $u->id, $reloaded->assignees->toArray());
             $this->assertSame([(string) $assigneeB->id], $ids);
         }
     }

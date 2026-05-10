@@ -10,7 +10,7 @@ readonly class BandSpaceInvitationExistingUserEmail
 {
     private const string TEMPLATE_ID = '13';
 
-    public function __construct(private readonly MailerInterface $mailer)
+    public function __construct(private MailerInterface $mailer)
     {
     }
 

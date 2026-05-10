@@ -18,9 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceCategoryCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_create_category(): void
@@ -28,9 +28,6 @@ class FinanceCategoryCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -79,10 +76,6 @@ class FinanceCategoryCreateTest extends ApiTestCase
             'name' => 'Production',
             'position' => 0,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $parentCategory = $parentCategory;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -178,9 +171,6 @@ class FinanceCategoryCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'POST',
@@ -202,9 +192,6 @@ class FinanceCategoryCreateTest extends ApiTestCase
             'status' => MembershipStatus::Left,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -221,9 +208,6 @@ class FinanceCategoryCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

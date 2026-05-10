@@ -37,10 +37,10 @@ readonly class MusicianAnnounceBuilder
         $dto = new MusicianAnnounceDTO();
         $dto->id = (string) $entity->id;
         $dto->creationDatetime = $entity->creationDatetime;
-        $dto->type = (int) $entity->type;
+        $dto->type = $entity->type;
         $dto->instrument = $this->buildInstrument($entity->instrument);
         $dto->styles = $this->buildStyles($entity->styles->toArray());
-        $dto->locationName = (string) $entity->locationName;
+        $dto->locationName = $entity->locationName;
         $dto->note = $entity->note;
         $dto->author = $this->buildAuthor($entity->author);
 
@@ -51,7 +51,7 @@ readonly class MusicianAnnounceBuilder
     {
         $dto = new Instrument();
         $dto->id = (string) $entity->id;
-        $dto->musicianName = (string) $entity->musicianName;
+        $dto->musicianName = $entity->musicianName;
 
         return $dto;
     }
@@ -65,7 +65,7 @@ readonly class MusicianAnnounceBuilder
         return array_map(function (StyleEntity $entity): Style {
             $dto = new Style();
             $dto->id = (string) $entity->id;
-            $dto->name = (string) $entity->name;
+            $dto->name = $entity->name;
 
             return $dto;
         }, $entities);
@@ -74,12 +74,12 @@ readonly class MusicianAnnounceBuilder
     private function buildAuthor(User $user): Author
     {
         $dto = new Author();
-        $dto->id = (string) $user->id;
+        $dto->id = $user->id;
         $dto->username = $user->username;
         $dto->deletionDatetime = $user->deletionDatetime;
-        $dto->hasMusicianProfile = $user->musicianProfile !== null;
+        $dto->hasMusicianProfile = $user->musicianProfile instanceof \App\Entity\Musician\MusicianProfile;
 
-        if ($user->profilePicture) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');

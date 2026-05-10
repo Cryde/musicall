@@ -37,7 +37,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): PublicationVoteSummary
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug'], 'status' => Publication::STATUS_ONLINE]);
-        if (!$publication) {
+        if (!$publication instanceof \App\Entity\Publication) {
             throw new PublicationNotFoundException('Publication inexistante');
         }
         /** @var Request $request */
@@ -61,7 +61,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
         $summary->upvotes = $voteCache->upvoteCount ?? 0;
         $summary->downvotes = $voteCache->downvoteCount ?? 0;
 
-        if ($voteCache) {
+        if ($voteCache instanceof \App\Entity\Metric\VoteCache) {
             /** @var User|null $user */
             $user = $this->security->getUser();
             if ($user) {
@@ -69,7 +69,7 @@ readonly class PublicationVoteProcessor implements ProcessorInterface
                 $summary->userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
-                if ($request) {
+                if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
                     $summary->userVote = $vote?->value;

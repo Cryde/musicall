@@ -48,7 +48,7 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
             ->where('n.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace);
 
-        if ($parent !== null) {
+        if ($parent instanceof \App\Entity\BandSpace\BandSpaceNote) {
             $qb->andWhere('n.parent = :parent')
                 ->setParameter('parent', $parent);
         } else {

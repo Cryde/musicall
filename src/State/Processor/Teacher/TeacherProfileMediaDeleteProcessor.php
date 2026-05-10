@@ -26,7 +26,7 @@ readonly class TeacherProfileMediaDeleteProcessor implements ProcessorInterface
         /** @var TeacherProfileMedia $data */
         $media = $this->mediaRepository->find($data->id);
 
-        if ($media) {
+        if ($media instanceof \App\Entity\Teacher\TeacherProfileMedia) {
             $this->entityManager->remove($media);
             $this->entityManager->flush();
         }

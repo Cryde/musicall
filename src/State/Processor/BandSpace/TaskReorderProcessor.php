@@ -40,7 +40,7 @@ readonly class TaskReorderProcessor implements ProcessorInterface
 
         $requestedIds = array_column($data->positions, 'id');
         $foundTasks = $this->taskRepository->findByIdsAndBandSpace($requestedIds, $bandSpace);
-        $foundIds = array_map(fn($task): string => (string) $task->id, $foundTasks);
+        $foundIds = array_map(fn(\App\Entity\BandSpace\Task $task): string => (string) $task->id, $foundTasks);
 
         $missingIds = array_diff($requestedIds, $foundIds);
         if (count($missingIds) > 0) {

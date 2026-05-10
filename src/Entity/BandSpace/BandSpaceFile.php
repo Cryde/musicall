@@ -16,7 +16,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceFileRepository::class)]
 #[ORM\Table(name: 'band_space_file')]
-#[ORM\Index(columns: ['band_space_id', 'archive_datetime'], name: 'idx_band_space_file_band_archived')]
+#[ORM\Index(name: 'idx_band_space_file_band_archived', columns: ['band_space_id', 'archive_datetime'])]
 class BandSpaceFile
 {
     #[ORM\Id]

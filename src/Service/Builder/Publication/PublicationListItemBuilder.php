@@ -47,12 +47,12 @@ readonly class PublicationListItemBuilder
     {
         $item = new PublicationListItem();
         $item->id = (int) $publication->id;
-        $item->title = (string) $publication->title;
+        $item->title = $publication->title;
         $item->slug = $publication->slug;
         $item->subCategory = $this->buildSubCategory($publication->subCategory);
         $item->author = $this->buildAuthor($publication->author);
         $publicationDatetime = $publication->publicationDatetime;
-        assert($publicationDatetime !== null);
+        assert($publicationDatetime instanceof \DateTimeInterface);
         $item->publicationDatetime = $publicationDatetime;
         $item->cover = $this->buildCoverUrl($publication->cover);
         $item->typeLabel = $publication->getTypeLabel();
@@ -70,8 +70,8 @@ readonly class PublicationListItemBuilder
     {
         $dto = new SubCategory();
         $dto->id = (int) $subCategory->id;
-        $dto->title = (string) $subCategory->title;
-        $dto->slug = (string) $subCategory->slug;
+        $dto->title = $subCategory->title;
+        $dto->slug = $subCategory->slug;
         $dto->typeLabel = $subCategory->getTypeLabel();
         $dto->isCourse = $subCategory->getIsCourse();
 
@@ -81,7 +81,7 @@ readonly class PublicationListItemBuilder
     private function buildAuthor(User $user): Author
     {
         $dto = new Author();
-        $dto->username = (string) $user->username;
+        $dto->username = $user->username;
         $dto->deletionDatetime = $user->deletionDatetime;
 
         return $dto;
@@ -99,7 +99,7 @@ readonly class PublicationListItemBuilder
     private function resolveUserVote(Publication $publication): ?int
     {
         $voteCache = $publication->voteCache;
-        if (!$voteCache) {
+        if (!$voteCache instanceof \App\Entity\Metric\VoteCache) {
             return null;
         }
 
@@ -112,7 +112,7 @@ readonly class PublicationListItemBuilder
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request) {
+        if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
             $identifier = $this->requestIdentifier->fromRequest($request);
             $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
 

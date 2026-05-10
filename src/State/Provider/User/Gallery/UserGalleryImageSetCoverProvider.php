@@ -33,7 +33,7 @@ readonly class UserGalleryImageSetCoverProvider implements ProviderInterface
 
         /** @var User $user */
         $user = $this->security->getUser();
-        if (!$image = $this->galleryImageRepository->find($uriVariables['id'])) {
+        if (!($image = $this->galleryImageRepository->find($uriVariables['id'])) instanceof \App\Entity\Image\GalleryImage) {
             throw new NotFoundHttpException('Image non trouvee');
         }
 

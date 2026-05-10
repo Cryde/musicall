@@ -25,9 +25,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class TeacherProfileEditTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_create_teacher_profile(): void
@@ -334,7 +334,7 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
 
     public function test_update_teacher_profile(): void
     {
-        $teacherProfileRepository = self::getContainer()->get(TeacherProfileRepository::class);
+        self::getContainer()->get(TeacherProfileRepository::class);
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
 
         $user = UserFactory::new()->asBaseUser()->create();

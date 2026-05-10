@@ -34,7 +34,7 @@ readonly class TaskActivityBuilder
 
     public function buildItem(Task $task, BandSpaceActivity $entity): TaskActivityResource
     {
-        if ($entity->actor === null) {
+        if (!$entity->actor instanceof \App\Entity\User) {
             throw new \LogicException('Cannot build TaskActivityResource for a BandSpaceActivity with a null actor.');
         }
 

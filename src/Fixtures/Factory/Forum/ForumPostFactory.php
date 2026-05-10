@@ -27,9 +27,6 @@ final class ForumPostFactory extends PersistentObjectFactory
         ];
     }
 
-    /**
-     * @param ForumTopic $topic
-     */
     public function withTopic(ForumTopic $topic): self
     {
         return $this->with(['topic' => $topic]);

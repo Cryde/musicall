@@ -38,12 +38,12 @@ readonly class TeacherProfileBuilder
         $dto = new PublicTeacherProfile();
 
         $dto->username = $user->username;
-        $dto->userId = (string) $user->id;
+        $dto->userId = $user->id;
         $dto->creationDatetime = $profile->creationDatetime;
         $dto->updateDatetime = $profile->updateDatetime;
 
         // Profile picture
-        if ($user->profilePicture) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
@@ -82,7 +82,7 @@ readonly class TeacherProfileBuilder
         return array_values(array_map(function (TeacherProfileInstrument $instrument): PublicTeacherProfileInstrument {
             $dto = new PublicTeacherProfileInstrument();
             $dto->instrumentId = (string) $instrument->instrument->id;
-            $dto->instrumentName = (string) $instrument->instrument->name;
+            $dto->instrumentName = $instrument->instrument->name;
 
             return $dto;
         }, $instruments));
@@ -97,7 +97,7 @@ readonly class TeacherProfileBuilder
         return array_values(array_map(function (Style $style): PublicTeacherProfileStyle {
             $dto = new PublicTeacherProfileStyle();
             $dto->id = (string) $style->id;
-            $dto->name = (string) $style->name;
+            $dto->name = $style->name;
 
             return $dto;
         }, $styles));

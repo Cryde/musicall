@@ -35,7 +35,7 @@ readonly class BandSpaceNoteCollectionProvider implements ProviderInterface
         }
 
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships((string) $uriVariables['bandSpaceId']);
-        if (!$bandSpace) {
+        if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
             throw new NotFoundHttpException('Band space not found');
         }
 

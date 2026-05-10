@@ -50,12 +50,12 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
         $parent = null;
         if ($data->parentId !== null && $data->parentId !== '') {
             $parent = $this->folderRepository->findOneByIdAndBandSpace($data->parentId, $bandSpace);
-            if ($parent === null) {
+            if (!$parent instanceof \App\Entity\BandSpace\BandSpaceFolder) {
                 throw new BadRequestHttpException('Dossier parent introuvable dans ce Band Space');
             }
         }
 
-        $depth = $parent !== null ? $this->folderRepository->computeDepth($parent) + 1 : 0;
+        $depth = $parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? $this->folderRepository->computeDepth($parent) + 1 : 0;
         if ($depth >= self::MAX_DEPTH) {
             throw new UnprocessableEntityHttpException(sprintf('La profondeur maximale (%d) est dépassée', self::MAX_DEPTH));
         }
@@ -81,7 +81,7 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
             actor: $user,
             payload: [
                 'name' => $folder->name,
-                'parent_id' => $parent !== null ? (string) $parent->id : null,
+                'parent_id' => $parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $parent->id : null,
             ],
         );
         $this->entityManager->flush();

@@ -41,7 +41,7 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships((string) $uriVariables['bandSpaceId']);
-        if (!$bandSpace) {
+        if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
             throw new NotFoundHttpException('Band space not found');
         }
 
@@ -50,7 +50,7 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
         }
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
-        if (!$note) {
+        if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
             throw new NotFoundHttpException('Note not found');
         }
 

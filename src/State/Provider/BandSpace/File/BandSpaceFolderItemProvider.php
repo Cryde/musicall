@@ -36,7 +36,7 @@ readonly class BandSpaceFolderItemProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($folder === null) {
+        if (!$folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             throw new NotFoundHttpException('Dossier introuvable');
         }
 

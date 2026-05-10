@@ -44,7 +44,7 @@ readonly class FinanceEntryCollectionProvider implements ProviderInterface
 
         $entries = $this->financeEntryRepository->findByBandSpace($bandSpace, $from, $to);
 
-        $entriesWithAmount = array_filter($entries, fn ($e) => $e->amount !== null);
+        $entriesWithAmount = array_filter($entries, fn (\App\Entity\BandSpace\FinanceEntry $e): bool => $e->amount !== null);
         $splitSums = $this->financeEntrySplitRepository->getSumsByEntries($entriesWithAmount);
 
         $splitWarnings = [];

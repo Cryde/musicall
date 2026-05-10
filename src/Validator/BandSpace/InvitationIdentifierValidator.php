@@ -35,7 +35,7 @@ class InvitationIdentifierValidator extends ConstraintValidator
             }
         } else {
             $user = $this->userRepository->findOneBy(['username' => $identifier]);
-            if (!$user) {
+            if (!$user instanceof \App\Entity\User) {
                 $this->context->buildViolation($constraint->usernameNotFoundMessage)
                     ->setCode(InvitationIdentifier::USERNAME_NOT_FOUND_ERROR)
                     ->addViolation();

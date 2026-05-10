@@ -13,7 +13,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceFolderRepository::class)]
 #[ORM\Table(name: 'band_space_folder')]
-#[ORM\Index(columns: ['band_space_id', 'parent_id'], name: 'idx_band_space_folder_parent')]
+#[ORM\Index(name: 'idx_band_space_folder_parent', columns: ['band_space_id', 'parent_id'])]
 #[ORM\UniqueConstraint(name: 'unique_band_space_folder_sibling_name', columns: ['band_space_id', 'parent_id', 'name'])]
 class BandSpaceFolder
 {

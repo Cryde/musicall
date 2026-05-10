@@ -26,7 +26,7 @@ readonly class TeacherProfileMediaCreateProcedure
     {
         // URL is already validated by SupportedMediaUrl constraint
         $parsed = $this->mediaUrlParser->parse($mediaDto->url);
-        if ($parsed === null) {
+        if (!$parsed instanceof \App\Service\Musician\MediaUrlParser\ParsedMediaUrl) {
             throw new \RuntimeException('Invalid media URL');
         }
 

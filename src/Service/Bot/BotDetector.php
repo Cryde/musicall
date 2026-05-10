@@ -6,7 +6,7 @@ class BotDetector
 {
     public function isBot(string $userAgent): bool
     {
-        if (!$userAgent) {
+        if ($userAgent === '' || $userAgent === '0') {
             return false;
         }
 

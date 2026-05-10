@@ -24,7 +24,7 @@ readonly class AdminGalleryActionProvider implements ProviderInterface
     {
         $gallery = $this->galleryRepository->find($uriVariables['id']);
 
-        if (!$gallery) {
+        if (!$gallery instanceof \App\Entity\Gallery) {
             throw new NotFoundHttpException('Gallery not found');
         }
 

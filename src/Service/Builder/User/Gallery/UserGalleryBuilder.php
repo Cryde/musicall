@@ -32,11 +32,11 @@ readonly class UserGalleryBuilder
 
         $dto = new UserGallery();
         $dto->id = (int) $gallery->id;
-        $dto->title = (string) $gallery->title;
+        $dto->title = $gallery->title;
         $dto->slug = $gallery->slug;
         $dto->description = $gallery->description;
         $dto->creationDatetime = $creationDatetime;
-        $dto->status = (int) $gallery->status;
+        $dto->status = $gallery->status;
         $dto->statusLabel = self::STATUS_LABELS[$gallery->status] ?? 'Inconnu';
         $dto->imageCount = $gallery->getImageCount();
         $dto->coverImageUrl = $this->getCoverImageUrl($gallery);
@@ -48,9 +48,9 @@ readonly class UserGalleryBuilder
     {
         $dto = new UserGalleryEdit();
         $dto->id = (int) $gallery->id;
-        $dto->title = (string) $gallery->title;
+        $dto->title = $gallery->title;
         $dto->description = $gallery->description;
-        $dto->status = (int) $gallery->status;
+        $dto->status = $gallery->status;
         $dto->coverImageUrl = $this->getCoverImageUrl($gallery);
         $dto->coverImageId = $gallery->coverImage?->id;
 
@@ -64,15 +64,15 @@ readonly class UserGalleryBuilder
 
         $dto = new UserGalleryPreview();
         $dto->id = (int) $gallery->id;
-        $dto->title = (string) $gallery->title;
+        $dto->title = $gallery->title;
         $dto->slug = (string) $gallery->slug;
         $dto->description = $gallery->description;
-        $dto->status = (int) $gallery->status;
+        $dto->status = $gallery->status;
         $dto->statusLabel = self::STATUS_LABELS[$gallery->status] ?? 'Inconnu';
         $dto->creationDatetime = $creationDatetime;
         $dto->authorUsername = $author->username;
         $dto->images = array_map(
-            fn (GalleryImage $image) => $this->getImageSizes($image),
+            fn (GalleryImage $image): array => $this->getImageSizes($image),
             $gallery->images->toArray()
         );
 
@@ -91,7 +91,7 @@ readonly class UserGalleryBuilder
     private function getCoverImageUrl(Gallery $gallery): ?string
     {
         $coverImage = $gallery->coverImage;
-        if (!$coverImage) {
+        if (!$coverImage instanceof \App\Entity\Image\GalleryImage) {
             return null;
         }
 

@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserGalleryImageTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     // ============ GET COLLECTION TESTS ============
@@ -46,8 +46,8 @@ class UserGalleryImageTest extends ApiTestCase
             'author' => $user,
             'status' => Gallery::STATUS_DRAFT,
         ]);
-        $image1 = GalleryImageFactory::new(['gallery' => $gallery])->create();
-        $image2 = GalleryImageFactory::new(['gallery' => $gallery])->create();
+        GalleryImageFactory::new(['gallery' => $gallery])->create();
+        GalleryImageFactory::new(['gallery' => $gallery])->create();
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/images');

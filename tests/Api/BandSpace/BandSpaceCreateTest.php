@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function testCreateBandSpaceSuccess(): void
@@ -29,8 +29,6 @@ class BandSpaceCreateTest extends ApiTestCase
         // Create an existing band space for this user to verify multiple band spaces work
         $existingBandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $existingBandSpace, 'user' => $user])->create();
-
-        $user = $user;
 
         // Verify one band space exists initially
         $result = $bandSpaceRepository->findByUser($user);
@@ -51,7 +49,7 @@ class BandSpaceCreateTest extends ApiTestCase
         $result = $bandSpaceRepository->findByUser($user);
         $this->assertCount(2, $result);
 
-        $bandSpace = array_find($result, fn($bs) => $bs->name === 'The Rockers');
+        $bandSpace = array_find($result, fn($bs): bool => $bs->name === 'The Rockers');
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpace',
             '@id' => '/api/band_spaces/' . $bandSpace->id,
@@ -72,7 +70,6 @@ class BandSpaceCreateTest extends ApiTestCase
     public function testCreateBandSpaceWithoutNameFails(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
-        $user = $user;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

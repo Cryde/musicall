@@ -15,9 +15,9 @@ use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceCategoryUpdateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_update_category_name(): void
@@ -32,10 +32,6 @@ class FinanceCategoryUpdateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -78,10 +74,6 @@ class FinanceCategoryUpdateTest extends ApiTestCase
             'name' => 'Clips',
             'position' => 0,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

@@ -14,7 +14,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceFileShareRepository::class)]
 #[ORM\Table(name: 'band_space_file_share')]
-#[ORM\Index(columns: ['band_space_file_id', 'revocation_datetime'], name: 'idx_band_space_file_share_active')]
+#[ORM\Index(name: 'idx_band_space_file_share_active', columns: ['band_space_file_id', 'revocation_datetime'])]
 class BandSpaceFileShare
 {
     #[ORM\Id]

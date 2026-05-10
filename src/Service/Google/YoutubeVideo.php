@@ -23,7 +23,7 @@ readonly class YoutubeVideo
      */
     public function getVideoInfo(string $videoUrl): YoutubeVideoInfo
     {
-        if (!$videoId = $this->youtubeUrlHelper->getVideoId($videoUrl)) {
+        if ((($videoId = $this->youtubeUrlHelper->getVideoId($videoUrl))) === '' || (($videoId = $this->youtubeUrlHelper->getVideoId($videoUrl))) === '0') {
             throw new YoutubeVideoNotFoundException('Invalid YouTube URL: ' . $videoUrl);
         }
 

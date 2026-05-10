@@ -31,7 +31,7 @@ readonly class PublicationProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
-        if (!$publication) {
+        if (!$publication instanceof \App\Entity\Publication) {
             throw new PublicationNotFoundException('Publication inexistante');
         }
 
@@ -47,7 +47,7 @@ readonly class PublicationProvider implements ProviderInterface
         if ($publication->status === Publication::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
-            if ($request = $this->requestStack->getCurrentRequest()) {
+            if (($request = $this->requestStack->getCurrentRequest()) instanceof \Symfony\Component\HttpFoundation\Request) {
                 $this->viewProcedure->process($publication, $request, $user);
             }
         }

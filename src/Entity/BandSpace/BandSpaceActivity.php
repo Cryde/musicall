@@ -14,8 +14,8 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceActivityRepository::class)]
 #[ORM\Table(name: 'band_space_activity')]
-#[ORM\Index(columns: ['band_space_id', 'creation_datetime'], name: 'idx_band_space_activity_feed')]
-#[ORM\Index(columns: ['band_space_id', 'module', 'resource_id', 'creation_datetime'], name: 'idx_band_space_activity_resource')]
+#[ORM\Index(name: 'idx_band_space_activity_feed', columns: ['band_space_id', 'creation_datetime'])]
+#[ORM\Index(name: 'idx_band_space_activity_resource', columns: ['band_space_id', 'module', 'resource_id', 'creation_datetime'])]
 class BandSpaceActivity
 {
     #[ORM\Id]

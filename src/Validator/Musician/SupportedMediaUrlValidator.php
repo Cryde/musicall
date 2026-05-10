@@ -28,7 +28,7 @@ class SupportedMediaUrlValidator extends ConstraintValidator
             return;
         }
 
-        if ($this->mediaUrlParser->parse($value) === null) {
+        if (!$this->mediaUrlParser->parse($value) instanceof \App\Service\Musician\MediaUrlParser\ParsedMediaUrl) {
             $this->context->buildViolation($constraint->message)
                 ->setCode(self::ERROR_CODE)
                 ->addViolation();

@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MusicianAnnounceDeleteCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_delete_musician_announces(): void
@@ -31,8 +31,6 @@ class MusicianAnnounceDeleteCollectionTest extends ApiTestCase
             'type' => 1, // type musician
             'styles' => [$style1]
         ]);
-
-        $user1 = $user1;
 
         $this->client->loginUser($user1);
         $this->client->request('DELETE', '/api/user/musician/announces/' . $user1Announce1->id);
@@ -56,8 +54,6 @@ class MusicianAnnounceDeleteCollectionTest extends ApiTestCase
             'type' => 1, // type musician
             'styles' => [$style1]
         ]);
-
-        $user2 = $user2;
 
         $this->client->loginUser($user2);
         $this->client->request('DELETE', '/api/user/musician/announces/' . $user1Announce1->id);

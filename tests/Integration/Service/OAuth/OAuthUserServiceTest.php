@@ -17,10 +17,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class OAuthUserServiceTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     protected function setUp(): void
     {
         self::bootKernel();
@@ -202,7 +201,7 @@ class OAuthUserServiceTest extends KernelTestCase
         $mock->expects($this->once())
             ->method('importFromUrl')
             ->with(
-                $this->callback(fn ($user) => $user->email === 'withpicture@example.com'),
+                $this->callback(fn ($user): bool => $user->email === 'withpicture@example.com'),
                 'https://example.com/picture.jpg'
             );
 

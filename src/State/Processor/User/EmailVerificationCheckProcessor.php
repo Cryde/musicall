@@ -41,7 +41,7 @@ readonly class EmailVerificationCheckProcessor implements ProcessorInterface
         try {
             $this->emailVerificationService->verify($user, $data->code);
         } catch (EmailVerificationException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+            throw new BadRequestHttpException($e->getMessage(), $e);
         }
 
         $this->eventDispatcher->dispatch(new UserConfirmedEvent($user));

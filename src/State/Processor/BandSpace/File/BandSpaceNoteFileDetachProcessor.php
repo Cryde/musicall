@@ -47,17 +47,17 @@ readonly class BandSpaceNoteFileDetachProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $note = $this->noteRepository->findOneByIdAndBandSpace((string) $uriVariables['noteId'], $bandSpace);
-        if ($note === null) {
+        if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
             throw new NotFoundHttpException('Note introuvable');
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
         $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'note', (string) $note->id);
-        if ($attachment === null) {
+        if (!$attachment instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
             throw new NotFoundHttpException("Le fichier n'est pas attaché à cette note");
         }
 

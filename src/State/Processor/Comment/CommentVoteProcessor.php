@@ -37,7 +37,7 @@ readonly class CommentVoteProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CommentVoteSummary
     {
         $comment = $this->commentRepository->find($uriVariables['id']);
-        if (!$comment) {
+        if (!$comment instanceof \App\Entity\Comment\Comment) {
             throw new CommentNotFoundException('Commentaire inexistant');
         }
         /** @var Request $request */
@@ -61,7 +61,7 @@ readonly class CommentVoteProcessor implements ProcessorInterface
         $summary->upvotes = $voteCache->upvoteCount ?? 0;
         $summary->downvotes = $voteCache->downvoteCount ?? 0;
 
-        if ($voteCache) {
+        if ($voteCache instanceof \App\Entity\Metric\VoteCache) {
             /** @var User|null $user */
             $user = $this->security->getUser();
             if ($user) {
@@ -69,7 +69,7 @@ readonly class CommentVoteProcessor implements ProcessorInterface
                 $summary->userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
-                if ($request) {
+                if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
                     $summary->userVote = $vote?->value;

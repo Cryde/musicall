@@ -41,7 +41,7 @@ readonly class BandSpaceFileUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 

@@ -31,7 +31,7 @@ readonly class TaskCommentBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->task->bandSpace->id;
         $dto->taskId = (string) $entity->task->id;
-        $dto->authorId = (string) $entity->author->id;
+        $dto->authorId = $entity->author->id;
         $dto->authorUsername = $entity->author->username;
         $dto->authorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->author);
         $dto->content = $entity->content;

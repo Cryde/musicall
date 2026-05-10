@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceEntryGetItemTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_item(): void
@@ -46,11 +46,6 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'date' => new \DateTime('2024-01-15'),
             'creationDatetime' => new \DateTime('2024-01-15 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -88,9 +83,6 @@ class FinanceEntryGetItemTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/nonexistent-id');
 
@@ -115,10 +107,6 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'label' => 'Mixage',
             'amount' => 50000,
         ])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -149,10 +137,6 @@ class FinanceEntryGetItemTest extends ApiTestCase
             'label' => 'Mixage',
             'amount' => 50000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);

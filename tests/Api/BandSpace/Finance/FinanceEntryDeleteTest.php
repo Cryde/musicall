@@ -23,9 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceEntryDeleteTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_delete_entry(): void
@@ -50,10 +50,6 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'amount' => 50000,
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
         $entryId = (string) $entry->id;
 
         $this->client->loginUser($user);
@@ -97,10 +93,6 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
 
@@ -136,10 +128,6 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
 
@@ -166,10 +154,6 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'scope' => FinanceEntryScope::Band,
             'amount' => 50000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);
@@ -212,10 +196,6 @@ class FinanceEntryDeleteTest extends ApiTestCase
             'member' => $ownerMembership,
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
 
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id);

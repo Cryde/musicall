@@ -36,7 +36,7 @@ readonly class FinanceRecurrenceItemProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$recurrence) {
+        if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence) {
             throw new NotFoundHttpException('Récurrence introuvable');
         }
 

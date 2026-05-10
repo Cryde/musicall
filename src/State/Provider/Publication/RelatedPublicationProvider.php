@@ -27,7 +27,7 @@ readonly class RelatedPublicationProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
-        if (!$publication) {
+        if (!$publication instanceof \App\Entity\Publication) {
             return [];
         }
 

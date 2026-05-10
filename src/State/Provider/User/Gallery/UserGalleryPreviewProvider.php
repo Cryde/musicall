@@ -36,7 +36,7 @@ readonly class UserGalleryPreviewProvider implements ProviderInterface
         $user = $this->security->getUser();
 
         $gallery = $this->galleryRepository->find($uriVariables['id']);
-        if (!$gallery) {
+        if (!$gallery instanceof \App\Entity\Gallery) {
             throw new NotFoundHttpException('Gallery not found');
         }
 

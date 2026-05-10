@@ -11,9 +11,9 @@ use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserNotificationPreferenceGetTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_notification_preferences_returns_defaults_when_no_entity_exists(): void

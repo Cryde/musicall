@@ -19,7 +19,7 @@ use App\State\Processor\Forum\ForumPostVoteProcessor;
 )]
 class ForumPostVoteSummary
 {
-    #[ApiProperty(identifier: true, readable: false)]
+    #[ApiProperty(readable: false, identifier: true)]
     public string $id;
     public int $upvotes = 0;
     public int $downvotes = 0;

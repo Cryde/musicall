@@ -20,7 +20,7 @@ class UserNotificationPreference
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     public ?string $id = null;
 
-    #[ORM\OneToOne(inversedBy: 'notificationPreference', targetEntity: User::class)]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'notificationPreference')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     public User $user;
 

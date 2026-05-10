@@ -12,48 +12,48 @@ readonly class UserNotificationPreferenceChecker
     {
         $preference = $user->notificationPreference;
 
-        return $preference === null || $preference->siteNews;
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->siteNews;
     }
 
     public function canReceiveWeeklyRecapNotification(User $user): bool
     {
         $preference = $user->notificationPreference;
 
-        return $preference === null || $preference->weeklyRecap;
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->weeklyRecap;
     }
 
     public function canReceiveMessageNotification(User $user): bool
     {
         $preference = $user->notificationPreference;
 
-        return $preference === null || $preference->messageReceived;
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->messageReceived;
     }
 
     public function canReceivePublicationCommentNotification(User $user): bool
     {
         $preference = $user->notificationPreference;
 
-        return $preference === null || $preference->publicationComment;
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->publicationComment;
     }
 
     public function canReceiveForumReplyNotification(User $user): bool
     {
         $preference = $user->notificationPreference;
 
-        return $preference === null || $preference->forumReply;
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->forumReply;
     }
 
     public function canReceiveMarketingNotification(User $user): bool
     {
         $preference = $user->notificationPreference;
 
-        return $preference !== null && $preference->marketing;
+        return $preference instanceof \App\Entity\User\UserNotificationPreference && $preference->marketing;
     }
 
     public function canReceiveActivityReminderNotification(User $user): bool
     {
         $preference = $user->notificationPreference;
 
-        return $preference === null || $preference->activityReminder;
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->activityReminder;
     }
 }

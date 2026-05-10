@@ -15,10 +15,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicationVideoCreationProcedureTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     private const string VIDEO_URL = 'https://www.youtube.com/watch?v=' . DummyYoutubeRepository::VIDEO_ID_PROCEDURE_TEST;
 
     protected function setUp(): void

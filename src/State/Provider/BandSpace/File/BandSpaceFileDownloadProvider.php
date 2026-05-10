@@ -39,10 +39,10 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
-        if ($file->currentVersion === null) {
+        if (!$file->currentVersion instanceof \App\Entity\BandSpace\BandSpaceFileVersion) {
             throw new NotFoundHttpException('Aucune version disponible pour ce fichier');
         }
 

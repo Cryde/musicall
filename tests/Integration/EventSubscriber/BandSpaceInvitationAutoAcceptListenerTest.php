@@ -19,10 +19,9 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_auto_accepts_pending_invitation_on_registration(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();

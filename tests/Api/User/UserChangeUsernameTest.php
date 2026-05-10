@@ -13,11 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserChangeUsernameTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
-    use ResetDatabase;
-    use Factories;
 
     private const array SERVER_PARAMS = ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'];
 

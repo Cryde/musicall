@@ -26,7 +26,7 @@ class VoteProcedure
     public function process(VotableInterface $votable, Request $request, int $value, ?User $user = null): void
     {
         $voteCache = $votable->voteCache;
-        if (!$voteCache) {
+        if (!$voteCache instanceof \App\Entity\Metric\VoteCache) {
             $voteCache = $this->voteCacheDirector->build();
             $votable->voteCache = $voteCache;
             $this->entityManager->persist($voteCache);
@@ -35,13 +35,13 @@ class VoteProcedure
 
         $identifier = $this->requestIdentifier->fromRequest($request);
 
-        if ($user) {
+        if ($user instanceof \App\Entity\User) {
             $vote = $this->voteRepository->findOneByUserAndVoteCache($user, $voteCache);
         } else {
             $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
         }
 
-        if ($vote) {
+        if ($vote instanceof \App\Entity\Metric\Vote) {
             if ($vote->value === $value) {
                 // Toggle off — remove vote
                 $this->adjustCacheCount($voteCache, $vote->value, -1);
@@ -72,9 +72,9 @@ class VoteProcedure
     private function adjustCacheCount(VoteCache $voteCache, int $value, int $delta): void
     {
         if ($value === 1) {
-            $voteCache->upvoteCount = $voteCache->upvoteCount + $delta;
+            $voteCache->upvoteCount += $delta;
         } else {
-            $voteCache->downvoteCount = $voteCache->downvoteCount + $delta;
+            $voteCache->downvoteCount += $delta;
         }
     }
 }

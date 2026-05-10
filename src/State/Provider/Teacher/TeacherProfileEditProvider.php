@@ -56,7 +56,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
         $dto->offersTrial = $profile->offersTrial;
         $dto->trialPrice = $profile->trialPrice;
 
-        $dto->locations = array_values(array_map(function ($location): TeacherProfileLocation {
+        $dto->locations = array_values(array_map(function (\App\Entity\Teacher\TeacherProfileLocation $location): TeacherProfileLocation {
             $item = new TeacherProfileLocation();
             /** @var string|null $locationId */
             $locationId = $location->id;
@@ -72,23 +72,23 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->locations->toArray()));
 
-        $dto->instruments = array_values(array_map(function ($instrument): TeacherProfileInstrument {
+        $dto->instruments = array_values(array_map(function (\App\Entity\Teacher\TeacherProfileInstrument $instrument): TeacherProfileInstrument {
             $item = new TeacherProfileInstrument();
             $item->instrumentId = (string) $instrument->instrument->id;
-            $item->instrumentName = (string) $instrument->instrument->musicianName;
+            $item->instrumentName = $instrument->instrument->musicianName;
 
             return $item;
         }, $profile->instruments->toArray()));
 
-        $dto->styles = array_values(array_map(function ($style): TeacherProfileStyle {
+        $dto->styles = array_values(array_map(function (\App\Entity\Attribute\Style $style): TeacherProfileStyle {
             $item = new TeacherProfileStyle();
             $item->id = (string) $style->id;
-            $item->name = (string) $style->name;
+            $item->name = $style->name;
 
             return $item;
         }, $profile->styles->toArray()));
 
-        $dto->pricing = array_values(array_map(function ($pricing): TeacherProfilePricing {
+        $dto->pricing = array_values(array_map(function (\App\Entity\Teacher\TeacherProfilePricing $pricing): TeacherProfilePricing {
             $item = new TeacherProfilePricing();
             /** @var string|null $pricingId */
             $pricingId = $pricing->id;
@@ -99,7 +99,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->pricing->toArray()));
 
-        $dto->availability = array_values(array_map(function ($availability): TeacherProfileAvailability {
+        $dto->availability = array_values(array_map(function (\App\Entity\Teacher\TeacherAvailability $availability): TeacherProfileAvailability {
             $item = new TeacherProfileAvailability();
             /** @var string|null $availabilityId */
             $availabilityId = $availability->id;
@@ -111,7 +111,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->availability->toArray()));
 
-        $dto->packages = array_values(array_map(function ($package): TeacherProfilePackage {
+        $dto->packages = array_values(array_map(function (\App\Entity\Teacher\TeacherProfilePackage $package): TeacherProfilePackage {
             $item = new TeacherProfilePackage();
             /** @var string|null $packageId */
             $packageId = $package->id;
@@ -124,7 +124,7 @@ readonly class TeacherProfileEditProvider implements ProviderInterface
             return $item;
         }, $profile->packages->toArray()));
 
-        $dto->socialLinks = array_values(array_map(function ($socialLink): TeacherProfileSocialLink {
+        $dto->socialLinks = array_values(array_map(function (\App\Entity\Teacher\TeacherSocialLink $socialLink): TeacherProfileSocialLink {
             $item = new TeacherProfileSocialLink();
             $item->id = $socialLink->id;
             $item->platform = $socialLink->platform->value;

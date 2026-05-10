@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceRecurrenceGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_recurrences(): void
@@ -62,12 +62,6 @@ class FinanceRecurrenceGetCollectionTest extends ApiTestCase
             'isActive' => true,
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-        $recurrence1 = $recurrence1;
-        $recurrence2 = $recurrence2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences');
@@ -128,9 +122,6 @@ class FinanceRecurrenceGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences');
 
@@ -146,9 +137,6 @@ class FinanceRecurrenceGetCollectionTest extends ApiTestCase
             'user' => $user,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences');

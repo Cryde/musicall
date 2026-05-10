@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\Message;
 
 use App\Entity\Message\MessageThread;

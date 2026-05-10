@@ -32,9 +32,6 @@ final class ForumTopicFactory extends PersistentObjectFactory
         ];
     }
 
-    /**
-     * @param Forum $forum
-     */
     public function withForum(Forum $forum): self
     {
         return $this->with(['forum' => $forum]);

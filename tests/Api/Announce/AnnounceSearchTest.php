@@ -10,10 +10,9 @@ use App\Tests\Factory\User\UserFactory;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class AnnounceSearchTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_search_musicians_with_filters(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

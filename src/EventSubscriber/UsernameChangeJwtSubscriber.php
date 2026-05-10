@@ -82,7 +82,7 @@ class UsernameChangeJwtSubscriber implements EventSubscriberInterface
         $oldRefreshTokenString = $request->cookies->get('refresh_token');
         if ($oldRefreshTokenString) {
             $oldRefreshToken = $this->refreshTokenManager->get($oldRefreshTokenString);
-            if ($oldRefreshToken) {
+            if ($oldRefreshToken instanceof \Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenInterface) {
                 $this->refreshTokenManager->delete($oldRefreshToken);
             }
         }

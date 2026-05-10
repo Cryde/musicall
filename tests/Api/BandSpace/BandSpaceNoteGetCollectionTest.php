@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceNoteGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_collection(): void
@@ -38,11 +38,6 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'position' => 1,
             'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note1 = $note1;
-        $note2 = $note2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
@@ -92,9 +87,6 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
 
@@ -115,9 +107,6 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
 
@@ -133,9 +122,6 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'user' => $inactiveUser,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $inactiveUser = $inactiveUser;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');
@@ -165,10 +151,6 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes');

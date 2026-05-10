@@ -16,7 +16,7 @@ class SocialLink
     public ?string $platform = null;
 
     #[Assert\NotBlank(message: 'L\'URL est obligatoire')]
-    #[Assert\Url(requireTld: true, message: 'L\'URL n\'est pas valide')]
+    #[Assert\Url(message: 'L\'URL n\'est pas valide', requireTld: true)]
     #[Assert\Length(max: 500, maxMessage: 'L\'URL ne doit pas dépasser {{ limit }} caractères')]
     public ?string $url = null;
 }

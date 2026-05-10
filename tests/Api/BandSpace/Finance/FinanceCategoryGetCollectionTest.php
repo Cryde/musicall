@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceCategoryGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_categories(): void
@@ -38,11 +38,6 @@ class FinanceCategoryGetCollectionTest extends ApiTestCase
             'position' => 1,
             'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category1 = $category1;
-        $category2 = $category2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories');
@@ -89,9 +84,6 @@ class FinanceCategoryGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories');
 
@@ -107,9 +99,6 @@ class FinanceCategoryGetCollectionTest extends ApiTestCase
             'user' => $user,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories');

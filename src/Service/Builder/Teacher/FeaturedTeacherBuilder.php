@@ -36,7 +36,7 @@ readonly class FeaturedTeacherBuilder
 
         $dto->username = $user->username;
 
-        if ($user->profilePicture) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
@@ -46,7 +46,7 @@ readonly class FeaturedTeacherBuilder
         $dto->instruments = array_values(array_map(static function (TeacherProfileInstrumentEntity $instrument): TeacherProfileInstrument {
             $dto = new TeacherProfileInstrument();
             $dto->instrumentId = (string) $instrument->instrument->id;
-            $dto->instrumentName = (string) $instrument->instrument->name;
+            $dto->instrumentName = $instrument->instrument->name;
 
             return $dto;
         }, $profile->instruments->toArray()));

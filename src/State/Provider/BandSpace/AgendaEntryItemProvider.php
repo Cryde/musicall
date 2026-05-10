@@ -36,7 +36,7 @@ readonly class AgendaEntryItemProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->agendaEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$entry) {
+        if (!$entry instanceof \App\Entity\BandSpace\AgendaEntry) {
             throw new NotFoundHttpException('Événement introuvable');
         }
 

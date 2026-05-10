@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Integration\Controller;
 
 use App\Entity\PublicationSubCategory;
@@ -10,10 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class HomeControllerTest extends WebTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_old_publication_redirect(): void
     {
         $client = static::createClient();

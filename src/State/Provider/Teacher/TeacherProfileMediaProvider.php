@@ -49,7 +49,7 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
      */
     private function provideCollection(?TeacherProfile $profile): array
     {
-        if (!$profile) {
+        if (!$profile instanceof \App\Entity\Teacher\TeacherProfile) {
             return [];
         }
 
@@ -63,10 +63,10 @@ readonly class TeacherProfileMediaProvider implements ProviderInterface
 
     private function provideItem(string $id, ?TeacherProfile $profile): TeacherProfileMedia
     {
-        if (!$profile) {
+        if (!$profile instanceof \App\Entity\Teacher\TeacherProfile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }
-        if (!$media = $this->mediaRepository->find($id)) {
+        if (!($media = $this->mediaRepository->find($id)) instanceof \App\Entity\Teacher\TeacherProfileMedia) {
             throw new NotFoundHttpException('Média non trouvé');
         }
 

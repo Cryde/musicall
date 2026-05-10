@@ -18,9 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceBootstrapTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_bootstrap_creates_default_categories(): void
@@ -28,9 +28,6 @@ class FinanceBootstrapTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -75,9 +72,6 @@ class FinanceBootstrapTest extends ApiTestCase
         FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
         FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Clips', 'position' => 1])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -101,9 +95,6 @@ class FinanceBootstrapTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'POST',
@@ -124,9 +115,6 @@ class FinanceBootstrapTest extends ApiTestCase
             'user' => $user,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

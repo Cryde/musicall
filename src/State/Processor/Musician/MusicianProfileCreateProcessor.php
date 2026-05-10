@@ -77,7 +77,7 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
 
         foreach ($data->instruments as $instrumentInput) {
             $instrument = $this->instrumentRepository->find($instrumentInput->instrumentId);
-            if (!$instrument) {
+            if (!$instrument instanceof \App\Entity\Attribute\Instrument) {
                 continue;
             }
 
@@ -99,7 +99,7 @@ readonly class MusicianProfileCreateProcessor implements ProcessorInterface
 
         foreach ($data->styleIds as $styleId) {
             $style = $this->styleRepository->find($styleId);
-            if ($style) {
+            if ($style instanceof \App\Entity\Attribute\Style) {
                 $profile->addStyle($style);
             }
         }

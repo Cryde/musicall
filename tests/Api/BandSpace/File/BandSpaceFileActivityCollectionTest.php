@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileActivityCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_list_returns_activities_for_file(): void
@@ -29,7 +29,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         $otherFile = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
 
-        $upload = BandSpaceActivityFactory::new([
+        BandSpaceActivityFactory::new([
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'uploaded',
@@ -39,7 +39,7 @@ class BandSpaceFileActivityCollectionTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2026-05-01 10:00:00'),
         ])->create();
 
-        $rename = BandSpaceActivityFactory::new([
+        BandSpaceActivityFactory::new([
             'bandSpace' => $bandSpace,
             'module' => BandSpaceModule::File,
             'type' => 'renamed',

@@ -46,7 +46,7 @@ class ForumPostRepository extends ServiceEntityRepository
         );
 
         return array_map(
-            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
             $result->fetchAllAssociative()
         );
     }

@@ -48,7 +48,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
-        if ($entry === null) {
+        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
             throw new NotFoundHttpException('Entrée introuvable');
         }
 
@@ -57,12 +57,12 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
         }
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
         $attachment = $this->attachmentRepository->findOneByFileAndSource($file, 'finance', (string) $entry->id);
-        if ($attachment === null) {
+        if (!$attachment instanceof \App\Entity\BandSpace\BandSpaceFileAttachment) {
             throw new NotFoundHttpException("Le fichier n'est pas attaché à cette entrée");
         }
 

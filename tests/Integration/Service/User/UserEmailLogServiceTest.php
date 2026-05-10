@@ -13,10 +13,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserEmailLogServiceTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     protected function setUp(): void
     {
         self::bootKernel();

@@ -18,9 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileShareDeleteTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_admin_revokes_share_records_activity(): void
@@ -62,7 +62,7 @@ class BandSpaceFileShareDeleteTest extends ApiTestCase
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
-        $revoked = array_values(array_filter($activities, fn ($a): bool => $a->type === 'share_revoked'));
+        $revoked = array_values(array_filter($activities, fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === 'share_revoked'));
         $this->assertCount(1, $revoked);
         $this->assertSame($shareId, $revoked[0]->payload['share_id']);
     }

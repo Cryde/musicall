@@ -34,7 +34,7 @@ readonly class UserGalleryImageDeleteProvider implements ProviderInterface
         $user = $this->security->getUser();
 
         $image = $this->galleryImageRepository->find($uriVariables['id']);
-        if (!$image) {
+        if (!$image instanceof \App\Entity\Image\GalleryImage) {
             throw new NotFoundHttpException('Image non trouvee');
         }
 

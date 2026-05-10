@@ -37,7 +37,7 @@ readonly class BandSpaceFileVersionBuilder
             UrlGeneratorInterface::ABSOLUTE_PATH,
         );
 
-        if ($entity->createdBy !== null) {
+        if ($entity->createdBy instanceof \App\Entity\User) {
             $dto->createdBy = [
                 'id' => (string) $entity->createdBy->id,
                 'username' => $entity->createdBy->username,

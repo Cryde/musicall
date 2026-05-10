@@ -23,19 +23,19 @@ readonly class UserPublicationPreviewBuilder
     {
         $dto = new UserPublicationPreview();
         $dto->id = (int) $publication->id;
-        $dto->title = (string) $publication->title;
+        $dto->title = $publication->title;
         $dto->slug = $publication->slug;
         $dto->shortDescription = $publication->shortDescription;
         $dto->content = $this->appPublicationSanitizer->sanitize($publication->content ?? '');
-        $dto->statusId = (int) $publication->status;
+        $dto->statusId = $publication->status;
         $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);
 
         $subCategory = $publication->subCategory;
         $category = new UserPublicationCategory();
         $category->id = (int) $subCategory->id;
-        $category->title = (string) $subCategory->title;
-        $category->slug = (string) $subCategory->slug;
+        $category->title = $subCategory->title;
+        $category->slug = $subCategory->slug;
         $dto->category = $category;
 
         $author = $publication->author;

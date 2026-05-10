@@ -31,7 +31,7 @@ readonly class BandSpaceInvitationAutoAcceptListener
         $user = $event->user;
         $pendingInvitations = $this->invitationRepository->findPendingByEmail($user->email);
 
-        if (empty($pendingInvitations)) {
+        if ($pendingInvitations === []) {
             return;
         }
 
@@ -42,7 +42,7 @@ readonly class BandSpaceInvitationAutoAcceptListener
 
             $existingMembership = $this->membershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
 
-            if ($existingMembership) {
+            if ($existingMembership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
                 $existingMembership->status = MembershipStatus::Active;
                 $existingMembership->leftDatetime = null;
                 $existingMembership->role = Role::User;

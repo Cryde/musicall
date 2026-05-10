@@ -18,7 +18,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
         parent::__construct($registry, FinanceEntry::class);
     }
 
-    private static function effectiveAmountSql(string $alias = 'e'): string
+    private function effectiveAmountSql(string $alias = 'e'): string
     {
         return "COALESCE({$alias}.amount, ROUND(({$alias}.amount_min + {$alias}.amount_max) / 2), 0)";
     }
@@ -26,15 +26,15 @@ class FinanceEntryRepository extends ServiceEntityRepository
     /**
      * @return array{string, array<string, string>}
      */
-    private static function buildDateFilter(BandSpace $bandSpace, ?\DateTimeImmutable $from, ?\DateTimeImmutable $to): array
+    private function buildDateFilter(BandSpace $bandSpace, ?\DateTimeImmutable $from, ?\DateTimeImmutable $to): array
     {
         $filter = '';
         $params = ['bandSpaceId' => (string) $bandSpace->id];
-        if ($from !== null) {
+        if ($from instanceof \DateTimeImmutable) {
             $filter .= ' AND e.date >= :from';
             $params['from'] = $from->format('Y-m-d');
         }
-        if ($to !== null) {
+        if ($to instanceof \DateTimeImmutable) {
             $filter .= ' AND e.date < :to';
             $params['to'] = $to->format('Y-m-d');
         }
@@ -56,10 +56,10 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->setParameter('bandSpace', $bandSpace)
             ->orderBy('e.date', 'DESC');
 
-        if ($from !== null) {
+        if ($from instanceof \DateTimeImmutable) {
             $qb->andWhere('e.date >= :from')->setParameter('from', $from);
         }
-        if ($to !== null) {
+        if ($to instanceof \DateTimeImmutable) {
             $qb->andWhere('e.date < :to')->setParameter('to', $to);
         }
 
@@ -110,8 +110,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
     public function getSummaryByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $effectiveAmount = self::effectiveAmountSql();
-        [$dateFilter, $params] = self::buildDateFilter($bandSpace, $from, $to);
+        $effectiveAmount = $this->effectiveAmountSql();
+        [$dateFilter, $params] = $this->buildDateFilter($bandSpace, $from, $to);
 
         $sql = <<<SQL
             SELECT
@@ -147,8 +147,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
     public function getSummaryByCategory(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $effectiveAmount = self::effectiveAmountSql();
-        [$dateFilter, $params] = self::buildDateFilter($bandSpace, $from, $to);
+        $effectiveAmount = $this->effectiveAmountSql();
+        [$dateFilter, $params] = $this->buildDateFilter($bandSpace, $from, $to);
 
         $sql = <<<SQL
             SELECT
@@ -167,7 +167,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
 
         $rows = $conn->executeQuery($sql, $params)->fetchAllAssociative();
 
-        return array_map(fn (array $row) => [
+        return array_map(fn (array $row): array => [
             'pole_id' => $row['pole_id'],
             'pole_name' => $row['pole_name'],
             'paid' => (int) $row['paid'],
@@ -201,7 +201,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
     public function getUpcomingByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null, int $limit = 5): array
     {
         $now = new \DateTimeImmutable();
-        $effectiveFrom = $from !== null && $from > $now ? $from : $now;
+        $effectiveFrom = $from instanceof \DateTimeImmutable && $from > $now ? $from : $now;
 
         $qb = $this->createQueryBuilder('e')
             ->join('e.category', 'c')
@@ -214,7 +214,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->orderBy('e.date', 'ASC')
             ->setMaxResults($limit);
 
-        if ($to !== null) {
+        if ($to instanceof \DateTimeImmutable) {
             $qb->andWhere('e.date < :to')->setParameter('to', $to);
         }
 
@@ -227,7 +227,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
     public function getMemberContributions(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
     {
         $conn = $this->getEntityManager()->getConnection();
-        [$dateFilter, $params] = self::buildDateFilter($bandSpace, $from, $to);
+        [$dateFilter, $params] = $this->buildDateFilter($bandSpace, $from, $to);
 
         $sql = <<<SQL
             SELECT
@@ -246,7 +246,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
 
         $rows = $conn->executeQuery($sql, $params)->fetchAllAssociative();
 
-        return array_map(fn (array $row) => [
+        return array_map(fn (array $row): array => [
             'member_id' => $row['member_id'],
             'username' => $row['username'],
             'total' => (int) $row['total'],

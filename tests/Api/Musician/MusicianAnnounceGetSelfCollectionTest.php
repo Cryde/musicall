@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_self_musician_announces(): void
@@ -50,8 +50,6 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
         // shouldn't be in the results
         MusicianAnnounceFactory::new()->create(['author' => $user2,]);
         MusicianAnnounceFactory::new()->create(['author' => $user2,]);
-
-        $user1 = $user1;
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/musician_announces/self');

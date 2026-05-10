@@ -25,7 +25,7 @@ class PublicationDirector
         if ($category && $category->type !== PublicationSubCategory::TYPE_COURSE) {
             $category = null;
         }
-        if (!$category) {
+        if (!$category instanceof \App\Entity\PublicationSubCategory) {
             $category = $this->publicationSubCategoryRepository->findOneBy(['slug' => 'decouvertes']);
         }
         assert($category !== null);

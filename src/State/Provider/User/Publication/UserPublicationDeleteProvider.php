@@ -33,7 +33,7 @@ class UserPublicationDeleteProvider implements ProviderInterface
 
         /** @var User $user */
         $user = $this->security->getUser();
-        if (!$publication = $this->publicationRepository->find($uriVariables['id'])) {
+        if (!($publication = $this->publicationRepository->find($uriVariables['id'])) instanceof \App\Entity\Publication) {
             throw new NotFoundHttpException('Publication not found');
         }
 

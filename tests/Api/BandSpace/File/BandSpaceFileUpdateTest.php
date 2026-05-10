@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileUpdateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_rename_file(): void
@@ -402,14 +402,14 @@ class BandSpaceFileUpdateTest extends ApiTestCase
         $activities = $repo->findForResource($bandSpace, BandSpaceModule::File, $resourceId);
         $matching = array_values(array_filter(
             $activities,
-            fn ($a): bool => $a->type === $type
+            fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === $type
                 && $a->payload === $expectedPayload,
         ));
         $this->assertCount(1, $matching, sprintf(
             'Expected exactly one "%s" activity with payload %s, got %d activities of type "%s" total.',
             $type,
             json_encode($expectedPayload, JSON_THROW_ON_ERROR),
-            count(array_filter($activities, fn ($a): bool => $a->type === $type)),
+            count(array_filter($activities, fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === $type)),
             $type,
         ));
     }

@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceCategoryGetItemTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_item(): void
@@ -32,10 +32,6 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
@@ -62,9 +58,6 @@ class FinanceCategoryGetItemTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/nonexistent-id');
 
@@ -83,10 +76,6 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'name' => 'Studio',
             'position' => 0,
         ])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
@@ -111,10 +100,6 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'name' => 'Studio',
             'position' => 0,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);

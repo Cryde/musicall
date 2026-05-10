@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceGetTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_item(): void
@@ -24,9 +24,6 @@ class BandSpaceGetTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);
@@ -69,9 +66,6 @@ class BandSpaceGetTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);
 
@@ -97,9 +91,6 @@ class BandSpaceGetTest extends ApiTestCase
             'user' => $inactiveUser,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $inactiveUser = $inactiveUser;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id);

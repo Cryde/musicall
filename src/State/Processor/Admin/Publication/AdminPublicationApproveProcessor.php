@@ -29,7 +29,7 @@ readonly class AdminPublicationApproveProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
-        if (!$publication = $this->publicationRepository->find($uriVariables['id'])) {
+        if (!($publication = $this->publicationRepository->find($uriVariables['id'])) instanceof \App\Entity\Publication) {
             throw new NotFoundHttpException('Publication not found');
         }
 

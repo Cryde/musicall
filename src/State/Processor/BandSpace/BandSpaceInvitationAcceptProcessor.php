@@ -42,18 +42,16 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         $invitation = $this->bandSpaceInvitationRepository->findPendingByToken((string) $uriVariables['token']);
-        if (!$invitation) {
+        if (!$invitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
             throw new NotFoundHttpException('Invitation introuvable ou expirée');
         }
 
-        if ($invitation->existingUser !== null) {
+        if ($invitation->existingUser instanceof \App\Entity\User) {
             if ($invitation->existingUser->id !== $user->id) {
                 throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
             }
-        } else {
-            if (mb_strtolower($user->email) !== mb_strtolower($invitation->email)) {
-                throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
-            }
+        } elseif (mb_strtolower($user->email) !== mb_strtolower($invitation->email)) {
+            throw new AccessDeniedHttpException('Cette invitation ne vous est pas destinée');
         }
 
         if ($this->bandSpaceMembershipRepository->isMember($invitation->bandSpace, $user)) {
@@ -62,7 +60,7 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
 
         $existingMembership = $this->bandSpaceMembershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
 
-        if ($existingMembership) {
+        if ($existingMembership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             $existingMembership->status = MembershipStatus::Active;
             $existingMembership->leftDatetime = null;
             $existingMembership->role = Role::User;

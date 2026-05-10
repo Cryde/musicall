@@ -17,7 +17,7 @@ readonly class UserProfilePictureUrlBuilder
     public function build(User $user): ?string
     {
         $profilePicture = $user->profilePicture;
-        if (!$profilePicture) {
+        if (!$profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             return null;
         }
 

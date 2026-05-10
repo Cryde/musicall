@@ -33,7 +33,7 @@ readonly class GalleryMetaDataProvider implements BotMetaDataProviderInterface
             'status' => Gallery::STATUS_ONLINE,
         ]);
 
-        if (!$gallery) {
+        if (!$gallery instanceof \App\Entity\Gallery) {
             return [];
         }
 
@@ -43,7 +43,7 @@ readonly class GalleryMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         return [
-            'title' => (string) $gallery->title,
+            'title' => $gallery->title,
             'description' => (string) $gallery->description,
             'cover' => $cover,
         ];

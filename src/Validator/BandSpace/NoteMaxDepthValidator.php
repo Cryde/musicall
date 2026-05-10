@@ -52,13 +52,13 @@ class NoteMaxDepthValidator extends ConstraintValidator
         }
 
         $parent = $this->noteRepository->findOneByIdAndBandSpace($value->parentId, $bandSpace);
-        if ($parent === null) {
+        if (!$parent instanceof \App\Entity\BandSpace\BandSpaceNote) {
             return;
         }
 
         $depth = 1;
         $ancestor = $parent;
-        while ($ancestor->parent !== null) {
+        while ($ancestor->parent instanceof \App\Entity\BandSpace\BandSpaceNote) {
             $depth++;
             $ancestor = $ancestor->parent;
         }

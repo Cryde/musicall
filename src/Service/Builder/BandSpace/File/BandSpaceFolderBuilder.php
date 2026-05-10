@@ -13,7 +13,7 @@ readonly class BandSpaceFolderBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->name = $entity->name;
-        $dto->parentId = $entity->parent !== null ? (string) $entity->parent->id : null;
+        $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $entity->parent->id : null;
         $dto->depth = $depth;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
         $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
@@ -79,7 +79,7 @@ readonly class BandSpaceFolderBuilder
             'id' => (string) $node->id,
             'band_space_id' => (string) $node->bandSpace->id,
             'name' => $node->name,
-            'parent_id' => $node->parent !== null ? (string) $node->parent->id : null,
+            'parent_id' => $node->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $node->parent->id : null,
             'depth' => $depth,
             'children' => $this->assembleChildren($node, $childrenByParentId, $depth + 1),
             'creation_datetime' => $node->creationDatetime->format(\DateTimeInterface::ATOM),

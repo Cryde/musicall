@@ -49,7 +49,7 @@ readonly class TopicPostListBuilder
         $item->upvotes = $voteCache->upvoteCount ?? 0;
         $item->downvotes = $voteCache->downvoteCount ?? 0;
 
-        if ($voteCache) {
+        if ($voteCache instanceof \App\Entity\Metric\VoteCache) {
             /** @var User|null $currentUser */
             $currentUser = $this->security->getUser();
             if ($currentUser) {
@@ -57,7 +57,7 @@ readonly class TopicPostListBuilder
                 $item->userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
-                if ($request) {
+                if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
                     $item->userVote = $vote?->value;

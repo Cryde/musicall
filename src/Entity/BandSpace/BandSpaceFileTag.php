@@ -12,7 +12,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: BandSpaceFileTagRepository::class)]
 #[ORM\Table(name: 'band_space_file_tag')]
-#[ORM\Index(columns: ['band_space_id'], name: 'idx_band_space_file_tag_band')]
+#[ORM\Index(name: 'idx_band_space_file_tag_band', columns: ['band_space_id'])]
 #[ORM\UniqueConstraint(name: 'unique_band_space_file_tag_name', columns: ['band_space_id', 'name'])]
 class BandSpaceFileTag
 {

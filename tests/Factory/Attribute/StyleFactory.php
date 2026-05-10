@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\Attribute;
 
 use Zenstruck\Foundry\Factory;
@@ -17,7 +19,7 @@ final class StyleFactory extends PersistentObjectFactory
         ];
     }
 
-    public function asRock(): Factory
+    public function asRock(): \App\Tests\Factory\Attribute\StyleFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -26,7 +28,7 @@ final class StyleFactory extends PersistentObjectFactory
         ]);
     }
 
-    public function asPop(): Factory
+    public function asPop(): \App\Tests\Factory\Attribute\StyleFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -35,7 +37,7 @@ final class StyleFactory extends PersistentObjectFactory
         ]);
     }
 
-    public function asJazz(): Factory
+    public function asJazz(): \App\Tests\Factory\Attribute\StyleFactory
     {
         return $this->with([
             'name' => 'Jazz',
@@ -43,7 +45,7 @@ final class StyleFactory extends PersistentObjectFactory
         ]);
     }
 
-    public function asMetal(): Factory
+    public function asMetal(): \App\Tests\Factory\Attribute\StyleFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),

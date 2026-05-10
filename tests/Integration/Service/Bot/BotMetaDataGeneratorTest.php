@@ -22,10 +22,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BotMetaDataGeneratorTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     private BotMetaDataGenerator $botMetaDataGenerator;
 
     protected function setUp(): void

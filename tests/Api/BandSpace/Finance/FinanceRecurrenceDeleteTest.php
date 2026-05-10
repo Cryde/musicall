@@ -26,9 +26,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceRecurrenceDeleteTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_delete_recurrence(): void
@@ -58,7 +58,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         ])->create();
 
         // Create planned entries linked to the recurrence
-        $plannedEntry1 = FinanceEntryFactory::new([
+        FinanceEntryFactory::new([
             'category' => $category,
             'label' => 'Loyer salle',
             'type' => FinanceEntryType::Expense,
@@ -70,7 +70,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $plannedEntry2 = FinanceEntryFactory::new([
+        FinanceEntryFactory::new([
             'category' => $category,
             'label' => 'Loyer salle',
             'type' => FinanceEntryType::Expense,
@@ -94,10 +94,6 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'recurrence' => $recurrence,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $recurrence = $recurrence;
         $recurrenceId = (string) $recurrence->id;
         $paidEntryId = (string) $paidEntry->id;
 
@@ -158,10 +154,6 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $recurrence = $recurrence;
-
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrence->id);
 
@@ -199,10 +191,6 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
             'isActive' => true,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $recurrence = $recurrence;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrence->id);

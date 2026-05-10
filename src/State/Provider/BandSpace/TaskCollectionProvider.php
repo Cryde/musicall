@@ -46,7 +46,7 @@ readonly class TaskCollectionProvider implements ProviderInterface
 
         $filters = $context['filters'] ?? [];
 
-        $archived = isset($filters['archived']) ? filter_var($filters['archived'], FILTER_VALIDATE_BOOLEAN) : false;
+        $archived = isset($filters['archived']) && filter_var($filters['archived'], FILTER_VALIDATE_BOOLEAN);
         $overdueOnly = isset($filters['overdue']) && filter_var($filters['overdue'], FILTER_VALIDATE_BOOLEAN);
 
         $taskFilter = new TaskFilter(

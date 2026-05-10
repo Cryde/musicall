@@ -10,9 +10,10 @@ use App\Service\Google\YoutubeVideo;
 use App\Service\Musician\MediaMetadata\YouTubeMetadataFetcher;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class YouTubeMetadataFetcherTest extends TestCase
 {
-    private YoutubeVideo $youtubeVideo;
+    private \PHPUnit\Framework\MockObject\MockObject $youtubeVideo;
     private YouTubeMetadataFetcher $fetcher;
 
     protected function setUp(): void

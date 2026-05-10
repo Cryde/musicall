@@ -34,7 +34,7 @@ readonly class OAuthUserService
         // Check if social account already exists
         $socialAccount = $this->socialAccountRepository->findByProviderAndProviderId($provider, $userData->id);
 
-        if ($socialAccount !== null) {
+        if ($socialAccount instanceof \App\Entity\SocialAccount) {
             // User already linked this social account - this is a login
             $user = $socialAccount->user;
             $user->lastLoginDatetime = new \DateTime();
@@ -44,7 +44,7 @@ readonly class OAuthUserService
         }
 
         // If user is logged in, link the social account to their existing account
-        if ($currentUser !== null) {
+        if ($currentUser instanceof \App\Entity\User) {
             $this->createSocialAccount($currentUser, $provider, $userData->id, $userData->email);
 
             return new OAuthResult($currentUser, false);

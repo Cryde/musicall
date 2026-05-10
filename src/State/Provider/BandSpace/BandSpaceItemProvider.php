@@ -31,12 +31,12 @@ readonly class BandSpaceItemProvider implements ProviderInterface
         $user = $this->security->getUser();
 
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships($uriVariables['id']);
-        if (!$bandSpace) {
+        if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
             throw new NotFoundHttpException('Band space not found');
         }
 
         $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $user);
-        if (!$membership) {
+        if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             throw new AccessDeniedHttpException('You are not a member of this band space');
         }
 

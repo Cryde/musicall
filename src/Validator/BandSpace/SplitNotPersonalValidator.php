@@ -46,7 +46,7 @@ class SplitNotPersonalValidator extends ConstraintValidator
         }
 
         $entry = $this->entryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
-        if ($entry === null) {
+        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
             return;
         }
 

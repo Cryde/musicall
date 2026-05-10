@@ -40,11 +40,11 @@ readonly class BandSpaceFileShareDeleteProcessor implements ProcessorInterface
         [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
         $share = $this->shareRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($share === null) {
+        if (!$share instanceof \App\Entity\BandSpace\BandSpaceFileShare) {
             throw new NotFoundHttpException('Lien de partage introuvable');
         }
 
-        if ($share->revocationDatetime !== null) {
+        if ($share->revocationDatetime instanceof \DateTimeImmutable) {
             return;
         }
 

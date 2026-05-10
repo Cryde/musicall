@@ -56,7 +56,7 @@ readonly class ForumMetaDataProvider implements BotMetaDataProviderInterface
     {
         $forum = $this->forumRepository->findOneBy(['slug' => $slug]);
 
-        if (!$forum) {
+        if (!$forum instanceof \App\Entity\Forum\Forum) {
             return $this->getForBase();
         }
 
@@ -73,7 +73,7 @@ readonly class ForumMetaDataProvider implements BotMetaDataProviderInterface
     {
         $topic = $this->forumTopicRepository->findOneBy(['slug' => $slug]);
 
-        if (!$topic) {
+        if (!$topic instanceof \App\Entity\Forum\ForumTopic) {
             return $this->getForBase();
         }
 

@@ -27,7 +27,7 @@ class StaticDirectoryNamer implements DirectoryNamerInterface, ConfigurableInter
     public function directoryName($object, PropertyMapping $mapping): string
     {
         // When we specify a propertyPath we act like "Vich\UploaderBundle\Naming\PropertyDirectoryNamer"
-        if ($this->propertyPath) {
+        if ($this->propertyPath !== '' && $this->propertyPath !== '0') {
             try {
                 $name = $this->propertyAccessor->getValue($object, $this->propertyPath);
             } catch (NoSuchPropertyException $e) {

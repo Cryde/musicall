@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceSummaryTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_summary_empty(): void
@@ -29,10 +29,6 @@ class FinanceSummaryTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $membership = $membership;
 
         $this->client->loginUser($user);
         $this->client->request(
@@ -96,11 +92,6 @@ class FinanceSummaryTest extends ApiTestCase
             'amount' => 15000,
             'date' => new \DateTime('2024-06-20'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $membership = $membership;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->request(
@@ -175,11 +166,6 @@ class FinanceSummaryTest extends ApiTestCase
             'date' => new \DateTime('2024-02-15'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $membership = $membership;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->request(
             'GET',
@@ -226,9 +212,6 @@ class FinanceSummaryTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($otherUser);
         $this->client->request(
             'GET',
@@ -250,9 +233,6 @@ class FinanceSummaryTest extends ApiTestCase
             'user' => $user,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->request(

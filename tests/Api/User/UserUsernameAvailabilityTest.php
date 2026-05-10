@@ -11,11 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserUsernameAvailabilityTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
-    use ResetDatabase;
-    use Factories;
 
     public function test_username_available(): void
     {

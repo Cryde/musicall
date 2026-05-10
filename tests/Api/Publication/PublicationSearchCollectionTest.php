@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Api\Publication;
 
 use App\Entity\Publication;
@@ -15,9 +17,9 @@ use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicationSearchCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public static function setUpBeforeClass(): void

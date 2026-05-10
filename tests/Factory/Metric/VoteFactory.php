@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\Metric;
 
 use App\Entity\Metric\Vote;

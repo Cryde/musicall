@@ -24,7 +24,7 @@ readonly class MusicianAnnounceItemProvider implements ProviderInterface
     {
         $entity = $this->musicianAnnounceRepository->find($uriVariables['id']);
 
-        if (!$entity) {
+        if (!$entity instanceof \App\Entity\Musician\MusicianAnnounce) {
             throw new NotFoundHttpException('Musician announce not found');
         }
 

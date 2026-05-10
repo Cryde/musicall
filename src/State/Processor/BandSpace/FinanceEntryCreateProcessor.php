@@ -49,7 +49,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
         [$bandSpace, $currentMembership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
-        if (!$category) {
+        if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
             throw new NotFoundHttpException('Catégorie introuvable');
         }
 
@@ -69,7 +69,7 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
             $entry->member = $currentMembership;
         } elseif ($data->memberId !== null) {
             $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
-            if (!$member) {
+            if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
                 throw new NotFoundHttpException('Membre introuvable');
             }
             $entry->member = $member;

@@ -33,7 +33,7 @@ readonly class BandSpaceFileActivityBuilder
 
     public function buildItem(BandSpaceFile $file, BandSpaceActivity $entity): BandSpaceFileActivityResource
     {
-        if ($entity->actor === null) {
+        if (!$entity->actor instanceof \App\Entity\User) {
             throw new \LogicException('Cannot build BandSpaceFileActivityResource without an actor.');
         }
 

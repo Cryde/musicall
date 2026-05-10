@@ -47,7 +47,7 @@ readonly class AgendaAggregator
     private function buildManual(BandSpace $bandSpace, AgendaEntry $entry): AgendaItem
     {
         $item = new AgendaItem();
-        $item->id = 'manual-' . (string) $entry->id;
+        $item->id = 'manual-' . $entry->id;
         $item->bandSpaceId = (string) $bandSpace->id;
         $item->source = 'manual';
         $item->sourceId = (string) $entry->id;
@@ -66,7 +66,7 @@ readonly class AgendaAggregator
     private function buildTask(BandSpace $bandSpace, Task $task): AgendaItem
     {
         $item = new AgendaItem();
-        $item->id = 'task-' . (string) $task->id;
+        $item->id = 'task-' . $task->id;
         $item->bandSpaceId = (string) $bandSpace->id;
         $item->source = 'task';
         $item->sourceId = (string) $task->id;
@@ -81,7 +81,7 @@ readonly class AgendaAggregator
             'category_name' => $task->category?->name,
             'assignees' => array_values($task->assignees->map(
                 fn(User $user): array => [
-                    'id' => (string) $user->id,
+                    'id' => $user->id,
                     'username' => $user->username,
                     'profile_picture_url' => $this->profilePictureUrlBuilder->build($user),
                 ]
@@ -94,7 +94,7 @@ readonly class AgendaAggregator
     private function buildFinance(BandSpace $bandSpace, FinanceEntry $entry): AgendaItem
     {
         $item = new AgendaItem();
-        $item->id = 'finance-' . (string) $entry->id;
+        $item->id = 'finance-' . $entry->id;
         $item->bandSpaceId = (string) $bandSpace->id;
         $item->source = 'finance';
         $item->sourceId = (string) $entry->id;

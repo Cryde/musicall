@@ -25,7 +25,7 @@ readonly class FinanceCategoryBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->name = $entity->name;
-        $dto->parentId = $entity->parent !== null ? (string) $entity->parent->id : null;
+        $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\FinanceCategory ? (string) $entity->parent->id : null;
         $dto->position = $entity->position;
         $dto->hasChildren = !$entity->children->isEmpty();
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);

@@ -79,7 +79,7 @@ class Gallery implements ViewableInterface
     /**
      * @var Collection<int, GalleryImage>
      */
-    #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryImage::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: GalleryImage::class, mappedBy: 'gallery', cascade: ['remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     public Collection $images;
 

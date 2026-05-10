@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceEntrySplitGetItemTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_item(): void
@@ -46,12 +46,6 @@ class FinanceEntrySplitGetItemTest extends ApiTestCase
             'amount' => 25000,
             'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
-        $membership = $membership;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
@@ -91,10 +85,6 @@ class FinanceEntrySplitGetItemTest extends ApiTestCase
             'amount' => 50000,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/nonexistent-id');
 
@@ -125,11 +115,6 @@ class FinanceEntrySplitGetItemTest extends ApiTestCase
             'member' => $membership,
             'amount' => 25000,
         ])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
 
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
@@ -166,11 +151,6 @@ class FinanceEntrySplitGetItemTest extends ApiTestCase
             'member' => $membership,
             'amount' => 25000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);

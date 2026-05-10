@@ -23,11 +23,11 @@ readonly class UserCourseBuilder
 
         $dto = new UserCourse();
         $dto->id = (int) $publication->id;
-        $dto->title = (string) $publication->title;
+        $dto->title = $publication->title;
         $dto->slug = $publication->slug;
         $dto->creationDatetime = $creationDatetime;
         $dto->editionDatetime = $publication->editionDatetime;
-        $dto->statusId = (int) $publication->status;
+        $dto->statusId = $publication->status;
         $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->typeId = (int) $publication->type;
         $dto->typeLabel = $publication->type === Publication::TYPE_VIDEO
@@ -36,8 +36,8 @@ readonly class UserCourseBuilder
 
         $category = new UserCourseCategory();
         $category->id = (int) $subCategory->id;
-        $category->title = (string) $subCategory->title;
-        $category->slug = (string) $subCategory->slug;
+        $category->title = $subCategory->title;
+        $category->slug = $subCategory->slug;
         $dto->category = $category;
 
         $dto->coverUrl = $this->buildCoverUrl($publication);
@@ -48,7 +48,7 @@ readonly class UserCourseBuilder
     private function buildCoverUrl(Publication $publication): ?string
     {
         $cover = $publication->cover;
-        if ($cover === null) {
+        if (!$cover instanceof \App\Entity\Image\PublicationCover) {
             return null;
         }
 
@@ -66,6 +66,6 @@ readonly class UserCourseBuilder
      */
     public function buildFromEntities(array $publications): array
     {
-        return array_map(fn(Publication $p) => $this->buildFromEntity($p), $publications);
+        return array_map(fn(Publication $p): \App\ApiResource\User\Course\UserCourse => $this->buildFromEntity($p), $publications);
     }
 }

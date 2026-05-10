@@ -30,7 +30,7 @@ readonly class UserProfileMetaDataProvider implements BotMetaDataProviderInterfa
 
         $user = $this->userRepository->findOneBy(['username' => $matches[1]]);
 
-        if (!$user) {
+        if (!$user instanceof \App\Entity\User) {
             return [];
         }
 

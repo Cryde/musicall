@@ -72,7 +72,7 @@ final readonly class BandSpaceFolderVirtualFoldersListener
         if ($bandSpace === null) {
             return;
         }
-        if ($this->membershipRepository->findMembership($bandSpace, $user) === null) {
+        if (!$this->membershipRepository->findMembership($bandSpace, $user) instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             return;
         }
 

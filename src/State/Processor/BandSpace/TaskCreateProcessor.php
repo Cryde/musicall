@@ -70,7 +70,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
 
         if ($data->categoryId !== null) {
             $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
-            if (!$category) {
+            if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
                 throw new NotFoundHttpException('Catégorie introuvable');
             }
             $task->category = $category;
@@ -81,12 +81,12 @@ readonly class TaskCreateProcessor implements ProcessorInterface
         if ($data->assigneeIds !== null) {
             foreach ($data->assigneeIds as $assigneeId) {
                 $assignee = $this->userRepository->find($assigneeId);
-                if (!$assignee) {
+                if (!$assignee instanceof \App\Entity\User) {
                     throw new BadRequestHttpException(sprintf('Utilisateur %s introuvable', $assigneeId));
                 }
 
                 $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $assignee);
-                if (!$membership) {
+                if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
                     throw new BadRequestHttpException(sprintf('L\'utilisateur %s n\'est pas membre du Band Space', $assignee->username));
                 }
 

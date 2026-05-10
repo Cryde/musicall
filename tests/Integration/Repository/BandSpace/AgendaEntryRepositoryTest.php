@@ -10,10 +10,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class AgendaEntryRepositoryTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_find_upcoming_for_band_returns_entries_within_window_only(): void
     {
         $repo = static::getContainer()->get(AgendaEntryRepository::class);

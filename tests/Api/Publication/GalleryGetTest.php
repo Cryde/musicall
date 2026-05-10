@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class GalleryGetTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_item_gallery(): void
@@ -31,7 +31,7 @@ class GalleryGetTest extends ApiTestCase
             'title'               => 'Titre de la gallery',
         ])->create();
         $cover = GalleryImageFactory::new(['imageName' => 'cover.jpg', 'gallery' => $gallery])->create();
-        $image2 = GalleryImageFactory::new(['imageName' => 'image2.jpg', 'gallery' => $gallery])->create();
+        GalleryImageFactory::new(['imageName' => 'image2.jpg', 'gallery' => $gallery])->create();
         $gallery->coverImage = $cover;
         \Zenstruck\Foundry\Persistence\save($gallery);
 

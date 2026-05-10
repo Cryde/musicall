@@ -19,7 +19,7 @@ use App\State\Processor\Publication\PublicationVoteProcessor;
 )]
 class PublicationVoteSummary
 {
-    #[ApiProperty(identifier: true, readable: false)]
+    #[ApiProperty(readable: false, identifier: true)]
     public string $slug;
     public int $upvotes = 0;
     public int $downvotes = 0;

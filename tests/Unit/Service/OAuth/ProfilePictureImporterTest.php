@@ -13,12 +13,13 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class ProfilePictureImporterTest extends TestCase
 {
-    private RemoteFileDownloader $remoteFileDownloader;
-    private EntityManagerInterface $entityManager;
-    private ParameterBagInterface $parameterBag;
-    private LoggerInterface $logger;
+    private \PHPUnit\Framework\MockObject\MockObject $remoteFileDownloader;
+    private \PHPUnit\Framework\MockObject\MockObject $entityManager;
+    private \PHPUnit\Framework\MockObject\MockObject $parameterBag;
+    private \PHPUnit\Framework\MockObject\MockObject $logger;
     private ProfilePictureImporter $importer;
 
     protected function setUp(): void
@@ -55,11 +56,11 @@ class ProfilePictureImporterTest extends TestCase
         $this->entityManager
             ->expects($this->once())
             ->method('persist')
-            ->with($this->callback(function (UserProfilePicture $picture) use ($user) {
+            ->with($this->callback(function (UserProfilePicture $picture) use ($user): bool {
                 return $picture->imageName === 'downloaded_picture.jpg'
                     && $picture->imageSize === 12345
                     && $picture->user === $user
-                    && $picture->updatedAt !== null;
+                    && $picture->updatedAt instanceof \DateTimeInterface;
             }));
 
         $this->logger

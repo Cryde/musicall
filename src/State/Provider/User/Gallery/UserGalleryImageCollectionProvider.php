@@ -37,7 +37,7 @@ readonly class UserGalleryImageCollectionProvider implements ProviderInterface
         $user = $this->security->getUser();
 
         $gallery = $this->galleryRepository->find($uriVariables['id']);
-        if (!$gallery) {
+        if (!$gallery instanceof \App\Entity\Gallery) {
             throw new NotFoundHttpException('Galerie non trouvee');
         }
 
@@ -46,7 +46,7 @@ readonly class UserGalleryImageCollectionProvider implements ProviderInterface
         }
 
         return array_map(
-            fn($image) => $this->userGalleryBuilder->buildImageFromEntity($image),
+            fn(\App\Entity\Image\GalleryImage $image): \App\ApiResource\User\Gallery\UserGalleryImage => $this->userGalleryBuilder->buildImageFromEntity($image),
             $gallery->images->toArray()
         );
     }

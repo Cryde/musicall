@@ -48,7 +48,7 @@ class FinanceCategoryRepository extends ServiceEntityRepository
             ->where('c.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace);
 
-        if ($parent !== null) {
+        if ($parent instanceof \App\Entity\BandSpace\FinanceCategory) {
             $qb->andWhere('c.parent = :parent')
                 ->setParameter('parent', $parent);
         } else {

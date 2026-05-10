@@ -58,7 +58,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         [$bandSpace, $currentMembership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
-        if (!$entry) {
+        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
             throw new NotFoundHttpException('Entrée introuvable');
         }
 
@@ -124,7 +124,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
 
         if (array_key_exists('category_id', $requestPayload)) {
             $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
-            if (!$category) {
+            if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
                 throw new NotFoundHttpException('Catégorie introuvable');
             }
             $entry->category = $category;
@@ -133,7 +133,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         if (array_key_exists('member_id', $requestPayload)) {
             if ($data->memberId !== null) {
                 $member = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace($data->memberId, $bandSpace);
-                if (!$member) {
+                if (!$member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
                     throw new NotFoundHttpException('Membre introuvable');
                 }
                 $entry->member = $member;
@@ -142,7 +142,7 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
             }
         }
 
-        if ($entry->scope === FinanceEntryScope::Personal && $entry->member === null) {
+        if ($entry->scope === FinanceEntryScope::Personal && !$entry->member instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             $entry->member = $currentMembership;
         }
 

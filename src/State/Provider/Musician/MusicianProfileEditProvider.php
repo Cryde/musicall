@@ -40,25 +40,25 @@ readonly class MusicianProfileEditProvider implements ProviderInterface
         $dto = new MusicianProfileEdit();
         $dto->id = $profile->id;
 
-        if ($profile->availabilityStatus) {
+        if ($profile->availabilityStatus instanceof \App\Enum\Musician\AvailabilityStatus) {
             $dto->availabilityStatus = $profile->availabilityStatus->value;
             $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
         }
 
-        $dto->instruments = array_values(array_map(function ($instrument): MusicianProfileEditInstrument {
+        $dto->instruments = array_values(array_map(function (\App\Entity\Musician\MusicianProfileInstrument $instrument): MusicianProfileEditInstrument {
             $item = new MusicianProfileEditInstrument();
             $item->instrumentId = (string) $instrument->instrument->id;
-            $item->instrumentName = (string) $instrument->instrument->musicianName;
+            $item->instrumentName = $instrument->instrument->musicianName;
             $item->skillLevel = $instrument->skillLevel->value;
             $item->skillLevelLabel = $instrument->skillLevel->getLabel();
 
             return $item;
         }, $profile->instruments->toArray()));
 
-        $dto->styles = array_values(array_map(function ($style): MusicianProfileEditStyle {
+        $dto->styles = array_values(array_map(function (\App\Entity\Attribute\Style $style): MusicianProfileEditStyle {
             $item = new MusicianProfileEditStyle();
             $item->id = (string) $style->id;
-            $item->name = (string) $style->name;
+            $item->name = $style->name;
 
             return $item;
         }, $profile->styles->toArray()));

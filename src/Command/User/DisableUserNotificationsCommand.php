@@ -38,7 +38,7 @@ class DisableUserNotificationsCommand extends Command
         $userId = $input->getArgument('user-id');
 
         try {
-            if (!$user = $this->userRepository->find($userId)) {
+            if (!($user = $this->userRepository->find($userId)) instanceof \App\Entity\User) {
                 $output->writeln(sprintf('<error>User with ID "%s" not found</error>', $userId));
 
                 return Command::FAILURE;
@@ -49,7 +49,7 @@ class DisableUserNotificationsCommand extends Command
             return Command::FAILURE;
         }
 
-        if (!$preference = $user->notificationPreference) {
+        if (!($preference = $user->notificationPreference) instanceof \App\Entity\User\UserNotificationPreference) {
             $preference = new UserNotificationPreference();
             $preference->user = $user;
             $user->notificationPreference = $preference;

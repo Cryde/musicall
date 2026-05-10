@@ -13,9 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_collection(): void
@@ -32,10 +32,6 @@ class BandSpaceGetCollectionTest extends ApiTestCase
         ])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace1, 'user' => $user])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace2, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace1 = $bandSpace1;
-        $bandSpace2 = $bandSpace2;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces');
@@ -93,9 +89,6 @@ class BandSpaceGetCollectionTest extends ApiTestCase
 
         BandSpaceMembershipFactory::new(['bandSpace' => $userBandSpace, 'user' => $user])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $otherBandSpace, 'user' => $otherUser])->create();
-
-        $user = $user;
-        $userBandSpace = $userBandSpace;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces');

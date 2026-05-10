@@ -41,7 +41,6 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): BandSpaceFolderResource
     {
-        /** @var BandSpaceFolderResource $data */
         $user = $this->security->getUser();
         if (!$user instanceof User) {
             throw new AccessDeniedHttpException();
@@ -50,11 +49,11 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
         [$bandSpace, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($folder === null) {
+        if (!$folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             throw new NotFoundHttpException('Dossier introuvable');
         }
 
-        $isOwner = $folder->createdBy !== null && $folder->createdBy->id === $user->id;
+        $isOwner = $folder->createdBy instanceof \App\Entity\User && $folder->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut modifier ce dossier');
         }
@@ -62,7 +61,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
         $oldName = $folder->name;
-        $oldParentId = $folder->parent !== null ? (string) $folder->parent->id : null;
+        $oldParentId = $folder->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $folder->parent->id : null;
         $renamed = false;
         $moved = false;
 
@@ -87,7 +86,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
             $newParent = null;
             if ($rawParentId !== null && $rawParentId !== '') {
                 $newParent = $this->folderRepository->findOneByIdAndBandSpace((string) $rawParentId, $bandSpace);
-                if ($newParent === null) {
+                if (!$newParent instanceof \App\Entity\BandSpace\BandSpaceFolder) {
                     throw new BadRequestHttpException('Dossier parent introuvable dans ce Band Space');
                 }
                 if ((string) $newParent->id === (string) $folder->id) {
@@ -100,7 +99,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
             }
 
             if ($newParent !== $folder->parent) {
-                $newParentDepth = $newParent !== null ? $this->folderRepository->computeDepth($newParent) : -1;
+                $newParentDepth = $newParent instanceof \App\Entity\BandSpace\BandSpaceFolder ? $this->folderRepository->computeDepth($newParent) : -1;
                 if ($newParentDepth + 1 >= BandSpaceFolderCreateProcessor::MAX_DEPTH) {
                     throw new UnprocessableEntityHttpException(sprintf('La profondeur maximale (%d) est dépassée', BandSpaceFolderCreateProcessor::MAX_DEPTH));
                 }
@@ -134,7 +133,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
                 actor: $user,
                 payload: [
                     'from_parent_id' => $oldParentId,
-                    'to_parent_id' => $folder->parent !== null ? (string) $folder->parent->id : null,
+                    'to_parent_id' => $folder->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $folder->parent->id : null,
                 ],
             );
         }

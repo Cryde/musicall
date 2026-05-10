@@ -15,10 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class ViewProcedureTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     private ViewProcedure $viewProcedure;
     private ViewRepository $viewRepository;
 

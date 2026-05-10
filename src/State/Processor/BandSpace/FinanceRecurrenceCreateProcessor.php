@@ -49,7 +49,7 @@ readonly class FinanceRecurrenceCreateProcessor implements ProcessorInterface
         [$bandSpace, $currentMembership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->categoryId, $bandSpace);
-        if (!$category) {
+        if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
             throw new NotFoundHttpException('Catégorie introuvable');
         }
 

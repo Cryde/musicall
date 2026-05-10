@@ -62,7 +62,7 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
     private function resolveUserVote(Publication $publication): ?int
     {
         $voteCache = $publication->voteCache;
-        if (!$voteCache) {
+        if (!$voteCache instanceof \App\Entity\Metric\VoteCache) {
             return null;
         }
 
@@ -75,7 +75,7 @@ class PublicationNormalizer implements NormalizerInterface, NormalizerAwareInter
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request) {
+        if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
             $identifier = $this->requestIdentifier->fromRequest($request);
             $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
 

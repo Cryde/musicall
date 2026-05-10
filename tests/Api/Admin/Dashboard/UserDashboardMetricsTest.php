@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class UserDashboardMetricsTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_user_dashboard_metrics_as_admin(): void
@@ -56,7 +56,7 @@ class UserDashboardMetricsTest extends ApiTestCase
     {
         $admin = UserFactory::new()->asAdminUser()->create();
 
-        $user1 = UserFactory::new()->with([
+        UserFactory::new()->with([
             'creationDatetime' => new \DateTime(),
             'email' => 'today1@test.com',
             'username' => 'today_user_1',
@@ -64,7 +64,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             'confirmationDatetime' => new \DateTime(),
         ])->create();
 
-        $user2 = UserFactory::new()->with([
+        UserFactory::new()->with([
             'creationDatetime' => new \DateTime(),
             'email' => 'today2@test.com',
             'username' => 'today_user_2',

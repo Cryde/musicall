@@ -17,7 +17,7 @@ class PublicationStory extends Story
     {
         $publications = PublicationFactory::new()
             ->with(
-                static function () {
+                static function (): array {
                     $commentNumber = random_int(0, 5);
                     $thread = CommentThreadFactory::new(['commentNumber' => $commentNumber])->create();
                     CommentFactory::new([
@@ -65,9 +65,9 @@ class PublicationStory extends Story
                 ])->create();
 
                 if ($value === 1) {
-                    $voteCache->upvoteCount = $voteCache->upvoteCount + 1;
+                    $voteCache->upvoteCount += 1;
                 } else {
-                    $voteCache->downvoteCount = $voteCache->downvoteCount + 1;
+                    $voteCache->downvoteCount += 1;
                 }
             }
         }

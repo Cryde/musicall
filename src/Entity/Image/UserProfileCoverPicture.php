@@ -41,7 +41,7 @@ class UserProfileCoverPicture
     public function setImageFile(?File $image = null): static
     {
         $this->imageFile = $image;
-        if (null !== $image) {
+        if ($image instanceof \Symfony\Component\HttpFoundation\File\File) {
             $this->updatedAt = new \DateTime();
         }
 

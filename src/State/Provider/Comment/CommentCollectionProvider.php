@@ -73,7 +73,7 @@ readonly class CommentCollectionProvider implements ProviderInterface
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
             return [];
         }
 

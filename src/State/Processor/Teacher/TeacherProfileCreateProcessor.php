@@ -114,7 +114,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
 
         foreach ($data->instrumentIds as $instrumentId) {
             $instrument = $this->instrumentRepository->find($instrumentId);
-            if (!$instrument) {
+            if (!$instrument instanceof \App\Entity\Attribute\Instrument) {
                 continue;
             }
 
@@ -130,7 +130,7 @@ readonly class TeacherProfileCreateProcessor implements ProcessorInterface
 
         foreach ($data->styleIds as $styleId) {
             $style = $this->styleRepository->find($styleId);
-            if ($style) {
+            if ($style instanceof \App\Entity\Attribute\Style) {
                 $profile->addStyle($style);
             }
         }

@@ -19,15 +19,12 @@ class UserChecker implements UserCheckerInterface
             return;
         }
 
-        if (!$user->confirmationDatetime) {
+        if (!$user->confirmationDatetime instanceof \DateTimeInterface) {
             throw new CustomUserMessageAccountStatusException('account_not_verified', ['{{ email }}' => $user->email]);
         }
     }
 
     public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void
     {
-        if (!$user instanceof User) {
-            return;
-        }
     }
 }

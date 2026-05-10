@@ -15,7 +15,7 @@ class MusicianAnnounceStory extends Story
     {
         MusicianAnnounceFactory::new()
             ->with(
-                static function () {
+                static function (): array {
                     return [
                         'instrument' => InstrumentStory::getRandom(InstrumentStory::ATTRIBUTES_INSTRUMENTS),
                         'styles'     => StyleStory::getRandomRange(StyleStory::ATTRIBUTES_STYLES, 1, 5),

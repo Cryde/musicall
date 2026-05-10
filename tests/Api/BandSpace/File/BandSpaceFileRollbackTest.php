@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileRollbackTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_rollback_to_previous_version(): void
@@ -63,7 +63,7 @@ class BandSpaceFileRollbackTest extends ApiTestCase
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
-        $rolledBack = array_values(array_filter($activities, fn ($a): bool => $a->type === 'rolled_back'));
+        $rolledBack = array_values(array_filter($activities, fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === 'rolled_back'));
         $this->assertCount(1, $rolledBack);
         $this->assertSame(['from_version_number' => 2, 'to_version_number' => 1], $rolledBack[0]->payload);
     }

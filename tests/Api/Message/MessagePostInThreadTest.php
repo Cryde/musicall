@@ -13,9 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MessagePostInThreadTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_not_logged(): void
@@ -39,9 +39,6 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
-
-        $user1 = $user1;
-        $thread = $thread;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [
@@ -83,9 +80,6 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user3 = $user3;
-        $thread = $thread;
-
         $this->client->loginUser($user3);
         $this->client->jsonRequest('POST', '/api/messages', [
             'thread'  => '/api/message_threads/' . $thread->id,
@@ -118,9 +112,6 @@ class MessagePostInThreadTest extends ApiTestCase
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
-
-        $user1 = $user1;
-        $thread = $thread;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages', [

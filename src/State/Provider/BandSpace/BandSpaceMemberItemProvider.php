@@ -36,7 +36,7 @@ readonly class BandSpaceMemberItemProvider implements ProviderInterface
             $bandSpace
         );
 
-        if (!$membership) {
+        if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             throw new NotFoundHttpException('Membre introuvable');
         }
 

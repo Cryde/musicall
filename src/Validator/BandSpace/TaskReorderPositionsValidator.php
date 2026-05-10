@@ -19,7 +19,7 @@ class TaskReorderPositionsValidator extends ConstraintValidator
             return;
         }
 
-        if (empty($value->positions)) {
+        if ($value->positions === []) {
             $this->context->buildViolation($constraint->emptyMessage)
                 ->atPath('positions')
                 ->setCode(TaskReorderPositions::ERROR_CODE)

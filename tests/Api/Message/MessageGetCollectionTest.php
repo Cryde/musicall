@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MessageGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_not_logged(): void
@@ -63,9 +63,6 @@ class MessageGetCollectionTest extends ApiTestCase
         //this is other thread participant
         MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread2, 'participant' => $user2])->create();
-        $thread = $thread;
-        $user1 = $user1;
-        $user2 = $user2;
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]=desc');
@@ -182,8 +179,6 @@ class MessageGetCollectionTest extends ApiTestCase
         $thread = MessageThreadFactory::new()->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
-
-        $thread = $thread;
 
         $this->client->loginUser($user3); // user3 is not part of this thread
         $this->client->request('GET', '/api/messages/' . $thread->id);

@@ -51,15 +51,15 @@ readonly class PublicationBuilder
         $subCategory = $publicationEntity->subCategory;
         $cover = $publicationEntity->cover;
         $thread = $publicationEntity->thread;
-        assert($cover !== null && $thread !== null);
+        assert($cover instanceof \App\Entity\Image\PublicationCover && $thread instanceof \App\Entity\Comment\CommentThread);
 
         $publication = new Publication();
         $publication->slug = $publicationEntity->slug;
         $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->content);
-        $publication->title = (string) $publicationEntity->title;
+        $publication->title = $publicationEntity->title;
         $publication->description = $publicationEntity->getDescription() ?? '';
         $publicationDatetime = $publicationEntity->publicationDatetime;
-        assert($publicationDatetime !== null);
+        assert($publicationDatetime instanceof \DateTimeInterface);
         $publication->publicationDatetime = $publicationDatetime;
         $publication->author = $this->buildAuthor($author);
         $publication->cover = $this->buildCover($cover);
@@ -71,7 +71,7 @@ readonly class PublicationBuilder
         $publication->upvotes = $voteCache->upvoteCount ?? 0;
         $publication->downvotes = $voteCache->downvoteCount ?? 0;
 
-        if ($voteCache) {
+        if ($voteCache instanceof \App\Entity\Metric\VoteCache) {
             /** @var User|null $currentUser */
             $currentUser = $this->security->getUser();
             if ($currentUser) {
@@ -79,7 +79,7 @@ readonly class PublicationBuilder
                 $publication->userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
-                if ($request) {
+                if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
                     $publication->userVote = $vote?->value;
@@ -93,7 +93,7 @@ readonly class PublicationBuilder
     private function buildAuthor(User $user): Author
     {
         $author = new Author();
-        $author->username = (string) $user->username;
+        $author->username = $user->username;
         $author->deletionDatetime = $user->deletionDatetime;
 
         return $author;
@@ -113,8 +113,8 @@ readonly class PublicationBuilder
     {
         $category = new Category();
         $category->id = (int) $publicationSubCategory->id;
-        $category->slug = (string) $publicationSubCategory->slug;
-        $category->title = (string) $publicationSubCategory->title;
+        $category->slug = $publicationSubCategory->slug;
+        $category->title = $publicationSubCategory->title;
 
         return $category;
     }

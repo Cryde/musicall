@@ -47,7 +47,7 @@ readonly class TaskUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$task) {
+        if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
 

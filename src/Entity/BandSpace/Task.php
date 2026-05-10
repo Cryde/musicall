@@ -18,9 +18,9 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table(name: 'task')]
-#[ORM\Index(columns: ['status'], name: 'idx_task_status')]
-#[ORM\Index(columns: ['priority'], name: 'idx_task_priority')]
-#[ORM\Index(columns: ['archive_datetime'], name: 'idx_task_archive_datetime')]
+#[ORM\Index(name: 'idx_task_status', columns: ['status'])]
+#[ORM\Index(name: 'idx_task_priority', columns: ['priority'])]
+#[ORM\Index(name: 'idx_task_archive_datetime', columns: ['archive_datetime'])]
 class Task
 {
     #[ORM\Id]

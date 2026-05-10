@@ -32,7 +32,7 @@ readonly class EmailVerificationCodeGenerator
     public function generate(User $user): string
     {
         $latestCode = $this->repository->findLatestUnusedForUser($user);
-        if ($latestCode !== null && !$this->isCooldownExpired($latestCode)) {
+        if ($latestCode instanceof \App\Entity\User\EmailVerificationCode && !$this->isCooldownExpired($latestCode)) {
             throw new EmailVerificationException('cooldown_not_expired');
         }
 

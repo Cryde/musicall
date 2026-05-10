@@ -43,7 +43,7 @@ class CommentThread
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(mappedBy: "thread", targetEntity: Comment::class)]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "thread")]
     #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
     public Collection $comments;
 

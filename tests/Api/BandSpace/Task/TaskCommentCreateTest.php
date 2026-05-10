@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class TaskCommentCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_create_comment(): void
@@ -118,7 +118,7 @@ class TaskCommentCreateTest extends ApiTestCase
 
         $mentionedIds = array_map(
             fn($a) => $a->payload['mentioned_user_id'],
-            array_values(array_filter($activities, fn($a) => $a->type === 'mention'))
+            array_values(array_filter($activities, fn($a): bool => $a->type === 'mention'))
         );
         $this->assertCount(2, $mentionedIds);
         $this->assertContains((string) $alice->id, $mentionedIds);

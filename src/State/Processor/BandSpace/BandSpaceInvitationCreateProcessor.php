@@ -79,7 +79,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         }
 
         $pendingInvitation = $this->bandSpaceInvitationRepository->findPendingByEmailAndBandSpace($email, $bandSpace);
-        if ($pendingInvitation) {
+        if ($pendingInvitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
             throw new ConflictHttpException('Une invitation est déjà en attente pour cet utilisateur');
         }
 
@@ -109,7 +109,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
 
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        if ($existingUser) {
+        if ($existingUser instanceof \App\Entity\User) {
             $this->existingUserEmail->send(
                 $email,
                 $existingUser->username,

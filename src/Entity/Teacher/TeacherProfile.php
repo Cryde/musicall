@@ -32,7 +32,7 @@ class TeacherProfile implements ViewableInterface
         }
     }
 
-    #[ORM\OneToOne(inversedBy: 'teacherProfile', targetEntity: User::class)]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'teacherProfile')]
     #[ORM\JoinColumn(nullable: false)]
     public User $user;
 
@@ -66,7 +66,7 @@ class TeacherProfile implements ViewableInterface
     /**
      * @var Collection<int, TeacherProfileInstrument>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfileInstrument::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherProfileInstrument::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $instruments;
 
     /**
@@ -79,38 +79,38 @@ class TeacherProfile implements ViewableInterface
     /**
      * @var Collection<int, TeacherProfileMedia>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfileMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherProfileMedia::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
     public Collection $media;
 
     /**
      * @var Collection<int, TeacherProfilePricing>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfilePricing::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherProfilePricing::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $pricing;
 
     /**
      * @var Collection<int, TeacherAvailability>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherAvailability::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherAvailability::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $availability;
 
     /**
      * @var Collection<int, TeacherProfileLocation>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfileLocation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherProfileLocation::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $locations;
 
     /**
      * @var Collection<int, TeacherProfilePackage>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherProfilePackage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherProfilePackage::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $packages;
 
     /**
      * @var Collection<int, TeacherSocialLink>
      */
-    #[ORM\OneToMany(mappedBy: 'teacherProfile', targetEntity: TeacherSocialLink::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: TeacherSocialLink::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $socialLinks;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

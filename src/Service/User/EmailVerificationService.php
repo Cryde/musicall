@@ -39,7 +39,7 @@ readonly class EmailVerificationService
     {
         $verificationCode = $this->repository->findLatestUnusedForUser($user);
 
-        if ($verificationCode === null) {
+        if (!$verificationCode instanceof \App\Entity\User\EmailVerificationCode) {
             throw new EmailVerificationException('no_code_found');
         }
 

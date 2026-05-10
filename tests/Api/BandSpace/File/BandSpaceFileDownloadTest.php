@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileDownloadTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     private const string V1_CONTENT = "Hello, MusicAll Files module!\n";
@@ -156,6 +156,6 @@ class BandSpaceFileDownloadTest extends ApiTestCase
 
     private function getStreamedBody(): string
     {
-        return (string) $this->client->getInternalResponse()->getContent();
+        return $this->client->getInternalResponse()->getContent();
     }
 }

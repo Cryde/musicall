@@ -54,7 +54,7 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         $summary->minDate = $boundaries['min_date'];
         $summary->maxDate = $boundaries['max_date'];
 
-        $summary->byCategory = array_map(fn (array $row) => [
+        $summary->byCategory = array_map(fn (array $row): array => [
             'id' => $row['pole_id'],
             'name' => $row['pole_name'],
             'paid' => $row['paid'],
@@ -62,13 +62,13 @@ readonly class FinanceSummaryProvider implements ProviderInterface
             'planned' => $row['planned'],
         ], $byCategory);
 
-        $summary->memberContributions = array_map(fn (array $c) => [
+        $summary->memberContributions = array_map(fn (array $c): array => [
             'member_id' => $c['member_id'],
             'name' => $c['username'],
             'total' => $c['total'],
         ], $contributions);
 
-        $summary->upcomingEntries = array_map(fn ($entry) => [
+        $summary->upcomingEntries = array_map(fn (\App\Entity\BandSpace\FinanceEntry $entry): array => [
             'id' => (string) $entry->id,
             'label' => $entry->label,
             'amount' => $entry->amount,

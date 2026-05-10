@@ -132,7 +132,7 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     public function buildFolderPath(?BandSpaceFolder $folder): array
     {
         $path = [];
-        while ($folder !== null) {
+        while ($folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             array_unshift($path, ['id' => (string) $folder->id, 'name' => $folder->name]);
             $folder = $folder->parent;
         }

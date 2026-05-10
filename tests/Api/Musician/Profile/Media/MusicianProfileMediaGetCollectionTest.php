@@ -13,9 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MusicianProfileMediaGetCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_collection_success_with_multiple_media(): void
@@ -31,9 +31,6 @@ class MusicianProfileMediaGetCollectionTest extends ApiTestCase
 
         $user->musicianProfile = $musicianProfile;
         \Zenstruck\Foundry\Persistence\save($user);
-
-        // Store IDs before creating media
-        $userId = $user->id;
 
         // Create media and store their IDs
         $media1Id = MusicianProfileMediaFactory::new()->asYouTube()->create([

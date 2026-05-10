@@ -47,7 +47,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         [, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $membership->bandSpace);
-        if ($folder === null) {
+        if (!$folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             throw new NotFoundHttpException('Dossier introuvable');
         }
 
@@ -61,7 +61,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul un administrateur peut supprimer un dossier en cascade');
         }
 
-        $isOwner = $folder->createdBy !== null && $folder->createdBy->id === $user->id;
+        $isOwner = $folder->createdBy instanceof \App\Entity\User && $folder->createdBy->id === $user->id;
         if ($strategy === self::STRATEGY_MOVE_TO_ROOT && !$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce dossier');
         }

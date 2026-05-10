@@ -50,13 +50,13 @@ class CategoryMaxDepthValidator extends ConstraintValidator
         }
 
         $parent = $this->categoryRepository->findOneByIdAndBandSpace($value->parentId, $bandSpace);
-        if ($parent === null) {
+        if (!$parent instanceof \App\Entity\BandSpace\FinanceCategory) {
             return;
         }
 
         $depth = 1;
         $ancestor = $parent;
-        while ($ancestor->parent !== null) {
+        while ($ancestor->parent instanceof \App\Entity\BandSpace\FinanceCategory) {
             $depth++;
             $ancestor = $ancestor->parent;
         }

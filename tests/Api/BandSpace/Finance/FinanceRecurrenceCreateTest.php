@@ -21,9 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceRecurrenceCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_create_recurrence(): void
@@ -38,10 +38,6 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -114,10 +110,6 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
             'POST',
@@ -157,10 +149,6 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -199,10 +187,6 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'startDate' => new \DateTime('2024-01-01'),
             'endDate' => new \DateTime('2024-12-31'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -254,10 +238,6 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -307,10 +287,6 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $category = $category;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

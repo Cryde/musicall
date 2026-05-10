@@ -26,11 +26,11 @@ readonly class GalleryBuilder
         $author = $galleryEntity->author;
         $coverImage = $galleryEntity->coverImage;
         $publicationDatetime = $galleryEntity->publicationDatetime;
-        assert($coverImage !== null && $publicationDatetime !== null);
+        assert($coverImage instanceof \App\Entity\Image\GalleryImage && $publicationDatetime instanceof \DateTimeInterface);
 
         $gallery = new Gallery();
         $gallery->slug = (string) $galleryEntity->slug;
-        $gallery->title = (string) $galleryEntity->title;
+        $gallery->title = $galleryEntity->title;
         $gallery->description = $galleryEntity->description ?? '';
         $gallery->publicationDatetime = $publicationDatetime;
         $gallery->author = $this->buildAuthor($author);
@@ -44,7 +44,7 @@ readonly class GalleryBuilder
     private function buildAuthor(User $user): Author
     {
         $author = new Author();
-        $author->username = (string) $user->username;
+        $author->username = $user->username;
         $author->deletionDatetime = $user->deletionDatetime;
 
         return $author;
@@ -66,7 +66,7 @@ readonly class GalleryBuilder
     public function buildImagesFromEntity(GalleryEntity $gallery): array
     {
         return array_map(
-            fn (GalleryImageEntity $image) => $this->buildImageFromEntity($image),
+            fn (GalleryImageEntity $image): \App\ApiResource\Publication\GalleryImage => $this->buildImageFromEntity($image),
             $gallery->images->toArray()
         );
     }

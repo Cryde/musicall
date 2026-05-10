@@ -23,9 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class FinanceEntrySplitDeleteTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_delete_split(): void
@@ -53,11 +53,6 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'member' => $membership,
             'amount' => 25000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
         $splitId = (string) $split->id;
 
         $this->client->loginUser($user);
@@ -105,11 +100,6 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'amount' => 25000,
         ])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
-
         $this->client->loginUser($otherUser);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
 
@@ -141,11 +131,6 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'member' => $membership,
             'amount' => 25000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);
@@ -194,11 +179,6 @@ class FinanceEntrySplitDeleteTest extends ApiTestCase
             'member' => $membership,
             'amount' => 25000,
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $entry = $entry;
-        $split = $split;
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id . '/splits/' . $split->id);

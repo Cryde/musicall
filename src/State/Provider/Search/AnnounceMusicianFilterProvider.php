@@ -30,7 +30,7 @@ readonly class AnnounceMusicianFilterProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AnnounceMusicianFilter
     {
-        if (!$params = $operation->getParameters()) {
+        if (!($params = $operation->getParameters()) instanceof \ApiPlatform\Metadata\Parameters) {
             return null;
         }
         $search = $params->get('search')?->getValue();

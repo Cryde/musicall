@@ -74,9 +74,6 @@ class ForumStory extends Story
         $this->createTopicsForSuggestionsForum($suggestionsForum);
     }
 
-    /**
-     * @param Forum $forum
-     */
     private function createTopicsForPresentationForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
@@ -124,9 +121,6 @@ class ForumStory extends Story
         $this->updateForumCounts($forum);
     }
 
-    /**
-     * @param Forum $forum
-     */
     private function createTopicsForDiscussionForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
@@ -139,7 +133,7 @@ class ForumStory extends Story
             ['title' => 'Comment gérez-vous le trac sur scène ?', 'slug' => 'comment-gerez-vous-le-trac-sur-scene', 'posts' => 6],
         ];
 
-        foreach ($discussionTopics as $index => $topicData) {
+        foreach ($discussionTopics as $topicData) {
             $topic = ForumTopicFactory::new([
                 'forum' => $forum,
                 'title' => $topicData['title'],
@@ -158,9 +152,6 @@ class ForumStory extends Story
         $this->updateForumCounts($forum);
     }
 
-    /**
-     * @param Forum $forum
-     */
     private function createTopicsForTheorieForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
@@ -202,9 +193,6 @@ class ForumStory extends Story
         $this->updateForumCounts($forum);
     }
 
-    /**
-     * @param Forum $forum
-     */
     private function createTopicsForSuggestionsForum(Forum $forum): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
@@ -240,9 +228,6 @@ class ForumStory extends Story
         $this->updateForumCounts($forum);
     }
 
-    /**
-     * @param ForumTopic $topic
-     */
     private function createPostsForTopic(ForumTopic $topic, int $count): void
     {
         $users = UserStory::getPool(UserStory::POOL_USERS);
@@ -269,15 +254,12 @@ class ForumStory extends Story
 
         // Update topic with last post and post count
         $topic->postNumber = $count;
-        if ($lastPost) {
+        if ($lastPost instanceof \App\Entity\Forum\ForumPost) {
             $topic->lastPost = $lastPost;
         }
         \Zenstruck\Foundry\Persistence\save($topic);
     }
 
-    /**
-     * @param Forum $forum
-     */
     private function updateForumCounts(Forum $forum): void
     {
         $topicCount = 0;

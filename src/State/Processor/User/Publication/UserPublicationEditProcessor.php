@@ -35,15 +35,15 @@ class UserPublicationEditProcessor implements ProcessorInterface
         if (isset($data->title)) {
             $publication->title = $data->title;
         }
-        if (isset($data->shortDescription)) {
+        if ($data->shortDescription !== null) {
             $publication->shortDescription = $data->shortDescription;
         }
-        if (isset($data->content)) {
+        if ($data->content !== null) {
             $publication->content = $data->content;
         }
-        if (isset($data->categoryId)) {
+        if ($data->categoryId !== null) {
             $category = $this->subCategoryRepository->find($data->categoryId);
-            if (!$category) {
+            if (!$category instanceof \App\Entity\PublicationSubCategory) {
                 throw new BadRequestHttpException('Category not found');
             }
             $publication->subCategory = $category;

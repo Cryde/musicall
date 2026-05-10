@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\User;
 
 use App\Entity\Image\UserProfilePicture;

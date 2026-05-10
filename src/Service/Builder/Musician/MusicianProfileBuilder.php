@@ -32,19 +32,19 @@ readonly class MusicianProfileBuilder
         $dto = new PublicMusicianProfile();
 
         $dto->username = $user->username;
-        $dto->userId = (string) $user->id;
+        $dto->userId = $user->id;
         $dto->creationDatetime = $profile->creationDatetime;
         $dto->updateDatetime = $profile->updateDatetime;
 
         // Profile picture
-        if ($user->profilePicture) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile');
             if ($path !== null) {
                 $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
             }
         }
 
-        if ($profile->availabilityStatus) {
+        if ($profile->availabilityStatus instanceof \App\Enum\Musician\AvailabilityStatus) {
             $dto->availabilityStatus = $profile->availabilityStatus->value;
             $dto->availabilityStatusLabel = $profile->availabilityStatus->getLabel();
         }
@@ -70,7 +70,7 @@ readonly class MusicianProfileBuilder
             $instrumentEntity = $instrument->instrument;
             $dto = new PublicMusicianProfileInstrument();
             $dto->instrumentId = (string) $instrumentEntity->id;
-            $dto->instrumentName = (string) $instrumentEntity->musicianName;
+            $dto->instrumentName = $instrumentEntity->musicianName;
             $dto->skillLevel = $instrument->skillLevel->value;
             $dto->skillLevelLabel = $instrument->skillLevel->getLabel();
 
@@ -87,7 +87,7 @@ readonly class MusicianProfileBuilder
         return array_values(array_map(function (Style $style): PublicMusicianProfileStyle {
             $dto = new PublicMusicianProfileStyle();
             $dto->id = (string) $style->id;
-            $dto->name = (string) $style->name;
+            $dto->name = $style->name;
 
             return $dto;
         }, $styles));
@@ -103,11 +103,11 @@ readonly class MusicianProfileBuilder
             $dto = new PublicProfileAnnounce();
             $dto->id = (string) $announce->id;
             $dto->creationDatetime = $announce->creationDatetime;
-            $dto->type = (int) $announce->type;
-            $dto->instrumentName = (string) $announce->instrument->musicianName;
-            $dto->locationName = (string) $announce->locationName;
+            $dto->type = $announce->type;
+            $dto->instrumentName = $announce->instrument->musicianName;
+            $dto->locationName = $announce->locationName;
             $dto->styles = array_map(
-                fn($style) => (string) $style->name,
+                fn(\App\Entity\Attribute\Style $style): string => $style->name,
                 $announce->styles->toArray()
             );
 

@@ -29,7 +29,7 @@ class TopicCreationProcedure
 
     public function process(Forum $forumDto, string $title, string $message): ForumTopic
     {
-        if (!$forum = $this->forumRepository->find($forumDto->id)) {
+        if (!($forum = $this->forumRepository->find($forumDto->id)) instanceof \App\Entity\Forum\Forum) {
             throw new NotFoundHttpException('Forum not found.');
         }
         /** @var User $user */
@@ -46,8 +46,8 @@ class TopicCreationProcedure
         $topic->lastPost = $post;
 
         // Update forum counters
-        $forum->topicNumber = $forum->topicNumber + 1;
-        $forum->postNumber = $forum->postNumber + 1;
+        $forum->topicNumber += 1;
+        $forum->postNumber += 1;
 
         $this->entityManager->flush();
 

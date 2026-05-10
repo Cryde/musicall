@@ -24,7 +24,7 @@ class UserPublicationDeleteProcessor implements ProcessorInterface
         /** @var UserPublication $data */
         $publication = $this->publicationRepository->find($data->id);
 
-        if ($publication) {
+        if ($publication instanceof \App\Entity\Publication) {
             $this->entityManager->remove($publication);
             $this->entityManager->flush();
         }

@@ -40,7 +40,7 @@ readonly class FinanceCategoryDeleteProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
-        if (!$category) {
+        if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
             throw new NotFoundHttpException('Catégorie introuvable');
         }
 

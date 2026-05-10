@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\Attribute;
 
 use Zenstruck\Foundry\Factory;
@@ -18,7 +20,7 @@ final class InstrumentFactory extends PersistentObjectFactory
         ];
     }
 
-    public function asDrum(): Factory
+    public function asDrum(): \App\Tests\Factory\Attribute\InstrumentFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -28,7 +30,7 @@ final class InstrumentFactory extends PersistentObjectFactory
         ]);
     }
 
-    public function asGuitar(): Factory
+    public function asGuitar(): \App\Tests\Factory\Attribute\InstrumentFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
@@ -38,7 +40,7 @@ final class InstrumentFactory extends PersistentObjectFactory
         ]);
     }
 
-    public function asPiano(): Factory
+    public function asPiano(): \App\Tests\Factory\Attribute\InstrumentFactory
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),

@@ -9,10 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicationRepositoryTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_find_one_video(): void
     {
         $repo = static::getContainer()->get(PublicationRepository::class);

@@ -21,20 +21,19 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MusicianAIFinderTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_find(): void
     {
-        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
-        $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
+        UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
-        $pop = StyleFactory::new()->asPop()->create();
+        StyleFactory::new()->asPop()->create();
         $rock = StyleFactory::new()->asRock()->create();
-        $metal = StyleFactory::new()->asMetal()->create();
+        StyleFactory::new()->asMetal()->create();
         $drum = InstrumentFactory::new()->asDrum()->create();
-        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        InstrumentFactory::new()->asGuitar()->create();
 
         $finder = $this->buildMusicianFilterGeneratorOk($drum, [$rock]);
 
@@ -54,7 +53,7 @@ class MusicianAIFinderTest extends KernelTestCase
             static::getContainer()->get(InstrumentRepository::class),
             static::getContainer()->get(StyleRepository::class),
             new Agent(
-                new InMemoryPlatform(fn(Model $model, MessageBag $input, array $options) => $this->callableResult($model, $input, $options, $instrument, $styles)),
+                new InMemoryPlatform(fn(Model $model, MessageBag $input, array $options): \Symfony\AI\Platform\Result\ResultInterface => $this->callableResult($instrument, $styles)),
                 'gpt-4o-mini',
             ),
             static::getContainer()->get(AnnounceMusicianFilterBuilder::class),
@@ -64,12 +63,12 @@ class MusicianAIFinderTest extends KernelTestCase
     /**
      * @param Style[]      $styles
      */
-    private function callableResult(Model $model, MessageBag $input, array $options, Instrument $instrument, array $styles): ResultInterface
+    private function callableResult(Instrument $instrument, array $styles): ResultInterface
     {
         return new ObjectResult([
             'type' => 1,
             'instrument' => $instrument->id,
-            'styles' => array_map(fn(Style $style) => $style->id, $styles),
+            'styles' => array_map(fn(Style $style): \Ramsey\Uuid\UuidInterface|string|null => $style->id, $styles),
             'coordinates' => [
                 'latitude' => 48.856614,
                 'longitude' => 2.3522219,

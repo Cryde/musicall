@@ -43,7 +43,7 @@ readonly class AgendaEntryDeleteProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->agendaEntryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
-        if (!$entry) {
+        if (!$entry instanceof \App\Entity\BandSpace\AgendaEntry) {
             throw new NotFoundHttpException('Événement introuvable');
         }
 

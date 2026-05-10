@@ -16,10 +16,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceActivityRecorderTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     protected function setUp(): void
     {
         self::bootKernel();
@@ -78,7 +77,6 @@ class BandSpaceActivityRecorderTest extends KernelTestCase
             module: BandSpaceModule::File,
             type: 'public_accessed',
             resourceId: Uuid::uuid4(),
-            actor: null,
         );
 
         $this->getEntityManager()->flush();

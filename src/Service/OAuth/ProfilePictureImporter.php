@@ -24,7 +24,7 @@ readonly class ProfilePictureImporter
     public function importFromUrl(User $user, string $pictureUrl): void
     {
         // Skip if user already has a profile picture
-        if ($user->profilePicture !== null) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             return;
         }
 

@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceActivityCollectionTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_admin_lists_all_activities(): void
@@ -85,7 +85,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame(2, $data['totalItems']);
-        $modules = array_map(fn($a) => $a['module'], $data['member']);
+        $modules = array_map(fn(array $a) => $a['module'], $data['member']);
         sort($modules);
         $this->assertSame(['agenda', 'task'], $modules);
     }

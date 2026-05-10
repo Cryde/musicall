@@ -38,12 +38,12 @@ readonly class TaskCommentItemProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $bandSpace);
-        if (!$task) {
+        if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
 
         $comment = $this->taskCommentRepository->findOneByIdAndTask((string) $uriVariables['id'], $task);
-        if (!$comment) {
+        if (!$comment instanceof \App\Entity\BandSpace\TaskComment) {
             throw new NotFoundHttpException('Commentaire introuvable');
         }
 

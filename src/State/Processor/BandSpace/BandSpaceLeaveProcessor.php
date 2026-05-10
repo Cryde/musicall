@@ -44,12 +44,12 @@ readonly class BandSpaceLeaveProcessor implements ProcessorInterface
         $user = $this->security->getUser();
 
         $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships((string) $uriVariables['bandSpaceId']);
-        if (!$bandSpace) {
+        if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
             throw new NotFoundHttpException('Band Space introuvable');
         }
 
         $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $user);
-        if (!$membership) {
+        if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
             throw new AccessDeniedHttpException('Vous n\'êtes pas membre de ce Band Space');
         }
 

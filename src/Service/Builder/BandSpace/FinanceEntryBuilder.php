@@ -39,10 +39,10 @@ readonly class FinanceEntryBuilder
         $dto->amountMax = $entity->amountMax;
         $dto->date = $entity->date->format('Y-m-d');
         $dto->scope = $entity->scope->value;
-        $dto->memberId = $entity->member !== null ? (string) $entity->member->id : null;
+        $dto->memberId = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership ? (string) $entity->member->id : null;
         $dto->memberName = $entity->member?->user->username;
-        $dto->isFormerMember = $entity->member !== null && $entity->member->status !== MembershipStatus::Active;
-        $dto->recurrenceId = $entity->recurrence !== null ? (string) $entity->recurrence->id : null;
+        $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
+        $dto->recurrenceId = $entity->recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence ? (string) $entity->recurrence->id : null;
         $dto->splitWarning = $splitWarning;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
         $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);

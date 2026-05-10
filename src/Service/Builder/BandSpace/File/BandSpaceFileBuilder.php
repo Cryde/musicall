@@ -53,7 +53,7 @@ readonly class BandSpaceFileBuilder
         $dto->originalName = $entity->originalName;
         $dto->size = $entity->currentVersion?->size;
         $dto->mimeType = $entity->currentVersion?->mimeType;
-        $dto->folderId = $entity->folder !== null ? (string) $entity->folder->id : null;
+        $dto->folderId = $entity->folder instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $entity->folder->id : null;
         $dto->folderPath = $this->fileRepository->buildFolderPath($entity->folder);
 
         $dto->tags = array_values(array_map(
@@ -67,14 +67,14 @@ readonly class BandSpaceFileBuilder
 
         $dto->attachments = $this->buildAttachments($entity);
 
-        $dto->currentVersionId = $entity->currentVersion !== null
+        $dto->currentVersionId = $entity->currentVersion instanceof \App\Entity\BandSpace\BandSpaceFileVersion
             ? (string) $entity->currentVersion->id
             : null;
         $dto->currentVersionNumber = $entity->currentVersion?->versionNumber;
 
         $dto->versionCount = $versionCount ?? $this->fileRepository->countVersionsByFileIds([(string) $entity->id])[(string) $entity->id] ?? 0;
 
-        if ($entity->createdBy !== null) {
+        if ($entity->createdBy instanceof \App\Entity\User) {
             $dto->createdBy = [
                 'id' => (string) $entity->createdBy->id,
                 'username' => $entity->createdBy->username,
@@ -130,7 +130,7 @@ readonly class BandSpaceFileBuilder
         $entryLabels = [];
         foreach ($entryIds as $entryId) {
             $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
-            if ($entry !== null) {
+            if ($entry instanceof \App\Entity\BandSpace\FinanceEntry) {
                 $entryLabels[$entryId] = $entry->label;
             }
         }
@@ -138,7 +138,7 @@ readonly class BandSpaceFileBuilder
         $noteTitles = [];
         foreach ($noteIds as $noteId) {
             $note = $this->noteRepository->findOneByIdAndBandSpace($noteId, $bandSpace);
-            if ($note !== null) {
+            if ($note instanceof \App\Entity\BandSpace\BandSpaceNote) {
                 $noteTitles[$noteId] = $note->title;
             }
         }

@@ -14,7 +14,7 @@ use Ramsey\Uuid\UuidInterface;
 #[ORM\Entity(repositoryClass: BandSpaceFileAttachmentRepository::class)]
 #[ORM\Table(name: 'band_space_file_attachment')]
 #[ORM\UniqueConstraint(name: 'uniq_attachment_file_source', columns: ['band_space_file_id', 'source_type', 'source_id'])]
-#[ORM\Index(columns: ['source_type', 'source_id'], name: 'idx_attachment_source')]
+#[ORM\Index(name: 'idx_attachment_source', columns: ['source_type', 'source_id'])]
 class BandSpaceFileAttachment
 {
     #[ORM\Id]

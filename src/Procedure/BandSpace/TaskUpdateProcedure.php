@@ -93,11 +93,7 @@ readonly class TaskUpdateProcedure
         }
 
         $task->status = TaskStatus::from($newStatus);
-        if ($task->status === TaskStatus::Done) {
-            $task->completedDatetime = new DateTimeImmutable();
-        } else {
-            $task->completedDatetime = null;
-        }
+        $task->completedDatetime = $task->status === TaskStatus::Done ? new DateTimeImmutable() : null;
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $task->bandSpace,
             module: BandSpaceModule::Task,
@@ -128,10 +124,10 @@ readonly class TaskUpdateProcedure
 
     private function applyCategoryChange(Task $task, ?string $newCategoryId, BandSpace $bandSpace, User $user): void
     {
-        $oldCategoryId = $task->category !== null ? (string) $task->category->id : null;
+        $oldCategoryId = $task->category instanceof \App\Entity\BandSpace\TaskCategory ? (string) $task->category->id : null;
         if ($newCategoryId !== null) {
             $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($newCategoryId, $bandSpace);
-            if (!$category) {
+            if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
                 throw new NotFoundHttpException('Catégorie introuvable');
             }
             $task->category = $category;
@@ -189,12 +185,12 @@ readonly class TaskUpdateProcedure
 
         foreach ($added as $addedId) {
             $assignee = $this->userRepository->find($addedId);
-            if (!$assignee) {
+            if (!$assignee instanceof \App\Entity\User) {
                 throw new BadRequestHttpException(sprintf('Utilisateur %s introuvable', $addedId));
             }
 
             $membership = $this->bandSpaceMembershipRepository->findMembership($bandSpace, $assignee);
-            if (!$membership) {
+            if (!$membership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
                 throw new BadRequestHttpException(sprintf('L\'utilisateur %s n\'est pas membre du Band Space', $assignee->username));
             }
 
@@ -216,7 +212,7 @@ readonly class TaskUpdateProcedure
     private function applyArchivedChange(Task $task, bool $archived, User $user): void
     {
         if ($archived) {
-            if ($task->archiveDatetime !== null) {
+            if ($task->archiveDatetime instanceof \DateTimeImmutable) {
                 return;
             }
             if ($task->status !== TaskStatus::Done) {
@@ -234,7 +230,7 @@ readonly class TaskUpdateProcedure
             return;
         }
 
-        if ($task->archiveDatetime === null) {
+        if (!$task->archiveDatetime instanceof \DateTimeImmutable) {
             return;
         }
         $task->archiveDatetime = null;

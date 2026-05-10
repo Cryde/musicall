@@ -12,7 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ViewRepository::class)]
-#[ORM\Index(columns: ['entity_type', 'entity_id'], name: 'idx_view_entity')]
+#[ORM\Index(name: 'idx_view_entity', columns: ['entity_type', 'entity_id'])]
 class View
 {
     #[ORM\Id]

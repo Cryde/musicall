@@ -20,11 +20,11 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
     operations: [
         new Post(
             uriTemplate: '/band_spaces/{bandSpaceId}/files/{fileId}/versions',
+            inputFormats: ['multipart' => ['multipart/form-data']],
             uriVariables: [
                 'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
                 'fileId' => new Link(fromClass: self::class, identifiers: ['fileId']),
             ],
-            inputFormats: ['multipart' => ['multipart/form-data']],
             openapi: new Operation(
                 tags: ['Band Space File Version'],
                 requestBody: new RequestBody(

@@ -19,7 +19,7 @@ class TaskMovePayloadValidator extends ConstraintValidator
             return;
         }
 
-        if (empty($value->positions)) {
+        if ($value->positions === []) {
             $this->context->buildViolation($constraint->emptyMessage)
                 ->atPath('positions')
                 ->setCode(TaskMovePayload::ERROR_CODE)

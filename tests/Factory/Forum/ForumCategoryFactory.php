@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\Forum;
 
 use App\Entity\Forum\ForumCategory;

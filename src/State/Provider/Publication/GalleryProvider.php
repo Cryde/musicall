@@ -33,13 +33,13 @@ readonly class GalleryProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
         $gallery = $this->galleryRepository->findOneBy(['slug' => $uriVariables['slug']]);
-        if (!$gallery) {
+        if (!$gallery instanceof \App\Entity\Gallery) {
             throw new PublicationNotFoundException('Gallery inexistante');
         }
         if ($gallery->status === Gallery::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
-            if ($request = $this->requestStack->getCurrentRequest()) {
+            if (($request = $this->requestStack->getCurrentRequest()) instanceof \Symfony\Component\HttpFoundation\Request) {
                 $this->viewProcedure->process($gallery, $request, $user);
             }
         }

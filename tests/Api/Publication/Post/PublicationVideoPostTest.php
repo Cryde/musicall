@@ -14,9 +14,9 @@ use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
 // note:  This test will only cover constraints for now
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class PublicationVideoPostTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_empty_values(): void

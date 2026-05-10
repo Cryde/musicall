@@ -21,7 +21,7 @@ readonly class BandSpaceInvitationInfoProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): BandSpaceInvitationInfo
     {
         $invitation = $this->bandSpaceInvitationRepository->findPendingByToken((string) $uriVariables['token']);
-        if (!$invitation) {
+        if (!$invitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
             throw new NotFoundHttpException('Invitation introuvable ou expirée');
         }
 

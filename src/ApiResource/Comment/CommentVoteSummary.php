@@ -19,7 +19,7 @@ use App\State\Processor\Comment\CommentVoteProcessor;
 )]
 class CommentVoteSummary
 {
-    #[ApiProperty(identifier: true, readable: false)]
+    #[ApiProperty(readable: false, identifier: true)]
     public int $id;
     public int $upvotes = 0;
     public int $downvotes = 0;

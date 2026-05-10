@@ -28,17 +28,11 @@ final class ForumFactory extends PersistentObjectFactory
         ];
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function withForumCategory(ForumCategory $forumCategory): self
     {
         return $this->with(['forumCategory' => $forumCategory]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asPresentation(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -50,9 +44,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asDiscussionGenerale(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -64,9 +55,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asTheorieMusicale(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -78,9 +66,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asInformatiqueMusicale(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -92,9 +77,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asPromotion(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -106,9 +88,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asPetitesAnnonces(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -120,9 +99,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asVideos(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -134,9 +110,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asAudio(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -148,9 +121,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asSuggestions(ForumCategory $forumCategory): self
     {
         return $this->with([
@@ -162,9 +132,6 @@ final class ForumFactory extends PersistentObjectFactory
         ]);
     }
 
-    /**
-     * @param ForumCategory $forumCategory
-     */
     public function asBugs(ForumCategory $forumCategory): self
     {
         return $this->with([

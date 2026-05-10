@@ -14,7 +14,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: AgendaEntryRepository::class)]
 #[ORM\Table(name: 'agenda_entry')]
-#[ORM\Index(columns: ['event_datetime'], name: 'idx_agenda_entry_event_datetime')]
+#[ORM\Index(name: 'idx_agenda_entry_event_datetime', columns: ['event_datetime'])]
 class AgendaEntry
 {
     #[ORM\Id]

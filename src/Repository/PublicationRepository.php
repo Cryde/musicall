@@ -49,7 +49,7 @@ class PublicationRepository extends ServiceEntityRepository
     /**
      * @return Publication|null
      */
-    public function findOneVideo(string $videoId)
+    public function findOneVideo(string $videoId): ?object
     {
         return $this->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO]);
     }
@@ -162,7 +162,7 @@ class PublicationRepository extends ServiceEntityRepository
         );
 
         return array_map(
-            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
             $result->fetchAllAssociative()
         );
     }
@@ -253,7 +253,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return array_map(function ($row) {
+        return array_map(function (array $row): array {
             return [
                 'id' => $row['id'],
                 'title' => $row['title'],
@@ -310,7 +310,7 @@ class PublicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return array_map(function ($row) {
+        return array_map(function (array $row): array {
             return [
                 'id' => $row['id'],
                 'title' => $row['title'],

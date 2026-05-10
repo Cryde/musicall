@@ -53,7 +53,7 @@ class RecurrenceNoOverlapValidator extends ConstraintValidator
         }
 
         $category = $this->categoryRepository->findOneByIdAndBandSpace($value->categoryId, $bandSpace);
-        if ($category === null) {
+        if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
             return;
         }
 

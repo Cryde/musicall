@@ -44,7 +44,7 @@ class UserProfile implements ViewableInterface
     /**
      * @var Collection<int, UserSocialLink>
      */
-    #[ORM\OneToMany(mappedBy: 'profile', targetEntity: UserSocialLink::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: UserSocialLink::class, mappedBy: 'profile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $socialLinks;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

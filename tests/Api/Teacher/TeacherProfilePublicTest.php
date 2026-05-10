@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class TeacherProfilePublicTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_teacher_profile_success(): void
@@ -29,7 +29,7 @@ class TeacherProfilePublicTest extends ApiTestCase
             'email' => 'teacher@test.com',
         ]);
 
-        $teacherProfile = TeacherProfileFactory::new()->create([
+        TeacherProfileFactory::new()->create([
             'user' => $user,
             'description' => 'Professeur de guitare expérimenté',
             'yearsOfExperience' => 10,

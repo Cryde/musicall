@@ -75,7 +75,7 @@ class BandSpaceFolderRepository extends ServiceEntityRepository
     public function computeDepth(?BandSpaceFolder $folder): int
     {
         $depth = 0;
-        while ($folder !== null && $folder->parent !== null) {
+        while ($folder instanceof \App\Entity\BandSpace\BandSpaceFolder && $folder->parent instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             $depth++;
             $folder = $folder->parent;
         }
@@ -99,14 +99,14 @@ class BandSpaceFolderRepository extends ServiceEntityRepository
             ->setParameter('bandSpace', $bandSpace)
             ->setParameter('name', mb_strtolower(trim($name)));
 
-        if ($parent === null) {
+        if (!$parent instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             $qb->andWhere('f.parent IS NULL');
         } else {
             $qb->andWhere('f.parent = :parent')
                 ->setParameter('parent', $parent);
         }
 
-        if ($exclude !== null) {
+        if ($exclude instanceof \App\Entity\BandSpace\BandSpaceFolder) {
             $qb->andWhere('f.id != :excludeId')
                 ->setParameter('excludeId', $exclude->id);
         }

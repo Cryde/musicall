@@ -42,7 +42,7 @@ readonly class BandSpaceFileActivityCollectionProvider implements ProviderInterf
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
-        if ($file === null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 

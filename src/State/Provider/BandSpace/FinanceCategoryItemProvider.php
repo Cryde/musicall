@@ -36,7 +36,7 @@ readonly class FinanceCategoryItemProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->financeCategoryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$category) {
+        if (!$category instanceof \App\Entity\BandSpace\FinanceCategory) {
             throw new NotFoundHttpException('Catégorie introuvable');
         }
 

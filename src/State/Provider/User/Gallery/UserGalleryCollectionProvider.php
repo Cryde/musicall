@@ -35,7 +35,7 @@ readonly class UserGalleryCollectionProvider implements ProviderInterface
         );
 
         return array_map(
-            fn($gallery) => $this->userGalleryBuilder->buildFromEntity($gallery),
+            fn(\App\Entity\Gallery $gallery): \App\ApiResource\User\Gallery\UserGallery => $this->userGalleryBuilder->buildFromEntity($gallery),
             $galleries
         );
     }

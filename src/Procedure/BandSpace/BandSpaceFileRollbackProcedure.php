@@ -24,7 +24,7 @@ readonly class BandSpaceFileRollbackProcedure
     public function rollback(BandSpaceFile $file, int $versionNumber, User $user): BandSpaceFile
     {
         $target = $this->versionRepository->findOneByFileAndVersionNumber($file, $versionNumber);
-        if ($target === null) {
+        if (!$target instanceof \App\Entity\BandSpace\BandSpaceFileVersion) {
             throw new UnprocessableEntityHttpException(sprintf('Version %d introuvable pour ce fichier', $versionNumber));
         }
 

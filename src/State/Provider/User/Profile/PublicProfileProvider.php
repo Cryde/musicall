@@ -33,7 +33,7 @@ readonly class PublicProfileProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PublicProfile
     {
         $username = $uriVariables['username'];
-        if (!$user = $this->userRepository->findOneBy(['username' => $username])) {
+        if (!($user = $this->userRepository->findOneBy(['username' => $username])) instanceof \App\Entity\User) {
             throw new NotFoundHttpException('Profil non trouvé');
         }
 
@@ -54,7 +54,7 @@ readonly class PublicProfileProvider implements ProviderInterface
     private function trackView(User $profileOwner, UserProfile $profile): void
     {
         $request = $this->requestStack->getCurrentRequest();
-        if (!$request) {
+        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
             return;
         }
 

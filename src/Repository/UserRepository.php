@@ -307,7 +307,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $maxScore = 5;
 
         // Has profile picture (20%)
-        if ($user->profilePicture !== null) {
+        if ($user->profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $score++;
         }
 
@@ -329,7 +329,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         // Has cover picture (20%)
-        if ($profile->coverPicture !== null) {
+        if ($profile->coverPicture instanceof \App\Entity\Image\UserProfileCoverPicture) {
             $score++;
         }
 
@@ -355,7 +355,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         );
 
         return array_map(
-            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
             $result->fetchAllAssociative()
         );
     }
@@ -379,7 +379,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         );
 
         return array_map(
-            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
             $result->fetchAllAssociative()
         );
     }

@@ -32,12 +32,12 @@ readonly class CommentItemProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): CommentResource
     {
         $comment = $this->commentRepository->find($uriVariables['id']);
-        if (!$comment) {
+        if (!$comment instanceof \App\Entity\Comment\Comment) {
             throw new NotFoundHttpException('Commentaire introuvable');
         }
 
         $userVote = null;
-        if ($comment->voteCache !== null) {
+        if ($comment->voteCache instanceof \App\Entity\Metric\VoteCache) {
             /** @var User|null $user */
             $user = $this->security->getUser();
             if ($user) {
@@ -45,7 +45,7 @@ readonly class CommentItemProvider implements ProviderInterface
                 $userVote = $vote?->value;
             } else {
                 $request = $this->requestStack->getCurrentRequest();
-                if ($request !== null) {
+                if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
                     $identifier = $this->requestIdentifier->fromRequest($request);
                     $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $comment->voteCache);
                     $userVote = $vote?->value;

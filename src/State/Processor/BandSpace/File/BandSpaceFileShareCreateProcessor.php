@@ -51,12 +51,12 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        $this->shareCreateLimiter->create((string) $user->id)->consume()->ensureAccepted();
+        $this->shareCreateLimiter->create($user->id)->consume()->ensureAccepted();
 
         [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
@@ -95,7 +95,7 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
         // fetches metadata, prompts for password if needed, and triggers the
         // /api/shares/{token}/download endpoint.
         $request = $this->requestStack->getCurrentRequest();
-        $baseUrl = $request !== null ? $request->getSchemeAndHttpHost() : '';
+        $baseUrl = $request instanceof \Symfony\Component\HttpFoundation\Request ? $request->getSchemeAndHttpHost() : '';
         $shareUrl = $baseUrl . '/shares/' . $tokenPair['token'];
 
         $created = new BandSpaceFileShareCreated();

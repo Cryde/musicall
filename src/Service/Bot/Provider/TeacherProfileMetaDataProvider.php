@@ -31,7 +31,7 @@ readonly class TeacherProfileMetaDataProvider implements BotMetaDataProviderInte
 
         $teacherProfile = $this->teacherProfileRepository->findByUsername($matches[1]);
 
-        if (!$teacherProfile) {
+        if (!$teacherProfile instanceof \App\Entity\Teacher\TeacherProfile) {
             return [];
         }
 
@@ -55,7 +55,7 @@ readonly class TeacherProfileMetaDataProvider implements BotMetaDataProviderInte
 
         $cover = null;
         $profilePicture = $user->profilePicture;
-        if ($profilePicture) {
+        if ($profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             $path = $this->uploaderHelper->asset($profilePicture, 'imageFile');
             if ($path !== null) {
                 $cover = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_large');

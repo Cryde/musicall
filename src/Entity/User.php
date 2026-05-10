@@ -80,13 +80,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Publication>
      */
-    #[ORM\OneToMany(mappedBy: "author", targetEntity: Publication::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: "author", orphanRemoval: true)]
     public Collection $publications;
 
     /**
      * @var Collection<int, SocialAccount>
      */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: SocialAccount::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: SocialAccount::class, mappedBy: 'user', orphanRemoval: true)]
     public Collection $socialAccounts;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -122,30 +122,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: false)]
     public UserProfile $profile;
 
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: MusicianProfile::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: MusicianProfile::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     public ?MusicianProfile $musicianProfile = null {
         set(?MusicianProfile $value) {
-            if ($value !== null && $value->user !== $this) {
+            if ($value instanceof \App\Entity\Musician\MusicianProfile && $value->user !== $this) {
                 $value->user = $this;
             }
             $this->musicianProfile = $value;
         }
     }
 
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserNotificationPreference::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: UserNotificationPreference::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     public ?UserNotificationPreference $notificationPreference = null {
         set(?UserNotificationPreference $value) {
-            if ($value !== null) {
+            if ($value instanceof \App\Entity\User\UserNotificationPreference) {
                 $value->user = $this;
             }
             $this->notificationPreference = $value;
         }
     }
 
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: TeacherProfile::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: TeacherProfile::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     public ?TeacherProfile $teacherProfile = null {
         set(?TeacherProfile $value) {
-            if ($value !== null && $value->user !== $this) {
+            if ($value instanceof \App\Entity\Teacher\TeacherProfile && $value->user !== $this) {
                 $value->user = $this;
             }
             $this->teacherProfile = $value;
@@ -262,6 +262,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isDeleted(): bool
     {
-        return $this->deletionDatetime !== null;
+        return $this->deletionDatetime instanceof \DateTimeImmutable;
     }
 }

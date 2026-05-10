@@ -20,9 +20,9 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     private const string FILE_CONTENT = "Public-share download payload\n";
@@ -40,7 +40,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
             'attachment; filename=doc.txt',
             (string) $this->client->getResponse()->headers->get('Content-Disposition'),
         );
-        $this->assertSame(self::FILE_CONTENT, (string) $this->client->getInternalResponse()->getContent());
+        $this->assertSame(self::FILE_CONTENT, $this->client->getInternalResponse()->getContent());
     }
 
     public function test_public_download_increments_access_count_and_records_activity(): void
@@ -63,7 +63,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
-        $accessed = array_values(array_filter($activities, fn ($a): bool => $a->type === 'public_accessed'));
+        $accessed = array_values(array_filter($activities, fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === 'public_accessed'));
         $this->assertCount(1, $accessed);
         $this->assertNull($accessed[0]->actor);
         $this->assertSame($shareId, $accessed[0]->payload['share_id']);
@@ -141,7 +141,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
         $this->client->request('GET', '/api/shares/' . $token . '/download?password=p%40ss');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSame(self::FILE_CONTENT, (string) $this->client->getInternalResponse()->getContent());
+        $this->assertSame(self::FILE_CONTENT, $this->client->getInternalResponse()->getContent());
     }
 
     public function test_password_wrong_returns_401(): void

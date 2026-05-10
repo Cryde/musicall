@@ -26,9 +26,9 @@ readonly class FinanceEntrySplitBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->entry->category->bandSpace->id;
         $dto->entryId = (string) $entity->entry->id;
-        $dto->memberId = $entity->member !== null ? (string) $entity->member->id : null;
+        $dto->memberId = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership ? (string) $entity->member->id : null;
         $dto->memberName = $entity->member?->user->username;
-        $dto->isFormerMember = $entity->member !== null && $entity->member->status !== MembershipStatus::Active;
+        $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
         $dto->amount = $entity->amount;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
         $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);

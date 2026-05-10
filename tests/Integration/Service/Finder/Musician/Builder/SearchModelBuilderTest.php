@@ -9,10 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class SearchModelBuilderTest extends KernelTestCase
 {
-    use ResetDatabase, Factories;
-
     public function test_build(): void
     {
         $style1 = StyleFactory::new()->asRock()->create();

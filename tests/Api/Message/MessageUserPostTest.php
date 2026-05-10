@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MessageUserPostTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_not_logged(): void
@@ -35,9 +35,6 @@ class MessageUserPostTest extends ApiTestCase
         $messageThreadMetaRepository = static::getContainer()->get(MessageThreadMetaRepository::class);
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
-
-        $user1 = $user1;
-        $user2 = $user2;
 
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user1]));
         $this->assertCount(0, $messageThreadMetaRepository->findBy(['user' => $user2]));
@@ -90,10 +87,6 @@ class MessageUserPostTest extends ApiTestCase
         MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
         MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
 
-        $user1 = $user1;
-        $user2 = $user2;
-        $thread = $thread;
-
         // we already have meta thread per user
         $this->assertCount(1, $messageThreadMetaRepository->findBy(['user' => $user1]));
         $this->assertCount(1, $messageThreadMetaRepository->findBy(['user' => $user2]));
@@ -138,9 +131,6 @@ class MessageUserPostTest extends ApiTestCase
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
-
-        $user1 = $user1;
-        $user2 = $user2;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/messages/user', [

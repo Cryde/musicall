@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\User;
 
 use Zenstruck\Foundry\Factory;
@@ -23,24 +25,24 @@ final class MusicianAnnounceFactory extends PersistentObjectFactory
         ];
     }
 
-    public function withInstrument($instrument): Factory
+    public function withInstrument($instrument): \App\Tests\Factory\User\MusicianAnnounceFactory
     {
         return $this->with(['instrument' => $instrument]);
     }
 
-    public function withStyles(iterable $styles): Factory
+    public function withStyles(iterable $styles): \App\Tests\Factory\User\MusicianAnnounceFactory
     {
         return $this->with([
             'styles' => $styles,
         ]);
     }
 
-    public function asBand(): Factory
+    public function asBand(): \App\Tests\Factory\User\MusicianAnnounceFactory
     {
         return $this->with(['type' => MusicianAnnounce::TYPE_BAND]);
     }
 
-    public function asMusician(): Factory
+    public function asMusician(): \App\Tests\Factory\User\MusicianAnnounceFactory
     {
         return $this->with(['type' => MusicianAnnounce::TYPE_MUSICIAN]);
     }

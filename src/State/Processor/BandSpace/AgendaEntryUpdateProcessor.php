@@ -51,7 +51,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->agendaEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$entry) {
+        if (!$entry instanceof \App\Entity\BandSpace\AgendaEntry) {
             throw new NotFoundHttpException('Événement introuvable');
         }
 
@@ -102,7 +102,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
 
         if ($entry->isAllDay) {
             $entry->eventDatetime = new DateTimeImmutable($entry->eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');
-            $entry->endDatetime = $entry->endDatetime !== null
+            $entry->endDatetime = $entry->endDatetime instanceof \DateTimeImmutable
                 ? new DateTimeImmutable($entry->endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
                 : null;
         }

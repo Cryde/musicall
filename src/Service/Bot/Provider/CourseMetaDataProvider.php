@@ -61,7 +61,7 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
             'type' => PublicationSubCategory::TYPE_COURSE,
         ]);
 
-        if (!$category) {
+        if (!$category instanceof \App\Entity\PublicationSubCategory) {
             return $this->getForBase();
         }
 
@@ -81,7 +81,7 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
             'status' => Publication::STATUS_ONLINE,
         ]);
 
-        if (!$publication) {
+        if (!$publication instanceof \App\Entity\Publication) {
             return [];
         }
 
@@ -91,7 +91,7 @@ readonly class CourseMetaDataProvider implements BotMetaDataProviderInterface
         }
 
         return [
-            'title' => (string) $publication->title,
+            'title' => $publication->title,
             'description' => (string) $publication->shortDescription,
             'cover' => $cover,
         ];

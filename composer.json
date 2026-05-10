@@ -71,7 +71,6 @@
         "vich/uploader-bundle": "^2.8.1"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest",
         "dama/doctrine-test-bundle": "^8.4",
         "deployer/deployer": "^7.5.12",
         "league/flysystem-memory": "^3.29",
@@ -80,7 +79,8 @@
         "phpstan/phpstan-doctrine": "^2.0.11",
         "phpstan/phpstan-symfony": "^2.0.8",
         "phpunit/phpunit": "^12.4.3",
-        "rector/rector": "^2.2.8",
+        "rector/rector": "^2.4",
+        "roave/security-advisories": "dev-latest",
         "symfony/browser-kit": "^8.0",
         "symfony/css-selector": "^8.0",
         "symfony/debug-bundle": "^8.0",

@@ -34,7 +34,7 @@ class AlreadyExistingVideoValidator extends ConstraintValidator
             throw new UnexpectedValueException($value, 'string');
         }
         $videoId = $this->youtubeUrlHelper->getVideoId($value);
-        if (!$this->publicationRepository->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO])) {
+        if (!$this->publicationRepository->findOneBy(['content' => $videoId, 'type' => Publication::TYPE_VIDEO]) instanceof \App\Entity\Publication) {
             return;
         }
         // the argument must be a string or an object implementing __toString()

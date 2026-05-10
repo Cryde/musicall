@@ -36,7 +36,7 @@ readonly class BandSpaceFileShareItemProvider implements ProviderInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $share = $this->shareRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($share === null) {
+        if (!$share instanceof \App\Entity\BandSpace\BandSpaceFileShare) {
             throw new NotFoundHttpException('Lien de partage introuvable');
         }
 

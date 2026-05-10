@@ -17,7 +17,7 @@ class CourseStory extends Story
     {
         PublicationFactory::new()
             ->with(
-                static function () {
+                static function (): array {
                     $commentNumber = random_int(0, 5);
                     $thread = CommentThreadFactory::new(['commentNumber' => $commentNumber])->create();
                     CommentFactory::new([

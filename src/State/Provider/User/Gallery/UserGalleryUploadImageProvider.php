@@ -33,7 +33,7 @@ readonly class UserGalleryUploadImageProvider implements ProviderInterface
         $user = $this->security->getUser();
 
         $gallery = $this->galleryRepository->find($uriVariables['id']);
-        if (!$gallery) {
+        if (!$gallery instanceof \App\Entity\Gallery) {
             throw new NotFoundHttpException('Galerie non trouvee');
         }
 

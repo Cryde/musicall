@@ -84,12 +84,12 @@ class BandSpaceActivityRepository extends ServiceEntityRepository
                 ->setParameter('type', $filter->type);
         }
 
-        if ($filter->from !== null) {
+        if ($filter->from instanceof \DateTimeImmutable) {
             $qb->andWhere('a.creationDatetime >= :from')
                 ->setParameter('from', $filter->from);
         }
 
-        if ($filter->to !== null) {
+        if ($filter->to instanceof \DateTimeImmutable) {
             $qb->andWhere('a.creationDatetime <= :to')
                 ->setParameter('to', $filter->to);
         }

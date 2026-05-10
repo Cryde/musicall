@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class MusicianAnnouncePostTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_post(): void
@@ -26,12 +26,6 @@ class MusicianAnnouncePostTest extends ApiTestCase
         $style2 = StyleFactory::new()->asPop()->create();
         $style3 = StyleFactory::new()->asMetal()->create();
         $instrument1 = InstrumentFactory::new()->asDrum()->create();
-
-        $user1 = $user1;
-        $instrument1 = $instrument1;
-        $style1 = $style1;
-        $style2 = $style2;
-        $style3 = $style3;
 
         $result = $musicianAnnounceRepository->findBy(['author' => $user1]);
         $this->assertCount(0, $result);

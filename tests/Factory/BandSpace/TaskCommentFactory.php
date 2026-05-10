@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Factory\BandSpace;
 
 use App\Entity\BandSpace\TaskComment;

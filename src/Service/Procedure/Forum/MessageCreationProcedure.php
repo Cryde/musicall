@@ -28,7 +28,7 @@ readonly class MessageCreationProcedure
 
     public function process(Topic $topicDto, string $message): TopicPost
     {
-        if (!$topic = $this->forumTopicRepository->find($topicDto->id)) {
+        if (!($topic = $this->forumTopicRepository->find($topicDto->id)) instanceof \App\Entity\Forum\ForumTopic) {
             throw new NotFoundHttpException('Ce sujet n\'existe pas.');
         }
 
@@ -43,11 +43,11 @@ readonly class MessageCreationProcedure
 
         // Update topic counters
         $topic->lastPost = $post;
-        $topic->postNumber = $topic->postNumber + 1;
+        $topic->postNumber += 1;
 
         // Update forum counters
         $forum = $topic->forum;
-        $forum->postNumber = $forum->postNumber + 1;
+        $forum->postNumber += 1;
 
         $this->entityManager->flush();
 

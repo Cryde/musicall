@@ -32,7 +32,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PublicTeacherProfile
     {
-        if (!$user = $this->userRepository->findOneBy(['username' => $uriVariables['username'] ?? ''])) {
+        if (!($user = $this->userRepository->findOneBy(['username' => $uriVariables['username'] ?? ''])) instanceof \App\Entity\User) {
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
@@ -40,7 +40,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
             throw new NotFoundHttpException('Utilisateur non trouvé');
         }
 
-        if (!$teacherProfile = $user->teacherProfile) {
+        if (!($teacherProfile = $user->teacherProfile) instanceof \App\Entity\Teacher\TeacherProfile) {
             throw new NotFoundHttpException('Profil professeur non trouvé');
         }
 
@@ -51,7 +51,7 @@ readonly class TeacherProfileProvider implements ProviderInterface
 
     private function trackView(TeacherProfile $profile, User $profileOwner): void
     {
-        if (!$request = $this->requestStack->getCurrentRequest()) {
+        if (!($request = $this->requestStack->getCurrentRequest()) instanceof \Symfony\Component\HttpFoundation\Request) {
             return;
         }
 

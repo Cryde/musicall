@@ -10,6 +10,7 @@ use App\Service\User\UserNotificationPreferenceChecker;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class UserNotificationPreferenceCheckerTest extends TestCase
 {
     private UserNotificationPreferenceChecker $checker;

@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceNoteGetTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_get_item_with_content(): void
@@ -34,10 +34,6 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'position' => 0,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
@@ -66,9 +62,6 @@ class BandSpaceNoteGetTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/nonexistent-id');
 
@@ -93,10 +86,6 @@ class BandSpaceNoteGetTest extends ApiTestCase
 
         $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Secret Note'])->create();
 
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
-        $note = $note;
-
         $this->client->loginUser($otherUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
 
@@ -114,10 +103,6 @@ class BandSpaceNoteGetTest extends ApiTestCase
         ])->create();
 
         $note = BandSpaceNoteFactory::new(['bandSpace' => $bandSpace, 'title' => 'Secret Note'])->create();
-
-        $inactiveUser = $inactiveUser;
-        $bandSpace = $bandSpace;
-        $note = $note;
 
         $this->client->loginUser($inactiveUser);
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);

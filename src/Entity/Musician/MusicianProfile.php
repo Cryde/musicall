@@ -28,7 +28,7 @@ class MusicianProfile implements ViewableInterface
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     public ?string $id = null;
 
-    #[ORM\OneToOne(inversedBy: 'musicianProfile', targetEntity: User::class)]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'musicianProfile')]
     #[ORM\JoinColumn(nullable: false)]
     public User $user;
 
@@ -38,7 +38,7 @@ class MusicianProfile implements ViewableInterface
     /**
      * @var Collection<int, MusicianProfileInstrument>
      */
-    #[ORM\OneToMany(mappedBy: 'musicianProfile', targetEntity: MusicianProfileInstrument::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: MusicianProfileInstrument::class, mappedBy: 'musicianProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public Collection $instruments;
 
     /**
@@ -51,7 +51,7 @@ class MusicianProfile implements ViewableInterface
     /**
      * @var Collection<int, MusicianProfileMedia>
      */
-    #[ORM\OneToMany(mappedBy: 'musicianProfile', targetEntity: MusicianProfileMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: MusicianProfileMedia::class, mappedBy: 'musicianProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
     public Collection $media;
 

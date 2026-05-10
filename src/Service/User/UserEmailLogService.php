@@ -21,7 +21,7 @@ readonly class UserEmailLogService
 
     public function hasBeenSent(User $user, UserEmailType $emailType, ?string $referenceId = null): bool
     {
-        return $this->userEmailLogRepository->findOneByUserAndType($user, $emailType, $referenceId) !== null;
+        return $this->userEmailLogRepository->findOneByUserAndType($user, $emailType, $referenceId) instanceof \App\Entity\User\UserEmailLog;
     }
 
     public function hasBeenSentSince(
@@ -30,7 +30,7 @@ readonly class UserEmailLogService
         DateTimeImmutable $since,
         ?string $referenceId = null
     ): bool {
-        return $this->userEmailLogRepository->findOneByUserAndTypeSince($user, $emailType, $since, $referenceId) !== null;
+        return $this->userEmailLogRepository->findOneByUserAndTypeSince($user, $emailType, $since, $referenceId) instanceof \App\Entity\User\UserEmailLog;
     }
 
     /**

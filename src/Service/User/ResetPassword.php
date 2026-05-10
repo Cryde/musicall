@@ -23,7 +23,7 @@ readonly class ResetPassword
      */
     public function resetPasswordByLogin(string $login): void
     {
-        if (!$user = $this->userRepository->findOneByEmailOrLogin($login)) {
+        if (!($user = $this->userRepository->findOneByEmailOrLogin($login)) instanceof \App\Entity\User) {
             // we just do nothing no need to send exception
             return;
         }

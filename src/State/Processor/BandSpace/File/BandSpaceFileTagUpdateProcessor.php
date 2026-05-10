@@ -38,7 +38,6 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): BandSpaceFileTagResource
     {
-        /** @var BandSpaceFileTagResource $data */
         $user = $this->security->getUser();
         if (!$user instanceof User) {
             throw new AccessDeniedHttpException();
@@ -47,7 +46,7 @@ readonly class BandSpaceFileTagUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $tag = $this->tagRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if ($tag === null) {
+        if (!$tag instanceof \App\Entity\BandSpace\BandSpaceFileTag) {
             throw new NotFoundHttpException('Tag introuvable');
         }
 

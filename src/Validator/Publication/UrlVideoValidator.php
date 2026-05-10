@@ -29,7 +29,7 @@ class UrlVideoValidator extends ConstraintValidator
         if (!is_string($value)) {
             throw new UnexpectedValueException($value, 'string');
         }
-        if ($this->youtubeUrlHelper->getVideoId($value)) {
+        if ($this->youtubeUrlHelper->getVideoId($value) !== '' && $this->youtubeUrlHelper->getVideoId($value) !== '0') {
             return;
         }
         // the argument must be a string or an object implementing __toString()

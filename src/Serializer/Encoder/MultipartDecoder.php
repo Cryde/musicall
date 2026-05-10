@@ -19,7 +19,7 @@ final class MultipartDecoder implements DecoderInterface
     public function decode(string $data, string $format, array $context = []): ?array
     {
         $request = $this->requestStack->getCurrentRequest();
-        if (!$request) {
+        if (!$request instanceof \Symfony\Component\HttpFoundation\Request) {
             return null;
         }
 

@@ -57,7 +57,7 @@ class EmailVerificationCode
 
     public function isUsed(): bool
     {
-        return $this->usedDatetime !== null;
+        return $this->usedDatetime instanceof \DateTimeImmutable;
     }
 
     public function hasReachedMaxAttempts(): bool

@@ -57,7 +57,7 @@ readonly class BandSpaceNoteFileAttachProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $note = $this->noteRepository->findOneByIdAndBandSpace((string) $uriVariables['noteId'], $bandSpace);
-        if ($note === null) {
+        if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
             throw new NotFoundHttpException('Note introuvable');
         }
 

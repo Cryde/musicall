@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileVersionUploadTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_upload_version_increments_number_and_updates_current(): void
@@ -81,7 +81,7 @@ class BandSpaceFileVersionUploadTest extends ApiTestCase
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId);
-        $versionAdded = array_values(array_filter($activities, fn ($a): bool => $a->type === 'version_added'));
+        $versionAdded = array_values(array_filter($activities, fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === 'version_added'));
         $this->assertCount(1, $versionAdded);
         $this->assertSame(2, $versionAdded[0]->payload['version_number']);
         $this->assertSame('text/plain', $versionAdded[0]->payload['mime_type']);

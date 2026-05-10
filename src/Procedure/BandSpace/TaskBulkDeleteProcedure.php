@@ -29,7 +29,7 @@ readonly class TaskBulkDeleteProcedure
         }
 
         $tasks = $this->taskRepository->findByIdsAndBandSpace($taskIds, $bandSpace);
-        $foundIds = array_map(fn($task): string => (string) $task->id, $tasks);
+        $foundIds = array_map(fn(\App\Entity\BandSpace\Task $task): string => (string) $task->id, $tasks);
         $missing = array_diff($taskIds, $foundIds);
         if (count($missing) > 0) {
             throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missing)));

@@ -21,11 +21,11 @@ readonly class BandSpaceFileShareBuilder
         $dto->accessCount = $entity->accessCount;
         $dto->lastAccessDatetime = $entity->lastAccessDatetime?->format(\DateTimeInterface::ATOM);
         $dto->hasPassword = $entity->passwordHash !== null;
-        $dto->isActive = $entity->revocationDatetime === null
-            && ($entity->expiryDatetime === null || $entity->expiryDatetime > $now);
+        $dto->isActive = !$entity->revocationDatetime instanceof \DateTimeImmutable
+            && (!$entity->expiryDatetime instanceof \DateTimeImmutable || $entity->expiryDatetime > $now);
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
 
-        if ($entity->createdBy !== null) {
+        if ($entity->createdBy instanceof \App\Entity\User) {
             $dto->createdBy = [
                 'id' => (string) $entity->createdBy->id,
                 'username' => $entity->createdBy->username,

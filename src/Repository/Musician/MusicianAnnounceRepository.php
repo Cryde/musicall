@@ -35,7 +35,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
         );
 
         return array_map(
-            fn (array $row) => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['date_label' => $row['date_label'], 'count' => (int) $row['count']],
             $result->fetchAllAssociative()
         );
     }
@@ -83,7 +83,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             ->getResult();
 
         return array_map(
-            fn (array $row) => ['name' => $row['name'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['name' => $row['name'], 'count' => (int) $row['count']],
             $results
         );
     }
@@ -107,7 +107,7 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             ->getResult();
 
         return array_map(
-            fn (array $row) => ['name' => $row['name'], 'count' => (int) $row['count']],
+            fn (array $row): array => ['name' => $row['name'], 'count' => (int) $row['count']],
             $results
         );
     }
@@ -139,12 +139,12 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
         }
 
         // Filter by instrument if provided
-        if ($musician->instrument !== null) {
+        if ($musician->instrument instanceof \App\Entity\Attribute\Instrument) {
             $qb->andWhere('musician_announce.instrument = :instrument')
                 ->setParameter('instrument', $musician->instrument);
         }
 
-        if ($currentUser) {
+        if ($currentUser instanceof \App\Entity\User) {
             $qb->andWhere('musician_announce.author != :current_user')
                 ->setParameter('current_user', $currentUser);
         }

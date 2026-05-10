@@ -32,7 +32,7 @@ readonly class UserSocialLinkDeleteProvider implements ProviderInterface
 
         $link = $this->userSocialLinkRepository->find($uriVariables['id']);
 
-        if (!$link) {
+        if (!$link instanceof \App\Entity\User\UserSocialLink) {
             throw new NotFoundHttpException('Lien social non trouvé');
         }
 

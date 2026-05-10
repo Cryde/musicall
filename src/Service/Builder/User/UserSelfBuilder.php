@@ -20,7 +20,7 @@ readonly class UserSelfBuilder
     public function buildFromEntity(User $user): UserSelf
     {
         $dto = new UserSelf();
-        $dto->id = (string) $user->id;
+        $dto->id = $user->id;
         $dto->username = $user->username;
         $dto->email = $user->email;
         $dto->roles = $user->getRoles();
@@ -37,7 +37,7 @@ readonly class UserSelfBuilder
     private function buildProfilePicture(User $user): ?array
     {
         $profilePicture = $user->profilePicture;
-        if (!$profilePicture) {
+        if (!$profilePicture instanceof \App\Entity\Image\UserProfilePicture) {
             return null;
         }
         if (!$path = $this->uploaderHelper->asset($profilePicture, 'imageFile')) {

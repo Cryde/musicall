@@ -18,9 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceNoteCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_create_note(): void
@@ -28,9 +28,6 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $user = $user;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -83,10 +80,6 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-        $parentNote = $parentNote;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -116,9 +109,6 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -140,9 +130,6 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $user = $user;
-        $bandSpace = $bandSpace;
-
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
@@ -160,9 +147,6 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $otherUser = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
-
-        $otherUser = $otherUser;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($otherUser);
         $this->client->jsonRequest(
@@ -184,9 +168,6 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'user' => $inactiveUser,
             'status' => MembershipStatus::Left,
         ])->create();
-
-        $inactiveUser = $inactiveUser;
-        $bandSpace = $bandSpace;
 
         $this->client->loginUser($inactiveUser);
         $this->client->jsonRequest(

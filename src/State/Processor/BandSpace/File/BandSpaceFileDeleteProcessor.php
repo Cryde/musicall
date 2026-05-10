@@ -45,11 +45,11 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
         [, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $membership->bandSpace);
-        if ($file === null || $file->archiveDatetime !== null) {
+        if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
-        $isOwner = $file->createdBy !== null && $file->createdBy->id === $user->id;
+        $isOwner = $file->createdBy instanceof \App\Entity\User && $file->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce fichier');
         }

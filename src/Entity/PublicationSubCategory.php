@@ -49,7 +49,7 @@ class PublicationSubCategory
     /**
      * @var Collection<int, Publication>
      */
-    #[ORM\OneToMany(mappedBy: "subCategory", targetEntity: Publication::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: "subCategory", orphanRemoval: true)]
     public Collection $publications;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]

@@ -31,7 +31,7 @@ readonly class UserSocialLinkCollectionProvider implements ProviderInterface
         $profile = $user->profile;
 
         return array_map(
-            fn(UserSocialLink $link) => $this->buildFromEntity($link),
+            fn(UserSocialLink $link): \App\ApiResource\User\Profile\UserSocialLinkResource => $this->buildFromEntity($link),
             $profile->socialLinks->toArray()
         );
     }

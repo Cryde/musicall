@@ -18,7 +18,7 @@ readonly class BandSpaceMemberBuilder
         $dto = new BandSpaceMember();
         $dto->id = (string) $membership->id;
         $dto->bandSpaceId = (string) $membership->bandSpace->id;
-        $dto->userId = (string) $membership->user->id;
+        $dto->userId = $membership->user->id;
         $dto->username = $membership->user->username;
         $dto->role = $membership->role->value;
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($membership->user);

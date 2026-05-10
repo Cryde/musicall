@@ -68,7 +68,7 @@ class FinanceEntrySplitRepository extends ServiceEntityRepository
             return [];
         }
 
-        $entryIds = array_map(fn (FinanceEntry $e) => (string) $e->id, $entries);
+        $entryIds = array_map(fn (FinanceEntry $e): string => (string) $e->id, $entries);
 
         $results = $this->createQueryBuilder('s')
             ->select('IDENTITY(s.entry) AS entry_id, COALESCE(SUM(s.amount), 0) AS total')

@@ -44,7 +44,7 @@ readonly class TaskCategoryUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->taskCategoryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$category) {
+        if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
             throw new NotFoundHttpException('Catégorie introuvable');
         }
 

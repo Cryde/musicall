@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class BandSpaceFileShareCreateTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_admin_creates_share_returns_one_time_share_url(): void
@@ -60,7 +60,7 @@ class BandSpaceFileShareCreateTest extends ApiTestCase
         /** @var BandSpaceActivityRepository $activityRepo */
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $file->id);
-        $shared = array_values(array_filter($activities, fn ($a): bool => $a->type === 'shared'));
+        $shared = array_values(array_filter($activities, fn (\App\Entity\BandSpace\BandSpaceActivity $a): bool => $a->type === 'shared'));
         $this->assertCount(1, $shared);
         $this->assertFalse($shared[0]->payload['has_password']);
     }

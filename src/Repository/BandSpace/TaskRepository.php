@@ -68,12 +68,12 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('query', '%' . mb_strtolower($trimmedQuery) . '%');
         }
 
-        if ($filter->dueDateFrom !== null) {
+        if ($filter->dueDateFrom instanceof \DateTimeImmutable) {
             $qb->andWhere('t.dueDate >= :dueDateFrom')
                 ->setParameter('dueDateFrom', $filter->dueDateFrom);
         }
 
-        if ($filter->dueDateTo !== null) {
+        if ($filter->dueDateTo instanceof \DateTimeImmutable) {
             $qb->andWhere('t.dueDate <= :dueDateTo')
                 ->setParameter('dueDateTo', $filter->dueDateTo);
         }

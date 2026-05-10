@@ -27,7 +27,7 @@ readonly class AnnounceDeleteProvider implements ProviderInterface
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
         $currentUser = $this->security->getUser();
-        if (!$announce = $this->musicianAnnounceRepository->findOneBy(['id' => $uriVariables['id'], 'author' => $currentUser])) {
+        if (!($announce = $this->musicianAnnounceRepository->findOneBy(['id' => $uriVariables['id'], 'author' => $currentUser])) instanceof \App\Entity\Musician\MusicianAnnounce) {
             throw new NotFoundHttpException('Announce not found.');
         }
 

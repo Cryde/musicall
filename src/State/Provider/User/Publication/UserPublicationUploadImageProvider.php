@@ -33,7 +33,7 @@ readonly class UserPublicationUploadImageProvider implements ProviderInterface
         $user = $this->security->getUser();
 
         $publication = $this->publicationRepository->find($uriVariables['id']);
-        if (!$publication) {
+        if (!$publication instanceof \App\Entity\Publication) {
             throw new NotFoundHttpException('Publication not found');
         }
 

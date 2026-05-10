@@ -30,7 +30,7 @@ class ForumSource
     /**
      * @var Collection<int, ForumCategory>
      */
-    #[ORM\OneToMany(mappedBy: 'forumSource', targetEntity: ForumCategory::class)]
+    #[ORM\OneToMany(targetEntity: ForumCategory::class, mappedBy: 'forumSource')]
     public Collection $forumCategories;
 
     #[ORM\Column(type: Types::STRING, length: 255)]

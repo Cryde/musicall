@@ -11,18 +11,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
+#[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class CommentPostTest extends ApiTestCase
 {
-    use ResetDatabase, Factories;
     use ApiTestAssertionsTrait;
 
     public function test_post(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $commentThread = CommentThreadFactory::new()->create();
-
-        $user1 = $user1;
-        $commentThread = $commentThread;
 
         $this->client->loginUser($user1);
         $this->client->jsonRequest('POST', '/api/comments', [
