@@ -5,7 +5,6 @@ namespace App\ApiResource\Message;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\Entity\Message\Message;
 use App\Entity\User;
 use App\State\Processor\Message\MessagePostToUserProcessor;
 use App\Validator\Message\NotDeletedRecipient;
@@ -18,9 +17,9 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/messages/user',
             openapi: new Operation(tags: ['Message']),
-            normalizationContext: ['groups' => [Message::ITEM]],
+            normalizationContext: ['groups' => [MessageResource::ITEM]],
             denormalizationContext: ['groups' => [MessageUser::POST]],
-            output: Message::class,
+            output: MessageResource::class,
             name: 'api_message_post_to_user',
             processor: MessagePostToUserProcessor::class
         ),

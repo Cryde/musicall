@@ -4,9 +4,10 @@ namespace App\State\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Message\Message;
+use App\ApiResource\Message\MessageResource;
 use App\Entity\User;
 use App\Service\Access\ThreadAccess;
+use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -14,7 +15,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * @implements ProcessorInterface<Message, Message>
+ * @implements ProcessorInterface<MessageResource, MessageResource>
  */
 class MessagePostProcessor implements ProcessorInterface
 {
@@ -22,12 +23,13 @@ class MessagePostProcessor implements ProcessorInterface
         private readonly Security               $security,
         private readonly ThreadAccess           $threadAccess,
         private readonly MessageSenderProcedure $messageSenderProcedure,
+        private readonly MessageBuilder         $messageBuilder,
         #[Target('message_send')]
         private readonly RateLimiterFactoryInterface $messageSendLimiter,
     ) {
     }
 
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): Message
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
@@ -40,6 +42,8 @@ class MessagePostProcessor implements ProcessorInterface
             throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
         }
 
-        return $this->messageSenderProcedure->processByThread($data->thread, $user, $data->content);
+        $message = $this->messageSenderProcedure->processByThread($data->thread, $user, $data->content);
+
+        return $this->messageBuilder->buildItem($message);
     }
 }

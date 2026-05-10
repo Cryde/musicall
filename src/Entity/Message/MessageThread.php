@@ -7,6 +7,7 @@ namespace App\Entity\Message;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\ApiResource\Message\MessageResource;
 use App\Repository\Message\MessageThreadRepository;
 use DateTime;
 use DateTimeInterface;
@@ -34,7 +35,7 @@ class MessageThread
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([MessageThreadMeta::LIST, Message::ITEM])]
+    #[Groups([MessageThreadMeta::LIST, MessageResource::ITEM])]
     public UuidInterface|string|null $id = null {
         get {
             return is_string($this->id) ? $this->id : $this->id?->toString();

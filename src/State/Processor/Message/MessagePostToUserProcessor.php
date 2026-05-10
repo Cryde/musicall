@@ -4,9 +4,10 @@ namespace App\State\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\ApiResource\Message\MessageResource;
 use App\ApiResource\Message\MessageUser;
-use App\Entity\Message\Message;
 use App\Entity\User;
+use App\Service\Builder\Message\MessageBuilder;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -14,13 +15,14 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * @implements ProcessorInterface<MessageUser, Message>
+ * @implements ProcessorInterface<MessageUser, MessageResource>
  */
 class MessagePostToUserProcessor implements ProcessorInterface
 {
     public function __construct(
         private readonly Security               $security,
         private readonly MessageSenderProcedure $messageSenderProcedure,
+        private readonly MessageBuilder         $messageBuilder,
         #[Target('thread_creation')]
         private readonly RateLimiterFactoryInterface $threadCreationLimiter,
         #[Target('message_send')]
@@ -28,7 +30,7 @@ class MessagePostToUserProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): Message
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageResource
     {
         /** @var MessageUser $data */
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
@@ -40,6 +42,8 @@ class MessagePostToUserProcessor implements ProcessorInterface
         $this->threadCreationLimiter->create($userIdentifier)->consume()->ensureAccepted();
         $this->messageSendLimiter->create($userIdentifier)->consume()->ensureAccepted();
 
-        return $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content);
+        $message = $this->messageSenderProcedure->process($currentUser, $data->recipient, $data->content);
+
+        return $this->messageBuilder->buildItem($message);
     }
 }

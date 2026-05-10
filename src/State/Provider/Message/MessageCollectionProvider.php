@@ -1,36 +1,44 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\State\Provider\Message;
 
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Message\MessageResource;
+use App\Entity\Message\Message;
+use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\Repository\Message\MessageThreadRepository;
 use App\Service\Access\ThreadAccess;
+use App\Service\Builder\Message\MessageBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * @implements ProviderInterface<object>
+ * @implements ProviderInterface<MessageResource>
  */
-class MessageCollectionProvider implements ProviderInterface
+readonly class MessageCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly Security                $security,
-        private readonly MessageThreadRepository $messageThreadRepository,
-        private readonly ThreadAccess            $threadAccess,
-        private readonly CollectionProvider      $collectionProvider
+        private Security                $security,
+        private MessageThreadRepository $messageThreadRepository,
+        private ThreadAccess            $threadAccess,
+        private CollectionProvider      $collectionProvider,
+        private MessageBuilder          $messageBuilder,
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        if (!($thread = $this->messageThreadRepository->find($uriVariables['threadId'])) instanceof \App\Entity\Message\MessageThread) {
+        if (!($thread = $this->messageThreadRepository->find($uriVariables['threadId'])) instanceof MessageThread) {
             throw new NotFoundHttpException('Thread not found.');
         }
 
@@ -40,6 +48,19 @@ class MessageCollectionProvider implements ProviderInterface
             throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
         }
 
-        return $this->collectionProvider->provide($operation, $uriVariables, $context);
+        /** @var TraversablePaginator $paginator */
+        $paginator = $this->collectionProvider->provide($operation, $uriVariables, $context);
+
+        $dtos = array_map(
+            fn (Message $entity): MessageResource => $this->messageBuilder->buildItem($entity),
+            iterator_to_array($paginator),
+        );
+
+        return new TraversablePaginator(
+            new \ArrayIterator($dtos),
+            $paginator->getCurrentPage(),
+            $paginator->getItemsPerPage(),
+            $paginator->getTotalItems(),
+        );
     }
 }

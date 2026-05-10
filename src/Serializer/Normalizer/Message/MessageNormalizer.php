@@ -8,6 +8,11 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+/**
+ * Sanitizes the `content` field on Message entities embedded as nested objects in
+ * other resource responses (e.g. MessageThreadMeta.last_message). Will be removed
+ * once MessageThreadMeta is migrated to a DTO that composes MessageBuilder (#667).
+ */
 class MessageNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Message;
 
-use App\Entity\Message\Message;
+use App\ApiResource\Message\MessageResource;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraint;
@@ -27,8 +27,8 @@ class NotDeletedThreadRecipientValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, NotDeletedThreadRecipient::class);
         }
 
-        if (!$value instanceof Message) {
-            throw new UnexpectedValueException($value, Message::class);
+        if (!$value instanceof MessageResource) {
+            throw new UnexpectedValueException($value, MessageResource::class);
         }
 
         /** @var User|null $currentUser */
