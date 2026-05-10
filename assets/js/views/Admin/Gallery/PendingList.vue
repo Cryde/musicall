@@ -53,14 +53,11 @@
         </template>
       </Column>
     </DataTable>
-
-    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import Column from 'primevue/column'
-import ConfirmDialog from 'primevue/confirmdialog'
 import DataTable from 'primevue/datatable'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'

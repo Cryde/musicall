@@ -221,8 +221,6 @@
       </div>
     </template>
 
-    <ConfirmDialog />
-
     <CoverPictureModal
       v-model:visible="showCoverPictureModal"
       :image="coverPictureImage"
@@ -233,7 +231,6 @@
 
 <script setup>
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'

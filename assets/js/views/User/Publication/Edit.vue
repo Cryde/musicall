@@ -293,9 +293,6 @@
       v-model="showSettingsModal"
       @saved="handleSettingsSaved"
     />
-
-    <!-- Submit Confirmation -->
-    <ConfirmDialog />
   </div>
 </template>
 
@@ -309,7 +306,6 @@ import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'

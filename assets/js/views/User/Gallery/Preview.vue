@@ -78,8 +78,6 @@
         </div>
       </Message>
 
-      <ConfirmDialog />
-
       <!-- Breadcrumb -->
       <div class="flex justify-end mb-4">
         <Breadcrumb :items="breadcrumbItems" />
@@ -176,7 +174,6 @@
 import { useTitle } from '@vueuse/core'
 import { MasonryWall } from '@yeger/vue-masonry-wall'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'

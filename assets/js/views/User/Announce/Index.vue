@@ -112,15 +112,12 @@
       v-model:visible="showAddModal"
       @created="handleAnnounceCreated"
     />
-
-    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 // biome-ignore lint/suspicious/noShadowRestrictedNames: PrimeVue component name happens to match the WebAPI; local import always wins
 import DataView from 'primevue/dataview'
 import ProgressSpinner from 'primevue/progressspinner'

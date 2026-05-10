@@ -203,7 +203,6 @@
 
     <AddDiscoverModal @published="handleDiscoverPublished" />
     <AddPublicationModal v-model="showAddPublicationModal" @created="handlePublicationCreated" />
-    <ConfirmDialog />
   </div>
 </template>
 
@@ -211,7 +210,6 @@
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
-import ConfirmDialog from 'primevue/confirmdialog'
 import DataTable from 'primevue/datatable'
 import Paginator from 'primevue/paginator'
 import ProgressSpinner from 'primevue/progressspinner'

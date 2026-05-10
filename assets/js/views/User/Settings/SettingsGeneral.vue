@@ -221,15 +221,12 @@
       :image="selectedImage"
       @saved="handlePictureSaved"
     />
-
-    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'

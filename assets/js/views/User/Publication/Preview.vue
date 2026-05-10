@@ -78,8 +78,6 @@
         </div>
       </Message>
 
-      <ConfirmDialog />
-
       <!-- Breadcrumb -->
       <div class="flex justify-end mb-4">
         <Breadcrumb :items="breadCrumbs" />
@@ -116,7 +114,6 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'

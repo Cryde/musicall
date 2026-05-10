@@ -163,8 +163,6 @@
           <Button label="Enregistrer" icon="pi pi-check" :loading="isSaving" @click="saveSettings" />
         </template>
       </Dialog>
-
-      <ConfirmDialog />
     </template>
   </div>
 </template>
@@ -172,7 +170,6 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import ConfirmDialog from 'primevue/confirmdialog'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import ProgressBar from 'primevue/progressbar'
