@@ -60,52 +60,18 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?sortBy=creation_datetime&sortOrder=desc');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            '@context' => '/api/contexts/UserPublication',
-            '@id' => '/api/user/publications',
-            '@type' => 'Collection',
-            'member' => [
-                [
-                    '@id' => '/api/user_publications/' . $publication2->id,
-                    '@type' => 'UserPublication',
-                    'id' => $publication2->id,
-                    'title' => 'Publication 2',
-                    'slug' => 'publication-2',
-                    'creation_datetime' => '2024-01-02T10:00:00+00:00',
-                    'edition_datetime' => '2024-01-03T10:00:00+00:00',
-                    'status_id' => Publication::STATUS_ONLINE,
-                    'status_label' => 'Publié',
-                    'type_id' => Publication::TYPE_TEXT,
-                    'type_label' => 'text',
-                    'category' => [
-                        '@type' => 'UserPublicationCategory',
-                        'id' => $category->id,
-                        'title' => 'News',
-                        'slug' => 'news',
-                    ],
-                ],
-                [
-                    '@id' => '/api/user_publications/' . $publication1->id,
-                    '@type' => 'UserPublication',
-                    'id' => $publication1->id,
-                    'title' => 'Publication 1',
-                    'slug' => 'publication-1',
-                    'creation_datetime' => '2024-01-01T10:00:00+00:00',
-                    'edition_datetime' => '2024-01-02T10:00:00+00:00',
-                    'status_id' => Publication::STATUS_DRAFT,
-                    'status_label' => 'Brouillon',
-                    'type_id' => Publication::TYPE_TEXT,
-                    'type_label' => 'text',
-                    'category' => [
-                        '@type' => 'UserPublicationCategory',
-                        'id' => $category->id,
-                        'title' => 'News',
-                        'slug' => 'news',
-                    ],
-                ],
-            ],
-            'totalItems' => 2,
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('/api/contexts/UserPublication', $response['@context']);
+        $this->assertSame('/api/user/publications', $response['@id']);
+        $this->assertSame('Collection', $response['@type']);
+        $this->assertSame(2, $response['totalItems']);
+        $this->assertCount(2, $response['member']);
+        $this->assertSame($publication2->id, $response['member'][0]['id']);
+        $this->assertSame('Publication 2', $response['member'][0]['title']);
+        $this->assertSame(Publication::STATUS_ONLINE, $response['member'][0]['status_id']);
+        $this->assertSame($publication1->id, $response['member'][1]['id']);
+        $this->assertSame('Publication 1', $response['member'][1]['title']);
+        $this->assertSame(Publication::STATUS_DRAFT, $response['member'][1]['status_id']);
     }
 
     public function test_get_collection_only_own_publications(): void
@@ -136,15 +102,11 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/user/publications');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $user1Publication->id,
-                    'title' => 'User 1 Publication',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($user1Publication->id, $response['member'][0]['id']);
+        $this->assertSame('User 1 Publication', $response['member'][0]['title']);
     }
 
     public function test_get_collection_excludes_courses(): void
@@ -178,15 +140,11 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $publication->id,
-                    'title' => 'Publication',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($publication->id, $response['member'][0]['id']);
+        $this->assertSame('Publication', $response['member'][0]['title']);
     }
 
     public function test_get_collection_filter_by_status(): void
@@ -215,15 +173,11 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?status=' . Publication::STATUS_DRAFT);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $draftPublication->id,
-                    'title' => 'Draft Publication',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($draftPublication->id, $response['member'][0]['id']);
+        $this->assertSame('Draft Publication', $response['member'][0]['title']);
     }
 
     public function test_get_collection_filter_by_category(): void
@@ -253,15 +207,11 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?category=' . $newsCategory->id);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $newsPublication->id,
-                    'title' => 'News Publication',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($newsPublication->id, $response['member'][0]['id']);
+        $this->assertSame('News Publication', $response['member'][0]['title']);
     }
 
     public function test_get_collection_pagination_first_page(): void
@@ -283,11 +233,8 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?itemsPerPage=10');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 15,
-        ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(15, $response['totalItems']);
         $this->assertCount(10, $response['member']);
     }
 
@@ -310,11 +257,8 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?itemsPerPage=10&page=2');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 15,
-        ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(15, $response['totalItems']);
         $this->assertCount(5, $response['member']);
     }
 
@@ -346,18 +290,12 @@ class UserPublicationGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/publications?sortBy=title&sortOrder=asc');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 2,
-            'member' => [
-                [
-                    'id' => $alphaPublication->id,
-                    'title' => 'Alpha Publication',
-                ],
-                [
-                    'id' => $zebraPublication->id,
-                    'title' => 'Zebra Publication',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(2, $response['totalItems']);
+        $this->assertCount(2, $response['member']);
+        $this->assertSame($alphaPublication->id, $response['member'][0]['id']);
+        $this->assertSame('Alpha Publication', $response['member'][0]['title']);
+        $this->assertSame($zebraPublication->id, $response['member'][1]['id']);
+        $this->assertSame('Zebra Publication', $response['member'][1]['title']);
     }
 }

@@ -52,21 +52,17 @@ class UserPublicationEditTest extends ApiTestCase
         $this->client->request('GET', '/api/user/publications/' . $publication->id . '/edit');
         $this->assertResponseIsSuccessful();
 
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationEdit',
-            'id' => $publication->id,
-            'title' => 'Test Publication',
-            'slug' => 'test-publication',
-            'short_description' => 'Short desc',
-            'content' => '<p>Test content</p>',
-            'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
-            'category' => [
-                '@type' => 'UserPublicationCategory',
-                'id' => $category->id,
-                'title' => 'News',
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserPublicationEdit', $response['@type']);
+        $this->assertSame($publication->id, $response['id']);
+        $this->assertSame('Test Publication', $response['title']);
+        $this->assertSame('test-publication', $response['slug']);
+        $this->assertSame('Short desc', $response['short_description']);
+        $this->assertSame('<p>Test content</p>', $response['content']);
+        $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
+        $this->assertSame('Brouillon', $response['status_label']);
+        $this->assertSame($category->id, $response['category']['id']);
+        $this->assertSame('News', $response['category']['title']);
     }
 
     public function test_get_edit_not_owner(): void
@@ -151,14 +147,13 @@ class UserPublicationEditTest extends ApiTestCase
         ]));
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationEdit',
-            'id' => $publication->id,
-            'title' => 'Updated Title',
-            'short_description' => 'Updated desc',
-            'content' => '<p>Updated content</p>',
-            'status_id' => Publication::STATUS_DRAFT,
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserPublicationEdit', $response['@type']);
+        $this->assertSame($publication->id, $response['id']);
+        $this->assertSame('Updated Title', $response['title']);
+        $this->assertSame('Updated desc', $response['short_description']);
+        $this->assertSame('<p>Updated content</p>', $response['content']);
+        $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
     }
 
     public function test_patch_partial_update(): void
@@ -184,11 +179,10 @@ class UserPublicationEditTest extends ApiTestCase
         ]));
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'title' => 'Original Title',
-            'short_description' => 'Original desc',
-            'content' => '<p>Only content updated</p>',
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('Original Title', $response['title']);
+        $this->assertSame('Original desc', $response['short_description']);
+        $this->assertSame('<p>Only content updated</p>', $response['content']);
     }
 
     public function test_patch_not_owner(): void

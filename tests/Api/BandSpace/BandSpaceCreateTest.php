@@ -80,12 +80,20 @@ class BandSpaceCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             '@type' => 'ConstraintViolation',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'title' => 'An error occurred',
+            'detail' => 'name: Veuillez spécifier un nom',
+            'description' => 'name: Veuillez spécifier un nom',
+            'status' => 422,
+            'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
             'violations' => [
                 [
                     'propertyPath' => 'name',
                     'message' => 'Veuillez spécifier un nom',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ],
             ],
         ]);

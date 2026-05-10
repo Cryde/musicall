@@ -68,7 +68,20 @@ class TaskCategoryCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains(['color' => '#4ECDC4']);
+
+        $repo = self::getContainer()->get(TaskCategoryRepository::class);
+        $created = $repo->findOneBy(['bandSpace' => $bandSpace, 'name' => 'Second']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TaskCategory',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $created->id,
+            '@type' => 'TaskCategory',
+            'id' => $created->id,
+            'band_space_id' => $bandSpace->id,
+            'name' => 'Second',
+            'color' => '#4ECDC4',
+            'creation_datetime' => $created->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+        ]);
     }
 
     public function test_create_category_validation_empty_name(): void

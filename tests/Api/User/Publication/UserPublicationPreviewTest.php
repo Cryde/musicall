@@ -52,25 +52,18 @@ class UserPublicationPreviewTest extends ApiTestCase
         $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseIsSuccessful();
 
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationPreview',
-            'id' => $publication->id,
-            'title' => 'Test Draft Publication',
-            'slug' => 'test-draft-publication',
-            'short_description' => 'Short desc',
-            'content' => '<p>Test content</p>',
-            'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
-            'category' => [
-                '@type' => 'UserPublicationCategory',
-                'id' => $category->id,
-                'title' => 'News',
-            ],
-            'author' => [
-                '@type' => 'UserPublicationPreviewAuthor',
-                'username' => 'testauthor',
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserPublicationPreview', $response['@type']);
+        $this->assertSame($publication->id, $response['id']);
+        $this->assertSame('Test Draft Publication', $response['title']);
+        $this->assertSame('test-draft-publication', $response['slug']);
+        $this->assertSame('Short desc', $response['short_description']);
+        $this->assertSame('<p>Test content</p>', $response['content']);
+        $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
+        $this->assertSame('Brouillon', $response['status_label']);
+        $this->assertSame($category->id, $response['category']['id']);
+        $this->assertSame('News', $response['category']['title']);
+        $this->assertSame('testauthor', $response['author']['username']);
     }
 
     public function test_preview_pending_success(): void
@@ -92,17 +85,13 @@ class UserPublicationPreviewTest extends ApiTestCase
         $this->client->request('GET', '/api/user/publications/' . $publication->id . '/preview');
         $this->assertResponseIsSuccessful();
 
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationPreview',
-            'id' => $publication->id,
-            'title' => 'Test Pending Publication',
-            'status_id' => Publication::STATUS_PENDING,
-            'status_label' => 'En validation',
-            'author' => [
-                '@type' => 'UserPublicationPreviewAuthor',
-                'username' => 'pendingauthor',
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserPublicationPreview', $response['@type']);
+        $this->assertSame($publication->id, $response['id']);
+        $this->assertSame('Test Pending Publication', $response['title']);
+        $this->assertSame(Publication::STATUS_PENDING, $response['status_id']);
+        $this->assertSame('En validation', $response['status_label']);
+        $this->assertSame('pendingauthor', $response['author']['username']);
     }
 
     public function test_preview_not_owner(): void

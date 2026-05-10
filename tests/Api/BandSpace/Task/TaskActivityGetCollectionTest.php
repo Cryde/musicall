@@ -46,15 +46,25 @@ class TaskActivityGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $activityId = $this->getResponseAsArray()['member'][0]['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TaskActivity',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/activities',
             '@type' => 'Collection',
             'totalItems' => 1,
             'member' => [
                 [
+                    '@type' => 'TaskActivity',
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/activities/' . $activityId,
+                    'id' => $activityId,
+                    'band_space_id' => (string) $bandSpace->id,
+                    'task_id' => (string) $task->id,
                     'actor_id' => $user->id,
                     'actor_username' => $user->username,
                     'actor_profile_picture_url' => null,
                     'type' => 'status_changed',
+                    'payload' => ['from' => 'todo', 'to' => 'in_progress'],
+                    'creation_datetime' => '2024-01-01T10:00:00+00:00',
                 ],
             ],
         ]);

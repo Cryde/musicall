@@ -66,12 +66,11 @@ class UserPublicationSubmitTest extends ApiTestCase
         $updatedPublication = $publicationRepository->find($publication->id);
         $this->assertEquals(Publication::STATUS_PENDING, $updatedPublication->status);
 
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationEdit',
-            'id' => $publication->id,
-            'status_id' => Publication::STATUS_PENDING,
-            'status_label' => 'En validation',
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserPublicationEdit', $response['@type']);
+        $this->assertSame($publication->id, $response['id']);
+        $this->assertSame(Publication::STATUS_PENDING, $response['status_id']);
+        $this->assertSame('En validation', $response['status_label']);
     }
 
     public function test_submit_not_owner(): void

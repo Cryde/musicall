@@ -62,7 +62,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
         $entries = $entryRepository->findByBandSpace($bandSpace);
         $this->assertCount(6, $entries);
 
-        $responseData = json_decode($this->client->getResponse()->getContent(), true);
+        $responseData = $this->getResponseAsArray();
         $recurrenceId = $responseData['id'];
 
         $this->assertJsonEquals([

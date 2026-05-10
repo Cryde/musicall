@@ -161,10 +161,36 @@ class MessageGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/messages/' . $thread->id);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $thread->id,
+            '@type' => 'Collection',
             'member' => [
                 [
+                    '@id' => '/api/messages/' . $message->id,
+                    '@type' => 'Message',
+                    'creation_datetime' => $message->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'author' => [
+                        '@id' => '/api/users/' . $user2->id,
+                        '@type' => 'User',
+                        'id' => $user2->id,
+                        'username' => 'base_user_2',
+                    ],
                     'content' => '',
+                ],
+            ],
+            'totalItems' => 1,
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/messages/' . $thread->id . '{?order[creation_datetime]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[creation_datetime]',
+                        'property' => 'creation_datetime',
+                        'required' => false,
+                    ],
                 ],
             ],
         ]);

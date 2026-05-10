@@ -243,7 +243,15 @@ class AgendaGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 0]);
+        $response = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
+            'view' => $response['view'],
+        ]);
     }
 
     public function test_excludes_items_outside_window(): void
@@ -277,7 +285,7 @@ class AgendaGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $payload = json_decode($this->client->getResponse()->getContent(), true);
+        $payload = $this->getResponseAsArray();
         $this->assertSame(1, $payload['totalItems']);
         $this->assertSame('manual-' . $inWindow->id, $payload['member'][0]['id']);
     }
@@ -334,7 +342,7 @@ class AgendaGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $payload = json_decode($this->client->getResponse()->getContent(), true);
+        $payload = $this->getResponseAsArray();
         $this->assertSame(3, $payload['totalItems']);
         $ids = array_column($payload['member'], 'id');
         $this->assertContains('manual-' . $startsBefore->id, $ids);
@@ -363,7 +371,15 @@ class AgendaGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 0]);
+        $response = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 0,
+            'member' => [],
+            'view' => $response['view'],
+        ]);
     }
 
     public function test_default_window_when_no_params(): void
@@ -397,7 +413,7 @@ class AgendaGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $payload = json_decode($this->client->getResponse()->getContent(), true);
+        $payload = $this->getResponseAsArray();
         $this->assertSame(1, $payload['totalItems']);
         $this->assertSame('Demain', $payload['member'][0]['title']);
     }

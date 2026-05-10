@@ -53,10 +53,23 @@ class TaskMoveTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $movedId,
+            '@type' => 'Task',
             'id' => $movedId,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => $moved->title,
             'status' => 'in_progress',
+            'priority' => 'normal',
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'assignees' => [],
             'position' => 1,
+            'creation_datetime' => $moved->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $this->getResponseAsArray()['update_datetime'],
+            'comment_count' => 0,
+            'file_count' => 0,
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
@@ -102,7 +115,24 @@ class TaskMoveTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['id' => $aId, 'status' => 'todo', 'position' => 1]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $aId,
+            '@type' => 'Task',
+            'id' => $aId,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => $taskA->title,
+            'status' => 'todo',
+            'priority' => 'normal',
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'assignees' => [],
+            'position' => 1,
+            'creation_datetime' => $taskA->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $this->getResponseAsArray()['update_datetime'],
+            'comment_count' => 0,
+            'file_count' => 0,
+        ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         \Zenstruck\Foundry\Persistence\refresh($bandSpace);

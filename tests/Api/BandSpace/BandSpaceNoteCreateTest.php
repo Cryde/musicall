@@ -89,11 +89,23 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $created = $noteRepository->findOneBy(['title' => 'Child Note']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $created->id,
             '@type' => 'BandSpaceNote',
+            'id' => $created->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Child Note',
             'parent_id' => $parentNote->id,
             'position' => 0,
+            'content' => null,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $created->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
         ]);
     }
 
@@ -118,9 +130,23 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $created = $noteRepository->findOneBy(['title' => 'New Note']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $created->id,
+            '@type' => 'BandSpaceNote',
+            'id' => $created->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'New Note',
+            'parent_id' => null,
             'position' => 1,
+            'content' => null,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $created->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
         ]);
     }
 

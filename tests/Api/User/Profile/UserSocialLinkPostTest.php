@@ -35,8 +35,12 @@ class UserSocialLinkPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+        $id = $this->getResponseAsArray()['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSocialLinkResource',
+            '@id' => '/api/user_social_link_resources/' . $id,
             '@type' => 'UserSocialLinkResource',
+            'id' => $id,
             'platform' => 'youtube',
             'platform_label' => 'YouTube',
             'url' => 'https://www.youtube.com/@mychannel',
@@ -57,10 +61,15 @@ class UserSocialLinkPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+        $id = $this->getResponseAsArray()['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSocialLinkResource',
+            '@id' => '/api/user_social_link_resources/' . $id,
             '@type' => 'UserSocialLinkResource',
+            'id' => $id,
             'platform' => 'youtube',
             'platform_label' => 'YouTube',
+            'url' => 'https://www.youtube.com/@user',
         ]);
     }
 
@@ -78,10 +87,15 @@ class UserSocialLinkPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+        $id = $this->getResponseAsArray()['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSocialLinkResource',
+            '@id' => '/api/user_social_link_resources/' . $id,
             '@type' => 'UserSocialLinkResource',
+            'id' => $id,
             'platform' => 'soundcloud',
             'platform_label' => 'SoundCloud',
+            'url' => 'https://soundcloud.com/user',
         ]);
     }
 
@@ -99,10 +113,15 @@ class UserSocialLinkPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+        $id = $this->getResponseAsArray()['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSocialLinkResource',
+            '@id' => '/api/user_social_link_resources/' . $id,
             '@type' => 'UserSocialLinkResource',
+            'id' => $id,
             'platform' => 'instagram',
             'platform_label' => 'Instagram',
+            'url' => 'https://www.instagram.com/user',
         ]);
     }
 
@@ -120,10 +139,15 @@ class UserSocialLinkPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+        $id = $this->getResponseAsArray()['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSocialLinkResource',
+            '@id' => '/api/user_social_link_resources/' . $id,
             '@type' => 'UserSocialLinkResource',
+            'id' => $id,
             'platform' => 'twitter',
             'platform_label' => 'X (Twitter)',
+            'url' => 'https://twitter.com/user',
         ]);
     }
 
@@ -141,10 +165,15 @@ class UserSocialLinkPostTest extends ApiTestCase
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+        $id = $this->getResponseAsArray()['id'];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserSocialLinkResource',
+            '@id' => '/api/user_social_link_resources/' . $id,
             '@type' => 'UserSocialLinkResource',
+            'id' => $id,
             'platform' => 'website',
             'platform_label' => 'Site web',
+            'url' => 'https://www.mywebsite.com',
         ]);
     }
 

@@ -34,10 +34,20 @@ class TaskCategoryUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['color' => '#123ABC']);
 
         $repo = self::getContainer()->get(TaskCategoryRepository::class);
         $reloaded = $repo->findOneByIdAndBandSpace($category->id, $bandSpace);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TaskCategory',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
+            '@type' => 'TaskCategory',
+            'id' => (string) $category->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'name' => $category->name,
+            'color' => '#123ABC',
+            'creation_datetime' => $reloaded->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $reloaded->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
         $this->assertSame('#123ABC', $reloaded->color);
     }
 

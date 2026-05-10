@@ -72,7 +72,7 @@ class RecentActivityTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        $body = json_decode($this->client->getResponse()->getContent(), true);
+        $body = $this->getResponseAsArray();
 
         $this->assertCount(2, $body['recent_topics']);
         $this->assertSame('Newer topic', $body['recent_topics'][0]['title']);
@@ -122,7 +122,7 @@ class RecentActivityTest extends ApiTestCase
         $this->client->request('GET', '/api/admin/forum/recent-activity');
 
         $this->assertResponseIsSuccessful();
-        $body = json_decode($this->client->getResponse()->getContent(), true);
+        $body = $this->getResponseAsArray();
 
         $this->assertSame('Latest reply', $body['recent_posts'][0]['content_excerpt']);
         $this->assertSame(3, $body['recent_posts'][0]['topic_page']);
@@ -155,7 +155,7 @@ class RecentActivityTest extends ApiTestCase
         $this->client->request('GET', '/api/admin/forum/recent-activity');
 
         $this->assertResponseIsSuccessful();
-        $body = json_decode($this->client->getResponse()->getContent(), true);
+        $body = $this->getResponseAsArray();
         $this->assertCount(10, $body['recent_topics']);
         $this->assertCount(10, $body['recent_posts']);
     }

@@ -67,10 +67,15 @@ class UserGalleryDeleteTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/galleries/' . $gallery->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous n\'etes pas autorise a supprimer cette galerie',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous n\'etes pas autorise a supprimer cette galerie',
         ]);
     }
 
@@ -82,10 +87,15 @@ class UserGalleryDeleteTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/galleries/999999');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Galerie non trouvee',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Galerie non trouvee',
         ]);
     }
 
@@ -101,10 +111,15 @@ class UserGalleryDeleteTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/galleries/' . $gallery->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous ne pouvez pas supprimer une galerie publiee',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous ne pouvez pas supprimer une galerie publiee',
         ]);
     }
 }

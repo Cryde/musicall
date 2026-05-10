@@ -76,7 +76,7 @@ class TeacherProfileEditTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
 
         // Decode response to get the actual IDs (order may differ from Doctrine collection)
-        $responseData = json_decode($this->client->getResponse()->getContent(), true);
+        $responseData = $this->getResponseAsArray();
 
         $profile = $teacherProfileRepository->findOneBy(['user' => $user]);
         $this->assertNotNull($profile);
@@ -441,7 +441,7 @@ instrument_ids: Vous devez sélectionner au moins un instrument',
         $this->assertResponseIsSuccessful();
 
         // Decode response to get the actual IDs (order may differ from Doctrine collection)
-        $responseData = json_decode($this->client->getResponse()->getContent(), true);
+        $responseData = $this->getResponseAsArray();
 
         $this->assertJsonEquals([
             '@context' => '/api/contexts/TeacherProfileOutput',

@@ -43,14 +43,23 @@ class TaskCommentUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            '@type' => 'TaskComment',
-            'id' => $comment->id,
-            'content' => 'Version corrigée',
-        ]);
 
         $commentRepo = self::getContainer()->get(TaskCommentRepository::class);
         $refreshed = $commentRepo->find($comment->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TaskComment',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
+            '@type' => 'TaskComment',
+            'id' => (string) $comment->id,
+            'task_id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'author_id' => (string) $user->id,
+            'author_username' => $user->username,
+            'author_profile_picture_url' => null,
+            'content' => 'Version corrigée',
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
         $this->assertSame('Version corrigée', $refreshed->content);
         $this->assertNotNull($refreshed->updateDatetime);
 

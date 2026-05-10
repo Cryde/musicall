@@ -29,7 +29,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        TaskFactory::new([
+        $task = TaskFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'title' => 'Ma tâche',
@@ -45,9 +45,13 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
             '@type' => 'Collection',
             'totalItems' => 1,
+            'member' => [$this->buildTaskShape($bandSpace, $user, $task)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
         ]);
     }
 
@@ -56,7 +60,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo])->create();
+        $todoTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Done])->create();
 
         $this->client->loginUser($user);
@@ -68,7 +72,18 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 1]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$this->buildTaskShape($bandSpace, $user, $todoTask)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?status=todo',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_get_tasks_filter_by_priority(): void
@@ -77,7 +92,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'priority' => TaskPriority::Normal])->create();
-        TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'priority' => TaskPriority::Urgent])->create();
+        $urgent = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'priority' => TaskPriority::Urgent])->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
@@ -88,7 +103,18 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 1]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$this->buildTaskShape($bandSpace, $user, $urgent)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?priority=urgent',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_get_tasks_filter_by_category(): void
@@ -97,7 +123,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
-        TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'category' => $category])->create();
+        $taskInCategory = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'category' => $category])->create();
         TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'category' => null])->create();
 
         $this->client->loginUser($user);
@@ -109,7 +135,18 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 1]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$this->buildTaskShape($bandSpace, $user, $taskInCategory)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?category_id=' . $category->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_get_tasks_includes_comment_count(): void
@@ -143,11 +180,16 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 2,
             'member' => [
-                ['id' => $taskWithComments->id, 'comment_count' => 2],
-                ['id' => $taskWithoutComments->id, 'comment_count' => 0],
+                $this->buildTaskShape($bandSpace, $user, $taskWithComments, ['comment_count' => 2]),
+                $this->buildTaskShape($bandSpace, $user, $taskWithoutComments),
             ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
         ]);
     }
 
@@ -209,11 +251,16 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 2,
             'member' => [
-                ['id' => $taskWithFiles->id, 'file_count' => 2],
-                ['id' => $taskWithoutFiles->id, 'file_count' => 0],
+                $this->buildTaskShape($bandSpace, $user, $taskWithFiles, ['file_count' => 2]),
+                $this->buildTaskShape($bandSpace, $user, $taskWithoutFiles),
             ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
         ]);
     }
 
@@ -238,10 +285,16 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
             'totalItems' => 1,
-            'member' => [
-                ['id' => $matching->id],
+            'member' => [$this->buildTaskShape($bandSpace, $user, $matching)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?query=mixage',
+                '@type' => 'PartialCollectionView',
             ],
         ]);
     }
@@ -273,10 +326,16 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
             'totalItems' => 1,
-            'member' => [
-                ['id' => $matching->id],
+            'member' => [$this->buildTaskShape($bandSpace, $user, $matching)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?query=pavel',
+                '@type' => 'PartialCollectionView',
             ],
         ]);
     }
@@ -286,7 +345,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        TaskFactory::new([
+        $matching = TaskFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'title' => 'Highlight Clip',
@@ -301,7 +360,18 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 1]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$this->buildTaskShape($bandSpace, $user, $matching)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?query=HIGHLIGHT',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_get_tasks_search_composes_with_status(): void
@@ -309,7 +379,7 @@ class TaskGetCollectionTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        TaskFactory::new([
+        $todoMixage = TaskFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'title' => 'Mixage',
@@ -331,7 +401,18 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 1]);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [$this->buildTaskShape($bandSpace, $user, $todoMixage)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?query=mixage&status=todo',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_get_tasks_filter_overdue_excludes_done_and_future(): void
@@ -374,10 +455,16 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
             'totalItems' => 1,
-            'member' => [
-                ['id' => $overdueTodo->id],
+            'member' => [$this->buildTaskShape($bandSpace, $user, $overdueTodo)],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?overdue=1',
+                '@type' => 'PartialCollectionView',
             ],
         ]);
     }
@@ -418,12 +505,21 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['totalItems' => 2]);
-
-        $body = json_decode($this->client->getResponse()->getContent(), true);
-        $ids = array_column($body['member'], 'id');
-        $this->assertContains($inRangeStart->id, $ids);
-        $this->assertContains($inRangeEnd->id, $ids);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                $this->buildTaskShape($bandSpace, $user, $inRangeStart),
+                $this->buildTaskShape($bandSpace, $user, $inRangeEnd),
+            ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?due_date_from=2026-05-01&due_date_to=2026-05-31',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_get_tasks_not_member(): void
@@ -442,5 +538,52 @@ class TaskGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
+    private function buildTaskShape(object $bandSpace, object $user, object $task, array $overrides = []): array
+    {
+        return array_merge([
+            '@type' => 'Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => $task->title,
+            'description' => $task->description,
+            'status' => $task->status->value,
+            'priority' => $task->priority->value,
+            'due_date' => $task->dueDate?->format('Y-m-d'),
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'category_id' => $task->category?->id,
+            'category_name' => $task->category?->name,
+            'assignees' => [],
+            'archive_datetime' => $task->archiveDatetime?->format(\DateTimeInterface::ATOM),
+            'completed_datetime' => $task->completedDatetime?->format(\DateTimeInterface::ATOM),
+            'position' => $task->position,
+            'creation_datetime' => \DateTimeImmutable::createFromInterface($task->creationDatetime)->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $task->updateDatetime?->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+            'file_count' => 0,
+        ], $overrides);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildTaskSearchShape(object $bandSpace): array
+    {
+        return [
+            '@type' => 'IriTemplate',
+            'template' => '/api/band_spaces/' . $bandSpace->id . '/tasks{?status,priority}',
+            'variableRepresentation' => 'BasicRepresentation',
+            'mapping' => [
+                ['@type' => 'IriTemplateMapping', 'variable' => 'status', 'property' => 'status', 'required' => false],
+                ['@type' => 'IriTemplateMapping', 'variable' => 'priority', 'property' => 'priority', 'required' => false],
+            ],
+        ];
     }
 }

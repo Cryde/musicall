@@ -56,7 +56,7 @@ class UserDashboardMetricsTest extends ApiTestCase
     {
         $admin = UserFactory::new()->asAdminUser()->create();
 
-        UserFactory::new()->with([
+        $user1 = UserFactory::new()->with([
             'creationDatetime' => new \DateTime(),
             'email' => 'today1@test.com',
             'username' => 'today_user_1',
@@ -64,7 +64,7 @@ class UserDashboardMetricsTest extends ApiTestCase
             'confirmationDatetime' => new \DateTime(),
         ])->create();
 
-        UserFactory::new()->with([
+        $user2 = UserFactory::new()->with([
             'creationDatetime' => new \DateTime(),
             'email' => 'today2@test.com',
             'username' => 'today_user_2',
@@ -77,13 +77,26 @@ class UserDashboardMetricsTest extends ApiTestCase
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseIsSuccessful();
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserDashboardMetrics',
+            '@id' => '/api/admin/dashboard/users',
+            '@type' => 'UserDashboardMetrics',
+            'recent_empty_accounts' => $response['recent_empty_accounts'],
+            'profile_completion_rates' => $response['profile_completion_rates'],
+            'recent_registrations' => $response['recent_registrations'],
+            'top_messagers' => [],
+            'recent_teachers' => [],
+            'total_users' => 3,
+            'unconfirmed_accounts' => 0,
+            'total_musician_profiles' => 0,
+            'total_teacher_profiles' => 0,
+            'emails_sent_by_type' => [],
+        ]);
         $this->assertCount(2, $response['recent_registrations']);
         $usernames = array_column($response['recent_registrations'], 'username');
         $this->assertContains('today_user_1', $usernames);
         $this->assertContains('today_user_2', $usernames);
-        $this->assertSame(3, $response['total_users']);
     }
 
     public function test_get_user_dashboard_metrics_with_top_messagers(): void
@@ -113,11 +126,30 @@ class UserDashboardMetricsTest extends ApiTestCase
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/users?from=' . $thirtyDaysAgo . '&to=' . $today);
         $this->assertResponseIsSuccessful();
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertCount(1, $response['top_messagers']);
-        $this->assertSame('top_messager', $response['top_messagers'][0]['username']);
-        $this->assertSame(5, $response['top_messagers'][0]['message_count']);
+        $response = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserDashboardMetrics',
+            '@id' => '/api/admin/dashboard/users',
+            '@type' => 'UserDashboardMetrics',
+            'recent_empty_accounts' => $response['recent_empty_accounts'],
+            'profile_completion_rates' => $response['profile_completion_rates'],
+            'recent_registrations' => $response['recent_registrations'],
+            'top_messagers' => [
+                [
+                    'id' => $messager->id,
+                    'username' => 'top_messager',
+                    'message_count' => 5,
+                    'account_age_days' => 30,
+                    'avg_messages_per_day' => 0.2,
+                ],
+            ],
+            'recent_teachers' => [],
+            'total_users' => 2,
+            'unconfirmed_accounts' => 0,
+            'total_musician_profiles' => 0,
+            'total_teacher_profiles' => 0,
+            'emails_sent_by_type' => [],
+        ]);
     }
 
     public function test_get_user_dashboard_metrics_with_unconfirmed_accounts(): void
@@ -137,10 +169,29 @@ class UserDashboardMetricsTest extends ApiTestCase
         $this->client->loginUser($admin);
         $this->client->request('GET', '/api/admin/dashboard/users?from=' . $today . '&to=' . $today);
         $this->assertResponseIsSuccessful();
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertSame(1, $response['unconfirmed_accounts']);
-        $this->assertSame(1, $response['total_users']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserDashboardMetrics',
+            '@id' => '/api/admin/dashboard/users',
+            '@type' => 'UserDashboardMetrics',
+            'recent_empty_accounts' => [],
+            'profile_completion_rates' => [
+                'avg_percent' => 0,
+                'total' => 0,
+                'levels' => [
+                    'empty' => 0,
+                    'basic' => 0,
+                    'complete' => 0,
+                ],
+            ],
+            'recent_registrations' => [],
+            'top_messagers' => [],
+            'recent_teachers' => [],
+            'total_users' => 1,
+            'unconfirmed_accounts' => 1,
+            'total_musician_profiles' => 0,
+            'total_teacher_profiles' => 0,
+            'emails_sent_by_type' => [],
+        ]);
     }
 
     public function test_get_user_dashboard_metrics_with_emails_sent(): void

@@ -44,13 +44,12 @@ class UserGalleryEditTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/galleries/' . $gallery->id);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            '@type' => 'UserGalleryEdit',
-            'id' => $gallery->id,
-            'title' => 'My Gallery',
-            'description' => 'My description',
-            'status' => Gallery::STATUS_DRAFT,
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserGalleryEdit', $response['@type']);
+        $this->assertSame($gallery->id, $response['id']);
+        $this->assertSame('My Gallery', $response['title']);
+        $this->assertSame('My description', $response['description']);
+        $this->assertSame(Gallery::STATUS_DRAFT, $response['status']);
     }
 
     public function test_get_gallery_not_owner(): void
@@ -124,12 +123,11 @@ class UserGalleryEditTest extends ApiTestCase
         $this->assertEquals('Updated Title', $updatedGallery->title);
         $this->assertEquals('Updated description', $updatedGallery->description);
 
-        $this->assertJsonContains([
-            '@type' => 'UserGalleryEdit',
-            'id' => $gallery->id,
-            'title' => 'Updated Title',
-            'description' => 'Updated description',
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserGalleryEdit', $response['@type']);
+        $this->assertSame($gallery->id, $response['id']);
+        $this->assertSame('Updated Title', $response['title']);
+        $this->assertSame('Updated description', $response['description']);
     }
 
     public function test_patch_gallery_not_owner(): void

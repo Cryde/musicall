@@ -58,12 +58,11 @@ class UserGallerySubmitTest extends ApiTestCase
         $updatedGallery = $galleryRepository->find($gallery->id);
         $this->assertEquals(Gallery::STATUS_PENDING, $updatedGallery->status);
 
-        $this->assertJsonContains([
-            '@type' => 'UserGallery',
-            'id' => $gallery->id,
-            'status' => Gallery::STATUS_PENDING,
-            'status_label' => 'En validation',
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserGallery', $response['@type']);
+        $this->assertSame($gallery->id, $response['id']);
+        $this->assertSame(Gallery::STATUS_PENDING, $response['status']);
+        $this->assertSame('En validation', $response['status_label']);
     }
 
     public function test_submit_not_owner(): void
@@ -79,10 +78,15 @@ class UserGallerySubmitTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous n\'etes pas autorise a soumettre cette galerie',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous n\'etes pas autorise a soumettre cette galerie',
         ]);
     }
 
@@ -98,10 +102,15 @@ class UserGallerySubmitTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Cette galerie ne peut pas etre soumise',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Cette galerie ne peut pas etre soumise',
         ]);
     }
 
@@ -117,10 +126,15 @@ class UserGallerySubmitTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/galleries/' . $gallery->id . '/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Cette galerie ne peut pas etre soumise',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Cette galerie ne peut pas etre soumise',
         ]);
     }
 
@@ -132,10 +146,15 @@ class UserGallerySubmitTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/galleries/999999/submit', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Galerie non trouvee',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Galerie non trouvee',
         ]);
     }
 

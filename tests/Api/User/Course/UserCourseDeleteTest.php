@@ -80,8 +80,15 @@ class UserCourseDeleteTest extends ApiTestCase
         $this->client->loginUser($user2);
         $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'You are not the owner of this course',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'You are not the owner of this course',
         ]);
     }
 
@@ -102,8 +109,15 @@ class UserCourseDeleteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'You can only delete draft courses',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'You can only delete draft courses',
         ]);
     }
 
@@ -124,8 +138,15 @@ class UserCourseDeleteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/courses/' . $course->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'You can only delete draft courses',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'You can only delete draft courses',
         ]);
     }
 
@@ -136,8 +157,15 @@ class UserCourseDeleteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/courses/999999');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'Course not found',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Course not found',
         ]);
     }
 }

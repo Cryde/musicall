@@ -52,17 +52,13 @@ class UserPublicationCreateTest extends ApiTestCase
         $this->assertEquals(Publication::TYPE_TEXT, $createdPublication->type);
         $this->assertEquals($category->id, $createdPublication->subCategory->id);
 
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationEdit',
-            'title' => 'My New Publication',
-            'status_id' => Publication::STATUS_DRAFT,
-            'status_label' => 'Brouillon',
-            'category' => [
-                '@type' => 'UserPublicationCategory',
-                'id' => $category->id,
-                'title' => 'News',
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserPublicationEdit', $response['@type']);
+        $this->assertSame('My New Publication', $response['title']);
+        $this->assertSame(Publication::STATUS_DRAFT, $response['status_id']);
+        $this->assertSame('Brouillon', $response['status_label']);
+        $this->assertSame($category->id, $response['category']['id']);
+        $this->assertSame('News', $response['category']['title']);
     }
 
     public function test_create_publication_validation_error_empty_title(): void

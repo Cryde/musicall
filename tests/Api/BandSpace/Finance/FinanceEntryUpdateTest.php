@@ -411,7 +411,33 @@ class FinanceEntryUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['status' => 'committed', 'amount' => 75000]);
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $updatedEntry = $entryRepository->find($entry->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            '@type' => 'FinanceEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'category_id' => $category->id,
+            'category_name' => 'Studio',
+            'label' => 'Recording',
+            'type' => 'expense',
+            'status' => 'committed',
+            'amount' => 75000,
+            'amount_min' => null,
+            'amount_max' => null,
+            'date' => '2024-01-15',
+            'scope' => 'band',
+            'member_id' => null,
+            'member_name' => null,
+            'recurrence_id' => null,
+            'is_former_member' => false,
+            'split_warning' => false,
+            'creation_datetime' => $updatedEntry->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
     }
 
     public function test_update_paid_entry_allows_status_change(): void

@@ -46,7 +46,7 @@ class MusicianProfilePostTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         // Get the created profile ID from response
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
         $profileId = $response['id'];
 
         $this->assertJsonEquals([
@@ -83,7 +83,7 @@ class MusicianProfilePostTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
         $profileId = $response['id'];
 
         $this->assertJsonEquals([

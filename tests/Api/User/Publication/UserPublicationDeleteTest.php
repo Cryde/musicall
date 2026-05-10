@@ -80,8 +80,15 @@ class UserPublicationDeleteTest extends ApiTestCase
         $this->client->loginUser($user2);
         $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'You are not the owner of this publication',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'You are not the owner of this publication',
         ]);
     }
 
@@ -102,8 +109,15 @@ class UserPublicationDeleteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'You can only delete draft publications',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'You can only delete draft publications',
         ]);
     }
 
@@ -124,8 +138,15 @@ class UserPublicationDeleteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/publications/' . $publication->id);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'You can only delete draft publications',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'You can only delete draft publications',
         ]);
     }
 
@@ -136,8 +157,15 @@ class UserPublicationDeleteTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/user/publications/999999');
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
             'detail' => 'Publication not found',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Publication not found',
         ]);
     }
 }

@@ -92,12 +92,23 @@ class TaskCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertJsonContains([
+
+        $repo = self::getContainer()->get(TaskRepository::class);
+        $tasks = $repo->findByBandSpace($bandSpace, new TaskFilter());
+        $task = $tasks[0];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            '@type' => 'Task',
+            'id' => $task->id,
+            'band_space_id' => $bandSpace->id,
             'title' => 'Réserver la salle',
             'description' => 'Appeler la salle pour réserver',
             'status' => 'in_progress',
             'priority' => 'high',
             'due_date' => '2026-04-15',
+            'created_by_id' => $user->id,
+            'created_by_username' => $user->username,
             'category_id' => $category->id,
             'category_name' => 'Logistique',
             'assignees' => [
@@ -107,6 +118,13 @@ class TaskCreateTest extends ApiTestCase
                     'profile_picture_url' => null,
                 ],
             ],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $task->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+            'comment_count' => 0,
+            'file_count' => 0,
         ]);
     }
 

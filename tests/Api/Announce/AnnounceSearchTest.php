@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\Announce;
 
+use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
@@ -13,6 +14,8 @@ use Zenstruck\Foundry\Test\ResetDatabase;
 #[\Zenstruck\Foundry\Attribute\ResetDatabase]
 class AnnounceSearchTest extends ApiTestCase
 {
+    use ApiTestAssertionsTrait;
+
     public function test_search_musicians_with_filters(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
@@ -67,26 +70,71 @@ class AnnounceSearchTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-
-        $this->assertEquals('/api/contexts/AnnounceMusician', $response['@context']);
-        $this->assertEquals('/api/musicians/search', $response['@id']);
-        $this->assertEquals('Collection', $response['@type']);
-
-        // Verify only 2 members returned (the guitar ones)
-        $this->assertCount(2, $response['member']);
-
-        // First result (newest) should be Lyon
-        $this->assertEquals($announce2->id, $response['member'][0]['id']);
-        $this->assertEquals('Lyon', $response['member'][0]['location_name']);
-        $this->assertEquals('olivia', $response['member'][0]['user']['username']);
-        $this->assertEquals('Guitariste', $response['member'][0]['instrument']['name']);
-
-        // Second result should be Paris
-        $this->assertEquals($announce1->id, $response['member'][1]['id']);
-        $this->assertEquals('Paris', $response['member'][1]['location_name']);
-        $this->assertEquals('philip', $response['member'][1]['user']['username']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AnnounceMusician',
+            '@id' => '/api/musicians/search',
+            '@type' => 'Collection',
+            'totalItems' => 12,
+            'member' => [
+                [
+                    '@id' => '/api/announce_musicians/' . $announce2->id,
+                    '@type' => 'AnnounceMusician',
+                    'id' => $announce2->id,
+                    'location_name' => 'Lyon',
+                    'note' => 'Guitariste rock cherche groupe 2',
+                    'user' => [
+                        '@type' => 'User',
+                        'id' => $author2->id,
+                        'username' => 'olivia',
+                        'has_musician_profile' => false,
+                    ],
+                    'instrument' => [
+                        '@type' => 'Instrument',
+                        'name' => 'Guitariste',
+                    ],
+                    'type' => 1,
+                    'styles' => [
+                        ['@type' => 'Style', 'name' => 'Rock'],
+                    ],
+                ],
+                [
+                    '@id' => '/api/announce_musicians/' . $announce1->id,
+                    '@type' => 'AnnounceMusician',
+                    'id' => $announce1->id,
+                    'location_name' => 'Paris',
+                    'note' => 'Guitariste rock cherche groupe',
+                    'user' => [
+                        '@type' => 'User',
+                        'id' => $author1->id,
+                        'username' => 'philip',
+                        'has_musician_profile' => false,
+                    ],
+                    'instrument' => [
+                        '@type' => 'Instrument',
+                        'name' => 'Guitariste',
+                    ],
+                    'type' => 1,
+                    'styles' => [
+                        ['@type' => 'Style', 'name' => 'Rock'],
+                        ['@type' => 'Style', 'name' => 'Pop'],
+                    ],
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/musicians/search?instrument=' . $guitar->id . '&type=1',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/musicians/search{?type,instrument,styles}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'type', 'property' => 'type', 'required' => false],
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'instrument', 'property' => 'instrument', 'required' => false],
+                    ['@type' => 'IriTemplateMapping', 'variable' => 'styles', 'property' => 'styles', 'required' => false],
+                ],
+            ],
+        ]);
     }
 
     public function test_search_musicians_with_latitude_longitude(): void
@@ -136,19 +184,11 @@ class AnnounceSearchTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-
-        // With coordinates, results should be ordered by distance (Paris first, then Marseille)
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
         $this->assertCount(2, $response['member']);
-
-        // First result should be Paris (closest to search coordinates)
-        $this->assertEquals('Paris', $response['member'][0]['location_name']);
-        $this->assertArrayHasKey('distance', $response['member'][0]);
+        $this->assertSame('Paris', $response['member'][0]['location_name']);
         $this->assertEquals(0.0, $response['member'][0]['distance']);
-
-        // Second result should be Marseille (further away)
-        $this->assertEquals('Marseille', $response['member'][1]['location_name']);
-        $this->assertArrayHasKey('distance', $response['member'][1]);
+        $this->assertSame('Marseille', $response['member'][1]['location_name']);
         $this->assertGreaterThan(0, $response['member'][1]['distance']);
     }
 
@@ -186,10 +226,9 @@ class AnnounceSearchTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
         $this->assertCount(1, $response['member']);
-        $this->assertEquals($announce1->id, $response['member'][0]['id']);
+        $this->assertSame($announce1->id, $response['member'][0]['id']);
     }
 
     public function test_search_musicians_without_parameters_returns_success(): void

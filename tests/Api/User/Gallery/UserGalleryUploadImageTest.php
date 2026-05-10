@@ -56,13 +56,14 @@ class UserGalleryUploadImageTest extends ApiTestCase
         $images = $galleryImageRepository->findBy(['gallery' => $gallery]);
         $this->assertCount(1, $images);
 
-        $this->assertJsonContains([
+        $response = $this->getResponseAsArray();
+        $this->assertJsonEquals([
+            '@context' => $response['@context'],
+            '@id' => $response['@id'],
             '@type' => 'UserGalleryImage',
+            'id' => $response['id'],
+            'sizes' => $response['sizes'],
         ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('id', $response);
-        $this->assertArrayHasKey('sizes', $response);
     }
 
     public function test_upload_image_not_owner(): void

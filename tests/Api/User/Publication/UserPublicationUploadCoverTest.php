@@ -56,13 +56,14 @@ class UserPublicationUploadCoverTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
-        $this->assertJsonContains([
-            '@type' => 'UserPublicationUploadCoverOutput',
-        ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('uri', $response);
+        $response = $this->getResponseAsArray();
         $this->assertNotEmpty($response['uri']);
+        $this->assertJsonEquals([
+            '@context' => $response['@context'],
+            '@id' => $response['@id'],
+            '@type' => 'UserPublicationUploadCoverOutput',
+            'uri' => $response['uri'],
+        ]);
     }
 
     public function test_upload_cover_not_owner(): void

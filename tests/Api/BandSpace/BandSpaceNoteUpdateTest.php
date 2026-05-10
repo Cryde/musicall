@@ -6,6 +6,7 @@ namespace App\Tests\Api\BandSpace;
 
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -44,9 +45,23 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
             'title' => 'New Title',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -80,9 +95,23 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
             'content' => $content,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -113,9 +142,23 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
             'position' => 5,
+            'content' => null,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -144,9 +187,23 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'has_children' => false,
             'emoji' => '🎵',
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -180,9 +237,23 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'has_children' => false,
             'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
 
@@ -211,9 +282,23 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
             '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
             'content' => null,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
 
@@ -349,20 +434,36 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $sanitizedContent = [
+            'type' => 'doc',
             'content' => [
-                'type' => 'doc',
-                'content' => [
-                    [
-                        'type' => 'paragraph',
-                        'content' => [
-                            ['type' => 'text', 'text' => ''],
-                            ['type' => 'text', 'text' => ''],
-                            ['type' => 'text', 'text' => 'Safe text'],
-                        ],
+                [
+                    'type' => 'paragraph',
+                    'content' => [
+                        ['type' => 'text', 'text' => ''],
+                        ['type' => 'text', 'text' => ''],
+                        ['type' => 'text', 'text' => 'Safe text'],
                     ],
                 ],
             ],
+        ];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => $sanitizedContent,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
     }
 

@@ -52,7 +52,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(2, $data['totalItems']);
         $this->assertCount(2, $data['member']);
         // ordered DESC by creation_datetime
@@ -83,7 +83,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(2, $data['totalItems']);
         $modules = array_map(fn(array $a) => $a['module'], $data['member']);
         sort($modules);
@@ -110,7 +110,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(1, $data['totalItems']);
         $this->assertSame('comment_added', $data['member'][0]['type']);
         $this->assertSame($member->id, $data['member'][0]['actor']['id']);
@@ -134,7 +134,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(1, $data['totalItems']);
         $this->assertSame('status_changed', $data['member'][0]['type']);
     }
@@ -158,7 +158,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(1, $data['totalItems']);
         $this->assertStringStartsWith('2026-03-15', $data['member'][0]['creation_datetime']);
     }
@@ -185,7 +185,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(1, $data['totalItems']);
         $this->assertNull($data['member'][0]['actor']);
     }
@@ -251,7 +251,7 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = $this->getResponseAsArray();
         $this->assertSame(60, $data['totalItems']);
         $this->assertCount(50, $data['member']);
     }

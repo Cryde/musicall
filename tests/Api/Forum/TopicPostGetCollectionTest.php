@@ -180,8 +180,9 @@ class TopicPostGetCollectionTest extends ApiTestCase
         ])->create();
 
         // Create 15 posts (more than page size of 10)
+        $posts = [];
         for ($i = 1; $i <= 15; $i++) {
-            ForumPostFactory::new([
+            $posts[$i] = ForumPostFactory::new([
                 'topic' => $topic,
                 'creator' => $poster,
                 'content' => 'Post content ' . $i,
@@ -190,14 +191,44 @@ class TopicPostGetCollectionTest extends ApiTestCase
             ])->create();
         }
 
+        $expectedMember = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $expectedMember[] = [
+                '@id' => '/api/topic_posts/' . $posts[$i]->id,
+                '@type' => 'TopicPost',
+                'id' => $posts[$i]->id,
+                'creation_datetime' => $posts[$i]->creationDatetime->format(\DateTimeInterface::ATOM),
+                'update_datetime' => null,
+                'content' => 'Post content ' . $i,
+                'creator' => [
+                    '@type' => 'User',
+                    'id' => $poster->id,
+                    'username' => 'poster',
+                    'deletion_datetime' => null,
+                    'profile_picture' => null,
+                ],
+                'upvotes' => 0,
+                'downvotes' => 0,
+                'user_vote' => null,
+            ];
+        }
+
         $this->client->request('GET', '/api/forums/topics/test-topic/posts');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/forums/topics/test-topic/posts',
+            '@type' => 'Collection',
+            'member' => $expectedMember,
             'totalItems' => 15,
+            'view' => [
+                '@id' => '/api/forums/topics/test-topic/posts?page=1',
+                '@type' => 'PartialCollectionView',
+                'first' => '/api/forums/topics/test-topic/posts?page=1',
+                'last' => '/api/forums/topics/test-topic/posts?page=2',
+                'next' => '/api/forums/topics/test-topic/posts?page=2',
+            ],
         ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertCount(10, $response['member']);
     }
 
     public function test_get_collection_pagination_second_page(): void
@@ -219,8 +250,9 @@ class TopicPostGetCollectionTest extends ApiTestCase
         ])->create();
 
         // Create 15 posts (more than page size of 10)
+        $posts = [];
         for ($i = 1; $i <= 15; $i++) {
-            ForumPostFactory::new([
+            $posts[$i] = ForumPostFactory::new([
                 'topic' => $topic,
                 'creator' => $poster,
                 'content' => 'Post content ' . $i,
@@ -229,13 +261,43 @@ class TopicPostGetCollectionTest extends ApiTestCase
             ])->create();
         }
 
+        $expectedMember = [];
+        for ($i = 11; $i <= 15; $i++) {
+            $expectedMember[] = [
+                '@id' => '/api/topic_posts/' . $posts[$i]->id,
+                '@type' => 'TopicPost',
+                'id' => $posts[$i]->id,
+                'creation_datetime' => $posts[$i]->creationDatetime->format(\DateTimeInterface::ATOM),
+                'update_datetime' => null,
+                'content' => 'Post content ' . $i,
+                'creator' => [
+                    '@type' => 'User',
+                    'id' => $poster->id,
+                    'username' => 'poster',
+                    'deletion_datetime' => null,
+                    'profile_picture' => null,
+                ],
+                'upvotes' => 0,
+                'downvotes' => 0,
+                'user_vote' => null,
+            ];
+        }
+
         $this->client->request('GET', '/api/forums/topics/test-topic/posts?page=2');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TopicPost',
+            '@id' => '/api/forums/topics/test-topic/posts',
+            '@type' => 'Collection',
+            'member' => $expectedMember,
             'totalItems' => 15,
+            'view' => [
+                '@id' => '/api/forums/topics/test-topic/posts?page=2',
+                '@type' => 'PartialCollectionView',
+                'first' => '/api/forums/topics/test-topic/posts?page=1',
+                'last' => '/api/forums/topics/test-topic/posts?page=2',
+                'previous' => '/api/forums/topics/test-topic/posts?page=1',
+            ],
         ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertCount(5, $response['member']);
     }
 }

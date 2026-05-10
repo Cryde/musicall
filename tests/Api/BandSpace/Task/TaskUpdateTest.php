@@ -43,7 +43,33 @@ class TaskUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['status' => 'in_progress']);
+
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            '@type' => 'Task',
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => $task->title,
+            'description' => null,
+            'status' => 'in_progress',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+            'file_count' => 0,
+        ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id);
@@ -73,9 +99,32 @@ class TaskUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            '@type' => 'Task',
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
             'title' => 'Updated title',
+            'description' => null,
             'status' => 'todo',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+            'file_count' => 0,
         ]);
     }
 
@@ -102,7 +151,33 @@ class TaskUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['file_count' => 1]);
+
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $refreshed = $repo->find($task->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            '@type' => 'Task',
+            'id' => (string) $task->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => $task->title,
+            'description' => 'Une description',
+            'status' => 'todo',
+            'priority' => 'normal',
+            'due_date' => null,
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'category_id' => null,
+            'category_name' => null,
+            'assignees' => [],
+            'archive_datetime' => null,
+            'completed_datetime' => null,
+            'position' => 0,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+            'comment_count' => 0,
+            'file_count' => 1,
+        ]);
     }
 
     public function test_completed_datetime_set_when_moving_to_done(): void

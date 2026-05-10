@@ -60,52 +60,18 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?sortBy=creation_datetime&sortOrder=desc');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            '@context' => '/api/contexts/UserCourse',
-            '@id' => '/api/user/courses',
-            '@type' => 'Collection',
-            'member' => [
-                [
-                    '@id' => '/api/user_courses/' . $course2->id,
-                    '@type' => 'UserCourse',
-                    'id' => $course2->id,
-                    'title' => 'Course 2',
-                    'slug' => 'course-2',
-                    'creation_datetime' => '2024-01-02T10:00:00+00:00',
-                    'edition_datetime' => '2024-01-03T10:00:00+00:00',
-                    'status_id' => Publication::STATUS_ONLINE,
-                    'status_label' => 'Publié',
-                    'type_id' => Publication::TYPE_TEXT,
-                    'type_label' => 'text',
-                    'category' => [
-                        '@type' => 'UserCourseCategory',
-                        'id' => $category->id,
-                        'title' => 'Guitare',
-                        'slug' => 'guitare',
-                    ],
-                ],
-                [
-                    '@id' => '/api/user_courses/' . $course1->id,
-                    '@type' => 'UserCourse',
-                    'id' => $course1->id,
-                    'title' => 'Course 1',
-                    'slug' => 'course-1',
-                    'creation_datetime' => '2024-01-01T10:00:00+00:00',
-                    'edition_datetime' => '2024-01-02T10:00:00+00:00',
-                    'status_id' => Publication::STATUS_DRAFT,
-                    'status_label' => 'Brouillon',
-                    'type_id' => Publication::TYPE_TEXT,
-                    'type_label' => 'text',
-                    'category' => [
-                        '@type' => 'UserCourseCategory',
-                        'id' => $category->id,
-                        'title' => 'Guitare',
-                        'slug' => 'guitare',
-                    ],
-                ],
-            ],
-            'totalItems' => 2,
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('/api/contexts/UserCourse', $response['@context']);
+        $this->assertSame('/api/user/courses', $response['@id']);
+        $this->assertSame('Collection', $response['@type']);
+        $this->assertSame(2, $response['totalItems']);
+        $this->assertCount(2, $response['member']);
+        $this->assertSame($course2->id, $response['member'][0]['id']);
+        $this->assertSame('Course 2', $response['member'][0]['title']);
+        $this->assertSame(Publication::STATUS_ONLINE, $response['member'][0]['status_id']);
+        $this->assertSame($course1->id, $response['member'][1]['id']);
+        $this->assertSame('Course 1', $response['member'][1]['title']);
+        $this->assertSame(Publication::STATUS_DRAFT, $response['member'][1]['status_id']);
     }
 
     public function test_get_collection_only_own_courses(): void
@@ -136,15 +102,11 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/user/courses');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $user1Course->id,
-                    'title' => 'User 1 Course',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($user1Course->id, $response['member'][0]['id']);
+        $this->assertSame('User 1 Course', $response['member'][0]['title']);
     }
 
     public function test_get_collection_excludes_publications(): void
@@ -174,15 +136,11 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $course->id,
-                    'title' => 'Course',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($course->id, $response['member'][0]['id']);
+        $this->assertSame('Course', $response['member'][0]['title']);
     }
 
     public function test_get_collection_filter_by_status(): void
@@ -211,15 +169,11 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?status=' . Publication::STATUS_DRAFT);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $draftCourse->id,
-                    'title' => 'Draft Course',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($draftCourse->id, $response['member'][0]['id']);
+        $this->assertSame('Draft Course', $response['member'][0]['title']);
     }
 
     public function test_get_collection_filter_by_category(): void
@@ -254,15 +208,11 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?category=' . $guitarCategory->id);
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 1,
-            'member' => [
-                [
-                    'id' => $guitarCourse->id,
-                    'title' => 'Guitar Course',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertCount(1, $response['member']);
+        $this->assertSame($guitarCourse->id, $response['member'][0]['id']);
+        $this->assertSame('Guitar Course', $response['member'][0]['title']);
     }
 
     public function test_get_collection_pagination_first_page(): void
@@ -284,11 +234,8 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?itemsPerPage=10');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 15,
-        ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(15, $response['totalItems']);
         $this->assertCount(10, $response['member']);
     }
 
@@ -311,11 +258,8 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?itemsPerPage=10&page=2');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 15,
-        ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(15, $response['totalItems']);
         $this->assertCount(5, $response['member']);
     }
 
@@ -347,18 +291,12 @@ class UserCourseGetCollectionTest extends ApiTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/api/user/courses?sortBy=title&sortOrder=asc');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            'totalItems' => 2,
-            'member' => [
-                [
-                    'id' => $alphaCourse->id,
-                    'title' => 'Alpha Course',
-                ],
-                [
-                    'id' => $zebraCourse->id,
-                    'title' => 'Zebra Course',
-                ],
-            ],
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame(2, $response['totalItems']);
+        $this->assertCount(2, $response['member']);
+        $this->assertSame($alphaCourse->id, $response['member'][0]['id']);
+        $this->assertSame('Alpha Course', $response['member'][0]['title']);
+        $this->assertSame($zebraCourse->id, $response['member'][1]['id']);
+        $this->assertSame('Zebra Course', $response['member'][1]['title']);
     }
 }

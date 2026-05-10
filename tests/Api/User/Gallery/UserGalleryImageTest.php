@@ -53,14 +53,11 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/images');
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
-            '@context' => '/api/contexts/UserGalleryImage',
-            '@id' => '/api/user/galleries/' . $gallery->id . '/images',
-            '@type' => 'Collection',
-            'totalItems' => 2,
-        ]);
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('/api/contexts/UserGalleryImage', $response['@context']);
+        $this->assertSame('/api/user/galleries/' . $gallery->id . '/images', $response['@id']);
+        $this->assertSame('Collection', $response['@type']);
+        $this->assertSame(2, $response['totalItems']);
         $this->assertCount(2, $response['member']);
     }
 
@@ -77,10 +74,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('GET', '/api/user/galleries/' . $gallery->id . '/images');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous n\'etes pas autorise a acceder a cette galerie',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous n\'etes pas autorise a acceder a cette galerie',
         ]);
     }
 
@@ -92,10 +94,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('GET', '/api/user/galleries/999999/images');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Galerie non trouvee',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Galerie non trouvee',
         ]);
     }
 
@@ -139,11 +146,10 @@ class UserGalleryImageTest extends ApiTestCase
         $updatedGallery = $galleryRepository->find($gallery->id);
         $this->assertEquals($image2->id, $updatedGallery->coverImage->id);
 
-        $this->assertJsonContains([
-            '@type' => 'UserGalleryEdit',
-            'id' => $gallery->id,
-            'cover_image_id' => $image2->id,
-        ]);
+        $response = $this->getResponseAsArray();
+        $this->assertSame('UserGalleryEdit', $response['@type']);
+        $this->assertSame($gallery->id, $response['id']);
+        $this->assertSame($image2->id, $response['cover_image_id']);
     }
 
     public function test_set_cover_not_owner(): void
@@ -160,10 +166,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/gallery-images/' . $image->id . '/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous n\'etes pas autorise a modifier cette image',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous n\'etes pas autorise a modifier cette image',
         ]);
     }
 
@@ -175,10 +186,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->jsonRequest('PATCH', '/api/user/gallery-images/999999/cover', [], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Image non trouvee',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Image non trouvee',
         ]);
     }
 
@@ -225,10 +241,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/gallery-images/' . $image->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous n\'etes pas autorise a supprimer cette image',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous n\'etes pas autorise a supprimer cette image',
         ]);
     }
 
@@ -240,10 +261,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/gallery-images/999999');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Image non trouvee',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Image non trouvee',
         ]);
     }
 
@@ -260,10 +286,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/gallery-images/' . $image->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Cette galerie ne peut plus etre modifiee',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Cette galerie ne peut plus etre modifiee',
         ]);
     }
 
@@ -282,10 +313,15 @@ class UserGalleryImageTest extends ApiTestCase
         $this->client->request('DELETE', '/api/user/gallery-images/' . $image->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonContains([
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
             '@type' => 'Error',
             'title' => 'An error occurred',
             'detail' => 'Vous ne pouvez pas supprimer l\'image de couverture',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous ne pouvez pas supprimer l\'image de couverture',
         ]);
     }
 }
