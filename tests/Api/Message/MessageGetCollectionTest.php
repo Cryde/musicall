@@ -196,6 +196,30 @@ class MessageGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_newlines_in_content_are_converted_to_br(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
+
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
+        $message = MessageFactory::new([
+            'author' => $user2,
+            'thread' => $thread,
+            'content' => "line one\nline two\nline three",
+        ])->create();
+        $thread->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($thread);
+
+        $this->client->loginUser($user1);
+        $this->client->request('GET', '/api/messages/' . $thread->id);
+        $this->assertResponseIsSuccessful();
+
+        $response = $this->getResponseAsArray();
+        $this->assertSame("line one<br />\nline two<br />\nline three", $response['member'][0]['content']);
+    }
+
     public function test_get_collection_but_not_participant(): void
     {
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);

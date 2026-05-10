@@ -12,7 +12,7 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 readonly class MessageBuilder
 {
     public function __construct(
-        private HtmlSanitizerInterface $sanitizer,
+        private HtmlSanitizerInterface $appOnlybrSanitizer,
     ) {
     }
 
@@ -36,7 +36,7 @@ readonly class MessageBuilder
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->author = $entity->author;
         $dto->thread = $this->buildShallowThread($entity->thread->id);
-        $dto->content = $this->sanitizer->sanitize(nl2br($entity->content));
+        $dto->content = $this->appOnlybrSanitizer->sanitize(nl2br($entity->content));
 
         return $dto;
     }
