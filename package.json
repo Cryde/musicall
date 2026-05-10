@@ -11,7 +11,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.6",
     "@primevue/auto-import-resolver": "^4.4.1",
-    "unplugin-vue-components": "^31.0.0",
+    "unplugin-vue-components": "^32.0.0",
     "vite": "^8.0.3",
     "vite-plugin-symfony": "^8.2.2"
   },
@@ -35,7 +35,7 @@
     "@tiptap/pm": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "@tiptap/vue-3": "^3.14.0",
-    "@unhead/vue": "^2.0.19",
+    "@unhead/vue": "^3.1.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vueuse/core": "^14.0.0",
     "@yeger/vue-masonry-wall": "^6.1.0",

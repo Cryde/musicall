@@ -54,7 +54,7 @@ const head = createHead({
       },
       meta: [
         {
-          vmid: 'description',
+          key: 'description',
           name: 'description',
           content:
             'Site communautaire au service de la musique. Articles et cours sur la musique, annuaire de musiciens, forums, ...'
