@@ -9,8 +9,8 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\ApiResource\Message\MessageThreadMetaResource;
 use App\Entity\Comment\Comment;
-use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\State\Processor\User\UserProfilePictureDeleteProcessor;
 use App\State\Processor\User\UserProfilePictureProcessor;
@@ -74,7 +74,7 @@ class UserProfilePicture
     #[Assert\NotNull]
     #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true)]
     #[Vich\UploadableField(mapping: 'user_profile_picture', fileNameProperty: 'imageName', size: 'imageSize')]
-    #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
+    #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMetaResource::LIST, User::ITEM])]
     public ?File $imageFile = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]

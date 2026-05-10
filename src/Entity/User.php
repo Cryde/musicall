@@ -13,10 +13,10 @@ use App\Entity\Forum\ForumTopic;
 use App\Entity\Image\UserProfilePicture;
 use App\Entity\Musician\MusicianProfile;
 use App\ApiResource\Message\MessageResource;
+use App\ApiResource\Message\MessageThreadMetaResource;
 use App\Entity\Teacher\TeacherProfile;
 use App\Entity\User\UserNotificationPreference;
 use App\Entity\User\UserProfile;
-use App\Entity\Message\MessageThreadMeta;
 use App\Repository\UserRepository;
 use DateTime;
 use DateTimeInterface;
@@ -53,12 +53,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([User::ITEM, MessageResource::LIST, MessageThreadMeta::LIST, MessageResource::ITEM])]
+    #[Groups([User::ITEM, MessageResource::LIST, MessageThreadMetaResource::LIST, MessageResource::ITEM])]
     public string $id;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un nom d\'utilisateur')]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMeta::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, Gallery::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, Gallery::LIST])]
     public string $username;
 
     #[Assert\NotBlank(message: 'Veuillez saisir un email')]
@@ -111,11 +111,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public ?\DateTimeImmutable $usernameChangedDatetime = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMeta::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, Gallery::LIST])]
+    #[Groups([Comment::ITEM, Comment::LIST, Publication::ITEM, Publication::LIST, MessageThreadMetaResource::LIST, User::ITEM, MessageResource::LIST, MessageResource::ITEM, Gallery::LIST])]
     public ?\DateTimeImmutable $deletionDatetime = null;
 
     #[ORM\OneToOne(targetEntity: UserProfilePicture::class, cascade: ['persist', 'remove'])]
-    #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMeta::LIST, User::ITEM])]
+    #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMetaResource::LIST, User::ITEM])]
     public ?UserProfilePicture $profilePicture = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]

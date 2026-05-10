@@ -6,7 +6,6 @@ namespace App\ApiResource\Message;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Entity\Message\MessageThreadMeta;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
@@ -21,13 +20,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
 class MessageThreadResource
 {
     #[ApiProperty(identifier: true)]
-    #[Groups([MessageThreadMeta::LIST])]
+    #[Groups([MessageThreadMetaResource::LIST])]
     public string $id;
 
     /** @var MessageParticipantResource[] */
-    #[Groups([MessageThreadMeta::LIST])]
+    #[Groups([MessageThreadMetaResource::LIST])]
     public array $messageParticipants = [];
 
-    #[Groups([MessageThreadMeta::LIST])]
+    #[Groups([MessageThreadMetaResource::LIST])]
     public ?MessageResource $lastMessage = null;
 }

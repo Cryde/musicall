@@ -6,7 +6,6 @@ namespace App\ApiResource\Message;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -24,6 +23,6 @@ class MessageParticipantResource
     #[ApiProperty(identifier: true)]
     public string $id;
 
-    #[Groups([MessageThreadMeta::LIST])]
+    #[Groups([MessageThreadMetaResource::LIST])]
     public User $participant;
 }

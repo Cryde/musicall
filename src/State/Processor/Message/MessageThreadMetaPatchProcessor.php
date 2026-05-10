@@ -4,36 +4,48 @@ namespace App\State\Processor\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\ApiResource\Message\MessageThreadMetaResource;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\Repository\Message\MessageThreadMetaRepository;
+use App\Service\Builder\Message\MessageThreadMetaBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * @implements ProcessorInterface<MessageThreadMeta, MessageThreadMeta>
+ * @implements ProcessorInterface<MessageThreadMetaResource, MessageThreadMetaResource>
  */
-class MessageThreadMetaPatchProcessor implements ProcessorInterface
+readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly Security               $security,
-        private readonly EntityManagerInterface $entityManager
+        private Security                    $security,
+        private EntityManagerInterface      $entityManager,
+        private MessageThreadMetaRepository $messageThreadMetaRepository,
+        private MessageThreadMetaBuilder    $messageThreadMetaBuilder,
     ) {
     }
 
-    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageThreadMeta
+    public function process($data, Operation $operation, array $uriVariables = [], array $context = []): MessageThreadMetaResource
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
-        /** @var MessageThreadMeta $data */
         /** @var User $user */
         $user = $this->security->getUser();
-        if ($user->id !== $data->user->id) {
+
+        $entity = $this->messageThreadMetaRepository->find($uriVariables['id']);
+        if (!$entity instanceof MessageThreadMeta) {
+            throw new NotFoundHttpException('Message thread meta introuvable');
+        }
+        if ($entity->user->id !== $user->id) {
             throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
         }
+
+        $entity->isRead = $data->isRead;
         $this->entityManager->flush();
 
-        return $data;
+        return $this->messageThreadMetaBuilder->buildItem($entity);
     }
 }
