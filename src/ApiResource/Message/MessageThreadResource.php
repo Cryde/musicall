@@ -6,13 +6,13 @@ namespace App\ApiResource\Message;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Message\MessageThreadMeta;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
- * Read-only DTO for MessageThread. The entity-level Get only exists to populate
- * `@id`/`@type` on nested `thread` objects in `MessageThreadMetaResource`. This DTO
- * registers the same metadata via `operations: []` without exposing an HTTP route —
- * #667 wires it into `MessageThreadMetaResource` and strips the entity-side
- * `#[ApiResource]` / `#[Groups]`.
+ * Read-only DTO for MessageThread. Only registered as a resource (no HTTP routes)
+ * so the IRI / @type metadata flows through to nested rendering inside
+ * `MessageThreadMetaResource.thread`.
  */
 #[ApiResource(
     shortName: 'MessageThread',
@@ -21,10 +21,13 @@ use ApiPlatform\Metadata\ApiResource;
 class MessageThreadResource
 {
     #[ApiProperty(identifier: true)]
+    #[Groups([MessageThreadMeta::LIST])]
     public string $id;
 
     /** @var MessageParticipantResource[] */
+    #[Groups([MessageThreadMeta::LIST])]
     public array $messageParticipants = [];
 
+    #[Groups([MessageThreadMeta::LIST])]
     public ?MessageResource $lastMessage = null;
 }

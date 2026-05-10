@@ -13,13 +13,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
-use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
- * `#[ApiResource(operations: [])]` keeps the entity registered for IRI generation in
- * nested rendering contexts (e.g. MessageThreadMeta.last_message). No HTTP routes are
- * exposed — the API surface lives on `App\ApiResource\Message\MessageResource`. This
- * legacy stub will be removed when #667 migrates MessageThreadMeta to a DTO.
+ * `#[ApiResource(operations: [])]` keeps the entity registered for IRI generation
+ * in nested entity contexts (e.g. `MessageResource->thread.last_message` rendering)
+ * and for IRI-based denormalization when API requests reference messages by URL.
+ * No HTTP routes are exposed — the API surface lives on `MessageResource`.
  */
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ApiResource(operations: [])]
@@ -36,12 +35,10 @@ class Message
     }
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([MessageThreadMeta::LIST])]
     public DateTimeInterface $creationDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups([MessageThreadMeta::LIST])]
     public User $author;
 
     #[ORM\ManyToOne(targetEntity: MessageThread::class, inversedBy: "messages")]
@@ -49,7 +46,6 @@ class Message
     public MessageThread $thread;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups([MessageThreadMeta::LIST])]
     public string $content;
 
     public function __construct()

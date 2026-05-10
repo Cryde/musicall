@@ -16,6 +16,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
+use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\State\Processor\Message\MessagePostProcessor;
 use App\State\Provider\Message\MessageCollectionProvider;
@@ -60,10 +61,10 @@ class MessageResource
     #[Groups([MessageResource::ITEM])]
     public string $id;
 
-    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageThreadMeta::LIST])]
     public DateTimeInterface $creationDatetime;
 
-    #[Groups([MessageResource::LIST, MessageResource::ITEM])]
+    #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageThreadMeta::LIST])]
     public User $author;
 
     #[Assert\NotNull]
@@ -71,6 +72,6 @@ class MessageResource
     public MessageThread $thread;
 
     #[Assert\NotBlank]
-    #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageResource::POST])]
+    #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageResource::POST, MessageThreadMeta::LIST])]
     public string $content;
 }

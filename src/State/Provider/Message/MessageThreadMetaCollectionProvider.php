@@ -4,23 +4,29 @@ namespace App\State\Provider\Message;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Message\MessageThreadMetaResource;
 use App\Entity\User;
 use App\Repository\Message\MessageThreadMetaRepository;
+use App\Service\Builder\Message\MessageThreadMetaBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * @implements ProviderInterface<object>
+ * @implements ProviderInterface<MessageThreadMetaResource>
  */
-class MessageThreadMetaCollectionProvider implements ProviderInterface
+readonly class MessageThreadMetaCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly MessageThreadMetaRepository $messageThreadMetaRepository,
-        private readonly Security                    $security
+        private MessageThreadMetaRepository $messageThreadMetaRepository,
+        private MessageThreadMetaBuilder    $messageThreadMetaBuilder,
+        private Security                    $security,
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
+    /**
+     * @return MessageThreadMetaResource[]
+     */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
@@ -28,6 +34,8 @@ class MessageThreadMetaCollectionProvider implements ProviderInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        return $this->messageThreadMetaRepository->findByUserAndNotDeleted($user);
+        $entities = $this->messageThreadMetaRepository->findByUserAndNotDeleted($user);
+
+        return $this->messageThreadMetaBuilder->buildList($entities);
     }
 }

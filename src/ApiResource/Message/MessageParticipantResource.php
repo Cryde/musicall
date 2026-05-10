@@ -6,14 +6,14 @@ namespace App\ApiResource\Message;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
- * Read-only DTO for MessageParticipant. No HTTP operations are exposed — the entity
- * never had a real consumer for its Get route, only IRI generation in nested
- * `MessageThread.message_participants` rendering. Empty `operations: []` keeps the
- * resource registered for IRI / @type metadata once #667 strips the entity-side
- * `#[ApiResource]` and the rendering pipeline switches to this DTO.
+ * Read-only DTO for MessageParticipant. Metadata-only registration: nested rendering
+ * inside `MessageThreadResource.message_participants` resolves @id / @type through
+ * here.
  */
 #[ApiResource(
     shortName: 'MessageParticipant',
@@ -24,5 +24,6 @@ class MessageParticipantResource
     #[ApiProperty(identifier: true)]
     public string $id;
 
+    #[Groups([MessageThreadMeta::LIST])]
     public User $participant;
 }

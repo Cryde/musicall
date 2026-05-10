@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Entity\Message;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Message\MessageResource;
 use App\Repository\Message\MessageThreadRepository;
 use DateTime;
@@ -19,23 +17,22 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+/**
+ * `#[ApiResource(operations: [])]` keeps the entity registered so that incoming
+ * `/api/message_threads/{id}` IRIs can be resolved into entity instances by the
+ * Symfony serializer (used by `MessageResource->thread` denormalization on POST
+ * /messages). It also lets the entity render nested in POST responses with a
+ * proper @id/@type. No HTTP routes are exposed.
+ */
 #[ORM\Entity(repositoryClass: MessageThreadRepository::class)]
-#[ApiResource(
-    operations: [
-        new Get(
-            openapi: new Operation(tags: ['Message']),
-            normalizationContext: ['groups' => [MessageThread::ITEM]],
-        )
-    ]
-)]
+#[ApiResource(operations: [])]
 class MessageThread
 {
-    const ITEM = 'MESSAGE_THREAD_ITEM';
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups([MessageThreadMeta::LIST, MessageResource::ITEM])]
+    #[Groups([MessageResource::ITEM])]
     public UuidInterface|string|null $id = null {
         get {
             return is_string($this->id) ? $this->id : $this->id?->toString();
@@ -50,16 +47,15 @@ class MessageThread
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
+
     /**
      * @var Collection<int, MessageParticipant>
      */
     #[ORM\OneToMany(targetEntity: MessageParticipant::class, mappedBy: 'thread')]
-    #[Groups([MessageThreadMeta::LIST])]
     public Collection $messageParticipants;
 
     #[ORM\ManyToOne(targetEntity: Message::class)]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups([MessageThreadMeta::LIST])]
     public ?Message $lastMessage = null;
 
     public function __construct()
