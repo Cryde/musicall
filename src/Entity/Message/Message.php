@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity\Message;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
 use DateTime;
@@ -14,14 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * `#[ApiResource(operations: [])]` keeps the entity registered for IRI generation
- * in nested entity contexts (e.g. `MessageResource->thread.last_message` rendering)
- * and for IRI-based denormalization when API requests reference messages by URL.
- * No HTTP routes are exposed — the API surface lives on `MessageResource`.
- */
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-#[ApiResource(operations: [])]
 class Message
 {
     #[ORM\Id]

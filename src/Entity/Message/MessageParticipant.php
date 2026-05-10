@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity\Message;
 
-use ApiPlatform\Metadata\ApiResource;
 use DateTimeInterface;
 use DateTime;
 use App\Entity\User;
@@ -14,14 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * `#[ApiResource(operations: [])]` keeps the entity registered for IRI generation
- * in case it gets nested in entity-side serialization paths. The actual API surface
- * uses `MessageParticipantResource`.
- */
 #[ORM\Entity(repositoryClass: MessageParticipantRepository::class)]
 #[ORM\UniqueConstraint(name: 'message_participant_unique', columns: ['thread_id', 'participant_id'])]
-#[ApiResource(operations: [])]
 class MessageParticipant
 {
     #[ORM\Id]

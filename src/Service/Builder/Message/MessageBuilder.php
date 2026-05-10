@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Builder\Message;
 
 use App\ApiResource\Message\MessageResource;
+use App\ApiResource\Message\MessageThreadResource;
 use App\Entity\Message\Message;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -34,8 +35,16 @@ readonly class MessageBuilder
         $dto->id = (string) $entity->id;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->author = $entity->author;
-        $dto->thread = $entity->thread;
+        $dto->thread = $this->buildShallowThread($entity->thread->id);
         $dto->content = $this->sanitizer->sanitize(nl2br($entity->content));
+
+        return $dto;
+    }
+
+    private function buildShallowThread(\Ramsey\Uuid\UuidInterface|string|null $threadId): MessageThreadResource
+    {
+        $dto = new MessageThreadResource();
+        $dto->id = (string) $threadId;
 
         return $dto;
     }

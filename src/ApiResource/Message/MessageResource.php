@@ -19,12 +19,9 @@ use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\State\Processor\Message\MessagePostProcessor;
 use App\State\Provider\Message\MessageCollectionProvider;
-use App\Validator\Message\NotDeletedThreadRecipient;
 use DateTimeInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 
-#[NotDeletedThreadRecipient]
 #[ApiResource(
     shortName: 'Message',
     operations: [
@@ -43,7 +40,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/messages',
             openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [MessageResource::ITEM]],
-            denormalizationContext: ['groups' => [MessageResource::POST]],
+            input: MessageCreation::class,
             name: 'api_message_post',
             processor: MessagePostProcessor::class,
         ),
@@ -54,7 +51,6 @@ class MessageResource
 {
     public const string LIST = 'message:list';
     public const string ITEM = 'message:item';
-    public const string POST = 'message:post';
 
     #[ApiProperty(identifier: true)]
     #[Groups([MessageResource::ITEM])]
@@ -66,11 +62,9 @@ class MessageResource
     #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageThreadMetaResource::LIST])]
     public User $author;
 
-    #[Assert\NotNull]
-    #[Groups([MessageResource::ITEM, MessageResource::POST])]
-    public MessageThread $thread;
+    #[Groups([MessageResource::ITEM])]
+    public MessageThreadResource $thread;
 
-    #[Assert\NotBlank]
-    #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageResource::POST, MessageThreadMetaResource::LIST])]
+    #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageThreadMetaResource::LIST])]
     public string $content;
 }
