@@ -85,15 +85,15 @@ class MessagePostInThreadTest extends ApiTestCase
             'thread'  => '/api/message_threads/' . $thread->id,
             'content' => 'new content from user1',
         ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
-            '@id' => '/api/errors/403',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title'       => 'An error occurred',
-            'description' => 'Vous n\'êtes pas autorisé à voir ceci.',
-            'detail' => 'Vous n\'êtes pas autorisé à voir ceci.',
-            'status' => 403,
-            'type' => '/errors/403',
+            'description' => 'Thread not found.',
+            'detail' => 'Thread not found.',
+            'status' => 404,
+            'type' => '/errors/404',
             '@context' => '/api/contexts/Error',
         ]);
     }
@@ -136,6 +136,25 @@ class MessagePostInThreadTest extends ApiTestCase
             'status' => 422,
             'type' => '/validation_errors/music_all_a9d3b7e1-4c6f-4e2a-8b5d-3f1c0e9a7d26',
         ]);
+    }
+
+    public function test_post_message_with_content_too_long(): void
+    {
+        $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
+
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
+        MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread])->create();
+
+        $this->client->loginUser($user1);
+        $this->client->jsonRequest('POST', '/api/messages', [
+            'thread'  => '/api/message_threads/' . $thread->id,
+            'content' => str_repeat('a', 5001),
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     public function test_with_invalid_values(): void

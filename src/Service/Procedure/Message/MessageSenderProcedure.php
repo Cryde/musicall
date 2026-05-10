@@ -12,6 +12,7 @@ use App\Service\Builder\Message\MessageDirector;
 use App\Service\Builder\Message\MessageParticipantDirector;
 use App\Service\Builder\Message\MessageThreadDirector;
 use App\Service\Builder\Message\MessageThreadMetaDirector;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -37,30 +38,37 @@ class MessageSenderProcedure
      */
     public function process(User $sender, User $recipient, string $content) : Message
     {
-        if (!$thread = $this->messageThreadRepository->findByParticipants($recipient, $sender)) {
-            $thread = $this->messageThreadDirector->create();
-            $threadMetaSender = $this->messageThreadMetaDirector->create($thread, $sender, true);
-            $threadMetaRecipient = $this->messageThreadMetaDirector->create($thread, $recipient, false);
-            $participantSender = $this->messageParticipantDirector->create($thread, $sender);
-            $participantRecipient = $this->messageParticipantDirector->create($thread, $recipient);
+        return $this->entityManager->wrapInTransaction(function () use ($sender, $recipient, $content): Message {
+            // Serialize concurrent A↔B thread creation by acquiring write locks on the
+            // two user rows in deterministic id-sorted order (deadlock-free). The second
+            // request in a race blocks here, then sees the thread the first just created.
+            $this->lockUserPair($sender, $recipient);
 
-            $this->entityManager->persist($thread);
-            $this->entityManager->persist($threadMetaSender);
-            $this->entityManager->persist($threadMetaRecipient);
-            $this->entityManager->persist($participantSender);
-            $this->entityManager->persist($participantRecipient);
+            if (!$thread = $this->messageThreadRepository->findByParticipants($recipient, $sender)) {
+                $thread = $this->messageThreadDirector->create();
+                $threadMetaSender = $this->messageThreadMetaDirector->create($thread, $sender, true);
+                $threadMetaRecipient = $this->messageThreadMetaDirector->create($thread, $recipient, false);
+                $participantSender = $this->messageParticipantDirector->create($thread, $sender);
+                $participantRecipient = $this->messageParticipantDirector->create($thread, $recipient);
 
-            $this->eventDispatcher->dispatch(new MessageSentEvent($recipient, $sender, $thread));
-        } else {
-            $this->handleReadMessage($thread, $sender);
-        }
+                $this->entityManager->persist($thread);
+                $this->entityManager->persist($threadMetaSender);
+                $this->entityManager->persist($threadMetaRecipient);
+                $this->entityManager->persist($participantSender);
+                $this->entityManager->persist($participantRecipient);
 
-        $message = $this->messageDirector->create($thread, $sender, $content);
-        $this->entityManager->persist($message);
-        $thread->lastMessage = $message;
-        $this->entityManager->flush();
+                $this->eventDispatcher->dispatch(new MessageSentEvent($recipient, $sender, $thread));
+            } else {
+                $this->handleReadMessage($thread, $sender);
+            }
 
-        return $message;
+            $message = $this->messageDirector->create($thread, $sender, $content);
+            $this->entityManager->persist($message);
+            $thread->lastMessage = $message;
+            $this->entityManager->flush();
+
+            return $message;
+        });
     }
 
     public function processByThread(MessageThread $thread, User $sender, string $content): Message
@@ -73,6 +81,22 @@ class MessageSenderProcedure
         $this->entityManager->flush();
 
         return $message;
+    }
+
+    private function lockUserPair(User $sender, User $recipient): void
+    {
+        $ids = [(string) $sender->id, (string) $recipient->id];
+        sort($ids, SORT_STRING);
+
+        $this->entityManager->createQueryBuilder()
+            ->select('u')
+            ->from(User::class, 'u')
+            ->where('u.id IN (:ids)')
+            ->orderBy('u.id', 'ASC')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->getResult();
     }
 
     private function handleReadMessage(MessageThread $thread, User $sender): void

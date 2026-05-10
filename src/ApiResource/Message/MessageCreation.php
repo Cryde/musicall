@@ -20,5 +20,6 @@ class MessageCreation
     public MessageThreadResource $thread;
 
     #[Assert\NotBlank]
+    #[Assert\Length(max: 5000)]
     public string $content;
 }

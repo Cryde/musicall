@@ -34,6 +34,7 @@ class MessageUser
     #[Groups([MessageUser::POST])]
     public User $recipient;
     #[Assert\NotBlank]
+    #[Assert\Length(max: 5000)]
     #[Groups([MessageUser::POST])]
     public string $content;
 }

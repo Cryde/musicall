@@ -8,8 +8,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Message\MessageThreadResource;
 use App\Entity\Message\MessageThread;
+use App\Entity\User;
 use App\Repository\Message\MessageThreadRepository;
+use App\Service\Access\ThreadAccess;
 use App\Service\Builder\Message\MessageThreadBuilder;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -20,6 +23,8 @@ readonly class MessageThreadItemProvider implements ProviderInterface
     public function __construct(
         private MessageThreadRepository $messageThreadRepository,
         private MessageThreadBuilder    $messageThreadBuilder,
+        private ThreadAccess            $threadAccess,
+        private Security                $security,
     ) {
     }
 
@@ -27,6 +32,14 @@ readonly class MessageThreadItemProvider implements ProviderInterface
     {
         $entity = $this->messageThreadRepository->find($uriVariables['id']);
         if (!$entity instanceof MessageThread) {
+            throw new NotFoundHttpException('Thread not found.');
+        }
+
+        // Participation check: throw 404 (not 403) for non-participants so authenticated
+        // users cannot probe thread existence. Anonymous calls fall through; downstream
+        // (Get operation security / processor auth) handle them.
+        $user = $this->security->getUser();
+        if ($user instanceof User && !$this->threadAccess->isOneOfParticipant($entity, $user)) {
             throw new NotFoundHttpException('Thread not found.');
         }
 
