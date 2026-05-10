@@ -15,7 +15,6 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Entity(repositoryClass: BandSpaceFileVersionRepository::class)]
 #[ORM\Table(name: 'band_space_file_version')]
-#[ORM\Index(name: 'idx_band_space_file_version_lookup', columns: ['band_space_file_id', 'version_number'])]
 #[ORM\UniqueConstraint(name: 'unique_band_space_file_version_number', columns: ['band_space_file_id', 'version_number'])]
 #[Vich\Uploadable]
 class BandSpaceFileVersion

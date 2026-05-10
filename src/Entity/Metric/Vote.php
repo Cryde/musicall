@@ -25,6 +25,7 @@ class Vote
     public VoteCache $voteCache;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     public ?User $user = null;
 
     #[ORM\Column(type: Types::STRING, length: 128)]

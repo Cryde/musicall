@@ -17,6 +17,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: FinanceEntryRepository::class)]
 #[ORM\Table(name: 'finance_entry')]
+#[ORM\Index(name: 'IDX_finance_entry_category_status', columns: ['category_id', 'status'])]
 class FinanceEntry
 {
     #[ORM\Id]

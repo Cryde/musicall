@@ -12,6 +12,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: FinanceEntrySplitRepository::class)]
 #[ORM\Table(name: 'finance_entry_split')]
+#[ORM\Index(name: 'IDX_finance_entry_split_entry_member', columns: ['entry_id', 'member_id'])]
 class FinanceEntrySplit
 {
     #[ORM\Id]
