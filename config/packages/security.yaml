@@ -23,7 +23,8 @@ security:
             pattern:  ^/api/token/refresh
             stateless: true
             user_checker: App\Security\UserChecker
-            refresh_jwt: ~
+            refresh_jwt:
+                check_path: /api/token/refresh
 
         login:
             pattern: ^/api/login
