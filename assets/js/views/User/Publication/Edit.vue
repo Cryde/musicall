@@ -312,7 +312,7 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PublicationSettingsModal from '../../../components/publication/PublicationSettingsModal.vue'
 import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
@@ -382,6 +382,10 @@ onMounted(async () => {
 
 onUnmounted(() => {
   publicationEditStore.clear()
+})
+
+onBeforeUnmount(() => {
+  editor.value?.destroy()
 })
 
 watch(

@@ -74,16 +74,21 @@
 </template>
 
 <script setup>
+import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
-import { watch } from 'vue'
+import { onBeforeUnmount, watch } from 'vue'
 
 const props = defineProps({
   previousContent: {
     type: String,
     default: ''
+  },
+  placeholder: {
+    type: String,
+    default: 'Écrivez votre message…'
   }
 })
 
@@ -93,6 +98,9 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: false
+    }),
+    Placeholder.configure({
+      placeholder: props.placeholder
     })
   ],
   content: props.previousContent,
@@ -102,6 +110,10 @@ const editor = useEditor({
       text: editor.getText()
     })
   }
+})
+
+onBeforeUnmount(() => {
+  editor.value?.destroy()
 })
 
 watch(
