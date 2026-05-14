@@ -6,9 +6,20 @@
 
     <div class="flex items-center gap-3 mb-6">
       <h1 class="text-2xl font-semibold">{{ forumStore.currentTopic?.title }}</h1>
+      <Tag v-if="forumStore.currentTopic?.is_resolved" value="Résolu" severity="success" icon="pi pi-check-circle" />
       <Tag v-if="forumStore.currentTopic?.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" />
       <Button
-        v-if="canToggleLock"
+        v-if="canManageTopic"
+        :label="forumStore.currentTopic.is_resolved ? 'Marquer non résolu' : 'Marquer résolu'"
+        :icon="forumStore.currentTopic.is_resolved ? 'pi pi-times-circle' : 'pi pi-check-circle'"
+        size="small"
+        severity="secondary"
+        text
+        :loading="isResolveLoading"
+        @click="handleToggleResolved"
+      />
+      <Button
+        v-if="canManageTopic"
         :label="forumStore.currentTopic.is_locked ? 'Déverrouiller' : 'Verrouiller'"
         :icon="forumStore.currentTopic.is_locked ? 'pi pi-lock-open' : 'pi pi-lock'"
         size="small"
@@ -97,8 +108,9 @@ const toast = useToast()
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
 const isToggleLoading = ref(false)
+const isResolveLoading = ref(false)
 
-const canToggleLock = computed(() => {
+const canManageTopic = computed(() => {
   const topic = forumStore.currentTopic
   if (!topic || !userSecurityStore.isAuthenticated) return false
   if (userSecurityStore.isAdmin) return true
@@ -125,6 +137,29 @@ async function handleToggleLock() {
     })
   } finally {
     isToggleLoading.value = false
+  }
+}
+
+async function handleToggleResolved() {
+  if (!forumStore.currentTopic) return
+  isResolveLoading.value = true
+  try {
+    if (forumStore.currentTopic.is_resolved) {
+      await forumStore.unresolveCurrentTopic()
+      toast.add({ severity: 'success', summary: 'Sujet marqué non résolu', life: 3000 })
+    } else {
+      await forumStore.resolveCurrentTopic()
+      toast.add({ severity: 'success', summary: 'Sujet marqué résolu', life: 3000 })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Action impossible',
+      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      life: 4000
+    })
+  } finally {
+    isResolveLoading.value = false
   }
 }
 

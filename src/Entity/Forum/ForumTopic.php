@@ -44,6 +44,9 @@ class ForumTopic implements SluggableEntityInterface
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $isLocked = false;
 
+    #[ORM\Column(type: Types::BOOLEAN)]
+    public bool $isResolved = false;
+
     #[ORM\ManyToOne(targetEntity: ForumPost::class)]
     #[ORM\JoinColumn(nullable: true)]
     public ?ForumPost $lastPost = null;

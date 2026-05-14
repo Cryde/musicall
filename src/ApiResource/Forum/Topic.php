@@ -30,6 +30,7 @@ class Topic
     public string $slug;
 
     public bool $isLocked;
+    public bool $isResolved;
 
     #[ApiProperty(genId: false)]
     public Forum $forum;

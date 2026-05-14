@@ -17,6 +17,7 @@ final class ForumTopicFactory extends PersistentObjectFactory
             'creationDatetime' => new \DateTime(),
             'forum' => ForumFactory::new(),
             'isLocked' => false,
+            'isResolved' => false,
             'postNumber' => self::faker()->randomNumber(),
             'slug' => self::faker()->text(255),
             'title' => self::faker()->text(255),

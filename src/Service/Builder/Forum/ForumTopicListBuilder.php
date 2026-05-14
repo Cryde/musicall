@@ -35,6 +35,7 @@ readonly class ForumTopicListBuilder
         $item->slug = $topic->slug;
         $item->type = $topic->type;
         $item->isLocked = $topic->isLocked;
+        $item->isResolved = $topic->isResolved;
         $item->lastPost = $topic->lastPost instanceof \App\Entity\Forum\ForumPost ? $this->buildPostSimple($topic->lastPost) : null;
         $item->creationDatetime = $topic->creationDatetime;
         $item->author = $this->userDtoBuilder->buildFromEntity($topic->author);

@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * @implements ProviderInterface<ForumTopic>
  */
-readonly class ForumTopicLockActionProvider implements ProviderInterface
+readonly class ForumTopicSlugActionProvider implements ProviderInterface
 {
     public function __construct(
         private ForumTopicRepository $forumTopicRepository,

@@ -25,6 +25,7 @@ final class ForumTopicFactory extends PersistentObjectFactory
             'creationDatetime' => self::faker()->dateTimeBetween('-1 year', 'now'),
             'forum' => ForumFactory::new(),
             'isLocked' => false,
+            'isResolved' => false,
             'postNumber' => 0,
             'slug' => self::faker()->slug(),
             'title' => $title,

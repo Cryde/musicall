@@ -3,6 +3,7 @@
     <div class="flex-1">
       <div class="flex items-center gap-2 mb-1">
         <Tag v-if="isPinned" value="Epinglé" severity="info" icon="pi pi-thumbtack" class="text-xs" />
+        <Tag v-if="topic.is_resolved" value="Résolu" severity="success" icon="pi pi-check-circle" class="text-xs" />
         <Tag v-if="topic.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" class="text-xs" />
       </div>
       <router-link

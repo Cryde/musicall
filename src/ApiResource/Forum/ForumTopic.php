@@ -38,6 +38,7 @@ class ForumTopic
 
     public int $type;
     public bool $isLocked;
+    public bool $isResolved;
 
     #[ApiProperty(genId: false)]
     public ?ForumPost $lastPost = null;

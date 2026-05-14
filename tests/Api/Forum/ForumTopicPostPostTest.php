@@ -66,6 +66,7 @@ class ForumTopicPostPostTest extends ApiTestCase
             'slug' => 'title-for-this-new-topic',
             'type' => 0,
             'is_locked' => false,
+            'is_resolved' => false,
             'last_post' => [
                 '@type' => 'ForumPost',
                 'id' => $posts[0]->id,

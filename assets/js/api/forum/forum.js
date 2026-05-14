@@ -57,14 +57,42 @@ export default {
   },
 
   lockTopic(slug) {
-    return axios.post(Routing.generate('api_forum_topic_lock', { slug }), {}, {
-      headers: { 'Content-Type': 'application/ld+json' }
-    })
+    return axios.post(
+      Routing.generate('api_forum_topic_lock', { slug }),
+      {},
+      {
+        headers: { 'Content-Type': 'application/ld+json' }
+      }
+    )
   },
 
   unlockTopic(slug) {
-    return axios.post(Routing.generate('api_forum_topic_unlock', { slug }), {}, {
-      headers: { 'Content-Type': 'application/ld+json' }
-    })
+    return axios.post(
+      Routing.generate('api_forum_topic_unlock', { slug }),
+      {},
+      {
+        headers: { 'Content-Type': 'application/ld+json' }
+      }
+    )
+  },
+
+  resolveTopic(slug) {
+    return axios.post(
+      Routing.generate('api_forum_topic_resolve', { slug }),
+      {},
+      {
+        headers: { 'Content-Type': 'application/ld+json' }
+      }
+    )
+  },
+
+  unresolveTopic(slug) {
+    return axios.post(
+      Routing.generate('api_forum_topic_unresolve', { slug }),
+      {},
+      {
+        headers: { 'Content-Type': 'application/ld+json' }
+      }
+    )
   }
 }
