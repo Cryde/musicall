@@ -114,5 +114,17 @@ export default {
         headers: { 'Content-Type': 'application/ld+json' }
       }
     )
+  },
+
+  editForumPost(id, content) {
+    return axios
+      .post(
+        Routing.generate('api_forum_post_edit', { id }),
+        { content },
+        {
+          headers: { 'Content-Type': 'application/ld+json' }
+        }
+      )
+      .then((resp) => resp.data)
   }
 }

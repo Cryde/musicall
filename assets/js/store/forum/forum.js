@@ -116,6 +116,12 @@ export const useForumStore = defineStore('forum', () => {
     currentTopic.value = { ...currentTopic.value, is_pinned: false }
   }
 
+  async function editPost(postId, content) {
+    const updated = await forumApi.editForumPost(postId, content)
+    posts.value = posts.value.map((p) => (p.id === postId ? updated : p))
+    return updated
+  }
+
   function clearCategories() {
     categories.value = []
   }
@@ -160,6 +166,7 @@ export const useForumStore = defineStore('forum', () => {
     unresolveCurrentTopic,
     pinCurrentTopic,
     unpinCurrentTopic,
+    editPost,
     clearCategories,
     clearForum,
     clearTopic,
