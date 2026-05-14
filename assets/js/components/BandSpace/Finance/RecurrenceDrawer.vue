@@ -117,6 +117,7 @@
 </template>
 
 <script setup>
+import { format } from 'date-fns'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Drawer from 'primevue/drawer'
@@ -125,7 +126,6 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { format } from 'date-fns'
 import { computed, reactive, watch } from 'vue'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'

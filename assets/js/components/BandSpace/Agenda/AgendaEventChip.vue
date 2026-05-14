@@ -28,8 +28,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import Avatar from '../../User/Avatar.vue'
 import { formatAmount } from '../../../utils/currency.js'
+import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -42,7 +42,8 @@ const isCompact = computed(() => props.viewType === 'dayGridMonth')
 const priorityIcon = computed(() => {
   if (props.item.source !== 'task') return null
   const p = props.item.metadata?.priority
-  if (p === 'urgent') return { icon: 'pi-exclamation-circle', color: 'text-red-200', label: 'Urgent' }
+  if (p === 'urgent')
+    return { icon: 'pi-exclamation-circle', color: 'text-red-200', label: 'Urgent' }
   if (p === 'high') return { icon: 'pi-arrow-up', color: 'text-amber-100', label: 'Priorité haute' }
   return null
 })

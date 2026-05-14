@@ -61,7 +61,9 @@ export default {
 
   getEntry(bandSpaceId, entryId) {
     return axios
-      .get(Routing.generate('api_band_space_finance_entries_get_item', { bandSpaceId, id: entryId }))
+      .get(
+        Routing.generate('api_band_space_finance_entries_get_item', { bandSpaceId, id: entryId })
+      )
       .then((resp) => resp.data)
       .catch(handleApiError)
   },

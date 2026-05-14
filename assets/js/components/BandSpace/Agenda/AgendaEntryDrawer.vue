@@ -140,6 +140,7 @@
 </template>
 
 <script setup>
+import { format } from 'date-fns'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
@@ -149,7 +150,6 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
-import { format } from 'date-fns'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
 
@@ -255,7 +255,9 @@ watch(isVisible, (visible) => {
   if (props.agendaItem && props.agendaItem.source === 'manual') {
     form.title = props.agendaItem.title ?? ''
     form.eventDatetime = props.agendaItem.datetime ? new Date(props.agendaItem.datetime) : null
-    form.endDatetime = props.agendaItem.end_datetime ? new Date(props.agendaItem.end_datetime) : null
+    form.endDatetime = props.agendaItem.end_datetime
+      ? new Date(props.agendaItem.end_datetime)
+      : null
     form.isAllDay = !!props.agendaItem.is_all_day
     form.location = props.agendaItem.metadata?.location ?? ''
     form.description = props.agendaItem.description ?? ''
@@ -285,7 +287,9 @@ async function handleSubmit() {
 
   const serializeStart = () => {
     if (!form.eventDatetime) return null
-    return form.isAllDay ? format(form.eventDatetime, 'yyyy-MM-dd') : form.eventDatetime.toISOString()
+    return form.isAllDay
+      ? format(form.eventDatetime, 'yyyy-MM-dd')
+      : form.eventDatetime.toISOString()
   }
   const serializeEnd = () => {
     if (!form.endDatetime) return null
