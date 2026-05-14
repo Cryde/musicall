@@ -7,6 +7,16 @@
     <div class="flex items-center gap-3 mb-6">
       <h1 class="text-2xl font-semibold">{{ forumStore.currentTopic?.title }}</h1>
       <Tag v-if="forumStore.currentTopic?.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" />
+      <Button
+        v-if="canToggleLock"
+        :label="forumStore.currentTopic.is_locked ? 'Déverrouiller' : 'Verrouiller'"
+        :icon="forumStore.currentTopic.is_locked ? 'pi pi-lock-open' : 'pi pi-lock'"
+        size="small"
+        severity="secondary"
+        text
+        :loading="isToggleLoading"
+        @click="handleToggleLock"
+      />
     </div>
 
     <template v-if="forumStore.isLoading && !forumStore.currentTopic">
@@ -61,9 +71,11 @@
 <script setup>
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
+import Button from 'primevue/button'
 import Divider from 'primevue/divider'
 import Paginator from 'primevue/paginator'
 import Tag from 'primevue/tag'
+import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
@@ -71,6 +83,7 @@ import AddMessageForm from '../../components/Forum/AddMessageForm.vue'
 import TopicPost from '../../components/Forum/TopicPost.vue'
 import TopicPostSkeleton from '../../components/Forum/TopicPostSkeleton.vue'
 import { useForumStore } from '../../store/forum/forum.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 const POSTS_PER_PAGE = 10
@@ -78,9 +91,42 @@ const POSTS_PER_PAGE = 10
 const route = useRoute()
 const router = useRouter()
 const forumStore = useForumStore()
+const userSecurityStore = useUserSecurityStore()
+const toast = useToast()
 
 const showAuthModal = ref(false)
 const authModalMessage = ref('')
+const isToggleLoading = ref(false)
+
+const canToggleLock = computed(() => {
+  const topic = forumStore.currentTopic
+  if (!topic || !userSecurityStore.isAuthenticated) return false
+  if (userSecurityStore.isAdmin) return true
+  return topic.author?.id === userSecurityStore.userProfile?.id
+})
+
+async function handleToggleLock() {
+  if (!forumStore.currentTopic) return
+  isToggleLoading.value = true
+  try {
+    if (forumStore.currentTopic.is_locked) {
+      await forumStore.unlockCurrentTopic()
+      toast.add({ severity: 'success', summary: 'Sujet déverrouillé', life: 3000 })
+    } else {
+      await forumStore.lockCurrentTopic()
+      toast.add({ severity: 'success', summary: 'Sujet verrouillé', life: 3000 })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Action impossible',
+      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      life: 4000
+    })
+  } finally {
+    isToggleLoading.value = false
+  }
+}
 
 const topicSlug = computed(() => route.params.slug)
 const currentPage = computed(() => {

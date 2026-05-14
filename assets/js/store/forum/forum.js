@@ -80,6 +80,18 @@ export const useForumStore = defineStore('forum', () => {
     return post
   }
 
+  async function lockCurrentTopic() {
+    if (!currentTopic.value) return
+    await forumApi.lockTopic(currentTopic.value.slug)
+    currentTopic.value = { ...currentTopic.value, is_locked: true }
+  }
+
+  async function unlockCurrentTopic() {
+    if (!currentTopic.value) return
+    await forumApi.unlockTopic(currentTopic.value.slug)
+    currentTopic.value = { ...currentTopic.value, is_locked: false }
+  }
+
   function clearCategories() {
     categories.value = []
   }
@@ -118,6 +130,8 @@ export const useForumStore = defineStore('forum', () => {
     loadPosts,
     createTopic,
     createPost,
+    lockCurrentTopic,
+    unlockCurrentTopic,
     clearCategories,
     clearForum,
     clearTopic,

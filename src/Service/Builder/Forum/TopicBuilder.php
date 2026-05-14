@@ -9,6 +9,11 @@ use App\Entity\Forum\ForumTopic as ForumTopicEntity;
 
 readonly class TopicBuilder
 {
+    public function __construct(
+        private UserDtoBuilder $userDtoBuilder,
+    ) {
+    }
+
     public function buildFromEntity(ForumTopicEntity $topic): Topic
     {
         $item = new Topic();
@@ -17,6 +22,7 @@ readonly class TopicBuilder
         $item->slug = $topic->slug;
         $item->isLocked = $topic->isLocked;
         $item->forum = $this->buildForum($topic->forum);
+        $item->author = $this->userDtoBuilder->buildFromEntity($topic->author);
 
         return $item;
     }

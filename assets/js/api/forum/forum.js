@@ -54,5 +54,17 @@ export default {
         { headers: { 'Content-Type': 'application/ld+json' } }
       )
       .then((resp) => resp.data)
+  },
+
+  lockTopic(slug) {
+    return axios.post(Routing.generate('api_forum_topic_lock', { slug }), {}, {
+      headers: { 'Content-Type': 'application/ld+json' }
+    })
+  },
+
+  unlockTopic(slug) {
+    return axios.post(Routing.generate('api_forum_topic_unlock', { slug }), {}, {
+      headers: { 'Content-Type': 'application/ld+json' }
+    })
   }
 }

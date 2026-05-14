@@ -39,6 +39,7 @@ class TopicGetTest extends ApiTestCase
 
         $topicId = $topic->id;
         $forumId = $forum->id;
+        $authorId = $author->id;
 
         $this->client->request('GET', '/api/forums/topics/test-topic-title');
         $this->assertResponseIsSuccessful();
@@ -56,6 +57,11 @@ class TopicGetTest extends ApiTestCase
                 'title' => 'Test Forum',
                 'slug' => 'test-forum',
                 'description' => 'Test forum description',
+            ],
+            'author' => [
+                '@type' => 'User',
+                'id' => $authorId,
+                'username' => 'topic_author',
             ],
         ]);
     }
