@@ -6,6 +6,7 @@
 
     <div class="flex items-center gap-3 mb-6">
       <h1 class="text-2xl font-semibold">{{ forumStore.currentTopic?.title }}</h1>
+      <Tag v-if="forumStore.currentTopic?.is_pinned" value="Épinglé" severity="info" icon="pi pi-thumbtack" />
       <Tag v-if="forumStore.currentTopic?.is_resolved" value="Résolu" severity="success" icon="pi pi-check-circle" />
       <Tag v-if="forumStore.currentTopic?.is_locked" value="Verrouillé" severity="warn" icon="pi pi-lock" />
       <Button
@@ -27,6 +28,16 @@
         text
         :loading="isToggleLoading"
         @click="handleToggleLock"
+      />
+      <Button
+        v-if="userSecurityStore.isAdmin && forumStore.currentTopic"
+        :label="forumStore.currentTopic.is_pinned ? 'Détacher' : 'Épingler'"
+        icon="pi pi-thumbtack"
+        size="small"
+        severity="secondary"
+        text
+        :loading="isPinLoading"
+        @click="handleTogglePinned"
       />
     </div>
 
@@ -109,6 +120,7 @@ const showAuthModal = ref(false)
 const authModalMessage = ref('')
 const isToggleLoading = ref(false)
 const isResolveLoading = ref(false)
+const isPinLoading = ref(false)
 
 const canManageTopic = computed(() => {
   const topic = forumStore.currentTopic
@@ -137,6 +149,29 @@ async function handleToggleLock() {
     })
   } finally {
     isToggleLoading.value = false
+  }
+}
+
+async function handleTogglePinned() {
+  if (!forumStore.currentTopic) return
+  isPinLoading.value = true
+  try {
+    if (forumStore.currentTopic.is_pinned) {
+      await forumStore.unpinCurrentTopic()
+      toast.add({ severity: 'success', summary: 'Sujet détaché', life: 3000 })
+    } else {
+      await forumStore.pinCurrentTopic()
+      toast.add({ severity: 'success', summary: 'Sujet épinglé', life: 3000 })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Action impossible',
+      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      life: 4000
+    })
+  } finally {
+    isPinLoading.value = false
   }
 }
 

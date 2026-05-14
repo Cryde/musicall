@@ -22,6 +22,7 @@ readonly class TopicBuilder
         $item->slug = $topic->slug;
         $item->isLocked = $topic->isLocked;
         $item->isResolved = $topic->isResolved;
+        $item->isPinned = $topic->type === ForumTopicEntity::TYPE_TOPIC_PINNED;
         $item->forum = $this->buildForum($topic->forum);
         $item->author = $this->userDtoBuilder->buildFromEntity($topic->author);
 

@@ -103,6 +103,7 @@ class ForumTopicGetCollectionTest extends ApiTestCase
                     'type' => ForumTopic::TYPE_TOPIC_PINNED,
                     'is_locked' => false,
                     'is_resolved' => false,
+                    'is_pinned' => true,
                     'last_post' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
                     'author' => [
@@ -124,6 +125,7 @@ class ForumTopicGetCollectionTest extends ApiTestCase
                     'type' => ForumTopic::TYPE_TOPIC_DEFAULT,
                     'is_locked' => false,
                     'is_resolved' => false,
+                    'is_pinned' => false,
                     'last_post' => [
                         '@type' => 'ForumPost',
                         'id' => $lastPostId,
@@ -156,6 +158,7 @@ class ForumTopicGetCollectionTest extends ApiTestCase
                     'type' => ForumTopic::TYPE_TOPIC_DEFAULT,
                     'is_locked' => true,
                     'is_resolved' => false,
+                    'is_pinned' => false,
                     'last_post' => null,
                     'creation_datetime' => '2024-01-05T10:00:00+00:00',
                     'author' => [

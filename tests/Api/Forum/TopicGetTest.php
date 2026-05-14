@@ -52,6 +52,7 @@ class TopicGetTest extends ApiTestCase
             'slug' => 'test-topic-title',
             'is_locked' => false,
             'is_resolved' => false,
+            'is_pinned' => false,
             'forum' => [
                 '@type' => 'Forum',
                 'id' => $forumId,

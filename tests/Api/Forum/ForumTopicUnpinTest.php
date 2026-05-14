@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Forum;
 
+use App\Entity\Forum\ForumTopic;
 use App\Repository\Forum\ForumTopicRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -14,7 +15,7 @@ use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 
 #[\Zenstruck\Foundry\Attribute\ResetDatabase]
-class ForumTopicLockTest extends ApiTestCase
+class ForumTopicUnpinTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
@@ -39,17 +40,17 @@ class ForumTopicLockTest extends ApiTestCase
         '@id' => '/api/errors/403',
         '@type' => 'Error',
         'title' => 'An error occurred',
-        'detail' => 'Vous ne pouvez pas modifier l\'état de ce sujet.',
-        'description' => 'Vous ne pouvez pas modifier l\'état de ce sujet.',
+        'detail' => 'Access Denied.',
+        'description' => 'Access Denied.',
         'status' => 403,
         'type' => '/errors/403',
     ];
 
-    public function test_lock_unauthenticated_returns_401(): void
+    public function test_unpin_unauthenticated_returns_401(): void
     {
-        $this->createTopic();
+        $this->createTopic(['type' => ForumTopic::TYPE_TOPIC_PINNED]);
 
-        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/lock', [], [
+        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/unpin', [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -58,12 +59,12 @@ class ForumTopicLockTest extends ApiTestCase
         $this->assertJsonEquals(self::UNAUTH_BODY);
     }
 
-    public function test_lock_unknown_slug_returns_404(): void
+    public function test_unpin_unknown_slug_returns_404(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create();
-        $this->client->loginUser($user);
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $this->client->loginUser($admin);
 
-        $this->client->jsonRequest('POST', '/api/forums/topics/does-not-exist/lock', [], [
+        $this->client->jsonRequest('POST', '/api/forums/topics/does-not-exist/unpin', [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -72,13 +73,13 @@ class ForumTopicLockTest extends ApiTestCase
         $this->assertJsonEquals(self::NOT_FOUND_BODY);
     }
 
-    public function test_lock_by_random_user_returns_403(): void
+    public function test_unpin_by_base_user_returns_403(): void
     {
-        $topic = $this->createTopic();
-        $otherUser = UserFactory::new(['username' => 'other_user', 'email' => 'other@email.com'])->create();
+        $topic = $this->createTopic(['type' => ForumTopic::TYPE_TOPIC_PINNED]);
+        $user = UserFactory::new(['username' => 'other_user', 'email' => 'other@email.com'])->create();
 
-        $this->client->loginUser($otherUser);
-        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/lock', [], [
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/unpin', [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
@@ -86,53 +87,55 @@ class ForumTopicLockTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertJsonEquals(self::FORBIDDEN_BODY);
         $repository = static::getContainer()->get(ForumTopicRepository::class);
-        $this->assertFalse($repository->find($topic->id)->isLocked);
+        $this->assertSame(ForumTopic::TYPE_TOPIC_PINNED, $repository->find($topic->id)->type);
     }
 
-    public function test_lock_by_author_succeeds(): void
+    public function test_unpin_by_author_returns_403(): void
     {
-        $topic = $this->createTopic();
+        $topic = $this->createTopic(['type' => ForumTopic::TYPE_TOPIC_PINNED]);
 
         $this->client->loginUser($topic->author);
-        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/lock', [], [
+        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/unpin', [], [
+            'CONTENT_TYPE' => 'application/ld+json',
+            'HTTP_ACCEPT' => 'application/ld+json',
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals(self::FORBIDDEN_BODY);
+        $repository = static::getContainer()->get(ForumTopicRepository::class);
+        $this->assertSame(ForumTopic::TYPE_TOPIC_PINNED, $repository->find($topic->id)->type);
+    }
+
+    public function test_unpin_by_admin_succeeds(): void
+    {
+        $topic = $this->createTopic(['type' => ForumTopic::TYPE_TOPIC_PINNED]);
+        $admin = UserFactory::new()->asAdminUser()->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/unpin', [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
         $repository = static::getContainer()->get(ForumTopicRepository::class);
-        $this->assertTrue($repository->find($topic->id)->isLocked);
+        $this->assertSame(ForumTopic::TYPE_TOPIC_DEFAULT, $repository->find($topic->id)->type);
     }
 
-    public function test_lock_by_admin_succeeds(): void
+    public function test_unpin_already_unpinned_is_idempotent(): void
     {
         $topic = $this->createTopic();
         $admin = UserFactory::new()->asAdminUser()->create();
 
         $this->client->loginUser($admin);
-        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/lock', [], [
+        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/unpin', [], [
             'CONTENT_TYPE' => 'application/ld+json',
             'HTTP_ACCEPT' => 'application/ld+json',
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
         $repository = static::getContainer()->get(ForumTopicRepository::class);
-        $this->assertTrue($repository->find($topic->id)->isLocked);
-    }
-
-    public function test_lock_already_locked_is_idempotent(): void
-    {
-        $topic = $this->createTopic(['isLocked' => true]);
-
-        $this->client->loginUser($topic->author);
-        $this->client->jsonRequest('POST', '/api/forums/topics/test-topic/lock', [], [
-            'CONTENT_TYPE' => 'application/ld+json',
-            'HTTP_ACCEPT' => 'application/ld+json',
-        ]);
-
-        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
-        $repository = static::getContainer()->get(ForumTopicRepository::class);
-        $this->assertTrue($repository->find($topic->id)->isLocked);
+        $this->assertSame(ForumTopic::TYPE_TOPIC_DEFAULT, $repository->find($topic->id)->type);
     }
 
     /**

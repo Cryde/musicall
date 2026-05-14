@@ -67,6 +67,7 @@ class ForumTopicPostPostTest extends ApiTestCase
             'type' => 0,
             'is_locked' => false,
             'is_resolved' => false,
+            'is_pinned' => false,
             'last_post' => [
                 '@type' => 'ForumPost',
                 'id' => $posts[0]->id,

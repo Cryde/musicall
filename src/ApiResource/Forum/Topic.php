@@ -31,6 +31,7 @@ class Topic
 
     public bool $isLocked;
     public bool $isResolved;
+    public bool $isPinned;
 
     #[ApiProperty(genId: false)]
     public Forum $forum;

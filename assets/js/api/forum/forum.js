@@ -94,5 +94,25 @@ export default {
         headers: { 'Content-Type': 'application/ld+json' }
       }
     )
+  },
+
+  pinTopic(slug) {
+    return axios.post(
+      Routing.generate('api_forum_topic_pin', { slug }),
+      {},
+      {
+        headers: { 'Content-Type': 'application/ld+json' }
+      }
+    )
+  },
+
+  unpinTopic(slug) {
+    return axios.post(
+      Routing.generate('api_forum_topic_unpin', { slug }),
+      {},
+      {
+        headers: { 'Content-Type': 'application/ld+json' }
+      }
+    )
   }
 }

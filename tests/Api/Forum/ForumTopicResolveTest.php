@@ -18,6 +18,33 @@ class ForumTopicResolveTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
+    private const array UNAUTH_BODY = [
+        'code' => 401,
+        'message' => 'JWT Token not found',
+    ];
+
+    private const array NOT_FOUND_BODY = [
+        '@context' => '/api/contexts/Error',
+        '@id' => '/api/errors/404',
+        '@type' => 'Error',
+        'title' => 'An error occurred',
+        'detail' => 'Topic not found',
+        'description' => 'Topic not found',
+        'status' => 404,
+        'type' => '/errors/404',
+    ];
+
+    private const array FORBIDDEN_BODY = [
+        '@context' => '/api/contexts/Error',
+        '@id' => '/api/errors/403',
+        '@type' => 'Error',
+        'title' => 'An error occurred',
+        'detail' => 'Vous ne pouvez pas modifier l\'état de ce sujet.',
+        'description' => 'Vous ne pouvez pas modifier l\'état de ce sujet.',
+        'status' => 403,
+        'type' => '/errors/403',
+    ];
+
     public function test_resolve_unauthenticated_returns_401(): void
     {
         $this->createTopic();
@@ -28,6 +55,7 @@ class ForumTopicResolveTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertJsonEquals(self::UNAUTH_BODY);
     }
 
     public function test_resolve_unknown_slug_returns_404(): void
@@ -41,6 +69,7 @@ class ForumTopicResolveTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals(self::NOT_FOUND_BODY);
     }
 
     public function test_resolve_by_random_user_returns_403(): void
@@ -55,6 +84,7 @@ class ForumTopicResolveTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals(self::FORBIDDEN_BODY);
         $repository = static::getContainer()->get(ForumTopicRepository::class);
         $this->assertFalse($repository->find($topic->id)->isResolved);
     }

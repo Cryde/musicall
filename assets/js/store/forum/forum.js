@@ -104,6 +104,18 @@ export const useForumStore = defineStore('forum', () => {
     currentTopic.value = { ...currentTopic.value, is_resolved: false }
   }
 
+  async function pinCurrentTopic() {
+    if (!currentTopic.value) return
+    await forumApi.pinTopic(currentTopic.value.slug)
+    currentTopic.value = { ...currentTopic.value, is_pinned: true }
+  }
+
+  async function unpinCurrentTopic() {
+    if (!currentTopic.value) return
+    await forumApi.unpinTopic(currentTopic.value.slug)
+    currentTopic.value = { ...currentTopic.value, is_pinned: false }
+  }
+
   function clearCategories() {
     categories.value = []
   }
@@ -146,6 +158,8 @@ export const useForumStore = defineStore('forum', () => {
     unlockCurrentTopic,
     resolveCurrentTopic,
     unresolveCurrentTopic,
+    pinCurrentTopic,
+    unpinCurrentTopic,
     clearCategories,
     clearForum,
     clearTopic,

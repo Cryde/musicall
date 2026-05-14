@@ -68,7 +68,7 @@ const props = defineProps({
   }
 })
 
-const isPinned = computed(() => props.topic.type === 1)
+const isPinned = computed(() => props.topic.is_pinned === true)
 const authorName = computed(() => displayName(props.topic.author))
 const lastPostCreatorName = computed(() =>
   props.topic.last_post ? displayName(props.topic.last_post.creator) : ''
