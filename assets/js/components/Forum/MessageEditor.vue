@@ -49,6 +49,31 @@
         />
         <Divider layout="vertical" class="mx-1" />
         <Button
+          v-tooltip.bottom="'Ajouter une image'"
+          icon="pi pi-image"
+          severity="secondary"
+          text
+          size="small"
+          :loading="isUploadingImage"
+          @click="triggerImageUpload"
+        />
+        <input
+          ref="imageInputRef"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleImageUpload"
+        >
+        <Button
+          v-tooltip.bottom="'Ajouter une vidéo YouTube'"
+          icon="pi pi-youtube"
+          severity="secondary"
+          text
+          size="small"
+          @click="showYoutubeDialog = true"
+        />
+        <Divider layout="vertical" class="mx-1" />
+        <Button
           v-tooltip.bottom="'Annuler'"
           icon="pi pi-undo"
           severity="secondary"
@@ -70,16 +95,43 @@
 
       <EditorContent :editor="editor" class="p-3 min-h-[150px] prose dark:prose-invert max-w-none" />
     </div>
+
+    <Dialog
+      v-model:visible="showYoutubeDialog"
+      modal
+      header="Ajouter une vidéo YouTube"
+      :style="{ width: '32rem' }"
+    >
+      <div class="flex flex-col gap-3">
+        <InputText
+          v-model="youtubeUrl"
+          placeholder="https://www.youtube.com/watch?v=…"
+          autofocus
+          @keyup.enter="insertYoutubeVideo"
+        />
+        <small class="text-surface-500">Collez l'URL d'une vidéo YouTube</small>
+      </div>
+      <template #footer>
+        <Button label="Annuler" severity="secondary" text @click="showYoutubeDialog = false" />
+        <Button label="Ajouter" icon="pi pi-plus" :disabled="!isValidYoutubeUrl" @click="insertYoutubeVideo" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
+import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
+import Youtube from '@tiptap/extension-youtube'
 import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import Divider from 'primevue/divider'
-import { onBeforeUnmount, watch } from 'vue'
+import InputText from 'primevue/inputtext'
+import { useToast } from 'primevue/usetoast'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import forumApi from '../../api/forum/forum.js'
 
 const props = defineProps({
   previousContent: {
@@ -93,6 +145,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['content-update'])
+const toast = useToast()
+
+const imageInputRef = ref(null)
+const isUploadingImage = ref(false)
+const showYoutubeDialog = ref(false)
+const youtubeUrl = ref('')
+
+const isValidYoutubeUrl = computed(() => {
+  if (!youtubeUrl.value) return false
+  return /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(youtubeUrl.value)
+})
 
 const editor = useEditor({
   extensions: [
@@ -101,6 +164,13 @@ const editor = useEditor({
     }),
     Placeholder.configure({
       placeholder: props.placeholder
+    }),
+    Image,
+    Youtube.configure({
+      controls: true,
+      nocookie: true,
+      width: 640,
+      height: 360
     })
   ],
   content: props.previousContent,
@@ -125,6 +195,41 @@ watch(
   }
 )
 
+function triggerImageUpload() {
+  imageInputRef.value?.click()
+}
+
+async function handleImageUpload(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  isUploadingImage.value = true
+  try {
+    const { uri } = await forumApi.uploadImage(file)
+    if (uri) {
+      editor.value?.chain().focus().setImage({ src: uri }).run()
+      toast.add({ severity: 'success', summary: 'Image ajoutée', life: 3000 })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Échec du téléchargement',
+      detail: e?.response?.data?.detail || 'Une erreur est survenue.',
+      life: 4000
+    })
+  } finally {
+    isUploadingImage.value = false
+    if (imageInputRef.value) imageInputRef.value.value = ''
+  }
+}
+
+function insertYoutubeVideo() {
+  if (!isValidYoutubeUrl.value) return
+  editor.value?.chain().focus().setYoutubeVideo({ src: youtubeUrl.value }).run()
+  showYoutubeDialog.value = false
+  youtubeUrl.value = ''
+}
+
 function reset() {
   editor.value?.commands.clearContent(true)
 }
@@ -144,5 +249,17 @@ defineExpose({ reset })
   color: #adb5bd;
   pointer-events: none;
   height: 0;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+
+.ProseMirror [data-youtube-video] iframe {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
 }
 </style>

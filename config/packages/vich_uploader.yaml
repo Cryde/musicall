@@ -4,6 +4,16 @@ vich_uploader:
     metadata:
         type: attribute
     mappings:
+        # this is used to store image inside a forum message
+        forum_image:
+            upload_destination: oneup_flysystem.musicall_filesystem
+            uri_prefix: ''
+            namer:
+                service: Vich\UploaderBundle\Naming\HashNamer
+            directory_namer:
+                service: App\Service\DirectoryNamer\StaticDirectoryNamer
+                options: { path: '/images/forum/post' }
+
         # this is used to store image in publication
         publication_image:
             upload_destination: oneup_flysystem.musicall_filesystem

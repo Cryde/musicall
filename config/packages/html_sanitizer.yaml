@@ -41,7 +41,7 @@ framework:
                     blockquote: []
                     br: []
                     em: []
-                    div: []
+                    div: ['data-youtube-video']
                     p: []
                     strong: []
                     hr: []
@@ -65,5 +65,5 @@ when@dev:
                     allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.local', 'youtube-nocookie.com']
                     allowed_media_schemes: ['http', 'https']
                 app.forum_sanitizer:
-                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.local' ]
+                    allowed_media_hosts: [ 'musicall.com', 'youtube.com', '127.0.0.1:8000', '127.0.0.1', 'musicall.local', 'youtube-nocookie.com' ]
                     allowed_media_schemes: [ 'http', 'https']

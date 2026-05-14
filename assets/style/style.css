@@ -1,9 +1,11 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
+@plugin "@tailwindcss/typography";
 
 @import 'primeicons/primeicons.css';
 
 @import "./publication.css";
+@import "./forum.css";
 
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
 

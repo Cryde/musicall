@@ -75,7 +75,7 @@
             </div>
           </template>
           <template v-else>
-            <div class="prose dark:prose-invert max-w-none" v-html="post.content" />
+            <div class="forum-post-content prose dark:prose-invert max-w-none" v-html="post.content" />
             <div class="flex items-center gap-1 mt-3">
               <Button
                 icon="pi pi-thumbs-up"

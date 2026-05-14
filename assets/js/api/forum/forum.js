@@ -126,5 +126,15 @@ export default {
         }
       )
       .then((resp) => resp.data)
+  },
+
+  uploadImage(file) {
+    const formData = new FormData()
+    formData.append('imageFile', file)
+    return axios
+      .post(Routing.generate('api_forum_upload_image'), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      .then((resp) => resp.data)
   }
 }
