@@ -289,4 +289,36 @@ class PublicationSanitizerTest extends KernelTestCase
         $html = 'Just plain text without any HTML';
         $this->assertSame('Just plain text without any HTML', $this->sanitizer->sanitize($html));
     }
+
+    // ========== MULTI-COLUMN BLOCK ==========
+
+    public function test_allows_two_column_layout(): void
+    {
+        $html = '<div data-type="columns" data-cols="2"><div data-type="column"><p>Left</p></div><div data-type="column"><p>Right</p></div></div>';
+        $this->assertSame($html, $this->sanitizer->sanitize($html));
+    }
+
+    public function test_allows_three_column_layout(): void
+    {
+        $html = '<div data-type="columns" data-cols="3"><div data-type="column"><p>A</p></div><div data-type="column"><p>B</p></div><div data-type="column"><p>C</p></div></div>';
+        $this->assertSame($html, $this->sanitizer->sanitize($html));
+    }
+
+    public function test_columns_preserve_nested_rich_content(): void
+    {
+        $html = '<div data-type="columns" data-cols="2"><div data-type="column"><h2>Title</h2><p><strong>Bold</strong> text</p><ul><li>Item</li></ul></div><div data-type="column"><blockquote>Quote</blockquote></div></div>';
+        $this->assertSame($html, $this->sanitizer->sanitize($html));
+    }
+
+    public function test_columns_strips_disallowed_attrs(): void
+    {
+        $html = '<div data-type="columns" data-cols="2" onclick="alert(1)" id="evil"><div data-type="column"><p>Safe</p></div><div data-type="column"><p>Content</p></div></div>';
+        $result = $this->sanitizer->sanitize($html);
+        $this->assertStringNotContainsString('onclick', $result);
+        $this->assertStringNotContainsString('id=', $result);
+        $this->assertStringContainsString('data-type="columns"', $result);
+        $this->assertStringContainsString('data-cols="2"', $result);
+        $this->assertStringContainsString('<p>Safe</p>', $result);
+        $this->assertStringContainsString('<p>Content</p>', $result);
+    }
 }

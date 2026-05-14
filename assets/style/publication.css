@@ -28,3 +28,46 @@
     width: 100%;
     height: auto;
 }
+
+/* Multi-column block — shared by editor + read views */
+.publication-container [data-type="columns"],
+.publication-editor [data-type="columns"] {
+    display: grid;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    grid-template-columns: 1fr; /* mobile default — stacked */
+}
+
+@media (min-width: 768px) {
+    .publication-container [data-type="columns"][data-cols="2"],
+    .publication-editor [data-type="columns"][data-cols="2"] {
+        grid-template-columns: 1fr 1fr;
+    }
+    .publication-container [data-type="columns"][data-cols="3"],
+    .publication-editor [data-type="columns"][data-cols="3"] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Editor-only outline so empty columns stay visible while authoring */
+.publication-editor [data-type="columns"] {
+    outline: 1px dashed var(--p-surface-300);
+    outline-offset: 4px;
+    padding: 0.25rem;
+}
+
+.publication-editor [data-type="column"] {
+    min-height: 2.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+:root.dark .publication-editor [data-type="columns"] {
+    outline-color: var(--p-surface-600);
+}
+
+/* Inside narrow columns, images shrink to fit instead of overflowing */
+.publication-container [data-type="column"] img,
+.publication-editor [data-type="column"] img {
+    max-width: 100%;
+    margin: 0.75rem auto;
+}

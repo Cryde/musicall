@@ -11,7 +11,7 @@ framework:
                     br: [ ]
             app.publication_sanitizer:
                 allow_elements:
-                    div: ['class', 'data-youtube-video']
+                    div: ['class', 'data-youtube-video', 'data-type', 'data-cols']
                     span: ['class']
                     a: ['href']
                     blockquote: []

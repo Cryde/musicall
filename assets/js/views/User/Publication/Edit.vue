@@ -160,6 +160,35 @@
               size="small"
               @click="editor?.chain().focus().setHorizontalRule().run()"
             />
+            <Button
+              v-tooltip.bottom="'Insérer des colonnes'"
+              icon="pi pi-th-large"
+              :severity="editor?.isActive('columns') ? 'primary' : 'secondary'"
+              text
+              size="small"
+              :disabled="editor?.isActive('columns')"
+              @click="toggleColumnsPopover"
+            />
+            <Popover ref="columnsPopover">
+              <div class="flex flex-col gap-1">
+                <Button
+                  label="2 colonnes"
+                  icon="pi pi-th-large"
+                  severity="secondary"
+                  text
+                  size="small"
+                  @click="insertColumns(2)"
+                />
+                <Button
+                  label="3 colonnes"
+                  icon="pi pi-th-large"
+                  severity="secondary"
+                  text
+                  size="small"
+                  @click="insertColumns(3)"
+                />
+              </div>
+            </Popover>
           </div>
 
           <!-- Media -->
@@ -256,6 +285,9 @@
 
           <!-- Editor -->
           <EditorContent :editor="editor" class="publication-editor" />
+
+          <!-- Columns bubble menu (only visible when cursor is inside a columns block) -->
+          <ColumnsBubbleMenu ref="columnsBubbleMenuRef" :editor="editor" />
         </div>
       </div>
     </div>
@@ -297,6 +329,7 @@
 </template>
 
 <script setup>
+import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
 import DragHandle from '@tiptap/extension-drag-handle'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -309,11 +342,14 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
+import Popover from 'primevue/popover'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import ColumnsBubbleMenu from '../../../components/Editor/ColumnsBubbleMenu.vue'
+import { Column, Columns } from '../../../components/Editor/extensions/Columns.js'
 import PublicationSettingsModal from '../../../components/publication/PublicationSettingsModal.vue'
 import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 
@@ -329,6 +365,9 @@ const imageInput = ref(null)
 const showYoutubeDialog = ref(false)
 const youtubeUrl = ref('')
 const showSettingsModal = ref(false)
+const columnsPopover = ref(null)
+const columnsBubbleMenuRef = ref(null)
+let columnsBubbleMenuRegistered = false
 
 const isValidYoutubeUrl = computed(() => {
   const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|music\.youtube\.com)\/.+/
@@ -362,7 +401,9 @@ const editor = useEditor({
         el.innerHTML = '⠿'
         return el
       }
-    })
+    }),
+    Columns,
+    Column
   ],
   content: '',
   onUpdate: ({ editor }) => {
@@ -387,6 +428,26 @@ onUnmounted(() => {
 onBeforeUnmount(() => {
   editor.value?.destroy()
 })
+
+watch(
+  [editor, columnsBubbleMenuRef],
+  ([currentEditor, menuComponent]) => {
+    if (columnsBubbleMenuRegistered) return
+    if (!currentEditor || !menuComponent?.rootEl) return
+
+    currentEditor.registerPlugin(
+      BubbleMenuPlugin({
+        editor: currentEditor,
+        element: menuComponent.rootEl,
+        pluginKey: 'columnsBubbleMenu',
+        shouldShow: ({ editor: e }) => e.isActive('columns'),
+        options: { placement: 'top', offset: 8 }
+      })
+    )
+    columnsBubbleMenuRegistered = true
+  },
+  { immediate: true }
+)
 
 watch(
   () => publicationEditStore.publication?.content,
@@ -423,6 +484,15 @@ async function handleImageUpload(event) {
   }
 
   event.target.value = ''
+}
+
+function toggleColumnsPopover(event) {
+  columnsPopover.value?.toggle(event)
+}
+
+function insertColumns(count) {
+  editor.value?.chain().focus().insertColumns(count).run()
+  columnsPopover.value?.hide()
 }
 
 function insertYoutubeVideo() {
