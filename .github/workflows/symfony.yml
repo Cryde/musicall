@@ -8,13 +8,17 @@ on:
     pull_request:
         branches:
             - master
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-    symfony:
-        name: Symfony 7.0 (PHP ${{ matrix.php-versions }})
-        # https://hub.docker.com/_/ubuntu/
+    backend:
+        name: Backend (PHP ${{ matrix.php-versions }})
         runs-on: ubuntu-24.04
         services:
-            # https://docs.docker.com/samples/library/mysql/
             mysql:
                 image: mariadb:10.11
                 env:
@@ -28,64 +32,81 @@ jobs:
             matrix:
                 php-versions: ['8.4']
         steps:
-            # —— Setup Github actions 🐙 —————————————————————————————————————————————
-            # https://github.com/actions/checkout (official)
+            # —— Setup ——————————————————————————————————————————————————————————————
             - name: Checkout
               uses: actions/checkout@v4
 
-            # https://github.com/shivammathur/setup-php (community)
-            - name: Setup PHP, extensions and composer with shivammathur/setup-php
+            - name: Setup PHP, extensions and composer
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php-versions }}
-                  extensions: mbstring, xml, ctype, intl, pdo, pdo_mysql, mysql, dom, filter, gd, json, opcache
+                  extensions: mbstring, ctype, intl, pdo_mysql, gd, xml
                   coverage: pcov
-                  tools: phpstan
-              env:
-                  update: true
 
-            - name: Check PHP Version
-              run: php -v
+            # —— Composer ——————————————————————————————————————————————————————————
+            - name: Get Composer Cache Directory
+              id: composer-cache
+              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-            # —— Composer 🧙‍️ —————————————————————————————————————————————————————————
-            -   name: Get Composer Cache Directory
-                id: composer-cache
-                run: |
-                    echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
             - uses: actions/cache@v4
               with:
                   path: ${{ steps.composer-cache.outputs.dir }}
                   key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-composer-
+                  restore-keys: ${{ runner.os }}-composer-
+
             - name: Install dependencies
               run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-
-            # —— Symfony 🎵 ——————————————————————————————————————————————————————————
+            # —— Symfony ———————————————————————————————————————————————————————————
             - name: Check the Symfony console
-              run: |
-                  bin/console about
-            ## —— Static analysis ✨ —————————————————————————————————————————————————
+              run: bin/console about
+
+            # —— Static analysis ———————————————————————————————————————————————————
             - name: Static Analysis using PHPStan
-              run: phpstan analyse --no-progress
+              run: vendor/bin/phpstan analyse --no-progress --memory-limit=600M
 
+            # —— Test database —————————————————————————————————————————————————————
             - name: Create test database
+              env:
+                  APP_ENV: test
               run: |
-                  php bin/console doctrine:cache:clear-metadata
-                  php bin/console doctrine:database:create  --if-not-exists
-                  php bin/console doctrine:schema:drop --force
-                  php bin/console doctrine:schema:create
-                  php bin/console doctrine:schema:validate
-              env:
-                  APP_ENV: test
+                  bin/console -n doctrine:database:create --if-not-exists
+                  bin/console -n doctrine:schema:create
+                  bin/console -n doctrine:schema:validate
 
+            # —— Tests —————————————————————————————————————————————————————————————
             - name: Run tests and collect coverage
-              run: vendor/bin/phpunit --coverage-clover ./coverage.xml
               env:
                   APP_ENV: test
+              run: vendor/bin/phpunit --coverage-clover ./coverage.xml
 
             - name: Upload coverage reports to Codecov
               uses: codecov/codecov-action@v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
+
+    frontend:
+        name: Frontend (Node ${{ matrix.node-versions }})
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: true
+            matrix:
+                node-versions: ['22']
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-versions }}
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint (Biome)
+              run: npm run lint
+
+            - name: Build (Vite)
+              run: npm run build
