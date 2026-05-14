@@ -484,11 +484,13 @@ class TaskGetCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'dueDate' => new \DateTimeImmutable('2026-05-01 00:00:00'),
+            'creationDatetime' => new \DateTime('2026-04-02 00:00:00'),
         ])->create();
         $inRangeEnd = TaskFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
             'dueDate' => new \DateTimeImmutable('2026-05-31 23:59:00'),
+            'creationDatetime' => new \DateTime('2026-04-01 00:00:00'),
         ])->create();
         TaskFactory::new([
             'bandSpace' => $bandSpace,
