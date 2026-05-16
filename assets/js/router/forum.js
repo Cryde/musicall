@@ -6,6 +6,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    path: '/forums/my-topics',
+    name: 'app_forum_my_topics',
+    component: () => import('../views/Forum/MyTopics.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/forums/:slug',
     name: 'forum_topic_list',
     component: () => import('../views/Forum/Show.vue'),

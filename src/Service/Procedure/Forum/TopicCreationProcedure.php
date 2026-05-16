@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Repository\Forum\ForumRepository;
 use App\Service\Builder\Forum\ForumTopicBuilder;
 use App\Service\Builder\Forum\ForumTopicListBuilder;
+use App\Service\Forum\ForumTopicParticipationService;
 use App\Service\Slugifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -17,12 +18,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class TopicCreationProcedure
 {
     public function __construct(
-        readonly private Security               $security,
-        readonly private ForumTopicBuilder      $forumTopicBuilder,
-        readonly private ForumTopicListBuilder  $forumTopicListBuilder,
-        readonly private Slugifier              $slugifier,
-        readonly private ForumRepository        $forumRepository,
-        readonly private EntityManagerInterface $entityManager
+        readonly private Security                       $security,
+        readonly private ForumTopicBuilder              $forumTopicBuilder,
+        readonly private ForumTopicListBuilder          $forumTopicListBuilder,
+        readonly private Slugifier                      $slugifier,
+        readonly private ForumRepository                $forumRepository,
+        readonly private EntityManagerInterface         $entityManager,
+        readonly private ForumTopicParticipationService $participationService,
     ) {
     }
 
@@ -51,6 +53,7 @@ class TopicCreationProcedure
         $forum->topicNumber += 1;
         $forum->postNumber += 1;
 
+        $this->participationService->recordPost($user, $topic);
         $this->entityManager->flush();
 
         return $this->forumTopicListBuilder->buildFromEntity($topic);

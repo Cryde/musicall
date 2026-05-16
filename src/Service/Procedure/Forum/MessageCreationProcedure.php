@@ -11,6 +11,7 @@ use App\Entity\Forum\ForumTopic;
 use App\Entity\User;
 use App\Repository\Forum\ForumTopicRepository;
 use App\Service\Builder\Forum\ForumPostBuilder;
+use App\Service\Forum\ForumTopicParticipationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -19,10 +20,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 readonly class MessageCreationProcedure
 {
     public function __construct(
-        private Security               $security,
-        private ForumPostBuilder       $forumPostBuilder,
-        private EntityManagerInterface $entityManager,
-        private ForumTopicRepository   $forumTopicRepository,
+        private Security                       $security,
+        private ForumPostBuilder               $forumPostBuilder,
+        private EntityManagerInterface         $entityManager,
+        private ForumTopicRepository           $forumTopicRepository,
+        private ForumTopicParticipationService $participationService,
     ) {
     }
 
@@ -49,6 +51,7 @@ readonly class MessageCreationProcedure
         $topic->postNumber += 1;
         $topic->forum->postNumber += 1;
 
+        $this->participationService->recordPost($user, $topic);
         $this->entityManager->flush();
 
         return $this->forumPostBuilder->buildItem($post);

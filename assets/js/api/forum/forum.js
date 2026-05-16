@@ -136,5 +136,27 @@ export default {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       .then((resp) => resp.data)
+  },
+
+  getMyParticipations({ page = 1 } = {}) {
+    return axios
+      .get(Routing.generate('api_forum_topic_participations_list', { page }))
+      .then((resp) => resp.data)
+  },
+
+  removeParticipation(id) {
+    return axios.post(
+      Routing.generate('api_forum_topic_participation_remove', { id }),
+      {},
+      { headers: { 'Content-Type': 'application/ld+json' } }
+    )
+  },
+
+  restoreParticipation(id) {
+    return axios.post(
+      Routing.generate('api_forum_topic_participation_restore', { id }),
+      {},
+      { headers: { 'Content-Type': 'application/ld+json' } }
+    )
   }
 }

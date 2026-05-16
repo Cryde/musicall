@@ -4,6 +4,15 @@
       <Breadcrumb :items="breadcrumbItems" />
     </div>
 
+    <router-link
+      v-if="userSecurityStore.isAuthenticated"
+      :to="{ name: 'app_forum_my_topics' }"
+      class="inline-flex items-center gap-2 mb-4 text-sm text-primary hover:underline"
+    >
+      <i class="pi pi-bookmark" />
+      Mes sujets
+    </router-link>
+
     <h1 class="text-2xl font-semibold mb-6">Liste des forums</h1>
 
     <template v-if="forumStore.isLoading">
@@ -45,11 +54,13 @@ import Card from 'primevue/card'
 import { onMounted, onUnmounted } from 'vue'
 import ForumCategorySkeleton from '../../components/Forum/ForumCategorySkeleton.vue'
 import { useForumStore } from '../../store/forum/forum.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 
 useTitle('Forum - MusicAll')
 
 const forumStore = useForumStore()
+const userSecurityStore = useUserSecurityStore()
 
 const breadcrumbItems = [{ label: 'Forum' }]
 
