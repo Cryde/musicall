@@ -58,6 +58,13 @@ class AdminPublicationDeleteTest extends ApiTestCase
         ])->create();
         $publicationId = $publication->id;
 
+        // Mirror what PublicationVideoCreationProcedure does in prod: set the cover's back-ref
+        // to the publication. This is what makes the OneToOne bi-directional and triggers
+        // Doctrine's CycleDetectedException unless the procedure handles it.
+        $em = self::getContainer()->get('doctrine.orm.entity_manager');
+        $cover->publication = $publication;
+        $em->flush();
+
         $image1 = PublicationImageFactory::new(['publication' => $publication, 'imageName' => 'img-1.jpg'])->create();
         $image2 = PublicationImageFactory::new(['publication' => $publication, 'imageName' => 'img-2.jpg'])->create();
         $imageIds = [$image1->id, $image2->id];

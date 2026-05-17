@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Procedure\Publication;
 
 use App\Entity\Comment\CommentThread;
+use App\Entity\Image\PublicationCover;
 use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,6 +48,18 @@ readonly class PublicationDeleteProcedure
         // cascade=remove, so the CommentThread survives the publication's deletion and must be
         // cleaned up separately.
         $thread = $publication->thread;
+        $cover = $publication->cover;
+
+        // Publication ↔ PublicationCover is a bi-directional OneToOne (publication.cover_id and
+        // cover.publication_id both exist as FKs). Letting cascade=remove fire on the publication
+        // would make Doctrine try to topologically sort two interdependent DELETEs and throw
+        // CycleDetectedException. Break the cycle by nulling both ends first, then removing the
+        // cover explicitly so Vich still wipes the underlying file.
+        if ($cover instanceof PublicationCover) {
+            $publication->cover = null;
+            $cover->publication = null;
+            $this->entityManager->flush();
+        }
 
         // PublicationImage is OneToMany without cascade=remove on the publication side.
         // Removing each entity via the EM ensures Vich's lifecycle listener wipes the file.
@@ -54,6 +67,9 @@ readonly class PublicationDeleteProcedure
             $this->entityManager->remove($image);
         }
 
+        if ($cover instanceof PublicationCover) {
+            $this->entityManager->remove($cover);
+        }
         $this->entityManager->remove($publication);
         $this->entityManager->flush();
 
