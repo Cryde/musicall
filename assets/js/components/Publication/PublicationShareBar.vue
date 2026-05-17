@@ -83,7 +83,9 @@ function shareToFacebook() {
 }
 
 function shareToTwitter() {
-  openShareWindow(`https://twitter.com/intent/tweet?url=${encodedUrl.value}&text=${encodedTitle.value}`)
+  openShareWindow(
+    `https://twitter.com/intent/tweet?url=${encodedUrl.value}&text=${encodedTitle.value}`
+  )
 }
 
 function shareToLinkedIn() {
@@ -91,7 +93,9 @@ function shareToLinkedIn() {
 }
 
 function shareToReddit() {
-  openShareWindow(`https://www.reddit.com/submit?url=${encodedUrl.value}&title=${encodedTitle.value}`)
+  openShareWindow(
+    `https://www.reddit.com/submit?url=${encodedUrl.value}&title=${encodedTitle.value}`
+  )
 }
 
 function shareByEmail() {

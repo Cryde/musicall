@@ -143,14 +143,14 @@
 <script setup>
 import Tag from 'primevue/tag'
 import { computed } from 'vue'
-import CommentThread from '../Comment/CommentThread.vue'
+import relativeDate from '../../helper/date/relative-date.js'
+import { displayName } from '../../helper/user/displayName.js'
 import Breadcrumb from '../../views/Global/Breadcrumb.vue'
+import CommentThread from '../Comment/CommentThread.vue'
 import PublicationShareBar from './PublicationShareBar.vue'
 import LatestPublicationsWidget from './Sidebar/LatestPublicationsWidget.vue'
 import PopularTagsWidget from './Sidebar/PopularTagsWidget.vue'
 import VoteButtons from './VoteButtons.vue'
-import relativeDate from '../../helper/date/relative-date.js'
-import { displayName } from '../../helper/user/displayName.js'
 
 const props = defineProps({
   publication: { type: Object, required: true },
