@@ -53,6 +53,7 @@ class GalleryGetTest extends ApiTestCase
                 'id' => 0,
                 'title' => 'gallery',
                 'slug' => 'gallery',
+                'is_course' => false,
             ],
             'description' => 'Petite description de la gallery',
             'cover' => [
