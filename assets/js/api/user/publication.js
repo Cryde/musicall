@@ -55,11 +55,11 @@ export default {
       .then((resp) => resp.data)
   },
 
-  save(id, { title, shortDescription, categoryId, content }) {
+  save(id, { title, shortDescription, categoryId, content, tags }) {
     return axios
       .patch(
         Routing.generate('api_user_publications_patch', { id }),
-        { title, shortDescription, categoryId, content },
+        { title, shortDescription, categoryId, content, tags: tags ?? [] },
         { headers: { 'Content-Type': 'application/merge-patch+json' } }
       )
       .then((resp) => resp.data)

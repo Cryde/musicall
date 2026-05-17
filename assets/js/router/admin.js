@@ -24,6 +24,11 @@ export default {
       component: () => import('../views/Admin/Publication/PendingList.vue')
     },
     {
+      name: 'admin_publications_tags',
+      path: 'publications/tags',
+      component: () => import('../views/Admin/Publication/Tags.vue')
+    },
+    {
       name: 'admin_galleries_pending',
       path: 'galleries/pending',
       component: () => import('../views/Admin/Gallery/PendingList.vue')

@@ -57,6 +57,25 @@
         <small class="text-surface-500">Cette courte description apparaîtra sur la page d'accueil</small>
       </div>
 
+      <!-- Tags -->
+      <div class="flex flex-col gap-2">
+        <label for="settings-tags" class="font-medium text-surface-700 dark:text-surface-200">
+          Tags
+        </label>
+        <AutoComplete
+          id="settings-tags"
+          v-model="tags"
+          :suggestions="tagSuggestions"
+          multiple
+          fluid
+          :disabled="isSaving"
+          placeholder="Ajoutez des tags (entrée pour valider)"
+          @complete="handleTagSearch"
+          @keydown.enter.prevent="handleTagEnter"
+        />
+        <small class="text-surface-500">Décrivent le contenu (genre, format, thème). Tapez puis appuyez sur Entrée pour ajouter.</small>
+      </div>
+
       <!-- Cover Image -->
       <div class="flex flex-col gap-2">
         <label class="font-medium text-surface-700 dark:text-surface-200">
@@ -141,6 +160,7 @@
 </template>
 
 <script setup>
+import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import FileUpload from 'primevue/fileupload'
@@ -150,6 +170,7 @@ import ProgressBar from 'primevue/progressbar'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, ref } from 'vue'
+import tagsApi from '../../api/publication/tags.js'
 import { usePublicationEditStore } from '../../store/publication/publicationEdit.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 
@@ -174,6 +195,8 @@ const title = ref('')
 const shortDescription = ref('')
 const selectedCategory = ref(null)
 const coverUrl = ref(null)
+const tags = ref([])
+const tagSuggestions = ref([])
 const isSaving = ref(false)
 const errors = ref([])
 const fileUploadRef = ref(null)
@@ -191,8 +214,38 @@ async function initForm() {
     shortDescription.value = publicationEditStore.publication.short_description || ''
     selectedCategory.value = publicationEditStore.publication.category?.id || null
     coverUrl.value = publicationEditStore.publication.cover_url || null
+    tags.value = Array.isArray(publicationEditStore.publication.tags)
+      ? [...publicationEditStore.publication.tags]
+      : []
   }
   errors.value = []
+}
+
+async function handleTagSearch(event) {
+  const query = (event.query ?? '').trim()
+  if (query.length === 0) {
+    tagSuggestions.value = []
+    return
+  }
+  try {
+    const items = await tagsApi.search(query)
+    tagSuggestions.value = items
+      .map((item) => item.label)
+      .filter((label) => !tags.value.includes(label))
+  } catch (e) {
+    console.error('Tag suggestions failed:', e)
+    tagSuggestions.value = []
+  }
+}
+
+function handleTagEnter(event) {
+  const raw = (event.target.value ?? '').trim()
+  if (raw.length === 0) return
+  if (!tags.value.includes(raw)) {
+    tags.value = [...tags.value, raw]
+  }
+  event.target.value = ''
+  tagSuggestions.value = []
 }
 
 async function handleCoverUpload(event) {
@@ -231,7 +284,8 @@ async function handleSave() {
     title: title.value.trim(),
     shortDescription: shortDescription.value.trim(),
     categoryId: selectedCategory.value,
-    content: publicationEditStore.publication.content || ''
+    content: publicationEditStore.publication.content || '',
+    tags: tags.value
   })
 
   if (success) {

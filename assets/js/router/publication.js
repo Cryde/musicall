@@ -12,6 +12,12 @@ export default [
     meta: { isAuthRequired: false }
   },
   {
+    name: 'app_publication_tag',
+    path: '/publications/tag/:slug',
+    component: () => import('../views/Publication/Tag.vue'),
+    meta: { isAuthRequired: false }
+  },
+  {
     name: 'app_gallery_show',
     path: '/photos/:slug',
     component: () => import('../views/Gallery/ShowGallery.vue'),

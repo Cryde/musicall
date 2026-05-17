@@ -14,6 +14,7 @@ use App\Entity\Image\PublicationCover;
 use App\Entity\Image\PublicationImage;
 use App\Entity\Metric\ViewCache;
 use App\Entity\Metric\VoteCache;
+use App\Entity\Publication\Tag;
 use App\Repository\PublicationRepository;
 use DateTime;
 use DateTimeInterface;
@@ -137,10 +138,18 @@ class Publication implements ViewableInterface, VotableInterface, SluggableEntit
     #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
     public ?VoteCache $voteCache = null;
 
+    /**
+     * @var Collection<int, Tag>
+     */
+    #[ORM\ManyToMany(targetEntity: Tag::class)]
+    #[ORM\JoinTable(name: 'map_publication_tag')]
+    public Collection $tags;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
         $this->images = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     #[Groups([Publication::ITEM, Publication::LIST])]

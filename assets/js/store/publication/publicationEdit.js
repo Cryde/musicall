@@ -41,7 +41,7 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
     }
   }
 
-  async function save({ title, shortDescription, categoryId, content }) {
+  async function save({ title, shortDescription, categoryId, content, tags }) {
     if (!publication.value) return false
 
     isSaving.value = true
@@ -51,7 +51,8 @@ export const usePublicationEditStore = defineStore('publicationEdit', () => {
         title,
         shortDescription,
         categoryId,
-        content
+        content,
+        tags: tags ?? []
       })
       publication.value = result
       return true

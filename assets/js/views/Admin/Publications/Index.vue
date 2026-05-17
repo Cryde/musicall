@@ -24,6 +24,14 @@
       />
 
       <AdminModuleCard
+        label="Tags"
+        description="Gérer les tags des publications et des cours"
+        icon="pi-hashtag"
+        color="#8b5cf6"
+        route="admin_publications_tags"
+      />
+
+      <AdminModuleCard
         label="Cours"
         description="Les cours partagent la même infrastructure que les publications"
         icon="pi-book"

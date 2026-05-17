@@ -508,7 +508,8 @@ async function handleSave() {
     title: publicationEditStore.publication.title,
     shortDescription: publicationEditStore.publication.short_description,
     categoryId: publicationEditStore.publication.category?.id,
-    content: editor.value?.getHTML() || ''
+    content: editor.value?.getHTML() || '',
+    tags: publicationEditStore.publication.tags ?? []
   })
 
   if (success) {

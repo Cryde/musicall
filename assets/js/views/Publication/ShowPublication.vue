@@ -33,6 +33,18 @@
         class="box content is-shadowless publication-container p-3 bg-surface-0 dark:bg-surface-800 rounded-md"
         v-html="publication.content"
       />
+
+      <div v-if="publication.tags?.length" class="mt-4 flex flex-wrap gap-2">
+        <router-link
+          v-for="tag in publication.tags"
+          :key="tag.slug"
+          :to="{ name: 'app_publication_tag', params: { slug: tag.slug } }"
+          class="inline-flex transition-opacity hover:opacity-75"
+          :aria-label="`Voir les publications avec le tag ${tag.label}`"
+        >
+          <Tag :value="tag.label" severity="secondary" />
+        </router-link>
+      </div>
     </template>
 
     <template v-if="publication.type.label === 'video'">
@@ -100,6 +112,7 @@
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useTitle } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
+import Tag from 'primevue/tag'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CommentThread from '../../components/Comment/CommentThread.vue'

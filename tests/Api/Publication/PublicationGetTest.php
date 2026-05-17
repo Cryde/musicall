@@ -83,6 +83,7 @@ class PublicationGetTest extends ApiTestCase
             'upvotes'              => 0,
             'downvotes'            => 0,
             'user_vote'            => null,
+            'tags'                 => [],
         ]);
     }
 

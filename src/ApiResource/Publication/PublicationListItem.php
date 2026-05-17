@@ -46,6 +46,13 @@ use DateTimeInterface;
                     description: 'Order by publication datetime',
                     required: false,
                 ),
+                'tag.slug' => new QueryParameter(
+                    key: 'tag.slug',
+                    schema: ['type' => 'string'],
+                    property: 'tag.slug',
+                    description: 'Filter publications carrying this tag slug',
+                    required: false,
+                ),
                 'page' => new QueryParameter(
                     key: 'page',
                     schema: ['type' => 'integer', 'minimum' => 1, 'default' => 1],

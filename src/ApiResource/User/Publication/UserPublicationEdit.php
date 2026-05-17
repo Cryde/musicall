@@ -11,6 +11,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\User\Publication\UserPublicationEditProcessor;
 use App\State\Processor\User\Publication\UserPublicationSubmitProcessor;
 use App\State\Provider\User\Publication\UserPublicationEditProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -62,4 +63,17 @@ class UserPublicationEdit
     public ?int $categoryId = null;
 
     public ?string $coverUrl = null;
+
+    /**
+     * null = leave tags untouched. [] = clear all tags. Non-empty array = replace tag set.
+     *
+     * @var string[]|null
+     */
+    #[Assert\All([
+        new Assert\Type('string'),
+        new Assert\NotBlank(message: 'Le tag ne peut pas être vide'),
+        new Assert\Length(max: 100, maxMessage: 'Le tag est trop long (max {{ limit }} caractères)'),
+    ])]
+    #[Assert\Count(max: 20, maxMessage: 'Un maximum de {{ limit }} tags est autorisé')]
+    public ?array $tags = null;
 }

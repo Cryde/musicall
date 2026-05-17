@@ -54,6 +54,7 @@ const publicationsBadgeCount = computed(
 const PUBLICATIONS_ROUTES = new Set([
   'admin_publications_index',
   'admin_publications_pending',
+  'admin_publications_tags',
   'admin_galleries_pending'
 ])
 

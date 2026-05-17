@@ -15,6 +15,17 @@ export default {
       )
       .then((resp) => resp.data)
   },
+  getPublicationsByTag({ slug, page = 1, orientation = 'desc' }) {
+    return axios
+      .get(
+        Routing.generate('api_publication_get_collection', {
+          page,
+          order: { publication_datetime: orientation },
+          'tag.slug': slug
+        })
+      )
+      .then((resp) => resp.data)
+  },
   getLastPublications() {
     return axios
       .get(Routing.generate('api_publication_get_last'))

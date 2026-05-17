@@ -35,8 +35,9 @@ readonly class PublicationCollectionProvider implements ProviderInterface
         $subCategorySlug = $filters['sub_category.slug'] ?? null;
         $subCategoryType = isset($filters['sub_category.type']) ? (int) $filters['sub_category.type'] : null;
         $orderDirection = $filters['order']['publication_datetime'] ?? 'desc';
+        $tagSlug = $filters['tag.slug'] ?? null;
 
-        $qb = $this->publicationRepository->createCollectionQueryBuilder($subCategorySlug, $subCategoryType, $orderDirection);
+        $qb = $this->publicationRepository->createCollectionQueryBuilder($subCategorySlug, $subCategoryType, $orderDirection, $tagSlug);
         $qb->setFirstResult($offset)
            ->setMaxResults($itemsPerPage);
 

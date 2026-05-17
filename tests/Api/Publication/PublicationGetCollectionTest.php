@@ -164,7 +164,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             ],
             'search'     => [
                 '@type'                  => 'IriTemplate',
-                'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],page}',
+                'template'               => '/api/publications{?sub_category.slug,sub_category.type,order[publication_datetime],tag.slug,page}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping'                => [
                     [
@@ -183,6 +183,12 @@ class PublicationGetCollectionTest extends ApiTestCase
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[publication_datetime]',
                         'property' => 'publication_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type'    => 'IriTemplateMapping',
+                        'variable' => 'tag.slug',
+                        'property' => 'tag.slug',
                         'required' => false,
                     ],
                     [

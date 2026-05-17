@@ -59,4 +59,7 @@ class Publication
     public int $upvotes = 0;
     public int $downvotes = 0;
     public ?int $userVote = null;
+
+    /** @var Publication\Tag[] */
+    public array $tags = [];
 }

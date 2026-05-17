@@ -9,6 +9,7 @@ use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use App\Repository\PublicationSubCategoryRepository;
 use App\Service\Builder\User\Publication\UserPublicationEditBuilder;
+use App\Service\Publication\TagService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -23,6 +24,7 @@ class UserPublicationEditProcessor implements ProcessorInterface
         private readonly PublicationRepository $publicationRepository,
         private readonly PublicationSubCategoryRepository $subCategoryRepository,
         private readonly UserPublicationEditBuilder $builder,
+        private readonly TagService $tagService,
     ) {
     }
 
@@ -47,6 +49,14 @@ class UserPublicationEditProcessor implements ProcessorInterface
                 throw new BadRequestHttpException('Category not found');
             }
             $publication->subCategory = $category;
+        }
+
+        if ($data->tags !== null) {
+            $tags = $this->tagService->upsertByLabels($data->tags);
+            $publication->tags->clear();
+            foreach ($tags as $tag) {
+                $publication->tags->add($tag);
+            }
         }
 
         $publication->editionDatetime = new DateTime();

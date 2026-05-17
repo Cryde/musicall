@@ -14,10 +14,9 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class PublicationSearchCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
@@ -149,6 +148,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     'upvotes' => 0,
                     'downvotes' => 0,
                     'user_vote' => null,
+                    'tags' => [],
                 ],
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-1',
@@ -185,6 +185,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     'upvotes' => 0,
                     'downvotes' => 0,
                     'user_vote' => null,
+                    'tags' => [],
                 ],
             ],
             'totalItems' => 2,

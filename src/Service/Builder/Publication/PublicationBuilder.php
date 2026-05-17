@@ -5,6 +5,7 @@ namespace App\Service\Builder\Publication;
 use App\ApiResource\Publication\Publication\Author;
 use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Category;
+use App\ApiResource\Publication\Publication\Tag;
 use App\ApiResource\Publication\Publication\Thread;
 use App\ApiResource\Publication\Publication\Type;
 use App\ApiResource\Publication\Publication;
@@ -66,6 +67,7 @@ readonly class PublicationBuilder
         $publication->category = $this->buildCategory($subCategory);
         $publication->thread = $this->buildThread($thread);
         $publication->type = $this->buildType((int) $publicationEntity->type);
+        $publication->tags = $this->buildTags($publicationEntity);
 
         $voteCache = $publicationEntity->voteCache;
         $publication->upvotes = $voteCache->upvoteCount ?? 0;
@@ -135,5 +137,21 @@ readonly class PublicationBuilder
         $type->label = $publicationType->label();
 
         return $type;
+    }
+
+    /**
+     * @return Tag[]
+     */
+    private function buildTags(PublicationEntity $publicationEntity): array
+    {
+        $tags = [];
+        foreach ($publicationEntity->tags as $tagEntity) {
+            $tag = new Tag();
+            $tag->slug = $tagEntity->slug;
+            $tag->label = $tagEntity->label;
+            $tags[] = $tag;
+        }
+
+        return $tags;
     }
 }

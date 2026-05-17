@@ -35,6 +35,8 @@ readonly class UserPublicationEditBuilder
         $category->slug = $subCategory->slug;
         $dto->category = $category;
 
+        $dto->tags = array_map(static fn ($tag): string => $tag->label, $publication->tags->toArray());
+
         return $dto;
     }
 
