@@ -32,6 +32,18 @@ export default {
       .then((resp) => resp.data)
       .then((resp) => resp.member)
   },
+  getLatestPublications({ excludeId = null, count = 3, subCategoryType = null } = {}) {
+    const params = { count }
+    if (excludeId !== null && excludeId !== undefined) {
+      params.excludeId = excludeId
+    }
+    if (subCategoryType !== null && subCategoryType !== undefined) {
+      params.subCategoryType = subCategoryType
+    }
+    return axios
+      .get(Routing.generate('api_publication_get_latest', params))
+      .then((resp) => resp.data.member)
+  },
   getPublicationCategories() {
     return axios
       .get(Routing.generate('api_publication_categories_list'))

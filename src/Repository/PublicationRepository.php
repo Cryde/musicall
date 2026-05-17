@@ -133,6 +133,141 @@ class PublicationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Publication IDs sharing at least one tag with $publication, ranked by shared-tag
+     * count DESC then publicationDatetime DESC. Returns IDs only so the result is safe
+     * to cache (no per-user state).
+     *
+     * @param int[] $tagIds
+     *
+     * @return int[]
+     */
+    public function findRelatedIdsByTags(int $currentPublicationId, array $tagIds, int $limit): array
+    {
+        if ($tagIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('publication')
+            ->select('publication.id AS id, COUNT(shared_tag.id) AS shared_count, publication.publicationDatetime AS pub_datetime')
+            ->innerJoin('publication.tags', 'shared_tag', 'WITH', 'shared_tag.id IN (:tagIds)')
+            ->where('publication.status = :status')
+            ->andWhere('publication.id != :currentId')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setParameter('currentId', $currentPublicationId)
+            ->setParameter('tagIds', $tagIds)
+            ->groupBy('publication.id')
+            ->orderBy('shared_count', 'DESC')
+            ->addOrderBy('pub_datetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    /**
+     * Same-subcategory fallback for related publications. Returns IDs only.
+     *
+     * @param int[] $excludeIds
+     *
+     * @return int[]
+     */
+    public function findRelatedIdsBySubCategory(int $currentPublicationId, int $subCategoryId, int $limit, array $excludeIds = []): array
+    {
+        $qb = $this->createQueryBuilder('publication')
+            ->select('publication.id')
+            ->join('publication.subCategory', 'sub_category')
+            ->where('publication.status = :status')
+            ->andWhere('publication.id != :currentId')
+            ->andWhere('sub_category.id = :subCategoryId')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setParameter('currentId', $currentPublicationId)
+            ->setParameter('subCategoryId', $subCategoryId)
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($excludeIds !== []) {
+            $qb->andWhere('publication.id NOT IN (:exclude)')->setParameter('exclude', $excludeIds);
+        }
+
+        $rows = $qb->getQuery()->getArrayResult();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    /**
+     * Load online publications by id list, preserving the order of $ids. Joins relations
+     * needed by the LIST serialization group (subCategory, cover, author, voteCache).
+     *
+     * @param int[] $ids
+     *
+     * @return Publication[]
+     */
+    public function findOnlineByIdsOrdered(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $entities = $this->createQueryBuilder('publication')
+            ->select('publication, sub_category, cover, author, vote_cache')
+            ->join('publication.subCategory', 'sub_category')
+            ->join('publication.author', 'author')
+            ->leftJoin('publication.cover', 'cover')
+            ->leftJoin('publication.voteCache', 'vote_cache')
+            ->where('publication.status = :status')
+            ->andWhere('publication.id IN (:ids)')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        $byId = [];
+        foreach ($entities as $entity) {
+            $byId[(int) $entity->id] = $entity;
+        }
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            if (isset($byId[$id])) {
+                $ordered[] = $byId[$id];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * Latest online publications excluding the given id, optionally narrowed by
+     * subCategory type (1 = publication, 2 = course). IDs only — safe to cache.
+     *
+     * @return int[]
+     */
+    public function findLatestIdsExcluding(?int $excludeId, int $limit, ?int $subCategoryType = null): array
+    {
+        $qb = $this->createQueryBuilder('publication')
+            ->select('publication.id')
+            ->where('publication.status = :status')
+            ->setParameter('status', Publication::STATUS_ONLINE)
+            ->orderBy('publication.publicationDatetime', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($excludeId !== null) {
+            $qb->andWhere('publication.id != :excludeId')->setParameter('excludeId', $excludeId);
+        }
+
+        if ($subCategoryType !== null) {
+            $qb->join('publication.subCategory', 'sub_category')
+               ->andWhere('sub_category.type = :subCategoryType')
+               ->setParameter('subCategoryType', $subCategoryType);
+        }
+
+        $rows = $qb->getQuery()->getArrayResult();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    /**
      * Count publications created within a date range (only ONLINE status).
      */
     public function countPublicationsSince(\DateTimeImmutable $since): int

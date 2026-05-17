@@ -29,7 +29,7 @@ class PublicationGetTest extends ApiTestCase
         $viewCache = ViewCacheFactory::new(['count' => 123])->create();
         $cover = PublicationCoverFactory::new(['imageName' => 'test.jpg'])->create();
         $thread = CommentThreadFactory::new()->create();
-        PublicationFactory::new([
+        $publication = PublicationFactory::new([
             'author'              => $author,
             'content'             => 'publication_content',
             'creationDatetime'    => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
@@ -51,6 +51,7 @@ class PublicationGetTest extends ApiTestCase
             '@context' => '/api/contexts/Publication',
             '@id' => '/api/publications/titre-de-la-publication',
             '@type' => 'Publication',
+            'id'                   => $publication->id,
             'title'                => 'Titre de la publication',
             'author'               => [
                 '@type'    => 'Author',
@@ -83,6 +84,8 @@ class PublicationGetTest extends ApiTestCase
             'upvotes'              => 0,
             'downvotes'            => 0,
             'user_vote'            => null,
+            'view_count'           => 124,
+            'reading_time'         => 1,
             'tags'                 => [],
         ]);
     }

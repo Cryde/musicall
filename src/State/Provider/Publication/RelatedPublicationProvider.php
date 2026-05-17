@@ -7,6 +7,7 @@ namespace App\State\Provider\Publication;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Publication;
+use App\Entity\Publication\Tag;
 use App\Repository\PublicationRepository;
 
 /**
@@ -14,7 +15,7 @@ use App\Repository\PublicationRepository;
  */
 readonly class RelatedPublicationProvider implements ProviderInterface
 {
-    private const int RELATED_PUBLICATIONS_LIMIT = 2;
+    private const int RELATED_PUBLICATIONS_LIMIT = 3;
 
     public function __construct(
         private PublicationRepository $publicationRepository,
@@ -27,10 +28,30 @@ readonly class RelatedPublicationProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
-        if (!$publication instanceof \App\Entity\Publication) {
+        if (!$publication instanceof Publication) {
             return [];
         }
 
-        return $this->publicationRepository->findRelatedPublications($publication, self::RELATED_PUBLICATIONS_LIMIT);
+        $publicationId = (int) $publication->id;
+        $tagIds = array_map(static fn (Tag $tag): int => (int) $tag->id, $publication->tags->toArray());
+
+        $byTag = $this->publicationRepository->findRelatedIdsByTags(
+            $publicationId,
+            $tagIds,
+            self::RELATED_PUBLICATIONS_LIMIT,
+        );
+
+        if (count($byTag) >= self::RELATED_PUBLICATIONS_LIMIT) {
+            return $this->publicationRepository->findOnlineByIdsOrdered($byTag);
+        }
+
+        $fallback = $this->publicationRepository->findRelatedIdsBySubCategory(
+            $publicationId,
+            (int) $publication->subCategory->id,
+            self::RELATED_PUBLICATIONS_LIMIT - count($byTag),
+            $byTag,
+        );
+
+        return $this->publicationRepository->findOnlineByIdsOrdered(array_merge($byTag, $fallback));
     }
 }

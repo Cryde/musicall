@@ -103,6 +103,8 @@ class PublicationSearchCollectionTest extends ApiTestCase
 
         $subCatId = $sub->id;
         $threadId = $thread->id;
+        $pub1Id = $pub1->id;
+        $pub2Id = $pub2->id;
         $this->assertResponseIsSuccessful();
         foreach ($objectToDelete as $item) {
             \Zenstruck\Foundry\Persistence\delete($item);
@@ -116,6 +118,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-2',
                     '@type'                => 'Publication',
+                    'id'                   => $pub2Id,
                     'title'                => 'Titre de la publication 2',
                     'author'               => [
                         '@type' => 'Author',
@@ -148,11 +151,14 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     'upvotes' => 0,
                     'downvotes' => 0,
                     'user_vote' => null,
+                    'view_count' => 20,
+                    'reading_time' => 1,
                     'tags' => [],
                 ],
                 [
                     '@id'                  => '/api/publications/titre-de-la-publication-1',
                     '@type'                => 'Publication',
+                    'id'                   => $pub1Id,
                     'title'                => 'Titre de la publication 1',
                     'author'               => [
                         '@type' => 'Author',
@@ -185,6 +191,8 @@ class PublicationSearchCollectionTest extends ApiTestCase
                     'upvotes' => 0,
                     'downvotes' => 0,
                     'user_vote' => null,
+                    'view_count' => 10,
+                    'reading_time' => 1,
                     'tags' => [],
                 ],
             ],

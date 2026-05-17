@@ -41,6 +41,8 @@ use App\State\Provider\Publication\PublicationSearchProvider;
 )]
 class Publication
 {
+    #[ApiProperty(identifier: false)]
+    public int $id;
     public string $title;
     #[ApiProperty(genId: false)]
     public Category $category;
@@ -59,6 +61,8 @@ class Publication
     public int $upvotes = 0;
     public int $downvotes = 0;
     public ?int $userVote = null;
+    public int $viewCount = 0;
+    public int $readingTime = 0;
 
     /** @var Publication\Tag[] */
     public array $tags = [];

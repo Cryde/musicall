@@ -55,6 +55,7 @@ readonly class PublicationBuilder
         assert($cover instanceof \App\Entity\Image\PublicationCover && $thread instanceof \App\Entity\Comment\CommentThread);
 
         $publication = new Publication();
+        $publication->id = (int) $publicationEntity->id;
         $publication->slug = $publicationEntity->slug;
         $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->content);
         $publication->title = $publicationEntity->title;
@@ -68,6 +69,10 @@ readonly class PublicationBuilder
         $publication->thread = $this->buildThread($thread);
         $publication->type = $this->buildType((int) $publicationEntity->type);
         $publication->tags = $this->buildTags($publicationEntity);
+        $publication->viewCount = $publicationEntity->viewCache->count ?? 0;
+        $publication->readingTime = $publicationEntity->type === PublicationEntity::TYPE_TEXT
+            ? $this->calculateReadingTime($publication->content)
+            : 0;
 
         $voteCache = $publicationEntity->voteCache;
         $publication->upvotes = $voteCache->upvoteCount ?? 0;
@@ -137,6 +142,20 @@ readonly class PublicationBuilder
         $type->label = $publicationType->label();
 
         return $type;
+    }
+
+    private const int READING_WORDS_PER_MINUTE = 200;
+
+    private function calculateReadingTime(string $sanitizedHtml): int
+    {
+        $plain = trim(html_entity_decode(strip_tags($sanitizedHtml)));
+        if ($plain === '') {
+            return 1;
+        }
+        $words = preg_split('/\s+/u', $plain) ?: [];
+        $count = count(array_filter($words, static fn (string $w): bool => $w !== ''));
+
+        return max(1, (int) ceil($count / self::READING_WORDS_PER_MINUTE));
     }
 
     /**
