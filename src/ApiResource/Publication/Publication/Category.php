@@ -6,4 +6,5 @@ class Category
     public int $id;
     public string $title;
     public string $slug;
+    public bool $isCourse = false;
 }

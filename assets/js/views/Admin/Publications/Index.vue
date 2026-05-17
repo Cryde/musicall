@@ -32,6 +32,14 @@
       />
 
       <AdminModuleCard
+        label="Supprimer une publication"
+        description="Rechercher et supprimer définitivement une publication publiée"
+        icon="pi-trash"
+        color="#ef4444"
+        route="admin_publications_delete"
+      />
+
+      <AdminModuleCard
         label="Cours"
         description="Les cours partagent la même infrastructure que les publications"
         icon="pi-book"

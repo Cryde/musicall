@@ -27,5 +27,15 @@ export default {
         headers: { 'Content-Type': 'application/ld+json' }
       }
     )
+  },
+
+  deletePublication(id) {
+    return axios.delete(Routing.generate('api_admin_publications_delete', { id }))
+  },
+
+  searchPublications(term) {
+    return axios
+      .get(Routing.generate('api_publication_search', { term }))
+      .then((resp) => resp.data.member)
   }
 }

@@ -122,6 +122,7 @@ readonly class PublicationBuilder
         $category->id = (int) $publicationSubCategory->id;
         $category->slug = $publicationSubCategory->slug;
         $category->title = $publicationSubCategory->title;
+        $category->isCourse = $publicationSubCategory->getIsCourse();
 
         return $category;
     }

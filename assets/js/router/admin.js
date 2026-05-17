@@ -24,6 +24,11 @@ export default {
       component: () => import('../views/Admin/Publication/PendingList.vue')
     },
     {
+      name: 'admin_publications_delete',
+      path: 'publications/delete',
+      component: () => import('../views/Admin/Publication/PublishedList.vue')
+    },
+    {
       name: 'admin_publications_tags',
       path: 'publications/tags',
       component: () => import('../views/Admin/Publication/Tags.vue')

@@ -137,6 +137,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                         'id' => $subCatId,
                         'title' => 'Chroniques',
                         'slug' => 'chroniques',
+                        'is_course' => false,
                     ],
                     'content' => 'blabla',
                     'thread' => [
@@ -177,6 +178,7 @@ class PublicationSearchCollectionTest extends ApiTestCase
                         'id' => $subCatId,
                         'title' => 'Chroniques',
                         'slug' => 'chroniques',
+                        'is_course' => false,
                     ],
                     'content' => 'find me 1',
                     'thread' => [

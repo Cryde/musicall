@@ -66,6 +66,7 @@ class PublicationGetTest extends ApiTestCase
                 'id'       => $sub->id,
                 'title'    => 'Chroniques',
                 'slug'     => 'chroniques',
+                'is_course' => false,
             ],
             'description'          => 'Petite description de la publication',
             'cover'                => [
