@@ -9,6 +9,7 @@ import ConfirmationService from 'primevue/confirmationservice'
 import Ripple from 'primevue/ripple'
 import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
+import facebookLogoUrl from '../image/facebook-logo.jpg'
 import App from './App.vue'
 import { useDarkMode } from './composables/useDarkMode.js'
 import router from './router/index.js'
@@ -63,7 +64,7 @@ const head = createHead({
         { property: 'og:locale', content: 'fr_FR' },
         {
           property: 'og:image',
-          content: `${window.location.origin}/build/images/facebook-logo.jpg`
+          content: `${window.location.origin}${facebookLogoUrl}`
         },
         { property: 'og:site_name', content: 'MusicAll' }
       ]
