@@ -12,10 +12,10 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\BandSpace\BandSpaceActivityFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class BandSpaceFolderActivityTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

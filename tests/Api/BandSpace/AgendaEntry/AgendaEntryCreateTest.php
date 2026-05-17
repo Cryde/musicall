@@ -11,10 +11,10 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class AgendaEntryCreateTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

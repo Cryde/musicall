@@ -11,10 +11,10 @@ use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class PublicationGetCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

@@ -6,10 +6,10 @@ use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use App\Tests\Factory\Publication\PublicationFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class PublicationRepositoryTest extends KernelTestCase
 {
     public function test_find_one_video(): void

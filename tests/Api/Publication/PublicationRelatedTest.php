@@ -14,7 +14,7 @@ use App\Tests\Factory\Publication\TagFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class PublicationRelatedTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

@@ -9,10 +9,10 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumSourceFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class ForumCategoryGetCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

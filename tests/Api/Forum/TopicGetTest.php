@@ -10,10 +10,10 @@ use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class TopicGetTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

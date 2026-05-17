@@ -13,11 +13,12 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumSourceFactory;
+use App\Tests\Factory\Forum\ForumTopicParticipationFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class ForumTopicParticipationTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
@@ -250,15 +251,11 @@ class ForumTopicParticipationTest extends ApiTestCase
         ?\DateTimeInterface $readDatetime = null,
         ?\DateTimeInterface $removedDatetime = null,
     ): ForumTopicParticipation {
-        $em = static::getContainer()->get('doctrine')->getManager();
-        $participation = new ForumTopicParticipation();
-        $participation->user = $user;
-        $participation->topic = $topic;
-        $participation->readDatetime = $readDatetime;
-        $participation->removedDatetime = $removedDatetime;
-        $em->persist($participation);
-        $em->flush();
-
-        return $participation;
+        return ForumTopicParticipationFactory::new([
+            'user' => $user,
+            'topic' => $topic,
+            'readDatetime' => $readDatetime,
+            'removedDatetime' => $removedDatetime,
+        ])->create();
     }
 }

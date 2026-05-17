@@ -11,8 +11,11 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Publication\TagFactory;
+use App\Repository\Publication\TagRepository;
+use App\Repository\PublicationRepository;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -267,9 +270,9 @@ class AdminTagTest extends ApiTestCase
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
-        static::getContainer()->get('doctrine')->getManager()->clear();
-        $tagRepo = static::getContainer()->get(\App\Repository\Publication\TagRepository::class);
-        $publicationRepo = static::getContainer()->get(\App\Repository\PublicationRepository::class);
+        static::getContainer()->get(EntityManagerInterface::class)->clear();
+        $tagRepo = static::getContainer()->get(TagRepository::class);
+        $publicationRepo = static::getContainer()->get(PublicationRepository::class);
 
         $this->assertNull($tagRepo->find($tagId));
         $this->assertCount(0, $publicationRepo->find($pubId)->tags);

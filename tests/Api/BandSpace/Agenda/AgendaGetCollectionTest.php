@@ -12,13 +12,14 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
+use Doctrine\Common\Collections\ArrayCollection;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class AgendaGetCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
@@ -152,9 +153,8 @@ class AgendaGetCollectionTest extends ApiTestCase
             'status' => TaskStatus::Todo,
             'priority' => TaskPriority::Normal,
             'dueDate' => new DateTimeImmutable('2026-06-20 12:00:00', new \DateTimeZone('UTC')),
+            'assignees' => new ArrayCollection([$assignee]),
         ])->create();
-        $task->assignees->add($assignee);
-        self::getContainer()->get('doctrine')->getManager()->flush();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

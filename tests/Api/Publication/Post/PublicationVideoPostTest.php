@@ -10,11 +10,11 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
+
 
 // note:  This test will only cover constraints for now
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class PublicationVideoPostTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

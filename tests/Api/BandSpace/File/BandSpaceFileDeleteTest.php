@@ -12,10 +12,10 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class BandSpaceFileDeleteTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

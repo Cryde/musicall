@@ -7,10 +7,10 @@ namespace App\Tests\Api\Publication;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class PublicationCategoryTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

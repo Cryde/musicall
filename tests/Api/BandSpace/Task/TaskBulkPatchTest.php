@@ -12,11 +12,12 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\TaskCategoryFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class TaskBulkPatchTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
@@ -137,10 +138,12 @@ class TaskBulkPatchTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $assigneeA])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $assigneeB])->create();
 
-        $task1 = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        $task1->assignees->add($assigneeA);
+        $task1 = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'assignees' => new ArrayCollection([$assigneeA]),
+        ])->create();
         $task2 = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
-        self::getContainer()->get('doctrine')->getManager()->flush();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(

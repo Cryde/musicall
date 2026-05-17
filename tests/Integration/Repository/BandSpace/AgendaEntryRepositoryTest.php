@@ -7,10 +7,10 @@ use App\Tests\Factory\BandSpace\AgendaEntryFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class AgendaEntryRepositoryTest extends KernelTestCase
 {
     public function test_find_upcoming_for_band_returns_entries_within_window_only(): void

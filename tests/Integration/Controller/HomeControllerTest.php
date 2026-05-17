@@ -9,10 +9,10 @@ use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class HomeControllerTest extends WebTestCase
 {
     public function test_old_publication_redirect(): void

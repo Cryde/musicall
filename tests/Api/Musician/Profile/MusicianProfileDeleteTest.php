@@ -20,10 +20,10 @@ use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Metric\ViewFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class MusicianProfileDeleteTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

@@ -10,10 +10,10 @@ use App\Tests\Factory\Attribute\StyleFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class MusicianAnnounceRepositoryTest extends KernelTestCase
 {
     private MusicianAnnounceRepository $repository;

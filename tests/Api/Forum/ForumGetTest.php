@@ -9,10 +9,10 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class ForumGetTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

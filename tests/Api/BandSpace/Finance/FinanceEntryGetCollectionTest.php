@@ -17,10 +17,10 @@ use App\Tests\Factory\BandSpace\FinanceEntrySplitFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Enum\BandSpace\MembershipStatus;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class FinanceEntryGetCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

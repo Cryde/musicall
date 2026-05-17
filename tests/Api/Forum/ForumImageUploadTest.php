@@ -10,7 +10,7 @@ use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class ForumImageUploadTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

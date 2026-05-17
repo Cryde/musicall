@@ -7,10 +7,10 @@ namespace App\Tests\Api\Course;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class CourseCategoryTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

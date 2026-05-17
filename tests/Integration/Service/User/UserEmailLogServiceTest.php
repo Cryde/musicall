@@ -10,10 +10,10 @@ use App\Service\User\UserEmailLogService;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class UserEmailLogServiceTest extends KernelTestCase
 {
     protected function setUp(): void

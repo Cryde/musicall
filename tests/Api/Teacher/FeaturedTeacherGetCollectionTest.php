@@ -10,10 +10,10 @@ use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Teacher\TeacherProfileFactory;
 use App\Tests\Factory\Teacher\TeacherProfileInstrumentFactory;
 use App\Tests\Factory\User\UserFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class FeaturedTeacherGetCollectionTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

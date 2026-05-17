@@ -9,10 +9,10 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserSocialLinkFactory;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class UserSocialLinkGetTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

@@ -14,10 +14,10 @@ use App\Tests\Factory\User\UserEmailLogFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class SendEmailConfirmationReminderCommandTest extends KernelTestCase
 {
     private CommandTester $commandTester;

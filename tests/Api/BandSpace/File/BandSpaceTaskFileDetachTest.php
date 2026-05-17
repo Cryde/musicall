@@ -14,10 +14,10 @@ use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class BandSpaceTaskFileDetachTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

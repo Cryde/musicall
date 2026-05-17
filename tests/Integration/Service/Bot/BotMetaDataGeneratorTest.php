@@ -19,10 +19,10 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Tests\Factory\User\UserProfilePictureFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class BotMetaDataGeneratorTest extends KernelTestCase
 {
     private BotMetaDataGenerator $botMetaDataGenerator;

@@ -6,10 +6,10 @@ use App\Service\Finder\Musician\Builder\SearchModelBuilder;
 use App\Tests\Factory\Attribute\InstrumentFactory;
 use App\Tests\Factory\Attribute\StyleFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class SearchModelBuilderTest extends KernelTestCase
 {
     public function test_build(): void

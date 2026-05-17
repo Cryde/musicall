@@ -16,10 +16,10 @@ use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
 {
     public function test_auto_accepts_pending_invitation_on_registration(): void

@@ -13,7 +13,7 @@ use App\Tests\Factory\Forum\ForumTopicFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class ForumTopicUnresolveTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

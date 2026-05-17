@@ -13,7 +13,7 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class PublicationLatestTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

@@ -12,10 +12,10 @@ use App\Service\Google\DummyYoutubeRepository;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class PublicationVideoCreationProcedureTest extends KernelTestCase
 {
     private const string VIDEO_URL = 'https://www.youtube.com/watch?v=' . DummyYoutubeRepository::VIDEO_ID_PROCEDURE_TEST;

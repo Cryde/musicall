@@ -14,7 +14,7 @@ use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class PopularTagTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

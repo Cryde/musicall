@@ -9,7 +9,7 @@ use App\Service\Publication\TagService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class TagServiceTest extends KernelTestCase
 {
     protected function setUp(): void

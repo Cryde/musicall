@@ -22,10 +22,10 @@ use App\Enum\BandSpace\MembershipStatus;
 use App\Validator\BandSpace\EntryNotPaidValidator;
 use App\Validator\BandSpace\SplitNotPersonalValidator;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class FinanceEntrySplitCreateTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

@@ -18,10 +18,10 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+
+#[ResetDatabase]
 class ContentOverviewMetricsTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;

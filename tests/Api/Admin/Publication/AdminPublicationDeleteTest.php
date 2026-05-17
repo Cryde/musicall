@@ -4,7 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Admin\Publication;
 
+use App\Entity\Image\PublicationCover;
+use App\Entity\Image\PublicationImage;
 use App\Entity\Publication;
+use App\Repository\Comment\CommentRepository;
+use App\Repository\Comment\CommentThreadRepository;
+use App\Repository\Metric\ViewCacheRepository;
+use App\Repository\Metric\ViewRepository;
+use App\Repository\Metric\VoteCacheRepository;
+use App\Repository\Metric\VoteRepository;
+use App\Repository\Publication\TagRepository;
+use App\Repository\PublicationRepository;
+use App\Repository\UserRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Comment\CommentFactory;
@@ -20,10 +31,11 @@ use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
 use App\Tests\Factory\Publication\TagFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Foundry\Attribute\ResetDatabase;
 
-#[\Zenstruck\Foundry\Attribute\ResetDatabase]
+#[ResetDatabase]
 class AdminPublicationDeleteTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
@@ -61,7 +73,7 @@ class AdminPublicationDeleteTest extends ApiTestCase
         // Mirror what PublicationVideoCreationProcedure does in prod: set the cover's back-ref
         // to the publication. This is what makes the OneToOne bi-directional and triggers
         // Doctrine's CycleDetectedException unless the procedure handles it.
-        $em = self::getContainer()->get('doctrine.orm.entity_manager');
+        $em = self::getContainer()->get(EntityManagerInterface::class);
         $cover->publication = $publication;
         $em->flush();
 
@@ -91,46 +103,63 @@ class AdminPublicationDeleteTest extends ApiTestCase
         $coverId = $cover->id;
         $commentVoteCache1Id = $commentVoteCache1->id;
         $commentVoteCache2Id = $commentVoteCache2->id;
+        $tagId = $tag->id;
+        $authorId = $author->id;
+
+        $publicationRepo = self::getContainer()->get(PublicationRepository::class);
+        $viewCacheRepo = self::getContainer()->get(ViewCacheRepository::class);
+        $voteCacheRepo = self::getContainer()->get(VoteCacheRepository::class);
+        $viewRepo = self::getContainer()->get(ViewRepository::class);
+        $voteRepo = self::getContainer()->get(VoteRepository::class);
+        $commentRepo = self::getContainer()->get(CommentRepository::class);
+        $commentThreadRepo = self::getContainer()->get(CommentThreadRepository::class);
+        $tagRepo = self::getContainer()->get(TagRepository::class);
+        $userRepo = self::getContainer()->get(UserRepository::class);
+        $coverRepo = $em->getRepository(PublicationCover::class);
+        $imageRepo = $em->getRepository(PublicationImage::class);
 
         // Sanity: rows are present before the delete.
-        $conn = $this->getDbConnection();
-        self::assertSame(2, $this->countViewRowsForCache($conn, $viewCacheId));
-        self::assertSame(2, $this->countVoteRowsForCache($conn, $voteCacheId));
-        self::assertSame(2, $this->countComments($conn, $threadId));
-        self::assertSame(1, $this->countMapTag($conn, $publicationId));
+        self::assertSame(2, $viewRepo->count(['viewCache' => $viewCacheId]));
+        self::assertSame(2, $voteRepo->count(['voteCache' => $voteCacheId]));
+        self::assertSame(2, $commentRepo->count(['thread' => $threadId]));
+        self::assertSame(1, $tagRepo->countPublicationsForTag($tagId));
 
         $this->client->loginUser($admin);
         $this->client->request('DELETE', '/api/admin/publications/' . $publicationId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
+        // Detach managed entities so the assertions below hit the DB, not the identity map.
+        $em->clear();
+
         // Publication itself is gone.
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM publication WHERE id = ?', [$publicationId]));
+        self::assertNull($publicationRepo->find($publicationId));
         // Cover (via Doctrine cascade).
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM publication_cover WHERE id = ?', [$coverId]));
+        self::assertNull($coverRepo->find($coverId));
         // Cached metrics gone.
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM view_cache WHERE id = ?', [$viewCacheId]));
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM vote_cache WHERE id = ?', [$voteCacheId]));
+        self::assertNull($viewCacheRepo->find($viewCacheId));
+        self::assertNull($voteCacheRepo->find($voteCacheId));
         // Granular metric rows gone via DB FK cascade.
-        self::assertSame(0, $this->countViewRowsForCache($conn, $viewCacheId));
-        self::assertSame(0, $this->countVoteRowsForCache($conn, $voteCacheId));
+        self::assertSame(0, $viewRepo->count(['viewCache' => $viewCacheId]));
+        self::assertSame(0, $voteRepo->count(['voteCache' => $voteCacheId]));
         // Images gone.
         foreach ($imageIds as $id) {
-            self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM publication_image WHERE id = ?', [$id]));
+            self::assertNull($imageRepo->find($id));
         }
         // Comments gone, with their VoteCaches.
         foreach ($commentIds as $id) {
-            self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM comment WHERE id = ?', [$id]));
+            self::assertNull($commentRepo->find($id));
         }
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM vote_cache WHERE id = ?', [$commentVoteCache1Id]));
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM vote_cache WHERE id = ?', [$commentVoteCache2Id]));
+        self::assertNull($voteCacheRepo->find($commentVoteCache1Id));
+        self::assertNull($voteCacheRepo->find($commentVoteCache2Id));
         // Thread gone.
-        self::assertSame(0, (int) $conn->fetchOne('SELECT COUNT(*) FROM comment_thread WHERE id = ?', [$threadId]));
-        // M2M tag links gone, but the Tag itself preserved.
-        self::assertSame(0, $this->countMapTag($conn, $publicationId));
-        self::assertSame(1, (int) $conn->fetchOne('SELECT COUNT(*) FROM tag WHERE id = ?', [$tag->id]));
+        self::assertNull($commentThreadRepo->find($threadId));
+        // M2M tag links gone (TagRepository::countPublicationsForTag counts map_publication_tag
+        // rows for this tag), but the Tag itself preserved.
+        self::assertSame(0, $tagRepo->countPublicationsForTag($tagId));
+        self::assertNotNull($tagRepo->find($tagId));
         // Author preserved.
-        self::assertSame(1, (int) $conn->fetchOne('SELECT COUNT(*) FROM fos_user WHERE id = ?', [$author->id]));
+        self::assertNotNull($userRepo->find($authorId));
     }
 
     public function test_delete_publication_returns_401_when_anonymous(): void
@@ -198,30 +227,5 @@ class AdminPublicationDeleteTest extends ApiTestCase
             'detail'      => 'Publication not found',
             'description' => 'Publication not found',
         ]);
-    }
-
-    private function getDbConnection(): Connection
-    {
-        return self::getContainer()->get('doctrine.orm.entity_manager')->getConnection();
-    }
-
-    private function countViewRowsForCache(Connection $conn, int $viewCacheId): int
-    {
-        return (int) $conn->fetchOne('SELECT COUNT(*) FROM view WHERE view_cache_id = ?', [$viewCacheId]);
-    }
-
-    private function countVoteRowsForCache(Connection $conn, int $voteCacheId): int
-    {
-        return (int) $conn->fetchOne('SELECT COUNT(*) FROM vote WHERE vote_cache_id = ?', [$voteCacheId]);
-    }
-
-    private function countComments(Connection $conn, int $threadId): int
-    {
-        return (int) $conn->fetchOne('SELECT COUNT(*) FROM comment WHERE thread_id = ?', [$threadId]);
-    }
-
-    private function countMapTag(Connection $conn, int $publicationId): int
-    {
-        return (int) $conn->fetchOne('SELECT COUNT(*) FROM map_publication_tag WHERE publication_id = ?', [$publicationId]);
     }
 }
