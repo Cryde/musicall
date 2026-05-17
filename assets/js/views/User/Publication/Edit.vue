@@ -18,7 +18,7 @@
     <div v-else class="flex flex-col gap-6">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 min-w-0">
           <Button
             icon="pi pi-arrow-left"
             severity="secondary"
@@ -26,19 +26,72 @@
             rounded
             @click="router.push({ name: 'app_user_publications' })"
           />
-          <div>
-            <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
-              {{ publicationEditStore.publication.title }}
-            </h1>
-            <p class="text-sm text-surface-500 dark:text-surface-400">
+          <div class="flex flex-wrap items-center gap-3 min-w-0">
+            <Tag :value="statusBadge.label" :severity="statusBadge.severity" />
+            <p class="text-sm text-surface-500 dark:text-surface-400 truncate">
               {{ publicationEditStore.publication.category?.title }}
             </p>
+            <span
+              v-if="isDirty && !isAutoSaving"
+              class="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+            >
+              <span class="w-2 h-2 rounded-full bg-amber-500" />
+              Non enregistré
+            </span>
+            <span
+              v-if="isAutoSaving"
+              class="inline-flex items-center gap-1.5 text-xs text-surface-500 dark:text-surface-400"
+            >
+              <i class="pi pi-spin pi-spinner text-xs" />
+              Enregistrement…
+            </span>
           </div>
+        </div>
+
+        <div class="flex items-center gap-2 self-end md:self-auto">
+          <Button
+            v-tooltip.bottom="focusMode ? 'Quitter le mode focus' : 'Mode focus'"
+            :icon="focusMode ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+            severity="secondary"
+            text
+            size="small"
+            @click="focusMode = !focusMode"
+          />
+          <Button
+            label="Enregistrer"
+            icon="pi pi-save"
+            severity="secondary"
+            size="small"
+            :loading="publicationEditStore.isSaving"
+            @click="handleSave"
+          />
+          <Button
+            label="Soumettre"
+            icon="pi pi-send"
+            severity="success"
+            size="small"
+            :loading="publicationEditStore.isSubmitting"
+            @click="handleSubmit"
+          />
         </div>
       </div>
 
+      <div class="grid grid-cols-1 gap-4" :class="!focusMode && 'lg:grid-cols-[1fr_320px]'">
+        <!-- Editor column -->
+        <div class="flex flex-col gap-3 min-w-0">
+          <input
+            v-model="title"
+            type="text"
+            placeholder="Titre de la publication"
+            class="w-full text-3xl md:text-4xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 text-surface-900 dark:text-surface-0 placeholder:text-surface-300 dark:placeholder:text-surface-600 px-1"
+            :disabled="publicationEditStore.isSaving || publicationEditStore.isSubmitting"
+          />
+          <p v-if="slugPreview" class="text-xs text-surface-500 dark:text-surface-400 px-1">
+            URL : <span class="font-mono">/publications/{{ slugPreview }}</span>
+          </p>
+
       <!-- Editor Container (same styling as publication display) -->
-      <div class="content publication-container bg-surface-0 dark:bg-surface-800 rounded-md">
+      <div class="content publication-container bg-surface-0 dark:bg-surface-800 rounded-md min-w-0">
         <!-- Toolbar (sticky inside container) -->
         <div class="sticky top-0 z-30 bg-surface-50 dark:bg-surface-700 border-b border-surface-200 dark:border-surface-600 rounded-t-md p-2">
         <div class="flex flex-wrap items-center gap-1">
@@ -241,36 +294,6 @@
             />
           </div>
 
-          <!-- Spacer -->
-          <div class="flex-1" />
-
-          <!-- Actions -->
-          <div class="flex items-center gap-2">
-            <Button
-              v-tooltip.bottom="'Paramètres'"
-              icon="pi pi-cog"
-              severity="secondary"
-              text
-              size="small"
-              @click="showSettingsModal = true"
-            />
-            <Button
-              label="Enregistrer"
-              icon="pi pi-save"
-              severity="secondary"
-              size="small"
-              :loading="publicationEditStore.isSaving"
-              @click="handleSave"
-            />
-            <Button
-              label="Soumettre"
-              icon="pi pi-send"
-              severity="success"
-              size="small"
-              :loading="publicationEditStore.isSubmitting"
-              @click="handleSubmit"
-            />
-          </div>
         </div>
         </div>
 
@@ -289,6 +312,18 @@
           <!-- Columns bubble menu (only visible when cursor is inside a columns block) -->
           <ColumnsBubbleMenu ref="columnsBubbleMenuRef" :editor="editor" />
         </div>
+      </div>
+        </div>
+
+        <PublicationSettingsPanel
+          v-if="!focusMode"
+          v-model:short-description="shortDescription"
+          v-model:category-id="categoryId"
+          v-model:tags="tags"
+          :word-count="wordCount"
+          :reading-time="readingTime"
+          :disabled="publicationEditStore.isSaving || publicationEditStore.isSubmitting"
+        />
       </div>
     </div>
 
@@ -319,12 +354,6 @@
         <Button label="Ajouter" icon="pi pi-plus" :disabled="!isValidYoutubeUrl" @click="insertYoutubeVideo" />
       </template>
     </Dialog>
-
-    <!-- Settings Modal -->
-    <PublicationSettingsModal
-      v-model="showSettingsModal"
-      @saved="handleSettingsSaved"
-    />
   </div>
 </template>
 
@@ -344,13 +373,14 @@ import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Popover from 'primevue/popover'
 import ProgressSpinner from 'primevue/progressspinner'
+import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import ColumnsBubbleMenu from '../../../components/Editor/ColumnsBubbleMenu.vue'
 import { Column, Columns } from '../../../components/Editor/extensions/Columns.js'
-import PublicationSettingsModal from '../../../components/publication/PublicationSettingsModal.vue'
+import PublicationSettingsPanel from '../../../components/Publication/PublicationSettingsPanel.vue'
 import { usePublicationEditStore } from '../../../store/publication/publicationEdit.js'
 
 useTitle('Édition - MusicAll')
@@ -364,10 +394,127 @@ const publicationEditStore = usePublicationEditStore()
 const imageInput = ref(null)
 const showYoutubeDialog = ref(false)
 const youtubeUrl = ref('')
-const showSettingsModal = ref(false)
 const columnsPopover = ref(null)
 const columnsBubbleMenuRef = ref(null)
 let columnsBubbleMenuRegistered = false
+
+const title = ref('')
+const shortDescription = ref('')
+const categoryId = ref(null)
+const tags = ref([])
+const currentContent = ref('')
+const lastSaved = ref(null)
+const focusMode = ref(false)
+const isAutoSaving = ref(false)
+let autosaveTimer = null
+
+const AUTOSAVE_INTERVAL_MS = 30_000
+
+const STATUS_BADGES = {
+  0: { label: 'Brouillon', severity: 'warn' },
+  1: { label: 'Publié', severity: 'success' },
+  2: { label: 'En validation', severity: 'info' }
+}
+
+const statusBadge = computed(() => {
+  const id = publicationEditStore.publication?.status_id
+  return (
+    STATUS_BADGES[id] ?? {
+      label: publicationEditStore.publication?.status_label ?? '—',
+      severity: 'secondary'
+    }
+  )
+})
+
+const wordCount = computed(() => {
+  const plain = (currentContent.value || '').replace(/<[^>]+>/g, ' ').trim()
+  if (!plain) return 0
+  return plain.split(/\s+/).filter((w) => w.length > 0).length
+})
+
+const readingTime = computed(() =>
+  wordCount.value === 0 ? 0 : Math.max(1, Math.ceil(wordCount.value / 200))
+)
+
+const slugPreview = computed(() => {
+  const fromTitle = slugify(title.value)
+  return fromTitle || publicationEditStore.publication?.slug || ''
+})
+
+const isDirty = computed(() => {
+  if (!lastSaved.value) return false
+  return (
+    title.value !== lastSaved.value.title ||
+    shortDescription.value !== lastSaved.value.shortDescription ||
+    categoryId.value !== lastSaved.value.categoryId ||
+    JSON.stringify(tags.value) !== JSON.stringify(lastSaved.value.tags) ||
+    currentContent.value !== lastSaved.value.content
+  )
+})
+
+function slugify(s) {
+  return (s || '')
+    .toString()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function takeSnapshot() {
+  lastSaved.value = {
+    title: title.value,
+    shortDescription: shortDescription.value,
+    categoryId: categoryId.value,
+    tags: [...tags.value],
+    content: currentContent.value
+  }
+}
+
+function syncSettingsFromStore() {
+  const p = publicationEditStore.publication
+  if (!p) return
+  title.value = p.title || ''
+  shortDescription.value = p.short_description || ''
+  categoryId.value = p.category?.id ?? null
+  tags.value = Array.isArray(p.tags) ? [...p.tags] : []
+  currentContent.value = p.content || ''
+  takeSnapshot()
+}
+
+function handleBeforeUnload(e) {
+  if (isDirty.value) {
+    e.preventDefault()
+    e.returnValue = ''
+    return ''
+  }
+}
+
+async function silentAutoSave() {
+  if (isAutoSaving.value || publicationEditStore.isSaving || publicationEditStore.isSubmitting)
+    return
+  isAutoSaving.value = true
+  try {
+    const success = await publicationEditStore.save({
+      title: title.value.trim(),
+      shortDescription: shortDescription.value.trim(),
+      categoryId: categoryId.value,
+      content: currentContent.value,
+      tags: tags.value
+    })
+    if (success) takeSnapshot()
+  } finally {
+    isAutoSaving.value = false
+  }
+}
+
+onBeforeRouteLeave(() => {
+  if (isDirty.value) {
+    return window.confirm('Vous avez des modifications non enregistrées. Quitter quand même ?')
+  }
+  return true
+})
 
 const isValidYoutubeUrl = computed(() => {
   const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|music\.youtube\.com)\/.+/
@@ -407,7 +554,9 @@ const editor = useEditor({
   ],
   content: '',
   onUpdate: ({ editor }) => {
-    publicationEditStore.updateContent(editor.getHTML())
+    const html = editor.getHTML()
+    currentContent.value = html
+    publicationEditStore.updateContent(html)
   }
 })
 
@@ -415,10 +564,15 @@ onMounted(async () => {
   const id = route.params.id
   if (id) {
     await publicationEditStore.loadPublication(id)
+    syncSettingsFromStore()
     if (publicationEditStore.publication?.content) {
       editor.value?.commands.setContent(publicationEditStore.publication.content)
     }
   }
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  autosaveTimer = setInterval(() => {
+    if (isDirty.value) silentAutoSave()
+  }, AUTOSAVE_INTERVAL_MS)
 })
 
 onUnmounted(() => {
@@ -427,6 +581,11 @@ onUnmounted(() => {
 
 onBeforeUnmount(() => {
   editor.value?.destroy()
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  if (autosaveTimer) {
+    clearInterval(autosaveTimer)
+    autosaveTimer = null
+  }
 })
 
 watch(
@@ -505,14 +664,15 @@ function insertYoutubeVideo() {
 
 async function handleSave() {
   const success = await publicationEditStore.save({
-    title: publicationEditStore.publication.title,
-    shortDescription: publicationEditStore.publication.short_description,
-    categoryId: publicationEditStore.publication.category?.id,
-    content: editor.value?.getHTML() || '',
-    tags: publicationEditStore.publication.tags ?? []
+    title: title.value.trim(),
+    shortDescription: shortDescription.value.trim(),
+    categoryId: categoryId.value,
+    content: currentContent.value,
+    tags: tags.value
   })
 
   if (success) {
+    syncSettingsFromStore()
     toast.add({
       severity: 'success',
       summary: 'Enregistré',
@@ -563,14 +723,6 @@ function handleSubmit() {
         })
       }
     }
-  })
-}
-
-function handleSettingsSaved() {
-  toast.add({
-    severity: 'success',
-    summary: 'Paramètres enregistrés',
-    life: 3000
   })
 }
 </script>
