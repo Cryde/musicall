@@ -92,6 +92,12 @@ function handleLogin() {
   showAuthModal.value = true
 }
 
+function insertQuote(quote) {
+  editorRef.value?.insertQuote(quote)
+}
+
+defineExpose({ insertQuote })
+
 async function handleSubmit() {
   if (!canSubmit.value) return
 

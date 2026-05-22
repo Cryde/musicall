@@ -234,7 +234,37 @@ function reset() {
   editor.value?.commands.clearContent(true)
 }
 
-defineExpose({ reset })
+function htmlToPlainText(html) {
+  // Render HTML through textContent so embedded tags are stripped without
+  // executing scripts; setting innerHTML on a detached element is safe.
+  const container = document.createElement('div')
+  container.innerHTML = html ?? ''
+  return (container.textContent || '').replace(/\s+/g, ' ').trim()
+}
+
+function insertQuote({ author, html }) {
+  if (!editor.value) return
+  const text = htmlToPlainText(html)
+  editor.value
+    .chain()
+    .focus('end')
+    .insertContent([
+      {
+        type: 'blockquote',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: `${author} a écrit :` }] },
+          ...(text
+            ? [{ type: 'paragraph', content: [{ type: 'text', text }] }]
+            : [{ type: 'paragraph' }])
+        ]
+      },
+      { type: 'paragraph' }
+    ])
+    .focus('end')
+    .run()
+}
+
+defineExpose({ reset, insertQuote })
 </script>
 
 <style>

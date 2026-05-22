@@ -59,6 +59,8 @@
         v-for="post in forumStore.posts"
         :key="post.id"
         :post="post"
+        :is-locked="forumStore.currentTopic?.is_locked ?? false"
+        @quote="handleQuote"
       />
 
       <div v-if="forumStore.postsTotalItems > POSTS_PER_PAGE" class="flex justify-start my-6">
@@ -72,10 +74,11 @@
 
       <Divider />
 
-      <div class="max-w-3xl mx-auto mt-6">
+      <div ref="replyFormSectionRef" class="max-w-3xl mx-auto mt-6">
         <h2 class="text-xl font-semibold mb-4">Poster un message sur ce sujet</h2>
         <AddMessageForm
           v-if="forumStore.currentTopic"
+          ref="addMessageFormRef"
           :topic-slug="forumStore.currentTopic.slug"
           :is-locked="forumStore.currentTopic.is_locked"
           @message-created="handleMessageCreated"
@@ -121,6 +124,15 @@ const authModalMessage = ref('')
 const isToggleLoading = ref(false)
 const isResolveLoading = ref(false)
 const isPinLoading = ref(false)
+const addMessageFormRef = ref(null)
+const replyFormSectionRef = ref(null)
+
+function handleQuote(quote) {
+  addMessageFormRef.value?.insertQuote(quote)
+  nextTick(() => {
+    replyFormSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
 
 const canManageTopic = computed(() => {
   const topic = forumStore.currentTopic

@@ -98,6 +98,17 @@
                 aria-label="Je n'aime pas"
                 @click="handleVote(-1)"
               />
+              <Button
+                v-if="canQuote"
+                icon="pi pi-comment"
+                label="Citer"
+                text
+                size="small"
+                severity="secondary"
+                class="ml-2"
+                :aria-label="`Citer le message de ${creatorName}`"
+                @click="handleQuote"
+              />
             </div>
           </template>
         </div>
@@ -136,8 +147,14 @@ const props = defineProps({
   post: {
     type: Object,
     required: true
+  },
+  isLocked: {
+    type: Boolean,
+    default: false
   }
 })
+
+const emit = defineEmits(['quote'])
 
 const userSecurityStore = useUserSecurityStore()
 const forumStore = useForumStore()
@@ -221,6 +238,17 @@ const canContact = computed(() => {
   if (!userSecurityStore.isAuthenticated) return true
   return userSecurityStore.user?.id !== props.post.creator.id
 })
+
+const canQuote = computed(
+  () => userSecurityStore.isAuthenticated && !props.isLocked && !isEditing.value
+)
+
+function handleQuote() {
+  emit('quote', {
+    author: creatorName.value,
+    html: props.post.content
+  })
+}
 
 function handleContact() {
   if (!userSecurityStore.isAuthenticated) {
