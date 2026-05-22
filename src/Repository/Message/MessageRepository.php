@@ -95,7 +95,7 @@ class MessageRepository extends ServiceEntityRepository
                 'user_id' => $row['user_id'],
                 'username' => $row['username'],
                 'message_count' => (int) $row['message_count'],
-                'account_age_days' => $diff->days !== false ? $diff->days : 0,
+                'account_age_days' => $diff->days,
                 'creation_datetime' => $creationDate,
             ];
         }, $results);
