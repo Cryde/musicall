@@ -8,6 +8,8 @@ use App\Contracts\Metric\VotableInterface;
 use App\Entity\Metric\VoteCache;
 use App\Entity\User;
 use App\Repository\Comment\CommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -49,9 +51,21 @@ class Comment implements VotableInterface
     #[ORM\OneToOne(targetEntity: VoteCache::class, cascade: ['persist', 'remove'])]
     public ?VoteCache $voteCache = null;
 
+    #[ORM\ManyToOne(targetEntity: Comment::class, inversedBy: 'replies')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    public ?Comment $parent = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'parent')]
+    #[ORM\OrderBy(['creationDatetime' => 'ASC'])]
+    public Collection $replies;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+        $this->replies = new ArrayCollection();
     }
 
     public function getVotableId(): ?string

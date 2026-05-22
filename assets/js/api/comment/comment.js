@@ -16,21 +16,21 @@ export default {
       .then((resp) => resp.data)
   },
 
-  postComment({ threadId, content }) {
+  postComment({ threadId, content, parentId = null }) {
+    const payload = {
+      thread: `/api/comment_threads/${threadId}`,
+      content
+    }
+    if (parentId !== null && parentId !== undefined) {
+      payload.parentId = parentId
+    }
     return axios
-      .post(
-        Routing.generate('api_comments_post_collection'),
-        {
-          thread: `/api/comment_threads/${threadId}`,
-          content
-        },
-        {
-          headers: {
-            'Content-Type': 'application/ld+json',
-            Accept: 'application/ld+json'
-          }
+      .post(Routing.generate('api_comments_post_collection'), payload, {
+        headers: {
+          'Content-Type': 'application/ld+json',
+          Accept: 'application/ld+json'
         }
-      )
+      })
       .then((resp) => resp.data)
       .catch(handleApiError)
   },

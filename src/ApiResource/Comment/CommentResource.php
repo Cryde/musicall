@@ -40,6 +40,8 @@ class CommentResource
 
     public int $threadId;
 
+    public ?int $parentId = null;
+
     /** @var array{id: string, username: string, profile_picture_url: string|null, deletion_datetime: string|null} */
     public array $author;
 

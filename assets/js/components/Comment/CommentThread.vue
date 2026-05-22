@@ -10,22 +10,23 @@
 
     <template v-else>
       <div class="text-right text-sm text-surface-500 dark:text-surface-400 mb-4">
-        <template v-if="commentStore.totalComments === 0">
+        <template v-if="rootComments.length === 0">
           Il n'y a pas encore de commentaires
         </template>
-        <template v-else-if="commentStore.totalComments === 1">
+        <template v-else-if="rootComments.length === 1">
           1 commentaire
         </template>
         <template v-else>
-          {{ commentStore.totalComments }} commentaires
+          {{ rootComments.length }} commentaires
         </template>
       </div>
 
       <div class="flex flex-col gap-4">
         <CommentItem
-          v-for="comment in commentStore.comments"
+          v-for="comment in rootComments"
           :key="comment.id"
           :comment="comment"
+          :replies="repliesByParentId[comment.id] || []"
         />
       </div>
     </template>
@@ -34,7 +35,7 @@
 
 <script setup>
 import Divider from 'primevue/divider'
-import { onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { useCommentStore } from '../../store/comment/comment.js'
 import CommentForm from './CommentForm.vue'
 import CommentItem from './CommentItem.vue'
@@ -47,6 +48,25 @@ const props = defineProps({
 })
 
 const commentStore = useCommentStore()
+
+const rootComments = computed(() =>
+  commentStore.comments.filter((c) => c.parent_id === null || c.parent_id === undefined)
+)
+
+// Backend returns replies ordered by creation_datetime ASC (see Comment::$replies
+// OrderBy). The collection endpoint preserves that order, so no client-side sort needed.
+const repliesByParentId = computed(() => {
+  const map = {}
+  for (const c of commentStore.comments) {
+    if (c.parent_id !== null && c.parent_id !== undefined) {
+      if (!map[c.parent_id]) {
+        map[c.parent_id] = []
+      }
+      map[c.parent_id].push(c)
+    }
+  }
+  return map
+})
 
 onMounted(() => {
   if (props.threadId) {

@@ -22,17 +22,24 @@ export const useCommentStore = defineStore('comment', () => {
     }
   }
 
-  async function postComment(content) {
+  async function postComment({ content, parentId = null }) {
     if (!threadId.value) return
 
     isPosting.value = true
     try {
       const comment = await commentApi.postComment({
         threadId: threadId.value,
-        content
+        content,
+        parentId
       })
-      // Add new comment at the beginning
-      comments.value = [comment, ...comments.value]
+      // Roots show newest-first; replies follow backend ASC ordering (oldest-first),
+      // so prepend a root but append a reply to keep the on-screen order stable
+      // until the next thread reload.
+      if (parentId === null) {
+        comments.value = [comment, ...comments.value]
+      } else {
+        comments.value = [...comments.value, comment]
+      }
       totalComments.value += 1
       return comment
     } finally {

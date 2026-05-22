@@ -36,6 +36,7 @@ readonly class CommentBuilder
         $dto = new CommentResource();
         $dto->id = $entity->id;
         $dto->threadId = $entity->thread->id;
+        $dto->parentId = $entity->parent?->id;
         $dto->author = [
             'id' => $entity->author->id,
             'username' => $entity->author->username,

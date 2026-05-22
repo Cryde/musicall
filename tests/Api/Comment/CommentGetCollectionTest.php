@@ -74,6 +74,76 @@ class CommentGetCollectionTest extends ApiTestCase
         $this->assertJsonEquals($this->expectedCollection($thread, $comment, $author, $refreshed, 1, 0, 1));
     }
 
+    public function test_get_comments_returns_root_and_reply_with_parent_id(): void
+    {
+        $thread = CommentThreadFactory::new()->create();
+        $author = UserFactory::new()->create(['username' => 'author', 'email' => 'author@test.com']);
+        $replier = UserFactory::new()->asBaseUser()->create(['username' => 'replier', 'email' => 'replier@test.com']);
+        $root = CommentFactory::new(['thread' => $thread, 'author' => $author, 'content' => 'Question'])->create();
+        $reply = CommentFactory::new(['thread' => $thread, 'author' => $replier, 'content' => 'Réponse', 'parent' => $root])->create();
+
+        $this->client->jsonRequest(
+            'GET',
+            '/api/comments?thread=' . $thread->id,
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $commentRepo = self::getContainer()->get(CommentRepository::class);
+        $rootRefreshed = $commentRepo->find($root->id);
+        $replyRefreshed = $commentRepo->find($reply->id);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Comment',
+            '@id' => '/api/comments',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                [
+                    '@id' => '/api/comments/' . $root->id,
+                    '@type' => 'Comment',
+                    'id' => $root->id,
+                    'thread_id' => $thread->id,
+                    'author' => [
+                        'id' => $author->id,
+                        'username' => 'author',
+                        'profile_picture_url' => null,
+                        'deletion_datetime' => null,
+                    ],
+                    'content' => 'Question',
+                    'creation_datetime' => $rootRefreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                    'parent_id' => null,
+                ],
+                [
+                    '@id' => '/api/comments/' . $reply->id,
+                    '@type' => 'Comment',
+                    'id' => $reply->id,
+                    'thread_id' => $thread->id,
+                    'author' => [
+                        'id' => $replier->id,
+                        'username' => 'replier',
+                        'profile_picture_url' => null,
+                        'deletion_datetime' => null,
+                    ],
+                    'content' => 'Réponse',
+                    'creation_datetime' => $replyRefreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'upvotes' => 0,
+                    'downvotes' => 0,
+                    'user_vote' => null,
+                    'parent_id' => $root->id,
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/comments?thread=' . $thread->id,
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
     public function test_get_comments_user_vote_null_for_anonymous(): void
     {
         $thread = CommentThreadFactory::new()->create();
@@ -123,6 +193,7 @@ class CommentGetCollectionTest extends ApiTestCase
                     'upvotes' => $upvotes,
                     'downvotes' => $downvotes,
                     'user_vote' => $userVote,
+                    'parent_id' => null,
                 ],
             ],
             'view' => [
