@@ -66,11 +66,14 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
         // Add membership to band space (bidirectional relationship)
         $bandSpace->memberships->add($creatorMembership);
 
-        // Persist entities
         $this->entityManager->persist($bandSpace);
         $this->entityManager->persist($creatorMembership);
-        $this->entityManager->flush();
 
+        // BandSpace::id is assigned at persist time (CUSTOM UUID generator),
+        // so we can safely read it before flush. record() only persists the
+        // activity row - the single flush() below commits all three in one
+        // transaction, so a failure can't leave a band space without its
+        // membership or activity log.
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Settings,
@@ -79,6 +82,7 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
             actor: $user,
             payload: ['name' => $bandSpace->name],
         );
+
         $this->entityManager->flush();
 
         return $this->bandSpaceBuilder->buildItem($bandSpace, Role::Admin);
