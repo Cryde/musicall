@@ -101,6 +101,16 @@
         >
           {{ formattedDueDate }}
         </span>
+        <button
+          type="button"
+          class="ml-1 w-7 h-7 -mr-1 rounded hover:bg-surface-100 dark:hover:bg-surface-800 flex items-center justify-center text-surface-500"
+          aria-label="Plus d'actions"
+          aria-haspopup="menu"
+          @click.stop="actionMenuRef?.toggle($event)"
+        >
+          <i class="pi pi-ellipsis-v text-sm" aria-hidden="true" />
+        </button>
+        <Menu ref="actionMenuRef" :model="actionMenuItems" :popup="true" />
       </div>
     </div>
   </div>
@@ -108,6 +118,8 @@
 
 <script setup>
 import Checkbox from 'primevue/checkbox'
+import Menu from 'primevue/menu'
+import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import Avatar from '../../User/Avatar.vue'
@@ -122,7 +134,41 @@ const props = defineProps({
 const emit = defineEmits(['open-task'])
 
 const tasksStore = useBandTasksStore()
+const toast = useToast()
 const popoverRef = ref()
+const actionMenuRef = ref()
+
+// Touch fallback for the drag-only kanban: build "Déplacer vers ..." items
+// for the statuses that aren't the task's current one. Appends to the end
+// of the target column (newIndex = current count in that column).
+const STATUS_OPTIONS = [
+  { value: 'todo', label: 'À faire' },
+  { value: 'in_progress', label: 'En cours' },
+  { value: 'done', label: 'Terminé' }
+]
+
+const actionMenuItems = computed(() => {
+  return STATUS_OPTIONS.filter((s) => s.value !== props.task.status).map((s) => ({
+    label: `Déplacer vers « ${s.label} »`,
+    icon: 'pi pi-arrow-right',
+    command: () => moveToStatus(s.value)
+  }))
+})
+
+async function moveToStatus(newStatus) {
+  const newIndex = tasksStore.tasks.filter(
+    (t) => t.status === newStatus && !t.archive_datetime
+  ).length
+  try {
+    await tasksStore.moveTaskToColumn(props.bandSpaceId, props.task.id, newStatus, newIndex)
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Impossible de déplacer la tâche',
+      life: 5000
+    })
+  }
+}
 
 const isSelected = computed(() => tasksStore.selectedTaskIds.has(props.task.id))
 

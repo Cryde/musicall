@@ -13,41 +13,21 @@
     >
       <button
         type="button"
-        class="flex items-center gap-2 w-full min-w-0 text-left h-full pr-1 group-hover:pr-20"
+        class="flex items-center gap-2 w-full min-w-0 text-left h-full pr-8"
         @click="emit('select', folder.id)"
       >
         <i class="pi pi-folder text-surface-500 shrink-0"></i>
         <span class="truncate">{{ folder.name }}</span>
       </button>
-      <div
-        class="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5"
+      <button
+        type="button"
+        class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
+        aria-label="Actions du dossier"
+        aria-haspopup="menu"
+        @click.stop="openContextMenu($event)"
       >
-        <button
-          type="button"
-          class="w-6 h-6 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 disabled:opacity-30 disabled:cursor-not-allowed"
-          v-tooltip.top="canCreateSub ? 'Nouveau sous-dossier' : 'Profondeur maximale atteinte'"
-          :disabled="!canCreateSub"
-          @click.stop="emit('create-sub', folder)"
-        >
-          <i class="pi pi-plus text-xs"></i>
-        </button>
-        <button
-          type="button"
-          class="w-6 h-6 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
-          v-tooltip.top="'Renommer / déplacer'"
-          @click.stop="emit('edit', folder)"
-        >
-          <i class="pi pi-pencil text-xs"></i>
-        </button>
-        <button
-          type="button"
-          class="w-6 h-6 flex items-center justify-center rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
-          v-tooltip.top="'Supprimer'"
-          @click.stop="emit('delete', folder)"
-        >
-          <i class="pi pi-trash text-xs"></i>
-        </button>
-      </div>
+        <i class="pi pi-ellipsis-v text-xs" aria-hidden="true"></i>
+      </button>
     </div>
 
     <FolderTreeNode

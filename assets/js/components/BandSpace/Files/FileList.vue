@@ -25,35 +25,47 @@
       <div
         v-for="file in files"
         :key="file.id"
-        class="grid grid-cols-12 gap-2 px-3 py-2 items-center text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
+        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
         :draggable="true"
         @click="emit('select', file)"
         @contextmenu="(event) => openContextMenu(event, file)"
         @dragstart="(event) => handleDragStart(event, file)"
         @dragend="handleDragEnd"
       >
-        <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
-          <i :class="iconForMime(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
-          <span class="truncate font-medium">{{ file.original_name }}</span>
+        <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
+          <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
+            <i :class="iconForMime(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
+            <span class="truncate font-medium">{{ file.original_name }}</span>
+          </div>
+
+          <div class="col-span-4 md:col-span-2 tabular-nums text-surface-600 dark:text-surface-300">
+            {{ formatSize(file.size) }}
+          </div>
+
+          <div class="col-span-4 md:col-span-2 flex flex-wrap gap-1">
+            <Tag
+              v-for="tag in file.tags"
+              :key="tag.id"
+              :value="tag.name"
+              :style="tagStyle(tag.color_hex)"
+              class="text-xs"
+            />
+          </div>
+
+          <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
+            {{ formatDate(file.creation_datetime) }}
+          </div>
         </div>
 
-        <div class="col-span-4 md:col-span-2 tabular-nums text-surface-600 dark:text-surface-300">
-          {{ formatSize(file.size) }}
-        </div>
-
-        <div class="col-span-4 md:col-span-2 flex flex-wrap gap-1">
-          <Tag
-            v-for="tag in file.tags"
-            :key="tag.id"
-            :value="tag.name"
-            :style="tagStyle(tag.color_hex)"
-            class="text-xs"
-          />
-        </div>
-
-        <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
-          {{ formatDate(file.creation_datetime) }}
-        </div>
+        <button
+          type="button"
+          class="shrink-0 w-7 h-7 flex items-center justify-center rounded text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
+          aria-label="Actions du fichier"
+          aria-haspopup="menu"
+          @click.stop="(event) => openContextMenu(event, file)"
+        >
+          <i class="pi pi-ellipsis-v text-xs" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
 

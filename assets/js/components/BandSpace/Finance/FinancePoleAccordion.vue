@@ -43,7 +43,7 @@
             <div class="flex items-center justify-between mb-2">
               <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ child.name }}</h4>
               <button
-                class="text-xs text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                class="text-xs text-red-500 hover:text-red-700 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                 title="Supprimer la catégorie"
                 @click="emit('delete-category', child.id)"
               >
