@@ -1,0 +1,83 @@
+{% extends 'pdf/setlist/_base.html.twig' %}
+
+{% block extra_styles %}
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+        table.items th, table.items td {
+            text-align: left;
+            padding: 2mm 3mm;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+        table.items th {
+            background: #f4f4f4;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            color: #666;
+        }
+        table.items td.idx { width: 8mm; color: #888; }
+        table.items td.title { font-weight: bold; }
+        table.items td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+        .item-note {
+            display: block;
+            margin-top: 1mm;
+            font-size: 8pt;
+            color: #555;
+            font-style: italic;
+        }
+        .item-transition {
+            display: block;
+            margin-top: 1mm;
+            font-size: 8pt;
+            color: #888;
+        }
+        .item-non-song .title { color: #666; font-style: italic; }
+{% endblock %}
+
+{% block body %}
+    <table class="items">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Titre</th>
+                {% if options.showKey %}<th>Ton.</th>{% endif %}
+                {% if options.showTempo %}<th class="numeric">BPM</th>{% endif %}
+                {% if options.showDurations %}<th class="numeric">Durée</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in setlist.items %}
+                <tr class="{{ item.type.value != 'song' ? 'item-non-song' : '' }}">
+                    <td class="idx">{{ loop.index }}</td>
+                    <td class="title">
+                        {% if item.type.value == 'song' and item.song %}
+                            {{ item.song.title }}
+                        {% else %}
+                            {{ item.label ?: '—' }}
+                        {% endif %}
+                        {% if options.showNotes and item.note %}
+                            <span class="item-note">{{ item.note }}</span>
+                        {% endif %}
+                        {% if options.showTransitions and item.transition %}
+                            <span class="item-transition">→ {{ item.transition }}</span>
+                        {% endif %}
+                    </td>
+                    {% if options.showKey %}
+                        <td>{{ (item.type.value == 'song' and item.song) ? (item.song.tonality ?: '') : '' }}</td>
+                    {% endif %}
+                    {% if options.showTempo %}
+                        <td class="numeric">{{ (item.type.value == 'song' and item.song and item.song.tempo) ? item.song.tempo : '' }}</td>
+                    {% endif %}
+                    {% if options.showDurations %}
+                        {% set duration = item.durationOverride ?? (item.song.referenceDuration ?? null) %}
+                        <td class="numeric">{{ duration ? ((duration // 60) ~ '′' ~ ('%02d'|format(duration % 60)) ~ '″') : '' }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

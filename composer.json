@@ -14,6 +14,7 @@
         "doctrine/doctrine-bundle": "^3.0",
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.5.7",
+        "dompdf/dompdf": "^3.1",
         "friendsofsymfony/jsrouting-bundle": "^3.6.1",
         "gesdinet/jwt-refresh-token-bundle": "^2.0.0",
         "google/apiclient": "^2.18.4",

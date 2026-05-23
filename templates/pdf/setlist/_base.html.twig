@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ setlist.name }}</title>
+    <style>
+        @page { margin: 18mm 14mm 18mm 14mm; }
+        body { font-family: 'DejaVu Sans', sans-serif; color: #1a1a1a; }
+        .pdf-header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 6mm;
+            margin-bottom: 6mm;
+        }
+        .pdf-header h1 { margin: 0 0 2mm 0; font-size: 22pt; }
+        .pdf-header .meta { font-size: 10pt; color: #555; }
+        .pdf-footer {
+            position: fixed;
+            bottom: -10mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 8pt;
+            color: #888;
+        }
+        .pdf-footer .page-number:before { content: counter(page); }
+        .pdf-footer .page-count:before { content: counter(pages); }
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="pdf-header">
+        <h1>{{ setlist.name }}</h1>
+        <div class="meta">
+            {{ setlist.bandSpace.name }}
+            &nbsp;·&nbsp;
+            {{ setlist.items|length }} {{ setlist.items|length > 1 ? 'titres' : 'titre' }}
+            {% if total_duration_seconds > 0 %}
+                &nbsp;·&nbsp;
+                Durée totale&nbsp;: {{ (total_duration_seconds // 60) }} min {{ (total_duration_seconds % 60) }} s
+            {% endif %}
+        </div>
+    </div>
+
+    {% block body %}{% endblock %}
+
+    <div class="pdf-footer">
+        Page <span class="page-number"></span> / <span class="page-count"></span>
+    </div>
+</body>
+</html>

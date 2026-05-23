@@ -1,0 +1,88 @@
+{% extends 'pdf/setlist/_base.html.twig' %}
+
+{% block extra_styles %}
+        ol.items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            counter-reset: item;
+        }
+        ol.items li {
+            counter-increment: item;
+            padding: 4mm 0;
+            border-bottom: 1px dashed #ccc;
+            page-break-inside: avoid;
+        }
+        .item-title {
+            font-size: 18pt;
+            font-weight: bold;
+        }
+        .item-title:before {
+            content: counter(item) ". ";
+            color: #888;
+            font-weight: normal;
+        }
+        .item-meta {
+            margin-top: 2mm;
+            font-size: 10pt;
+            color: #555;
+        }
+        .item-meta .badge {
+            display: inline-block;
+            padding: 1mm 2mm;
+            margin-right: 2mm;
+            background: #f0f0f0;
+            border-radius: 2mm;
+        }
+        .item-note {
+            margin-top: 2mm;
+            font-size: 9pt;
+            color: #444;
+            font-style: italic;
+        }
+        .item-transition {
+            margin-top: 2mm;
+            font-size: 9pt;
+            color: #888;
+        }
+        .item-interlude .item-title {
+            color: #555;
+            font-style: italic;
+        }
+{% endblock %}
+
+{% block body %}
+    <ol class="items">
+        {% for item in setlist.items %}
+            <li class="item-{{ item.type.value }}">
+                {% if item.type.value == 'song' and item.song %}
+                    <div class="item-title">{{ item.song.title }}</div>
+                {% else %}
+                    <div class="item-title">{{ item.label ?: '—' }}</div>
+                {% endif %}
+
+                <div class="item-meta">
+                    {% if options.showKey and item.type.value == 'song' and item.song and item.song.tonality %}
+                        <span class="badge">Tonalité&nbsp;: {{ item.song.tonality }}</span>
+                    {% endif %}
+                    {% if options.showTempo and item.type.value == 'song' and item.song and item.song.tempo %}
+                        <span class="badge">{{ item.song.tempo }} BPM</span>
+                    {% endif %}
+                    {% if options.showDurations %}
+                        {% set duration = item.durationOverride ?? (item.song.referenceDuration ?? null) %}
+                        {% if duration %}
+                            <span class="badge">{{ (duration // 60) }}′{{ '%02d'|format(duration % 60) }}″</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if options.showNotes and item.note %}
+                    <div class="item-note">{{ item.note }}</div>
+                {% endif %}
+                {% if options.showTransitions and item.transition %}
+                    <div class="item-transition">→ {{ item.transition }}</div>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+{% endblock %}
