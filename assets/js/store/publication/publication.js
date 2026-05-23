@@ -8,10 +8,16 @@ export const usePublicationStore = defineStore('publicaton', () => {
   const isVoting = ref(false)
 
   async function loadPublication(slug) {
+    // Null out before the await so navigating from /publications/foo to
+    // /publications/bar doesn't flash the previous title during the new
+    // fetch (view component is reused across the route change, so
+    // onUnmounted never fires between slugs).
+    publication.value = null
     publication.value = await publicationApi.getPublication(slug)
   }
 
   async function loadRelatedPublications(slug) {
+    relatedPublications.value = []
     relatedPublications.value = await publicationApi.getRelatedPublications(slug)
   }
 
