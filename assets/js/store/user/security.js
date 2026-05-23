@@ -32,11 +32,13 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
       await checkAuthInfo()
       localStorage.setItem('was_logged_in', 'true')
       startProactiveRefresh()
-      // Redirect to return_url if present, otherwise home
+      // Hard reload (rather than router.replace) to start from a clean Pinia
+      // state — prevents any stale data from a prior session (different user
+      // on the same browser, expired token) from surviving into the new one.
       if (returnUrl) {
         window.location.href = returnUrl
       } else {
-        await router.replace({ name: 'app_home' })
+        window.location.href = router.resolve({ name: 'app_home' }).href
       }
     } catch (e) {
       if (e?.response?.status === 401) {
@@ -227,7 +229,9 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     isAuthenticated.value = false
     isAuthenticatedLoading.value = false
 
-    await router.push({ name: 'app_home' })
+    // Hard reload wipes all Pinia stores so no user-scoped data (messages,
+    // drafts, band space, etc.) leaks to the next user on a shared browser.
+    window.location.href = router.resolve({ name: 'app_home' }).href
   }
 
   async function refreshUserProfile() {
