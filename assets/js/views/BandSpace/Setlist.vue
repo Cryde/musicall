@@ -17,6 +17,7 @@
           :active-setlist-id="activeSetlistId"
           @select-repertoire="selectRepertoire"
           @select-setlist="selectSetlist"
+          @new-setlist="newSetlistDialogOpen = true"
         />
       </aside>
 
@@ -44,21 +45,28 @@
           :active-setlist-id="activeSetlistId"
           @select-repertoire="selectRepertoire"
           @select-setlist="selectSetlist"
+          @new-setlist="newSetlistDialogOpen = true"
         />
       </Drawer>
+
+      <NewSetlistDialog
+        v-model:visible="newSetlistDialogOpen"
+        :band-space-id="bandSpaceId"
+        @created="handleSetlistCreated"
+      />
 
       <section class="flex-1 min-w-0">
         <RepertoireView
           v-if="activeView === 'repertoire'"
           :band-space-id="bandSpaceId"
         />
-        <div
-          v-else-if="activeView === 'setlist'"
-          class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 text-center text-surface-500"
-        >
-          <i class="pi pi-clock text-3xl mb-3 block"></i>
-          L'éditeur de setlist arrive bientôt.
-        </div>
+        <SetlistEditor
+          v-else-if="activeView === 'setlist' && activeSetlistId"
+          :band-space-id="bandSpaceId"
+          :setlist-id="activeSetlistId"
+          @archived="handleSetlistArchived"
+          @duplicated="handleSetlistDuplicated"
+        />
       </section>
     </div>
   </div>
@@ -70,7 +78,9 @@ import Drawer from 'primevue/drawer'
 import Message from 'primevue/message'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import NewSetlistDialog from '../../components/BandSpace/Setlist/NewSetlistDialog.vue'
 import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vue'
+import SetlistEditor from '../../components/BandSpace/Setlist/SetlistEditor.vue'
 import SidebarContent from '../../components/BandSpace/Setlist/SidebarContent.vue'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../store/bandSpace/bandSpaceSongs.js'
@@ -89,6 +99,7 @@ const bandSpaceId = computed(() => route.params.id)
 const activeView = ref('repertoire') // 'repertoire' | 'setlist'
 const activeSetlistId = ref(null)
 const mobileNavOpen = ref(false)
+const newSetlistDialogOpen = ref(false)
 
 const activeSetlist = computed(() =>
   activeSetlistId.value
@@ -128,6 +139,20 @@ function loadAll() {
   if (!bandSpaceId.value) return
   songsStore.fetchSongs(bandSpaceId.value)
   setlistsStore.fetchSetlists(bandSpaceId.value)
+}
+
+function handleSetlistCreated(created) {
+  selectSetlist(created.id)
+}
+
+function handleSetlistArchived() {
+  selectRepertoire()
+}
+
+function handleSetlistDuplicated(newId) {
+  // duplicateSetlist already inserted the copy into the store's setlists[],
+  // so we can navigate directly without a refetch.
+  selectSetlist(newId)
 }
 
 onMounted(() => {

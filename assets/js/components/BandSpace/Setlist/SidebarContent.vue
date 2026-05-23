@@ -42,8 +42,7 @@
         size="small"
         severity="secondary"
         class="w-full"
-        disabled
-        v-tooltip.top="'La création de setlists arrive dans la prochaine version'"
+        @click="emit('new-setlist')"
       />
     </div>
   </div>
@@ -63,7 +62,7 @@ const props = defineProps({
   activeSetlistId: { type: String, default: null }
 })
 
-const emit = defineEmits(['select-repertoire', 'select-setlist'])
+const emit = defineEmits(['select-repertoire', 'select-setlist', 'new-setlist'])
 
 const repertoireButtonClasses = computed(() =>
   props.activeView === 'repertoire'
