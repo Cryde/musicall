@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-auto py-6 lg:py-8 px-4 lg:px-20">
+  <div>
     <div class="mb-6 lg:mb-8">
       <h1 class="text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
         Tableau de bord

@@ -9,6 +9,13 @@
 
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
 
+:root {
+    /* Shared between the Band Space sidebar (AppBandLayout.vue aside) and
+       the logo zone in the top navbar (MenuBand.vue) so the logo stays
+       aligned above the sidebar. Keep them in sync via this variable. */
+    --band-sidebar-width: 11rem;
+}
+
 html {
     font-family: "Open Sans", serif;
 }

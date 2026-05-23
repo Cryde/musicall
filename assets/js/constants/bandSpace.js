@@ -26,12 +26,12 @@ export const SECTION_NAMES = {
 }
 
 export const NAVIGATION_ITEMS = Object.freeze([
-  { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD },
-  { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA },
-  { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES },
-  { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES },
-  { label: 'Setlists', route: BAND_SPACE_ROUTES.SETLIST },
-  { label: 'Tâches', route: BAND_SPACE_ROUTES.TASKS },
-  { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE },
-  { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS }
+  { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD, icon: 'pi-th-large' },
+  { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA, icon: 'pi-calendar' },
+  { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES, icon: 'pi-file-edit' },
+  { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES, icon: 'pi-folder' },
+  { label: 'Setlists', route: BAND_SPACE_ROUTES.SETLIST, icon: 'pi-list' },
+  { label: 'Tâches', route: BAND_SPACE_ROUTES.TASKS, icon: 'pi-check-square' },
+  { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE, icon: 'pi-wallet' },
+  { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS, icon: 'pi-cog' }
 ])

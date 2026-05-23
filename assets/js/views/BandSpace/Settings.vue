@@ -1,6 +1,6 @@
 <template>
-  <div class="flex-auto py-6 lg:py-8 px-8 lg:px-20">
-    <div class="grid grid-cols-12 gap-4 py-6 lg:py-8">
+  <div>
+    <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 lg:col-span-10 xl:col-span-10 flex-auto">
         <div class="flex flex-col lg:flex-row gap-6">
           <!-- Sidebar menu -->

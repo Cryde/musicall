@@ -1,58 +1,52 @@
 <template>
-  <nav class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
-    <div class="flex items-center gap-4">
-      <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" aria-label="Accueil MusicAll">
-        <img
-          src="../../../image/logo-2.png"
-          alt="Logo MusicAll"
-          class="h-4 w-auto"
-        />
-      </RouterLink>
-    </div>
-
+  <nav class="sticky top-0 z-30 flex items-stretch bg-surface-0 dark:bg-surface-900 border-b border-surface-200 dark:border-surface-800 h-16">
     <button
-      v-styleclass="{
-        selector: '@next',
-        enterFromClass: 'hidden',
-        enterActiveClass: 'animate-fadein',
-        leaveToClass: 'hidden',
-        leaveActiveClass: 'animate-fadeout',
-        hideOnOutsideClick: true
-      }"
-      class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100 bg-transparent border-0 p-0"
+      v-if="currentSpaceId"
+      type="button"
+      class="lg:hidden text-surface-700 dark:text-surface-200 bg-transparent border-0 px-3 py-2 ml-2 my-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
       aria-label="Ouvrir le menu de navigation"
-      aria-expanded="false"
-      aria-controls="mobile-menu"
+      @click="mobileNavOpen = !mobileNavOpen"
     >
-      <i class="pi pi-bars text-xl! leading-normal!" aria-hidden="true" />
+      <i class="pi pi-bars text-xl" aria-hidden="true" />
     </button>
 
-    <div
-      ref="mobileMenu"
-      class="hidden lg:flex flex-1 items-center justify-between absolute lg:static w-full bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow lg:shadow-none border lg:border-0 border-surface-800"
+    <!-- Logo zone — fills the sidebar column on lg+ so it aligns with the
+         sidebar below; sits flush after the hamburger on mobile. -->
+    <RouterLink
+      :to="{ name: 'app_home' }"
+      class="flex items-center px-4 lg:w-[var(--band-sidebar-width)] lg:shrink-0 lg:justify-center"
+      aria-label="Accueil MusicAll"
     >
-      <div class="flex-1 flex items-start gap-4 px-6 lg:px-0 py-4 lg:py-0 flex-col lg:flex-row">
-        <BandSpaceSelector class="mr-2" @navigate="closeMobileMenu" />
+      <span class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
+        <img src="../../../image/logo-2.png" alt="Logo MusicAll" class="h-4 w-auto" />
+      </span>
+    </RouterLink>
 
-        <BandNavigation :disabled="bandSpaceStore.isCreating" @navigate="closeMobileMenu" />
-
-        <RouterLink :to="{ name: 'app_home' }" custom v-slot="{ href, navigate }">
-          <a
-            :href="href"
-            @click="(e) => { if (!bandSpaceStore.isCreating) { navigate(e); closeMobileMenu() } }"
-            :class="[
-              'flex items-center lg:ml-10 text-xs gap-2 p-2 rounded-lg transition-colors duration-150 border w-full lg:w-auto border-transparent',
-              bandSpaceStore.isCreating
-                ? 'cursor-not-allowed opacity-50'
-                : 'cursor-pointer hover:underline'
-            ]"
-          >
-            <span class="font-medium">back to musicall</span>
-          </a>
-        </RouterLink>
+    <div class="flex flex-1 items-center gap-3 px-4 lg:pr-20 min-w-0">
+      <div class="hidden lg:block shrink-0">
+        <BandSpaceSelector />
       </div>
 
-      <AppNavbarUserCluster @navigate="closeMobileMenu" />
+      <div class="flex-1"></div>
+
+      <RouterLink :to="{ name: 'app_home' }" custom v-slot="{ href, navigate }">
+        <a
+          :href="href"
+          @click="(e) => { if (!bandSpaceStore.isCreating) navigate(e) }"
+          :class="[
+            'hidden lg:flex items-center text-xs gap-2 p-2 rounded-lg transition-colors duration-150 border border-transparent shrink-0',
+            bandSpaceStore.isCreating
+              ? 'cursor-not-allowed opacity-50'
+              : 'cursor-pointer hover:underline'
+          ]"
+        >
+          <span class="font-medium">back to musicall</span>
+        </a>
+      </RouterLink>
+
+      <div class="hidden lg:flex">
+        <AppNavbarUserCluster />
+      </div>
     </div>
   </nav>
 
@@ -60,24 +54,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
-import BandNavigation from '../../components/BandSpace/BandNavigation.vue'
 import BandSpaceSelector from '../../components/BandSpace/BandSpaceSelector.vue'
 import CreateBandSpaceModal from '../../components/BandSpace/CreateBandSpaceModal.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
-const bandSpaceStore = useBandSpaceStore()
-const { navigateToSpace } = useBandSpaceNavigation()
-const mobileMenu = ref(null)
+const mobileNavOpen = defineModel('mobileNavOpen', { type: Boolean, default: false })
 
-function closeMobileMenu() {
-  if (mobileMenu.value && window.innerWidth < 1024) {
-    mobileMenu.value.classList.add('hidden')
-  }
-}
+const bandSpaceStore = useBandSpaceStore()
+const { currentSpaceId, navigateToSpace } = useBandSpaceNavigation()
 
 function handleBandSpaceCreated(newSpace) {
   navigateToSpace(newSpace.id, BAND_SPACE_ROUTES.DASHBOARD)
