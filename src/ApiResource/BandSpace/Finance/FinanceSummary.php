@@ -30,6 +30,11 @@ class FinanceSummary
     public string $currentMembershipId;
     public int $totalIncome = 0;
     public int $totalExpense = 0;
+    // *_all variants ignore the entry status (sum of paid + committed +
+    // planned). Used by the dashboard widget so it reflects "everything
+    // the user has logged this period" rather than only what's paid.
+    public int $totalIncomeAll = 0;
+    public int $totalExpenseAll = 0;
     public int $totalPlanned = 0;
     public int $totalCommitted = 0;
     public int $totalPaid = 0;

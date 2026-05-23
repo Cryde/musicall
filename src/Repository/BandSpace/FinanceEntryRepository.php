@@ -105,7 +105,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{total_income: int, total_expense: int, total_planned: int, total_committed: int, total_paid: int, total_personal: int, has_estimates: bool}
+     * @return array{total_income: int, total_expense: int, total_income_all: int, total_expense_all: int, total_planned: int, total_committed: int, total_paid: int, total_personal: int, has_estimates: bool}
      */
     public function getSummaryByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
     {
@@ -117,6 +117,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
             SELECT
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.type = 'income' AND e.status = 'paid' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_income,
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.type = 'expense' AND e.status = 'paid' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_expense,
+                COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.type = 'income' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_income_all,
+                COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.type = 'expense' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_expense_all,
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'planned' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_planned,
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'committed' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_committed,
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'paid' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_paid,
@@ -133,6 +135,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
         return [
             'total_income' => (int) $result['total_income'],
             'total_expense' => (int) $result['total_expense'],
+            'total_income_all' => (int) $result['total_income_all'],
+            'total_expense_all' => (int) $result['total_expense_all'],
             'total_planned' => (int) $result['total_planned'],
             'total_committed' => (int) $result['total_committed'],
             'total_paid' => (int) $result['total_paid'],

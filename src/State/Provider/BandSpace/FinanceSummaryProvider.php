@@ -46,6 +46,8 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         $summary->currentMembershipId = (string) $currentMembership->id;
         $summary->totalIncome = $totals['total_income'];
         $summary->totalExpense = $totals['total_expense'];
+        $summary->totalIncomeAll = $totals['total_income_all'];
+        $summary->totalExpenseAll = $totals['total_expense_all'];
         $summary->totalPlanned = $totals['total_planned'];
         $summary->totalCommitted = $totals['total_committed'];
         $summary->totalPaid = $totals['total_paid'];
