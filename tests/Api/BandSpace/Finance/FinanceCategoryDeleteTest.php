@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\BandSpace\Finance;
 
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\FinanceCategoryRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -26,9 +27,9 @@ class FinanceCategoryDeleteTest extends ApiTestCase
 
     public function test_delete_category(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create();
+        $admin = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -36,7 +37,7 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         ])->create();
         $categoryId = (string) $category->id;
 
-        $this->client->loginUser($user);
+        $this->client->loginUser($admin);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $categoryId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
@@ -51,6 +52,41 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         $this->assertCount(1, $activities);
         $this->assertSame('category_deleted', $activities[0]->type);
         $this->assertSame(['name' => 'To Delete'], $activities[0]->payload);
+    }
+
+    public function test_delete_category_as_non_admin_member_returns_403(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'plain_member', 'email' => 'member@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Protected Category',
+        ])->create();
+        $categoryId = (string) $category->id;
+
+        $this->client->loginUser($member);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $categoryId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous devez être administrateur pour effectuer cette action',
+        ]);
+
+        // Category not deleted, no activity recorded.
+        $this->assertNotNull(self::getContainer()->get(FinanceCategoryRepository::class)->find($categoryId));
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $categoryId));
     }
 
     public function test_delete_category_not_member(): void

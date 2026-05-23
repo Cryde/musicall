@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\BandSpace\Task;
 
+use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -23,12 +24,12 @@ class TaskCategoryDeleteTest extends ApiTestCase
 
     public function test_delete_category(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create();
+        $admin = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
 
-        $this->client->loginUser($user);
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
             '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $category->id,
@@ -41,16 +42,16 @@ class TaskCategoryDeleteTest extends ApiTestCase
 
     public function test_delete_category_detaches_linked_tasks(): void
     {
-        $user = UserFactory::new()->asBaseUser()->create();
+        $admin = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
-        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'category' => $category, 'createdBy' => $user])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'category' => $category, 'createdBy' => $admin])->create();
 
         $categoryId = (string) $category->id;
         $taskId = (string) $task->id;
 
-        $this->client->loginUser($user);
+        $this->client->loginUser($admin);
         $this->client->jsonRequest(
             'DELETE',
             '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $categoryId,
@@ -63,6 +64,40 @@ class TaskCategoryDeleteTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $this->assertNull(self::getContainer()->get(TaskCategoryRepository::class)->find($categoryId));
         $this->assertNull(self::getContainer()->get(TaskRepository::class)->find($taskId)->category);
+    }
+
+    public function test_delete_category_as_non_admin_member_returns_403(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'plain_member', 'email' => 'member@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+        $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
+        $categoryId = (string) $category->id;
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/task-categories/' . $categoryId,
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Vous devez être administrateur pour effectuer cette action',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous devez être administrateur pour effectuer cette action',
+        ]);
+
+        // Category was not deleted.
+        $this->assertNotNull(self::getContainer()->get(TaskCategoryRepository::class)->find($categoryId));
     }
 
     public function test_delete_category_not_member(): void

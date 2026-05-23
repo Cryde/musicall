@@ -7,7 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskCategoryResource;
 use App\Entity\User;
 use App\Repository\BandSpace\TaskCategoryRepository;
-use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\BandSpaceAdminChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -20,7 +20,7 @@ readonly class TaskCategoryDeleteProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private BandSpaceMemberChecker $memberChecker,
+        private BandSpaceAdminChecker $adminChecker,
         private TaskCategoryRepository $taskCategoryRepository,
         private Security $security,
     ) {
@@ -36,7 +36,7 @@ readonly class TaskCategoryDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {
