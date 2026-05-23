@@ -39,7 +39,15 @@
             <Button label="Fichiers" icon="pi pi-folder" severity="secondary" size="small" @click="filesDrawerOpen = true" />
             <Button label="Exporter PDF" icon="pi pi-file-pdf" severity="secondary" size="small" @click="openPdfPopover" />
             <Button label="Dupliquer" icon="pi pi-copy" severity="secondary" size="small" :loading="isDuplicating" @click="handleDuplicate" />
-            <Button label="Mode Live" icon="pi pi-play" severity="secondary" size="small" disabled v-tooltip.top="'Le mode Live arrive bientôt'" />
+            <Button
+              label="Mode Live"
+              icon="pi pi-play"
+              severity="secondary"
+              size="small"
+              :disabled="setlist.items.length === 0"
+              v-tooltip.top="setlist.items.length === 0 ? 'Ajoutez au moins un titre' : null"
+              @click="openLiveMode"
+            />
             <Button label="Archiver" icon="pi pi-archive" severity="danger" outlined size="small" @click="confirmArchive" />
           </div>
         </div>
@@ -115,6 +123,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
+import { useRouter } from 'vue-router'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import AddSetlistItemDialog from './AddSetlistItemDialog.vue'
 import PdfExportPopover from './PdfExportPopover.vue'
@@ -132,6 +141,14 @@ const emit = defineEmits(['archived', 'duplicated'])
 const setlistsStore = useBandSetlistsStore()
 const confirm = useConfirm()
 const toast = useToast()
+const router = useRouter()
+
+function openLiveMode() {
+  router.push({
+    name: 'app_band_setlist_live',
+    params: { bandSpaceId: props.bandSpaceId, setlistId: props.setlistId }
+  })
+}
 
 const setlist = computed(() => setlistsStore.activeSetlist)
 

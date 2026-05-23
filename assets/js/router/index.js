@@ -97,6 +97,14 @@ const routes = [
         component: () => import('../views/BandSpace/InvitationResponse.vue')
       }
     ]
+  },
+  {
+    // Live mode runs outside AppBandLayout so the full viewport is usable
+    // for stage display — no MenuBand chrome, no footer, no padding.
+    path: '/band/:bandSpaceId/setlists/:setlistId/live',
+    name: 'app_band_setlist_live',
+    component: () => import('../views/BandSpace/SetlistLive.vue'),
+    meta: { isAuthRequired: true }
   }
 ]
 
