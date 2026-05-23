@@ -25,6 +25,13 @@ export default {
       .catch(handleApiError)
   },
 
+  getStats(bandSpaceId) {
+    return axios
+      .get(Routing.generate('api_band_space_task_stats', { bandSpaceId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   createTask(bandSpaceId, data) {
     return axios
       .post(Routing.generate('api_band_space_tasks_post', { bandSpaceId }), data, {
