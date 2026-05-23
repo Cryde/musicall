@@ -132,6 +132,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       params.source = 'finance'
     } else if (activeFolderId.value === 'virtual:note') {
       params.source = 'note'
+    } else if (activeFolderId.value === 'virtual:song') {
+      params.source = 'song'
+    } else if (activeFolderId.value === 'virtual:setlist') {
+      params.source = 'setlist'
     } else if (activeFolderId.value) {
       params.folderId = activeFolderId.value
     } else if (filters.source) {

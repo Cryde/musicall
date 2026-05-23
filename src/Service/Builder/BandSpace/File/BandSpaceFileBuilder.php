@@ -7,8 +7,10 @@ use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
-use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
+use App\Repository\BandSpace\SetlistRepository;
+use App\Repository\BandSpace\SongRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -21,6 +23,8 @@ readonly class BandSpaceFileBuilder
         private TaskRepository $taskRepository,
         private FinanceEntryRepository $financeEntryRepository,
         private BandSpaceNoteRepository $noteRepository,
+        private SongRepository $songRepository,
+        private SetlistRepository $setlistRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private UrlGeneratorInterface $urlGenerator,
     ) {
@@ -111,11 +115,15 @@ readonly class BandSpaceFileBuilder
         $taskIds = [];
         $entryIds = [];
         $noteIds = [];
+        $songIds = [];
+        $setlistIds = [];
         foreach ($attachments as $a) {
             match ($a->sourceType) {
                 'task' => $taskIds[] = (string) $a->sourceId,
                 'finance' => $entryIds[] = (string) $a->sourceId,
                 'note' => $noteIds[] = (string) $a->sourceId,
+                'song' => $songIds[] = (string) $a->sourceId,
+                'setlist' => $setlistIds[] = (string) $a->sourceId,
                 default => null,
             };
         }
@@ -143,12 +151,28 @@ readonly class BandSpaceFileBuilder
             }
         }
 
-        return array_map(static function ($a) use ($taskTitles, $entryLabels, $noteTitles): array {
+        $songTitles = [];
+        if (count($songIds) > 0) {
+            foreach ($this->songRepository->findByIdsAndBandSpace(array_values(array_unique($songIds)), $bandSpace) as $song) {
+                $songTitles[(string) $song->id] = $song->title;
+            }
+        }
+
+        $setlistNames = [];
+        if (count($setlistIds) > 0) {
+            foreach ($this->setlistRepository->findByIdsAndBandSpace(array_values(array_unique($setlistIds)), $bandSpace) as $setlist) {
+                $setlistNames[(string) $setlist->id] = $setlist->name;
+            }
+        }
+
+        return array_map(static function ($a) use ($taskTitles, $entryLabels, $noteTitles, $songTitles, $setlistNames): array {
             $sourceId = (string) $a->sourceId;
             $label = match ($a->sourceType) {
                 'task' => $taskTitles[$sourceId] ?? '—',
                 'finance' => $entryLabels[$sourceId] ?? '—',
                 'note' => $noteTitles[$sourceId] ?? '—',
+                'song' => $songTitles[$sourceId] ?? '—',
+                'setlist' => $setlistNames[$sourceId] ?? '—',
                 default => '—',
             };
 

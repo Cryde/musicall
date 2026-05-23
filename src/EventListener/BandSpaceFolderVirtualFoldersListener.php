@@ -25,6 +25,8 @@ final readonly class BandSpaceFolderVirtualFoldersListener
         'task' => 'Tâches',
         'finance' => 'Finances',
         'note' => 'Notes',
+        'song' => 'Chansons',
+        'setlist' => 'Setlists',
     ];
 
     public function __construct(

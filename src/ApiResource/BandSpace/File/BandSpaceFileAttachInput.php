@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use App\State\Processor\BandSpace\File\BandSpaceFileAttachProcessor;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -36,7 +37,7 @@ class BandSpaceFileAttachInput
     public string $fileId;
 
     #[Assert\NotBlank(message: 'Le type de source est requis')]
-    #[Assert\Choice(choices: ['task', 'finance'], message: 'Type de source invalide')]
+    #[Assert\Choice(choices: BandSpaceFileSourceTypes::ALL, message: 'Type de source invalide')]
     public ?string $sourceType = null;
 
     #[Assert\NotBlank(message: "L'identifiant de la source est requis")]

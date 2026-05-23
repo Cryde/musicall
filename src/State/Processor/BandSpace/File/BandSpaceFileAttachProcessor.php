@@ -14,7 +14,10 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
+use App\Repository\BandSpace\SetlistRepository;
+use App\Repository\BandSpace\SongRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -38,6 +41,9 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private TaskRepository $taskRepository,
         private FinanceEntryRepository $financeEntryRepository,
+        private BandSpaceNoteRepository $noteRepository,
+        private SongRepository $songRepository,
+        private SetlistRepository $setlistRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private BandSpaceFileBuilder $fileBuilder,
         private Security $security,
@@ -66,6 +72,9 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         $sourceLabel = match ($data->sourceType) {
             'task' => $this->resolveTask($data->sourceId, $bandSpace),
             'finance' => $this->resolveFinanceEntry($data->sourceId, $bandSpace, $user),
+            'note' => $this->resolveNote($data->sourceId, $bandSpace),
+            'song' => $this->resolveSong($data->sourceId, $bandSpace),
+            'setlist' => $this->resolveSetlist($data->sourceId, $bandSpace),
             default => throw new UnprocessableEntityHttpException('Type de source invalide'),
         };
 
@@ -127,5 +136,35 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         }
 
         return $entry->label;
+    }
+
+    private function resolveNote(string $noteId, BandSpace $bandSpace): string
+    {
+        $note = $this->noteRepository->findOneByIdAndBandSpace($noteId, $bandSpace);
+        if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
+            throw new NotFoundHttpException('Note introuvable');
+        }
+
+        return $note->title;
+    }
+
+    private function resolveSong(string $songId, BandSpace $bandSpace): string
+    {
+        $song = $this->songRepository->findOneByIdAndBandSpace($songId, $bandSpace);
+        if (!$song instanceof \App\Entity\BandSpace\Song) {
+            throw new NotFoundHttpException('Chanson introuvable');
+        }
+
+        return $song->title;
+    }
+
+    private function resolveSetlist(string $setlistId, BandSpace $bandSpace): string
+    {
+        $setlist = $this->setlistRepository->findOneByIdAndBandSpace($setlistId, $bandSpace);
+        if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
+            throw new NotFoundHttpException('Setlist introuvable');
+        }
+
+        return $setlist->name;
     }
 }

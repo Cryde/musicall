@@ -6,55 +6,48 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\ApiResource\BandSpace\File\BandSpaceFileUpload;
-use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileAttachment;
-use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Entity\BandSpace\BandSpaceFileVersion;
-use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
-use App\Repository\BandSpace\BandSpaceFileTagRepository;
-use App\Repository\BandSpace\BandSpaceFolderRepository;
-use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
+use App\Repository\BandSpace\BandSpaceFolderRepository;
+use App\Repository\BandSpace\BandSpaceFileTagRepository;
+use App\Repository\BandSpace\SongRepository;
+use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
-use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @implements ProcessorInterface<BandSpaceFileUpload, BandSpaceFileResource>
  */
-readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
+readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SongRepository $songRepository,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFileTagRepository $tagRepository,
         private BandSpaceFileQuotaService $quotaService,
         private BandSpaceActivityRecorder $activityRecorder,
         private BandSpaceFileBuilder $fileBuilder,
-        private ValidatorInterface $validator,
         private Security $security,
         private RequestStack $requestStack,
-        #[Target('band_space_file_upload')]
-        private RateLimiterFactoryInterface $uploadLimiter,
     ) {
     }
 
@@ -66,9 +59,12 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        $this->uploadLimiter->create($user->id)->consume()->ensureAccepted();
-
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+
+        $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['songId'], $bandSpace);
+        if (!$song instanceof \App\Entity\BandSpace\Song) {
+            throw new NotFoundHttpException('Chanson introuvable');
+        }
 
         $upload = $data->uploadedFile;
         if ($upload === null) {
@@ -91,29 +87,18 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
 
         $folder = null;
         if ($data->folderId !== null && $data->folderId !== '') {
-            $folder = $this->resolveFolder($data->folderId, $bandSpace);
-        }
-
-        $attachedSourceType = $data->attachedSourceType ?: null;
-        $attachedSourceId = null;
-        if ($attachedSourceType !== null) {
-            if (!in_array($attachedSourceType, BandSpaceFileSourceTypes::ALL, true)) {
-                throw new BadRequestHttpException(sprintf('Type de source attaché invalide : %s', $attachedSourceType));
+            $folder = $this->folderRepository->find($data->folderId);
+            if ($folder === null || $folder->bandSpace->id !== $bandSpace->id) {
+                throw new BadRequestHttpException('Dossier introuvable dans ce Band Space');
             }
-            $rawSourceId = $data->attachedSourceId;
-            if ($rawSourceId === null || $rawSourceId === '') {
-                throw new BadRequestHttpException('attachedSourceId est requis quand attachedSourceType est défini');
-            }
-            $violations = $this->validator->validate($rawSourceId, [new Assert\Uuid()]);
-            if (count($violations) > 0) {
-                throw new BadRequestHttpException('attachedSourceId doit être un UUID valide');
-            }
-            $attachedSourceId = $rawSourceId;
         }
 
         $tags = [];
         if (count($data->tagIds) > 0) {
-            $tags = $this->resolveTags($data->tagIds, $bandSpace);
+            $tags = $this->tagRepository->findBy(['id' => $data->tagIds, 'bandSpace' => $bandSpace]);
+            if (count($tags) !== count(array_unique($data->tagIds))) {
+                throw new BadRequestHttpException('Une ou plusieurs étiquettes sont invalides pour ce Band Space');
+            }
         }
 
         $file = new BandSpaceFile();
@@ -133,18 +118,15 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
         $version->size = $size;
         $version->setUploadedFile($upload);
 
+        $attachment = new BandSpaceFileAttachment();
+        $attachment->bandSpaceFile = $file;
+        $attachment->sourceType = 'song';
+        $attachment->sourceId = Uuid::fromString((string) $song->id);
+        $attachment->attachedBy = $user;
+
         $this->entityManager->persist($file);
         $this->entityManager->persist($version);
-
-        if ($attachedSourceType !== null) {
-            $attachment = new BandSpaceFileAttachment();
-            $attachment->bandSpaceFile = $file;
-            $attachment->sourceType = $attachedSourceType;
-            $attachment->sourceId = Uuid::fromString($attachedSourceId);
-            $attachment->attachedBy = $user;
-            $this->entityManager->persist($attachment);
-        }
-
+        $this->entityManager->persist($attachment);
         $this->entityManager->flush();
 
         $file->currentVersion = $version;
@@ -153,12 +135,39 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
             $bandSpace,
             BandSpaceModule::File,
             BandSpaceFileActivityType::Uploaded,
-            resourceId: $file->id !== null ? (string) $file->id : null,
+            resourceId: (string) $file->id,
             actor: $user,
             payload: [
                 'original_name' => $file->originalName,
                 'size' => $size,
                 'mime_type' => $mimeType,
+            ],
+        );
+
+        // File feed: "this file was attached to song X" - payload describes the SOURCE.
+        $this->activityRecorder->record(
+            $bandSpace,
+            BandSpaceModule::File,
+            BandSpaceFileActivityType::Attached,
+            resourceId: (string) $file->id,
+            actor: $user,
+            payload: [
+                'source_type' => 'song',
+                'source_id' => (string) $song->id,
+                'source_label' => $song->title,
+            ],
+        );
+
+        // Setlist feed: "a file was attached to this song" - payload describes the FILE.
+        $this->activityRecorder->record(
+            $bandSpace,
+            BandSpaceModule::Setlist,
+            BandSpaceSetlistActivityType::SongFileAttached,
+            resourceId: (string) $song->id,
+            actor: $user,
+            payload: [
+                'file_id' => (string) $file->id,
+                'original_name' => $file->originalName,
             ],
         );
 
@@ -172,30 +181,5 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
         }
 
         return $this->fileBuilder->buildItem($file, versionCount: 1);
-    }
-
-    private function resolveFolder(string $folderId, BandSpace $bandSpace): BandSpaceFolder
-    {
-        $folder = $this->folderRepository->find($folderId);
-        if ($folder === null || $folder->bandSpace->id !== $bandSpace->id) {
-            throw new BadRequestHttpException('Dossier introuvable dans ce Band Space');
-        }
-
-        return $folder;
-    }
-
-    /**
-     * @param string[] $tagIds
-     *
-     * @return BandSpaceFileTag[]
-     */
-    private function resolveTags(array $tagIds, BandSpace $bandSpace): array
-    {
-        $tags = $this->tagRepository->findBy(['id' => $tagIds, 'bandSpace' => $bandSpace]);
-        if (count($tags) !== count(array_unique($tagIds))) {
-            throw new BadRequestHttpException('Une ou plusieurs étiquettes sont invalides pour ce Band Space');
-        }
-
-        return $tags;
     }
 }

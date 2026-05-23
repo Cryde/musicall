@@ -47,6 +47,8 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
+                ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
+                ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
             ],
         ]);
     }
@@ -152,6 +154,8 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
+                ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
+                ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
             ],
         ]);
     }
@@ -173,6 +177,18 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
         $finance1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
         BandSpaceFileAttachmentFactory::createOne([
             'bandSpaceFile' => $finance1, 'sourceType' => 'finance', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
+        $song1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $song1, 'sourceType' => 'song', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
+        $setlist1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $setlist1, 'sourceType' => 'setlist', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
+        ]);
+        $setlist2 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $setlist2, 'sourceType' => 'setlist', 'sourceId' => Uuid::uuid4(), 'attachedBy' => $user,
         ]);
         // Archived attached file — must not count
         $archived = BandSpaceFileFactory::new([
@@ -207,6 +223,8 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 2],
                 ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 1],
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
+                ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 1],
+                ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 2],
             ],
         ]);
     }

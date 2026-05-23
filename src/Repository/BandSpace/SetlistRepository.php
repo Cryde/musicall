@@ -53,6 +53,25 @@ class SetlistRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $ids
+     * @return Setlist[]
+     */
+    public function findByIdsAndBandSpace(array $ids, BandSpace $bandSpace): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->where('s.id IN (:ids)')
+            ->andWhere('s.bandSpace = :bandSpace')
+            ->setParameter('ids', $ids)
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Single aggregate query - sum of (durationOverride OR song.referenceDuration OR 0).
      */
     public function totalDurationSeconds(Setlist $setlist): int

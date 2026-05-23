@@ -202,6 +202,12 @@ const emptyMessage = computed(() => {
   if (filesStore.activeFolderId === 'virtual:note') {
     return 'Aucune image attachée à une note pour le moment.'
   }
+  if (filesStore.activeFolderId === 'virtual:song') {
+    return 'Aucun fichier attaché à une chanson pour le moment.'
+  }
+  if (filesStore.activeFolderId === 'virtual:setlist') {
+    return 'Aucun fichier attaché à une setlist pour le moment.'
+  }
   if (filesStore.activeFolderId !== null) {
     return 'Aucun fichier dans ce dossier — commencez par en téléverser un.'
   }

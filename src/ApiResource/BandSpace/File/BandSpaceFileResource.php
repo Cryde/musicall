@@ -151,6 +151,32 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
             provider: BandSpaceFileItemProvider::class,
             processor: BandSpaceNoteFileDetachProcessor::class,
         ),
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/songs/{songId}/files/{id}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'songId' => new Link(fromClass: self::class, identifiers: ['songId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_song_files_detach',
+            provider: BandSpaceFileItemProvider::class,
+            processor: \App\State\Processor\BandSpace\File\BandSpaceSongFileDetachProcessor::class,
+        ),
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/setlists/{setlistId}/files/{id}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'setlistId' => new Link(fromClass: self::class, identifiers: ['setlistId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_setlist_files_detach',
+            provider: BandSpaceFileItemProvider::class,
+            processor: \App\State\Processor\BandSpace\File\BandSpaceSetlistFileDetachProcessor::class,
+        ),
     ],
     normalizationContext: ['skip_null_values' => false],
 )]

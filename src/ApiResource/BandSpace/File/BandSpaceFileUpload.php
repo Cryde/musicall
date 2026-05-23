@@ -119,6 +119,56 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
             name: 'api_band_space_note_files_attach',
             processor: BandSpaceNoteFileAttachProcessor::class,
         ),
+        new Post(
+            uriTemplate: '/band_spaces/{bandSpaceId}/songs/{songId}/files',
+            inputFormats: ['multipart' => ['multipart/form-data']],
+            openapi: new Operation(
+                tags: ['Band Space File'],
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'uploadedFile' => ['type' => 'string', 'format' => 'binary'],
+                                    'folderId' => ['type' => 'string', 'nullable' => true],
+                                    'tagIds' => ['type' => 'array', 'items' => ['type' => 'string']],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+            security: "is_granted('ROLE_USER')",
+            output: BandSpaceFileResource::class,
+            name: 'api_band_space_song_files_attach',
+            processor: \App\State\Processor\BandSpace\File\BandSpaceSongFileAttachProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/band_spaces/{bandSpaceId}/setlists/{setlistId}/files',
+            inputFormats: ['multipart' => ['multipart/form-data']],
+            openapi: new Operation(
+                tags: ['Band Space File'],
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'uploadedFile' => ['type' => 'string', 'format' => 'binary'],
+                                    'folderId' => ['type' => 'string', 'nullable' => true],
+                                    'tagIds' => ['type' => 'array', 'items' => ['type' => 'string']],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+            security: "is_granted('ROLE_USER')",
+            output: BandSpaceFileResource::class,
+            name: 'api_band_space_setlist_files_attach',
+            processor: \App\State\Processor\BandSpace\File\BandSpaceSetlistFileAttachProcessor::class,
+        ),
     ],
 )]
 class BandSpaceFileUpload
