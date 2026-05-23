@@ -86,6 +86,9 @@ import { formatBytes } from '../../../utils/formatBytes.js'
 
 const route = useRoute()
 const filesStore = useBandFilesStore()
+// Wipe previous space's files-store state synchronously before first render
+// so switching from A's Settings/Storage to B's doesn't flash A's quota.
+filesStore.clear()
 
 const bandSpaceId = computed(() => route.params.id)
 

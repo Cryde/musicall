@@ -91,6 +91,10 @@ const route = useRoute()
 const confirm = useConfirm()
 const toast = useToast()
 const notesStore = useBandSpaceNotesStore()
+// Wipe any previous space's notes synchronously before first render to avoid
+// flashing A's tree when switching to B (the :key on <router-view> remounts
+// this view but the Pinia store keeps A's state until cleared).
+notesStore.clear()
 
 const showCreateDialog = ref(false)
 const createParentId = ref(null)

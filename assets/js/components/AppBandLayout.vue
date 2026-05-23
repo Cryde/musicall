@@ -17,7 +17,9 @@
       <MenuBand />
       <div class="bg-surface-200 dark:bg-surface-950 px-6 py-8 md:px-12 lg:px-20">
         <div class="flex flex-col gap-8">
-          <router-view />
+          <!-- Force remount on space switch so module views never retain
+               another space's bandSpaceId or store state. -->
+          <router-view :key="route.params.id" />
         </div>
       </div>
       <Footer />

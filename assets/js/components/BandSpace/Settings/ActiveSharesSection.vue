@@ -91,6 +91,9 @@ const route = useRoute()
 const filesStore = useBandFilesStore()
 const confirm = useConfirm()
 const toast = useToast()
+// Wipe previous space's files-store state synchronously before first render
+// so switching from A's Settings/Shares to B's doesn't flash A's shares.
+filesStore.clear()
 
 const bandSpaceId = route.params.id
 

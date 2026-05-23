@@ -177,6 +177,9 @@ const toast = useToast()
 const settingsStore = useBandSpaceSettingsStore()
 const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()
+// Wipe previous space's members/invitations synchronously before first
+// render to avoid flashing A's roster when switching to B's Settings.
+settingsStore.clear()
 
 const bandSpaceId = route.params.id
 const inviteIdentifier = ref('')

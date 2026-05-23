@@ -131,6 +131,9 @@ const route = useRoute()
 const router = useRouter()
 const store = useBandSpaceActivityStore()
 const settingsStore = useBandSpaceSettingsStore()
+// Wipe previous space's activity feed synchronously before first render to
+// avoid flashing A's events when switching to B's Settings.
+store.clear()
 
 const bandSpaceId = route.params.id
 

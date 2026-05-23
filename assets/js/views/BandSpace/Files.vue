@@ -161,6 +161,10 @@ const router = useRouter()
 const toast = useToast()
 const filesStore = useBandFilesStore()
 const { currentSpace } = useBandSpaceNavigation()
+// Wipe any previous space's folders/files/tags synchronously before first
+// render. The :key on <router-view> remounts this view on space switch but
+// Pinia keeps A's data until cleared.
+filesStore.clear()
 
 const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 
@@ -239,11 +243,6 @@ function handleFilterUpdate({ key, value }) {
 
   filesStore.fetchFiles(bandSpaceId.value)
 }
-
-watch(bandSpaceId, () => {
-  filesStore.clear()
-  loadAll()
-})
 
 function handleFileSelect(file) {
   router.push({ query: { ...route.query, file: file.id } })

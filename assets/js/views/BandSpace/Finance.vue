@@ -172,6 +172,12 @@ const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
+// Wipe any previous space's categories/entries/summary synchronously before
+// first render so switching from /band/A/finances to /band/B/finances doesn't
+// flash A's numbers. The :key on <router-view> remounts this view but Pinia
+// keeps A's data until cleared. clear() preserves dateFrom/dateTo so the
+// restoreDateRange() call below still applies.
+financeStore.clear()
 
 const today = startOfDay(new Date())
 

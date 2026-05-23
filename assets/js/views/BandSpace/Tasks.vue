@@ -156,6 +156,10 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const tasksStore = useBandTasksStore()
+// Wipe any previous space's board synchronously before first render. The
+// :key on <router-view> remounts this view on space switch but Pinia keeps
+// A's tasks until cleared, which would flash for the duration of B's fetch.
+tasksStore.clear()
 
 const bandSpaceId = route.params.id
 const detailVisible = ref(false)

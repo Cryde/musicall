@@ -200,6 +200,12 @@ import { formatDateCompactWithYear } from '../../utils/date.js'
 const route = useRoute()
 const router = useRouter()
 const agendaStore = useBandAgendaStore()
+// Wipe any previous space's items synchronously before the first render so
+// switching from /band/A/agenda to /band/B/agenda doesn't flash A's entries
+// while B's fetch is in flight. The :key on <router-view> remounts this view
+// on space switch but the Pinia store itself is an app-singleton and keeps
+// A's state until cleared.
+agendaStore.clear()
 
 const dialogVisible = ref(false)
 const dialogItem = ref(null)
@@ -389,16 +395,6 @@ const calendarOptions = computed(() => ({
 onMounted(() => {
   fetchWithCurrentRange()
 })
-
-watch(
-  () => route.params.id,
-  (newId, oldId) => {
-    if (newId && newId !== oldId) {
-      agendaStore.clear()
-      fetchWithCurrentRange()
-    }
-  }
-)
 
 function fetchWithCurrentRange() {
   const fromIso = format(dateFrom.value, "yyyy-MM-dd'T'00:00:00")
