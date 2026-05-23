@@ -9,6 +9,7 @@ export const BAND_SPACE_ROUTES = {
   FILES: 'app_band_files',
   TASKS: 'app_band_tasks',
   FINANCE: 'app_band_finance',
+  SETLIST: 'app_band_setlist',
   PARAMETERS: 'app_band_parameters'
 }
 
@@ -19,6 +20,7 @@ export const SECTION_NAMES = {
   [BAND_SPACE_ROUTES.FILES]: 'Fichiers',
   [BAND_SPACE_ROUTES.TASKS]: 'Tâches',
   [BAND_SPACE_ROUTES.FINANCE]: 'Finances',
+  [BAND_SPACE_ROUTES.SETLIST]: 'Setlists',
   [BAND_SPACE_ROUTES.PARAMETERS]: 'Paramètres',
   [BAND_SPACE_ROUTES.INDEX]: 'Band Space'
 }
@@ -28,6 +30,7 @@ export const NAVIGATION_ITEMS = Object.freeze([
   { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA },
   { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES },
   { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES },
+  { label: 'Setlists', route: BAND_SPACE_ROUTES.SETLIST },
   { label: 'Tâches', route: BAND_SPACE_ROUTES.TASKS },
   { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE },
   { label: 'Paramètres', route: BAND_SPACE_ROUTES.PARAMETERS }

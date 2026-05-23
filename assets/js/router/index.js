@@ -82,6 +82,11 @@ const routes = [
         component: () => import('../views/BandSpace/Finance.vue')
       },
       {
+        path: ':id/setlists',
+        name: 'app_band_setlist',
+        component: () => import('../views/BandSpace/Setlist.vue')
+      },
+      {
         path: ':id/parametres',
         name: 'app_band_parameters',
         component: () => import('../views/BandSpace/Settings.vue')
