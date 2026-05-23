@@ -156,6 +156,58 @@ class TaskRepository extends ServiceEntityRepository
     /**
      * @return Task[]
      */
+    /**
+     * Per-status counts of non-archived tasks, plus an "overdue" count
+     * (status != done AND dueDate < now). Returned shape:
+     *   ['todo' => int, 'in_progress' => int, 'done' => int, 'overdue' => int]
+     *
+     * @return array{todo: int, in_progress: int, done: int, overdue: int}
+     */
+    public function getStatusCounts(BandSpace $bandSpace, DateTimeImmutable $now): array
+    {
+        $rows = $this->createQueryBuilder('t')
+            ->select('t.status, COUNT(t.id) AS row_count')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->groupBy('t.status')
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [
+            TaskStatus::Todo->value => 0,
+            TaskStatus::InProgress->value => 0,
+            TaskStatus::Done->value => 0,
+        ];
+        foreach ($rows as $row) {
+            $status = $row['status'] instanceof TaskStatus ? $row['status']->value : (string) $row['status'];
+            $counts[$status] = (int) $row['row_count'];
+        }
+
+        $overdue = (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->andWhere('t.status != :doneStatus')
+            ->andWhere('t.dueDate IS NOT NULL')
+            ->andWhere('t.dueDate < :now')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('doneStatus', TaskStatus::Done)
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return [
+            'todo' => $counts[TaskStatus::Todo->value],
+            'in_progress' => $counts[TaskStatus::InProgress->value],
+            'done' => $counts[TaskStatus::Done->value],
+            'overdue' => $overdue,
+        ];
+    }
+
+    /**
+     * @return Task[]
+     */
     public function findUpcomingForBand(BandSpace $bandSpace, DateTimeInterface $from, DateTimeInterface $to): array
     {
         return $this->createQueryBuilder('t')
