@@ -1,16 +1,16 @@
 <template>
   <nav class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
     <div class="flex items-center gap-4">
-      <div class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
+      <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" aria-label="Accueil MusicAll">
         <img
-          src="../../../image/logo.png"
-          alt="Logo"
+          src="../../../image/logo-2.png"
+          alt="Logo MusicAll"
           class="h-4 w-auto"
         />
-      </div>
+      </RouterLink>
     </div>
 
-    <span
+    <button
       v-styleclass="{
         selector: '@next',
         enterFromClass: 'hidden',
@@ -19,10 +19,13 @@
         leaveActiveClass: 'animate-fadeout',
         hideOnOutsideClick: true
       }"
-      class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100"
+      class="cursor-pointer block lg:hidden text-surface-900 dark:text-surface-100 bg-transparent border-0 p-0"
+      aria-label="Ouvrir le menu de navigation"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
     >
-      <i class="pi pi-bars text-xl! leading-normal!" />
-    </span>
+      <i class="pi pi-bars text-xl! leading-normal!" aria-hidden="true" />
+    </button>
 
     <div
       ref="mobileMenu"
@@ -49,9 +52,7 @@
         </RouterLink>
       </div>
 
-      <div class="border-t lg:border-t-0 border-surface-200 dark:border-surface-700 py-4 lg:py-0 mt-4 lg:mt-0 px-6 lg:px-0">
-        <UserMenu />
-      </div>
+      <AppNavbarUserCluster @navigate="closeMobileMenu" />
     </div>
   </nav>
 
@@ -60,10 +61,10 @@
 
 <script setup>
 import { ref } from 'vue'
+import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
 import BandNavigation from '../../components/BandSpace/BandNavigation.vue'
 import BandSpaceSelector from '../../components/BandSpace/BandSpaceSelector.vue'
 import CreateBandSpaceModal from '../../components/BandSpace/CreateBandSpaceModal.vue'
-import UserMenu from '../../components/BandSpace/UserMenu.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
