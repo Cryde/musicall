@@ -68,6 +68,7 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 
@@ -85,8 +86,11 @@ const emit = defineEmits(['select', 'open-share', 'open-versions', 'open-rename'
 
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()
+const bandSpaceStore = useBandSpaceStore()
 const confirm = useConfirm()
 const toast = useToast()
+
+const isAdmin = computed(() => bandSpaceStore.getById(props.bandSpaceId)?.role === 'admin')
 
 const contextMenuRef = ref(null)
 const contextMenuFile = ref(null)
@@ -121,15 +125,19 @@ const contextMenuItems = computed(() => {
   if (!f) return []
   const isAttached = (f.attachments?.length ?? 0) > 0
   const deleteLabel = isAttached ? `Supprimer (${contextFileSourceLabel.value})` : 'Supprimer'
-  return [
+  const items = [
     { label: 'Ouvrir', icon: 'pi pi-eye', command: () => emit('select', f) },
     {
       label: 'Télécharger',
       icon: 'pi pi-download',
       command: () => f.download_url && window.open(f.download_url, '_blank', 'noopener')
     },
-    { label: 'Renommer', icon: 'pi pi-pencil', command: () => emit('open-rename', f) },
-    { label: 'Partager', icon: 'pi pi-share-alt', command: () => emit('open-share', f) },
+    { label: 'Renommer', icon: 'pi pi-pencil', command: () => emit('open-rename', f) }
+  ]
+  if (isAdmin.value) {
+    items.push({ label: 'Partager', icon: 'pi pi-share-alt', command: () => emit('open-share', f) })
+  }
+  items.push(
     { label: 'Versions', icon: 'pi pi-history', command: () => emit('open-versions', f) },
     { label: 'Déplacer', icon: 'pi pi-arrows-h', command: () => emit('open-move', f) },
     { separator: true },
@@ -140,7 +148,8 @@ const contextMenuItems = computed(() => {
       disabled: !canDeleteContextFile.value || isAttached,
       command: () => confirmDelete(f)
     }
-  ]
+  )
+  return items
 })
 
 function openContextMenu(event, file) {

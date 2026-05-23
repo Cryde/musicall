@@ -166,6 +166,7 @@
     <template #footer>
       <div class="flex flex-wrap gap-2 justify-end">
         <Button
+          v-if="isAdmin"
           label="Partager"
           icon="pi pi-share-alt"
           size="small"
@@ -205,6 +206,7 @@ import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
+import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import Avatar from '../../User/Avatar.vue'
@@ -221,9 +223,11 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()
+const bandSpaceStore = useBandSpaceStore()
 const confirm = useConfirm()
 
 const file = computed(() => filesStore.activeFile)
+const isAdmin = computed(() => bandSpaceStore.getById(props.bandSpaceId)?.role === 'admin')
 
 const isRenaming = ref(false)
 const renameValue = ref('')
