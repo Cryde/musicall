@@ -16,18 +16,28 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
   // Map for O(1) lookup by ID
   const spacesMap = computed(() => new Map(spaces.value.map((s) => [s.id, s])))
 
+  // Monotonic token to discard stale responses if loadMyBandSpaces is called
+  // multiple times in quick succession (auth state churn, retries).
+  let loadToken = 0
+
   async function loadMyBandSpaces() {
+    const token = ++loadToken
     isLoading.value = true
     error.value = null
 
     try {
-      spaces.value = await bandSpaceApi.getMyBandSpaces()
+      const data = await bandSpaceApi.getMyBandSpaces()
+      if (token !== loadToken) return
+      spaces.value = data
     } catch (e) {
+      if (token !== loadToken) return
       error.value = e.message || 'Failed to load band spaces'
       spaces.value = []
       throw e
     } finally {
-      isLoading.value = false
+      if (token === loadToken) {
+        isLoading.value = false
+      }
     }
   }
 

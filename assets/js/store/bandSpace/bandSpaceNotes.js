@@ -14,6 +14,11 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
   const saveStatus = ref(null) // 'saving' | 'saved' | 'error'
   const loadError = ref(null)
 
+  // Monotonic tokens to discard stale responses if the user navigates fast
+  // (selects another note before the first one loads, or switches bandSpace).
+  let notesLoadToken = 0
+  let selectedNoteLoadToken = 0
+
   const tree = computed(() => buildTree(notes.value))
 
   function buildTree(flatList) {
@@ -45,15 +50,22 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
   }
 
   async function loadNotes(bandSpaceId) {
+    const token = ++notesLoadToken
     isLoading.value = true
     loadError.value = null
+    notes.value = []
     try {
-      notes.value = await bandSpaceNotesApi.getNotes(bandSpaceId)
+      const data = await bandSpaceNotesApi.getNotes(bandSpaceId)
+      if (token !== notesLoadToken) return
+      notes.value = data
     } catch {
+      if (token !== notesLoadToken) return
       notes.value = []
       loadError.value = 'Impossible de charger les notes'
     } finally {
-      isLoading.value = false
+      if (token === notesLoadToken) {
+        isLoading.value = false
+      }
     }
   }
 
@@ -62,18 +74,25 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
       return
     }
 
+    const token = ++selectedNoteLoadToken
     selectedNoteId.value = noteId
+    selectedNote.value = null
     isLoadingNote.value = true
     loadError.value = null
 
     try {
-      selectedNote.value = await bandSpaceNotesApi.getNote(bandSpaceId, noteId)
+      const data = await bandSpaceNotesApi.getNote(bandSpaceId, noteId)
+      if (token !== selectedNoteLoadToken) return
+      selectedNote.value = data
     } catch {
+      if (token !== selectedNoteLoadToken) return
       selectedNote.value = null
       selectedNoteId.value = null
       loadError.value = 'Impossible de charger la note'
     } finally {
-      isLoadingNote.value = false
+      if (token === selectedNoteLoadToken) {
+        isLoadingNote.value = false
+      }
     }
   }
 

@@ -17,7 +17,13 @@ export const useBandSpaceActivityStore = defineStore('bandSpaceActivity', () => 
     to: null
   })
 
+  // Single monotonic token bumped by every load* call. A stale page request
+  // resolving after a fresh load/filter change is dropped on the floor so it
+  // can't append to (or replace) the newer page set.
+  let loadToken = 0
+
   async function load(bandSpaceId) {
+    const token = ++loadToken
     isLoading.value = true
     try {
       currentPage.value = 1
@@ -25,10 +31,13 @@ export const useBandSpaceActivityStore = defineStore('bandSpaceActivity', () => 
         ...filters.value,
         page: 1
       })
+      if (token !== loadToken) return
       items.value = data.member
       totalItems.value = data.totalItems ?? 0
     } finally {
-      isLoading.value = false
+      if (token === loadToken) {
+        isLoading.value = false
+      }
     }
   }
 
@@ -37,6 +46,7 @@ export const useBandSpaceActivityStore = defineStore('bandSpaceActivity', () => 
       return
     }
 
+    const token = ++loadToken
     isLoadingMore.value = true
     try {
       currentPage.value += 1
@@ -44,10 +54,13 @@ export const useBandSpaceActivityStore = defineStore('bandSpaceActivity', () => 
         ...filters.value,
         page: currentPage.value
       })
+      if (token !== loadToken) return
       items.value = [...items.value, ...data.member]
       totalItems.value = data.totalItems ?? totalItems.value
     } finally {
-      isLoadingMore.value = false
+      if (token === loadToken) {
+        isLoadingMore.value = false
+      }
     }
   }
 

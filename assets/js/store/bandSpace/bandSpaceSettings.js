@@ -13,21 +13,39 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
   const isLeaving = ref(false)
   const isCancellingInvitation = ref(false)
 
+  // Monotonic tokens to prevent stale members/invitations from a previous
+  // bandSpace overwriting the current view when the user switches spaces
+  // while a request is in flight.
+  let membersLoadToken = 0
+  let invitationsLoadToken = 0
+
   async function loadMembers(bandSpaceId) {
+    const token = ++membersLoadToken
     isLoadingMembers.value = true
+    members.value = []
     try {
-      members.value = await bandSpaceSettingsApi.getMembers(bandSpaceId)
+      const data = await bandSpaceSettingsApi.getMembers(bandSpaceId)
+      if (token !== membersLoadToken) return
+      members.value = data
     } finally {
-      isLoadingMembers.value = false
+      if (token === membersLoadToken) {
+        isLoadingMembers.value = false
+      }
     }
   }
 
   async function loadInvitations(bandSpaceId) {
+    const token = ++invitationsLoadToken
     isLoadingInvitations.value = true
+    invitations.value = []
     try {
-      invitations.value = await bandSpaceSettingsApi.getInvitations(bandSpaceId)
+      const data = await bandSpaceSettingsApi.getInvitations(bandSpaceId)
+      if (token !== invitationsLoadToken) return
+      invitations.value = data
     } finally {
-      isLoadingInvitations.value = false
+      if (token === invitationsLoadToken) {
+        isLoadingInvitations.value = false
+      }
     }
   }
 

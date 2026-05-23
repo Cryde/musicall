@@ -25,6 +25,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   const activeEntry = ref(null)
   let entriesRequestId = 0
   let summaryRequestId = 0
+  let categoriesRequestId = 0
 
   const categoryTree = computed(() => buildTree(categories.value))
 
@@ -72,18 +73,22 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   }
 
   async function loadCategories(bandSpaceId) {
+    const requestId = ++categoriesRequestId
     const isInitialLoad = categories.value.length === 0
     if (isInitialLoad) {
       isLoading.value = true
     }
     loadError.value = null
     try {
-      categories.value = await bandSpaceFinanceApi.getCategories(bandSpaceId)
+      const data = await bandSpaceFinanceApi.getCategories(bandSpaceId)
+      if (requestId !== categoriesRequestId) return
+      categories.value = data
     } catch {
+      if (requestId !== categoriesRequestId) return
       categories.value = []
       loadError.value = 'Impossible de charger les catégories'
     } finally {
-      if (isInitialLoad) {
+      if (isInitialLoad && requestId === categoriesRequestId) {
         isLoading.value = false
       }
     }
