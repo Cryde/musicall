@@ -4,6 +4,7 @@
       <span v-if="timeText" class="font-medium tabular-nums shrink-0">{{ timeText }}</span>
       <span v-if="priorityIcon" :class="['pi shrink-0', priorityIcon.icon, priorityIcon.color]" :title="priorityIcon.label" />
       <span v-if="financeIcon" :class="['pi text-[10px] shrink-0', financeIcon.icon]" :title="financeIcon.label" />
+      <span v-if="isRecurringOccurrence" class="pi pi-refresh text-[10px] shrink-0 opacity-90" title="Événement récurrent" />
       <span class="truncate font-medium">{{ item.title }}</span>
     </div>
 
@@ -68,6 +69,10 @@ const financeAmount = computed(() => {
 
 const location = computed(() =>
   props.item.source === 'manual' ? (props.item.metadata?.location ?? null) : null
+)
+
+const isRecurringOccurrence = computed(
+  () => props.item.source === 'manual' && props.item.metadata?.is_recurring_occurrence === true
 )
 
 const assignees = computed(() => props.item.metadata?.assignees ?? [])

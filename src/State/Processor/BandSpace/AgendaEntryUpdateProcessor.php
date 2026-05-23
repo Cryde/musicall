@@ -7,6 +7,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\AgendaRecurrenceFrequency;
+use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
@@ -105,6 +107,40 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
             $entry->endDatetime = $entry->endDatetime instanceof \DateTimeImmutable
                 ? new DateTimeImmutable($entry->endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
                 : null;
+        }
+
+        // Each recurrence field accepts an independent PATCH. ValidRecurrence runs against
+        // the merged DTO, so it sees the post-merge state regardless of which field(s) the
+        // caller sent. Clearing the frequency cascades to the other two (the rule is gone).
+        $hasFrequencyKey = array_key_exists('recurrence_frequency', $payload) || array_key_exists('recurrenceFrequency', $payload);
+        $hasUntilKey = array_key_exists('recurrence_until_date', $payload) || array_key_exists('recurrenceUntilDate', $payload);
+        $hasMonthlyModeKey = array_key_exists('recurrence_monthly_mode', $payload) || array_key_exists('recurrenceMonthlyMode', $payload);
+
+        if ($hasFrequencyKey) {
+            if ($data->recurrenceFrequency === null || $data->recurrenceFrequency === '') {
+                $entry->recurrenceFrequency = null;
+                $entry->recurrenceUntilDate = null;
+                $entry->recurrenceMonthlyMode = null;
+            } else {
+                $entry->recurrenceFrequency = AgendaRecurrenceFrequency::from($data->recurrenceFrequency);
+            }
+        }
+
+        if ($hasUntilKey && $entry->recurrenceFrequency !== null) {
+            $entry->recurrenceUntilDate = $data->recurrenceUntilDate !== null && $data->recurrenceUntilDate !== ''
+                ? new DateTimeImmutable($data->recurrenceUntilDate)
+                : null;
+        }
+
+        if ($hasMonthlyModeKey) {
+            if ($entry->recurrenceFrequency === AgendaRecurrenceFrequency::Monthly) {
+                $entry->recurrenceMonthlyMode = $data->recurrenceMonthlyMode !== null && $data->recurrenceMonthlyMode !== ''
+                    ? AgendaRecurrenceMonthlyMode::from($data->recurrenceMonthlyMode)
+                    : null;
+            } else {
+                // Mode only has meaning for Monthly — keep it null on other frequencies.
+                $entry->recurrenceMonthlyMode = null;
+            }
         }
 
         $this->recordChanges(

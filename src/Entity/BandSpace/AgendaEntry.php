@@ -3,6 +3,8 @@
 namespace App\Entity\BandSpace;
 
 use App\Entity\User;
+use App\Enum\BandSpace\AgendaRecurrenceFrequency;
+use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use DateTime;
 use DateTimeImmutable;
@@ -52,6 +54,15 @@ class AgendaEntry
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     public bool $isAllDay = false;
+
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true, enumType: AgendaRecurrenceFrequency::class)]
+    public ?AgendaRecurrenceFrequency $recurrenceFrequency = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $recurrenceUntilDate = null;
+
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true, enumType: AgendaRecurrenceMonthlyMode::class)]
+    public ?AgendaRecurrenceMonthlyMode $recurrenceMonthlyMode = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;

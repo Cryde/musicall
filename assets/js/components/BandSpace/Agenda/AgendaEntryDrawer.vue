@@ -111,6 +111,68 @@
         />
       </div>
 
+      <div class="flex flex-col gap-3 border border-surface-200 dark:border-surface-700 rounded-md p-3">
+        <div class="flex flex-col gap-1">
+          <label for="agenda-recurrence-frequency" class="text-sm font-medium">Répéter</label>
+          <Select
+            id="agenda-recurrence-frequency"
+            v-model="form.recurrenceFrequency"
+            :options="frequencyOptions"
+            option-label="label"
+            option-value="value"
+          />
+        </div>
+
+        <div v-if="form.recurrenceFrequency === 'monthly'" class="flex flex-col gap-2">
+          <span class="text-sm font-medium">Mode mensuel</span>
+          <div class="flex items-center gap-2">
+            <RadioButton
+              v-model="form.recurrenceMonthlyMode"
+              inputId="agenda-recurrence-by-date"
+              name="recurrence-monthly-mode"
+              value="by_date"
+            />
+            <label for="agenda-recurrence-by-date" class="text-sm select-none">
+              {{ monthlyByDateLabel }}
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <RadioButton
+              v-model="form.recurrenceMonthlyMode"
+              inputId="agenda-recurrence-by-weekday"
+              name="recurrence-monthly-mode"
+              value="by_weekday"
+            />
+            <label for="agenda-recurrence-by-weekday" class="text-sm select-none">
+              {{ monthlyByWeekdayLabel }}
+            </label>
+          </div>
+          <small v-if="fieldErrors.recurrenceMonthlyMode" class="text-red-500">
+            {{ fieldErrors.recurrenceMonthlyMode }}
+          </small>
+          <small class="text-surface-500 dark:text-surface-400">
+            Calculé d'après la date de l'événement.
+          </small>
+        </div>
+
+        <div v-if="form.recurrenceFrequency" class="flex flex-col gap-1">
+          <label for="agenda-recurrence-until" class="text-sm font-medium">
+            Jusqu'au <span class="text-red-500">*</span>
+          </label>
+          <DatePicker
+            id="agenda-recurrence-until"
+            v-model="form.recurrenceUntilDate"
+            dateFormat="dd/mm/yy"
+            showIcon
+            :minDate="form.eventDatetime ?? undefined"
+            :class="{ 'p-invalid': fieldErrors.recurrenceUntilDate }"
+          />
+          <small v-if="fieldErrors.recurrenceUntilDate" class="text-red-500">
+            {{ fieldErrors.recurrenceUntilDate }}
+          </small>
+        </div>
+      </div>
+
       <div class="flex flex-wrap items-center gap-2 mt-4">
         <Button
           type="submit"
@@ -148,6 +210,8 @@ import Drawer from 'primevue/drawer'
 import InputMask from 'primevue/inputmask'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
+import RadioButton from 'primevue/radiobutton'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
@@ -169,7 +233,9 @@ const formError = ref(null)
 const fieldErrors = reactive({
   title: null,
   eventDatetime: null,
-  endDatetime: null
+  endDatetime: null,
+  recurrenceUntilDate: null,
+  recurrenceMonthlyMode: null
 })
 
 const form = reactive({
@@ -178,8 +244,60 @@ const form = reactive({
   endDatetime: null,
   isAllDay: false,
   location: '',
-  description: ''
+  description: '',
+  recurrenceFrequency: null,
+  recurrenceUntilDate: null,
+  recurrenceMonthlyMode: null
 })
+
+const frequencyOptions = [
+  { value: null, label: 'Ne se répète pas' },
+  { value: 'daily', label: 'Quotidien' },
+  { value: 'weekly', label: 'Hebdomadaire' },
+  { value: 'monthly', label: 'Mensuel' },
+  { value: 'yearly', label: 'Annuel' }
+]
+
+const WEEKDAY_LABELS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+const ORDINAL_LABELS = ['premier', 'deuxième', 'troisième', 'quatrième', 'cinquième']
+
+const monthlyByDateLabel = computed(() => {
+  if (!form.eventDatetime) return 'Le même jour du mois'
+  return `Le ${form.eventDatetime.getDate()} du mois`
+})
+
+const monthlyByWeekdayLabel = computed(() => {
+  if (!form.eventDatetime) return 'Même jour de la semaine du mois'
+  const weekIndex = Math.floor((form.eventDatetime.getDate() - 1) / 7)
+  const ordinal = ORDINAL_LABELS[weekIndex] ?? `${weekIndex + 1}ème`
+  return `Le ${ordinal} ${WEEKDAY_LABELS[form.eventDatetime.getDay()]} du mois`
+})
+
+// Clearing the frequency must also clear dependent fields so the next submit doesn't
+// drag stale values along.
+watch(
+  () => form.recurrenceFrequency,
+  (newFreq, oldFreq) => {
+    if (newFreq === null) {
+      form.recurrenceUntilDate = null
+      form.recurrenceMonthlyMode = null
+      return
+    }
+    if (oldFreq === null) {
+      // Default the until date to one month after the event so users have something to tweak.
+      if (form.eventDatetime && form.recurrenceUntilDate === null) {
+        const seed = new Date(form.eventDatetime)
+        seed.setMonth(seed.getMonth() + 1)
+        form.recurrenceUntilDate = seed
+      }
+    }
+    if (newFreq !== 'monthly') {
+      form.recurrenceMonthlyMode = null
+    } else if (form.recurrenceMonthlyMode === null) {
+      form.recurrenceMonthlyMode = 'by_date'
+    }
+  }
+)
 
 const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.source === 'manual')
 
@@ -250,6 +368,8 @@ watch(isVisible, (visible) => {
   fieldErrors.title = null
   fieldErrors.eventDatetime = null
   fieldErrors.endDatetime = null
+  fieldErrors.recurrenceUntilDate = null
+  fieldErrors.recurrenceMonthlyMode = null
 
   skipShiftEnd = true
   if (props.agendaItem && props.agendaItem.source === 'manual') {
@@ -261,6 +381,11 @@ watch(isVisible, (visible) => {
     form.isAllDay = !!props.agendaItem.is_all_day
     form.location = props.agendaItem.metadata?.location ?? ''
     form.description = props.agendaItem.description ?? ''
+    form.recurrenceFrequency = props.agendaItem.metadata?.recurrence_frequency ?? null
+    form.recurrenceMonthlyMode = props.agendaItem.metadata?.recurrence_monthly_mode ?? null
+    form.recurrenceUntilDate = props.agendaItem.metadata?.recurrence_until_date
+      ? new Date(`${props.agendaItem.metadata.recurrence_until_date}T00:00:00`)
+      : null
   } else {
     form.title = ''
     form.eventDatetime = props.initialDatetime ? new Date(props.initialDatetime) : null
@@ -268,6 +393,9 @@ watch(isVisible, (visible) => {
     form.isAllDay = false
     form.location = ''
     form.description = ''
+    form.recurrenceFrequency = null
+    form.recurrenceUntilDate = null
+    form.recurrenceMonthlyMode = null
   }
   nextTick(() => {
     skipShiftEnd = false
@@ -279,10 +407,28 @@ async function handleSubmit() {
   fieldErrors.title = null
   fieldErrors.eventDatetime = null
   fieldErrors.endDatetime = null
+  fieldErrors.recurrenceUntilDate = null
+  fieldErrors.recurrenceMonthlyMode = null
 
   if (form.endDatetime && form.eventDatetime && form.endDatetime <= form.eventDatetime) {
     fieldErrors.endDatetime = 'La fin doit être postérieure au début'
     return
+  }
+
+  if (form.recurrenceFrequency !== null) {
+    if (!form.recurrenceUntilDate) {
+      fieldErrors.recurrenceUntilDate = 'Veuillez spécifier une date de fin de récurrence.'
+      return
+    }
+    if (form.eventDatetime && form.recurrenceUntilDate < form.eventDatetime) {
+      fieldErrors.recurrenceUntilDate =
+        'La date de fin doit être postérieure ou égale au premier événement.'
+      return
+    }
+    if (form.recurrenceFrequency === 'monthly' && !form.recurrenceMonthlyMode) {
+      fieldErrors.recurrenceMonthlyMode = 'Veuillez préciser le mode de récurrence mensuelle.'
+      return
+    }
   }
 
   const serializeStart = () => {
@@ -302,7 +448,14 @@ async function handleSubmit() {
     endDatetime: serializeEnd(),
     isAllDay: form.isAllDay,
     location: form.location.trim() === '' ? null : form.location.trim(),
-    description: form.description.trim() === '' ? null : form.description.trim()
+    description: form.description.trim() === '' ? null : form.description.trim(),
+    recurrenceFrequency: form.recurrenceFrequency,
+    recurrenceUntilDate:
+      form.recurrenceFrequency && form.recurrenceUntilDate
+        ? format(form.recurrenceUntilDate, 'yyyy-MM-dd')
+        : null,
+    recurrenceMonthlyMode:
+      form.recurrenceFrequency === 'monthly' ? form.recurrenceMonthlyMode : null
   }
 
   try {
@@ -324,18 +477,28 @@ async function handleSubmit() {
       if (error.violationsByField.end_datetime) {
         fieldErrors.endDatetime = error.violationsByField.end_datetime[0].message
       }
+      if (error.violationsByField.recurrence_until_date) {
+        fieldErrors.recurrenceUntilDate = error.violationsByField.recurrence_until_date[0].message
+      }
+      if (error.violationsByField.recurrence_monthly_mode) {
+        fieldErrors.recurrenceMonthlyMode =
+          error.violationsByField.recurrence_monthly_mode[0].message
+      }
     }
     formError.value = error?.message ?? 'Impossible d’enregistrer l’événement'
   }
 }
 
 function handleDelete() {
+  const isRecurring = props.agendaItem?.metadata?.is_recurring_occurrence === true
   confirm.require({
-    message: 'Es-tu sûr de vouloir supprimer cet événement ?',
-    header: 'Confirmer la suppression',
+    message: isRecurring
+      ? 'Cet événement est récurrent. Toutes les occurrences (passées et futures) seront supprimées. Continuer ?'
+      : 'Es-tu sûr de vouloir supprimer cet événement ?',
+    header: isRecurring ? 'Supprimer la série ?' : 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
-    acceptLabel: 'Supprimer',
+    acceptLabel: isRecurring ? 'Supprimer la série' : 'Supprimer',
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {

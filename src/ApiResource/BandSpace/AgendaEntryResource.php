@@ -14,6 +14,7 @@ use App\State\Processor\BandSpace\AgendaEntryDeleteProcessor;
 use App\State\Processor\BandSpace\AgendaEntryUpdateProcessor;
 use App\State\Provider\BandSpace\AgendaEntryCollectionProvider;
 use App\State\Provider\BandSpace\AgendaEntryItemProvider;
+use App\Validator\BandSpace\Agenda\ValidRecurrence;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
@@ -68,6 +69,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     normalizationContext: ['skip_null_values' => false],
 )]
+#[ValidRecurrence]
 class AgendaEntryResource
 {
     #[ApiProperty(identifier: true)]
@@ -92,6 +94,12 @@ class AgendaEntryResource
     public ?string $endDatetime = null;
 
     public bool $isAllDay = false;
+
+    public ?string $recurrenceFrequency = null;
+
+    public ?string $recurrenceUntilDate = null;
+
+    public ?string $recurrenceMonthlyMode = null;
 
     public ?string $creatorId = null;
     public ?string $creatorUsername = null;

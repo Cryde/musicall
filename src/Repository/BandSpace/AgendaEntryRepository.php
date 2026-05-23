@@ -23,15 +23,21 @@ class AgendaEntryRepository extends ServiceEntityRepository
      */
     public function findUpcomingForBand(BandSpace $bandSpace, DateTimeInterface $from, DateTimeInterface $to): array
     {
-        // Overlap semantics: an entry intersects [from, to] iff it starts no later than `to`
-        // and its effective end (endDatetime, falling back to eventDatetime for point events)
-        // is no earlier than `from`.
+        // Two overlap semantics in one query:
+        //  - One-off entries (recurrenceFrequency IS NULL): the entry intersects [from, to] when it
+        //    starts no later than `to` and its effective end (endDatetime, fallback eventDatetime) is
+        //    no earlier than `from`.
+        //  - Recurring entries: the *rule* overlaps [from, to] when the first occurrence is no later
+        //    than `to` AND the recurrence horizon (recurrenceUntilDate) is no earlier than `from`. The
+        //    aggregator expands the actual occurrences afterwards.
         return $this->createQueryBuilder('a')
             ->addSelect('c')
             ->leftJoin('a.creator', 'c')
             ->where('a.bandSpace = :bandSpace')
-            ->andWhere('a.eventDatetime <= :to')
-            ->andWhere('COALESCE(a.endDatetime, a.eventDatetime) >= :from')
+            ->andWhere(
+                '(a.recurrenceFrequency IS NULL AND a.eventDatetime <= :to AND COALESCE(a.endDatetime, a.eventDatetime) >= :from)' .
+                ' OR (a.recurrenceFrequency IS NOT NULL AND a.eventDatetime <= :to AND a.recurrenceUntilDate >= :from)'
+            )
             ->setParameter('bandSpace', $bandSpace)
             ->setParameter('from', $from)
             ->setParameter('to', $to)

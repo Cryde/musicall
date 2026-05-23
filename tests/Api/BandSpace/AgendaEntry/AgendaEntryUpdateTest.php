@@ -58,6 +58,9 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-20T18:30:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -104,6 +107,9 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -151,6 +157,9 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => '2026-06-15T23:00:00+00:00',
             'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -202,6 +211,9 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T20:00:00+00:00',
             'end_datetime' => null,
             'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -292,6 +304,9 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'event_datetime' => '2026-06-15T00:00:00+00:00',
             'end_datetime' => '2026-06-17T00:00:00+00:00',
             'is_all_day' => true,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
             'creator_id' => $user->id,
             'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -352,6 +367,147 @@ class AgendaEntryUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_update_only_recurrence_until_date_extends_existing_series(): void
+    {
+        // Important #1 regression guard: a PATCH that touches only `recurrence_until_date`
+        // (without `recurrence_frequency`) must persist on an already-recurring entry.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-01-04 18:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-06-30'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['recurrenceUntilDate' => '2026-12-31'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-01-04T18:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => 'weekly',
+            'recurrence_until_date' => '2026-12-31',
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_update_only_monthly_mode_switches_mode_on_monthly_series(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Réunion mensuelle',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-01-05 19:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Monthly,
+            'recurrenceMonthlyMode' => \App\Enum\BandSpace\AgendaRecurrenceMonthlyMode::ByDate,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-12-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['recurrenceMonthlyMode' => 'by_weekday'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Réunion mensuelle',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-01-05T19:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => 'monthly',
+            'recurrence_until_date' => '2026-12-31',
+            'recurrence_monthly_mode' => 'by_weekday',
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    public function test_update_clears_recurrence_when_frequency_set_to_null(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-01-04 18:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-06-30'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['recurrenceFrequency' => null],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-01-04T18:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
     }
 
     public function test_update_agenda_entry_not_member(): void

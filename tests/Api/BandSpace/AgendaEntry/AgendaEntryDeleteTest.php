@@ -52,6 +52,38 @@ class AgendaEntryDeleteTest extends ApiTestCase
         $this->assertSame(['title' => 'Concert annulé'], $activities[0]->payload);
     }
 
+    public function test_delete_recurring_entry_removes_the_row(): void
+    {
+        // Aggregator expansions are derived from the entity at read time, so once the row is
+        // gone, no occurrence can be expanded. The expansion paths themselves are covered by
+        // AgendaGetCollectionTest — this case just confirms the recurring shape doesn't change
+        // the delete semantics.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new \DateTimeImmutable('2026-01-04 18:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new \DateTimeImmutable('2026-02-28'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $bandSpace));
+    }
+
     public function test_delete_agenda_entry_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

@@ -8,6 +8,8 @@ use App\ApiResource\BandSpace\AgendaEntryCreate;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\AgendaRecurrenceFrequency;
+use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -76,6 +78,15 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         $entry->eventDatetime = $eventDatetime;
         $entry->endDatetime = $endDatetime;
         $entry->isAllDay = $data->isAllDay;
+
+        if ($data->recurrenceFrequency !== null && $data->recurrenceFrequency !== '') {
+            // ValidRecurrence has already accepted the inputs here; tryFrom + parse can't fail.
+            $entry->recurrenceFrequency = AgendaRecurrenceFrequency::from($data->recurrenceFrequency);
+            $entry->recurrenceUntilDate = new DateTimeImmutable((string) $data->recurrenceUntilDate);
+            if ($entry->recurrenceFrequency === AgendaRecurrenceFrequency::Monthly) {
+                $entry->recurrenceMonthlyMode = AgendaRecurrenceMonthlyMode::from((string) $data->recurrenceMonthlyMode);
+            }
+        }
 
         $this->entityManager->persist($entry);
         $this->entityManager->flush();

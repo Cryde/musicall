@@ -86,7 +86,14 @@ class AgendaGetCollectionTest extends ApiTestCase
                     'is_all_day' => false,
                     'title' => 'Répétition',
                     'description' => 'Préparer le set',
-                    'metadata' => ['location' => 'Studio'],
+                    'metadata' => [
+                        'location' => 'Studio',
+                        'is_recurring_occurrence' => false,
+                        'recurrence_frequency' => null,
+                        'recurrence_monthly_mode' => null,
+                        'recurrence_until_date' => null,
+                        'series_id' => null,
+                    ],
                 ],
                 [
                     '@id' => '/api/agenda_items/id=' . $taskId . ';bandSpaceId=' . $bandSpace->id,
@@ -416,6 +423,294 @@ class AgendaGetCollectionTest extends ApiTestCase
         $payload = $this->getResponseAsArray();
         $this->assertSame(1, $payload['totalItems']);
         $this->assertSame('Demain', $payload['member'][0]['title']);
+    }
+
+    public function test_weekly_recurrence_expanded_within_window(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        // First occurrence is before the window; rule must still produce occurrences inside it.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => 'Studio',
+            'eventDatetime' => new DateTimeImmutable('2026-01-04 18:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-02-28'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-15&to=2026-02-15',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        // `to=2026-02-15` parses to 00:00:00; the 18:00 occurrence on that day lies past it.
+        // Expansions inside [2026-01-15T00:00, 2026-02-15T00:00] from start 2026-01-04 weekly:
+        // 2026-01-18, 2026-01-25, 2026-02-01, 2026-02-08 (all at 18:00).
+        $metadata = [
+            'location' => 'Studio',
+            'is_recurring_occurrence' => true,
+            'recurrence_frequency' => 'weekly',
+            'recurrence_monthly_mode' => null,
+            'recurrence_until_date' => '2026-02-28',
+            'series_id' => $entry->id,
+        ];
+        $member = function (string $occKey, string $datetime) use ($entry, $bandSpace, $metadata): array {
+            $id = 'manual-' . $entry->id . '-' . $occKey;
+            return [
+                '@id' => '/api/agenda_items/id=' . $id . ';bandSpaceId=' . $bandSpace->id,
+                '@type' => 'AgendaItem',
+                'id' => $id,
+                'band_space_id' => $bandSpace->id,
+                'source' => 'manual',
+                'source_id' => $entry->id,
+                'datetime' => $datetime,
+                'end_datetime' => null,
+                'is_all_day' => false,
+                'title' => 'Répétition',
+                'description' => null,
+                'metadata' => $metadata,
+            ];
+        };
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 4,
+            'member' => [
+                $member('20260118-1800', '2026-01-18T18:00:00+00:00'),
+                $member('20260125-1800', '2026-01-25T18:00:00+00:00'),
+                $member('20260201-1800', '2026-02-01T18:00:00+00:00'),
+                $member('20260208-1800', '2026-02-08T18:00:00+00:00'),
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-15&to=2026-02-15',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_monthly_by_weekday_expansion(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        // 2026-01-05 is the first Monday of January 2026.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Réunion mensuelle',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-01-05 19:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Monthly,
+            'recurrenceMonthlyMode' => \App\Enum\BandSpace\AgendaRecurrenceMonthlyMode::ByWeekday,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-06-30'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-01&to=2026-06-30',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        // First Mondays: 2026-01-05, 2026-02-02, 2026-03-02, 2026-04-06, 2026-05-04, 2026-06-01.
+        $metadata = [
+            'location' => null,
+            'is_recurring_occurrence' => true,
+            'recurrence_frequency' => 'monthly',
+            'recurrence_monthly_mode' => 'by_weekday',
+            'recurrence_until_date' => '2026-06-30',
+            'series_id' => $entry->id,
+        ];
+        $member = function (string $occKey, string $datetime) use ($entry, $bandSpace, $metadata): array {
+            $id = 'manual-' . $entry->id . '-' . $occKey;
+            return [
+                '@id' => '/api/agenda_items/id=' . $id . ';bandSpaceId=' . $bandSpace->id,
+                '@type' => 'AgendaItem',
+                'id' => $id,
+                'band_space_id' => $bandSpace->id,
+                'source' => 'manual',
+                'source_id' => $entry->id,
+                'datetime' => $datetime,
+                'end_datetime' => null,
+                'is_all_day' => false,
+                'title' => 'Réunion mensuelle',
+                'description' => null,
+                'metadata' => $metadata,
+            ];
+        };
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 6,
+            'member' => [
+                $member('20260105-1900', '2026-01-05T19:00:00+00:00'),
+                $member('20260202-1900', '2026-02-02T19:00:00+00:00'),
+                $member('20260302-1900', '2026-03-02T19:00:00+00:00'),
+                $member('20260406-1900', '2026-04-06T19:00:00+00:00'),
+                $member('20260504-1900', '2026-05-04T19:00:00+00:00'),
+                $member('20260601-1900', '2026-06-01T19:00:00+00:00'),
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-01&to=2026-06-30',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_yearly_recurrence_clamps_feb_29(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Anniversaire bissextile',
+            'description' => null,
+            'location' => null,
+            'isAllDay' => true,
+            'eventDatetime' => new DateTimeImmutable('2024-02-29 00:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Yearly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2027-12-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2024-01-01&to=2027-12-31',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $metadata = [
+            'location' => null,
+            'is_recurring_occurrence' => true,
+            'recurrence_frequency' => 'yearly',
+            'recurrence_monthly_mode' => null,
+            'recurrence_until_date' => '2027-12-31',
+            'series_id' => $entry->id,
+        ];
+        $member = function (string $occKey, string $datetime) use ($entry, $bandSpace, $metadata): array {
+            $id = 'manual-' . $entry->id . '-' . $occKey;
+            return [
+                '@id' => '/api/agenda_items/id=' . $id . ';bandSpaceId=' . $bandSpace->id,
+                '@type' => 'AgendaItem',
+                'id' => $id,
+                'band_space_id' => $bandSpace->id,
+                'source' => 'manual',
+                'source_id' => $entry->id,
+                'datetime' => $datetime,
+                'end_datetime' => null,
+                'is_all_day' => true,
+                'title' => 'Anniversaire bissextile',
+                'description' => null,
+                'metadata' => $metadata,
+            ];
+        };
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 4,
+            'member' => [
+                $member('20240229-0000', '2024-02-29T00:00:00+00:00'), // leap year original
+                $member('20250228-0000', '2025-02-28T00:00:00+00:00'), // clamped
+                $member('20260228-0000', '2026-02-28T00:00:00+00:00'), // clamped
+                $member('20270228-0000', '2027-02-28T00:00:00+00:00'), // clamped
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2024-01-01&to=2027-12-31',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_recurrence_preserves_duration_per_occurrence(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        // 2-hour duration: 18:00 -> 20:00. Weekly recurrence: each occurrence must also span 2h.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-01-04 18:00:00', new \DateTimeZone('UTC')),
+            'endDatetime' => new DateTimeImmutable('2026-01-04 20:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-01-25'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-01&to=2026-01-31',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $metadata = [
+            'location' => null,
+            'is_recurring_occurrence' => true,
+            'recurrence_frequency' => 'weekly',
+            'recurrence_monthly_mode' => null,
+            'recurrence_until_date' => '2026-01-25',
+            'series_id' => $entry->id,
+        ];
+        $member = function (string $occKey, string $datetime, string $endDatetime) use ($entry, $bandSpace, $metadata): array {
+            $id = 'manual-' . $entry->id . '-' . $occKey;
+            return [
+                '@id' => '/api/agenda_items/id=' . $id . ';bandSpaceId=' . $bandSpace->id,
+                '@type' => 'AgendaItem',
+                'id' => $id,
+                'band_space_id' => $bandSpace->id,
+                'source' => 'manual',
+                'source_id' => $entry->id,
+                'datetime' => $datetime,
+                'end_datetime' => $endDatetime,
+                'is_all_day' => false,
+                'title' => 'Répétition',
+                'description' => null,
+                'metadata' => $metadata,
+            ];
+        };
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 4,
+            'member' => [
+                $member('20260104-1800', '2026-01-04T18:00:00+00:00', '2026-01-04T20:00:00+00:00'),
+                $member('20260111-1800', '2026-01-11T18:00:00+00:00', '2026-01-11T20:00:00+00:00'),
+                $member('20260118-1800', '2026-01-18T18:00:00+00:00', '2026-01-18T20:00:00+00:00'),
+                $member('20260125-1800', '2026-01-25T18:00:00+00:00', '2026-01-25T20:00:00+00:00'),
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-01&to=2026-01-31',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
     }
 
     public function test_non_member_returns_403(): void

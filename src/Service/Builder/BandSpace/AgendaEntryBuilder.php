@@ -30,6 +30,9 @@ readonly class AgendaEntryBuilder
         $dto->eventDatetime = $entity->eventDatetime->format(\DateTimeInterface::ATOM);
         $dto->endDatetime = $entity->endDatetime?->format(\DateTimeInterface::ATOM);
         $dto->isAllDay = $entity->isAllDay;
+        $dto->recurrenceFrequency = $entity->recurrenceFrequency?->value;
+        $dto->recurrenceUntilDate = $entity->recurrenceUntilDate?->format('Y-m-d');
+        $dto->recurrenceMonthlyMode = $entity->recurrenceMonthlyMode?->value;
         $dto->creatorId = $entity->creator instanceof \App\Entity\User ? (string) $entity->creator->id : null;
         $dto->creatorUsername = $entity->creator?->username;
         $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);

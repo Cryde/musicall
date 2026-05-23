@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\AgendaEntryCreateProcessor;
+use App\Validator\BandSpace\Agenda\ValidRecurrence;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     name: 'api_band_space_agenda_entries_post',
     processor: AgendaEntryCreateProcessor::class,
 )]
+#[ValidRecurrence]
 class AgendaEntryCreate
 {
     #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
@@ -38,4 +40,10 @@ class AgendaEntryCreate
     public ?string $endDatetime = null;
 
     public bool $isAllDay = false;
+
+    public ?string $recurrenceFrequency = null;
+
+    public ?string $recurrenceUntilDate = null;
+
+    public ?string $recurrenceMonthlyMode = null;
 }
