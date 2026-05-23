@@ -54,9 +54,7 @@ onMounted(async () => {
     const from = format(today, "yyyy-MM-dd'T'00:00:00")
     const to = format(addDays(today, WINDOW_DAYS), "yyyy-MM-dd'T'23:59:59")
     const data = await bandSpaceAgendaApi.getAgenda(props.bandSpaceId, { from, to })
-    items.value = [...data]
-      .sort((a, b) => a.datetime.localeCompare(b.datetime))
-      .slice(0, MAX_ITEMS)
+    items.value = [...data].sort((a, b) => a.datetime.localeCompare(b.datetime)).slice(0, MAX_ITEMS)
   } catch {
     error.value = "Impossible de charger l'agenda."
   } finally {

@@ -79,7 +79,5 @@ const balanceClass = computed(() => {
   return 'text-surface-700 dark:text-surface-200'
 })
 
-const paidShare = computed(
-  () => (summary.value?.total_paid ?? 0) > 0
-)
+const paidShare = computed(() => (summary.value?.total_paid ?? 0) > 0)
 </script>
