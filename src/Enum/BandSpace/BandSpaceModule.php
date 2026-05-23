@@ -10,4 +10,5 @@ enum BandSpaceModule: string
     case Agenda = 'agenda';
     case Notes = 'notes';
     case Settings = 'settings';
+    case Setlist = 'setlist';
 }
