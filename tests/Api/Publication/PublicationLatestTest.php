@@ -7,6 +7,8 @@ namespace App\Tests\Api\Publication;
 use App\Entity\Publication;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\Metric\VoteCacheFactory;
+use App\Tests\Factory\Metric\VoteFactory;
 use App\Tests\Factory\Metric\ViewCacheFactory;
 use App\Tests\Factory\Publication\PublicationFactory;
 use App\Tests\Factory\Publication\PublicationSubCategoryFactory;
@@ -84,8 +86,7 @@ class PublicationLatestTest extends ApiTestCase
                     'id'                   => $newest->id,
                     'title'                => 'Newest',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -93,8 +94,7 @@ class PublicationLatestTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -113,8 +113,7 @@ class PublicationLatestTest extends ApiTestCase
                     'id'                   => $middle->id,
                     'title'                => 'Middle',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -122,8 +121,7 @@ class PublicationLatestTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -142,8 +140,7 @@ class PublicationLatestTest extends ApiTestCase
                     'id'                   => $oldest->id,
                     'title'                => 'Oldest',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -151,8 +148,7 @@ class PublicationLatestTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -224,8 +220,7 @@ class PublicationLatestTest extends ApiTestCase
                     'id'                   => $middle->id,
                     'title'                => 'Middle',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -233,8 +228,7 @@ class PublicationLatestTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -299,8 +293,7 @@ class PublicationLatestTest extends ApiTestCase
                     'id'                   => $course->id,
                     'title'                => 'Cours 1',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $courseCategory->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $courseCategory->id,
                         'title'      => 'Cours',
                         'slug'       => 'cours',
@@ -308,8 +301,7 @@ class PublicationLatestTest extends ApiTestCase
                         'is_course'  => true,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -328,6 +320,114 @@ class PublicationLatestTest extends ApiTestCase
                 '@id'   => '/api/publications/latest?count=5&subCategoryType=2',
                 '@type' => 'PartialCollectionView',
             ],
+        ]);
+    }
+
+    public function test_get_latest_publications_batches_user_votes(): void
+    {
+        // Regression guard for the DTO migration: vote resolution must be batched per
+        // request and map correctly to the right item in a multi-row response.
+        $sub = PublicationSubCategoryFactory::new()->asChronique()->create();
+        $author = UserFactory::new()->asAdminUser()->create();
+        $currentUser = UserFactory::new()->asBaseUser()->create();
+
+        $votedCache = VoteCacheFactory::new(['upvoteCount' => 1, 'downvoteCount' => 0])->create();
+        VoteFactory::new([
+            'voteCache' => $votedCache,
+            'user' => $currentUser,
+            'value' => 1,
+            'entityType' => 'app_publication',
+            'identifier' => 'test',
+        ])->create();
+
+        $voted = PublicationFactory::new([
+            'author'              => $author,
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2025-03-01T00:00:00+00:00'),
+            'shortDescription'    => 'Voted',
+            'slug'                => 'voted',
+            'status'              => Publication::STATUS_ONLINE,
+            'subCategory'         => $sub,
+            'title'               => 'Voted',
+            'type'                => Publication::TYPE_TEXT,
+            'viewCache'           => ViewCacheFactory::new(['count' => 0])->create(),
+            'voteCache'           => $votedCache,
+        ])->create();
+        $other = PublicationFactory::new([
+            'author'              => $author,
+            'publicationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2025-02-01T00:00:00+00:00'),
+            'shortDescription'    => 'Other',
+            'slug'                => 'other',
+            'status'              => Publication::STATUS_ONLINE,
+            'subCategory'         => $sub,
+            'title'               => 'Other',
+            'type'                => Publication::TYPE_TEXT,
+            'viewCache'           => ViewCacheFactory::new(['count' => 0])->create(),
+        ])->create();
+
+        $this->client->loginUser($currentUser);
+        $this->client->request('GET', '/api/publications/latest');
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'   => '/api/contexts/Publication',
+            '@id'        => '/api/publications/latest',
+            '@type'      => 'Collection',
+            'member'     => [
+                [
+                    '@id'                  => '/api/publications/voted',
+                    '@type'                => 'Publication',
+                    'id'                   => $voted->id,
+                    'title'                => 'Voted',
+                    'sub_category'         => [
+                        '@type'      => 'SubCategory',
+                        'id'         => $sub->id,
+                        'title'      => 'Chroniques',
+                        'slug'       => 'chroniques',
+                        'type_label' => 'publication',
+                        'is_course'  => false,
+                    ],
+                    'author'               => [
+                        '@type'             => 'Author',
+                        'username'          => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug'                 => 'voted',
+                    'publication_datetime' => '2025-03-01T00:00:00+00:00',
+                    'cover'                => null,
+                    'type_label'           => 'text',
+                    'description'          => 'Voted',
+                    'upvotes'              => 1,
+                    'downvotes'            => 0,
+                    'user_vote'            => 1,
+                ],
+                [
+                    '@id'                  => '/api/publications/other',
+                    '@type'                => 'Publication',
+                    'id'                   => $other->id,
+                    'title'                => 'Other',
+                    'sub_category'         => [
+                        '@type'      => 'SubCategory',
+                        'id'         => $sub->id,
+                        'title'      => 'Chroniques',
+                        'slug'       => 'chroniques',
+                        'type_label' => 'publication',
+                        'is_course'  => false,
+                    ],
+                    'author'               => [
+                        '@type'             => 'Author',
+                        'username'          => 'user_admin',
+                        'deletion_datetime' => null,
+                    ],
+                    'slug'                 => 'other',
+                    'publication_datetime' => '2025-02-01T00:00:00+00:00',
+                    'cover'                => null,
+                    'type_label'           => 'text',
+                    'description'          => 'Other',
+                    'upvotes'              => 0,
+                    'downvotes'            => 0,
+                    'user_vote'            => null,
+                ],
+            ],
+            'totalItems' => 2,
         ]);
     }
 

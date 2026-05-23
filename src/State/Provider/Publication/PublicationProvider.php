@@ -9,8 +9,10 @@ use App\Entity\User;
 use App\Exception\PublicationNotFoundException;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationBuilder;
+use App\Service\Metric\PublicationUserVoteResolver;
 use App\Service\Procedure\Metric\ViewProcedure;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -20,18 +22,19 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 readonly class PublicationProvider implements ProviderInterface
 {
     public function __construct(
-        private PublicationRepository $publicationRepository,
-        private ViewProcedure         $viewProcedure,
-        private RequestStack          $requestStack,
-        private Security              $security,
-        private PublicationBuilder    $publicationBuilder
+        private PublicationRepository        $publicationRepository,
+        private ViewProcedure                $viewProcedure,
+        private RequestStack                 $requestStack,
+        private Security                     $security,
+        private PublicationBuilder           $publicationBuilder,
+        private PublicationUserVoteResolver  $userVoteResolver,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|null|object
     {
         $publication = $this->publicationRepository->findOneBy(['slug' => $uriVariables['slug']]);
-        if (!$publication instanceof \App\Entity\Publication) {
+        if (!$publication instanceof Publication) {
             throw new PublicationNotFoundException('Publication inexistante');
         }
 
@@ -47,11 +50,16 @@ readonly class PublicationProvider implements ProviderInterface
         if ($publication->status === Publication::STATUS_ONLINE) {
             /** @var User $user */
             $user = $this->security->getUser();
-            if (($request = $this->requestStack->getCurrentRequest()) instanceof \Symfony\Component\HttpFoundation\Request) {
+            if (($request = $this->requestStack->getCurrentRequest()) instanceof Request) {
                 $this->viewProcedure->process($publication, $request, $user);
             }
         }
 
-        return $this->publicationBuilder->buildFromEntity($publication);
+        $userVotesByCacheId = $this->userVoteResolver->resolveForPublications([$publication]);
+        $userVote = $publication->voteCache?->id !== null
+            ? ($userVotesByCacheId[$publication->voteCache->id] ?? null)
+            : null;
+
+        return $this->publicationBuilder->buildItem($publication, $userVote);
     }
 }

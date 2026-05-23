@@ -6,24 +6,29 @@ namespace App\State\Provider\Publication;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Publication\PublicationListItem;
 use App\Entity\Publication;
 use App\Entity\Publication\Tag;
 use App\Repository\PublicationRepository;
+use App\Service\Builder\Publication\PublicationListItemBuilder;
+use App\Service\Metric\PublicationUserVoteResolver;
 
 /**
- * @implements ProviderInterface<Publication>
+ * @implements ProviderInterface<PublicationListItem>
  */
 readonly class RelatedPublicationProvider implements ProviderInterface
 {
     private const int RELATED_PUBLICATIONS_LIMIT = 3;
 
     public function __construct(
-        private PublicationRepository $publicationRepository,
+        private PublicationRepository       $publicationRepository,
+        private PublicationListItemBuilder  $publicationListItemBuilder,
+        private PublicationUserVoteResolver $userVoteResolver,
     ) {
     }
 
     /**
-     * @return Publication[]
+     * @return PublicationListItem[]
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
@@ -42,16 +47,20 @@ readonly class RelatedPublicationProvider implements ProviderInterface
         );
 
         if (count($byTag) >= self::RELATED_PUBLICATIONS_LIMIT) {
-            return $this->publicationRepository->findOnlineByIdsOrdered($byTag);
+            $publications = $this->publicationRepository->findOnlineByIdsOrdered($byTag);
+        } else {
+            $fallback = $this->publicationRepository->findRelatedIdsBySubCategory(
+                $publicationId,
+                (int) $publication->subCategory->id,
+                self::RELATED_PUBLICATIONS_LIMIT - count($byTag),
+                $byTag,
+            );
+            $publications = $this->publicationRepository->findOnlineByIdsOrdered(array_merge($byTag, $fallback));
         }
 
-        $fallback = $this->publicationRepository->findRelatedIdsBySubCategory(
-            $publicationId,
-            (int) $publication->subCategory->id,
-            self::RELATED_PUBLICATIONS_LIMIT - count($byTag),
-            $byTag,
+        return $this->publicationListItemBuilder->buildList(
+            $publications,
+            $this->userVoteResolver->resolveForPublications($publications),
         );
-
-        return $this->publicationRepository->findOnlineByIdsOrdered(array_merge($byTag, $fallback));
     }
 }

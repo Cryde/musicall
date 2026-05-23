@@ -6,12 +6,15 @@ namespace App\State\Provider\Publication;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Publication\PublicationListItem;
 use App\Repository\PublicationRepository;
+use App\Service\Builder\Publication\PublicationListItemBuilder;
+use App\Service\Metric\PublicationUserVoteResolver;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
- * @implements ProviderInterface<\App\Entity\Publication>
+ * @implements ProviderInterface<PublicationListItem>
  */
 readonly class LatestPublicationsProvider implements ProviderInterface
 {
@@ -19,17 +22,19 @@ readonly class LatestPublicationsProvider implements ProviderInterface
     private const int CACHE_TTL = 900; // 15 minutes
 
     public function __construct(
-        private PublicationRepository $publicationRepository,
-        private CacheInterface        $cache,
+        private PublicationRepository       $publicationRepository,
+        private PublicationListItemBuilder  $publicationListItemBuilder,
+        private PublicationUserVoteResolver $userVoteResolver,
+        private CacheInterface              $cache,
     ) {
     }
 
     /**
      * Query parameter bounds are enforced by the operation-level constraints on
-     * `LatestPublication` (Assert\Positive, Assert\Range); the provider trusts the
-     * sanitised values and only handles defaults / absence.
+     * the GetCollection operation (Assert\Positive, Assert\Range); the provider
+     * trusts the sanitised values and only handles defaults / absence.
      *
-     * @return \App\Entity\Publication[]
+     * @return PublicationListItem[]
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
@@ -49,6 +54,8 @@ readonly class LatestPublicationsProvider implements ProviderInterface
 
         $cacheKey = sprintf('latest_publications_%d_%d_%d', $excludeId ?? 0, $limit, $subCategoryType ?? 0);
 
+        // Cache the list of ids only; vote resolution stays per-request so it
+        // can't leak across users.
         $ids = $this->cache->get(
             $cacheKey,
             function (ItemInterface $item) use ($excludeId, $limit, $subCategoryType): array {
@@ -58,6 +65,11 @@ readonly class LatestPublicationsProvider implements ProviderInterface
             }
         );
 
-        return $this->publicationRepository->findOnlineByIdsOrdered($ids);
+        $publications = $this->publicationRepository->findOnlineByIdsOrdered($ids);
+
+        return $this->publicationListItemBuilder->buildList(
+            $publications,
+            $this->userVoteResolver->resolveForPublications($publications),
+        );
     }
 }

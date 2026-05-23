@@ -6,7 +6,7 @@ namespace App\ApiResource\Admin\Publication;
 
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\Entity\Publication;
+use App\ApiResource\Publication\PublicationListItem;
 use App\State\Provider\Admin\Publication\AdminPendingPublicationProvider;
 
 #[GetCollection(
@@ -14,8 +14,9 @@ use App\State\Provider\Admin\Publication\AdminPendingPublicationProvider;
     openapi: new Operation(tags: ['Admin Publications']),
     shortName: 'Publication',
     paginationEnabled: false,
-    normalizationContext: ['groups' => [Publication::LIST], 'skip_null_values' => false],
+    normalizationContext: ['skip_null_values' => false],
     security: 'is_granted("ROLE_ADMIN")',
+    output: PublicationListItem::class,
     name: 'api_admin_publications_pending_list',
     provider: AdminPendingPublicationProvider::class,
 )]

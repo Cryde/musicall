@@ -30,7 +30,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(operations: [])]
 class Publication implements ViewableInterface, VotableInterface, SluggableEntityInterface
 {
-    final const LIST_ITEMS_PER_PAGE = 12;
     final const ITEM = 'PUBLICATION_ITEM';
     final const LIST = 'PUBLICATION_LIST';
 

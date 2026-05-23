@@ -9,8 +9,10 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Publication\PublicationListItem;
+use App\Entity\Publication;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationListItemBuilder;
+use App\Service\Metric\PublicationUserVoteResolver;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
@@ -22,6 +24,7 @@ readonly class PublicationCollectionProvider implements ProviderInterface
         private PublicationRepository       $publicationRepository,
         private PublicationListItemBuilder  $publicationListItemBuilder,
         private Pagination                  $pagination,
+        private PublicationUserVoteResolver $userVoteResolver,
     ) {
     }
 
@@ -44,8 +47,13 @@ readonly class PublicationCollectionProvider implements ProviderInterface
         $paginator = new Paginator($qb->getQuery());
         $totalItems = count($paginator);
 
+        /** @var Publication[] $publications */
         $publications = iterator_to_array($paginator);
-        $dtos = $this->publicationListItemBuilder->buildFromEntities($publications);
+
+        $dtos = $this->publicationListItemBuilder->buildList(
+            $publications,
+            $this->userVoteResolver->resolveForPublications($publications),
+        );
 
         return new TraversablePaginator(
             new \ArrayIterator($dtos),

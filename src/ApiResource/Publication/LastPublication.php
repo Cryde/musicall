@@ -6,7 +6,6 @@ namespace App\ApiResource\Publication;
 
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\Entity\Publication;
 use App\State\Provider\Publication\LastPublicationsProvider;
 
 #[GetCollection(
@@ -15,7 +14,8 @@ use App\State\Provider\Publication\LastPublicationsProvider;
     openapi: new Operation(tags: ['Publications']),
     paginationEnabled: false,
     priority: 1,
-    normalizationContext: ['groups' => [Publication::LIST], 'skip_null_values' => false],
+    normalizationContext: ['skip_null_values' => false],
+    output: PublicationListItem::class,
     name: 'api_publication_get_last',
     provider: LastPublicationsProvider::class,
 )]

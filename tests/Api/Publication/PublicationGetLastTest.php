@@ -137,8 +137,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub5->id,
                     'title'                => 'Publication 5',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -146,8 +145,7 @@ class PublicationGetLastTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -166,8 +164,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub4->id,
                     'title'                => 'Publication 4',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -175,8 +172,7 @@ class PublicationGetLastTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -195,8 +191,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub3->id,
                     'title'                => 'Publication 3',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -204,8 +199,7 @@ class PublicationGetLastTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -224,8 +218,7 @@ class PublicationGetLastTest extends ApiTestCase
                     'id'                   => $pub2->id,
                     'title'                => 'Publication 2',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -233,8 +226,7 @@ class PublicationGetLastTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],

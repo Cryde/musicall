@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Repository\PublicationRepository;
 use App\Service\Builder\Publication\PublicationBuilder;
+use App\Service\Metric\PublicationUserVoteResolver;
 
 /**
  * @implements ProviderInterface<object>
@@ -13,8 +14,9 @@ use App\Service\Builder\Publication\PublicationBuilder;
 readonly class PublicationSearchProvider implements ProviderInterface
 {
     public function __construct(
-        private PublicationRepository $publicationRepository,
-        private PublicationBuilder $publicationBuilder
+        private PublicationRepository       $publicationRepository,
+        private PublicationBuilder          $publicationBuilder,
+        private PublicationUserVoteResolver $userVoteResolver,
     ) {
     }
 
@@ -26,6 +28,9 @@ readonly class PublicationSearchProvider implements ProviderInterface
         }
         $publicationEntities = $this->publicationRepository->getBySearchTerm($term);
 
-        return $this->publicationBuilder->buildFromEntities($publicationEntities);
+        return $this->publicationBuilder->buildList(
+            $publicationEntities,
+            $this->userVoteResolver->resolveForPublications($publicationEntities),
+        );
     }
 }

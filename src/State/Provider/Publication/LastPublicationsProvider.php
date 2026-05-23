@@ -6,25 +6,35 @@ namespace App\State\Provider\Publication;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Publication\PublicationListItem;
 use App\Repository\PublicationRepository;
+use App\Service\Builder\Publication\PublicationListItemBuilder;
+use App\Service\Metric\PublicationUserVoteResolver;
 
 /**
- * @implements ProviderInterface<object>
+ * @implements ProviderInterface<PublicationListItem>
  */
 readonly class LastPublicationsProvider implements ProviderInterface
 {
     private const LAST_PUBLICATIONS_LIMIT = 4;
 
     public function __construct(
-        private PublicationRepository $publicationRepository,
+        private PublicationRepository       $publicationRepository,
+        private PublicationListItemBuilder  $publicationListItemBuilder,
+        private PublicationUserVoteResolver $userVoteResolver,
     ) {
     }
 
     /**
-     * @return \App\Entity\Publication[]
+     * @return PublicationListItem[]
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        return $this->publicationRepository->findLastPublications(self::LAST_PUBLICATIONS_LIMIT);
+        $publications = $this->publicationRepository->findLastPublications(self::LAST_PUBLICATIONS_LIMIT);
+
+        return $this->publicationListItemBuilder->buildList(
+            $publications,
+            $this->userVoteResolver->resolveForPublications($publications),
+        );
     }
 }

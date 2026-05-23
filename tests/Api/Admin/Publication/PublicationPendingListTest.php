@@ -66,8 +66,7 @@ class PublicationPendingListTest extends ApiTestCase
                     'id'                   => $publication->id,
                     'title'                => 'Titre de la publication',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $sub->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $sub->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -75,9 +74,8 @@ class PublicationPendingListTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $admin->id,
-                        '@type'    => 'User',
-                        'username' => 'user_admin',
+                        '@type'             => 'Author',
+                        'username'          => 'user_admin',
                         'deletion_datetime' => null,
                     ],
                     'slug'                 => 'titre-de-la-publication',

@@ -6,7 +6,6 @@ namespace App\ApiResource\Publication;
 
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\Entity\Publication;
 use App\State\Provider\Publication\RelatedPublicationProvider;
 
 #[GetCollection(
@@ -14,7 +13,8 @@ use App\State\Provider\Publication\RelatedPublicationProvider;
     uriTemplate: '/publications/{slug}/related',
     openapi: new Operation(tags: ['Publications']),
     paginationEnabled: false,
-    normalizationContext: ['groups' => [Publication::LIST], 'skip_null_values' => false],
+    normalizationContext: ['skip_null_values' => false],
+    output: PublicationListItem::class,
     name: 'api_publication_related',
     provider: RelatedPublicationProvider::class,
 )]

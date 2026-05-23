@@ -2,25 +2,22 @@
 
 namespace App\Service\Builder\Publication;
 
+use App\ApiResource\Publication\Publication;
 use App\ApiResource\Publication\Publication\Author;
-use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Category;
+use App\ApiResource\Publication\Publication\Cover;
 use App\ApiResource\Publication\Publication\Tag;
 use App\ApiResource\Publication\Publication\Thread;
 use App\ApiResource\Publication\Publication\Type;
-use App\ApiResource\Publication\Publication;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
+use App\Entity\Metric\VoteCache;
 use App\Entity\Publication as PublicationEntity;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
 use App\Enum\Publication\PublicationType;
-use App\Repository\Metric\VoteRepository;
-use App\Service\Identifier\RequestIdentifier;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class PublicationBuilder
@@ -29,24 +26,27 @@ readonly class PublicationBuilder
         private UploaderHelper         $uploaderHelper,
         private CacheManager           $cacheManager,
         private HtmlSanitizerInterface $appPublicationSanitizer,
-        private VoteRepository         $voteRepository,
-        private Security               $security,
-        private RequestIdentifier      $requestIdentifier,
-        private RequestStack           $requestStack,
     ) {
     }
 
     /**
-     * @param PublicationEntity[] $publicationEntities
+     * @param PublicationEntity[] $entities
+     * @param array<int, int>     $userVotesByCacheId vote_cache_id => -1|1
      *
      * @return Publication[]
      */
-    public function buildFromEntities(array $publicationEntities): array
+    public function buildList(array $entities, array $userVotesByCacheId = []): array
     {
-        return array_map(fn (PublicationEntity $publicationEntity): Publication => $this->buildFromEntity($publicationEntity), $publicationEntities);
+        return array_map(
+            fn (PublicationEntity $entity): Publication => $this->buildItem(
+                $entity,
+                $entity->voteCache instanceof VoteCache ? ($userVotesByCacheId[$entity->voteCache->id] ?? null) : null,
+            ),
+            $entities,
+        );
     }
 
-    public function buildFromEntity(PublicationEntity $publicationEntity): Publication
+    public function buildItem(PublicationEntity $publicationEntity, ?int $userVote = null): Publication
     {
         $author = $publicationEntity->author;
         $subCategory = $publicationEntity->subCategory;
@@ -77,22 +77,7 @@ readonly class PublicationBuilder
         $voteCache = $publicationEntity->voteCache;
         $publication->upvotes = $voteCache->upvoteCount ?? 0;
         $publication->downvotes = $voteCache->downvoteCount ?? 0;
-
-        if ($voteCache instanceof \App\Entity\Metric\VoteCache) {
-            /** @var User|null $currentUser */
-            $currentUser = $this->security->getUser();
-            if ($currentUser) {
-                $vote = $this->voteRepository->findOneByUserAndVoteCache($currentUser, $voteCache);
-                $publication->userVote = $vote?->value;
-            } else {
-                $request = $this->requestStack->getCurrentRequest();
-                if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
-                    $identifier = $this->requestIdentifier->fromRequest($request);
-                    $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
-                    $publication->userVote = $vote?->value;
-                }
-            }
-        }
+        $publication->userVote = $userVote;
 
         return $publication;
     }

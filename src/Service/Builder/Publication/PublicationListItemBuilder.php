@@ -8,42 +8,39 @@ use App\ApiResource\Publication\PublicationListItem;
 use App\ApiResource\Publication\PublicationListItem\Author;
 use App\ApiResource\Publication\PublicationListItem\SubCategory;
 use App\Entity\Image\PublicationCover;
+use App\Entity\Metric\VoteCache;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
-use App\Repository\Metric\VoteRepository;
-use App\Service\Identifier\RequestIdentifier;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
 readonly class PublicationListItemBuilder
 {
     public function __construct(
-        private UploaderHelper    $uploaderHelper,
-        private CacheManager      $cacheManager,
-        private VoteRepository    $voteRepository,
-        private Security          $security,
-        private RequestIdentifier $requestIdentifier,
-        private RequestStack      $requestStack,
+        private UploaderHelper $uploaderHelper,
+        private CacheManager   $cacheManager,
     ) {
     }
 
     /**
-     * @param Publication[] $publications
+     * @param Publication[]   $publications
+     * @param array<int, int> $userVotesByCacheId vote_cache_id => -1|1
      *
      * @return PublicationListItem[]
      */
-    public function buildFromEntities(array $publications): array
+    public function buildList(array $publications, array $userVotesByCacheId = []): array
     {
         return array_map(
-            fn (Publication $publication): PublicationListItem => $this->buildFromEntity($publication),
+            fn (Publication $publication): PublicationListItem => $this->buildItem(
+                $publication,
+                $publication->voteCache instanceof VoteCache ? ($userVotesByCacheId[$publication->voteCache->id] ?? null) : null,
+            ),
             $publications,
         );
     }
 
-    public function buildFromEntity(Publication $publication): PublicationListItem
+    public function buildItem(Publication $publication, ?int $userVote = null): PublicationListItem
     {
         $item = new PublicationListItem();
         $item->id = (int) $publication->id;
@@ -61,7 +58,7 @@ readonly class PublicationListItemBuilder
         $voteCache = $publication->voteCache;
         $item->upvotes = $voteCache->upvoteCount ?? 0;
         $item->downvotes = $voteCache->downvoteCount ?? 0;
-        $item->userVote = $this->resolveUserVote($publication);
+        $item->userVote = $userVote;
 
         return $item;
     }
@@ -91,32 +88,6 @@ readonly class PublicationListItemBuilder
     {
         if ($cover && $path = $this->uploaderHelper->asset($cover, 'imageFile')) {
             return $this->cacheManager->getBrowserPath($path, 'publication_cover_300x300');
-        }
-
-        return null;
-    }
-
-    private function resolveUserVote(Publication $publication): ?int
-    {
-        $voteCache = $publication->voteCache;
-        if (!$voteCache instanceof \App\Entity\Metric\VoteCache) {
-            return null;
-        }
-
-        /** @var User|null $user */
-        $user = $this->security->getUser();
-        if ($user) {
-            $vote = $this->voteRepository->findOneByUserAndVoteCache($user, $voteCache);
-
-            return $vote?->value;
-        }
-
-        $request = $this->requestStack->getCurrentRequest();
-        if ($request instanceof \Symfony\Component\HttpFoundation\Request) {
-            $identifier = $this->requestIdentifier->fromRequest($request);
-            $vote = $this->voteRepository->findOneByIdentifierAndVoteCache($identifier, $voteCache);
-
-            return $vote?->value;
         }
 
         return null;

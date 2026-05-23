@@ -95,8 +95,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $related1->id,
                     'title'                => 'Related Publication 1',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $subChronique->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -104,8 +103,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -124,8 +122,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $related2->id,
                     'title'                => 'Related Publication 2',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $subChronique->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -133,8 +130,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -244,8 +240,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $twoShared->id,
                     'title'                => 'Two Shared Tags',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subNews->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $subNews->id,
                         'title'      => 'News',
                         'slug'       => 'news',
@@ -253,8 +248,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -273,8 +267,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $oneShared->id,
                     'title'                => 'One Shared Tag',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subNews->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $subNews->id,
                         'title'      => 'News',
                         'slug'       => 'news',
@@ -282,8 +275,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
@@ -302,8 +294,7 @@ class PublicationRelatedTest extends ApiTestCase
                     'id'                   => $categoryFallback->id,
                     'title'                => 'Category Fallback',
                     'sub_category'         => [
-                        '@id'        => '/api/publication_sub_categories/' . $subChronique->id,
-                        '@type'      => 'PublicationSubCategory',
+                        '@type'      => 'SubCategory',
                         'id'         => $subChronique->id,
                         'title'      => 'Chroniques',
                         'slug'       => 'chroniques',
@@ -311,8 +302,7 @@ class PublicationRelatedTest extends ApiTestCase
                         'is_course'  => false,
                     ],
                     'author'               => [
-                        '@id'      => '/api/users/' . $author->id,
-                        '@type'    => 'User',
+                        '@type'    => 'Author',
                         'username' => 'user_admin',
                         'deletion_datetime' => null,
                     ],
