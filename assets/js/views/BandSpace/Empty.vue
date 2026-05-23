@@ -1,3 +1,0 @@
-<template>
-    A venir
-</template>

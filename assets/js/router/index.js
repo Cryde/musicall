@@ -67,11 +67,6 @@ const routes = [
         component: () => import('../views/BandSpace/Notes.vue')
       },
       {
-        path: ':id/social',
-        name: 'app_band_social',
-        component: () => import('../views/BandSpace/Empty.vue')
-      },
-      {
         path: ':id/files',
         name: 'app_band_files',
         component: () => import('../views/BandSpace/Files.vue')
