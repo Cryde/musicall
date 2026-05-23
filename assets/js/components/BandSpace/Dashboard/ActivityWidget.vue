@@ -20,7 +20,10 @@
       <li v-for="activity in items" :key="activity.id" class="flex gap-3 text-sm">
         <i :class="['pi mt-0.5 text-surface-400', moduleIcon(activity.module)]" aria-hidden="true" />
         <div class="flex-1 min-w-0">
-          <p class="text-surface-700 dark:text-surface-200 leading-snug">{{ activitySentence(activity) }}</p>
+          <p class="text-surface-700 dark:text-surface-200 leading-snug">
+            <span class="font-medium">{{ activity.actor?.username || 'Système' }}</span>
+            {{ activitySentence(activity) }}
+          </p>
           <p class="text-xs text-surface-400 mt-0.5">{{ formatRelative(activity.creation_datetime) }}</p>
         </div>
       </li>
