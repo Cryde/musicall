@@ -7,18 +7,31 @@ export const usePublicationStore = defineStore('publicaton', () => {
   const relatedPublications = ref([])
   const isVoting = ref(false)
 
+  // Monotonic tokens to discard stale responses when the user navigates
+  // between publications faster than the API replies (e.g. clicks foo
+  // then bar; bar resolves first, foo resolves later and would otherwise
+  // overwrite bar).
+  let publicationLoadToken = 0
+  let relatedLoadToken = 0
+
   async function loadPublication(slug) {
     // Null out before the await so navigating from /publications/foo to
     // /publications/bar doesn't flash the previous title during the new
     // fetch (view component is reused across the route change, so
     // onUnmounted never fires between slugs).
+    const token = ++publicationLoadToken
     publication.value = null
-    publication.value = await publicationApi.getPublication(slug)
+    const data = await publicationApi.getPublication(slug)
+    if (token !== publicationLoadToken) return
+    publication.value = data
   }
 
   async function loadRelatedPublications(slug) {
+    const token = ++relatedLoadToken
     relatedPublications.value = []
-    relatedPublications.value = await publicationApi.getRelatedPublications(slug)
+    const data = await publicationApi.getRelatedPublications(slug)
+    if (token !== relatedLoadToken) return
+    relatedPublications.value = data
   }
 
   async function vote(slug, value) {
