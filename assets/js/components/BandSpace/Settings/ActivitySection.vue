@@ -143,6 +143,7 @@ const MODULE_OPTIONS = [
   { value: 'agenda', label: 'Agenda' },
   { value: 'notes', label: 'Notes' },
   { value: 'file', label: 'Fichiers' },
+  { value: 'setlist', label: 'Setlists' },
   { value: 'settings', label: 'Paramètres' }
 ]
 

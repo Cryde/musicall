@@ -99,6 +99,43 @@ const SENTENCES = {
   'finance.recurrence_end_date_changed': () => 'a modifié la date de fin de la récurrence',
   'finance.recurrence_deleted': (a) => `a supprimé la récurrence « ${a.payload?.label ?? '—'} »`,
 
+  // Setlist — songs (repertoire)
+  'setlist.song_added': (a) => `a ajouté la chanson « ${a.payload?.title ?? '—'} » au répertoire`,
+  'setlist.song_updated': (a) => `a modifié la chanson « ${a.payload?.title ?? '—'} »`,
+  'setlist.song_archived': (a) =>
+    `a retiré la chanson « ${a.payload?.title ?? '—'} » du répertoire`,
+  'setlist.song_unarchived': (a) =>
+    `a réintégré la chanson « ${a.payload?.title ?? '—'} » au répertoire`,
+  'setlist.song_file_attached': (a) =>
+    `a attaché le fichier « ${a.payload?.original_name ?? '—'} » à une chanson`,
+  'setlist.song_file_detached': (a) =>
+    `a détaché le fichier « ${a.payload?.original_name ?? '—'} » d'une chanson`,
+
+  // Setlist — setlists
+  'setlist.setlist_created': (a) => `a créé la setlist « ${a.payload?.name ?? '—'} »`,
+  'setlist.setlist_renamed': (a) => `a renommé la setlist en « ${a.payload?.name ?? '—'} »`,
+  'setlist.setlist_duplicated': (a) => `a dupliqué la setlist « ${a.payload?.name ?? '—'} »`,
+  'setlist.setlist_archived': (a) => `a archivé la setlist « ${a.payload?.name ?? '—'} »`,
+  'setlist.setlist_unarchived': (a) => `a réintégré la setlist « ${a.payload?.name ?? '—'} »`,
+
+  // Setlist — items
+  'setlist.setlist_item_added': (a) =>
+    a.payload?.label
+      ? `a ajouté « ${a.payload.label} » à une setlist`
+      : 'a ajouté un titre à une setlist',
+  'setlist.setlist_item_removed': () => "a retiré un titre d'une setlist",
+  'setlist.setlist_item_reordered': (a) =>
+    a.payload?.count
+      ? `a réordonné les ${a.payload.count} titres d'une setlist`
+      : "a réordonné les titres d'une setlist",
+  'setlist.setlist_item_updated': () => "a modifié un titre d'une setlist",
+
+  // Setlist — files
+  'setlist.setlist_file_attached': (a) =>
+    `a attaché le fichier « ${a.payload?.original_name ?? '—'} » à une setlist`,
+  'setlist.setlist_file_detached': (a) =>
+    `a détaché le fichier « ${a.payload?.original_name ?? '—'} » d'une setlist`,
+
   // Settings — band
   'settings.band_created': (a) => `a créé le Band Space « ${a.payload?.name ?? '—'} »`,
 

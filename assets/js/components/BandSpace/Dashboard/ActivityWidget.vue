@@ -75,6 +75,7 @@ const MODULE_ICONS = {
   agenda: 'pi-calendar',
   notes: 'pi-file-edit',
   file: 'pi-folder-open',
+  setlist: 'pi-list',
   settings: 'pi-cog'
 }
 
