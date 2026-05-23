@@ -20,11 +20,13 @@ use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use App\Service\Builder\BandSpace\File\BandSpaceFileVersionBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * @implements ProcessorInterface<BandSpaceFileVersionUpload, BandSpaceFileVersionResource>
@@ -41,6 +43,8 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
         private BandSpaceFileVersionBuilder $versionBuilder,
         private Security $security,
         private RequestStack $requestStack,
+        #[Target('band_space_file_upload')]
+        private RateLimiterFactoryInterface $uploadLimiter,
     ) {
     }
 
@@ -51,6 +55,8 @@ readonly class BandSpaceFileVersionUploadProcessor implements ProcessorInterface
         if (!$user instanceof User) {
             throw new AccessDeniedHttpException();
         }
+
+        $this->uploadLimiter->create($user->id)->consume()->ensureAccepted();
 
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 

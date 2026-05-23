@@ -13,6 +13,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -184,5 +185,45 @@ class BandSpaceFileUploadTest extends ApiTestCase
             'type' => '/errors/403',
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
+    }
+
+    public function test_upload_returns_429_when_rate_limit_exceeded(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        // Burn the full 30/min budget for this user up front so the single
+        // request below is the one that trips the limiter.
+        /** @var RateLimiterFactoryInterface $uploadLimiter */
+        $uploadLimiter = self::getContainer()->get('limiter.band_space_file_upload');
+        $uploadLimiter->create($user->id)->consume(30);
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_TOO_MANY_REQUESTS);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/429',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Rate Limit Exceeded',
+            'status' => 429,
+            'type' => '/errors/429',
+            'description' => 'Rate Limit Exceeded',
+        ]);
+
+        // No file persisted when the limiter rejects.
+        $repo = self::getContainer()->get(BandSpaceFileRepository::class);
+        $this->assertCount(0, $repo->findBy(['bandSpace' => $bandSpace]));
     }
 }
