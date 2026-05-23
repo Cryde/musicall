@@ -5,6 +5,7 @@ namespace App\Repository\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Enum\BandSpace\Role;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -35,6 +36,21 @@ class BandSpaceRepository extends ServiceEntityRepository
             ->orderBy('bs.creationDatetime', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function countAdminByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('bs')
+            ->select('COUNT(bs.id)')
+            ->innerJoin('bs.memberships', 'm')
+            ->where('m.user = :user')
+            ->andWhere('m.role = :role')
+            ->andWhere('m.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('role', Role::Admin)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function findOneByIdWithMemberships(string $id): ?BandSpace
