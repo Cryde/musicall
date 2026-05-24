@@ -175,6 +175,16 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+        ]);
     }
 
     public function test_delete_single_occurrence_not_member_returns_403(): void
@@ -200,6 +210,16 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Vous n'êtes pas membre de ce Band Space",
+        ]);
     }
 
     // ---- This + future ------------------------------------------------------
@@ -312,6 +332,16 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Cet événement n'est pas récurrent",
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => "Cet événement n'est pas récurrent",
+        ]);
     }
 
     public function test_delete_from_occurrence_not_member_returns_403(): void
@@ -337,5 +367,15 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Vous n'êtes pas membre de ce Band Space",
+        ]);
     }
 }
