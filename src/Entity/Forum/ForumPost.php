@@ -16,6 +16,7 @@ use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ForumPostRepository::class)]
+#[ORM\Index(name: 'idx_forum_post_content_ft', columns: ['content'], flags: ['FULLTEXT'])]
 class ForumPost implements VotableInterface
 {
     final public const LIST = 'FORUM_POST_LIST';

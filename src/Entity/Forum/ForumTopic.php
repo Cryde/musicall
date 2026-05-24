@@ -13,6 +13,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: ForumTopicRepository::class)]
+#[ORM\Index(name: 'idx_forum_topic_title_ft', columns: ['title'], flags: ['FULLTEXT'])]
 class ForumTopic implements SluggableEntityInterface
 {
     final const TYPE_TOPIC_DEFAULT = 0;

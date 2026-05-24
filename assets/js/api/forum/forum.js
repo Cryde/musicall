@@ -138,6 +138,12 @@ export default {
       .then((resp) => resp.data)
   },
 
+  search({ term, page = 1 }) {
+    return axios
+      .get(Routing.generate('api_forum_search', { term, page }))
+      .then((resp) => resp.data)
+  },
+
   getMyParticipations({ page = 1 } = {}) {
     return axios
       .get(Routing.generate('api_forum_topic_participations_list', { page }))
