@@ -1,0 +1,8 @@
+# dompdf writes per-font generated artifacts into the font dir on first use:
+# - <family>_<style>_<hash>.ttf  (copy of the source TTF)
+# - <family>_<style>_<hash>.ufm  (Adobe Font Metrics)
+# - installed-fonts.json         (family -> file mapping)
+# These are runtime artifacts; only the source TTFs and README.md are tracked.
+*_*.ttf
+*_*.ufm
+installed-fonts.json

@@ -2,6 +2,7 @@
 
 namespace App\Service\Setlist;
 
+use App\Enum\BandSpace\SetlistPdfFont;
 use App\Enum\BandSpace\SetlistPdfLayout;
 
 final readonly class SetlistPdfOptions
@@ -13,6 +14,15 @@ final readonly class SetlistPdfOptions
         public bool $showDurations = true,
         public bool $showNotes = false,
         public bool $showTransitions = false,
+        public ?SetlistPdfFont $font = null,
     ) {
+    }
+
+    /**
+     * Returns the explicit font choice, or the layout's default if none set.
+     */
+    public function effectiveFont(): SetlistPdfFont
+    {
+        return $this->font ?? SetlistPdfFont::defaultFor($this->layout);
     }
 }

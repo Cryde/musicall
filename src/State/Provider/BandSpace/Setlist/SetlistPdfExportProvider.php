@@ -6,10 +6,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\BandSpace\Setlist;
 use App\Entity\User;
-use App\Enum\BandSpace\SetlistPdfLayout;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\Setlist\SetlistPdfOptions;
+use App\Service\Setlist\SetlistPdfOptionsBuilder;
 use App\Service\Setlist\SetlistPdfRenderer;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -27,6 +26,7 @@ readonly class SetlistPdfExportProvider implements ProviderInterface
         private BandSpaceMemberChecker $memberChecker,
         private SetlistRepository $setlistRepository,
         private SetlistPdfRenderer $pdfRenderer,
+        private SetlistPdfOptionsBuilder $optionsBuilder,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -49,10 +49,10 @@ readonly class SetlistPdfExportProvider implements ProviderInterface
             throw new NotFoundHttpException('Setlist introuvable');
         }
 
-        $options = $this->buildOptionsFromQuery();
-        $totalDurationSeconds = $this->setlistRepository->totalDurationSeconds($setlist);
+        $options = $this->optionsBuilder->fromRequest($this->requestStack->getCurrentRequest());
+        $stats = $this->setlistRepository->durationStats($setlist);
 
-        $pdfBinary = $this->pdfRenderer->render($setlist, $options, $totalDurationSeconds);
+        $pdfBinary = $this->pdfRenderer->render($setlist, $options, $stats['total'], $stats['missing']);
 
         $response = new Response($pdfBinary);
         $response->headers->set('Content-Type', 'application/pdf');
@@ -62,22 +62,5 @@ readonly class SetlistPdfExportProvider implements ProviderInterface
         );
 
         return $response;
-    }
-
-    private function buildOptionsFromQuery(): SetlistPdfOptions
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        $query = $request?->query;
-
-        $layout = SetlistPdfLayout::tryFrom((string) ($query?->get('layout', 'large') ?? 'large')) ?? SetlistPdfLayout::Large;
-
-        return new SetlistPdfOptions(
-            layout: $layout,
-            showTempo: $query?->getBoolean('showTempo', true) ?? true,
-            showKey: $query?->getBoolean('showKey', true) ?? true,
-            showDurations: $query?->getBoolean('showDurations', true) ?? true,
-            showNotes: $query?->getBoolean('showNotes', false) ?? false,
-            showTransitions: $query?->getBoolean('showTransitions', false) ?? false,
-        );
     }
 }

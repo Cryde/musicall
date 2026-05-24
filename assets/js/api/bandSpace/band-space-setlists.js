@@ -150,6 +150,7 @@ export default {
     })
     const params = new URLSearchParams()
     if (options.layout) params.set('layout', options.layout)
+    if (options.font) params.set('font', options.font)
     if (options.showTempo !== undefined) params.set('showTempo', options.showTempo ? '1' : '0')
     if (options.showKey !== undefined) params.set('showKey', options.showKey ? '1' : '0')
     if (options.showDurations !== undefined)

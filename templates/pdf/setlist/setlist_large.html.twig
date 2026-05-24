@@ -1,88 +1,200 @@
 {% extends 'pdf/setlist/_base.html.twig' %}
 
 {% block extra_styles %}
-        ol.items {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            counter-reset: item;
-        }
-        ol.items li {
-            counter-increment: item;
-            padding: 4mm 0;
-            border-bottom: 1px dashed #ccc;
-            page-break-inside: avoid;
-        }
-        .item-title {
-            font-size: 18pt;
-            font-weight: bold;
-        }
-        .item-title:before {
-            content: counter(item) ". ";
+        .large-header { width: 100%; }
+        .large-header td { vertical-align: top; }
+        .large-header .left .band {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
             color: #888;
-            font-weight: normal;
         }
-        .item-meta {
-            margin-top: 2mm;
+        .large-header .left .name {
+            font-size: 22pt;
+            font-weight: bold;
+            margin-top: 1mm;
+        }
+        .large-header .right {
+            text-align: right;
             font-size: 10pt;
             color: #555;
+            padding-top: 4mm;
         }
-        .item-meta .badge {
+        .large-header .right .total {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+        .large-header .right .missing {
+            font-size: 8pt;
+            color: #b07900;
+            margin-top: 1mm;
+        }
+
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+        table.items th {
+            text-align: left;
+            padding: 3mm 3mm;
+            border-bottom: 2px solid #ccc;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            color: #666;
+            background: transparent;
+        }
+        table.items td {
+            text-align: left;
+            padding: 3mm 3mm;
+            vertical-align: top;
+        }
+        table.items tr.zebra td { background: #fafafa; }
+        table.items td.idx { width: 12mm; }
+        .idx-pill {
             display: inline-block;
-            padding: 1mm 2mm;
-            margin-right: 2mm;
-            background: #f0f0f0;
-            border-radius: 2mm;
-        }
-        .item-note {
-            margin-top: 2mm;
+            min-width: 8mm;
+            padding: 0.5mm 2mm;
+            border-radius: 3mm;
+            background: #f5b400;
+            color: #ffffff;
+            font-weight: bold;
             font-size: 9pt;
-            color: #444;
-            font-style: italic;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
         }
-        .item-transition {
-            margin-top: 2mm;
-            font-size: 9pt;
-            color: #888;
-        }
-        .item-interlude .item-title {
+        table.items td.title { font-weight: bold; }
+        table.items td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+        table.items td.muted { color: #999; }
+
+        .sub-line {
+            display: block;
+            margin-top: 1.5mm;
+            font-size: 8.5pt;
+            font-weight: normal;
             color: #555;
-            font-style: italic;
+        }
+        .sub-line .seg-arrow { color: #f5b400; margin-right: 1mm; }
+        .sub-line .seg-sep { color: #ccc; margin: 0 1.5mm; }
+        .sub-line .seg-trans { color: #444; }
+        .sub-line .seg-note { color: #555; font-style: italic; }
+
+        tr.non-song td.title { color: #777; font-style: italic; font-weight: normal; }
+        tr.non-song .idx-pill { background: #d0d0d0; }
+        .non-song-icon {
+            display: inline-block;
+            width: 3mm;
+            height: 3mm;
+            margin-right: 1.5mm;
+            border-radius: 50%;
+            background: #ccc;
+            vertical-align: middle;
+        }
+
+        tfoot tr.total-row td {
+            border-top: 2px solid #333;
+            padding-top: 3mm;
+            font-weight: bold;
+            font-size: 11pt;
         }
 {% endblock %}
 
-{% block body %}
-    <ol class="items">
-        {% for item in setlist.items %}
-            <li class="item-{{ item.type.value }}">
-                {% if item.type.value == 'song' and item.song %}
-                    <div class="item-title">{{ item.song.title }}</div>
-                {% else %}
-                    <div class="item-title">{{ item.label ?: '—' }}</div>
-                {% endif %}
-
-                <div class="item-meta">
-                    {% if options.showKey and item.type.value == 'song' and item.song and item.song.tonality %}
-                        <span class="badge">Tonalité&nbsp;: {{ item.song.tonality }}</span>
+{% block header %}
+    <div class="pdf-header">
+        <table class="large-header">
+            <tr>
+                <td class="left">
+                    <div class="band">{{ setlist.bandSpace.name }}</div>
+                    <div class="name">{{ setlist.name }}</div>
+                </td>
+                <td class="right">
+                    <div>{{ setlist.items|length }} {{ setlist.items|length > 1 ? 'titres' : 'titre' }}</div>
+                    {% if total_duration_seconds > 0 %}
+                        <div class="total">
+                            {{ (total_duration_seconds // 60) }} min {{ (total_duration_seconds % 60) }} s
+                        </div>
                     {% endif %}
-                    {% if options.showTempo and item.type.value == 'song' and item.song and item.song.tempo %}
-                        <span class="badge">{{ item.song.tempo }} BPM</span>
+                    {% if missing_duration_items > 0 %}
+                        <div class="missing">
+                            {{ missing_duration_items }} {{ missing_duration_items > 1 ? 'titres sans durée' : 'titre sans durée' }}
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        <hr class="pdf-header-rule">
+    </div>
+{% endblock %}
+
+{% block body %}
+    {% set visible_cols = 2
+        + (options.showKey ? 1 : 0)
+        + (options.showTempo ? 1 : 0)
+        + (options.showDurations ? 1 : 0)
+    %}
+    <table class="items">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Titre</th>
+                {% if options.showKey %}<th>Ton.</th>{% endif %}
+                {% if options.showTempo %}<th class="numeric">BPM</th>{% endif %}
+                {% if options.showDurations %}<th class="numeric">Durée</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in setlist.items %}
+                {% set is_song = item.type.value == 'song' and item.song %}
+                {% set duration = item.durationOverride ?? (item.song.referenceDuration ?? null) %}
+                <tr class="{{ is_song ? '' : 'non-song' }} {{ loop.index0 is odd ? 'zebra' : '' }}">
+                    <td class="idx"><span class="idx-pill">{{ loop.index }}</span></td>
+                    <td class="title">
+                        {% if not is_song %}<span class="non-song-icon"></span>{% endif %}
+                        {{ is_song ? item.song.title : (item.label ?: '—') }}
+                        {% if (options.showNotes and item.note) or (options.showTransitions and item.transition) %}
+                            <span class="sub-line">
+                                <span class="seg-arrow">↳</span>
+                                {% if options.showTransitions and item.transition %}
+                                    <span class="seg-trans">{{ item.transition }}</span>
+                                {% endif %}
+                                {% if options.showTransitions and item.transition and options.showNotes and item.note %}
+                                    <span class="seg-sep">·</span>
+                                {% endif %}
+                                {% if options.showNotes and item.note %}
+                                    <span class="seg-note">{{ item.note }}</span>
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </td>
+                    {% if options.showKey %}
+                        <td class="{{ (is_song and item.song.tonality) ? '' : 'muted' }}">
+                            {{ is_song ? (item.song.tonality ?: '—') : '—' }}
+                        </td>
+                    {% endif %}
+                    {% if options.showTempo %}
+                        <td class="numeric {{ (is_song and item.song.tempo) ? '' : 'muted' }}">
+                            {{ is_song and item.song.tempo ? item.song.tempo : '—' }}
+                        </td>
                     {% endif %}
                     {% if options.showDurations %}
-                        {% set duration = item.durationOverride ?? (item.song.referenceDuration ?? null) %}
-                        {% if duration %}
-                            <span class="badge">{{ (duration // 60) }}′{{ '%02d'|format(duration % 60) }}″</span>
-                        {% endif %}
+                        <td class="numeric {{ duration ? '' : 'muted' }}">
+                            {{ duration ? ((duration // 60) ~ '′' ~ ('%02d'|format(duration % 60)) ~ '″') : '—' }}
+                        </td>
                     {% endif %}
-                </div>
-
-                {% if options.showNotes and item.note %}
-                    <div class="item-note">{{ item.note }}</div>
-                {% endif %}
-                {% if options.showTransitions and item.transition %}
-                    <div class="item-transition">→ {{ item.transition }}</div>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ol>
+                </tr>
+            {% endfor %}
+        </tbody>
+        {% if options.showDurations and total_duration_seconds > 0 %}
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="{{ visible_cols - 1 }}">Total</td>
+                    <td class="numeric">
+                        {{ (total_duration_seconds // 60) }}′{{ '%02d'|format(total_duration_seconds % 60) }}″
+                    </td>
+                </tr>
+            </tfoot>
+        {% endif %}
+    </table>
 {% endblock %}
