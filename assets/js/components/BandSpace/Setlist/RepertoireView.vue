@@ -15,7 +15,7 @@
         <Skeleton v-for="i in 4" :key="i" width="100%" height="3rem" borderRadius="0.5rem" />
       </div>
       <div v-else-if="filteredSongs.length === 0" class="p-8 text-center text-surface-500">
-        <i class="pi pi-music text-3xl mb-3 block"></i>
+        <i class="pi pi-headphones text-3xl mb-3 block"></i>
         {{ query ? 'Aucun titre ne correspond à votre recherche.' : 'Aucun titre dans le répertoire. Commencez par en ajouter un.' }}
       </div>
       <table v-else class="w-full text-sm">
@@ -35,7 +35,15 @@
             class="border-t border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800 cursor-pointer"
             @click="openDrawer(song)"
           >
-            <td class="px-4 py-3 font-medium">{{ song.title }}</td>
+            <td class="px-4 py-3 font-medium">
+              <span>{{ song.title }}</span>
+              <i
+                v-if="songsWithFiles.has(song.id)"
+                class="pi pi-paperclip text-xs text-surface-400 ml-1.5"
+                v-tooltip.top="'Au moins un fichier attaché'"
+                aria-hidden="true"
+              ></i>
+            </td>
             <td class="px-4 py-3 hidden md:table-cell text-surface-600 dark:text-surface-300">{{ song.tonality || '—' }}</td>
             <td class="px-4 py-3 hidden md:table-cell text-right tabular-nums text-surface-600 dark:text-surface-300">{{ song.tempo || '—' }}</td>
             <td class="px-4 py-3 hidden lg:table-cell text-right tabular-nums text-surface-600 dark:text-surface-300">
@@ -84,7 +92,8 @@ import Menu from 'primevue/menu'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import SongDetailDrawer from './SongDetailDrawer.vue'
 import SongFormDialog from './SongFormDialog.vue'
@@ -104,6 +113,44 @@ const drawerVisible = ref(false)
 const drawerSong = ref(null)
 const actionsMenu = ref(null)
 const menuTargetSong = ref(null)
+
+// Set of song ids that have at least one file attached. Derived from a
+// single getFiles({ source: 'song' }) call so we don't fan out N requests
+// per song. Refreshed on mount and when the song drawer closes (attach /
+// detach happens inside it).
+const songsWithFiles = ref(new Set())
+
+async function loadSongsWithFiles() {
+  try {
+    // itemsPerPage hits the backend's paginationMaximumItemsPerPage (200) so
+    // we don't silently drop paperclip indicators for songs whose attached
+    // files fall past the first page. A dedicated has-files endpoint on
+    // SongResource would be cleaner — tracked as a follow-up.
+    const data = await bandSpaceFilesApi.getFiles(props.bandSpaceId, {
+      source: 'song',
+      itemsPerPage: 200
+    })
+    const ids = new Set()
+    for (const file of data.member ?? []) {
+      for (const att of file.attachments ?? []) {
+        if (att.source_type === 'song' && att.source_id) {
+          ids.add(att.source_id)
+        }
+      }
+    }
+    songsWithFiles.value = ids
+  } catch {
+    // Silent: indicator is informational, not blocking.
+  }
+}
+
+onMounted(() => {
+  loadSongsWithFiles()
+})
+
+watch(drawerVisible, (open, wasOpen) => {
+  if (wasOpen && !open) loadSongsWithFiles()
+})
 
 const filteredSongs = computed(() => {
   const q = query.value.trim().toLowerCase()

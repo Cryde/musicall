@@ -66,7 +66,7 @@ const isSong = computed(() => props.item.type === 'song')
 const typeIcon = computed(() => {
   switch (props.item.type) {
     case 'song':
-      return 'pi pi-music text-emerald-600'
+      return 'pi pi-headphones text-emerald-600'
     case 'interlude':
       return 'pi pi-volume-up text-sky-600'
     case 'break':

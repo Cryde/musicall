@@ -15,7 +15,7 @@
     </div>
 
     <div v-else-if="items.length === 0" class="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
-      <i class="pi pi-music text-4xl text-surface-400"></i>
+      <i class="pi pi-headphones text-4xl text-surface-400"></i>
       <p class="text-xl">Cette setlist est vide.</p>
       <Button label="Retour à l'éditeur" icon="pi pi-arrow-left" severity="secondary" @click="exitLive" />
     </div>
@@ -162,7 +162,7 @@ const current = computed(() => items.value[currentIndex.value] ?? null)
 function iconFor(item) {
   switch (item?.type) {
     case 'song':
-      return 'pi pi-music text-emerald-500'
+      return 'pi pi-headphones text-emerald-500'
     case 'interlude':
       return 'pi pi-volume-up text-sky-500'
     case 'break':

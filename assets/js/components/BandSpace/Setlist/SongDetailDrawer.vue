@@ -29,16 +29,48 @@
       <Divider />
 
       <div>
-        <div class="text-xs uppercase text-surface-500 mb-2">Fichiers attachés</div>
-        <p class="text-xs text-surface-400 italic mb-2">
-          Téléversez des partitions, accords, audio… Ils apparaitront dans le dossier virtuel « Chansons ».
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-xs uppercase text-surface-500">Fichiers attachés</div>
+          <span v-if="files.length > 0" class="text-xs text-surface-400 tabular-nums">
+            {{ files.length }}
+          </span>
+        </div>
+
+        <div v-if="isLoadingFiles && files.length === 0" class="flex flex-col gap-2 mb-2">
+          <Skeleton v-for="i in 2" :key="i" height="2.25rem" borderRadius="0.5rem" />
+        </div>
+
+        <ul v-else-if="files.length > 0" class="list-none p-0 m-0 flex flex-col gap-1 mb-3">
+          <li
+            v-for="file in files"
+            :key="file.id"
+            class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-surface-50 dark:bg-surface-800 text-sm"
+          >
+            <i class="pi pi-file text-surface-500 shrink-0" aria-hidden="true"></i>
+            <div class="flex-1 min-w-0">
+              <div class="truncate">{{ file.original_name }}</div>
+              <div v-if="file.size" class="text-xs text-surface-500 tabular-nums">
+                {{ formatBytes(file.size) }}
+              </div>
+            </div>
+            <Button
+              icon="pi pi-times"
+              severity="secondary"
+              text
+              rounded
+              size="small"
+              aria-label="Détacher"
+              v-tooltip.left="'Détacher ce fichier'"
+              @click="confirmDetach(file)"
+            />
+          </li>
+        </ul>
+
+        <p v-else class="text-xs text-surface-400 italic mb-2">
+          Aucun fichier pour le moment.
         </p>
-        <input
-          ref="fileInput"
-          type="file"
-          class="hidden"
-          @change="handleFileSelected"
-        />
+
+        <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
         <Button
           label="Téléverser un fichier"
           icon="pi pi-cloud-upload"
@@ -63,9 +95,10 @@
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
 import Drawer from 'primevue/drawer'
+import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 
@@ -83,6 +116,8 @@ const toast = useToast()
 
 const fileInput = ref(null)
 const isUploading = ref(false)
+const files = ref([])
+const isLoadingFiles = ref(false)
 
 function formatDuration(seconds) {
   if (!seconds) return '—'
@@ -91,6 +126,45 @@ function formatDuration(seconds) {
   return `${m}′${String(s).padStart(2, '0')}″`
 }
 
+function formatBytes(bytes) {
+  if (!bytes) return ''
+  const units = ['o', 'Ko', 'Mo', 'Go']
+  let value = bytes
+  let unit = 0
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit++
+  }
+  return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`
+}
+
+async function loadFiles() {
+  if (!props.song) {
+    files.value = []
+    return
+  }
+  isLoadingFiles.value = true
+  try {
+    files.value = await bandSpaceSongsApi.getAttachedFiles(props.bandSpaceId, props.song.id)
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+  } finally {
+    isLoadingFiles.value = false
+  }
+}
+
+watch(
+  [visible, () => props.song?.id],
+  ([isOpen, songId]) => {
+    if (isOpen && songId) {
+      loadFiles()
+    } else if (!isOpen) {
+      files.value = []
+    }
+  },
+  { immediate: true }
+)
+
 async function handleFileSelected(event) {
   const file = event.target.files?.[0]
   if (!file || !props.song) return
@@ -98,12 +172,33 @@ async function handleFileSelected(event) {
   try {
     await bandSpaceSongsApi.uploadFile(props.bandSpaceId, props.song.id, file)
     toast.add({ severity: 'success', summary: 'Fichier téléversé', life: 3000 })
+    await loadFiles()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
   } finally {
     isUploading.value = false
     if (fileInput.value) fileInput.value.value = ''
   }
+}
+
+function confirmDetach(file) {
+  if (!props.song) return
+  confirm.require({
+    message: `Détacher le fichier « ${file.original_name} » de cette chanson ?`,
+    header: 'Confirmer',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Détacher',
+    rejectLabel: 'Annuler',
+    accept: async () => {
+      try {
+        await bandSpaceSongsApi.detachFile(props.bandSpaceId, props.song.id, file.id)
+        toast.add({ severity: 'success', summary: 'Fichier détaché', life: 3000 })
+        await loadFiles()
+      } catch (e) {
+        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+      }
+    }
+  })
 }
 
 function confirmArchive() {

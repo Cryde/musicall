@@ -44,6 +44,13 @@ export default {
       .catch(handleApiError)
   },
 
+  getAttachedFiles(bandSpaceId, songId) {
+    return axios
+      .get(Routing.generate('api_band_space_song_files_get_collection', { bandSpaceId, songId }))
+      .then((resp) => resp.data.member ?? [])
+      .catch(handleApiError)
+  },
+
   uploadFile(bandSpaceId, songId, file, onProgress) {
     const formData = new FormData()
     formData.append('uploadedFile', file)

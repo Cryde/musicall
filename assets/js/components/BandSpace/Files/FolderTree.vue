@@ -213,7 +213,7 @@ function virtualIcon(source) {
   if (source === 'task') return 'pi pi-check-square text-blue-500'
   if (source === 'finance') return 'pi pi-euro text-amber-600'
   if (source === 'note') return 'pi pi-file-edit text-purple-500'
-  if (source === 'song') return 'pi pi-music text-emerald-600'
+  if (source === 'song') return 'pi pi-headphones text-emerald-600'
   if (source === 'setlist') return 'pi pi-list text-rose-600'
   return 'pi pi-folder text-surface-500'
 }

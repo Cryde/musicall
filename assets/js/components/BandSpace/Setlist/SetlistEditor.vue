@@ -60,7 +60,7 @@
         </div>
 
         <div v-if="setlist.items.length === 0" class="text-center py-8 text-surface-500">
-          <i class="pi pi-music text-3xl mb-3 block"></i>
+          <i class="pi pi-headphones text-3xl mb-3 block"></i>
           Aucun titre dans cette setlist. Commencez par en ajouter un.
         </div>
 

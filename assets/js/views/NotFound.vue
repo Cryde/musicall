@@ -17,7 +17,7 @@
     <!-- Piano Keyboard -->
     <div class="mb-8 select-none">
       <p class="text-sm text-surface-500 dark:text-surface-400 text-center mb-3">
-        <i class="pi pi-music mr-2" />
+        <i class="pi pi-headphones mr-2" />
         Jouez quelques notes en attendant
         <span class="hidden sm:inline">(clavier : A Z E R T Y U I)</span>
       </p>

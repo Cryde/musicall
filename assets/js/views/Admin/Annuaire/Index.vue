@@ -64,7 +64,7 @@
       <Card>
         <template #title>
           <div class="flex items-center gap-2 text-base">
-            <i class="pi pi-music text-primary" />
+            <i class="pi pi-headphones text-primary" />
             <span>Top instruments &amp; styles</span>
           </div>
         </template>

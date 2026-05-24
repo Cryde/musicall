@@ -6,7 +6,19 @@ import { handleApiError } from '../utils/handleApiError.js'
 export default {
   getFiles(
     bandSpaceId,
-    { folderId, tagId, source, taskId, financeEntryId, query, mime, uploaderId, sort, order } = {}
+    {
+      folderId,
+      tagId,
+      source,
+      taskId,
+      financeEntryId,
+      query,
+      mime,
+      uploaderId,
+      sort,
+      order,
+      itemsPerPage
+    } = {}
   ) {
     const params = {}
     if (folderId) params.folder_id = folderId
@@ -19,6 +31,7 @@ export default {
     if (uploaderId) params.uploader_id = uploaderId
     if (sort) params.sort = sort
     if (order) params.order = order
+    if (itemsPerPage) params.itemsPerPage = itemsPerPage
 
     return axios
       .get(Routing.generate('api_band_space_files_get_collection', { bandSpaceId }), { params })
