@@ -27,11 +27,7 @@ export function highlightTerm(text, term) {
     return safeText
   }
 
-  const tokens = String(term)
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(escapeRegex)
+  const tokens = String(term).trim().split(/\s+/).filter(Boolean).map(escapeRegex)
 
   if (tokens.length === 0) {
     return safeText

@@ -139,9 +139,7 @@ export default {
   },
 
   search({ term, page = 1 }) {
-    return axios
-      .get(Routing.generate('api_forum_search', { term, page }))
-      .then((resp) => resp.data)
+    return axios.get(Routing.generate('api_forum_search', { term, page })).then((resp) => resp.data)
   },
 
   getMyParticipations({ page = 1 } = {}) {
