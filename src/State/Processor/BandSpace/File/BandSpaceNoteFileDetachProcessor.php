@@ -66,6 +66,12 @@ readonly class BandSpaceNoteFileDetachProcessor implements ProcessorInterface
         $this->entityManager->remove($attachment);
         $file->updateDatetime = new \DateTime();
 
+        // File feed only — note file detach is triggered automatically by the
+        // editor when the user removes an image from the note body, and the
+        // resulting note_content_updated activity already captures the change
+        // in the Notes feed. A separate note_file_detached row would just be
+        // noise on every edit. (Contrast with Song / Setlist where detach is
+        // an explicit user-driven action.)
         $this->activityRecorder->record(
             $bandSpace,
             BandSpaceModule::File,

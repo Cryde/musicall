@@ -60,6 +60,11 @@ const SENTENCES = {
   'notes.note_renamed': (a) => `a renommé la note de « ${a.payload?.from} » à « ${a.payload?.to} »`,
   'notes.note_emoji_changed': () => "a modifié l'emoji de la note",
   'notes.note_content_updated': () => 'a modifié le contenu de la note',
+  'notes.note_file_attached': (a) =>
+    `a attaché le fichier « ${a.payload?.original_name ?? '—'} » à une note`,
+  // No notes.note_file_detached — note detach is automatic cleanup when an
+  // image is removed from the note body; the parallel note_content_updated
+  // activity already covers it in the Notes feed.
 
   // Finance — entries
   'finance.entry_created': (a) =>

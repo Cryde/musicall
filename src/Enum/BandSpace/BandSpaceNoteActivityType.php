@@ -9,4 +9,5 @@ enum BandSpaceNoteActivityType: string
     case EmojiChanged = 'note_emoji_changed';
     case ContentUpdated = 'note_content_updated';
     case Deleted = 'note_deleted';
+    case NoteFileAttached = 'note_file_attached';
 }

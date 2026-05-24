@@ -12,6 +12,7 @@ use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -119,6 +120,7 @@ readonly class BandSpaceNoteFileAttachProcessor implements ProcessorInterface
             ],
         );
 
+        // File feed: "this file was attached to note X" - payload describes the SOURCE.
         $this->activityRecorder->record(
             $bandSpace,
             BandSpaceModule::File,
@@ -129,6 +131,19 @@ readonly class BandSpaceNoteFileAttachProcessor implements ProcessorInterface
                 'source_type' => 'note',
                 'source_id' => (string) $note->id,
                 'source_label' => $note->title,
+            ],
+        );
+
+        // Notes feed: "a file was attached to this note" - payload describes the FILE.
+        $this->activityRecorder->record(
+            $bandSpace,
+            BandSpaceModule::Notes,
+            BandSpaceNoteActivityType::NoteFileAttached,
+            resourceId: (string) $note->id,
+            actor: $user,
+            payload: [
+                'file_id' => (string) $file->id,
+                'original_name' => $file->originalName,
             ],
         );
 
