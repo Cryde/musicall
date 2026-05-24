@@ -21,12 +21,15 @@
           <span v-if="!collapsed" class="font-medium truncate">{{ item.label }}</span>
         </a>
       </RouterLink>
+
+      <slot name="after-work" />
     </nav>
 
     <div
       v-if="settingsItem"
       class="mt-auto pt-3 border-t border-surface-200 dark:border-surface-700"
     >
+      <slot name="above-settings" />
       <RouterLink
         :to="{ name: settingsItem.route, params: { id: currentSpaceId } }"
         custom

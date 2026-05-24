@@ -63,10 +63,63 @@
             <BandSidebar
               :disabled="bandSpaceStore.isCreating"
               @navigate="mobileNavOpen = false"
-            />
-          </div>
-          <div class="shrink-0">
-            <AppNavbarUserCluster @navigate="mobileNavOpen = false" />
+            >
+              <template #after-work>
+                <div class="mt-2">
+                  <button
+                    v-styleclass="{
+                      selector: '@next',
+                      enterFromClass: 'hidden',
+                      enterActiveClass: 'animate-slidedown',
+                      leaveToClass: 'hidden',
+                      leaveActiveClass: 'animate-slideup'
+                    }"
+                    type="button"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors duration-150"
+                  >
+                    <i class="pi pi-user text-base shrink-0" aria-hidden="true"></i>
+                    <span class="font-medium truncate">
+                      {{ userSecurityStore.user?.username ?? 'Mon compte' }}
+                    </span>
+                    <i class="pi pi-chevron-down text-sm ml-auto" aria-hidden="true"></i>
+                  </button>
+                  <!-- Mirror of AppNavbarUserCluster's menuItems — keep in sync. -->
+                  <ul class="hidden list-none p-0 m-0 mt-1 flex flex-col gap-1 pl-3">
+                    <li
+                      v-for="entry in userMenuEntries"
+                      :key="entry.label"
+                    >
+                      <a
+                        @click="() => handleUserMenuClick(entry)"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer text-sm"
+                      >
+                        <i :class="['pi', entry.icon, 'text-sm shrink-0']" aria-hidden="true"></i>
+                        <span class="truncate">{{ entry.label }}</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </template>
+
+              <template #above-settings>
+                <RouterLink :to="{ name: 'app_messages' }" custom v-slot="{ href, navigate }">
+                  <a
+                    :href="href"
+                    @click="(e) => { navigate(e); mobileNavOpen = false }"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
+                  >
+                    <i class="pi pi-envelope text-base shrink-0" aria-hidden="true"></i>
+                    <span class="font-medium truncate">Messages</span>
+                    <Badge
+                      v-if="notificationStore.unreadMessages > 0"
+                      :value="notificationStore.unreadMessages"
+                      severity="danger"
+                      class="ml-auto"
+                    />
+                  </a>
+                </RouterLink>
+              </template>
+            </BandSidebar>
           </div>
         </div>
       </Drawer>
@@ -75,24 +128,97 @@
 </template>
 
 <script setup>
+import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
 import { useHead } from '@unhead/vue'
+import Badge from 'primevue/badge'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
+import { useNotificationStore } from '../store/notification/notification.js'
+import { useUserSecurityStore } from '../store/user/security.js'
 import MenuBand from '../views/Global/MenuBand.vue'
-import AppNavbarUserCluster from './AppNavbarUserCluster.vue'
 import BandSidebar from './BandSpace/BandSidebar.vue'
 import BandSpaceSelector from './BandSpace/BandSpaceSelector.vue'
 
 const bandSpaceStore = useBandSpaceStore()
+const userSecurityStore = useUserSecurityStore()
+const notificationStore = useNotificationStore()
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
+
+// Mirror of AppNavbarUserCluster's menuItems for the mobile drawer's
+// collapsible account section. Keep in sync if the desktop avatar menu
+// changes — extracting to a composable would be cleaner once a third
+// consumer appears.
+const userMenuEntries = computed(() => {
+  const entries = [
+    {
+      label: 'Mon profil',
+      icon: 'pi-user',
+      to: () => ({
+        name: 'app_user_public_profile',
+        params: { username: userSecurityStore.user?.username }
+      })
+    },
+    {
+      label: 'Mes annonces',
+      icon: 'pi-megaphone',
+      to: () => ({ name: 'app_user_announces' })
+    },
+    {
+      label: 'Mes publications',
+      icon: 'pi-file-edit',
+      to: () => ({ name: 'app_user_publications' })
+    },
+    {
+      label: 'Mes cours',
+      icon: 'pi-book',
+      to: () => ({ name: 'app_user_courses' })
+    },
+    {
+      label: 'Mes photos',
+      icon: 'pi-images',
+      to: () => ({ name: 'app_user_galleries' })
+    },
+    {
+      label: 'Paramètres du compte',
+      icon: 'pi-cog',
+      to: () => ({ name: 'app_user_settings' })
+    }
+  ]
+  if (userSecurityStore.isAdmin) {
+    entries.push({
+      label: 'Administration',
+      icon: 'pi-shield',
+      to: () => ({ name: 'admin_dashboard' })
+    })
+  }
+  entries.push({
+    label: 'Se déconnecter',
+    icon: 'pi-sign-out',
+    action: () => {
+      trackUmamiEvent('user-logout')
+      userSecurityStore.logout()
+    }
+  })
+  return entries
+})
+
+function handleUserMenuClick(entry) {
+  if (entry.action) {
+    entry.action()
+  } else if (entry.to) {
+    router.push(entry.to())
+  }
+  mobileNavOpen.value = false
+}
 
 const { currentSpace, setLastSpaceId, handleRedirect, validateCurrentSpace } =
   useBandSpaceNavigation()

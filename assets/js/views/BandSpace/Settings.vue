@@ -3,16 +3,19 @@
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 lg:col-span-10 xl:col-span-10 flex-auto">
         <div class="flex flex-col lg:flex-row gap-6">
-          <!-- Sidebar menu -->
+          <!-- Sidebar menu (horizontal scrollable tabs on mobile, vertical on lg+) -->
           <div class="lg:w-56 shrink-0">
-            <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4">
-              <nav class="flex flex-row lg:flex-col gap-1">
+            <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-2 lg:p-4">
+              <nav
+                class="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible"
+              >
                 <button
                   v-for="section in visibleSections"
                   :key="section.key"
                   @click="activeSection = section.key"
                   :class="[
-                    'w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium',
+                    'text-left px-3 lg:px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium',
+                    'shrink-0 whitespace-nowrap lg:w-full',
                     activeSection === section.key
                       ? 'bg-primary text-primary-contrast'
                       : 'text-surface-600 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800'
