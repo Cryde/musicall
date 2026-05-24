@@ -53,6 +53,10 @@ const SENTENCES = {
   'agenda.end_datetime_changed': () => "a modifié la date de fin de l'événement",
   'agenda.is_all_day_changed': (a) =>
     a.payload?.to ? "a basculé l'événement en journée entière" : 'a quitté la journée entière',
+  'agenda.occurrence_cancelled': (a) =>
+    `a annulé l'occurrence du ${a.payload?.occurrence_date ?? '?'} de « ${a.payload?.title ?? 'Sans titre'} »`,
+  'agenda.series_truncated': (a) =>
+    `a tronqué la série « ${a.payload?.title ?? 'Sans titre'} » à partir du ${a.payload?.from_occurrence_date ?? '?'}`,
 
   // Notes
   'notes.note_created': (a) => `a créé la note « ${a.payload?.title ?? 'Sans titre'} »`,

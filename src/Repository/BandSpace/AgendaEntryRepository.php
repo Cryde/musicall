@@ -30,9 +30,11 @@ class AgendaEntryRepository extends ServiceEntityRepository
         //  - Recurring entries: the *rule* overlaps [from, to] when the first occurrence is no later
         //    than `to` AND the recurrence horizon (recurrenceUntilDate) is no earlier than `from`. The
         //    aggregator expands the actual occurrences afterwards.
+        // Eager-fetch exceptions so the aggregator's expansion-time filter does not N+1.
         return $this->createQueryBuilder('a')
-            ->addSelect('c')
+            ->addSelect('c', 'e')
             ->leftJoin('a.creator', 'c')
+            ->leftJoin('a.exceptions', 'e')
             ->where('a.bandSpace = :bandSpace')
             ->andWhere(
                 '(a.recurrenceFrequency IS NULL AND a.eventDatetime <= :to AND COALESCE(a.endDatetime, a.eventDatetime) >= :from)' .

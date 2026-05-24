@@ -9,6 +9,8 @@ use App\Repository\BandSpace\AgendaEntryRepository;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
@@ -67,8 +69,18 @@ class AgendaEntry
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     public DateTimeInterface $creationDatetime;
 
+    /**
+     * Cancelled occurrences for this recurring entry. Aggregator skips any
+     * occurrence whose date matches one of these during expansion.
+     *
+     * @var Collection<int, AgendaEntryException>
+     */
+    #[ORM\OneToMany(targetEntity: AgendaEntryException::class, mappedBy: 'agendaEntry', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    public Collection $exceptions;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+        $this->exceptions = new ArrayCollection();
     }
 }

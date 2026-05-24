@@ -11,6 +11,8 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\AgendaEntryDeleteProcessor;
+use App\State\Processor\BandSpace\AgendaEntryFromOccurrenceDeleteProcessor;
+use App\State\Processor\BandSpace\AgendaEntryOccurrenceDeleteProcessor;
 use App\State\Processor\BandSpace\AgendaEntryUpdateProcessor;
 use App\State\Provider\BandSpace\AgendaEntryCollectionProvider;
 use App\State\Provider\BandSpace\AgendaEntryItemProvider;
@@ -65,6 +67,33 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'api_band_space_agenda_entries_delete',
             provider: AgendaEntryItemProvider::class,
             processor: AgendaEntryDeleteProcessor::class,
+        ),
+        // Cancel a single occurrence of a recurring entry (creates an exception row).
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/agenda-entries/{id}/occurrences/{occurrenceDate}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space Agenda']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_agenda_entries_delete_occurrence',
+            provider: AgendaEntryItemProvider::class,
+            processor: AgendaEntryOccurrenceDeleteProcessor::class,
+        ),
+        // Truncate the recurring series at the day before the picked occurrence.
+        // If the picked date is on or before the first occurrence, deletes the entry outright.
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/agenda-entries/{id}/from/{occurrenceDate}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space Agenda']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_agenda_entries_delete_from_occurrence',
+            provider: AgendaEntryItemProvider::class,
+            processor: AgendaEntryFromOccurrenceDeleteProcessor::class,
         ),
     ],
     normalizationContext: ['skip_null_values' => false],

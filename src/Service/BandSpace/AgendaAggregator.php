@@ -98,6 +98,9 @@ readonly class AgendaAggregator
      * within [$from, $to] and on or before `recurrenceUntilDate`. Bounded by the 5-year horizon
      * enforced at validation time, so the iteration count is safe.
      *
+     * Cancelled occurrences (entries in `$entry->exceptions`) are filtered out by date here -
+     * matching the user-perceived "this occurrence" granularity (date-only, not date+time).
+     *
      * @return DateTimeImmutable[]
      */
     private function expandOccurrences(AgendaEntry $entry, DateTimeImmutable $from, DateTimeImmutable $to): array
@@ -110,7 +113,7 @@ readonly class AgendaAggregator
         $horizon = $entry->recurrenceUntilDate->setTime(23, 59, 59);
         $windowEnd = $to < $horizon ? $to : $horizon;
 
-        return match ($entry->recurrenceFrequency) {
+        $occurrences = match ($entry->recurrenceFrequency) {
             AgendaRecurrenceFrequency::Daily => $this->expandFixedStep($entry->eventDatetime, $from, $windowEnd, new DateInterval('P1D')),
             AgendaRecurrenceFrequency::Weekly => $this->expandFixedStep($entry->eventDatetime, $from, $windowEnd, new DateInterval('P7D')),
             AgendaRecurrenceFrequency::Monthly => $entry->recurrenceMonthlyMode === AgendaRecurrenceMonthlyMode::ByWeekday
@@ -118,6 +121,20 @@ readonly class AgendaAggregator
                 : $this->expandMonthlyByDate($entry->eventDatetime, $from, $windowEnd),
             AgendaRecurrenceFrequency::Yearly => $this->expandYearly($entry->eventDatetime, $from, $windowEnd),
         };
+
+        if ($entry->exceptions->isEmpty()) {
+            return $occurrences;
+        }
+
+        $excludedDates = [];
+        foreach ($entry->exceptions as $exception) {
+            $excludedDates[$exception->occurrenceDate->format('Y-m-d')] = true;
+        }
+
+        return array_values(array_filter(
+            $occurrences,
+            static fn(DateTimeImmutable $occurrence): bool => !isset($excludedDates[$occurrence->format('Y-m-d')]),
+        ));
     }
 
     /**

@@ -61,6 +61,26 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
     }
   }
 
+  async function deleteOccurrence(bandSpaceId, entryId, occurrenceDate) {
+    isDeleting.value = true
+    try {
+      await bandSpaceAgendaApi.deleteOccurrence(bandSpaceId, entryId, occurrenceDate)
+      await fetchAgenda(bandSpaceId)
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
+  async function deleteFromOccurrence(bandSpaceId, entryId, occurrenceDate) {
+    isDeleting.value = true
+    try {
+      await bandSpaceAgendaApi.deleteFromOccurrence(bandSpaceId, entryId, occurrenceDate)
+      await fetchAgenda(bandSpaceId)
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
   function clear() {
     items.value = []
     loadError.value = null
@@ -76,6 +96,8 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
     createEntry,
     updateEntry,
     deleteEntry,
+    deleteOccurrence,
+    deleteFromOccurrence,
     clear
   }
 })

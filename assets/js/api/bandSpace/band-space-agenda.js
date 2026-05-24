@@ -41,5 +41,29 @@ export default {
         Routing.generate('api_band_space_agenda_entries_delete', { bandSpaceId, id: entryId })
       )
       .catch(handleApiError)
+  },
+
+  deleteOccurrence(bandSpaceId, entryId, occurrenceDate) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_agenda_entries_delete_occurrence', {
+          bandSpaceId,
+          id: entryId,
+          occurrenceDate
+        })
+      )
+      .catch(handleApiError)
+  },
+
+  deleteFromOccurrence(bandSpaceId, entryId, occurrenceDate) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_agenda_entries_delete_from_occurrence', {
+          bandSpaceId,
+          id: entryId,
+          occurrenceDate
+        })
+      )
+      .catch(handleApiError)
   }
 }

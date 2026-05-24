@@ -199,6 +199,56 @@
       </div>
     </form>
   </Drawer>
+
+  <Dialog
+    v-model:visible="showDeleteScopeDialog"
+    modal
+    header="Supprimer l’événement récurrent"
+    :style="{ width: '28rem' }"
+    :closable="!agendaStore.isDeleting"
+  >
+    <p class="text-sm text-surface-700 dark:text-surface-200 mb-4">
+      Cet événement fait partie d’une série. Que souhaites-tu supprimer&nbsp;?
+    </p>
+    <div class="flex flex-col gap-3">
+      <div class="flex items-start gap-2">
+        <RadioButton v-model="deleteScope" inputId="scope-single" value="single" />
+        <label for="scope-single" class="text-sm cursor-pointer select-none">
+          <span class="font-medium">Cette occurrence seulement</span>
+          <span class="block text-xs text-surface-500">Le reste de la série reste en place.</span>
+        </label>
+      </div>
+      <div class="flex items-start gap-2">
+        <RadioButton v-model="deleteScope" inputId="scope-from" value="from" />
+        <label for="scope-from" class="text-sm cursor-pointer select-none">
+          <span class="font-medium">Cette occurrence et les suivantes</span>
+          <span class="block text-xs text-surface-500">La série se termine la veille de cette occurrence.</span>
+        </label>
+      </div>
+      <div class="flex items-start gap-2">
+        <RadioButton v-model="deleteScope" inputId="scope-all" value="all" />
+        <label for="scope-all" class="text-sm cursor-pointer select-none">
+          <span class="font-medium">Toute la série</span>
+          <span class="block text-xs text-surface-500">Toutes les occurrences (passées et futures) seront supprimées.</span>
+        </label>
+      </div>
+    </div>
+    <template #footer>
+      <Button
+        label="Annuler"
+        severity="secondary"
+        text
+        :disabled="agendaStore.isDeleting"
+        @click="showDeleteScopeDialog = false"
+      />
+      <Button
+        label="Supprimer"
+        severity="danger"
+        :loading="agendaStore.isDeleting"
+        @click="confirmScopedDelete"
+      />
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -206,6 +256,7 @@ import { format } from 'date-fns'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
+import Dialog from 'primevue/dialog'
 import Drawer from 'primevue/drawer'
 import InputMask from 'primevue/inputmask'
 import InputText from 'primevue/inputtext'
@@ -489,16 +540,23 @@ async function handleSubmit() {
   }
 }
 
+const showDeleteScopeDialog = ref(false)
+const deleteScope = ref('single')
+
 function handleDelete() {
   const isRecurring = props.agendaItem?.metadata?.is_recurring_occurrence === true
+  if (isRecurring) {
+    deleteScope.value = 'single'
+    showDeleteScopeDialog.value = true
+    return
+  }
+
   confirm.require({
-    message: isRecurring
-      ? 'Cet événement est récurrent. Toutes les occurrences (passées et futures) seront supprimées. Continuer ?'
-      : 'Es-tu sûr de vouloir supprimer cet événement ?',
-    header: isRecurring ? 'Supprimer la série ?' : 'Confirmer la suppression',
+    message: 'Es-tu sûr de vouloir supprimer cet événement ?',
+    header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
-    acceptLabel: isRecurring ? 'Supprimer la série' : 'Supprimer',
+    acceptLabel: 'Supprimer',
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
@@ -510,5 +568,32 @@ function handleDelete() {
       }
     }
   })
+}
+
+function pickedOccurrenceDate() {
+  // The expanded occurrence id from AgendaAggregator carries the occurrence's
+  // local date in its .datetime ATOM string. Slice off the YYYY-MM-DD prefix.
+  return props.agendaItem?.datetime?.slice(0, 10) ?? null
+}
+
+async function confirmScopedDelete() {
+  const seriesId = props.agendaItem?.metadata?.series_id ?? props.agendaItem?.source_id
+  const occurrenceDate = pickedOccurrenceDate()
+
+  try {
+    if (deleteScope.value === 'single') {
+      await agendaStore.deleteOccurrence(props.bandSpaceId, seriesId, occurrenceDate)
+    } else if (deleteScope.value === 'from') {
+      await agendaStore.deleteFromOccurrence(props.bandSpaceId, seriesId, occurrenceDate)
+    } else {
+      await agendaStore.deleteEntry(props.bandSpaceId, seriesId)
+    }
+    showDeleteScopeDialog.value = false
+    emit('deleted')
+    isVisible.value = false
+  } catch (error) {
+    formError.value = error?.message ?? 'Impossible de supprimer l’événement'
+    showDeleteScopeDialog.value = false
+  }
 }
 </script>

@@ -12,4 +12,6 @@ enum BandSpaceAgendaActivityType: string
     case EventDatetimeChanged = 'event_datetime_changed';
     case EndDatetimeChanged = 'end_datetime_changed';
     case IsAllDayChanged = 'is_all_day_changed';
+    case OccurrenceCancelled = 'occurrence_cancelled';
+    case SeriesTruncated = 'series_truncated';
 }
