@@ -19,9 +19,13 @@
       <MenuBand v-model:mobile-nav-open="mobileNavOpen" />
       <div class="flex">
         <aside
-          class="hidden lg:block w-[var(--band-sidebar-width)] shrink-0 sticky top-16 h-[calc(100dvh-4rem)] bg-surface-0 dark:bg-surface-900 border-r border-surface-200 dark:border-surface-700 self-start"
+          class="hidden lg:block w-[var(--band-sidebar-width)] shrink-0 sticky top-16 h-[calc(100dvh-4rem)] bg-surface-0 dark:bg-surface-900 border-r border-surface-200 dark:border-surface-700 self-start transition-[width] duration-150"
         >
-          <BandSidebar :disabled="bandSpaceStore.isCreating" />
+          <BandSidebar
+            v-model:collapsed="sidebarCollapsed"
+            :disabled="bandSpaceStore.isCreating"
+            :show-toggle="true"
+          />
         </aside>
         <main class="flex-1 min-w-0 bg-surface-200 dark:bg-surface-950">
           <div class="px-6 py-8 md:px-12 lg:pl-8 lg:pr-20 flex flex-col gap-8">
@@ -96,6 +100,36 @@ const { currentSpace, setLastSpaceId, handleRedirect, validateCurrentSpace } =
 const isLoading = ref(true)
 const hasError = ref(false)
 const mobileNavOpen = ref(false)
+
+// Desktop sidebar collapse state — persists across reloads and drives the
+// --band-sidebar-width CSS variable so the aside, the navbar logo zone,
+// and any future consumer stay in sync via one declaration.
+const SIDEBAR_COLLAPSED_KEY = 'bandSidebarCollapsed'
+const SIDEBAR_WIDTH_EXPANDED = '11rem'
+const SIDEBAR_WIDTH_COLLAPSED = '4rem'
+
+const sidebarCollapsed = ref(false)
+try {
+  sidebarCollapsed.value = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
+} catch {
+  // localStorage may throw in privacy modes — fall back to expanded.
+}
+
+watch(
+  sidebarCollapsed,
+  (collapsed) => {
+    document.documentElement.style.setProperty(
+      '--band-sidebar-width',
+      collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED
+    )
+    try {
+      window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0')
+    } catch {
+      // ignore
+    }
+  },
+  { immediate: true }
+)
 
 // Page title based on current space and route
 const pageTitle = computed(() => {

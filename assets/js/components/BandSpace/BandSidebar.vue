@@ -15,14 +15,18 @@
           :href="href"
           @click="(e) => handleClick(e, navigate)"
           :class="linkClasses(isExactActive)"
+          v-tooltip.right="tooltipFor(item.label)"
         >
           <i :class="['pi', item.icon, 'text-base shrink-0']" aria-hidden="true"></i>
-          <span class="font-medium truncate">{{ item.label }}</span>
+          <span v-if="!collapsed" class="font-medium truncate">{{ item.label }}</span>
         </a>
       </RouterLink>
     </nav>
 
-    <div v-if="settingsItem" class="mt-auto pt-3 border-t border-surface-200 dark:border-surface-700">
+    <div
+      v-if="settingsItem"
+      class="mt-auto pt-3 border-t border-surface-200 dark:border-surface-700"
+    >
       <RouterLink
         :to="{ name: settingsItem.route, params: { id: currentSpaceId } }"
         custom
@@ -32,12 +36,30 @@
           :href="href"
           @click="(e) => handleClick(e, navigate)"
           :class="linkClasses(isExactActive)"
+          v-tooltip.right="tooltipFor(settingsItem.label)"
         >
           <i :class="['pi', settingsItem.icon, 'text-base shrink-0']" aria-hidden="true"></i>
-          <span class="font-medium truncate">{{ settingsItem.label }}</span>
+          <span v-if="!collapsed" class="font-medium truncate">{{ settingsItem.label }}</span>
         </a>
       </RouterLink>
     </div>
+
+    <button
+      v-if="showToggle"
+      type="button"
+      :class="[
+        'flex items-center mt-2 px-3 py-2 rounded-lg transition-colors duration-150 text-surface-500 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800',
+        collapsed ? 'justify-center' : 'justify-end'
+      ]"
+      :aria-label="collapsed ? 'Étendre le menu' : 'Réduire le menu'"
+      v-tooltip.right="collapsed ? 'Étendre le menu' : null"
+      @click="collapsed = !collapsed"
+    >
+      <i
+        :class="['pi', collapsed ? 'pi-angle-double-right' : 'pi-angle-double-left', 'text-sm']"
+        aria-hidden="true"
+      />
+    </button>
   </div>
 </template>
 
@@ -48,8 +70,11 @@ import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.j
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
 const props = defineProps({
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
+  showToggle: { type: Boolean, default: false }
 })
+
+const collapsed = defineModel('collapsed', { type: Boolean, default: false })
 
 const emit = defineEmits(['navigate'])
 
@@ -75,11 +100,18 @@ const settingsItem = computed(
 function linkClasses(isActive) {
   return [
     'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-150',
+    collapsed.value ? 'justify-center' : '',
     props.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
     isActive
       ? 'bg-primary text-primary-contrast'
       : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800'
   ]
+}
+
+// Tooltip only shows when collapsed (labels are hidden) — passing null
+// suppresses the tooltip in expanded mode.
+function tooltipFor(label) {
+  return collapsed.value ? label : null
 }
 
 function handleClick(event, navigate) {
