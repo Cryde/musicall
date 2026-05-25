@@ -44,6 +44,15 @@ class MessageThreadMeta
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $isDeleted;
 
+    /**
+     * One email per unread streak (#533): set true when the message-received
+     * email is sent, reset to false when the recipient marks the thread as
+     * read. While true, subsequent messages in the same thread do not
+     * re-trigger an email.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    public bool $pendingNotificationSent = false;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();

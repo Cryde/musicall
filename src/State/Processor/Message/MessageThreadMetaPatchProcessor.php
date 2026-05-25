@@ -43,6 +43,13 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
             throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
         }
 
+        // When the recipient catches up on the thread, reset the
+        // one-email-per-unread-streak flag so the next incoming message can
+        // trigger another notification (#533).
+        if (!$entity->isRead && $data->isRead) {
+            $entity->pendingNotificationSent = false;
+        }
+
         $entity->isRead = $data->isRead;
         $this->entityManager->flush();
 
