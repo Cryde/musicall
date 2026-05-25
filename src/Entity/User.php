@@ -96,6 +96,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     public ?DateTimeInterface $lastLoginDatetime = null;
 
+    /**
+     * Updated by UserActivityListener on (throttled) authenticated requests.
+     * Consumed for message-email "active recipient" guard (#712) and any
+     * future presence-aware feature.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $lastActivityDatetime = null;
+
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     public ?int $oldId = null;
 

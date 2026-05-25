@@ -154,9 +154,19 @@ class MessageSenderProcedure
     }
 
     /**
-     * One email per unread streak (#533). Send only if the recipient is
-     * eligible (not deleted, notifications enabled) AND has no email
-     * already in flight for the current unread streak.
+     * Skip the email when the recipient was active on the site within the
+     * last ACTIVE_WINDOW_SECONDS (#712). They will see the in-app
+     * notification next time they hit the inbox tab; an email at that
+     * point is noise. Window is comfortably wider than
+     * UserActivityListener's write throttle.
+     */
+    private const int ACTIVE_WINDOW_SECONDS = 300;
+
+    /**
+     * One email per unread streak (#533) AND skip if the recipient was
+     * recently active (#712). Send only if the recipient is eligible
+     * (not deleted, notifications enabled, presently idle) AND has no
+     * email already in flight for the current unread streak.
      */
     private function shouldNotify(User $recipient, MessageThreadMeta $meta): bool
     {
@@ -166,7 +176,20 @@ class MessageSenderProcedure
         if (!$this->preferenceChecker->canReceiveMessageNotification($recipient)) {
             return false;
         }
+        if ($meta->pendingNotificationSent) {
+            return false;
+        }
 
-        return !$meta->pendingNotificationSent;
+        return !$this->wasRecentlyActive($recipient);
+    }
+
+    private function wasRecentlyActive(User $recipient): bool
+    {
+        if ($recipient->lastActivityDatetime === null) {
+            return false;
+        }
+
+        return (new \DateTimeImmutable())->getTimestamp() - $recipient->lastActivityDatetime->getTimestamp()
+            < self::ACTIVE_WINDOW_SECONDS;
     }
 }

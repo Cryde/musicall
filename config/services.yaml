@@ -85,3 +85,10 @@ services:
 when@test:
     services:
         App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
+
+        # Don't fire UserActivityListener on every test request - it would
+        # write to fos_user.last_activity_datetime ~1600 times per suite.
+        # The listener's own behavior is covered directly by
+        # UserActivityListenerTest (direct invocation, no HTTP).
+        App\EventSubscriber\UserActivityListener:
+            autoconfigure: false

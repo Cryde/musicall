@@ -114,6 +114,45 @@ class MessageEmailThrottleTest extends ApiTestCase
         );
     }
 
+    public function test_no_email_when_recipient_was_recently_active(): void
+    {
+        // #712: recipient was active <5 min ago -> skip the email entirely
+        // (they will see the in-app notification on the inbox tab).
+        [$sender, $recipient, $thread] = $this->createThreadWithMembers();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $recipient->lastActivityDatetime = new \DateTimeImmutable('-30 seconds');
+        $em->flush();
+
+        $this->client->loginUser($sender);
+        $this->postMessage($thread, 'hey are you around?');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertEmailCount(0);
+
+        // Streak flag must NOT flip - otherwise we would never email this
+        // recipient until they read, even after they go idle.
+        $em->clear();
+        $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
+        $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
+        $this->assertFalse($recipientMeta->pendingNotificationSent);
+    }
+
+    public function test_email_sent_when_recipient_was_active_long_ago(): void
+    {
+        [$sender, $recipient, $thread] = $this->createThreadWithMembers();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $recipient->lastActivityDatetime = new \DateTimeImmutable('-2 hours');
+        $em->flush();
+
+        $this->client->loginUser($sender);
+        $this->postMessage($thread, 'long time no see');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertEmailCount(1);
+    }
+
     public function test_message_after_read_sends_a_fresh_email(): void
     {
         [$sender, $recipient, $thread] = $this->createThreadWithMembers();
