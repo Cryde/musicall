@@ -1,7 +1,10 @@
 services:
-    # OpenAI Platform
+    # OpenAI Platform — symfony/ai 0.9: PlatformFactory was renamed Factory
+    # and the createPlatform signature reordered $eventDispatcher from
+    # position 3 to 6. We rely on named arguments here so the rename
+    # doesn't accidentally misbind.
     Symfony\AI\Platform\PlatformInterface:
-        factory: ['Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory', 'create']
+        factory: ['Symfony\AI\Platform\Bridge\OpenAi\Factory', 'createPlatform']
         arguments:
             $apiKey: '%env(OPENAI_API_KEY)%'
             $httpClient: '@http_client'
