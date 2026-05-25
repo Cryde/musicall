@@ -4,6 +4,7 @@ namespace App\Service\Procedure\Message;
 
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
+use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\Event\MessageSentEvent;
 use App\Repository\Message\MessageThreadMetaRepository;
@@ -12,6 +13,7 @@ use App\Service\Builder\Message\MessageDirector;
 use App\Service\Builder\Message\MessageParticipantDirector;
 use App\Service\Builder\Message\MessageThreadDirector;
 use App\Service\Builder\Message\MessageThreadMetaDirector;
+use App\Service\User\UserNotificationPreferenceChecker;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -21,14 +23,15 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class MessageSenderProcedure
 {
     public function __construct(
-        private readonly EntityManagerInterface      $entityManager,
-        private readonly MessageThreadRepository     $messageThreadRepository,
-        private readonly MessageThreadDirector       $messageThreadDirector,
-        private readonly MessageThreadMetaDirector   $messageThreadMetaDirector,
-        private readonly MessageParticipantDirector  $messageParticipantDirector,
-        private readonly MessageThreadMetaRepository $messageThreadMetaRepository,
-        private readonly MessageDirector             $messageDirector,
-        private readonly EventDispatcherInterface    $eventDispatcher
+        private readonly EntityManagerInterface           $entityManager,
+        private readonly MessageThreadRepository          $messageThreadRepository,
+        private readonly MessageThreadDirector            $messageThreadDirector,
+        private readonly MessageThreadMetaDirector        $messageThreadMetaDirector,
+        private readonly MessageParticipantDirector       $messageParticipantDirector,
+        private readonly MessageThreadMetaRepository      $messageThreadMetaRepository,
+        private readonly MessageDirector                  $messageDirector,
+        private readonly EventDispatcherInterface         $eventDispatcher,
+        private readonly UserNotificationPreferenceChecker $preferenceChecker,
     ) {
     }
 
@@ -38,7 +41,10 @@ class MessageSenderProcedure
      */
     public function process(User $sender, User $recipient, string $content) : Message
     {
-        return $this->entityManager->wrapInTransaction(function () use ($sender, $recipient, $content): Message {
+        /** @var MessageSentEvent[] $eventsToDispatch */
+        $eventsToDispatch = [];
+
+        $message = $this->entityManager->wrapInTransaction(function () use ($sender, $recipient, $content, &$eventsToDispatch): Message {
             // Serialize concurrent A↔B thread creation by acquiring write locks on the
             // two user rows in deterministic id-sorted order (deadlock-free). The second
             // request in a race blocks here, then sees the thread the first just created.
@@ -57,9 +63,15 @@ class MessageSenderProcedure
                 $this->entityManager->persist($participantSender);
                 $this->entityManager->persist($participantRecipient);
 
-                $this->eventDispatcher->dispatch(new MessageSentEvent($recipient, $sender, $thread));
+                if ($this->shouldNotify($recipient, $threadMetaRecipient)) {
+                    $threadMetaRecipient->pendingNotificationSent = true;
+                    $eventsToDispatch[] = new MessageSentEvent($recipient, $sender, $thread);
+                }
             } else {
-                $this->handleReadMessage($thread, $sender);
+                $eventsToDispatch = array_merge(
+                    $eventsToDispatch,
+                    $this->handleReadMessage($thread, $sender),
+                );
             }
 
             $message = $this->messageDirector->create($thread, $sender, $content);
@@ -69,16 +81,32 @@ class MessageSenderProcedure
 
             return $message;
         });
+
+        // Dispatch AFTER the transaction commits so we never send an email
+        // for a message that failed to persist. The throttle decision +
+        // pending-flag flip already happened inside the transaction above,
+        // so the listener is now a pure email sender.
+        foreach ($eventsToDispatch as $event) {
+            $this->eventDispatcher->dispatch($event);
+        }
+
+        return $message;
     }
 
     public function processByThread(MessageThread $thread, User $sender, string $content): Message
     {
-        $this->handleReadMessage($thread, $sender);
+        $eventsToDispatch = $this->handleReadMessage($thread, $sender);
 
         $message = $this->messageDirector->create($thread, $sender, $content);
         $this->entityManager->persist($message);
         $thread->lastMessage = $message;
         $this->entityManager->flush();
+
+        // Same rule as process(): only emit notifications once the message is
+        // actually persisted, never before.
+        foreach ($eventsToDispatch as $event) {
+            $this->eventDispatcher->dispatch($event);
+        }
 
         return $message;
     }
@@ -99,20 +127,46 @@ class MessageSenderProcedure
             ->getResult();
     }
 
-    private function handleReadMessage(MessageThread $thread, User $sender): void
+    /**
+     * @return MessageSentEvent[]
+     */
+    private function handleReadMessage(MessageThread $thread, User $sender): array
     {
+        $events = [];
         foreach ($thread->messageParticipants as $participant) {
             $recipient = $participant->participant;
             if ($recipient->id !== $sender->id) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
                 assert($threadMetaRecipient !== null);
                 $threadMetaRecipient->isRead = false;
-                $this->eventDispatcher->dispatch(new MessageSentEvent($recipient, $sender, $thread));
+                if ($this->shouldNotify($recipient, $threadMetaRecipient)) {
+                    $threadMetaRecipient->pendingNotificationSent = true;
+                    $events[] = new MessageSentEvent($recipient, $sender, $thread);
+                }
             }
         }
 
         $threadMetaSender = $this->messageThreadMetaRepository->findOneBy(['user' => $sender, 'thread' => $thread]);
         assert($threadMetaSender !== null);
         $threadMetaSender->isRead = true;
+
+        return $events;
+    }
+
+    /**
+     * One email per unread streak (#533). Send only if the recipient is
+     * eligible (not deleted, notifications enabled) AND has no email
+     * already in flight for the current unread streak.
+     */
+    private function shouldNotify(User $recipient, MessageThreadMeta $meta): bool
+    {
+        if ($recipient->isDeleted()) {
+            return false;
+        }
+        if (!$this->preferenceChecker->canReceiveMessageNotification($recipient)) {
+            return false;
+        }
+
+        return !$meta->pendingNotificationSent;
     }
 }

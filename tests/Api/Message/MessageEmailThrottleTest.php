@@ -17,7 +17,7 @@ class MessageEmailThrottleTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
 
-    public function test_first_message_sends_email(): void
+    public function test_first_message_in_existing_thread_sends_email(): void
     {
         [$sender, $recipient, $thread] = $this->createThreadWithMembers();
 
@@ -30,6 +30,38 @@ class MessageEmailThrottleTest extends ApiTestCase
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
         $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
+        $this->assertTrue($recipientMeta->pendingNotificationSent);
+        $this->assertFalse($recipientMeta->isRead);
+    }
+
+    public function test_first_message_in_brand_new_thread_sends_email(): void
+    {
+        // POST /api/messages/user creates the thread + metas on the fly, so the
+        // throttle check runs against an entity that has not been flushed yet.
+        // Regression for an earlier blocker: a stale findOneBy in the listener
+        // returned null and skipped the email entirely.
+        $sender = UserFactory::new()->asBaseUser()->create([
+            'username' => 'first_sender',
+            'email' => 'first_sender@test.com',
+        ]);
+        $recipient = UserFactory::new()->asBaseUser()->create([
+            'username' => 'first_recipient',
+            'email' => 'first_recipient@test.com',
+        ]);
+
+        $this->client->loginUser($sender);
+        $this->client->jsonRequest('POST', '/api/messages/user', [
+            'recipient' => '/api/users/' . $recipient->id,
+            'content' => 'first hello',
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertEmailCount(1);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
+        $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id]);
+        $this->assertNotNull($recipientMeta);
         $this->assertTrue($recipientMeta->pendingNotificationSent);
         $this->assertFalse($recipientMeta->isRead);
     }

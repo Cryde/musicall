@@ -4,58 +4,41 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Entity\Message\MessageThreadMeta;
 use App\Event\MessageSentEvent;
-use App\Repository\Message\MessageThreadMetaRepository;
 use App\Service\Mail\Brevo\Message\MessageReceivedEmail;
-use App\Service\User\UserNotificationPreferenceChecker;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
+/**
+ * Sends the message-received email. The throttle (one email per unread
+ * streak, #533), preference and deleted-user checks, and the pending-flag
+ * flip all live in MessageSenderProcedure::shouldNotify - by the time we
+ * dispatch the event, we have already decided an email should go out.
+ *
+ * Kept as a listener (rather than calling the email service inline from
+ * the procedure) so future side-effects on message-sent (analytics,
+ * push notification, etc.) can plug in without touching the procedure.
+ */
 #[AsEventListener]
 readonly class MessageSentListener
 {
     public function __construct(
-        private MessageReceivedEmail              $messageReceivedEmail,
-        private RouterInterface                   $router,
-        private UserNotificationPreferenceChecker $preferenceChecker,
-        private MessageThreadMetaRepository       $messageThreadMetaRepository,
+        private MessageReceivedEmail $messageReceivedEmail,
+        private RouterInterface      $router,
     ) {
     }
 
     public function __invoke(MessageSentEvent $event): void
     {
-        $recipient = $event->recipient;
-        $sender = $event->sender;
-        $thread = $event->thread;
-
-        if ($recipient->isDeleted() || !$this->preferenceChecker->canReceiveMessageNotification($recipient)) {
-            return;
-        }
-
-        // One email per unread streak (#533): if a notification was already
-        // sent for the recipient's current unread streak in this thread, skip.
-        // The streak resets when the recipient marks the thread as read
-        // (MessageThreadMetaPatchProcessor flips pendingNotificationSent back
-        // to false).
-        $meta = $this->messageThreadMetaRepository->findOneBy(['thread' => $thread, 'user' => $recipient]);
-        if (!$meta instanceof MessageThreadMeta || $meta->pendingNotificationSent) {
-            return;
-        }
-
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $messageUrl = $baseUrl . 'messages/' . $thread->id;
+        $messageUrl = $baseUrl . 'messages/' . $event->thread->id;
 
         $this->messageReceivedEmail->send(
-            $recipient->email,
-            $recipient->username,
-            $sender->username,
-            $messageUrl
+            $event->recipient->email,
+            $event->recipient->username,
+            $event->sender->username,
+            $messageUrl,
         );
-
-        $meta->pendingNotificationSent = true;
-        // The procedure's outer transaction will flush this together with the
-        // message itself; no explicit flush here.
     }
 }
