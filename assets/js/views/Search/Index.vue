@@ -378,9 +378,10 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
@@ -390,7 +391,6 @@ import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
 const route = useRoute()
-const router = useRouter()
 
 const styleStore = useStyleStore()
 const instrumentStore = useInstrumentStore()
@@ -420,6 +420,19 @@ const selectSearchTypeOption = [
   { key: 2, name: 'Musiciens' },
   { key: 1, name: 'Groupe' }
 ]
+
+// URL <-> primitive sync. The entity refs above stay the source of truth for
+// the form (they back the v-model bindings); we mirror their derived
+// primitives into useUrlFilters at the moment a search runs (autoSync: false
+// so the URL captures the executed search, not in-progress draft state).
+const {
+  filters: urlFilters,
+  clear: clearUrlFilters,
+  push: pushUrlFilters
+} = useUrlFilters(
+  { type: '', instrument: '', styles: [], lat: '', lng: '', location: '' },
+  { autoSync: false }
+)
 
 const showAnnounceModal = ref(false)
 const createFromSearch = ref(false)
@@ -484,7 +497,7 @@ async function loadInitialResults() {
 
 function applyPrefilledInstrument() {
   // Only apply prefilled instrument from route meta if no URL instrument param
-  if (route.query.instrument) {
+  if (urlFilters.instrument) {
     return
   }
 
@@ -633,55 +646,41 @@ function buildSearchParams() {
 }
 
 function initializeFiltersFromUrl() {
-  const query = route.query
-
-  // Type (1=group, 2=musician)
-  if (query.type) {
-    selectSearchType.value = selectSearchTypeOption.find((t) => t.key === Number(query.type))
+  // useUrlFilters already hydrated `urlFilters` from the URL on setup;
+  // map those primitives back into the entity refs the form binds to.
+  if (urlFilters.type) {
+    selectSearchType.value = selectSearchTypeOption.find((t) => t.key === Number(urlFilters.type))
   }
-
-  // Instrument (by ID) - convert to string for comparison as URL params are strings
-  if (query.instrument) {
+  if (urlFilters.instrument) {
     selectedInstrument.value = instrumentStore.instruments.find(
-      (i) => String(i.id) === String(query.instrument)
+      (i) => String(i.id) === urlFilters.instrument
     )
   }
-
-  // Styles (comma-separated IDs) - convert to string for comparison
-  if (query.styles) {
-    const styleIds = query.styles.split(',')
-    selectedStyles.value = styleStore.styles.filter((s) => styleIds.includes(String(s.id)))
+  if (urlFilters.styles.length > 0) {
+    selectedStyles.value = styleStore.styles.filter((s) => urlFilters.styles.includes(String(s.id)))
   }
-
-  // Location (lat, lng, location name)
-  if (query.lat && query.lng && query.location) {
+  if (urlFilters.lat && urlFilters.lng && urlFilters.location) {
     selectedLocation.value = {
-      latitude: Number.parseFloat(query.lat),
-      longitude: Number.parseFloat(query.lng),
-      name: query.location
+      latitude: Number.parseFloat(urlFilters.lat),
+      longitude: Number.parseFloat(urlFilters.lng),
+      name: urlFilters.location
     }
   }
 }
 
-function updateUrlWithFilters() {
-  const query = {}
-
-  if (selectSearchType.value) {
-    query.type = selectSearchType.value.key
-  }
-  if (selectedInstrument.value) {
-    query.instrument = selectedInstrument.value.id
-  }
-  if (selectedStyles.value.length > 0) {
-    query.styles = selectedStyles.value.map((s) => s.id).join(',')
-  }
+function syncEntityRefsToUrlFilters() {
+  urlFilters.type = selectSearchType.value ? String(selectSearchType.value.key) : ''
+  urlFilters.instrument = selectedInstrument.value ? String(selectedInstrument.value.id) : ''
+  urlFilters.styles = selectedStyles.value.map((s) => String(s.id))
   if (selectedLocation.value && typeof selectedLocation.value === 'object') {
-    query.lat = selectedLocation.value.latitude
-    query.lng = selectedLocation.value.longitude
-    query.location = selectedLocation.value.name
+    urlFilters.lat = String(selectedLocation.value.latitude)
+    urlFilters.lng = String(selectedLocation.value.longitude)
+    urlFilters.location = selectedLocation.value.name
+  } else {
+    urlFilters.lat = ''
+    urlFilters.lng = ''
+    urlFilters.location = ''
   }
-
-  router.replace({ query })
 }
 
 async function search() {
@@ -701,7 +700,8 @@ async function search() {
   isSearchMade.value = true
 
   // Sync filters with URL for shareability
-  updateUrlWithFilters()
+  syncEntityRefsToUrlFilters()
+  pushUrlFilters()
 
   if (musicianSearchStore.announces.length === 0) {
     trackUmamiEvent('musician-search-no-results', searchFilters)
@@ -830,7 +830,8 @@ function clearAllFilters(skipTracking = false) {
   musicianSearchStore.clear()
   isSearchMade.value = false
   // Clear URL params
-  router.replace({ query: {} })
+  clearUrlFilters()
+  pushUrlFilters()
 }
 
 function handleOpenAnnounceModal() {

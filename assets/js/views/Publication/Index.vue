@@ -129,6 +129,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
+import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { useGalleriesStore } from '../../store/gallery/galleries.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
@@ -151,7 +152,9 @@ const isInitialized = ref(false)
 const isLoadingPage = ref(false)
 const selectCategoryFilter = ref(null)
 const currentPage = ref(1)
-const orientation = ref('desc')
+// `sort` is synced to ?sort= via useUrlFilters; the API still calls it
+// `orientation` so we map at the call site.
+const { filters: urlFilters } = useUrlFilters({ sort: 'desc' })
 const fetchedItems = ref()
 const showAuthModal = ref(false)
 
@@ -273,13 +276,13 @@ const infiniteHandler = async () => {
     if (isPhotosCategory.value) {
       fetchedItems.value = await galleriesStore.loadGalleries({
         page: currentPage.value,
-        orientation: orientation.value
+        orientation: urlFilters.sort
       })
     } else {
       fetchedItems.value = await publicationsStore.loadPublications({
         page: currentPage.value,
         slug: selectCategoryFilter.value?.slug,
-        orientation: orientation.value
+        orientation: urlFilters.sort
       })
     }
     currentPage.value++
@@ -319,7 +322,7 @@ const sortOptions = ref([
     icon: 'pi pi-calendar-plus',
     command: async () => {
       sortMenu.value.hide()
-      orientation.value = 'desc'
+      urlFilters.sort = 'desc'
       await resetList()
     }
   },
@@ -328,7 +331,7 @@ const sortOptions = ref([
     icon: 'pi pi-calendar-minus',
     command: async () => {
       sortMenu.value.hide()
-      orientation.value = 'asc'
+      urlFilters.sort = 'asc'
       await resetList()
     }
   }
