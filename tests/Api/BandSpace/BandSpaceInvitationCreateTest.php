@@ -4,8 +4,10 @@ namespace App\Tests\Api\BandSpace;
 
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
+use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -411,5 +413,55 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'type' => '/validation_errors/music_all_b1c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e',
             'title' => 'An error occurred',
         ]);
+    }
+
+    public function test_inviting_an_existing_user_creates_a_notification(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $invitee = UserFactory::new()->create(['username' => 'invitee', 'email' => 'invitee@example.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'invitee@example.com'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $invitation = self::getContainer()->get(BandSpaceInvitationRepository::class)
+            ->findPendingByEmailAndBandSpace('invitee@example.com', $bandSpace);
+        $this->assertNotNull($invitation);
+
+        $notifications = self::getContainer()->get(NotificationRepository::class)->findForRecipient($invitee, 10, 0);
+        $this->assertCount(1, $notifications);
+        $this->assertSame(NotificationType::BandSpaceInvitation, $notifications[0]->type);
+        $this->assertSame([
+            'band_space_id' => (string) $bandSpace->id,
+            'band_space_name' => 'The Rockers',
+            'invitation_token' => $invitation->token,
+            'invited_by_username' => $admin->username,
+        ], $notifications[0]->payload);
+    }
+
+    public function test_inviting_a_new_email_creates_no_notification(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'brand-new@example.com'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertSame(0, self::getContainer()->get(NotificationRepository::class)->count([]));
     }
 }

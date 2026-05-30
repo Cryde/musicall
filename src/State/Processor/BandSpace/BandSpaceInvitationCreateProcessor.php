@@ -10,6 +10,7 @@ use App\Entity\BandSpace\BandSpaceInvitation;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
+use App\Event\BandSpaceInvitationSentEvent;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\UserRepository;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<BandSpaceInvitationCreate, BandSpaceInvitationResource>
@@ -45,6 +47,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         private Security $security,
         #[Target('band_space_invitation')]
         private RateLimiterFactoryInterface $bandSpaceInvitationLimiter,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -79,7 +82,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         }
 
         $pendingInvitation = $this->bandSpaceInvitationRepository->findPendingByEmailAndBandSpace($email, $bandSpace);
-        if ($pendingInvitation instanceof \App\Entity\BandSpace\BandSpaceInvitation) {
+        if ($pendingInvitation instanceof BandSpaceInvitation) {
             throw new ConflictHttpException('Une invitation est déjà en attente pour cet utilisateur');
         }
 
@@ -107,9 +110,11 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
         );
         $this->entityManager->flush();
 
+        $this->eventDispatcher->dispatch(new BandSpaceInvitationSentEvent($invitation));
+
         $baseUrl = $this->router->generate('app_homepage', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        if ($existingUser instanceof \App\Entity\User) {
+        if ($existingUser instanceof User) {
             $this->existingUserEmail->send(
                 $email,
                 $existingUser->username,
