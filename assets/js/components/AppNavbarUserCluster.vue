@@ -18,6 +18,7 @@
           </OverlayBadge>
           <i v-else class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
         </RouterLink>
+        <NotificationBell @navigate="emit('navigate')" />
         <Avatar
           v-if="userSecurityStore.profilePictureUrl"
           :image="userSecurityStore.profilePictureUrl"
@@ -65,6 +66,7 @@ import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../store/notification/notification.js'
 import { useUserSecurityStore } from '../store/user/security.js'
 import { getAvatarStyle } from '../utils/avatar.js'
+import NotificationBell from './Notification/NotificationBell.vue'
 
 const emit = defineEmits(['navigate'])
 
