@@ -92,6 +92,14 @@ const TYPE_CONFIG = {
     preview: `vous a invité à rejoindre ${payload.band_space_name}`,
     actions: 'invitation',
     target: null
+  }),
+  band_space_task_assignment: (payload) => ({
+    icon: 'pi pi-check-square',
+    avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    title: payload.actor_username,
+    preview: `vous a assigné à la tâche « ${payload.task_title} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   })
 }
 

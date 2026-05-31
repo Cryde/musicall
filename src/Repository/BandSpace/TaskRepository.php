@@ -138,6 +138,26 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Bulk lookup by id (any band space) - used to refresh the live task title for the
+     * notification feed in one query.
+     *
+     * @param string[] $ids
+     * @return Task[]
+     */
+    public function findByIds(array $ids): array
+    {
+        if (count($ids) === 0) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('t')
+            ->where('t.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?Task
     {
         return $this->createQueryBuilder('t')

@@ -4,7 +4,9 @@ namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\TaskStatus;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -392,5 +394,39 @@ class TaskUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_adding_an_assignee_on_update_notifies_the_new_assignee(): void
+    {
+        $actor = UserFactory::new()->asBaseUser()->create();
+        $assignee = UserFactory::new()->create(['username' => 'late_assignee', 'email' => 'late@test.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $actor])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $assignee])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $actor, 'title' => 'Tâche à assigner'])->create();
+
+        $this->client->loginUser($actor);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['assignee_ids' => [$assignee->id]],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+        $notifications = $notificationRepository->findForRecipient($assignee, 10, 0);
+        $this->assertCount(1, $notifications);
+        $this->assertSame(NotificationType::BandSpaceTaskAssignment, $notifications[0]->type);
+        $this->assertSame([
+            'band_space_id' => (string) $bandSpace->id,
+            'task_id' => (string) $task->id,
+            'task_title' => 'Tâche à assigner',
+            'actor_id' => (string) $actor->id,
+            'actor_username' => $actor->username,
+        ], $notifications[0]->payload);
+
+        $this->assertCount(0, $notificationRepository->findForRecipient($actor, 10, 0));
     }
 }

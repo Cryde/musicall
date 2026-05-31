@@ -2,8 +2,10 @@
 
 namespace App\Tests\Api\BandSpace\Task;
 
+use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\Filter\TaskFilter;
 use App\Repository\BandSpace\TaskRepository;
+use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -161,5 +163,64 @@ class TaskCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function test_creating_a_task_with_assignees_notifies_them_not_the_creator(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create();
+        $assignee1 = UserFactory::new()->create(['username' => 'assignee_one', 'email' => 'a1@test.com']);
+        $assignee2 = UserFactory::new()->create(['username' => 'assignee_two', 'email' => 'a2@test.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $assignee1])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $assignee2])->create();
+
+        $this->client->loginUser($creator);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            ['title' => 'Tâche partagée', 'assignee_ids' => [$assignee1->id, $assignee2->id]],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $task = self::getContainer()->get(TaskRepository::class)->findByBandSpace($bandSpace, new TaskFilter())[0];
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+
+        $expectedPayload = [
+            'band_space_id' => (string) $bandSpace->id,
+            'task_id' => (string) $task->id,
+            'task_title' => 'Tâche partagée',
+            'actor_id' => (string) $creator->id,
+            'actor_username' => $creator->username,
+        ];
+
+        foreach ([$assignee1, $assignee2] as $assignee) {
+            $notifications = $notificationRepository->findForRecipient($assignee, 10, 0);
+            $this->assertCount(1, $notifications);
+            $this->assertSame(NotificationType::BandSpaceTaskAssignment, $notifications[0]->type);
+            $this->assertSame($expectedPayload, $notifications[0]->payload);
+        }
+
+        $this->assertCount(0, $notificationRepository->findForRecipient($creator, 10, 0));
+    }
+
+    public function test_assigning_a_task_to_yourself_creates_no_notification(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+
+        $this->client->loginUser($creator);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            ['title' => 'Ma tâche', 'assignee_ids' => [$creator->id]],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findForRecipient($creator, 10, 0));
     }
 }

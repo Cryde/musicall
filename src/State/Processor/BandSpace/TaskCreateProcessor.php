@@ -12,6 +12,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
+use App\Event\BandSpaceTaskAssignedEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
@@ -23,6 +24,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<TaskCreate, TaskResource>
@@ -38,6 +40,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskBuilder $taskBuilder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -78,6 +81,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
 
         $this->entityManager->persist($task);
 
+        $addedAssignees = [];
         if ($data->assigneeIds !== null) {
             foreach ($data->assigneeIds as $assigneeId) {
                 $assignee = $this->userRepository->find($assigneeId);
@@ -91,6 +95,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
                 }
 
                 $task->assignees->add($assignee);
+                $addedAssignees[] = $assignee;
                 $this->bandSpaceActivityRecorder->record(
                     bandSpace: $task->bandSpace,
                     module: BandSpaceModule::Task,
@@ -106,6 +111,10 @@ readonly class TaskCreateProcessor implements ProcessorInterface
         }
 
         $this->entityManager->flush();
+
+        if ($addedAssignees !== []) {
+            $this->eventDispatcher->dispatch(new BandSpaceTaskAssignedEvent($task, $user, $addedAssignees));
+        }
 
         return $this->taskBuilder->buildItem($task);
     }

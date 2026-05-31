@@ -10,6 +10,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
+use App\Event\BandSpaceTaskAssignedEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\TaskCategoryRepository;
 use App\Repository\UserRepository;
@@ -20,6 +21,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class TaskUpdateProcedure
 {
@@ -29,6 +31,7 @@ readonly class TaskUpdateProcedure
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private UserRepository $userRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -66,9 +69,9 @@ readonly class TaskUpdateProcedure
             $this->applyCategoryChange($task, $data->categoryId, $bandSpace, $user);
         }
 
-        if (array_key_exists('assignee_ids', $payload)) {
-            $this->applyAssigneesChange($task, $data->assignees, $payload['assignee_ids'], $bandSpace, $user);
-        }
+        $addedAssignees = array_key_exists('assignee_ids', $payload)
+            ? $this->applyAssigneesChange($task, $data->assignees, $payload['assignee_ids'], $bandSpace, $user)
+            : [];
 
         if (array_key_exists('archived', $payload)) {
             $this->applyArchivedChange($task, (bool) $payload['archived'], $user);
@@ -81,6 +84,10 @@ readonly class TaskUpdateProcedure
         $task->updateDatetime = new DateTime();
 
         $this->entityManager->flush();
+
+        if ($addedAssignees !== []) {
+            $this->eventDispatcher->dispatch(new BandSpaceTaskAssignedEvent($task, $user, $addedAssignees));
+        }
 
         return $task;
     }
@@ -151,6 +158,7 @@ readonly class TaskUpdateProcedure
     /**
      * @param array<int, array{id: string, username: string}> $currentAssignees
      * @param string[] $newAssigneeIds
+     * @return User[] the newly-added assignees
      */
     private function applyAssigneesChange(
         Task $task,
@@ -158,10 +166,11 @@ readonly class TaskUpdateProcedure
         array $newAssigneeIds,
         BandSpace $bandSpace,
         User $user,
-    ): void {
+    ): array {
         $oldIds = array_map(fn(array $a): string => $a['id'], $currentAssignees);
         $added = array_diff($newAssigneeIds, $oldIds);
         $removed = array_diff($oldIds, $newAssigneeIds);
+        $addedUsers = [];
 
         foreach ($removed as $removedId) {
             foreach ($task->assignees as $assignee) {
@@ -195,6 +204,7 @@ readonly class TaskUpdateProcedure
             }
 
             $task->assignees->add($assignee);
+            $addedUsers[] = $assignee;
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $task->bandSpace,
                 module: BandSpaceModule::Task,
@@ -207,6 +217,8 @@ readonly class TaskUpdateProcedure
                 ],
             );
         }
+
+        return $addedUsers;
     }
 
     private function applyArchivedChange(Task $task, bool $archived, User $user): void
