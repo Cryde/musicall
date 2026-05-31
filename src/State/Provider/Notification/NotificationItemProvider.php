@@ -9,6 +9,7 @@ use App\Entity\Notification\Notification;
 use App\Entity\User;
 use App\Repository\Notification\NotificationRepository;
 use App\Service\Builder\Notification\NotificationBuilder;
+use App\Service\Notification\NotificationFeedEnricher;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -22,6 +23,7 @@ readonly class NotificationItemProvider implements ProviderInterface
         private Security $security,
         private NotificationRepository $notificationRepository,
         private NotificationBuilder $notificationBuilder,
+        private NotificationFeedEnricher $feedEnricher,
     ) {
     }
 
@@ -37,6 +39,9 @@ readonly class NotificationItemProvider implements ProviderInterface
             throw new NotFoundHttpException('Notification introuvable');
         }
 
-        return $this->notificationBuilder->buildFromEntity($notification);
+        $dto = $this->notificationBuilder->buildFromEntity($notification);
+        $this->feedEnricher->enrich([$dto]);
+
+        return $dto;
     }
 }

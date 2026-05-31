@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Notification;
 
+use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\Notification\NotificationType;
 use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
 use App\Tests\Factory\Notification\NotificationFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -300,6 +302,274 @@ class UserNotificationTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals(['code' => 401, 'message' => 'JWT Token not found']);
+    }
+
+    public function test_invitation_notification_feed_exposes_pending_status(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        BandSpaceInvitationFactory::new(['token' => 'inv-token-pending', 'status' => InvitationStatus::Pending])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceInvitation,
+            'payload' => [
+                'band_space_id' => 'bs-1',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-pending',
+                'invited_by_username' => 'admin_user',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_invitation',
+                    'payload' => [
+                        'band_space_id' => 'bs-1',
+                        'band_space_name' => 'The Rockers',
+                        'invitation_token' => 'inv-token-pending',
+                        'invited_by_username' => 'admin_user',
+                        'invitation_status' => 'pending',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_invitation_notification_feed_reflects_accepted_status(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        BandSpaceInvitationFactory::new(['token' => 'inv-token-accepted', 'status' => InvitationStatus::Accepted])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceInvitation,
+            'payload' => [
+                'band_space_id' => 'bs-2',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-accepted',
+                'invited_by_username' => 'admin_user',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_invitation',
+                    'payload' => [
+                        'band_space_id' => 'bs-2',
+                        'band_space_name' => 'The Rockers',
+                        'invitation_token' => 'inv-token-accepted',
+                        'invited_by_username' => 'admin_user',
+                        'invitation_status' => 'accepted',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_invitation_notification_feed_marks_time_expired_invitation_as_expired(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        // Still status Pending, but past its expiration (the expire command may not have run yet).
+        BandSpaceInvitationFactory::new([
+            'token' => 'inv-token-expired',
+            'status' => InvitationStatus::Pending,
+            'expirationDatetime' => new \DateTime('-1 day'),
+        ])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceInvitation,
+            'payload' => [
+                'band_space_id' => 'bs-3',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-expired',
+                'invited_by_username' => 'admin_user',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_invitation',
+                    'payload' => [
+                        'band_space_id' => 'bs-3',
+                        'band_space_name' => 'The Rockers',
+                        'invitation_token' => 'inv-token-expired',
+                        'invited_by_username' => 'admin_user',
+                        'invitation_status' => 'expired',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_invitation_notification_item_endpoint_exposes_live_status(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        BandSpaceInvitationFactory::new(['token' => 'inv-token-item', 'status' => InvitationStatus::Pending])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceInvitation,
+            'payload' => [
+                'band_space_id' => 'bs-item',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-item',
+                'invited_by_username' => 'admin_user',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications/' . $notification->id, [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications/' . $notification->id,
+            '@type' => 'UserNotification',
+            'id' => (string) $notification->id,
+            'type' => 'band_space_invitation',
+            'payload' => [
+                'band_space_id' => 'bs-item',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-item',
+                'invited_by_username' => 'admin_user',
+                'invitation_status' => 'pending',
+            ],
+            'read_datetime' => null,
+            'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+        ]);
+    }
+
+    public function test_invitation_notification_feed_reflects_declined_status(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        BandSpaceInvitationFactory::new(['token' => 'inv-token-declined', 'status' => InvitationStatus::Declined])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceInvitation,
+            'payload' => [
+                'band_space_id' => 'bs-declined',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-declined',
+                'invited_by_username' => 'admin_user',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_invitation',
+                    'payload' => [
+                        'band_space_id' => 'bs-declined',
+                        'band_space_name' => 'The Rockers',
+                        'invitation_token' => 'inv-token-declined',
+                        'invited_by_username' => 'admin_user',
+                        'invitation_status' => 'declined',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_invitation_notification_with_unknown_token_is_marked_expired(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        // No matching invitation for this token (e.g. the invite was hard-deleted with its band space).
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceInvitation,
+            'payload' => [
+                'band_space_id' => 'bs-gone',
+                'band_space_name' => 'The Rockers',
+                'invitation_token' => 'inv-token-unknown',
+                'invited_by_username' => 'admin_user',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_invitation',
+                    'payload' => [
+                        'band_space_id' => 'bs-gone',
+                        'band_space_name' => 'The Rockers',
+                        'invitation_token' => 'inv-token-unknown',
+                        'invited_by_username' => 'admin_user',
+                        'invitation_status' => 'expired',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
     }
 
     private function notificationRepository(): NotificationRepository

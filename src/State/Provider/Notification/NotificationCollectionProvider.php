@@ -10,6 +10,7 @@ use App\ApiResource\Notification\UserNotification;
 use App\Entity\User;
 use App\Repository\Notification\NotificationRepository;
 use App\Service\Builder\Notification\NotificationBuilder;
+use App\Service\Notification\NotificationFeedEnricher;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -23,6 +24,7 @@ readonly class NotificationCollectionProvider implements ProviderInterface
         private NotificationRepository $notificationRepository,
         private NotificationBuilder $notificationBuilder,
         private Pagination $pagination,
+        private NotificationFeedEnricher $feedEnricher,
     ) {
     }
 
@@ -40,6 +42,7 @@ readonly class NotificationCollectionProvider implements ProviderInterface
         $entities = $this->notificationRepository->findForRecipient($user, $limit, $offset);
         $totalItems = $this->notificationRepository->countForRecipient($user);
         $dtos = $this->notificationBuilder->buildFromList($entities);
+        $this->feedEnricher->enrich($dtos);
 
         return new TraversablePaginator(new \ArrayIterator($dtos), $page, $limit, $totalItems);
     }

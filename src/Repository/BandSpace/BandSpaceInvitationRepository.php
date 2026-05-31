@@ -48,6 +48,26 @@ class BandSpaceInvitationRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * Bulk lookup by token (any status) - used to resolve live invitation status
+     * for the notification feed in one query.
+     *
+     * @param string[] $tokens
+     * @return BandSpaceInvitation[]
+     */
+    public function findByTokens(array $tokens): array
+    {
+        if ($tokens === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('i')
+            ->where('i.token IN (:tokens)')
+            ->setParameter('tokens', $tokens)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findPendingByEmailAndBandSpace(string $email, BandSpace $bandSpace): ?BandSpaceInvitation
     {
         return $this->createQueryBuilder('i')
