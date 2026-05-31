@@ -46,4 +46,23 @@ class ForumTopicParticipationRepository extends ServiceEntityRepository
 
         return $qb;
     }
+
+    /**
+     * Active participants (removedDatetime IS NULL) of a topic, as User entities.
+     *
+     * @return User[]
+     */
+    public function findActiveParticipantUsersByTopic(ForumTopic $topic): array
+    {
+        $participations = $this->createQueryBuilder('p')
+            ->innerJoin('p.user', 'u')
+            ->addSelect('u')
+            ->where('p.topic = :topic')
+            ->andWhere('p.removedDatetime IS NULL')
+            ->setParameter('topic', $topic)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(static fn (ForumTopicParticipation $participation): User => $participation->user, $participations);
+    }
 }

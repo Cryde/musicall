@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\Forum;
 
+use App\Enum\Notification\NotificationType;
 use App\Repository\Forum\ForumPostRepository;
+use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Forum\ForumCategoryFactory;
 use App\Tests\Factory\Forum\ForumFactory;
 use App\Tests\Factory\Forum\ForumSourceFactory;
 use App\Tests\Factory\Forum\ForumTopicFactory;
+use App\Tests\Factory\Forum\ForumTopicParticipationFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -245,5 +248,80 @@ class ForumPostPostTest extends ApiTestCase
             'title' => 'An error occurred',
             'type' => '/errors/400',
         ]);
+    }
+
+    public function test_reply_notifies_author_and_active_participants_not_the_poster(): void
+    {
+        $author = UserFactory::new()->create(['username' => 'topic_author', 'email' => 'author@test.com']);
+        $participant1 = UserFactory::new()->create(['username' => 'participant_one', 'email' => 'p1@test.com']);
+        $participant2 = UserFactory::new()->create(['username' => 'participant_two', 'email' => 'p2@test.com']);
+        $removedParticipant = UserFactory::new()->create(['username' => 'removed_one', 'email' => 'removed@test.com']);
+        $poster = UserFactory::new()->asBaseUser()->create();
+
+        $forumSource = ForumSourceFactory::new()->asRoot()->create();
+        $forumCategory = ForumCategoryFactory::new(['title' => 'Forum category', 'forumSource' => $forumSource])->create();
+        $forum = ForumFactory::new(['forumCategory' => $forumCategory])->create();
+        $topic = ForumTopicFactory::new([
+            'author' => $author,
+            'forum' => $forum,
+            'slug' => 'topic-title-slug',
+            'title' => 'Topic title',
+        ])->create();
+        ForumTopicParticipationFactory::new(['user' => $participant1, 'topic' => $topic])->create();
+        ForumTopicParticipationFactory::new(['user' => $participant2, 'topic' => $topic])->create();
+        ForumTopicParticipationFactory::new(['user' => $removedParticipant, 'topic' => $topic, 'removedDatetime' => new \DateTime()])->create();
+
+        $this->client->loginUser($poster);
+        $this->client->jsonRequest('POST', '/api/forum/posts', [
+            'content' => 'Voici ma réponse au sujet',
+            'topic' => '/api/forums/topics/' . $topic->slug,
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+
+        $post = self::getContainer()->get(ForumPostRepository::class)->findBy(['topic' => $topic])[0];
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+
+        $expectedPayload = [
+            'topic_id' => (string) $topic->id,
+            'topic_slug' => 'topic-title-slug',
+            'topic_title' => 'Topic title',
+            'post_id' => (string) $post->id,
+            'actor_id' => (string) $poster->id,
+            'actor_username' => $poster->username,
+        ];
+
+        foreach ([$author, $participant1, $participant2] as $recipient) {
+            $notifications = $notificationRepository->findForRecipient($recipient, 10, 0);
+            $this->assertCount(1, $notifications);
+            $this->assertSame(NotificationType::ForumTopicReply, $notifications[0]->type);
+            $this->assertSame($expectedPayload, $notifications[0]->payload);
+        }
+
+        $this->assertCount(0, $notificationRepository->findForRecipient($poster, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($removedParticipant, 10, 0));
+    }
+
+    public function test_reply_by_the_topic_author_does_not_notify_them(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create();
+        $forumSource = ForumSourceFactory::new()->asRoot()->create();
+        $forumCategory = ForumCategoryFactory::new(['title' => 'Forum category', 'forumSource' => $forumSource])->create();
+        $forum = ForumFactory::new(['forumCategory' => $forumCategory])->create();
+        $topic = ForumTopicFactory::new([
+            'author' => $author,
+            'forum' => $forum,
+            'slug' => 'my-own-topic',
+            'title' => 'My own topic',
+        ])->create();
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest('POST', '/api/forum/posts', [
+            'content' => 'Je réponds à mon propre sujet',
+            'topic' => '/api/forums/topics/' . $topic->slug,
+        ], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findForRecipient($author, 10, 0));
     }
 }

@@ -100,6 +100,14 @@ const TYPE_CONFIG = {
     preview: `vous a assigné à la tâche « ${payload.task_title} »`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
+  }),
+  forum_topic_reply: (payload) => ({
+    icon: 'pi pi-comments',
+    avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
+    title: payload.actor_username,
+    preview: `a répondu à « ${payload.topic_title} »`,
+    actions: null,
+    target: { name: 'forum_topic_item', params: { slug: payload.topic_slug } }
   })
 }
 
