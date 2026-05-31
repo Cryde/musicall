@@ -4,6 +4,7 @@ namespace App\Service\Notification;
 
 use App\ApiResource\Notification\UserNotification;
 use App\Service\Notification\Enricher\NotificationEnricherInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
@@ -22,6 +23,7 @@ readonly class NotificationFeedEnricher
     public function __construct(
         #[AutowireIterator('app.notification_enricher')]
         iterable $enrichers,
+        private LoggerInterface $logger,
     ) {
         $map = [];
         foreach ($enrichers as $enricher) {
@@ -42,7 +44,21 @@ readonly class NotificationFeedEnricher
 
         foreach ($groups as $type => $group) {
             $enricher = $this->enrichersByType[$type] ?? null;
-            $enricher?->enrich($group);
+            if ($enricher === null) {
+                continue;
+            }
+
+            // Read-time enrichment is best-effort: a failing enricher must degrade to the
+            // stored point-in-time payload, never 500 the whole feed (epic #689 contract).
+            // Isolated per type so one broken enricher can't take down the others.
+            try {
+                $enricher->enrich($group);
+            } catch (\Throwable $e) {
+                $this->logger->error('Notification feed enrichment failed; serving stored payload', [
+                    'type' => $type,
+                    'exception' => $e,
+                ]);
+            }
         }
     }
 }
