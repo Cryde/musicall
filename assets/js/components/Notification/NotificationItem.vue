@@ -83,6 +83,12 @@ const staleMessage = ref(null)
 
 const isUnread = computed(() => props.notification.read_datetime === null)
 
+// Publication and course comments deep-link to the same page by slug; is_course picks the route.
+function publicationTarget(payload) {
+  const name = payload.is_course ? 'app_course_show' : 'app_publication_show'
+  return { name, params: { slug: payload.publication_slug } }
+}
+
 // type -> row rendering. Each future producer adds its branch here.
 const TYPE_CONFIG = {
   band_space_invitation: (payload) => ({
@@ -108,6 +114,22 @@ const TYPE_CONFIG = {
     preview: `a répondu à « ${payload.topic_title} »`,
     actions: null,
     target: { name: 'forum_topic_item', params: { slug: payload.topic_slug } }
+  }),
+  publication_comment: (payload) => ({
+    icon: 'pi pi-comment',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.actor_username,
+    preview: `a commenté « ${payload.publication_title} »`,
+    actions: null,
+    target: publicationTarget(payload)
+  }),
+  comment_reply: (payload) => ({
+    icon: 'pi pi-reply',
+    avatarClass: 'bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-300',
+    title: payload.actor_username,
+    preview: `a répondu à un commentaire sur « ${payload.publication_title} »`,
+    actions: null,
+    target: publicationTarget(payload)
   })
 }
 
