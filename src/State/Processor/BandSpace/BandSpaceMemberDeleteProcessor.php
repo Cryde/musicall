@@ -12,6 +12,7 @@ use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\MembershipStatus;
+use App\Event\BandSpaceMemberRemovedEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
@@ -21,6 +22,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<BandSpaceMember, void>
@@ -34,6 +36,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -78,6 +81,9 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         );
 
         $this->entityManager->flush();
+
+        // Best-effort notification dispatched after the commit (epic #689 contract).
+        $this->eventDispatcher->dispatch(new BandSpaceMemberRemovedEvent($membership, $user));
     }
 
     private function deactivatePersonalRecurrences(BandSpaceMembership $membership): void

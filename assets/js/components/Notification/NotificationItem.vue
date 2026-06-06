@@ -164,6 +164,25 @@ const TYPE_CONFIG = {
     preview: "Votre galerie n'a pas été acceptée",
     actions: null,
     target: null
+  }),
+  band_space_role_changed: (payload) => ({
+    icon: 'pi pi-shield',
+    avatarClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300',
+    title: payload.actor_username,
+    preview:
+      payload.to === 'admin'
+        ? `vous a nommé administrateur de « ${payload.band_space_name} »`
+        : `vous a retiré les droits d'administrateur sur « ${payload.band_space_name} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
+  }),
+  band_space_member_removed: (payload) => ({
+    icon: 'pi pi-user-minus',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.actor_username,
+    preview: `vous a retiré de « ${payload.band_space_name} »`,
+    actions: null,
+    target: null
   })
 }
 

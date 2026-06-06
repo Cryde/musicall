@@ -10,6 +10,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
+use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -19,6 +20,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<BandSpaceMember, BandSpaceMember>
@@ -33,6 +35,7 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -78,7 +81,9 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
             $membership->leftDatetime = null;
         }
 
-        if ($oldRole !== $membership->role) {
+        $roleChanged = $oldRole !== $membership->role;
+
+        if ($roleChanged) {
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $bandSpace,
                 module: BandSpaceModule::Settings,
@@ -95,6 +100,11 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         }
 
         $this->entityManager->flush();
+
+        // Best-effort notification dispatched after the commit (epic #689 contract); only on an actual role change.
+        if ($roleChanged) {
+            $this->eventDispatcher->dispatch(new BandSpaceMemberRoleChangedEvent($membership, $oldRole, $user));
+        }
 
         return $this->bandSpaceMemberBuilder->buildItem($membership);
     }
