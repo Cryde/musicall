@@ -12,4 +12,8 @@ enum NotificationType: string
     case CommentReply = 'comment_reply';
     case TaskMention = 'task_mention';
     case BandSpaceTaskAssignment = 'band_space_task_assignment';
+    case PublicationApproved = 'publication_approved';
+    case PublicationRejected = 'publication_rejected';
+    case GalleryApproved = 'gallery_approved';
+    case GalleryRejected = 'gallery_rejected';
 }

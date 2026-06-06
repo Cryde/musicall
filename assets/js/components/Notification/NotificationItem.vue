@@ -130,6 +130,40 @@ const TYPE_CONFIG = {
     preview: `a répondu à un commentaire sur « ${payload.publication_title} »`,
     actions: null,
     target: publicationTarget(payload)
+  }),
+  publication_approved: (payload) => ({
+    icon: 'pi pi-check-circle',
+    avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    title: payload.publication_title,
+    preview: payload.is_course ? 'Votre cours a été publié' : 'Votre publication a été publiée',
+    actions: null,
+    target: publicationTarget(payload)
+  }),
+  publication_rejected: (payload) => ({
+    icon: 'pi pi-times-circle',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.publication_title,
+    preview: payload.is_course
+      ? "Votre cours n'a pas été accepté"
+      : "Votre publication n'a pas été acceptée",
+    actions: null,
+    target: null
+  }),
+  gallery_approved: (payload) => ({
+    icon: 'pi pi-check-circle',
+    avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    title: payload.gallery_title,
+    preview: 'Votre galerie a été publiée',
+    actions: null,
+    target: { name: 'app_gallery_show', params: { slug: payload.gallery_slug } }
+  }),
+  gallery_rejected: (payload) => ({
+    icon: 'pi pi-times-circle',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.gallery_title,
+    preview: "Votre galerie n'a pas été acceptée",
+    actions: null,
+    target: null
   })
 }
 
