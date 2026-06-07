@@ -7,6 +7,8 @@ namespace App\Enum\Notification;
 enum NotificationType: string
 {
     case BandSpaceInvitation = 'band_space_invitation';
+    case BandSpaceInvitationAccepted = 'band_space_invitation_accepted';
+    case BandSpaceInvitationDeclined = 'band_space_invitation_declined';
     case ForumTopicReply = 'forum_topic_reply';
     case PublicationComment = 'publication_comment';
     case CommentReply = 'comment_reply';

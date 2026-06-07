@@ -8,12 +8,14 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\InvitationStatus;
+use App\Event\BandSpaceInvitationRespondedEvent;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<mixed, void>
@@ -25,6 +27,7 @@ readonly class BandSpaceInvitationDeclineProcessor implements ProcessorInterface
         private BandSpaceInvitationRepository $bandSpaceInvitationRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -58,5 +61,10 @@ readonly class BandSpaceInvitationDeclineProcessor implements ProcessorInterface
         );
 
         $this->entityManager->flush();
+
+        // Best-effort notification dispatched after the commit (epic #689 contract): tell the inviter.
+        $this->eventDispatcher->dispatch(
+            new BandSpaceInvitationRespondedEvent($invitation, $user, InvitationStatus::Declined),
+        );
     }
 }

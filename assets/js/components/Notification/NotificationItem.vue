@@ -106,6 +106,22 @@ const TYPE_CONFIG = {
     actions: 'invitation',
     target: null
   }),
+  band_space_invitation_accepted: (payload) => ({
+    icon: 'pi pi-user-plus',
+    avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    title: payload.actor_username,
+    preview: `a rejoint « ${payload.band_space_name} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
+  }),
+  band_space_invitation_declined: (payload) => ({
+    icon: 'pi pi-times-circle',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.actor_username,
+    preview: `a décliné votre invitation à « ${payload.band_space_name} »`,
+    actions: null,
+    target: null
+  }),
   band_space_task_assignment: (payload) => ({
     icon: 'pi pi-check-square',
     avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
