@@ -61,14 +61,6 @@
           </div>
           <div v-else-if="visibleItems.length === 0" class="py-8 text-center text-sm text-surface-500">
             <p>{{ activeTab === 'unread' ? 'Aucune notification non lue' : 'Aucune notification' }}</p>
-            <Button
-              v-if="activeTab === 'unread' && store.items.length > 0"
-              label="Voir toutes les notifications"
-              link
-              size="small"
-              class="mt-1"
-              @click="activeTab = 'all'"
-            />
           </div>
           <NotificationItem
             v-for="notification in visibleItems"
@@ -76,6 +68,19 @@
             :notification="notification"
             @navigate="onItemNavigate"
           />
+        </div>
+
+        <div
+          v-if="store.items.length > 0"
+          class="border-t border-surface px-2 pt-2 mt-1 text-center"
+        >
+          <RouterLink
+            :to="{ name: 'app_notifications_index' }"
+            class="text-sm text-primary hover:underline"
+            @click="onItemNavigate"
+          >
+            Voir toutes les notifications
+          </RouterLink>
         </div>
       </div>
     </Popover>
@@ -87,6 +92,7 @@ import Button from 'primevue/button'
 import OverlayBadge from 'primevue/overlaybadge'
 import Popover from 'primevue/popover'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
 import NotificationItem from './NotificationItem.vue'
 

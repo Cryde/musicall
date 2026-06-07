@@ -123,6 +123,12 @@ export default [
     meta: { isAuthRequired: true }
   },
   {
+    name: 'app_notifications_index',
+    path: '/notifications',
+    component: () => import('../views/Notification/Index.vue'),
+    meta: { isAuthRequired: true }
+  },
+  {
     path: '/user/settings',
     component: () => import('../views/User/Settings/SettingsLayout.vue'),
     meta: { isAuthRequired: true },

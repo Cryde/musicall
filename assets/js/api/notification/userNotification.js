@@ -3,9 +3,9 @@
 import axios from 'axios'
 
 export default {
-  getFeed() {
+  getFeed(page = 1) {
     return axios
-      .get(Routing.generate('api_user_notifications_get_collection'))
+      .get(Routing.generate('api_user_notifications_get_collection', { page }))
       .then((resp) => resp.data)
       .then((data) => ({ items: data.member, total: data.totalItems }))
   },
