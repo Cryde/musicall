@@ -183,6 +183,14 @@ const TYPE_CONFIG = {
     preview: `vous a retiré de « ${payload.band_space_name} »`,
     actions: null,
     target: null
+  }),
+  task_mention: (payload) => ({
+    icon: 'pi pi-at',
+    avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
+    title: payload.actor_username,
+    preview: `vous a mentionné dans la tâche « ${payload.task_title} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   })
 }
 

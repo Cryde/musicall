@@ -621,6 +621,55 @@ class UserNotificationTest extends ApiTestCase
         ]);
     }
 
+    public function test_task_mention_notification_refreshes_to_the_live_task_title(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Titre actuel'])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::TaskMention,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'task_id' => (string) $task->id,
+                'task_title' => 'Ancien titre',
+                'comment_id' => 'comment-1',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'mentioner',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'task_mention',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'task_id' => (string) $task->id,
+                        'task_title' => 'Titre actuel',
+                        'comment_id' => 'comment-1',
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'mentioner',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
     private function notificationRepository(): NotificationRepository
     {
         return self::getContainer()->get(NotificationRepository::class);

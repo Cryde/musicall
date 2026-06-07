@@ -10,6 +10,7 @@ use App\Entity\BandSpace\TaskComment;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
+use App\Event\BandSpaceTaskMentionedEvent;
 use App\Repository\BandSpace\TaskRepository;
 use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -20,6 +21,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<TaskCommentCreate, TaskCommentResource>
@@ -35,6 +37,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskCommentBuilder $taskCommentBuilder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -87,6 +90,11 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         }
 
         $this->entityManager->flush();
+
+        // Best-effort notification dispatched after the commit (epic #689 contract); only if anyone was mentioned.
+        if ($mentionedMembers !== []) {
+            $this->eventDispatcher->dispatch(new BandSpaceTaskMentionedEvent($comment, $mentionedMembers));
+        }
 
         return $this->taskCommentBuilder->buildItem($comment);
     }
