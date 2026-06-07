@@ -9,6 +9,7 @@ use App\Enum\Notification\NotificationType;
 use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\AgendaEntryFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
@@ -662,6 +663,62 @@ class UserNotificationTest extends ApiTestCase
                         'comment_id' => 'comment-1',
                         'actor_id' => 'actor-1',
                         'actor_username' => 'mentioner',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_agenda_entry_notification_refreshes_to_the_live_title_and_datetime(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Titre actuel',
+            'eventDatetime' => new \DateTimeImmutable('2026-08-15T20:00:00+00:00'),
+        ])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceAgendaEntryCreated,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'band_space_name' => 'The Rockers',
+                'agenda_entry_id' => (string) $entry->id,
+                'entry_title' => 'Ancien titre',
+                'event_datetime' => '2020-01-01T10:00:00+00:00',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'creator',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_agenda_entry_created',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'band_space_name' => 'The Rockers',
+                        'agenda_entry_id' => (string) $entry->id,
+                        'entry_title' => 'Titre actuel',
+                        'event_datetime' => '2026-08-15T20:00:00+00:00',
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'creator',
                     ],
                     'read_datetime' => null,
                     'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),

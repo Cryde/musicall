@@ -12,6 +12,7 @@ use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Event\BandSpaceAgendaEntryCreatedEvent;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\AgendaEntryBuilder;
@@ -20,6 +21,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<AgendaEntryCreate, AgendaEntryResource>
@@ -32,6 +34,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
         private AgendaEntryBuilder $agendaEntryBuilder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -100,6 +103,9 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
             payload: ['title' => $entry->title],
         );
         $this->entityManager->flush();
+
+        // Best-effort notification dispatched after the commit (epic #689 contract).
+        $this->eventDispatcher->dispatch(new BandSpaceAgendaEntryCreatedEvent($entry, $user));
 
         return $this->agendaEntryBuilder->buildItem($entry);
     }

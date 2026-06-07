@@ -59,6 +59,8 @@
 </template>
 
 <script setup>
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
@@ -87,6 +89,11 @@ const isUnread = computed(() => props.notification.read_datetime === null)
 function publicationTarget(payload) {
   const name = payload.is_course ? 'app_course_show' : 'app_publication_show'
   return { name, params: { slug: payload.publication_slug } }
+}
+
+// Agenda has no per-entry deep-link; show the (read-time-refreshed) event date inline.
+function formatEventDate(iso) {
+  return format(new Date(iso), 'd MMMM yyyy', { locale: fr })
 }
 
 // type -> row rendering. Each future producer adds its branch here.
@@ -191,6 +198,14 @@ const TYPE_CONFIG = {
     preview: `vous a mentionné dans la tâche « ${payload.task_title} »`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
+  }),
+  band_space_agenda_entry_created: (payload) => ({
+    icon: 'pi pi-calendar-plus',
+    avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
+    title: payload.actor_username,
+    preview: `a ajouté l'événement « ${payload.entry_title} » le ${formatEventDate(payload.event_datetime)}`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
   })
 }
 
