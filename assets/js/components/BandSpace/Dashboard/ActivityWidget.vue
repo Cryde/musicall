@@ -9,7 +9,7 @@
   >
     <template #header-action>
       <RouterLink
-        :to="{ name: 'app_band_parameters', params: { id: bandSpaceId } }"
+        :to="{ name: 'app_band_parameters', params: { id: bandSpaceId }, query: { section: 'activity' } }"
         class="text-xs text-primary hover:underline"
       >
         Tout voir

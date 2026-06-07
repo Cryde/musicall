@@ -30,7 +30,7 @@
           <!-- Content area -->
           <div class="flex-1 min-w-0">
             <MembersSection v-if="activeSection === 'members'" />
-            <ActivitySection v-else-if="activeSection === 'activity' && isAdmin" />
+            <ActivitySection v-else-if="activeSection === 'activity'" />
             <ActiveSharesSection v-else-if="activeSection === 'shares'" />
             <QuotaIndicator v-else-if="activeSection === 'storage'" />
             <ComingSoonSection v-else :title="activeSectionLabel" />
@@ -43,6 +43,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import QuotaIndicator from '../../components/BandSpace/Files/QuotaIndicator.vue'
 import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveSharesSection.vue'
 import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
@@ -51,12 +52,13 @@ import MembersSection from '../../components/BandSpace/Settings/MembersSection.v
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 
 const { currentSpace } = useBandSpaceNavigation()
+const route = useRoute()
 
 const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 
 const allSections = [
   { key: 'members', label: 'Membres', adminOnly: false },
-  { key: 'activity', label: "Journal d'activité", adminOnly: true },
+  { key: 'activity', label: "Journal d'activité", adminOnly: false },
   { key: 'shares', label: 'Partages actifs', adminOnly: false },
   { key: 'storage', label: 'Stockage', adminOnly: false },
   { key: 'general', label: 'Général', adminOnly: false },
@@ -65,7 +67,7 @@ const allSections = [
 
 const visibleSections = computed(() => allSections.filter((s) => !s.adminOnly || isAdmin.value))
 
-const activeSection = ref('members')
+const activeSection = ref(allSections.find((s) => s.key === route.query.section)?.key ?? 'members')
 
 const activeSectionLabel = computed(
   () => allSections.find((s) => s.key === activeSection.value)?.label ?? ''

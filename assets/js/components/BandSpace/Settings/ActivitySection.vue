@@ -16,6 +16,7 @@
           class="w-full"
         />
         <Select
+          v-if="isAdmin"
           v-model="localFilters.actorId"
           :options="memberOptions"
           option-label="label"
@@ -122,6 +123,7 @@ import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandSpaceActivityStore } from '../../../store/bandSpace/bandSpaceActivity.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import Avatar from '../../User/Avatar.vue'
@@ -136,6 +138,10 @@ const settingsStore = useBandSpaceSettingsStore()
 store.clear()
 
 const bandSpaceId = route.params.id
+
+// The author filter needs the member list, which is admin-only; members get the feed without it.
+const { currentSpace } = useBandSpaceNavigation()
+const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 
 const MODULE_OPTIONS = [
   { value: 'task', label: 'Tâches' },
@@ -249,7 +255,7 @@ watch(
 )
 
 onMounted(async () => {
-  if (settingsStore.members.length === 0) {
+  if (isAdmin.value && settingsStore.members.length === 0) {
     await settingsStore.loadMembers(bandSpaceId)
   }
   applyFiltersToStore()

@@ -10,7 +10,7 @@ use App\ApiResource\BandSpace\BandSpaceActivityResource;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
-use App\Security\BandSpace\BandSpaceAdminChecker;
+use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityFilter;
 use App\Service\Builder\BandSpace\BandSpaceActivityBuilder;
 use DateTimeImmutable;
@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 readonly class BandSpaceActivityCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        private BandSpaceAdminChecker $adminChecker,
+        private BandSpaceMemberChecker $memberChecker,
         private BandSpaceActivityRepository $bandSpaceActivityRepository,
         private BandSpaceActivityBuilder $bandSpaceActivityBuilder,
         private Security $security,
@@ -41,7 +41,7 @@ readonly class BandSpaceActivityCollectionProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $page = $this->pagination->getPage($context);
         $itemsPerPage = $this->pagination->getLimit($operation, $context);

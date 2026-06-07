@@ -190,13 +190,20 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         $this->assertNull($data['member'][0]['actor']);
     }
 
-    public function test_non_admin_member_forbidden(): void
+    public function test_non_admin_member_lists_activities(): void
     {
         $admin = UserFactory::new()->asBaseUser()->create();
         $member = UserFactory::new()->create(['username' => 'member', 'email' => 'member@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Task,
+            'type' => 'status_changed',
+            'actor' => $admin,
+        ])->create();
 
         $this->client->loginUser($member);
         $this->client->jsonRequest(
@@ -206,7 +213,11 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        // #726: regular members can now read the band space activity feed (was admin-only).
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseAsArray();
+        $this->assertSame(1, $data['totalItems']);
+        $this->assertSame('status_changed', $data['member'][0]['type']);
     }
 
     public function test_non_member_forbidden(): void
