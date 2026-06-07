@@ -199,6 +199,14 @@ const TYPE_CONFIG = {
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   }),
+  task_comment: (payload) => ({
+    icon: 'pi pi-comment',
+    avatarClass: 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300',
+    title: payload.actor_username,
+    preview: `a commenté la tâche « ${payload.task_title} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
+  }),
   band_space_agenda_entry_created: (payload) => ({
     icon: 'pi pi-calendar-plus',
     avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',

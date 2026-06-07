@@ -10,6 +10,7 @@ use App\Entity\BandSpace\TaskComment;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
+use App\Event\BandSpaceTaskCommentedEvent;
 use App\Event\BandSpaceTaskMentionedEvent;
 use App\Repository\BandSpace\TaskRepository;
 use App\Repository\UserRepository;
@@ -91,10 +92,13 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
-        // Best-effort notification dispatched after the commit (epic #689 contract); only if anyone was mentioned.
+        // Best-effort notifications dispatched after the commit (epic #689 contract).
+        // Mentions notify the @-mentioned members; the participant fan-out notifies the task's
+        // creator/assignees/prior commenters, excluding anyone already covered by a mention.
         if ($mentionedMembers !== []) {
             $this->eventDispatcher->dispatch(new BandSpaceTaskMentionedEvent($comment, $mentionedMembers));
         }
+        $this->eventDispatcher->dispatch(new BandSpaceTaskCommentedEvent($comment, $mentionedMembers));
 
         return $this->taskCommentBuilder->buildItem($comment);
     }
