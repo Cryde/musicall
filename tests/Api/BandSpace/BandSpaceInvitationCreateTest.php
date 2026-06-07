@@ -2,12 +2,14 @@
 
 namespace App\Tests\Api\BandSpace;
 
+use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\Notification\NotificationRepository;
+use App\Service\Notification\NotificationCreator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -445,6 +447,9 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
             'invitation_token' => $invitation->token,
             'invited_by_username' => $admin->username,
         ], $notifications[0]->payload);
+
+        // Actor exclusion: the inviting admin is never notified of their own invite.
+        $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findForRecipient($admin, 10, 0));
     }
 
     public function test_inviting_a_new_email_creates_no_notification(): void
@@ -463,5 +468,49 @@ class BandSpaceInvitationCreateTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertSame(0, self::getContainer()->get(NotificationRepository::class)->count([]));
+    }
+
+    public function test_notification_failure_does_not_break_the_invitation(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        UserFactory::new()->create(['username' => 'invitee', 'email' => 'invitee@example.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        // A notification failure must never roll back or 500 the invite (epic #689 contract item 1).
+        self::getContainer()->set(NotificationCreator::class, $this->throwingNotificationCreator());
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations',
+            ['identifier' => 'invitee@example.com'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertNotNull(
+            self::getContainer()->get(BandSpaceInvitationRepository::class)
+                ->findPendingByEmailAndBandSpace('invitee@example.com', $bandSpace)
+        );
+    }
+
+    private function throwingNotificationCreator(): NotificationCreator
+    {
+        return new readonly class extends NotificationCreator {
+            public function __construct()
+            {
+            }
+
+            public function create(User $recipient, NotificationType $type, array $payload): void
+            {
+                throw new \RuntimeException('Notification creation failed');
+            }
+
+            public function createForRecipients(iterable $recipients, NotificationType $type, array $payload): void
+            {
+                throw new \RuntimeException('Notification creation failed');
+            }
+        };
     }
 }
