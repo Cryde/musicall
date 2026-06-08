@@ -106,9 +106,9 @@ if (import.meta.env.VITE_UMAMI_SITE_ID) {
     VueUmamiPlugin({
       websiteID: import.meta.env.VITE_UMAMI_SITE_ID,
       scriptSrc: import.meta.env.VITE_UMAMI_SITE_SCRIPT,
-      router,
       // Capture Core Web Vitals in Umami's Performance tab (data-performance flag on the tracker script, since v3.1.0).
       extraDataAttributes: {
+        'data-auto-track': 'true',
         'data-performance': 'true'
       }
     })
