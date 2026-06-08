@@ -46,6 +46,24 @@ axios.interceptors.response.use(
 
 const pinia = createPinia()
 const app = createApp(App)
+
+// Umami session replay (self-hosted recorder.js), loaded alongside the tracking plugin and gated on
+// the same site id. data-website-id mirrors the tracker so the recording attaches to the right site
+// per environment. The sampling/masking/duration knobs are inline for now.
+const umamiRecorderScript =
+  import.meta.env.VITE_UMAMI_SITE_ID && import.meta.env.VITE_UMAMI_RECORDER_SCRIPT
+    ? [
+        {
+          src: import.meta.env.VITE_UMAMI_RECORDER_SCRIPT,
+          defer: true,
+          'data-website-id': import.meta.env.VITE_UMAMI_SITE_ID,
+          'data-sample-rate': '0.15',
+          'data-mask-level': 'moderate',
+          'data-max-duration': '300000'
+        }
+      ]
+    : []
+
 const head = createHead({
   init: [
     {
@@ -67,7 +85,8 @@ const head = createHead({
           content: `${window.location.origin}${facebookLogoUrl}`
         },
         { property: 'og:site_name', content: 'MusicAll' }
-      ]
+      ],
+      script: umamiRecorderScript
     }
   ]
 })
@@ -87,7 +106,11 @@ if (import.meta.env.VITE_UMAMI_SITE_ID) {
     VueUmamiPlugin({
       websiteID: import.meta.env.VITE_UMAMI_SITE_ID,
       scriptSrc: import.meta.env.VITE_UMAMI_SITE_SCRIPT,
-      router
+      router,
+      // Capture Core Web Vitals in Umami's Performance tab (data-performance flag on the tracker script, since v3.1.0).
+      extraDataAttributes: {
+        'data-performance': 'true'
+      }
     })
   )
 }
