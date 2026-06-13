@@ -82,7 +82,7 @@
           <template v-if="!hasItems && !fetchedItems">
             <PublicationListItemSkeleton v-for="i in 5" :key="i" />
           </template>
-          <template v-else-if="isPhotosCategory">
+          <FadeList v-else-if="isPhotosCategory && hasItems">
             <GalleryListItem
               v-for="gallery in galleriesStore.galleries"
               :key="gallery.slug"
@@ -93,8 +93,8 @@
               :author="gallery.author"
               :date="gallery.publicationDatetime"
             />
-          </template>
-          <template v-else>
+          </FadeList>
+          <FadeList v-else-if="!isPhotosCategory && hasItems">
             <PublicationListItem
               v-for="publication in publicationsStore.publications"
               :to-route="{ name: 'app_publication_show', params: { slug: publication.slug } }"
@@ -110,7 +110,10 @@
               :downvotes="publication.downvotes ?? 0"
               :user-vote="publication.user_vote ?? null"
             />
-          </template>
+          </FadeList>
+          <div v-else class="text-center py-12 text-surface-500">
+            {{ isPhotosCategory ? 'Aucune galerie pour le moment.' : 'Aucune publication pour le moment.' }}
+          </div>
         </div>
       </div>
     </div>
@@ -127,6 +130,7 @@ import Select from 'primevue/select'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import FadeList from '../../components/Global/FadeList.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'

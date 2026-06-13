@@ -56,23 +56,25 @@
           <p class="text-surface-500 dark:text-surface-400 mb-4">{{ category.description }}</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <router-link
-              v-for="forum in category.forums"
-              :key="forum.id"
-              :to="{ name: 'forum_topic_list', params: { slug: forum.slug } }"
-              class="block"
-            >
-              <Card class="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                <template #title>
-                  <span class="text-lg">{{ forum.title }}</span>
-                </template>
-                <template #content>
-                  <p class="text-surface-600 dark:text-surface-300 text-sm">
-                    {{ forum.description }}
-                  </p>
-                </template>
-              </Card>
-            </router-link>
+            <FadeList>
+              <router-link
+                v-for="forum in category.forums"
+                :key="forum.id"
+                :to="{ name: 'forum_topic_list', params: { slug: forum.slug } }"
+                class="block"
+              >
+                <Card class="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                  <template #title>
+                    <span class="text-lg">{{ forum.title }}</span>
+                  </template>
+                  <template #content>
+                    <p class="text-surface-600 dark:text-surface-300 text-sm">
+                      {{ forum.description }}
+                    </p>
+                  </template>
+                </Card>
+              </router-link>
+            </FadeList>
           </div>
         </div>
       </template>
@@ -90,6 +92,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import forumApi from '../../api/forum/forum.js'
 import ForumCategorySkeleton from '../../components/Forum/ForumCategorySkeleton.vue'
 import ForumSearchResults from '../../components/Forum/ForumSearchResults.vue'
+import FadeList from '../../components/Global/FadeList.vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'

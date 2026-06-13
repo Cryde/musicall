@@ -82,20 +82,25 @@
           <template v-if="coursesStore.courses.length === 0 && !fetchedItems">
             <PublicationListItemSkeleton v-for="i in 5" :key="i" />
           </template>
-          <CourseListItem
-              v-for="course in coursesStore.courses"
-              :to-route="{name: 'app_course_show', params: {slug: course.slug}}"
-              :key="course.id"
-              :cover="course.cover"
-              :title="course.title"
-              :description="course.description"
-              :category="course.sub_category"
-              :author="course.author"
-              :date="course.publication_datetime"
-              :slug="course.slug"
-              :upvotes="course.upvotes ?? 0"
-              :downvotes="course.downvotes ?? 0"
-              :user-vote="course.user_vote ?? null"/>
+          <FadeList v-else-if="coursesStore.courses.length > 0">
+            <CourseListItem
+                v-for="course in coursesStore.courses"
+                :to-route="{name: 'app_course_show', params: {slug: course.slug}}"
+                :key="course.id"
+                :cover="course.cover"
+                :title="course.title"
+                :description="course.description"
+                :category="course.sub_category"
+                :author="course.author"
+                :date="course.publication_datetime"
+                :slug="course.slug"
+                :upvotes="course.upvotes ?? 0"
+                :downvotes="course.downvotes ?? 0"
+                :user-vote="course.user_vote ?? null"/>
+          </FadeList>
+          <div v-else class="text-center py-12 text-surface-500">
+            Aucun cours pour le moment.
+          </div>
         </div>
       </div>
     </div>
@@ -118,6 +123,7 @@ import guitarImg from '../../../image/course/guitare.png'
 import maoImg from '../../../image/course/mao.png'
 import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddCourseVideoModal from '../../components/Course/AddCourseVideoModal.vue'
+import FadeList from '../../components/Global/FadeList.vue'
 import ColumnCardRadio from '../../components/RadioGroup/ColumnCardRadio.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
 import { useCoursesStore } from '../../store/course/course.js'

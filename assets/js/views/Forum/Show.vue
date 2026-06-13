@@ -33,13 +33,13 @@
           <div v-if="forumStore.topics.length === 0" class="text-center py-8 text-surface-500">
             Aucun sujet dans ce forum pour le moment.
           </div>
-          <div v-else>
+          <FadeList v-else>
             <TopicListItem
               v-for="topic in forumStore.topics"
               :key="topic.id"
               :topic="topic"
             />
-          </div>
+          </FadeList>
         </template>
       </Card>
 
@@ -78,6 +78,7 @@ import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddTopicModal from '../../components/Forum/AddTopicModal.vue'
 import TopicListItem from '../../components/Forum/TopicListItem.vue'
 import TopicListItemSkeleton from '../../components/Forum/TopicListItemSkeleton.vue'
+import FadeList from '../../components/Global/FadeList.vue'
 import { useForumStore } from '../../store/forum/forum.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
