@@ -56,6 +56,12 @@ framework:
             limit: 10
             interval: '1 hour'
             cache_pool: "rate_limiter.cache"
+        email_verification_send:
+            # Bounds cross-account enumeration probing; the per-user 60s cooldown already caps emails per account.
+            policy: fixed_window
+            limit: 10
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
         password_reset:
             policy: fixed_window
             limit: 4
