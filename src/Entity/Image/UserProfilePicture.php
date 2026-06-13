@@ -15,6 +15,7 @@ use App\Entity\User;
 use App\State\Processor\User\UserProfilePictureDeleteProcessor;
 use App\State\Processor\User\UserProfilePictureProcessor;
 use App\State\Provider\User\UserProfilePictureDeleteProvider;
+use App\Validator\ImageMimeTypes;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -72,7 +73,7 @@ class UserProfilePicture
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
     #[Assert\NotNull]
-    #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true)]
+    #[Assert\Image(maxSize: "4Mi", minWidth: 450, maxWidth: 4000, maxHeight: 4000, minHeight: 450, allowLandscape: true, allowPortrait: true, mimeTypes: ImageMimeTypes::ALLOWED, mimeTypesMessage: ImageMimeTypes::INVALID_MESSAGE)]
     #[Vich\UploadableField(mapping: 'user_profile_picture', fileNameProperty: 'imageName', size: 'imageSize')]
     #[Groups([Comment::ITEM, Comment::LIST, MessageThreadMetaResource::LIST, User::ITEM])]
     public ?File $imageFile = null;

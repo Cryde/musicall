@@ -4,6 +4,7 @@ namespace App\Entity\Image;
 
 use App\Entity\Gallery;
 use App\Repository\GalleryImageRepository;
+use App\Validator\ImageMimeTypes;
 use DateTimeInterface;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
@@ -23,7 +24,7 @@ class GalleryImage
     public ?int $id = null;
 
     // NOTE: This is not a mapped field of entity metadata, just a simple property.
-    #[Assert\Image(maxWidth: 4000, maxHeight: 4000)]
+    #[Assert\Image(maxWidth: 4000, maxHeight: 4000, mimeTypes: ImageMimeTypes::ALLOWED, mimeTypesMessage: ImageMimeTypes::INVALID_MESSAGE)]
     #[Vich\UploadableField(mapping: 'gallery_image', fileNameProperty: 'imageName', size: 'imageSize')]
     public ?File $imageFile = null;
 

@@ -80,4 +80,34 @@ class ForumImageUploadTest extends ApiTestCase
             ],
         ]);
     }
+
+    public function test_upload_rejects_svg_returns_422(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $file = new UploadedFile(__DIR__ . '/fixtures/image-svg.svg', 'image-svg.svg');
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/api/forum/upload-image', [], ['imageFile' => $file], [
+            'CONTENT_TYPE' => 'multipart/form-data',
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/744f00bc-4389-4c74-92de-9a43cde55534',
+            '@type' => 'ConstraintViolation',
+            'title' => 'An error occurred',
+            'detail' => 'image_file: Le format de l\'image n\'est pas autorisé. Formats acceptés : JPEG, PNG, GIF, WebP.',
+            'status' => 422,
+            'type' => '/validation_errors/744f00bc-4389-4c74-92de-9a43cde55534',
+            'description' => 'image_file: Le format de l\'image n\'est pas autorisé. Formats acceptés : JPEG, PNG, GIF, WebP.',
+            'violations' => [
+                [
+                    'propertyPath' => 'image_file',
+                    'message' => 'Le format de l\'image n\'est pas autorisé. Formats acceptés : JPEG, PNG, GIF, WebP.',
+                    'code' => '744f00bc-4389-4c74-92de-9a43cde55534',
+                ],
+            ],
+        ]);
+    }
 }

@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 use App\State\Processor\User\Profile\UserProfileCoverPictureDeleteProcessor;
 use App\State\Processor\User\Profile\UserProfileCoverPictureProcessor;
 use App\State\Provider\User\Profile\UserProfileCoverPictureDeleteProvider;
+use App\Validator\ImageMimeTypes;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
@@ -69,6 +70,8 @@ class UserProfileCoverPictureUpload
         minRatio: 3.9,
         maxRatioMessage: 'L\'image doit avoir un ratio de 4:1 (largeur/hauteur)',
         minRatioMessage: 'L\'image doit avoir un ratio de 4:1 (largeur/hauteur)',
+        mimeTypes: ImageMimeTypes::ALLOWED,
+        mimeTypesMessage: ImageMimeTypes::INVALID_MESSAGE,
     )]
     public ?File $imageFile = null;
 

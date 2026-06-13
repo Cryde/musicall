@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\State\Processor\Forum\ForumImageUploadProcessor;
+use App\Validator\ImageMimeTypes;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
@@ -48,7 +49,7 @@ class ForumImageUpload
 {
     #[Vich\UploadableField(mapping: 'forum_image', fileNameProperty: 'filePath')]
     #[Assert\NotNull]
-    #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000)]
+    #[Assert\Image(maxSize: '4Mi', maxWidth: 4000, maxHeight: 4000, mimeTypes: ImageMimeTypes::ALLOWED, mimeTypesMessage: ImageMimeTypes::INVALID_MESSAGE)]
     public ?File $imageFile = null;
 
     public ?string $filePath = null;

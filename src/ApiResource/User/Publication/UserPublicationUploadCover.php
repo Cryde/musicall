@@ -11,6 +11,7 @@ use App\State\Processor\User\Publication\UserPublicationRemoveCoverProcessor;
 use App\State\Processor\User\Publication\UserPublicationUploadCoverProcessor;
 use App\State\Provider\User\Publication\UserPublicationEditProvider;
 use App\State\Provider\User\Publication\UserPublicationUploadCoverProvider;
+use App\Validator\ImageMimeTypes;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
@@ -59,7 +60,7 @@ class UserPublicationUploadCover
 {
     #[Vich\UploadableField(mapping: 'publication_image_cover', fileNameProperty: 'filePath')]
     #[Assert\NotNull]
-    #[Assert\Image(maxSize: "4Mi", maxWidth: 4000, maxHeight: 4000)]
+    #[Assert\Image(maxSize: "4Mi", maxWidth: 4000, maxHeight: 4000, mimeTypes: ImageMimeTypes::ALLOWED, mimeTypesMessage: ImageMimeTypes::INVALID_MESSAGE)]
     public ?File $imageFile = null;
     public ?string $filePath = null;
 }
