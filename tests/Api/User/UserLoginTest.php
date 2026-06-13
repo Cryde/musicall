@@ -30,13 +30,34 @@ class UserLoginTest extends ApiTestCase
         $this->assertResponseHasCookie('refresh_token');
     }
 
-    public function test_login_with_user_not_confirmed(): void
+    public function test_login_unverified_user_with_bad_password_returns_generic_error(): void
     {
+        // Anti-enumeration: a wrong password must look identical whether or not the
+        // account exists / is verified. account_not_verified is only revealed AFTER
+        // a correct password (see the test below), so a wrong-password probe cannot
+        // detect an unverified account nor resolve its email.
         $user1 = UserFactory::new()->asBaseUser()->create(['confirmationDatetime' => null]);
 
         $this->client->jsonRequest('POST', '/api/login_check', [
             'username' => $user1->username,
             'password' => 'bad',
+        ]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertJsonEquals([
+            'code' => 401,
+            'message' => 'Identifiants invalides.',
+        ]);
+    }
+
+    public function test_login_unverified_user_with_correct_password_returns_account_not_verified(): void
+    {
+        // Only the account owner (correct password) learns the unverified status and
+        // the email, so the frontend can route them to the verification flow.
+        $user1 = UserFactory::new()->asBaseUser()->create(['confirmationDatetime' => null]);
+
+        $this->client->jsonRequest('POST', '/api/login_check', [
+            'username' => $user1->username,
+            'password' => 'password',
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
         $this->assertJsonEquals([
