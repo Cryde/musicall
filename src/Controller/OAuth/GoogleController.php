@@ -38,6 +38,8 @@ class GoogleController extends AbstractOAuthController
             email: $email,
             username: $resourceOwner->getName() ?: $email,
             pictureUrl: $this->getHighResolutionPictureUrl($resourceOwner->getAvatar()),
+            // Default to false (untrusted) if Google omits the claim.
+            emailVerified: (bool) ($resourceOwner->toArray()['email_verified'] ?? false),
         );
     }
 

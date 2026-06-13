@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Entity\User\UserProfile;
 use App\Event\UserConfirmedEvent;
 use App\Exception\OAuth\OAuthEmailExistsException;
+use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +29,7 @@ readonly class OAuthUserService
 
     /**
      * @throws OAuthEmailExistsException
+     * @throws OAuthEmailNotVerifiedException
      */
     public function findOrCreateUser(OAuthUserData $userData, string $provider, ?User $currentUser = null): OAuthResult
     {
@@ -48,6 +50,14 @@ readonly class OAuthUserService
             $this->createSocialAccount($currentUser, $provider, $userData->id, $userData->email);
 
             return new OAuthResult($currentUser, false);
+        }
+
+        // Refuse to create an account from an email the provider has not verified.
+        // An unverified email is untrusted, so reject before it is even used to look
+        // up or create a user (SECURITY-FIX.md finding 14). Existing logins and links
+        // above are unaffected - they return before this point.
+        if (!$userData->emailVerified) {
+            throw new OAuthEmailNotVerifiedException();
         }
 
         // Check if email already exists (email conflict)

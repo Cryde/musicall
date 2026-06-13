@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Service\OAuth;
 
 use App\Entity\SocialAccount;
 use App\Exception\OAuth\OAuthEmailExistsException;
+use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Repository\SocialAccountRepository;
 use App\Repository\UserRepository;
 use App\Service\OAuth\OAuthUserData;
@@ -45,6 +46,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'test@example.com',
             username: 'Test User',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
@@ -68,6 +70,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'oauth@example.com',
             username: 'OAuth User',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser(
@@ -105,6 +108,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'existing@example.com',
             username: 'New User',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         try {
@@ -112,6 +116,30 @@ class OAuthUserServiceTest extends KernelTestCase
             $this->fail('Expected OAuthEmailExistsException was not thrown');
         } catch (OAuthEmailExistsException) {
             $this->assertSame(1, $this->getUserRepository()->count());
+            $this->assertSame(0, $this->getSocialAccountRepository()->count());
+        }
+    }
+
+    public function test_find_or_create_user_refuses_unverified_email(): void
+    {
+        // pretest
+        $this->assertSame(0, $this->getUserRepository()->count());
+        $this->assertSame(0, $this->getSocialAccountRepository()->count());
+
+        $userData = new OAuthUserData(
+            id: 'google-id-unverified',
+            email: 'unverified@example.com',
+            username: 'Unverified User',
+            pictureUrl: null,
+            emailVerified: false,
+        );
+
+        try {
+            $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
+            $this->fail('Expected OAuthEmailNotVerifiedException was not thrown');
+        } catch (OAuthEmailNotVerifiedException) {
+            // No account or social account is created from an unverified email.
+            $this->assertSame(0, $this->getUserRepository()->count());
             $this->assertSame(0, $this->getSocialAccountRepository()->count());
         }
     }
@@ -129,6 +157,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'newuser@example.com',
             username: 'New User',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
@@ -162,6 +191,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'special@example.com',
             username: 'John Döe @Special!',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
@@ -186,6 +216,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'johndoe2@example.com',
             username: 'John Doe',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
@@ -216,6 +247,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'withpicture@example.com',
             username: 'User With Picture',
             pictureUrl: 'https://example.com/picture.jpg',
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
@@ -238,6 +270,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'empty@example.com',
             username: '!!!',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);
@@ -261,6 +294,7 @@ class OAuthUserServiceTest extends KernelTestCase
             email: 'empty@example.com',
             username: '!!!',
             pictureUrl: null,
+            emailVerified: true,
         );
 
         $result = $this->getOAuthUserService()->findOrCreateUser($userData, SocialAccount::PROVIDER_GOOGLE);

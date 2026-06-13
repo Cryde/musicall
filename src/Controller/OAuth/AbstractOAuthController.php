@@ -6,6 +6,7 @@ namespace App\Controller\OAuth;
 
 use App\Entity\User;
 use App\Exception\OAuth\OAuthEmailExistsException;
+use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
@@ -100,6 +101,8 @@ abstract class AbstractOAuthController extends AbstractController
             return $this->createAuthenticatedRedirect($result->user, $request);
         } catch (OAuthEmailExistsException) {
             return $this->redirectWithError('email_exists');
+        } catch (OAuthEmailNotVerifiedException) {
+            return $this->redirectWithError('email_not_verified');
         } catch (\Exception $e) {
             $this->logger->error('OAuth authentication failed', [
                 'provider' => $this->getProviderName(),

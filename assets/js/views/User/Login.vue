@@ -142,6 +142,8 @@ const oauthError = computed(() => route.query.oauth_error)
 const oauthErrorMessages = {
   email_exists:
     'Cette adresse email est déjà associée à un compte. Connectez-vous avec votre mot de passe puis liez votre compte social dans les paramètres.',
+  email_not_verified:
+    "L'adresse email de ce compte Google n'est pas vérifiée. Vérifiez-la auprès de Google puis réessayez.",
   oauth_failed: 'La connexion a échoué. Veuillez réessayer.'
 }
 

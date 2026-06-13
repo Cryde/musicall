@@ -11,6 +11,7 @@ readonly class OAuthUserData
         public string $email,
         public string $username,
         public ?string $pictureUrl,
+        public bool $emailVerified,
     ) {
     }
 }
