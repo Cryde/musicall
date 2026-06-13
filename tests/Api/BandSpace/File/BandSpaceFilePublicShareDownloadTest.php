@@ -40,6 +40,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
             'attachment; filename=doc.txt',
             (string) $this->client->getResponse()->headers->get('Content-Disposition'),
         );
+        $this->assertSame('nosniff', $this->client->getResponse()->headers->get('X-Content-Type-Options'));
         $this->assertSame(self::FILE_CONTENT, $this->client->getInternalResponse()->getContent());
     }
 

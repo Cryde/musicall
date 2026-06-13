@@ -64,6 +64,9 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
         });
 
         $response->headers->set('Content-Type', $version->mimeType);
+        // Stop browsers from MIME-sniffing the body into an executable type
+        // (defence-in-depth alongside the attachment disposition below).
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set(
             'Content-Disposition',
             HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $file->originalName),
