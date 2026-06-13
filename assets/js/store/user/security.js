@@ -5,6 +5,7 @@ import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import router from '../../router/index.js'
+import { isSafeReturnUrl } from '../../utils/returnUrl.js'
 
 // Refresh token promise cache to prevent race conditions
 let refreshPromise = null
@@ -35,7 +36,9 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
       // Hard reload (rather than router.replace) to start from a clean Pinia
       // state — prevents any stale data from a prior session (different user
       // on the same browser, expired token) from surviving into the new one.
-      if (returnUrl) {
+      // `returnUrl` comes from the URL query string, so it must be validated as
+      // a same-origin relative path before redirecting (open-redirect guard).
+      if (returnUrl && isSafeReturnUrl(returnUrl)) {
         window.location.href = returnUrl
       } else {
         window.location.href = router.resolve({ name: 'app_home' }).href
