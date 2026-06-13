@@ -121,6 +121,38 @@ class BandSpaceFileUploadTest extends ApiTestCase
         ]);
     }
 
+    public function test_upload_svg_is_rejected_with_415(): void
+    {
+        // SVG can carry inline scripts, so it is no longer an allowed band-space
+        // file type (SECURITY-FIX.md finding 10).
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.svg', 'sample.svg', 'image/svg+xml', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/415',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Type de fichier non autorisé : image/svg+xml',
+            'status' => 415,
+            'type' => '/errors/415',
+            'description' => 'Type de fichier non autorisé : image/svg+xml',
+        ]);
+    }
+
     public function test_upload_no_file_returns_422(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

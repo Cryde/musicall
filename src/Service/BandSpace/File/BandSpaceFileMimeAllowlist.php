@@ -29,7 +29,9 @@ final class BandSpaceFileMimeAllowlist
         'image/png',
         'image/gif',
         'image/webp',
-        'image/svg+xml',
+        // image/svg+xml deliberately excluded: SVG can carry inline scripts (XSS).
+        // Downloads force Content-Disposition: attachment, but disallowing storage
+        // entirely is the stricter posture (SECURITY-FIX.md finding 10).
         'audio/mpeg',
         'audio/mp4',
         'audio/wav',
