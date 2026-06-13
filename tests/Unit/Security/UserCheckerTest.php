@@ -10,36 +10,46 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserCheckerTest extends TestCase
 {
-    public function test_check_pre_auth(): void
+    public function test_check_pre_auth_is_a_noop(): void
     {
+        // The verification check moved to checkPostAuth (so account_not_verified is
+        // only disclosed after the password is verified), leaving checkPreAuth a
+        // no-op for every user - including an unverified one.
         $checker = new UserChecker();
 
-        // this non-internal user as a confirmationDatetime to null
-        // if it was an internal user it would throw
         $checker->checkPreAuth($this->buildNonInternalUser());
 
-        $user = new User();
-        $user->confirmationDatetime = new \DateTime();
-        $checker->checkPreAuth($user);
+        $verifiedUser = new User();
+        $verifiedUser->confirmationDatetime = new \DateTime();
+        $checker->checkPreAuth($verifiedUser);
 
-        $user->confirmationDatetime = null;
-        $user->email = 'test@example.com';
-        $this->expectException(CustomUserMessageAccountStatusException::class);
-        $this->expectExceptionMessage('account_not_verified');
-        $checker->checkPreAuth($user);
+        $unverifiedUser = new User();
+        $unverifiedUser->confirmationDatetime = null;
+        $unverifiedUser->email = 'test@example.com';
+        $checker->checkPreAuth($unverifiedUser);
+
+        $this->expectNotToPerformAssertions();
     }
 
-    public function test_check_post_auth(): void
+    public function test_check_post_auth_throws_for_unverified_user(): void
     {
-        // i don't know if this test is useful
         $checker = new UserChecker();
 
+        // non-App user: ignored
         $checker->checkPostAuth($this->buildNonInternalUser());
 
-        $user = new User();
-        $checker->checkPostAuth($user);
+        // verified user: no exception
+        $verifiedUser = new User();
+        $verifiedUser->confirmationDatetime = new \DateTime();
+        $checker->checkPostAuth($verifiedUser);
 
-        $this->assertTrue(true); //
+        // unverified user: only now (after the password check) is the status disclosed
+        $unverifiedUser = new User();
+        $unverifiedUser->confirmationDatetime = null;
+        $unverifiedUser->email = 'test@example.com';
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_not_verified');
+        $checker->checkPostAuth($unverifiedUser);
     }
 
     private function buildNonInternalUser(): UserInterface
