@@ -50,6 +50,12 @@ framework:
             limit: 5
             interval: '1 day'
             cache_pool: "rate_limiter.cache"
+        email_verification_check:
+            # Higher than password_reset (4): OTP entry is error-prone (mistyped 6-digit code).
+            policy: fixed_window
+            limit: 10
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
         password_reset:
             policy: fixed_window
             limit: 4
