@@ -11,12 +11,9 @@ export default {
       .catch(handleApiError)
   },
 
-  buildDownloadUrl(token, password = null) {
-    const base = Routing.generate('api_band_space_file_shares_public_download', { token })
-    if (password) {
-      const sep = base.includes('?') ? '&' : '?'
-      return `${base}${sep}password=${encodeURIComponent(password)}`
-    }
-    return base
+  // The password is never put in the URL (query strings leak via logs, history
+  // and Referer). It is sent as the X-Share-Password header in PublicShare.vue.
+  buildDownloadUrl(token) {
+    return Routing.generate('api_band_space_file_shares_public_download', { token })
   }
 }

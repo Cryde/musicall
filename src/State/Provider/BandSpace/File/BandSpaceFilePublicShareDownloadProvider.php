@@ -69,7 +69,9 @@ readonly class BandSpaceFilePublicShareDownloadProvider implements ProviderInter
         }
 
         if ($share->passwordHash !== null) {
-            $submittedPassword = $request?->query->getString('password') ?? '';
+            // Read the password from a header, not the query string: query strings
+            // leak into access logs, browser history and the Referer header.
+            $submittedPassword = $request?->headers->get('X-Share-Password') ?? '';
             if ($submittedPassword === '') {
                 throw new UnauthorizedHttpException('Bearer', 'Mot de passe requis');
             }

@@ -139,7 +139,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
         $this->client->disableReboot();
         ['token' => $token] = $this->setupShare(passwordPlain: 'p@ss');
 
-        $this->client->request('GET', '/api/shares/' . $token . '/download?password=p%40ss');
+        $this->client->request('GET', '/api/shares/' . $token . '/download', [], [], ['HTTP_X_SHARE_PASSWORD' => 'p@ss']);
 
         $this->assertResponseIsSuccessful();
         $this->assertSame(self::FILE_CONTENT, $this->client->getInternalResponse()->getContent());
@@ -149,7 +149,7 @@ class BandSpaceFilePublicShareDownloadTest extends ApiTestCase
     {
         ['token' => $token] = $this->setupShare(passwordPlain: 'p@ss');
 
-        $this->client->request('GET', '/api/shares/' . $token . '/download?password=wrong');
+        $this->client->request('GET', '/api/shares/' . $token . '/download', [], [], ['HTTP_X_SHARE_PASSWORD' => 'wrong']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }

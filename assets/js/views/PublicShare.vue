@@ -136,16 +136,17 @@ async function handleDownload() {
   passwordError.value = null
   isDownloading.value = true
 
-  const url = publicShareApi.buildDownloadUrl(
-    token.value,
-    metadata.value.has_password ? passwordValue.value : null
-  )
+  const url = publicShareApi.buildDownloadUrl(token.value)
 
   if (metadata.value.has_password) {
     // Pre-flight HEAD-like check via fetch to surface an inline 401 instead of
-    // navigating to a raw error page when the password is wrong.
+    // navigating to a raw error page when the password is wrong. The password
+    // travels in a header (never the URL) so it can't leak via logs/history.
     try {
-      const probe = await fetch(url, { method: 'GET' })
+      const probe = await fetch(url, {
+        method: 'GET',
+        headers: { 'X-Share-Password': passwordValue.value }
+      })
       if (probe.status === 401) {
         passwordError.value = 'Mot de passe incorrect.'
         isDownloading.value = false
