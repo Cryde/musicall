@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace App\Entity\Metric;
 
-use ApiPlatform\Metadata\Get;
 use DateTime;
 use App\Repository\Metric\ViewCacheRepository;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
 
+// Internal view-counter entity; deliberately NOT an API Platform resource.
+// It was previously exposed via an ungated GET /api/view_caches/{id} that
+// nothing consumed (SECURITY-FIX.md finding 12).
 #[ORM\Entity(repositoryClass: ViewCacheRepository::class)]
-#[Get(normalizationContext: ['groups' => ViewCache::ITEM])]
 class ViewCache
 {
-    final const ITEM = 'VIEW_CACHE_ITEM';
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
