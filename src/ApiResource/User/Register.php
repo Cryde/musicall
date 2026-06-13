@@ -27,6 +27,7 @@ class Register
     #[Assert\Email(message: 'Email invalide')]
     public string $email;
     #[Assert\NotBlank(message: 'Veuillez saisir un mot de passe')]
-    #[Assert\Length(min: 6, minMessage: 'Le mot de passe doit au moins contenir 6 caractères')]
+    #[Assert\Length(min: 8, max: 4096, minMessage: 'Le mot de passe doit au moins contenir 8 caractères')]
+    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'Ce mot de passe est présent dans une fuite de données, veuillez en choisir un autre.')]
     public string $password;
 }

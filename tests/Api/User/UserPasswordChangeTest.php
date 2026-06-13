@@ -73,12 +73,12 @@ class UserPasswordChangeTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'password',
-                    'message' => 'Minimum 6 caractères',
+                    'message' => 'Minimum 8 caractères',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ]
             ],
-            'detail' => 'password: Minimum 6 caractères',
-            'description' => 'password: Minimum 6 caractères',
+            'detail' => 'password: Minimum 8 caractères',
+            'description' => 'password: Minimum 8 caractères',
             'type' => '/validation_errors/9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
         ]);

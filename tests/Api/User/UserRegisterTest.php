@@ -72,12 +72,12 @@ class UserRegisterTest extends ApiTestCase
             'title' => 'An error occurred',
             'detail' => 'username: Le nom d\'utilisateur doit au moins contenir 3 caractères
 email: Email invalide
-password: Le mot de passe doit au moins contenir 6 caractères',
+password: Le mot de passe doit au moins contenir 8 caractères',
             'status' => 422,
             'type' => '/validation_errors/0=9ff3fdc4-b214-49db-8718-39c315e33d45;1=bd79c0ab-ddba-46cc-a703-a7a4b08de310;2=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'description' => 'username: Le nom d\'utilisateur doit au moins contenir 3 caractères
 email: Email invalide
-password: Le mot de passe doit au moins contenir 6 caractères',
+password: Le mot de passe doit au moins contenir 8 caractères',
             'violations' => [
                 [
                               'propertyPath' => 'username',
@@ -91,7 +91,7 @@ password: Le mot de passe doit au moins contenir 6 caractères',
                 ],
                 [
                                'propertyPath' => 'password',
-            'message' => 'Le mot de passe doit au moins contenir 6 caractères',
+            'message' => 'Le mot de passe doit au moins contenir 8 caractères',
             'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ]

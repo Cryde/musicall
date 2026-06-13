@@ -21,7 +21,8 @@ class ChangePassword
     #[SecurityAssert\UserPassword(message: 'L\'ancien mot de passe est invalide')]
     public string $oldPassword;
     #[Assert\NotBlank]
-    #[Assert\Length(min: 6)]
+    #[Assert\Length(min: 8, max: 4096, minMessage: 'Le mot de passe doit contenir au moins 8 caractères.')]
+    #[Assert\NotCompromisedPassword(skipOnError: true, message: 'Ce mot de passe est présent dans une fuite de données, veuillez en choisir un autre.')]
     #[Assert\NotEqualTo(propertyPath: 'oldPassword')]
     public string $newPassword;
 
