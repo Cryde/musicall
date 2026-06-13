@@ -6,7 +6,7 @@ services:
     Symfony\AI\Platform\PlatformInterface:
         factory: ['Symfony\AI\Platform\Bridge\OpenAi\Factory', 'createPlatform']
         arguments:
-            $apiKey: '%env(OPENAI_API_KEY)%'
+            $apiKey: '%env(OPEN_AI_KEY)%'
             $httpClient: '@http_client'
             $eventDispatcher: '@event_dispatcher'
 
