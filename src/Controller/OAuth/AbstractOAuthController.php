@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class AbstractOAuthController extends AbstractController
 {
+    private const string RETURN_URL_SESSION_PREFIX = 'oauth_return_url.';
+
     public function __construct(
         protected readonly ClientRegistry $clientRegistry,
         protected readonly OAuthUserService $oAuthUserService,
@@ -49,7 +51,13 @@ abstract class AbstractOAuthController extends AbstractController
         $options = [];
 
         if ($returnUrl !== '' && $this->isValidReturnUrl($returnUrl)) {
-            $options['state'] = base64_encode(json_encode(['return_url' => $returnUrl], JSON_THROW_ON_ERROR));
+            // Use a random, unguessable state nonce (KnpU stores it in the session
+            // and verifies it on callback for CSRF) and stash the return URL against
+            // it, rather than encoding the return URL into the state itself - which
+            // made the state predictable (SECURITY-FIX.md finding 13).
+            $nonce = bin2hex(random_bytes(32));
+            $request->getSession()->set(self::RETURN_URL_SESSION_PREFIX . $nonce, $returnUrl);
+            $options['state'] = $nonce;
         }
 
         return $this->clientRegistry
@@ -161,25 +169,19 @@ abstract class AbstractOAuthController extends AbstractController
             return $this->frontendUrl;
         }
 
-        try {
-            $decoded = base64_decode($state, true);
-            if ($decoded === false) {
-                return $this->frontendUrl;
-            }
+        // The state is now an opaque nonce; the return URL was stashed against it in
+        // the session at connect() time. Resolve and consume it (single use).
+        $session = $request->getSession();
+        $sessionKey = self::RETURN_URL_SESSION_PREFIX . $state;
+        $returnUrl = $session->get($sessionKey);
+        $session->remove($sessionKey);
 
-            /** @var array{return_url?: string} $stateData */
-            $stateData = json_decode($decoded, true, 512, JSON_THROW_ON_ERROR);
-            $returnUrl = $stateData['return_url'] ?? null;
-
-            if ($returnUrl !== null && $this->isValidReturnUrl($returnUrl)) {
-                // Ensure it's a full URL
-                if (str_starts_with($returnUrl, '/')) {
-                    return $this->frontendUrl . $returnUrl;
-                }
-                return $returnUrl;
+        if (is_string($returnUrl) && $returnUrl !== '' && $this->isValidReturnUrl($returnUrl)) {
+            // Ensure it's a full URL
+            if (str_starts_with($returnUrl, '/')) {
+                return $this->frontendUrl . $returnUrl;
             }
-        } catch (\JsonException) {
-            // Invalid state, use default redirect
+            return $returnUrl;
         }
 
         return $this->frontendUrl;
