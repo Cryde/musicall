@@ -18,7 +18,7 @@
       aria-label="Accueil MusicAll"
     >
       <span class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2">
-        <img src="../../../image/logo-2.png" alt="Logo MusicAll" class="h-4 w-auto" />
+        <img src="../../../image/logo-2.webp" alt="Logo MusicAll" width="106" height="16" class="h-4 w-auto" />
       </span>
     </RouterLink>
 
