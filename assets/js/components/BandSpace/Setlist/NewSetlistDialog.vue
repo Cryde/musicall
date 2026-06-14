@@ -15,6 +15,7 @@
           placeholder="ex. Tour d'été 2026"
           class="w-full"
           :invalid="!!violation"
+          aria-label="Nom"
         />
         <small v-if="violation" class="text-red-500">{{ violation }}</small>
       </div>

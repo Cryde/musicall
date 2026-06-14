@@ -43,6 +43,7 @@
             optionLabel="label"
             optionValue="value"
             size="small"
+            aria-label="Statut"
             @change="saveField('status', editStatus)"
           />
         </div>
@@ -54,6 +55,7 @@
             optionLabel="label"
             optionValue="value"
             size="small"
+            aria-label="Priorité"
             @change="saveField('priority', editPriority)"
           />
         </div>
@@ -67,6 +69,7 @@
             placeholder="Aucune"
             showClear
             size="small"
+            aria-label="Catégorie"
             @change="saveField('category_id', editCategoryId)"
           />
         </div>
@@ -78,6 +81,7 @@
             showIcon
             showButtonBar
             size="small"
+            aria-label="Échéance"
             @date-select="saveDueDate"
             @clear-click="saveDueDate"
           />
@@ -95,6 +99,7 @@
           placeholder="Sélectionner des membres"
           display="chip"
           size="small"
+          aria-label="Assignés"
           @change="saveAssignees"
         />
       </div>
@@ -116,6 +121,7 @@
           autoResize
           placeholder="Ajouter une description..."
           class="text-sm"
+          aria-label="Description"
         />
         <div class="flex justify-end gap-2">
           <Button

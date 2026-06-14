@@ -58,6 +58,7 @@
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Dossier</label>
         <Select
           v-model="form.folderId"
+          aria-label="Dossier"
           :options="folderOptions"
           option-label="label"
           option-value="value"
@@ -74,6 +75,7 @@
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Étiquettes</label>
         <MultiSelect
           v-model="form.tagIds"
+          aria-label="Étiquettes"
           :options="tags"
           option-label="name"
           option-value="id"

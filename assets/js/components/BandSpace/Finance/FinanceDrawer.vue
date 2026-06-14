@@ -69,6 +69,7 @@
         <Select
           v-else
           id="finance-status"
+          aria-label="Statut"
           v-model="form.status"
           :options="statusOptions"
           optionLabel="label"
@@ -81,6 +82,7 @@
         <label class="text-sm font-medium">Montant</label>
         <SelectButton
           v-model="form.amountMode"
+          aria-label="Montant"
           :options="amountModeOptions"
           optionLabel="label"
           optionValue="value"
@@ -91,6 +93,7 @@
         <div v-if="form.amountMode === 'exact'" class="flex flex-col gap-1">
           <InputNumber
             id="finance-amount"
+            aria-label="Montant"
             v-model="form.amountEuros"
             :minFractionDigits="2"
             :maxFractionDigits="2"
@@ -102,6 +105,7 @@
         <div v-else class="flex flex-col sm:flex-row gap-2">
           <InputNumber
             v-model="form.amountMinEuros"
+            aria-label="Montant minimum"
             :minFractionDigits="2"
             :maxFractionDigits="2"
             suffix=" €"
@@ -111,6 +115,7 @@
           />
           <InputNumber
             v-model="form.amountMaxEuros"
+            aria-label="Montant maximum"
             :minFractionDigits="2"
             :maxFractionDigits="2"
             suffix=" €"

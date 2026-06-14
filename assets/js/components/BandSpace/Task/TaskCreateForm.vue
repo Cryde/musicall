@@ -3,12 +3,12 @@
     <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium">Titre</label>
-        <InputText v-model="form.title" placeholder="Ex : Réserver la salle" />
+        <InputText v-model="form.title" placeholder="Ex : Réserver la salle" aria-label="Titre" />
       </div>
 
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium">Description</label>
-        <Textarea v-model="form.description" rows="3" placeholder="Détails de la tâche..." autoResize />
+        <Textarea v-model="form.description" rows="3" placeholder="Détails de la tâche..." autoResize aria-label="Description" />
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -19,6 +19,7 @@
             :options="statusOptions"
             optionLabel="label"
             optionValue="value"
+            aria-label="Statut"
           />
         </div>
         <div class="flex flex-col gap-1">
@@ -28,6 +29,7 @@
             :options="priorityOptions"
             optionLabel="label"
             optionValue="value"
+            aria-label="Priorité"
           />
         </div>
       </div>
@@ -41,6 +43,7 @@
           optionValue="id"
           placeholder="Aucune"
           showClear
+          aria-label="Catégorie"
         />
       </div>
 
@@ -53,12 +56,13 @@
           optionValue="user_id"
           placeholder="Sélectionner des membres"
           display="chip"
+          aria-label="Assignés"
         />
       </div>
 
       <div class="flex flex-col gap-1">
         <label class="text-sm font-medium">Date d'échéance</label>
-        <DatePicker v-model="form.dueDate" dateFormat="yy-mm-dd" showIcon showButtonBar />
+        <DatePicker v-model="form.dueDate" dateFormat="yy-mm-dd" showIcon showButtonBar aria-label="Date d'échéance" />
       </div>
 
       <Button type="submit" label="Créer la tâche" :loading="tasksStore.isCreating" :disabled="!form.title.trim()" />

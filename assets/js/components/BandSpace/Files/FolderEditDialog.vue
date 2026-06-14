@@ -11,6 +11,7 @@
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Nom</label>
         <InputText
           v-model="form.name"
+          aria-label="Nom"
           placeholder="Ex : Live, Setlists, 2025"
           size="small"
           class="w-full"
@@ -24,6 +25,7 @@
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Dossier parent</label>
         <Select
           v-model="form.parentId"
+          aria-label="Dossier parent"
           :options="parentOptions"
           option-label="label"
           option-value="value"

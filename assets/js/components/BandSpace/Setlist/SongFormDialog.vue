@@ -9,14 +9,14 @@
     <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
       <div>
         <label class="block text-sm font-medium mb-1">Titre <span class="text-red-500">*</span></label>
-        <InputText v-model="form.title" autofocus class="w-full" :invalid="!!violationFor('title')" />
+        <InputText v-model="form.title" autofocus class="w-full" :invalid="!!violationFor('title')" aria-label="Titre" />
         <small v-if="violationFor('title')" class="text-red-500">{{ violationFor('title') }}</small>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-sm font-medium mb-1">Tonalité</label>
-          <InputText v-model="form.tonality" placeholder="ex. Em" class="w-full" :invalid="!!violationFor('tonality')" />
+          <InputText v-model="form.tonality" placeholder="ex. Em" class="w-full" :invalid="!!violationFor('tonality')" aria-label="Tonalité" />
           <small v-if="violationFor('tonality')" class="text-red-500">{{ violationFor('tonality') }}</small>
         </div>
         <div>
@@ -29,6 +29,7 @@
             class="w-full"
             inputClass="w-full"
             :invalid="!!violationFor('tempo')"
+            aria-label="BPM"
           />
           <small v-if="violationFor('tempo')" class="text-red-500">{{ violationFor('tempo') }}</small>
         </div>
@@ -44,13 +45,14 @@
           class="w-full"
           inputClass="w-full"
           :invalid="!!violationFor('reference_duration')"
+          aria-label="Durée de référence (secondes)"
         />
         <small v-if="violationFor('reference_duration')" class="text-red-500">{{ violationFor('reference_duration') }}</small>
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-1">Notes</label>
-        <Textarea v-model="form.notes" rows="3" class="w-full" />
+        <Textarea v-model="form.notes" rows="3" class="w-full" aria-label="Notes" />
       </div>
 
       <div class="flex justify-end gap-2 pt-2">

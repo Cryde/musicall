@@ -12,7 +12,7 @@
 
       <div v-if="item.type !== 'song'">
         <label class="block text-sm font-medium mb-1">Libellé</label>
-        <InputText v-model="form.label" class="w-full" />
+        <InputText v-model="form.label" class="w-full" aria-label="Libellé" />
       </div>
 
       <div>
@@ -25,6 +25,7 @@
           placeholder="Vide = utiliser la durée de référence"
           class="w-full"
           inputClass="w-full"
+          aria-label="Durée surchargée (s)"
         />
         <small v-if="referenceDuration" class="text-surface-500 block mt-1">
           Référence&nbsp;: {{ formatSeconds(referenceDuration) }}
@@ -37,12 +38,13 @@
           v-model="form.transition"
           placeholder="ex. segue, gap 5s, talk 30s…"
           class="w-full"
+          aria-label="Transition"
         />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-1">Note</label>
-        <Textarea v-model="form.note" rows="3" class="w-full" />
+        <Textarea v-model="form.note" rows="3" class="w-full" aria-label="Note" />
       </div>
 
       <div class="flex justify-between gap-2 pt-2">

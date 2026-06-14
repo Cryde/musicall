@@ -11,6 +11,7 @@
           option-label="label"
           option-value="value"
           class="w-full"
+          aria-label="Police"
         />
       </div>
 
@@ -24,6 +25,7 @@
           option-label="label"
           option-value="value"
           :allow-empty="false"
+          aria-label="Mise en page"
         />
       </div>
 

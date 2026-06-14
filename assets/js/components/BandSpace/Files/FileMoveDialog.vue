@@ -16,6 +16,7 @@
         <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Dossier de destination</label>
         <Select
           v-model="targetFolderId"
+          aria-label="Dossier de destination"
           :options="folderOptions"
           option-label="label"
           option-value="value"

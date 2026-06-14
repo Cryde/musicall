@@ -102,6 +102,7 @@
                 :options="otherTypeOptions"
                 option-label="label"
                 option-value="value"
+                aria-label="Type"
               />
             </div>
             <div>
@@ -111,6 +112,7 @@
                 placeholder="ex. Présentation du groupe"
                 class="w-full"
                 :invalid="!!labelError"
+                aria-label="Libellé"
               />
               <small v-if="labelError" class="text-red-500">{{ labelError }}</small>
             </div>
@@ -123,6 +125,7 @@
                 :useGrouping="false"
                 class="w-full"
                 inputClass="w-full"
+                aria-label="Durée (s, optionnel)"
               />
             </div>
             <div class="flex justify-end gap-2 pt-2">

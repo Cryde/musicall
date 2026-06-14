@@ -12,6 +12,7 @@
           <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Date d'expiration</label>
           <DatePicker
             v-model="form.expiryDatetime"
+            aria-label="Date d'expiration"
             show-time
             hour-format="24"
             date-format="dd/mm/yy"

@@ -118,6 +118,7 @@
         <label class="text-xs text-surface-400 uppercase tracking-wide">Étiquettes</label>
         <MultiSelect
           v-model="selectedTagIds"
+          aria-label="Étiquettes"
           :options="filesStore.tags"
           option-label="name"
           option-value="id"
@@ -131,6 +132,7 @@
         <label class="text-xs text-surface-400 uppercase tracking-wide">Dossier</label>
         <Select
           :model-value="selectedFolderId"
+          aria-label="Dossier"
           :options="folderOptions"
           option-label="label"
           option-value="value"
