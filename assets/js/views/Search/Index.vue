@@ -482,18 +482,29 @@ const breadcrumbLabel = computed(() => {
 useTitle(pageTitle)
 
 onMounted(async () => {
-  // Instruments and styles are independent (they only feed the filter
-  // dropdowns) — load them in parallel rather than chaining two round-trips.
-  await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
+  // Instruments and styles only feed the filter dropdowns — load them in
+  // parallel rather than chaining two round-trips.
+  const attributesLoaded = Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
 
-  // Initialize filters from URL query params
-  initializeFiltersFromUrl()
+  const hasScopedSearch =
+    !!prefilledInstrumentSlug.value ||
+    !!urlFilters.type ||
+    !!urlFilters.instrument ||
+    urlFilters.styles.length > 0 ||
+    !!(urlFilters.lat && urlFilters.lng && urlFilters.location)
 
-  // Pre-fill instrument if specified in route meta (takes precedence over URL)
-  applyPrefilledInstrument()
-
-  // Load initial results with any URL filters
-  await loadInitialResults()
+  if (hasScopedSearch) {
+    // The initial search is scoped by a prefilled instrument or URL filters,
+    // which are resolved against the attribute lists — load those first.
+    await attributesLoaded
+    initializeFiltersFromUrl()
+    applyPrefilledInstrument()
+    await loadInitialResults()
+  } else {
+    // Plain landing: the initial search is unscoped and needs neither list,
+    // so run it alongside the attribute loads.
+    await Promise.all([attributesLoaded, loadInitialResults()])
+  }
 })
 
 async function loadInitialResults() {

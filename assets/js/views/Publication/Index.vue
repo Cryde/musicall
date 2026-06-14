@@ -220,11 +220,19 @@ const pageDescription = computed(() => {
 useTitle(pageTitle)
 
 onMounted(async () => {
-  await publicationsStore.loadCategories()
-  initCategoryFromRoute()
-  isInitialized.value = true
-  // Load initial data
-  await infiniteHandler()
+  if (route.params.slug) {
+    // The first list page is scoped to the category in the URL, so the
+    // category list must load first to resolve that slug.
+    await publicationsStore.loadCategories()
+    initCategoryFromRoute()
+    isInitialized.value = true
+    await infiniteHandler()
+  } else {
+    // No category in the URL → the initial list is unscoped and independent
+    // of the category list; load both in parallel to save a round-trip.
+    isInitialized.value = true
+    await Promise.all([publicationsStore.loadCategories(), infiniteHandler()])
+  }
 })
 
 function initCategoryFromRoute() {
