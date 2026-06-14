@@ -38,6 +38,7 @@
               size="small"
               severity="danger"
               v-tooltip.left="'Supprimer'"
+              aria-label="Supprimer"
               @click="handleDelete(category)"
             />
           </template>

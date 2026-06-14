@@ -50,6 +50,7 @@
             severity="danger"
             size="small"
             v-tooltip.top="'Annuler l\'invitation'"
+            aria-label="Annuler l'invitation"
             :loading="settingsStore.isCancellingInvitation"
             @click="handleCancelInvitation(invitation)"
           />
@@ -103,6 +104,7 @@
               rounded
               size="small"
               v-tooltip.top="'Promouvoir admin'"
+              aria-label="Promouvoir admin"
               :loading="settingsStore.isUpdatingRole"
               @click="handlePromote(member)"
             />
@@ -113,6 +115,7 @@
               rounded
               size="small"
               v-tooltip.top="'Rétrograder membre'"
+              aria-label="Rétrograder membre"
               :loading="settingsStore.isUpdatingRole"
               @click="handleDemote(member)"
             />
@@ -123,6 +126,7 @@
               severity="danger"
               size="small"
               v-tooltip.top="'Exclure'"
+              aria-label="Exclure"
               :loading="settingsStore.isKicking"
               @click="handleKick(member)"
             />

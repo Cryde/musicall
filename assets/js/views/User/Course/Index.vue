@@ -131,6 +131,7 @@
                 <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="'Soumettre le cours'"
+                  aria-label="Soumettre le cours"
                   icon="pi pi-send"
                   severity="success"
                   text
@@ -140,6 +141,7 @@
                 />
                 <Button
                   v-tooltip.top="'Voir le cours'"
+                  aria-label="Voir le cours"
                   icon="pi pi-eye"
                   severity="info"
                   text
@@ -151,6 +153,7 @@
                 <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="'Modifier le cours'"
+                  aria-label="Modifier le cours"
                   icon="pi pi-pencil"
                   severity="secondary"
                   text
@@ -161,6 +164,7 @@
                 <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="'Supprimer le cours'"
+                  aria-label="Supprimer le cours"
                   icon="pi pi-trash"
                   severity="danger"
                   text

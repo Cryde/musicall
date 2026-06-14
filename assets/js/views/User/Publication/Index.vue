@@ -138,6 +138,7 @@
                 <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="'Soumettre la publication'"
+                  aria-label="Soumettre la publication"
                   icon="pi pi-send"
                   severity="success"
                   text
@@ -147,6 +148,7 @@
                 />
                 <Button
                   v-tooltip.top="'Voir la publication'"
+                  aria-label="Voir la publication"
                   icon="pi pi-eye"
                   severity="info"
                   text
@@ -157,6 +159,7 @@
                 <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="'Modifier la publication'"
+                  aria-label="Modifier la publication"
                   icon="pi pi-pencil"
                   severity="secondary"
                   text
@@ -167,6 +170,7 @@
                 <Button
                   v-if="data.status_id === STATUS_DRAFT"
                   v-tooltip.top="'Supprimer la publication'"
+                  aria-label="Supprimer la publication"
                   icon="pi pi-trash"
                   severity="danger"
                   text

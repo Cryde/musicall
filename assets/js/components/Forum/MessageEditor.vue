@@ -23,6 +23,7 @@
         <Divider layout="vertical" class="mx-1" />
         <Button
           v-tooltip.bottom="'Liste à puces'"
+          aria-label="Liste à puces"
           icon="pi pi-list"
           :severity="editor.isActive('bulletList') ? 'info' : 'secondary'"
           text
@@ -31,6 +32,7 @@
         />
         <Button
           v-tooltip.bottom="'Liste numérotée'"
+          aria-label="Liste numérotée"
           :severity="editor.isActive('orderedList') ? 'info' : 'secondary'"
           text
           size="small"
@@ -41,6 +43,7 @@
         <Divider layout="vertical" class="mx-1" />
         <Button
           v-tooltip.bottom="'Citation'"
+          aria-label="Citation"
           icon="pi pi-comment"
           :severity="editor.isActive('blockquote') ? 'info' : 'secondary'"
           text
@@ -50,6 +53,7 @@
         <Divider layout="vertical" class="mx-1" />
         <Button
           v-tooltip.bottom="'Ajouter une image'"
+          aria-label="Ajouter une image"
           icon="pi pi-image"
           severity="secondary"
           text
@@ -66,6 +70,7 @@
         >
         <Button
           v-tooltip.bottom="'Ajouter une vidéo YouTube'"
+          aria-label="Ajouter une vidéo YouTube"
           icon="pi pi-youtube"
           severity="secondary"
           text
@@ -75,6 +80,7 @@
         <Divider layout="vertical" class="mx-1" />
         <Button
           v-tooltip.bottom="'Annuler'"
+          aria-label="Annuler"
           icon="pi pi-undo"
           severity="secondary"
           text
@@ -84,6 +90,7 @@
         />
         <Button
           v-tooltip.bottom="'Rétablir'"
+          aria-label="Rétablir"
           icon="pi pi-refresh"
           severity="secondary"
           text

@@ -72,6 +72,7 @@
                 <Button
                   v-if="data.status === STATUS_DRAFT"
                   v-tooltip.top="'Soumettre la galerie'"
+                  aria-label="Soumettre la galerie"
                   icon="pi pi-send"
                   severity="success"
                   text
@@ -82,6 +83,7 @@
                 <Button
                   v-if="data.slug"
                   v-tooltip.top="'Voir la galerie'"
+                  aria-label="Voir la galerie"
                   icon="pi pi-eye"
                   severity="info"
                   text
@@ -92,6 +94,7 @@
                 <Button
                   v-if="data.status === STATUS_DRAFT"
                   v-tooltip.top="'Modifier la galerie'"
+                  aria-label="Modifier la galerie"
                   icon="pi pi-pencil"
                   severity="secondary"
                   text
@@ -102,6 +105,7 @@
                 <Button
                   v-if="data.status === STATUS_DRAFT"
                   v-tooltip.top="'Supprimer la galerie'"
+                  aria-label="Supprimer la galerie"
                   icon="pi pi-trash"
                   severity="danger"
                   text

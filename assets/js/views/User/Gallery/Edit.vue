@@ -120,7 +120,8 @@
             >
               <Button
                 v-if="userGalleryStore.gallery.cover_image_id !== image.id"
-                v-tooltip.bottom="'Definir comme couverture'"
+                v-tooltip.bottom="'Définir comme couverture'"
+                aria-label="Définir comme couverture"
                 icon="pi pi-image"
                 severity="info"
                 size="small"
@@ -132,6 +133,7 @@
               <Button
                 v-if="userGalleryStore.gallery.cover_image_id !== image.id"
                 v-tooltip.bottom="'Supprimer'"
+                aria-label="Supprimer"
                 icon="pi pi-trash"
                 severity="danger"
                 size="small"

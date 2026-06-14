@@ -21,6 +21,7 @@
         size="small"
         text
         rounded
+        aria-label="Nouveau dossier"
         v-tooltip.top="'Nouveau dossier'"
         @click="openCreateRoot"
       />

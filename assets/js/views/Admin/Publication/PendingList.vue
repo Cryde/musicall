@@ -29,6 +29,7 @@
               text
               rounded
               v-tooltip.top="'Voir la publication'"
+              aria-label="Voir la publication"
               as="router-link"
               :to="{ name: 'app_user_publication_preview', params: { id: data.id } }"
               target="_blank"
@@ -39,6 +40,7 @@
               text
               rounded
               v-tooltip.top="'Valider la publication'"
+              aria-label="Valider la publication"
               @click="confirmApprove(data)"
             />
             <Button
@@ -47,6 +49,7 @@
               text
               rounded
               v-tooltip.top="'Rejeter la publication'"
+              aria-label="Rejeter la publication"
               @click="confirmReject(data)"
             />
           </div>

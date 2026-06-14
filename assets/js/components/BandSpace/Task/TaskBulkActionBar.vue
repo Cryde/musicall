@@ -95,6 +95,7 @@
       severity="secondary"
       class="!text-white"
       v-tooltip.top="'Annuler la sélection'"
+      aria-label="Annuler la sélection"
       @click="tasksStore.exitSelectionMode"
     />
   </div>

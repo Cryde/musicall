@@ -4,6 +4,7 @@
       <span class="font-semibold text-surface-700 dark:text-surface-200">Notes</span>
       <Button
         v-tooltip.bottom="'Nouvelle note'"
+        aria-label="Nouvelle note"
         icon="pi pi-plus"
         severity="secondary"
         text

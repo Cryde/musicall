@@ -23,6 +23,7 @@
     <Divider layout="vertical" class="mx-1 my-0" />
     <Button
       v-tooltip.top="'Supprimer le bloc colonnes'"
+      aria-label="Supprimer le bloc colonnes"
       icon="pi pi-trash"
       severity="danger"
       text

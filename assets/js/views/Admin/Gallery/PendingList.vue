@@ -29,6 +29,7 @@
               text
               rounded
               v-tooltip.top="'Voir la galerie'"
+              aria-label="Voir la galerie"
               as="router-link"
               :to="{ name: 'app_user_gallery_preview', params: { id: data.id } }"
               target="_blank"
@@ -39,6 +40,7 @@
               text
               rounded
               v-tooltip.top="'Valider la galerie'"
+              aria-label="Valider la galerie"
               @click="confirmApprove(data)"
             />
             <Button
@@ -47,6 +49,7 @@
               text
               rounded
               v-tooltip.top="'Rejeter la galerie'"
+              aria-label="Rejeter la galerie"
               @click="confirmReject(data)"
             />
           </div>

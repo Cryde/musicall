@@ -93,6 +93,7 @@
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
             v-tooltip.bottom="'Insérer une image'"
+            aria-label="Insérer une image"
             icon="pi pi-image"
             severity="secondary"
             text
@@ -113,6 +114,7 @@
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
             v-tooltip.bottom="'Liste à puces'"
+            aria-label="Liste à puces"
             icon="pi pi-list"
             :severity="editor?.isActive('bulletList') ? 'primary' : 'secondary'"
             text
@@ -121,6 +123,7 @@
           />
           <Button
             v-tooltip.bottom="'Liste numérotée'"
+            aria-label="Liste numérotée"
             icon="pi pi-list-check"
             :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
             text
@@ -133,6 +136,7 @@
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
             v-tooltip.bottom="'Citation'"
+            aria-label="Citation"
             icon="pi pi-comment"
             :severity="editor?.isActive('blockquote') ? 'primary' : 'secondary'"
             text
@@ -141,6 +145,7 @@
           />
           <Button
             v-tooltip.bottom="'Ligne horizontale'"
+            aria-label="Ligne horizontale"
             icon="pi pi-minus"
             severity="secondary"
             text
@@ -153,6 +158,7 @@
         <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
           <Button
             v-tooltip.bottom="'Insérer un tableau'"
+            aria-label="Insérer un tableau"
             icon="pi pi-table"
             severity="secondary"
             text
@@ -165,6 +171,7 @@
         <div class="flex items-center gap-1 px-2">
           <Button
             v-tooltip.bottom="'Annuler'"
+            aria-label="Annuler"
             icon="pi pi-undo"
             severity="secondary"
             text
@@ -174,6 +181,7 @@
           />
           <Button
             v-tooltip.bottom="'Rétablir'"
+            aria-label="Rétablir"
             icon="pi pi-refresh"
             severity="secondary"
             text
@@ -195,6 +203,7 @@
       <div class="flex items-center gap-0.5 bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-600 rounded-lg shadow-lg p-1">
         <Button
           v-tooltip.top="'Colonne avant'"
+          aria-label="Colonne avant"
           icon="pi pi-chevron-left"
           severity="secondary"
           text
@@ -204,6 +213,7 @@
         />
         <Button
           v-tooltip.top="'Colonne après'"
+          aria-label="Colonne après"
           icon="pi pi-chevron-right"
           severity="secondary"
           text
@@ -213,6 +223,7 @@
         />
         <Button
           v-tooltip.top="'Supprimer colonne'"
+          aria-label="Supprimer colonne"
           icon="pi pi-minus"
           severity="danger"
           text
@@ -223,6 +234,7 @@
         <div class="w-px h-5 bg-surface-200 dark:bg-surface-600 mx-0.5" />
         <Button
           v-tooltip.top="'Ligne avant'"
+          aria-label="Ligne avant"
           icon="pi pi-chevron-up"
           severity="secondary"
           text
@@ -232,6 +244,7 @@
         />
         <Button
           v-tooltip.top="'Ligne après'"
+          aria-label="Ligne après"
           icon="pi pi-chevron-down"
           severity="secondary"
           text
@@ -241,6 +254,7 @@
         />
         <Button
           v-tooltip.top="'Supprimer ligne'"
+          aria-label="Supprimer ligne"
           icon="pi pi-minus-circle"
           severity="danger"
           text
@@ -251,6 +265,7 @@
         <div class="w-px h-5 bg-surface-200 dark:bg-surface-600 mx-0.5" />
         <Button
           v-tooltip.top="'Supprimer tableau'"
+          aria-label="Supprimer tableau"
           icon="pi pi-trash"
           severity="danger"
           text

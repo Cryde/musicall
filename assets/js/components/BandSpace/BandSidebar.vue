@@ -14,6 +14,7 @@
         <a
           :href="href"
           :aria-current="isExactActive ? 'page' : undefined"
+          :aria-label="item.label"
           @click="(e) => handleClick(e, navigate)"
           :class="linkClasses(isExactActive)"
           v-tooltip.right="tooltipFor(item.label)"
@@ -39,6 +40,7 @@
         <a
           :href="href"
           :aria-current="isExactActive ? 'page' : undefined"
+          :aria-label="settingsItem.label"
           @click="(e) => handleClick(e, navigate)"
           :class="linkClasses(isExactActive)"
           v-tooltip.right="tooltipFor(settingsItem.label)"

@@ -51,6 +51,7 @@
         size="small"
         text
         severity="secondary"
+        aria-label="Détacher"
         v-tooltip.top="'Détacher'"
         @click="confirmDetach(file)"
       />

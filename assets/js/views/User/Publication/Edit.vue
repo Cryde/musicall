@@ -52,6 +52,7 @@
         <div class="flex items-center gap-2 self-end md:self-auto">
           <Button
             v-tooltip.bottom="focusMode ? 'Quitter le mode focus' : 'Mode focus'"
+            :aria-label="focusMode ? 'Quitter le mode focus' : 'Mode focus'"
             :icon="focusMode ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
             severity="secondary"
             text
@@ -152,6 +153,7 @@
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
               v-tooltip.bottom="'Aligner à gauche'"
+              aria-label="Aligner à gauche"
               icon="pi pi-align-left"
               :severity="editor?.isActive({ textAlign: 'left' }) ? 'primary' : 'secondary'"
               text
@@ -160,6 +162,7 @@
             />
             <Button
               v-tooltip.bottom="'Centrer'"
+              aria-label="Centrer"
               icon="pi pi-align-center"
               :severity="editor?.isActive({ textAlign: 'center' }) ? 'primary' : 'secondary'"
               text
@@ -168,6 +171,7 @@
             />
             <Button
               v-tooltip.bottom="'Aligner à droite'"
+              aria-label="Aligner à droite"
               icon="pi pi-align-right"
               :severity="editor?.isActive({ textAlign: 'right' }) ? 'primary' : 'secondary'"
               text
@@ -180,6 +184,7 @@
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
               v-tooltip.bottom="'Liste à puces'"
+              aria-label="Liste à puces"
               icon="pi pi-list"
               :severity="editor?.isActive('bulletList') ? 'primary' : 'secondary'"
               text
@@ -188,6 +193,7 @@
             />
             <Button
               v-tooltip.bottom="'Liste numérotée'"
+              aria-label="Liste numérotée"
               icon="pi pi-list-check"
               :severity="editor?.isActive('orderedList') ? 'primary' : 'secondary'"
               text
@@ -200,6 +206,7 @@
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
               v-tooltip.bottom="'Citation'"
+              aria-label="Citation"
               icon="pi pi-comment"
               :severity="editor?.isActive('blockquote') ? 'primary' : 'secondary'"
               text
@@ -208,6 +215,7 @@
             />
             <Button
               v-tooltip.bottom="'Ligne horizontale'"
+              aria-label="Ligne horizontale"
               icon="pi pi-minus"
               severity="secondary"
               text
@@ -216,6 +224,7 @@
             />
             <Button
               v-tooltip.bottom="'Insérer des colonnes'"
+              aria-label="Insérer des colonnes"
               icon="pi pi-th-large"
               :severity="editor?.isActive('columns') ? 'primary' : 'secondary'"
               text
@@ -249,6 +258,7 @@
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
               v-tooltip.bottom="'Ajouter une image'"
+              aria-label="Ajouter une image"
               icon="pi pi-image"
               severity="secondary"
               text
@@ -265,6 +275,7 @@
             />
             <Button
               v-tooltip.bottom="'Ajouter une vidéo YouTube'"
+              aria-label="Ajouter une vidéo YouTube"
               icon="pi pi-youtube"
               severity="secondary"
               text
@@ -277,6 +288,7 @@
           <div class="flex items-center gap-1 px-2 border-r border-surface-200 dark:border-surface-700">
             <Button
               v-tooltip.bottom="'Annuler'"
+              aria-label="Annuler"
               icon="pi pi-undo"
               severity="secondary"
               text
@@ -286,6 +298,7 @@
             />
             <Button
               v-tooltip.bottom="'Rétablir'"
+              aria-label="Rétablir"
               icon="pi pi-refresh"
               severity="secondary"
               text

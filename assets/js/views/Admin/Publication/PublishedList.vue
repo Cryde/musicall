@@ -60,6 +60,7 @@
           <div class="flex gap-2">
             <Button
               v-tooltip.top="'Voir la publication'"
+              aria-label="Voir la publication"
               icon="pi pi-eye"
               severity="info"
               text
@@ -70,6 +71,7 @@
             />
             <Button
               v-tooltip.top="'Supprimer définitivement'"
+              aria-label="Supprimer définitivement"
               icon="pi pi-trash"
               severity="danger"
               text

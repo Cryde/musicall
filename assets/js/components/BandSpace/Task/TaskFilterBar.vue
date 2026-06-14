@@ -42,6 +42,7 @@
         rounded
         size="small"
         v-tooltip.bottom="'Gérer les catégories'"
+        aria-label="Gérer les catégories"
         @click="$emit('open-categories')"
       />
       <Button

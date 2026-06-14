@@ -69,6 +69,7 @@
               size="small"
               text
               severity="secondary"
+              aria-label="Télécharger cette version"
               v-tooltip.top="'Télécharger cette version'"
               @click="downloadVersion(version)"
             />
@@ -78,6 +79,7 @@
               size="small"
               text
               severity="secondary"
+              aria-label="Restaurer cette version"
               v-tooltip.top="'Restaurer cette version'"
               :disabled="filesStore.isRollingBack"
               @click="confirmRollback(version)"
