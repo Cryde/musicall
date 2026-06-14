@@ -17,7 +17,7 @@
           {{ publication.title }}
         </h1>
 
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-surface-500 dark:text-surface-300">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
           <span>
             Par
             <router-link
@@ -25,7 +25,7 @@
               :to="{ name: 'app_user_public_profile', params: { username: publication.author.username } }"
               class="font-semibold text-surface-700 dark:text-surface-200 hover:text-primary transition-colors"
             >{{ authorName }}</router-link>
-            <span v-else class="font-semibold text-surface-500">{{ authorName }}</span>
+            <span v-else class="font-semibold text-surface-600 dark:text-surface-300">{{ authorName }}</span>
           </span>
           <span class="flex items-center gap-1">
             <i class="pi pi-calendar text-xs" />

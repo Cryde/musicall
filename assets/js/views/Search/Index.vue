@@ -48,7 +48,7 @@
         </div>
 
         <!-- Examples -->
-        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-sm text-surface-500 dark:text-surface-400">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-sm text-surface-600 dark:text-surface-400">
             <span>Essayez :</span>
             <button class="text-primary hover:underline cursor-pointer" @click="insertExample">guitariste rock Paris</button>
             <span class="text-surface-300 dark:text-surface-600">•</span>

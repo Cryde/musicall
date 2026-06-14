@@ -9,7 +9,7 @@
     </div>
 
     <template v-else>
-      <div class="text-right text-sm text-surface-500 dark:text-surface-400 mb-4">
+      <div class="text-right text-sm text-surface-600 dark:text-surface-400 mb-4">
         <template v-if="rootComments.length === 0">
           Il n'y a pas encore de commentaires
         </template>

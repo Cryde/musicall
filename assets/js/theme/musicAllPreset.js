@@ -51,6 +51,12 @@ const MusicAllPreset = definePreset(Aura, {
                 color: '{teal.700}',
                 shadow: 'none'
               }
+            },
+            // Darken secondary button label so it meets AA on the grey content bg (was surface-500).
+            secondary: {
+              color: '{surface.600}',
+              hoverColor: '{surface.700}',
+              activeColor: '{surface.700}'
             }
           },
           outlined: {
@@ -59,6 +65,9 @@ const MusicAllPreset = definePreset(Aura, {
               activeBackground: '{teal.100}',
               borderColor: '{teal.600}',
               color: '{teal.700}'
+            },
+            secondary: {
+              color: '{surface.600}'
             }
           },
           text: {
@@ -66,6 +75,9 @@ const MusicAllPreset = definePreset(Aura, {
               hoverBackground: '{teal.50}',
               activeBackground: '{teal.100}',
               color: '{teal.700}'
+            },
+            secondary: {
+              color: '{surface.600}'
             }
           }
         },

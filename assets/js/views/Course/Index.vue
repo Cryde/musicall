@@ -8,7 +8,7 @@
       <h1 class="text-2xl font-semibold leading-tight text-surface-900 dark:text-surface-0">
         {{ pageHeading }}
       </h1>
-      <div class="text-base leading-tight text-surface-500 dark:text-surface-300">
+      <div class="text-base leading-tight text-surface-600 dark:text-surface-300">
         {{ pageDescription }}
       </div>
     </div>
