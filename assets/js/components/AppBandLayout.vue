@@ -90,13 +90,14 @@
                       v-for="entry in userMenuEntries"
                       :key="entry.label"
                     >
-                      <a
+                      <button
+                        type="button"
                         @click="() => handleUserMenuClick(entry)"
-                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer text-sm"
+                        class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer text-sm"
                       >
                         <i :class="['pi', entry.icon, 'text-sm shrink-0']" aria-hidden="true"></i>
                         <span class="truncate">{{ entry.label }}</span>
-                      </a>
+                      </button>
                     </li>
                   </ul>
                 </div>

@@ -1,7 +1,11 @@
 <template>
   <div
     class="flex gap-3 px-2 py-3 rounded-md cursor-pointer transition-colors hover:bg-surface-50 dark:hover:bg-surface-800/50"
+    :role="isActionable ? undefined : 'button'"
+    :tabindex="isActionable ? undefined : 0"
     @click="handleBodyClick"
+    @keydown.enter="handleBodyClick"
+    @keydown.space.prevent="handleBodyClick"
   >
     <div
       class="flex items-center justify-center w-10 h-10 rounded-full shrink-0"

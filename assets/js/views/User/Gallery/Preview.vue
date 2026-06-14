@@ -125,7 +125,12 @@
       <!-- Lightbox -->
       <div
         v-if="showLightbox"
-        class="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center"
+        ref="lightboxRef"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="gallery?.title ? `Galerie : ${gallery.title}` : 'Galerie photos'"
+        class="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center outline-none"
         @click.self="closeLightbox"
       >
         <ProgressSpinner v-if="imageLoading" class="absolute" />
@@ -179,7 +184,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import adminGalleryApi from '../../../api/admin/gallery.js'
 import userGalleryApi from '../../../api/user/gallery.js'
@@ -203,6 +208,9 @@ const error = ref(null)
 const isProcessing = ref(false)
 
 const showLightbox = ref(false)
+const lightboxRef = ref(null)
+// Element to restore focus to when the lightbox closes (WCAG 2.4.3).
+let lightboxTrigger = null
 const currentIndex = ref(0)
 const currentImage = ref('')
 const imageLoading = ref(false)
@@ -266,15 +274,19 @@ function getStatusSeverity(status) {
 }
 
 function openLightbox(index) {
+  lightboxTrigger = document.activeElement
   currentIndex.value = index
   loadCurrentImage()
   showLightbox.value = true
+  nextTick(() => lightboxRef.value?.focus())
 }
 
 function closeLightbox() {
   showLightbox.value = false
   currentIndex.value = 0
   currentImage.value = ''
+  lightboxTrigger?.focus?.()
+  lightboxTrigger = null
 }
 
 function nextImage() {

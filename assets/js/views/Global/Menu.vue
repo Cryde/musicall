@@ -40,6 +40,7 @@
               <a
                 v-bind="$attrs"
                 :href="href"
+                :aria-current="isExactActive ? 'page' : undefined"
                 @click="onNavClick($event, navigate)"
                 :class="[
                   'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border w-full lg:w-auto',

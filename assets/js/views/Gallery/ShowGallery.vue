@@ -52,7 +52,12 @@
       <!-- Lightbox -->
       <div
         v-if="showLightbox"
-        class="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center"
+        ref="lightboxRef"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="galleryStore.gallery?.title ? `Galerie : ${galleryStore.gallery.title}` : 'Galerie photos'"
+        class="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center outline-none"
         @click.self="closeLightbox"
       >
         <ProgressSpinner v-if="imageLoading" class="absolute" />
@@ -103,7 +108,7 @@ import { useTitle } from '@vueuse/core'
 import { MasonryWall } from '@yeger/vue-masonry-wall'
 import { format, parseISO } from 'date-fns'
 import ProgressSpinner from 'primevue/progressspinner'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ShareButton from '../../components/ShareButton.vue'
 import { displayName } from '../../helper/user/displayName.js'
@@ -114,6 +119,9 @@ const route = useRoute()
 const galleryStore = useGalleryStore()
 
 const showLightbox = ref(false)
+const lightboxRef = ref(null)
+// Element to restore focus to when the lightbox closes (WCAG 2.4.3).
+let lightboxTrigger = null
 const currentIndex = ref(0)
 const currentImage = ref('')
 const imageLoading = ref(false)
@@ -164,15 +172,19 @@ function formatDate(dateString) {
 
 function openLightbox(index) {
   trackUmamiEvent('gallery-image-view')
+  lightboxTrigger = document.activeElement
   currentIndex.value = index
   loadCurrentImage()
   showLightbox.value = true
+  nextTick(() => lightboxRef.value?.focus())
 }
 
 function closeLightbox() {
   showLightbox.value = false
   currentIndex.value = 0
   currentImage.value = ''
+  lightboxTrigger?.focus?.()
+  lightboxTrigger = null
 }
 
 function nextImage() {

@@ -26,7 +26,15 @@
         class="group relative bg-surface-100 dark:bg-surface-800 rounded-lg overflow-hidden"
       >
         <!-- Thumbnail -->
-        <div class="aspect-video relative cursor-pointer" @click="openMedia(item)">
+        <div
+          class="aspect-video relative cursor-pointer"
+          role="button"
+          tabindex="0"
+          :aria-label="`Lire ${item.title || 'le média'}`"
+          @click="openMedia(item)"
+          @keydown.enter="openMedia(item)"
+          @keydown.space.prevent="openMedia(item)"
+        >
           <img
             v-if="item.thumbnail_url"
             :src="item.thumbnail_url"
