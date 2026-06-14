@@ -31,12 +31,8 @@
           class="group flex items-center gap-1.5 sm:gap-2 py-2 px-1 sm:px-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer"
           @click="canEdit(entry) && emit('edit-entry', entry)"
         >
-          <!-- Status dot -->
-          <span
-            class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0"
-            :class="statusDotClass(entry.status)"
-            :title="statusLabel(entry.status)"
-          ></span>
+          <!-- Status indicator -->
+          <FinanceStatusDot :status="entry.status" />
 
           <!-- Recurrence icon -->
           <i
@@ -94,6 +90,7 @@ import Button from 'primevue/button'
 import { computed } from 'vue'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
+import FinanceStatusDot from './FinanceStatusDot.vue'
 
 const props = defineProps({
   entries: { type: Array, required: true },
@@ -144,28 +141,6 @@ function formatEntryAmount(entry) {
     return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
   }
   return '0,00 \u20AC'
-}
-
-function statusDotClass(status) {
-  switch (status) {
-    case 'paid':
-      return 'bg-green-500'
-    case 'committed':
-      return 'bg-orange-500'
-    default:
-      return 'bg-surface-400'
-  }
-}
-
-function statusLabel(status) {
-  switch (status) {
-    case 'paid':
-      return 'Payé'
-    case 'committed':
-      return 'Engagé'
-    default:
-      return 'Prévu'
-  }
 }
 
 function typeBadgeClass(type) {

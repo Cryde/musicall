@@ -38,10 +38,7 @@
           :key="entry.id"
           class="flex items-center gap-2 text-sm"
         >
-          <span
-            class="w-2 h-2 rounded-full flex-shrink-0"
-            :class="statusDotClass(entry.status)"
-          ></span>
+          <FinanceStatusDot :status="entry.status" />
           <span class="flex-1 truncate">{{ entry.label }}</span>
           <span class="text-surface-400 text-xs flex-shrink-0">{{ formatDateCompact(entry.date) }}</span>
           <span class="font-medium tabular-nums flex-shrink-0">{{ formatEntryAmount(entry) }}</span>
@@ -55,6 +52,7 @@
 import { computed } from 'vue'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
+import FinanceStatusDot from './FinanceStatusDot.vue'
 
 const props = defineProps({
   summary: { type: Object, default: null }
@@ -79,16 +77,5 @@ function formatEntryAmount(entry) {
     return `${formatAmount(entry.amount_min)} - ${formatAmount(entry.amount_max)}`
   }
   return formatAmount(0)
-}
-
-function statusDotClass(status) {
-  switch (status) {
-    case 'paid':
-      return 'bg-green-500'
-    case 'committed':
-      return 'bg-orange-500'
-    default:
-      return 'bg-surface-400'
-  }
 }
 </script>
