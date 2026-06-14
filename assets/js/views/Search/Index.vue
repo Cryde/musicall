@@ -482,8 +482,9 @@ const breadcrumbLabel = computed(() => {
 useTitle(pageTitle)
 
 onMounted(async () => {
-  await instrumentStore.loadInstruments()
-  await styleStore.loadStyles()
+  // Instruments and styles are independent (they only feed the filter
+  // dropdowns) — load them in parallel rather than chaining two round-trips.
+  await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
 
   // Initialize filters from URL query params
   initializeFiltersFromUrl()
