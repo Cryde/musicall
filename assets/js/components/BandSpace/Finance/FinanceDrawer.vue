@@ -205,7 +205,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
@@ -309,50 +309,55 @@ watch(
   }
 )
 
-watch(
-  () => props.visible,
-  async (visible) => {
-    if (!visible) return
-    formError.value = null
+// Also watch props.entry, not just props.visible: if the drawer ever swaps the entry while
+// staying open (today the modal mask prevents it, but that is incidental), we must re-sync the
+// form and reload the splits, otherwise entry A's splits would be saved onto entry B.
+watch([() => props.visible, () => props.entry], async ([visible]) => {
+  if (!visible) return
+  formError.value = null
 
-    if (props.entry) {
-      form.label = props.entry.label ?? ''
-      form.type = props.entry.type ?? 'expense'
-      form.status = props.entry.status ?? 'planned'
-      if (props.entry.amount_min != null || props.entry.amount_max != null) {
-        form.amountMode = 'range'
-        form.amountEuros = null
-        form.amountMinEuros =
-          props.entry.amount_min != null ? centsToCurrency(props.entry.amount_min) : null
-        form.amountMaxEuros =
-          props.entry.amount_max != null ? centsToCurrency(props.entry.amount_max) : null
-      } else {
-        form.amountMode = 'exact'
-        form.amountEuros = props.entry.amount != null ? centsToCurrency(props.entry.amount) : null
-        form.amountMinEuros = null
-        form.amountMaxEuros = null
-      }
-      form.date = new Date(props.entry.date)
-      form.scope = props.entry.scope ?? 'band'
-      form.categoryId = props.entry.category_id ?? null
-
-      await splitManagerRef.value?.reset(props.entry.id)
-    } else {
-      form.label = ''
-      form.categoryId = null
-      form.type = 'expense'
-      form.status = 'planned'
-      form.amountMode = 'exact'
+  if (props.entry) {
+    form.label = props.entry.label ?? ''
+    form.type = props.entry.type ?? 'expense'
+    form.status = props.entry.status ?? 'planned'
+    if (props.entry.amount_min != null || props.entry.amount_max != null) {
+      form.amountMode = 'range'
       form.amountEuros = null
+      form.amountMinEuros =
+        props.entry.amount_min != null ? centsToCurrency(props.entry.amount_min) : null
+      form.amountMaxEuros =
+        props.entry.amount_max != null ? centsToCurrency(props.entry.amount_max) : null
+    } else {
+      form.amountMode = 'exact'
+      form.amountEuros = props.entry.amount != null ? centsToCurrency(props.entry.amount) : null
       form.amountMinEuros = null
       form.amountMaxEuros = null
-      form.date = new Date()
-      form.scope = 'band'
-
-      await splitManagerRef.value?.reset(null)
     }
+    form.date = new Date(props.entry.date)
+    form.scope = props.entry.scope ?? 'band'
+    form.categoryId = props.entry.category_id ?? null
+
+    // Wait for the conditionally-rendered (v-if scope==='band') SplitManager to
+    // mount, otherwise splitManagerRef.value is still null here and reset() -
+    // which loads the existing splits - is silently skipped.
+    await nextTick()
+    await splitManagerRef.value?.reset(props.entry.id)
+  } else {
+    form.label = ''
+    form.categoryId = null
+    form.type = 'expense'
+    form.status = 'planned'
+    form.amountMode = 'exact'
+    form.amountEuros = null
+    form.amountMinEuros = null
+    form.amountMaxEuros = null
+    form.date = new Date()
+    form.scope = 'band'
+
+    await nextTick()
+    await splitManagerRef.value?.reset(null)
   }
-)
+})
 
 function statusLabel(status) {
   const labels = { planned: 'Prévu', committed: 'Engagé', paid: 'Payé' }

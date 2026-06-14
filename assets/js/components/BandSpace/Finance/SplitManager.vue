@@ -139,10 +139,13 @@ async function loadMembers() {
   }
 }
 
-async function loadExistingSplits() {
-  if (!props.entryId) return
+async function loadExistingSplits(entryId) {
+  // Use the entryId passed to reset(), NOT props.entryId: when the drawer opens an
+  // existing entry, props.entryId may not have propagated yet, which would make this
+  // bail out and leave the splits empty (they exist, just never loaded).
+  if (!entryId) return
   try {
-    existingSplits.value = await bandSpaceFinanceApi.getSplits(props.bandSpaceId, props.entryId)
+    existingSplits.value = await bandSpaceFinanceApi.getSplits(props.bandSpaceId, entryId)
   } catch {
     existingSplits.value = []
   }
@@ -200,7 +203,7 @@ async function reset(entryId) {
   existingSplits.value = []
 
   if (entryId) {
-    await Promise.all([loadMembers(), loadExistingSplits()])
+    await Promise.all([loadMembers(), loadExistingSplits(entryId)])
     prefillSplitsFromExisting()
     if (existingSplits.value.length > 0) {
       expanded.value = true
