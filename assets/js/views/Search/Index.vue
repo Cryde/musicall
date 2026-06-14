@@ -353,6 +353,7 @@
     </template>
 
     <AddAnnounceModal
+        v-if="showAnnounceModal"
         v-model:visible="showAnnounceModal"
         :initial-type="announceInitialType"
         :initial-instrument="announceInitialInstrument"
@@ -361,6 +362,7 @@
         @created="handleAnnounceCreated"
     />
     <AuthRequiredModal
+        v-if="showAuthModal"
         v-model:visible="showAuthModal"
         :variant="authModalVariant"
         :message="authModalMessage"
@@ -379,18 +381,22 @@ import Message from 'primevue/message'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
-import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
+
+// Heavy modals loaded on demand (with v-if below) to keep them out of the initial bundle.
+const AuthRequiredModal = defineAsyncComponent(
+  () => import('../../components/Auth/AuthRequiredModal.vue')
+)
+const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
 
 const route = useRoute()
 

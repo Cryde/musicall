@@ -58,27 +58,34 @@
 
     <!-- Modals -->
     <AddDiscoverModal @published="handleDiscoverPublished" />
-    <SendMessageModal v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" />
-    <AuthRequiredModal v-model:visible="showAuthModal" :message="authModalMessage" />
-    <AddAnnounceModal v-model:visible="showAnnounceModal" @created="handleAnnounceCreated" />
+    <SendMessageModal v-if="showMessageModal" v-model:visible="showMessageModal" :selected-recipient="selectedRecipient" />
+    <AuthRequiredModal v-if="showAuthModal" v-model:visible="showAuthModal" :message="authModalMessage" />
+    <AddAnnounceModal v-if="showAnnounceModal" v-model:visible="showAnnounceModal" @created="handleAnnounceCreated" />
   </div>
 </template>
 
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { onMounted, onUnmounted, ref } from 'vue'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
+import { defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
 import HomeAnnounces from '../../components/Home/HomeAnnounces.vue'
 import HomeHero from '../../components/Home/HomeHero.vue'
 import HomePublications from '../../components/Home/HomePublications.vue'
-import SendMessageModal from '../../components/Message/SendMessageModal.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
-import AddAnnounceModal from '../User/Announce/AddAnnounceModal.vue'
+
+// Heavy modals (message / announce / auth) only appear on a user action — load their
+// chunks on demand (paired with v-if below) so they stay out of the initial bundle.
+const AuthRequiredModal = defineAsyncComponent(
+  () => import('../../components/Auth/AuthRequiredModal.vue')
+)
+const SendMessageModal = defineAsyncComponent(
+  () => import('../../components/Message/SendMessageModal.vue')
+)
+const AddAnnounceModal = defineAsyncComponent(() => import('../User/Announce/AddAnnounceModal.vue'))
 
 useTitle('MusicAll, le site de référence au service de la musique')
 

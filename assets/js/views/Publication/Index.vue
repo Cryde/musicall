@@ -35,6 +35,7 @@
 
   <AddDiscoverModal @published="handleDiscoverPublished" />
   <AuthRequiredModal
+    v-if="showAuthModal"
     v-model:visible="showAuthModal"
     message="Si vous souhaitez partager une vidéo avec la communauté, vous devez vous connecter."
   />
@@ -127,9 +128,8 @@ import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import FadeList from '../../components/Global/FadeList.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import PublicationListItemSkeleton from '../../components/Skeleton/PublicationListItemSkeleton.vue'
@@ -141,6 +141,11 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 import GalleryListItem from '../Gallery/GalleryListItem.vue'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import PublicationListItem from './PublicationListItem.vue'
+
+// Heavy modal loaded on demand (with v-if below) to keep it out of the initial bundle.
+const AuthRequiredModal = defineAsyncComponent(
+  () => import('../../components/Auth/AuthRequiredModal.vue')
+)
 
 const PHOTOS_CATEGORY = { id: 'photos', slug: 'photos', title: 'Photos' }
 

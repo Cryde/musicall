@@ -29,6 +29,7 @@
     @published="handleCoursePublished"
   />
   <AuthRequiredModal
+    v-if="showAuthModal"
     v-model:visible="showAuthModal"
     message="Si vous souhaitez partager un cours vidéo avec la communauté, vous devez vous connecter."
   />
@@ -114,14 +115,13 @@ import { useInfiniteScroll, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Menu from 'primevue/menu'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import bassImg from '../../../image/course/basse.png'
 import drumImg from '../../../image/course/batterie.png'
 import miscImage from '../../../image/course/divers.png'
 import guitarImg from '../../../image/course/guitare.png'
 import maoImg from '../../../image/course/mao.png'
-import AuthRequiredModal from '../../components/Auth/AuthRequiredModal.vue'
 import AddCourseVideoModal from '../../components/Course/AddCourseVideoModal.vue'
 import FadeList from '../../components/Global/FadeList.vue'
 import ColumnCardRadio from '../../components/RadioGroup/ColumnCardRadio.vue'
@@ -130,6 +130,11 @@ import { useCoursesStore } from '../../store/course/course.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import CourseListItem from './CourseListItem.vue'
+
+// Heavy modal loaded on demand (with v-if below) to keep it out of the initial bundle.
+const AuthRequiredModal = defineAsyncComponent(
+  () => import('../../components/Auth/AuthRequiredModal.vue')
+)
 
 const route = useRoute()
 const router = useRouter()
