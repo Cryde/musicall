@@ -18,6 +18,7 @@
       <ProgressBar
         :value="cappedPercentage"
         :show-value="false"
+        aria-label="Stockage utilisé"
         :pt="{ value: { class: progressBarClass } }"
       />
       <div class="flex items-center justify-between text-sm">

@@ -13,7 +13,7 @@
           class="hidden md:inline-flex"
           @click="$emit('open-announce-modal')"
         />
-        <router-link :to="{ name: 'app_search_musician' }" aria-label="Voir toutes les annonces">
+        <router-link :to="{ name: 'app_search_musician' }" aria-label="Voir plus d'annonces">
           <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
         </router-link>
       </div>

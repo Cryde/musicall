@@ -14,7 +14,7 @@
           class="hidden md:inline-flex"
           @click="$emit('open-discover-modal')"
         />
-        <router-link :to="{ name: 'app_publications' }" aria-label="Voir toutes les publications">
+        <router-link :to="{ name: 'app_publications' }" aria-label="Voir plus de publications">
           <Button label="Voir plus" icon="pi pi-arrow-right" iconPos="right" severity="secondary" text size="small" />
         </router-link>
       </div>

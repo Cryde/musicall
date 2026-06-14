@@ -186,6 +186,7 @@
                     text
                     icon="pi pi-times"
                     severity="secondary"
+                    aria-label="Effacer les filtres"
                     v-tooltip.bottom="'Effacer les filtres'"
                     @click="clearAllFilters"
                 />

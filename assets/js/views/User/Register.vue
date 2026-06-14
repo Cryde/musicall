@@ -160,6 +160,7 @@
               :toggleMask="true"
               :invalid="!!errors.password"
               :aria-describedby="errors.password ? 'register-password-error' : undefined"
+              :pt="{ pcInputText: { root: { 'aria-expanded': undefined, 'aria-haspopup': undefined } } }"
               inputClass="w-full! p-3! shadow-sm dark:bg-surface-900!"
               :promptLabel="'Choisissez un mot de passe'"
               :weakLabel="'Faible'"
@@ -184,6 +185,7 @@
               :feedback="false"
               :invalid="!!errors.confirmPassword"
               :aria-describedby="errors.confirmPassword ? 'confirmPassword-error' : undefined"
+              :pt="{ pcInputText: { root: { 'aria-expanded': undefined, 'aria-haspopup': undefined } } }"
               inputClass="w-full! p-3! shadow-sm dark:bg-surface-900!"
               @blur="validateConfirmPassword"
             />

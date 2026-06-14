@@ -76,6 +76,7 @@
             :feedback="false"
             :invalid="!!errors.password"
             :aria-describedby="errors.password ? 'password-error' : undefined"
+            :pt="{ pcInputText: { root: { 'aria-expanded': undefined, 'aria-haspopup': undefined } } }"
             inputClass="w-full! dark:bg-surface-900!"
             autocomplete="current-password"
             @blur="validatePassword"
