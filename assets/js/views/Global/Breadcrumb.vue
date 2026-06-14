@@ -21,13 +21,13 @@
           <router-link
             v-if="item.to"
             :to="item.to"
-            :class="['cursor-pointer whitespace-nowrap transition-all text-surface-500 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400']"
+            :class="['cursor-pointer whitespace-nowrap transition-all text-surface-600 dark:text-surface-400 hover:text-primary-500 dark:hover:text-primary-400']"
           >
             {{ item.label }}
           </router-link>
           <span
             v-else
-            :class="['whitespace-nowrap text-surface-500 dark:text-surface-400']"
+            :class="['whitespace-nowrap text-surface-600 dark:text-surface-400']"
           >
             {{ item.label }}
           </span>

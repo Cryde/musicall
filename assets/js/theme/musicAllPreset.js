@@ -16,6 +16,20 @@ const MusicAllPreset = definePreset(Aura, {
       800: '#2d5070',
       900: '#203c57',
       950: '#142838'
+    },
+    // Light mode uses primary.700 for the functional primary colour so text/links
+    // and primary buttons meet WCAG AA (4.5:1) on white AND on the grey content
+    // background. Dark mode keeps Aura's default ({primary.400}). The hardcoded
+    // logo/hero hex are unaffected.
+    colorScheme: {
+      light: {
+        primary: {
+          color: '{primary.700}',
+          contrastColor: '#ffffff',
+          hoverColor: '{primary.800}',
+          activeColor: '{primary.800}'
+        }
+      }
     }
   },
   components: {
@@ -24,17 +38,17 @@ const MusicAllPreset = definePreset(Aura, {
         light: {
           root: {
             info: {
-              background: '{teal.500}',
-              hoverBackground: '{teal.600}',
-              activeBackground: '{teal.700}',
-              borderColor: '{teal.500}',
-              hoverBorderColor: '{teal.600}',
-              activeBorderColor: '{teal.700}',
+              background: '{teal.700}',
+              hoverBackground: '{teal.800}',
+              activeBackground: '{teal.900}',
+              borderColor: '{teal.700}',
+              hoverBorderColor: '{teal.800}',
+              activeBorderColor: '{teal.900}',
               color: '#ffffff',
               hoverColor: '#ffffff',
               activeColor: '#ffffff',
               focusRing: {
-                color: '{teal.500}',
+                color: '{teal.700}',
                 shadow: 'none'
               }
             }
@@ -43,15 +57,15 @@ const MusicAllPreset = definePreset(Aura, {
             info: {
               hoverBackground: '{teal.50}',
               activeBackground: '{teal.100}',
-              borderColor: '{teal.200}',
-              color: '{teal.500}'
+              borderColor: '{teal.600}',
+              color: '{teal.700}'
             }
           },
           text: {
             info: {
               hoverBackground: '{teal.50}',
               activeBackground: '{teal.100}',
-              color: '{teal.500}'
+              color: '{teal.700}'
             }
           }
         },

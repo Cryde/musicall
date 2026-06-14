@@ -55,7 +55,7 @@
                 <span
                     v-if="hasMoreStyles(styles)"
                     v-tooltip.top="allStylesText"
-                    class="inline-block px-3 py-1 text-xs font-medium rounded-full mr-2 mb-2 bg-surface-100 dark:bg-surface-800 text-surface-400 cursor-help"
+                    class="inline-block px-3 py-1 text-xs font-medium rounded-full mr-2 mb-2 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 cursor-help"
                 >
                     +{{ styles.length - MAX_VISIBLE_STYLES }}
                 </span>
