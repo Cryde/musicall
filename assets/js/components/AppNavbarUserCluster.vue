@@ -61,12 +61,15 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import OverlayBadge from 'primevue/overlaybadge'
-import { computed, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../store/notification/notification.js'
 import { useUserSecurityStore } from '../store/user/security.js'
 import { getAvatarStyle } from '../utils/avatar.js'
-import NotificationBell from './Notification/NotificationBell.vue'
+
+// Authenticated-only (guarded by v-if) — load the bell + its notification machinery
+// on demand so anonymous visitors never download it.
+const NotificationBell = defineAsyncComponent(() => import('./Notification/NotificationBell.vue'))
 
 const emit = defineEmits(['navigate'])
 
