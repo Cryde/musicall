@@ -60,7 +60,8 @@
               @mouseenter="showSearchDropdown"
               @mouseleave="hideSearchDropdown"
             >
-              <a
+              <button
+                type="button"
                 :class="[
                   'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors duration-150 border w-full lg:w-auto',
                   isSearchActive
@@ -73,7 +74,7 @@
               >
                 <span class="font-medium">Recherche</span>
                 <i class="pi pi-chevron-down text-xs transition-transform" :class="{ 'rotate-180': searchDropdownVisible }" aria-hidden="true" />
-              </a>
+              </button>
               <div
                 v-show="searchDropdownVisible"
                 class="lg:absolute w-full lg:w-48 bg-surface-0 dark:bg-surface-900 left-0 top-full z-50 shadow-md rounded-lg overflow-hidden animate-fadein"

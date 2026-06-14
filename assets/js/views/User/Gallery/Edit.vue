@@ -45,7 +45,7 @@
             class="hidden"
             @change="handleFileSelect"
           />
-          <i class="pi pi-cloud-upload text-4xl text-surface-400 dark:text-surface-500 mb-4" />
+          <i class="pi pi-cloud-upload text-4xl text-surface-500 dark:text-surface-400 mb-4" />
           <p class="text-lg font-medium text-surface-700 dark:text-surface-300">
             Glissez-deposez des images ici
           </p>

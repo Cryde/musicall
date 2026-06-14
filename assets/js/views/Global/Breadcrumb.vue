@@ -5,8 +5,9 @@
         <router-link
           :to="{ name: 'app_home' }"
           class="cursor-pointer transition-all"
+          aria-label="Accueil"
         >
-          <i class="pi pi-home text-base! leading-normal! text-surface-500 dark:text-surface-300"/>
+          <i class="pi pi-home text-base! leading-normal! text-surface-500 dark:text-surface-300" aria-hidden="true"/>
         </router-link>
       </li>
       <template

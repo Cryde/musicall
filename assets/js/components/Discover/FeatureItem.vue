@@ -29,14 +29,14 @@ const iconContainerClass = computed(() => [
 const iconClass = computed(() => [
   'text-xl leading-normal',
   props.soon
-    ? 'pi pi-clock text-surface-400 dark:text-surface-500'
+    ? 'pi pi-clock text-surface-500 dark:text-surface-400'
     : 'pi pi-check text-primary-800 dark:text-primary-300'
 ])
 
 const textClass = computed(() => [
   'leading-6 text-lg',
   props.soon
-    ? 'text-surface-400 dark:text-surface-500 italic'
+    ? 'text-surface-500 dark:text-surface-400 italic'
     : 'text-surface-600 dark:text-surface-400'
 ])
 </script>

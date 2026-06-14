@@ -20,7 +20,7 @@
       <li v-for="item in items" :key="item.id" class="flex gap-3 text-sm border-l-2 pl-3" :class="sourceBorderClass(item.source)">
         <div class="flex-1 min-w-0">
           <p class="font-medium text-surface-900 dark:text-surface-0 truncate">{{ item.title }}</p>
-          <p class="text-xs text-surface-500 mt-0.5">
+          <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">
             {{ formatDayLabel(item.datetime) }} - {{ formatTime(item.datetime) }}
           </p>
         </div>

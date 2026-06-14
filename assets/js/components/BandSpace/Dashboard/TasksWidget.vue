@@ -20,15 +20,15 @@
       <div class="grid grid-cols-3 gap-2">
         <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-center">
           <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ stats.todo }}</div>
-          <div class="text-xs text-surface-500 mt-1">À faire</div>
+          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">À faire</div>
         </div>
         <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-center">
           <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ stats.in_progress }}</div>
-          <div class="text-xs text-surface-500 mt-1">En cours</div>
+          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">En cours</div>
         </div>
         <div class="bg-surface-100 dark:bg-surface-800 rounded-lg p-3 text-center">
           <div class="text-2xl font-semibold text-surface-900 dark:text-surface-0">{{ stats.done }}</div>
-          <div class="text-xs text-surface-500 mt-1">Terminé</div>
+          <div class="text-xs text-surface-500 dark:text-surface-400 mt-1">Terminé</div>
         </div>
       </div>
       <RouterLink

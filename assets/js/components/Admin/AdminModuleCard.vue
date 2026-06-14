@@ -34,7 +34,7 @@
     </div>
     <div class="flex flex-col gap-1">
       <span class="font-semibold text-surface-500 dark:text-surface-400">{{ label }}</span>
-      <span v-if="description" class="text-sm text-surface-400 dark:text-surface-500">{{
+      <span v-if="description" class="text-sm text-surface-500 dark:text-surface-400">{{
         description
       }}</span>
     </div>

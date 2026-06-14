@@ -48,7 +48,7 @@
             @touchstart.prevent="playNote(key.note, key.frequency)"
             @touchend.prevent="stopNote(key.note)"
           >
-            <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-surface-400 dark:text-surface-500 pointer-events-none">
+            <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-surface-500 dark:text-surface-400 pointer-events-none">
               {{ key.keyLabel }}
             </span>
           </button>

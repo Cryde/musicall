@@ -262,7 +262,7 @@
                     <span>Identification des critères</span>
                 </div>
                 <i class="pi pi-arrow-right hidden sm:inline" />
-                <div class="hidden sm:flex items-center gap-2 text-surface-400 dark:text-surface-500">
+                <div class="hidden sm:flex items-center gap-2 text-surface-500 dark:text-surface-400">
                     <i class="pi pi-circle" />
                     <span>Recherche</span>
                 </div>

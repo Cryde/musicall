@@ -86,7 +86,7 @@
                   dans les alentours de {{ announce.location_name }}
                 </template>
 
-                <div class="mt-2 text-xs text-surface-400 dark:text-surface-500">
+                <div class="mt-2 text-xs text-surface-500 dark:text-surface-400">
                   <i class="pi pi-clock mr-1" />{{ relativeDate(announce.creation_datetime, { showHours: false }) }}
                 </div>
 

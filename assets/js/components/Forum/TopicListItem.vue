@@ -47,7 +47,7 @@
         le {{ formatDate(topic.last_post.creation_datetime) }}
       </router-link>
     </div>
-    <div v-else class="text-sm text-surface-400 dark:text-surface-500 md:w-48 shrink-0">
+    <div v-else class="text-sm text-surface-500 dark:text-surface-400 md:w-48 shrink-0">
       Aucune réponse
     </div>
   </div>

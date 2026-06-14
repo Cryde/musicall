@@ -125,7 +125,7 @@
               @blur="validateUsername"
             />
             <small v-if="errors.username" id="username-error" role="alert" class="text-red-500">{{ errors.username }}</small>
-            <small v-else class="text-surface-500">
+            <small v-else class="text-surface-500 dark:text-surface-400">
               3 à 40 caractères, lettres, chiffres, points et underscores uniquement
             </small>
           </div>
@@ -168,7 +168,7 @@
               @blur="validatePassword"
             />
             <small v-if="errors.password" id="register-password-error" role="alert" class="text-red-500">{{ errors.password }}</small>
-            <small v-else class="text-surface-500">Minimum 6 caractères</small>
+            <small v-else class="text-surface-500 dark:text-surface-400">Minimum 6 caractères</small>
           </div>
 
           <!-- Confirm Password -->

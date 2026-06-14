@@ -13,7 +13,7 @@
       <AccordionHeader>
         <div class="flex items-center justify-between w-full pr-2">
           <span class="font-semibold">{{ pole.name }}</span>
-          <span class="text-sm text-surface-500">{{ countEntries(pole) }} entrée{{ countEntries(pole) > 1 ? 's' : '' }}</span>
+          <span class="text-sm text-surface-500 dark:text-surface-400">{{ countEntries(pole) }} entrée{{ countEntries(pole) > 1 ? 's' : '' }}</span>
         </div>
       </AccordionHeader>
       <AccordionContent>
@@ -26,7 +26,7 @@
               :style="{ width: progressPercent(pole) + '%' }"
             ></div>
           </div>
-          <p class="text-xs text-surface-500 mt-1">{{ progressPercent(pole) }}% payé</p>
+          <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ progressPercent(pole) }}% payé</p>
         </div>
 
         <!-- Entries at pole level -->

@@ -64,7 +64,7 @@ const percentageClass = computed(() => {
   const pct = quota.value?.used_percentage ?? 0
   if (pct >= 100) return 'text-red-500'
   if (pct >= 80) return 'text-amber-500'
-  return 'text-surface-500'
+  return 'text-surface-500 dark:text-surface-400'
 })
 
 const progressBarClass = computed(() => {
