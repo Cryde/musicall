@@ -10,6 +10,7 @@ use App\Entity\BandSpace\FinanceEntrySplit;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Event\BandSpaceFinanceSplitAssignedEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceEntrySplitRepository;
@@ -21,6 +22,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<FinanceEntrySplitCreate, FinanceEntrySplitResource>
@@ -36,6 +38,7 @@ readonly class FinanceEntrySplitCreateProcessor implements ProcessorInterface
         private FinanceEntrySplitBuilder $financeEntrySplitBuilder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -94,6 +97,9 @@ readonly class FinanceEntrySplitCreateProcessor implements ProcessorInterface
         );
         $this->entityManager->flush();
 
-        return $this->financeEntrySplitBuilder->buildItem($split);
+        $result = $this->financeEntrySplitBuilder->buildItem($split);
+        $this->eventDispatcher->dispatch(new BandSpaceFinanceSplitAssignedEvent($split, $user));
+
+        return $result;
     }
 }

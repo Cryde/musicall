@@ -22,4 +22,5 @@ enum NotificationType: string
     case BandSpaceRoleChanged = 'band_space_role_changed';
     case BandSpaceMemberRemoved = 'band_space_member_removed';
     case BandSpaceAgendaEntryCreated = 'band_space_agenda_entry_created';
+    case BandSpaceFinanceSplitAssigned = 'band_space_finance_split_assigned';
 }

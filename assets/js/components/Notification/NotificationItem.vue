@@ -230,6 +230,14 @@ const TYPE_CONFIG = {
     preview: `a ajouté l'événement « ${payload.entry_title} » le ${formatEventDate(payload.event_datetime)}`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
+  }),
+  band_space_finance_split_assigned: (payload) => ({
+    icon: 'pi pi-wallet',
+    avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
+    title: payload.actor_username,
+    preview: `vous a attribué une dépense sur « ${payload.entry_label} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.FINANCE, params: { id: payload.band_space_id } }
   })
 }
 
