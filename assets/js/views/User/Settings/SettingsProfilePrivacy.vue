@@ -17,7 +17,7 @@
         </div>
         <div class="md:w-2/3 flex flex-col gap-4">
           <div class="flex items-center gap-3">
-            <ToggleSwitch v-model="isPublic" :disabled="isUpdating" />
+            <ToggleSwitch v-model="isPublic" :disabled="isUpdating" aria-label="Visibilité du profil" />
             <span class="text-surface-700 dark:text-surface-300">
               {{ isPublic ? 'Profil public' : 'Profil privé' }}
             </span>

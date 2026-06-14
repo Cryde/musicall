@@ -140,7 +140,7 @@
             Mode sombre
           </div>
           <div class="md:w-2/3 flex items-center gap-3">
-            <ToggleSwitch v-model="isDarkModeEnabled" />
+            <ToggleSwitch v-model="isDarkModeEnabled" aria-label="Mode sombre" />
             <span class="text-surface-600 dark:text-surface-400 text-sm">
               {{ isDarkModeEnabled ? 'Activé' : 'Désactivé' }}
             </span>

@@ -4,7 +4,7 @@
       <h1 class="text-2xl lg:text-3xl font-semibold text-surface-900 dark:text-surface-0">
         Tableau de bord
       </h1>
-      <p v-if="currentSpace?.name" class="text-surface-500 dark:text-surface-400 mt-1">
+      <p v-if="currentSpace?.name" class="text-surface-600 dark:text-surface-400 mt-1">
         {{ currentSpace.name }}
       </p>
     </div>
