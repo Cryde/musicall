@@ -50,3 +50,24 @@ html {
 .animate-particle { animation: particle-float 8s ease-in-out infinite; }
 .animate-particle-slow { animation: particle-slow 12s ease-in-out infinite; }
 
+/* Respect prefers-reduced-motion globally (WCAG 2.3.3 / 2.2.2): stop the infinite
+   particle/orb loops outright, and reduce every other animation/transition to a
+   near-instant, non-looping state so nothing keeps moving for users who opted out. */
+@media (prefers-reduced-motion: reduce) {
+    .animate-drift,
+    .animate-glow,
+    .animate-particle,
+    .animate-particle-slow {
+        animation: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+

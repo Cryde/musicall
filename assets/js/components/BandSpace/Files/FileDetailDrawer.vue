@@ -13,6 +13,7 @@
           <span class="font-semibold truncate">{{ file?.original_name }}</span>
           <Button
             icon="pi pi-pencil"
+            aria-label="Renommer"
             size="small"
             text
             rounded
@@ -31,6 +32,7 @@
           />
           <Button
             icon="pi pi-check"
+            aria-label="Valider"
             size="small"
             severity="primary"
             :loading="filesStore.isSavingFile"
@@ -38,6 +40,7 @@
           />
           <Button
             icon="pi pi-times"
+            aria-label="Annuler"
             size="small"
             text
             severity="secondary"

@@ -25,6 +25,7 @@
       <div v-if="mobileView === 'editor'" class="md:hidden flex items-center gap-2 p-3 border-b border-surface-200 dark:border-surface-700">
         <Button
           icon="pi pi-arrow-left"
+          aria-label="Retour"
           text
           rounded
           size="small"

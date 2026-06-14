@@ -24,6 +24,7 @@
         ref="textareaRef"
         v-model="content"
         :placeholder="placeholder"
+        aria-label="Votre commentaire"
         :rows="parentId === null ? 3 : 2"
         :disabled="commentStore.isPosting"
         class="w-full"

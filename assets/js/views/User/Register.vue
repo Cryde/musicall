@@ -120,10 +120,11 @@
               v-model="form.username"
               placeholder="Votre nom d'utilisateur"
               :invalid="!!errors.username"
+              :aria-describedby="errors.username ? 'username-error' : undefined"
               class="p-3 shadow-sm dark:bg-surface-900!"
               @blur="validateUsername"
             />
-            <small v-if="errors.username" class="text-red-500">{{ errors.username }}</small>
+            <small v-if="errors.username" id="username-error" role="alert" class="text-red-500">{{ errors.username }}</small>
             <small v-else class="text-surface-500">
               3 à 40 caractères, lettres, chiffres, points et underscores uniquement
             </small>
@@ -140,10 +141,11 @@
               type="email"
               placeholder="votre@email.com"
               :invalid="!!errors.email"
+              :aria-describedby="errors.email ? 'register-email-error' : undefined"
               class="p-3 shadow-sm dark:bg-surface-900!"
               @blur="validateEmail"
             />
-            <small v-if="errors.email" class="text-red-500">{{ errors.email }}</small>
+            <small v-if="errors.email" id="register-email-error" role="alert" class="text-red-500">{{ errors.email }}</small>
           </div>
 
           <!-- Password -->
@@ -157,6 +159,7 @@
               placeholder="Votre mot de passe"
               :toggleMask="true"
               :invalid="!!errors.password"
+              :aria-describedby="errors.password ? 'register-password-error' : undefined"
               inputClass="w-full! p-3! shadow-sm dark:bg-surface-900!"
               :promptLabel="'Choisissez un mot de passe'"
               :weakLabel="'Faible'"
@@ -164,7 +167,7 @@
               :strongLabel="'Fort'"
               @blur="validatePassword"
             />
-            <small v-if="errors.password" class="text-red-500">{{ errors.password }}</small>
+            <small v-if="errors.password" id="register-password-error" role="alert" class="text-red-500">{{ errors.password }}</small>
             <small v-else class="text-surface-500">Minimum 6 caractères</small>
           </div>
 
@@ -180,10 +183,11 @@
               :toggleMask="true"
               :feedback="false"
               :invalid="!!errors.confirmPassword"
+              :aria-describedby="errors.confirmPassword ? 'confirmPassword-error' : undefined"
               inputClass="w-full! p-3! shadow-sm dark:bg-surface-900!"
               @blur="validateConfirmPassword"
             />
-            <small v-if="errors.confirmPassword" class="text-red-500">{{ errors.confirmPassword }}</small>
+            <small v-if="errors.confirmPassword" id="confirmPassword-error" role="alert" class="text-red-500">{{ errors.confirmPassword }}</small>
           </div>
 
           <!-- Terms -->
@@ -193,6 +197,7 @@
               inputId="acceptTerms"
               :binary="true"
               :invalid="!!errors.acceptTerms"
+              :aria-describedby="errors.acceptTerms ? 'acceptTerms-error' : undefined"
             />
             <label for="acceptTerms" class="text-surface-700 dark:text-surface-300 text-sm cursor-pointer">
               J'accepte les
@@ -201,7 +206,7 @@
               <RouterLink :to="{ name: 'app_privacy' }" class="text-primary hover:text-primary-emphasis" target="_blank">politique de confidentialité</RouterLink>
             </label>
           </div>
-          <small v-if="errors.acceptTerms" class="text-red-500 -mt-4">{{ errors.acceptTerms }}</small>
+          <small v-if="errors.acceptTerms" id="acceptTerms-error" role="alert" class="text-red-500 -mt-4">{{ errors.acceptTerms }}</small>
 
           <!-- Submit Button -->
           <Button

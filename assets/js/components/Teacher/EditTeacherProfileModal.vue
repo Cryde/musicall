@@ -189,6 +189,7 @@
                 />
                 <Button
                   icon="pi pi-times"
+                  aria-label="Retirer ce lieu"
                   severity="danger"
                   text
                   rounded
@@ -280,6 +281,7 @@
               />
               <Button
                 icon="pi pi-times"
+                aria-label="Retirer ce créneau"
                 severity="danger"
                 text
                 rounded
@@ -430,6 +432,7 @@
                 </div>
                 <Button
                   icon="pi pi-times"
+                  aria-label="Retirer cette formule"
                   severity="danger"
                   text
                   rounded
@@ -489,6 +492,7 @@
               />
               <Button
                 icon="pi pi-times"
+                aria-label="Retirer ce lien"
                 severity="danger"
                 text
                 rounded

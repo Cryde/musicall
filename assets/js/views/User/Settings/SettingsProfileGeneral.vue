@@ -29,6 +29,7 @@
             <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
                 icon="pi pi-trash"
+                aria-label="Supprimer la photo de couverture"
                 severity="danger"
                 rounded
                 :loading="isDeletingCoverPicture"

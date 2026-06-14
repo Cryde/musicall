@@ -1,10 +1,11 @@
 <template>
-  <div class="flex gap-2 justify-center">
+  <div class="flex gap-2 justify-center" role="group" aria-label="Code de vérification à 6 chiffres">
     <input
       v-for="(_, index) in digits"
       :key="index"
       :ref="(el) => (inputRefs[index] = el)"
       v-model="digits[index]"
+      :aria-label="`Chiffre ${index + 1}`"
       type="text"
       inputmode="numeric"
       maxlength="1"

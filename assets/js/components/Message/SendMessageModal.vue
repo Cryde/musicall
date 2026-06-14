@@ -28,7 +28,9 @@
     <div class="flex flex-col gap-4">
       <!-- Recipient selection -->
       <div v-if="!selectedRecipient">
+        <label for="message-recipient" class="sr-only">Destinataire</label>
         <AutoComplete
+          inputId="message-recipient"
           v-model="recipient"
           :suggestions="recipientsOptions"
           :disabled="isSending"
@@ -92,6 +94,7 @@
       <!-- Message input -->
       <Textarea
         v-model="content"
+        aria-label="Votre message"
         :disabled="isSending"
         rows="5"
         fluid

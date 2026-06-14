@@ -73,11 +73,12 @@
       <div v-if="coverUrl" class="relative inline-block">
         <img
           :src="coverUrl"
-          alt="Cover"
+          alt="Image de couverture"
           class="w-full rounded-lg border border-surface-200 dark:border-surface-700"
         />
         <Button
           icon="pi pi-times"
+          aria-label="Retirer la couverture"
           severity="danger"
           size="small"
           rounded

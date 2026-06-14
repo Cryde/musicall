@@ -44,6 +44,7 @@
                   </div>
                   <Button
                     icon="pi pi-times"
+                    aria-label="Retirer le fichier"
                     text
                     rounded
                     size="small"

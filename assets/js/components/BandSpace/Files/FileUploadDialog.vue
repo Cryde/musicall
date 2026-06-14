@@ -41,6 +41,7 @@
             </div>
             <Button
               icon="pi pi-times"
+              aria-label="Retirer le fichier"
               text
               rounded
               size="small"
@@ -92,6 +93,7 @@
           />
           <Button
             icon="pi pi-plus"
+            aria-label="Créer l'étiquette"
             size="small"
             severity="secondary"
             :disabled="isUploading || isCreatingTag || !newTagName.trim()"

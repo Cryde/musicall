@@ -119,11 +119,3 @@ import { useUserSecurityStore } from '../../store/user/security.js'
 
 const userSecurityStore = useUserSecurityStore()
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-drift, .animate-glow, .animate-particle, .animate-particle-slow {
-    animation: none;
-  }
-}
-</style>

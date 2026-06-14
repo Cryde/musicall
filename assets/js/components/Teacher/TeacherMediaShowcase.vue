@@ -58,6 +58,7 @@
           <Button
             v-if="isOwnProfile"
             icon="pi pi-trash"
+            aria-label="Supprimer ce média"
             severity="danger"
             text
             rounded
@@ -98,6 +99,7 @@
         <iframe
           v-if="selectedMedia.platform === 'youtube'"
           :src="`https://www.youtube.com/embed/${selectedMedia.embed_id}?autoplay=1`"
+          :title="selectedMedia.title || 'Vidéo YouTube'"
           class="w-full h-full"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -107,6 +109,7 @@
         <iframe
           v-else-if="selectedMedia.platform === 'spotify'"
           :src="`https://open.spotify.com/embed/${selectedMedia.embed_id}`"
+          :title="selectedMedia.title || 'Lecteur Spotify'"
           class="w-full h-full"
           frameborder="0"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -116,6 +119,7 @@
         <iframe
           v-else-if="selectedMedia.platform === 'soundcloud'"
           :src="`https://w.soundcloud.com/player/?url=https://soundcloud.com/${selectedMedia.embed_id}&color=%23ff5500&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`"
+          :title="selectedMedia.title || 'Lecteur SoundCloud'"
           class="w-full h-full"
           frameborder="0"
           allow="autoplay"

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col dark:border-t dark:border-surface-700 pt-10">
+  <footer class="flex flex-col dark:border-t dark:border-surface-700 pt-10">
     <div class="flex flex-col lg:flex-row justify-between px-6 md:px-12 lg:px-20 py-16 gap-16 w-full overflow-hidden -mt-3 z-10 relative">
       <div class="flex items-center gap-4">
         <RouterLink
@@ -189,7 +189,7 @@
         </RouterLink>
       </div>
     </div>
-  </div>
+  </footer>
 </template>
 
 <script setup>

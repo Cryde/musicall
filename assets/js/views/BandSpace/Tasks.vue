@@ -67,6 +67,7 @@
         <div class="flex items-center gap-2 mb-4">
           <Button
             icon="pi pi-arrow-left"
+            aria-label="Retour"
             text
             rounded
             size="small"

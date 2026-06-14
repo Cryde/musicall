@@ -96,6 +96,7 @@
         />
         <Button
           icon="pi pi-send"
+          aria-label="Envoyer le message"
           :loading="messageStore.isAddingMessage"
           :disabled="!content.trim() || messageStore.isAddingMessage"
           @click="send"

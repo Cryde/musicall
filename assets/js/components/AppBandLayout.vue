@@ -16,6 +16,7 @@
       </div>
     </template>
     <template v-else>
+      <SkipLink />
       <MenuBand v-model:mobile-nav-open="mobileNavOpen" />
       <div class="flex">
         <aside
@@ -27,7 +28,7 @@
             :show-toggle="true"
           />
         </aside>
-        <main class="flex-1 min-w-0 bg-surface-200 dark:bg-surface-950">
+        <main id="main-content" tabindex="-1" class="flex-1 min-w-0 bg-surface-200 dark:bg-surface-950">
           <div class="px-6 py-8 md:px-12 lg:pl-8 lg:pr-20 flex flex-col gap-8">
             <!-- Force remount on space switch so module views never retain
                  another space's bandSpaceId or store state. -->
@@ -145,6 +146,7 @@ import { useUserSecurityStore } from '../store/user/security.js'
 import MenuBand from '../views/Global/MenuBand.vue'
 import BandSidebar from './BandSpace/BandSidebar.vue'
 import BandSpaceSelector from './BandSpace/BandSpaceSelector.vue'
+import SkipLink from './SkipLink.vue'
 
 const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()

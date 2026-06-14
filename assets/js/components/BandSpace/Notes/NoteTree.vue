@@ -31,6 +31,7 @@
             </span>
             <Button
               icon="pi pi-ellipsis-h"
+              aria-label="Actions de la note"
               severity="secondary"
               text
               rounded

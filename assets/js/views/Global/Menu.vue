@@ -1,5 +1,5 @@
 <template>
-    <nav class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
+    <nav aria-label="Navigation principale" class="relative flex items-center justify-between gap-8 px-8 lg:px-20 py-4 bg-surface-0 dark:bg-surface-900">
       <div class="flex items-center gap-4">
         <RouterLink :to="{ name: 'app_home' }" class="bg-[#5b87ae] dark:bg-transparent rounded-xs px-4 py-2" aria-label="Accueil MusicAll">
           <img

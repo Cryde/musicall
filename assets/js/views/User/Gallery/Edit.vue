@@ -10,6 +10,7 @@
           <div class="flex items-center gap-4">
             <Button
               icon="pi pi-chevron-left"
+              aria-label="Retour aux galeries"
               severity="secondary"
               text
               rounded
@@ -70,6 +71,7 @@
             </div>
             <Button
               :icon="isUploadExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              aria-label="Afficher la zone d'envoi"
               text
               rounded
               size="small"

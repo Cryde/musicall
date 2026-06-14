@@ -21,6 +21,7 @@
         <div class="flex items-center gap-4 min-w-0">
           <Button
             icon="pi pi-arrow-left"
+            aria-label="Retour"
             severity="secondary"
             text
             rounded

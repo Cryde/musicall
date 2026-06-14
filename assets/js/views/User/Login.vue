@@ -53,6 +53,7 @@
               v-model="email"
               placeholder="Email ou nom d'utilisateur"
               :invalid="!!errors.email"
+              :aria-describedby="errors.email ? 'email-error' : undefined"
               class="p-3 shadow-sm dark:bg-surface-900! w-full"
               autocomplete="username"
               autofocus
@@ -60,7 +61,7 @@
               @input="clearFieldError('email')"
             />
           </IconField>
-          <small v-if="errors.email" class="text-red-500">{{ errors.email }}</small>
+          <small v-if="errors.email" id="email-error" role="alert" class="text-red-500">{{ errors.email }}</small>
         </div>
 
         <div class="flex flex-col gap-2">
@@ -74,12 +75,13 @@
             :toggleMask="true"
             :feedback="false"
             :invalid="!!errors.password"
+            :aria-describedby="errors.password ? 'password-error' : undefined"
             inputClass="w-full! dark:bg-surface-900!"
             autocomplete="current-password"
             @blur="validatePassword"
             @input="clearFieldError('password')"
           />
-          <small v-if="errors.password" class="text-red-500">{{ errors.password }}</small>
+          <small v-if="errors.password" id="password-error" role="alert" class="text-red-500">{{ errors.password }}</small>
         </div>
 
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-0">

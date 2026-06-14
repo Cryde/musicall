@@ -32,6 +32,7 @@
             <input
                 v-model="quickSearch"
                 type="text"
+                aria-label="Décrivez votre recherche"
                 placeholder="Décrivez ce que vous cherchez..."
                 class="w-full pl-12 pr-16 sm:pr-36 py-3 sm:py-4 text-base sm:text-lg rounded-2xl border-2 border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all text-surface-900 dark:text-surface-0 placeholder:text-surface-400"
                 @keyup.enter="isQuickSearchParamEnough && generateQuickSearchFilters()"

@@ -21,8 +21,8 @@
               @keydown.enter="saveRename(category)"
               @keydown.escape="cancelRename"
             />
-            <Button icon="pi pi-check" text rounded size="small" @click="saveRename(category)" />
-            <Button icon="pi pi-times" text rounded size="small" @click="cancelRename" />
+            <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(category)" />
+            <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
           </template>
           <template v-else>
             <span

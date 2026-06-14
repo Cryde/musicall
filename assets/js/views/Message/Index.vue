@@ -14,6 +14,7 @@
       <div class="sm:hidden">
         <Button
           icon="pi pi-plus"
+          aria-label="Nouvelle conversation"
           rounded
           @click="showSendModal = true"
         />
