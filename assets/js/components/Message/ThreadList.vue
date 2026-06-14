@@ -47,7 +47,7 @@
                 <Tag v-if="!threadMeta.is_read" severity="info" value="new" class="text-xs" />
               </div>
 
-              <div class="text-xs text-surface-500 dark:text-surface-400 mb-1">
+              <div class="text-xs text-surface-600 dark:text-surface-400 mb-1">
                 {{ relativeDate(threadMeta.thread.last_message?.creation_datetime) }}
               </div>
 

@@ -24,7 +24,7 @@
             <span class="font-medium">{{ activity.actor?.username || 'Système' }}</span>
             {{ activitySentence(activity) }}
           </p>
-          <p class="text-xs text-surface-400 mt-0.5">{{ formatRelative(activity.creation_datetime) }}</p>
+          <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">{{ formatRelative(activity.creation_datetime) }}</p>
         </div>
       </li>
     </ul>

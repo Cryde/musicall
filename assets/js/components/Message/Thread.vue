@@ -56,7 +56,7 @@
           <div
             class="max-w-[70%] rounded-lg px-4 py-2"
             :class="isSender(message)
-              ? 'bg-primary-500 text-white'
+              ? 'bg-primary-700 text-white'
               : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0'"
           >
             <div
@@ -65,8 +65,8 @@
               v-html="autoLink(message.content)"
             />
             <div
-              class="text-xs mt-1 opacity-70"
-              :class="isSender(message) ? 'text-right' : ''"
+              class="text-xs mt-1"
+              :class="isSender(message) ? 'text-right text-surface-200' : 'opacity-70'"
             >
               {{ relativeDate(message.creation_datetime) }}
             </div>

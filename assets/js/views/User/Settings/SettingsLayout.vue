@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
           Paramètres
         </h1>
-        <p class="text-surface-500 dark:text-surface-400">
+        <p class="text-surface-600 dark:text-surface-400">
           Gérez les paramètres de votre compte
         </p>
       </div>

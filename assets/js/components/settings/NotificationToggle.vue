@@ -9,7 +9,7 @@
       </p>
     </div>
     <div class="md:w-2/3 flex items-center gap-3">
-      <ToggleSwitch :modelValue="modelValue" :disabled="disabled" @update:modelValue="$emit('update:modelValue', $event)" />
+      <ToggleSwitch :aria-label="label" :modelValue="modelValue" :disabled="disabled" @update:modelValue="$emit('update:modelValue', $event)" />
       <span class="text-surface-700 dark:text-surface-300">
         {{ modelValue ? 'Activé' : 'Désactivé' }}
       </span>

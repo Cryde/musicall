@@ -57,6 +57,15 @@ const MusicAllPreset = definePreset(Aura, {
               color: '{surface.600}',
               hoverColor: '{surface.700}',
               activeColor: '{surface.700}'
+            },
+            // Darken danger button so the white label meets AA (white on red-500 was 3.76, red-600 = 4.83).
+            danger: {
+              background: '{red.600}',
+              hoverBackground: '{red.700}',
+              activeBackground: '{red.800}',
+              borderColor: '{red.600}',
+              hoverBorderColor: '{red.700}',
+              activeBorderColor: '{red.800}'
             }
           },
           outlined: {
@@ -68,6 +77,9 @@ const MusicAllPreset = definePreset(Aura, {
             },
             secondary: {
               color: '{surface.600}'
+            },
+            danger: {
+              color: '{red.600}'
             }
           },
           text: {
@@ -78,6 +90,9 @@ const MusicAllPreset = definePreset(Aura, {
             },
             secondary: {
               color: '{surface.600}'
+            },
+            danger: {
+              color: '{red.600}'
             }
           }
         },

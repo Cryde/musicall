@@ -24,7 +24,7 @@
           <i class="pi pi-arrow-up text-green-500" aria-hidden="true" />
           Revenus
         </span>
-        <span class="tabular-nums text-green-600 dark:text-green-400">{{ formatAmount(summary.total_income_all) }}</span>
+        <span class="tabular-nums text-green-700 dark:text-green-400">{{ formatAmount(summary.total_income_all) }}</span>
       </div>
       <div class="flex justify-between items-center text-sm">
         <span class="flex items-center gap-2 text-surface-600 dark:text-surface-300">
@@ -33,7 +33,7 @@
         </span>
         <span class="tabular-nums text-red-600 dark:text-red-400">{{ formatAmount(summary.total_expense_all) }}</span>
       </div>
-      <p v-if="paidShare" class="text-xs text-surface-400 mt-1">
+      <p v-if="paidShare" class="text-xs text-surface-500 dark:text-surface-400 mt-1">
         Dont {{ formatAmount(summary.total_paid) }} déjà payés.
       </p>
     </div>
@@ -74,7 +74,7 @@ const balance = computed(
 )
 
 const balanceClass = computed(() => {
-  if (balance.value > 0) return 'text-green-600 dark:text-green-400'
+  if (balance.value > 0) return 'text-green-700 dark:text-green-400'
   if (balance.value < 0) return 'text-red-600 dark:text-red-400'
   return 'text-surface-700 dark:text-surface-200'
 })

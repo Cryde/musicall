@@ -5,7 +5,7 @@
         Revenus
         <i class="pi pi-info-circle text-xs ml-1 cursor-help" v-tooltip.top="'Total des revenus du groupe avec le statut Payé'"></i>
       </p>
-      <p class="text-xl font-semibold text-green-600 dark:text-green-400">{{ formatAmount(summary?.total_income) }}</p>
+      <p class="text-xl font-semibold text-green-700 dark:text-green-400">{{ formatAmount(summary?.total_income) }}</p>
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
