@@ -19,6 +19,96 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
     }
 
     /**
+     * Eager-loads the last announces for the public "last" listing without the N+1.
+     *
+     * The ToOne `instrument` is fetch-joined in the limited query (safe with a SQL
+     * LIMIT). The ToMany `styles` collections are initialised in a second batched
+     * query — fetch-joining a collection together with `setMaxResults()` breaks
+     * Doctrine's row hydration, and EXTRA_LAZY would still load one collection per
+     * row, whereas a single `WHERE announce IN (...)` is one round-trip.
+     *
+     * The `author` is intentionally left unhydrated here; it is projected separately
+     * by {@see self::findAuthorsDataForAnnounces()} to avoid dragging in the three
+     * inverse one-to-one profile tables that a full User hydration force-loads.
+     *
+     * @return MusicianAnnounce[]
+     */
+    public function findLastAnnounces(int $limit): array
+    {
+        $announces = $this->createQueryBuilder('announce')
+            ->addSelect('instrument')
+            ->leftJoin('announce.instrument', 'instrument')
+            ->orderBy('announce.creationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        if ($announces === []) {
+            return [];
+        }
+
+        // Side effect: initialise the styles collections on the managed entities.
+        $this->createQueryBuilder('announce')
+            ->addSelect('styles')
+            ->leftJoin('announce.styles', 'styles')
+            ->where('announce IN (:announces)')
+            ->setParameter('announces', $announces)
+            ->getQuery()
+            ->getResult();
+
+        return $announces;
+    }
+
+    /**
+     * Projects exactly the author fields the "last" listing needs, keyed by announce id.
+     *
+     * Everything is selected as scalars, so no User entity is hydrated and its inverse
+     * one-to-one profile tables (`notificationPreference` / `teacherProfile`) never load.
+     * The profile picture is reduced to its `imageName` (enough to rebuild the asset URL)
+     * and the `musicianProfile` to its id (existence flag).
+     *
+     * @param MusicianAnnounce[] $announces
+     *
+     * @return array<string, array{id: string, username: string, deletionDatetime: ?\DateTimeImmutable, hasMusicianProfile: bool, profilePictureName: ?string}>
+     */
+    public function findAuthorsDataForAnnounces(array $announces): array
+    {
+        if ($announces === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('announce')
+            ->select(
+                'announce.id AS announceId',
+                'author.id AS authorId',
+                'author.username AS username',
+                'author.deletionDatetime AS deletionDatetime',
+                'musicianProfile.id AS musicianProfileId',
+                'picture.imageName AS profilePictureName',
+            )
+            ->join('announce.author', 'author')
+            ->leftJoin('author.profilePicture', 'picture')
+            ->leftJoin('author.musicianProfile', 'musicianProfile')
+            ->where('announce IN (:announces)')
+            ->setParameter('announces', $announces)
+            ->getQuery()
+            ->getResult();
+
+        $authorsByAnnounceId = [];
+        foreach ($rows as $row) {
+            $authorsByAnnounceId[(string) $row['announceId']] = [
+                'id' => (string) $row['authorId'],
+                'username' => (string) $row['username'],
+                'deletionDatetime' => $row['deletionDatetime'],
+                'hasMusicianProfile' => $row['musicianProfileId'] !== null,
+                'profilePictureName' => $row['profilePictureName'],
+            ];
+        }
+
+        return $authorsByAnnounceId;
+    }
+
+    /**
      * @return array<int, array{date_label: string, count: int}>
      */
     public function countMusicianAnnouncesByDate(\DateTimeImmutable $from, \DateTimeImmutable $to): array
