@@ -313,6 +313,35 @@ class SetlistPdfExportTest extends ApiTestCase
         $this->assertNotSame($sizes['inter'], $sizes['source_serif'], 'Inter and Source Serif must produce visibly different PDFs');
     }
 
+    public function test_font_cache_writes_to_writable_dir_not_readonly_assets(): void
+    {
+        // Regression: dompdf writes its compiled .ufm/.ttf into fontDir, named from
+        // a hash of the absolute (per-release) source path, so it regenerates on
+        // every deploy. Pointing fontDir at the read-only assets/fonts/pdf shipped
+        // in the release 500'd in prod ("Permission denied" writing inter_normal_*.ufm).
+        // The compiled cache must land in the writable var/ dir instead.
+        $projectDir = (string) self::getContainer()->getParameter('kernel.project_dir');
+        $cacheDir = $projectDir . '/var/cache/dompdf';
+        // Wipe the whole cache dir (metrics + family cache) so dompdf is forced to
+        // regenerate; otherwise it short-circuits on the cached font family and
+        // would not re-emit the .ufm we are asserting on.
+        array_map('unlink', array_filter(glob($cacheDir . '/*') ?: [], 'is_file'));
+
+        $bandSpace = BandSpaceFactory::new()->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Cache location'])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Talk, 'label' => 'Hi', 'position' => 0])->create();
+
+        $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+        $pdf = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Large), 0, 0);
+
+        $this->assertStringStartsWith('%PDF-', $pdf);
+        $this->assertNotEmpty(
+            glob($cacheDir . '/*.ufm'),
+            'dompdf must write its compiled font metrics into the writable var/cache/dompdf, not the read-only asset dir',
+        );
+    }
+
     public function test_pdf_export_with_atkinson_font_succeeds(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

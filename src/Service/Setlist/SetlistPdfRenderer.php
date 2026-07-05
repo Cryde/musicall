@@ -46,7 +46,7 @@ readonly class SetlistPdfRenderer
             'font_family' => $fontFamily,
         ]);
 
-        $fontDir = $this->projectDir . self::FONT_DIR;
+        $assetFontDir = $this->projectDir . self::FONT_DIR;
         $fontCache = $this->projectDir . self::FONT_CACHE_DIR;
         if (!is_dir($fontCache)) {
             @mkdir($fontCache, 0775, recursive: true);
@@ -55,20 +55,26 @@ readonly class SetlistPdfRenderer
         $dompdfOptions = new Options();
         $dompdfOptions->setDefaultFont($fontFamily);
         $dompdfOptions->setIsRemoteEnabled(false);
-        $dompdfOptions->setFontDir($fontDir);
+        // dompdf writes the compiled .ufm/.ttf into fontDir (NOT fontCache), and
+        // names them from a hash of the absolute source path - which changes with
+        // every release directory - so it regenerates them on every deploy. fontDir
+        // must therefore be writable: point it at var/cache/dompdf. The read-only
+        // bundled TTFs shipped in assets/ are still read via the file:// paths in
+        // registerFont(). Pointing fontDir at the read-only assets dir returned a
+        // 500 in production ("Permission denied" writing inter_normal_*.ufm).
+        $dompdfOptions->setFontDir($fontCache);
         $dompdfOptions->setFontCache($fontCache);
-        // chroot defaults to dompdf's vendor dir; widen it so registerFont()
-        // can read our bundled TTFs. Without this, dompdf silently falls back
-        // to its built-in Helvetica.
+        // chroot REPLACES the default (it does not extend it). registerFont()
+        // validates the source TTF path against it, so it must include the asset
+        // dir we read the bundled fonts from; the writable cache dir is included too.
         //
-        // NOTE: setChroot REPLACES the default chroot (it does not extend it).
-        // If a template ever starts loading local images (e.g. a band logo via
-        // <img src="...">), add the relevant asset dir to this array - otherwise
-        // dompdf will silently skip those resources too.
-        $dompdfOptions->setChroot([$fontDir]);
+        // NOTE: if a template ever starts loading local images (e.g. a band logo
+        // via <img src="...">), add the relevant asset dir here - otherwise dompdf
+        // will silently skip those resources.
+        $dompdfOptions->setChroot([$assetFontDir, $fontCache]);
 
         $dompdf = new Dompdf($dompdfOptions);
-        $this->registerBundledFonts($dompdf, $fontDir);
+        $this->registerBundledFonts($dompdf, $assetFontDir);
 
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
