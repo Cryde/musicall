@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <title>{{ setlist.name }}</title>
     <style>
-        @page { margin: 18mm 14mm 22mm 14mm; }
+        {% set s = scale|default(1) %}
+        @page { margin: 18mm 14mm 14mm 14mm; }
         body { font-family: '{{ font_family|default('Inter') }}', sans-serif; color: #1a1a1a; }
 
-        .pdf-header { margin-bottom: 8mm; }
+        .pdf-header { margin-bottom: {{ (8 * s)|round(2) }}mm; }
         .pdf-header-rule {
             height: 0;
             border: 0;
             border-top: 2px solid #f5b400;
-            margin: 0 0 6mm 0;
+            margin: 0 0 {{ (6 * s)|round(2) }}mm 0;
         }
 
         {% block extra_styles %}{% endblock %}

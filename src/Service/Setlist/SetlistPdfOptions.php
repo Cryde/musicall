@@ -15,6 +15,7 @@ final readonly class SetlistPdfOptions
         public bool $showNotes = false,
         public bool $showTransitions = false,
         public ?SetlistPdfFont $font = null,
+        public bool $fitToOnePage = false,
     ) {
     }
 

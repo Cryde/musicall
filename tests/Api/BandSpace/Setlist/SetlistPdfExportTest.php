@@ -342,6 +342,65 @@ class SetlistPdfExportTest extends ApiTestCase
         );
     }
 
+    public function test_fit_to_one_page_compresses_a_large_set_onto_one_page(): void
+    {
+        // A 15-item Compact set overflows onto multiple pages at full size; the
+        // fit option must shrink font + spacing so the whole set lands on one page.
+        $setlist = $this->createCompactSetlistWithSongs(15);
+        $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+
+        $withoutFit = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact), 0, 0);
+        $withFit = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
+
+        $this->assertGreaterThan(
+            1,
+            preg_match_all('#/Type\s*/Page[^s]#', $withoutFit),
+            '15 compact songs must overflow multiple pages without the fit option',
+        );
+        $this->assertSame(
+            1,
+            preg_match_all('#/Type\s*/Page[^s]#', $withFit),
+            'fit-to-one-page must shrink the set onto a single page',
+        );
+    }
+
+    public function test_fit_to_one_page_is_ignored_above_the_item_cap(): void
+    {
+        // Beyond 15 items a single page would be illegible, so the flag is ignored
+        // and the export stays multi-page (mirrors the frontend cap and blocks a
+        // crafted URL forcing an unreadable fit).
+        $setlist = $this->createCompactSetlistWithSongs(20);
+        $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+
+        $pdf = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
+
+        $this->assertGreaterThan(
+            1,
+            preg_match_all('#/Type\s*/Page[^s]#', $pdf),
+            'above the 15-item cap the fit flag must be ignored (stays multi-page)',
+        );
+    }
+
+    private function createCompactSetlistWithSongs(int $count): object
+    {
+        $bandSpace = BandSpaceFactory::new()->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Fit test'])->create();
+        for ($i = 0; $i < $count; $i++) {
+            $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Song ' . $i])->create();
+            SetlistItemFactory::new([
+                'setlist' => $setlist,
+                'type' => SetlistItemType::Song,
+                'song' => $song,
+                'label' => null,
+                'position' => $i,
+            ])->create();
+        }
+
+        return $setlist;
+    }
+
     public function test_pdf_export_with_atkinson_font_succeeds(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

@@ -102,4 +102,30 @@ class SetlistPdfOptionsBuilderTest extends TestCase
 
         $this->assertSame(SetlistPdfLayout::Large, $options->layout);
     }
+
+    public function test_fit_to_one_page_defaults_off(): void
+    {
+        $builder = new SetlistPdfOptionsBuilder();
+
+        $this->assertFalse($builder->fromRequest(null)->fitToOnePage);
+        $this->assertFalse($builder->fromRequest(new Request(['layout' => 'large']))->fitToOnePage);
+    }
+
+    public function test_fit_to_one_page_is_honored_in_large(): void
+    {
+        $builder = new SetlistPdfOptionsBuilder();
+        $options = $builder->fromRequest(new Request(['layout' => 'large', 'fitToOnePage' => '1']));
+
+        $this->assertTrue($options->fitToOnePage);
+    }
+
+    public function test_fit_to_one_page_is_honored_in_compact(): void
+    {
+        // The flag is orthogonal to the per-field toggles Compact zeroes out.
+        $builder = new SetlistPdfOptionsBuilder();
+        $options = $builder->fromRequest(new Request(['layout' => 'compact', 'fitToOnePage' => '1']));
+
+        $this->assertSame(SetlistPdfLayout::Compact, $options->layout);
+        $this->assertTrue($options->fitToOnePage);
+    }
 }

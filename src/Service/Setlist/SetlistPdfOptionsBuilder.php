@@ -21,6 +21,8 @@ final readonly class SetlistPdfOptionsBuilder
 
         $layout = SetlistPdfLayout::tryFrom((string) ($query?->get('layout', 'large') ?? 'large')) ?? SetlistPdfLayout::Large;
         $font = SetlistPdfFont::tryFrom((string) ($query?->get('font') ?? ''));
+        // Orthogonal to the per-field toggles, so it applies to both layouts.
+        $fitToOnePage = $query?->getBoolean('fitToOnePage', false) ?? false;
 
         if ($layout === SetlistPdfLayout::Compact) {
             return new SetlistPdfOptions(
@@ -31,6 +33,7 @@ final readonly class SetlistPdfOptionsBuilder
                 showNotes: false,
                 showTransitions: false,
                 font: $font,
+                fitToOnePage: $fitToOnePage,
             );
         }
 
@@ -42,6 +45,7 @@ final readonly class SetlistPdfOptionsBuilder
             showNotes: $query?->getBoolean('showNotes', false) ?? false,
             showTransitions: $query?->getBoolean('showTransitions', false) ?? false,
             font: $font,
+            fitToOnePage: $fitToOnePage,
         );
     }
 }

@@ -104,6 +104,7 @@
       ref="pdfPopover"
       :band-space-id="bandSpaceId"
       :setlist-id="setlistId"
+      :item-count="setlist?.items?.length ?? 0"
     />
 
     <SetlistFileDrawer

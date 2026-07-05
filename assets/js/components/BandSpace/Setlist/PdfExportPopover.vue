@@ -29,6 +29,18 @@
         />
       </div>
 
+      <div v-tooltip.top="canFitOnePage ? '' : 'Trop de titres pour tenir sur une page (max 15)'">
+        <div class="flex items-center gap-2" :class="!canFitOnePage && 'opacity-50'">
+          <Checkbox
+            v-model="options.fitToOnePage"
+            :binary="true"
+            input-id="pdf-fit"
+            :disabled="!canFitOnePage"
+          />
+          <label for="pdf-fit" class="text-sm">Ajuster à une page</label>
+        </div>
+      </div>
+
       <div
         class="flex flex-col gap-2 pt-1"
         v-tooltip.top="isCompact ? 'Ne s’applique qu’en mode Large' : ''"
@@ -96,7 +108,8 @@ import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  setlistId: { type: String, required: true }
+  setlistId: { type: String, required: true },
+  itemCount: { type: Number, default: 0 }
 })
 
 const popover = ref(null)
@@ -112,6 +125,9 @@ const fontOptions = [
   { label: 'Source Serif (serif)', value: 'source_serif' }
 ]
 
+// Keep in sync with SetlistPdfRenderer::MAX_FIT_ITEMS (the backend caps the fit too).
+const MAX_FIT_ITEMS = 15
+
 const options = reactive({
   layout: 'large',
   showTempo: true,
@@ -119,10 +135,12 @@ const options = reactive({
   showDurations: true,
   showNotes: false,
   showTransitions: false,
-  font: 'inter'
+  font: 'inter',
+  fitToOnePage: false
 })
 
 const isCompact = computed(() => options.layout === 'compact')
+const canFitOnePage = computed(() => props.itemCount <= MAX_FIT_ITEMS)
 
 function toggle(event) {
   popover.value?.toggle(event)

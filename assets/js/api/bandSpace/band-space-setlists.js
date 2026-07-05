@@ -158,6 +158,8 @@ export default {
     if (options.showNotes !== undefined) params.set('showNotes', options.showNotes ? '1' : '0')
     if (options.showTransitions !== undefined)
       params.set('showTransitions', options.showTransitions ? '1' : '0')
+    if (options.fitToOnePage !== undefined)
+      params.set('fitToOnePage', options.fitToOnePage ? '1' : '0')
     const qs = params.toString()
     return qs ? `${baseUrl}?${qs}` : baseUrl
   }

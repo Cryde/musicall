@@ -11,13 +11,28 @@ use Twig\Environment;
 
 /**
  * Wraps dompdf - callers depend only on render(). Encapsulates Twig template
- * choice, font registration and footer/page-counter rendering.
+ * choice, font registration and the optional "fit to one page" shrink loop.
  */
 readonly class SetlistPdfRenderer
 {
     private const string FONT_DIR = '/assets/fonts/pdf/';
     private const string FONT_CACHE_DIR = '/var/cache/dompdf/';
-    private const int FOOTER_BOTTOM_OFFSET_PT = 28;
+
+    /**
+     * Above this many items a one-page render would be illegible, so the
+     * fit-to-one-page request is ignored and we fall back to a normal render.
+     * Mirrors the frontend cap (and blocks a crafted URL forcing an unreadable
+     * fit on a huge set).
+     */
+    private const int MAX_FIT_ITEMS = 15;
+
+    /**
+     * Descending scale factors tried when fitting to one page; the first that
+     * yields a single page wins. The last value is the floor.
+     *
+     * @var list<float>
+     */
+    private const array FIT_SCALES = [1.0, 0.85, 0.72, 0.6, 0.5, 0.42];
 
     public function __construct(
         private Environment $twig,
@@ -31,6 +46,36 @@ readonly class SetlistPdfRenderer
         int $totalDurationSeconds,
         int $missingDurationItems = 0,
     ): string {
+        if (!$options->fitToOnePage || $setlist->items->count() > self::MAX_FIT_ITEMS) {
+            return $this->renderAtScale($setlist, $options, $totalDurationSeconds, $missingDurationItems, 1.0)[0];
+        }
+
+        $lastPdf = '';
+        foreach (self::FIT_SCALES as $scale) {
+            [$lastPdf, $pageCount] = $this->renderAtScale($setlist, $options, $totalDurationSeconds, $missingDurationItems, $scale);
+            if ($pageCount <= 1) {
+                return $lastPdf;
+            }
+        }
+
+        // Could not fit even at the floor scale (should not happen within the
+        // item cap) - return the smallest attempt as the best effort.
+        return $lastPdf;
+    }
+
+    /**
+     * Renders the setlist at the given scale factor and returns the PDF binary
+     * together with its page count, so the caller can shrink until it fits.
+     *
+     * @return array{0: string, 1: int}
+     */
+    private function renderAtScale(
+        Setlist $setlist,
+        SetlistPdfOptions $options,
+        int $totalDurationSeconds,
+        int $missingDurationItems,
+        float $scale,
+    ): array {
         $template = $options->layout === SetlistPdfLayout::Compact
             ? 'pdf/setlist/setlist_compact.html.twig'
             : 'pdf/setlist/setlist_large.html.twig';
@@ -44,6 +89,7 @@ readonly class SetlistPdfRenderer
             'total_duration_seconds' => $totalDurationSeconds,
             'missing_duration_items' => $missingDurationItems,
             'font_family' => $fontFamily,
+            'scale' => $scale,
         ]);
 
         $assetFontDir = $this->projectDir . self::FONT_DIR;
@@ -80,9 +126,9 @@ readonly class SetlistPdfRenderer
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $this->stampFooter($dompdf, $fontFamily);
+        $pageCount = $dompdf->getCanvas()->get_page_count();
 
-        return $dompdf->output();
+        return [(string) $dompdf->output(), $pageCount];
     }
 
     /**
@@ -104,31 +150,5 @@ readonly class SetlistPdfRenderer
                 'file://' . $fontDir . $font->boldFile(),
             );
         }
-    }
-
-    /**
-     * Canvas-based footer ensures every page shows a real "X / Y" counter -
-     * the CSS counter(pages) approach is not reliably rendered by dompdf
-     * inside a position:fixed element.
-     */
-    private function stampFooter(Dompdf $dompdf, string $fontFamily): void
-    {
-        $canvas = $dompdf->getCanvas();
-        $fontMetrics = $dompdf->getFontMetrics();
-        $font = $fontMetrics->get_font($fontFamily, 'normal');
-        $size = 8;
-
-        $date = (new \DateTimeImmutable())->format('d/m/Y');
-        $text = sprintf('MusicAll · %s · {PAGE_NUM}/{PAGE_COUNT}', $date);
-
-        // Width is computed with placeholders replaced by representative
-        // values - page numbers up to 99 fit cleanly without re-centering.
-        $widthSample = sprintf('MusicAll · %s · 99/99', $date);
-        $textWidth = $fontMetrics->getTextWidth($widthSample, $font, $size);
-        $pageWidth = $canvas->get_width();
-        $x = ($pageWidth - $textWidth) / 2;
-        $y = $canvas->get_height() - self::FOOTER_BOTTOM_OFFSET_PT;
-
-        $canvas->page_text($x, $y, $text, $font, $size, [0.55, 0.55, 0.55]);
     }
 }
