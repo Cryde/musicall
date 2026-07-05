@@ -42,18 +42,64 @@ class SetlistPdfExportTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $response = $this->client->getResponse();
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
-        $this->assertStringContainsString(
-            'attachment',
-            (string) $response->headers->get('Content-Disposition'),
-        );
-        $this->assertStringContainsString(
-            'Live 2026.pdf',
+        $this->assertSame(
+            "attachment; filename=Live-2026.pdf; filename*=utf-8''Live%202026.pdf",
             (string) $response->headers->get('Content-Disposition'),
         );
 
         $body = (string) $response->getContent();
         $this->assertNotEmpty($body);
         $this->assertStringStartsWith('%PDF-', $body, 'Response body must be a valid PDF binary');
+    }
+
+    public function test_pdf_export_with_accented_name_succeeds(): void
+    {
+        // Regression (#731): makeDisposition() threw on a non-ASCII fallback
+        // filename, so any setlist named with accents (é, è, à, ...) - i.e. most
+        // French setlists - returned HTTP 500 instead of the rendered PDF.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Répétition générale'])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Talk, 'label' => 'Intro', 'position' => 0])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->client->getResponse();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
+        // Header stays pure ASCII: an ASCII slug fallback plus the real accented
+        // name carried through the RFC 5987 filename* parameter.
+        $this->assertSame(
+            "attachment; filename=Repetition-generale.pdf; filename*=utf-8''R%C3%A9p%C3%A9tition%20g%C3%A9n%C3%A9rale.pdf",
+            (string) $response->headers->get('Content-Disposition'),
+        );
+    }
+
+    public function test_pdf_export_with_slash_in_name_succeeds(): void
+    {
+        // Regression (#731): makeDisposition() also rejects "/" and "\" in the
+        // filename, so a setlist named e.g. "Rock/Metal" previously returned 500.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Rock/Metal'])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Talk, 'label' => 'Intro', 'position' => 0])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->client->getResponse();
+        $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
+        // "/" is replaced by "-"; display and fallback collapse to the same ASCII
+        // token, so no filename* is emitted.
+        $this->assertSame(
+            'attachment; filename=Rock-Metal.pdf',
+            (string) $response->headers->get('Content-Disposition'),
+        );
     }
 
     public function test_pdf_export_compact_layout(): void
