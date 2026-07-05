@@ -7,10 +7,10 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileVersion;
 use App\Entity\User;
+use App\Http\ContentDisposition;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -67,9 +67,12 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
         // Stop browsers from MIME-sniffing the body into an executable type
         // (defence-in-depth alongside the attachment disposition below).
         $response->headers->set('X-Content-Type-Options', 'nosniff');
+        // ContentDisposition sanitises the (user-supplied) original filename so a
+        // non-ASCII or "/"-containing name cannot 500 the download. Shared by the
+        // authenticated, versioned and public-share paths via ::stream().
         $response->headers->set(
             'Content-Disposition',
-            HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $file->originalName),
+            ContentDisposition::attachment($file->originalName),
         );
         if ($version->size !== null) {
             $response->headers->set('Content-Length', (string) $version->size);

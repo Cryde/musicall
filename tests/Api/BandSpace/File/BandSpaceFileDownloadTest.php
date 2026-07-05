@@ -108,10 +108,39 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         ]);
     }
 
+    public function test_download_with_accented_original_name_succeeds(): void
+    {
+        // Regression (#740): makeDisposition() threw on a non-ASCII fallback
+        // filename, so downloading a file whose original name carried an accent
+        // (é, è, à, ...) returned HTTP 500 instead of the binary. The fix lives in
+        // the shared ::stream(), so this also guards the versioned and public-share
+        // download paths.
+        $this->client->disableReboot();
+        [$user, $bandSpace, $file] = $this->setupFileWithTwoVersions(
+            currentVersionNumber: 1,
+            originalName: 'Répétition.pdf',
+        );
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+        );
+
+        $this->assertResponseIsSuccessful();
+        // Header stays pure ASCII: an ASCII fallback that keeps the extension,
+        // plus the real accented name carried via the RFC 5987 filename*.
+        $this->assertSame(
+            "attachment; filename=Repetition.pdf; filename*=utf-8''R%C3%A9p%C3%A9tition.pdf",
+            (string) $this->client->getResponse()->headers->get('Content-Disposition'),
+        );
+        $this->assertSame(self::V1_CONTENT, $this->getStreamedBody());
+    }
+
     /**
      * @return array{0: object, 1: object, 2: object, 3: object, 4: object}  user, bandSpace, file, v1, v2 (proxies)
      */
-    private function setupFileWithTwoVersions(int $currentVersionNumber): array
+    private function setupFileWithTwoVersions(int $currentVersionNumber, string $originalName = 'doc.txt'): array
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
@@ -120,7 +149,7 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         $file = BandSpaceFileFactory::new([
             'bandSpace' => $bandSpace,
             'createdBy' => $user,
-            'originalName' => 'doc.txt',
+            'originalName' => $originalName,
         ])->create();
 
         $v1StoragePath = 'test-v1-' . bin2hex(random_bytes(4)) . '.txt';
