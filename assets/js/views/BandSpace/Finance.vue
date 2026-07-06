@@ -70,6 +70,7 @@
             @edit-entry="handleEditEntry"
             @add-category="handleAddCategory"
             @delete-category="handleDeleteCategory"
+            @rename-category="handleRenameCategory"
           />
           <FinanceTimeline
             v-else
@@ -421,6 +422,21 @@ function handleDeleteCategory(categoryId) {
       }
     }
   })
+}
+
+async function handleRenameCategory({ id, name }) {
+  try {
+    await financeStore.updateCategory(bandSpaceId, id, { name })
+    trackUmamiEvent('finance-category-rename')
+    toast.add({ severity: 'success', summary: 'Catégorie renommée', life: 3000 })
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de renommer la catégorie',
+      life: 5000
+    })
+  }
 }
 
 function handleAddRecurrence() {

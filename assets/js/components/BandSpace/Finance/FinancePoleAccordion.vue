@@ -40,15 +40,37 @@
         <!-- Child categories -->
         <div v-if="pole.children.length > 0">
           <div v-for="child in pole.children" :key="child.id" class="mb-4 group">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300">{{ child.name }}</h4>
-              <button
-                class="text-xs text-red-500 hover:text-red-700 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
-                title="Supprimer la catégorie"
-                @click="emit('delete-category', child.id)"
-              >
-                <i class="pi pi-trash"></i>
-              </button>
+            <div class="flex items-center justify-between mb-2 gap-2">
+              <template v-if="editingId === child.id">
+                <InputText
+                  v-model="editingName"
+                  class="flex-1 text-sm"
+                  size="small"
+                  @keydown.enter="saveRename(child)"
+                  @keydown.escape="cancelRename"
+                />
+                <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(child)" />
+                <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
+              </template>
+              <template v-else>
+                <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300 flex-1 min-w-0 truncate">{{ child.name }}</h4>
+                <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                  <button
+                    class="text-xs text-surface-400 hover:text-primary"
+                    title="Renommer la catégorie"
+                    @click="startRename(child)"
+                  >
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    class="text-xs text-red-500 hover:text-red-700"
+                    title="Supprimer la catégorie"
+                    @click="emit('delete-category', child.id)"
+                  >
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </template>
             </div>
             <EntryList
               :entries="entriesByCategory[child.id] || []"
@@ -66,28 +88,48 @@
         </div>
 
         <!-- Pole-level actions -->
-        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 flex flex-wrap items-center gap-2 sm:gap-3">
-          <button
-            class="text-xs sm:text-sm text-primary hover:underline flex items-center gap-1"
-            @click="emit('add-entry', pole.id)"
-          >
-            <i class="pi pi-plus text-xs"></i>
-            Ajouter une entrée
-          </button>
-          <button
-            class="text-xs sm:text-sm text-surface-500 hover:text-primary hover:underline flex items-center gap-1"
-            @click="emit('add-category', pole.id)"
-          >
-            <i class="pi pi-plus text-xs"></i>
-            Ajouter une sous-catégorie
-          </button>
-          <button
-            class="text-xs sm:text-sm text-red-500 hover:text-red-700 flex items-center gap-1 ml-auto"
-            @click="emit('delete-category', pole.id)"
-          >
-            <i class="pi pi-trash text-xs"></i>
-            Supprimer la catégorie
-          </button>
+        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
+          <div v-if="editingId === pole.id" class="flex items-center gap-2">
+            <InputText
+              v-model="editingName"
+              class="flex-1 text-sm"
+              size="small"
+              @keydown.enter="saveRename(pole)"
+              @keydown.escape="cancelRename"
+            />
+            <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(pole)" />
+            <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
+          </div>
+          <div v-else class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <button
+              class="text-xs sm:text-sm text-primary hover:underline flex items-center gap-1"
+              @click="emit('add-entry', pole.id)"
+            >
+              <i class="pi pi-plus text-xs"></i>
+              Ajouter une entrée
+            </button>
+            <button
+              class="text-xs sm:text-sm text-surface-500 hover:text-primary hover:underline flex items-center gap-1"
+              @click="emit('add-category', pole.id)"
+            >
+              <i class="pi pi-plus text-xs"></i>
+              Ajouter une sous-catégorie
+            </button>
+            <button
+              class="text-xs sm:text-sm text-surface-500 hover:text-primary hover:underline flex items-center gap-1"
+              @click="startRename(pole)"
+            >
+              <i class="pi pi-pencil text-xs"></i>
+              Renommer
+            </button>
+            <button
+              class="text-xs sm:text-sm text-red-500 hover:text-red-700 flex items-center gap-1 ml-auto"
+              @click="emit('delete-category', pole.id)"
+            >
+              <i class="pi pi-trash text-xs"></i>
+              Supprimer la catégorie
+            </button>
+          </div>
         </div>
       </AccordionContent>
     </AccordionPanel>
@@ -100,6 +142,7 @@ import AccordionContent from 'primevue/accordioncontent'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionPanel from 'primevue/accordionpanel'
 import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { effectiveAmount } from '../../../utils/currency.js'
@@ -113,7 +156,33 @@ const props = defineProps({
   currentMembershipId: { type: String, default: null }
 })
 
-const emit = defineEmits(['add-entry', 'edit-entry', 'add-category', 'delete-category'])
+const emit = defineEmits([
+  'add-entry',
+  'edit-entry',
+  'add-category',
+  'delete-category',
+  'rename-category'
+])
+
+const editingId = ref(null)
+const editingName = ref('')
+
+function startRename(category) {
+  editingId.value = category.id
+  editingName.value = category.name
+}
+
+function cancelRename() {
+  editingId.value = null
+  editingName.value = ''
+}
+
+function saveRename(category) {
+  const name = editingName.value.trim()
+  if (!name) return
+  emit('rename-category', { id: category.id, name })
+  cancelRename()
+}
 
 const route = useRoute()
 const storageKey = STORAGE_KEY_PREFIX + route.params.id
