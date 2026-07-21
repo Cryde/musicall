@@ -32,12 +32,15 @@
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ progressPercent(pole) }}% payé</p>
         </div>
 
-        <!-- Entries at pole level -->
+        <!-- Entries at pole level (always rendered so the pole itself is a drop target, even when it
+             only holds subcategories) -->
         <EntryList
-          v-if="(entriesByCategory[pole.id] || []).length > 0 || pole.children.length === 0"
           :entries="entriesByCategory[pole.id] || []"
+          :categoryId="pole.id"
           :currentMembershipId="currentMembershipId"
+          :hideEmptyState="pole.children.length > 0"
           @edit="(entry) => emit('edit-entry', entry)"
+          @move="(entryId, toCategoryId) => emit('move-entry', entryId, toCategoryId)"
         />
 
         <!-- Child categories -->
@@ -78,8 +81,10 @@
             </div>
             <EntryList
               :entries="entriesByCategory[child.id] || []"
+              :categoryId="child.id"
               :currentMembershipId="currentMembershipId"
               @edit="(entry) => emit('edit-entry', entry)"
+              @move="(entryId, toCategoryId) => emit('move-entry', entryId, toCategoryId)"
             />
             <button
               class="mt-1 text-sm text-primary hover:underline flex items-center gap-1"
@@ -163,6 +168,7 @@ const props = defineProps({
 const emit = defineEmits([
   'add-entry',
   'edit-entry',
+  'move-entry',
   'add-category',
   'delete-category',
   'rename-category'

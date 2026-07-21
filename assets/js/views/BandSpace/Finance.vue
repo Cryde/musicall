@@ -83,6 +83,7 @@
             :currentMembershipId="financeStore.summary?.current_membership_id"
             @add-entry="handleAddEntry"
             @edit-entry="handleEditEntry"
+            @move-entry="handleMoveEntry"
             @add-category="handleAddCategory"
             @delete-category="handleDeleteCategory"
             @rename-category="handleRenameCategory"
@@ -404,6 +405,21 @@ function handleEditEntry(entry) {
   editingEntry.value = entry
   drawerCategoryId.value = entry.category_id
   drawerVisible.value = true
+}
+
+async function handleMoveEntry(entryId, toCategoryId) {
+  try {
+    await financeStore.moveEntryToCategory(bandSpaceId, entryId, toCategoryId)
+    trackUmamiEvent('finance-entry-move')
+  } catch {
+    // moveEntryToCategory already rolled the optimistic move back in the store.
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de déplacer cette entrée',
+      life: 5000
+    })
+  }
 }
 
 function handleAddCategory(parentId = null) {
