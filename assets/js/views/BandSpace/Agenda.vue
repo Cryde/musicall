@@ -171,10 +171,16 @@
 </template>
 
 <script setup>
-import dayGridPlugin from '@fullcalendar/daygrid'
-import interactionPlugin from '@fullcalendar/interaction'
-import timeGridPlugin from '@fullcalendar/timegrid'
 import FullCalendar from '@fullcalendar/vue3'
+import dayGridPlugin from '@fullcalendar/vue3/daygrid'
+import interactionPlugin from '@fullcalendar/vue3/interaction'
+import frLocale from '@fullcalendar/vue3/locales/fr'
+import classicTheme from '@fullcalendar/vue3/themes/classic'
+import timeGridPlugin from '@fullcalendar/vue3/timegrid'
+// v7 no longer bundles CSS; the classic theme's stylesheets must be imported explicitly.
+import '@fullcalendar/vue3/skeleton.css'
+import '@fullcalendar/vue3/themes/classic/theme.css'
+import '@fullcalendar/vue3/themes/classic/palette.css'
 import {
   addDays,
   endOfMonth,
@@ -287,9 +293,9 @@ const sourceOptions = [
 ]
 
 const SOURCE_COLORS = {
-  manual: { bg: '#3b82f6', border: '#2563eb' },
-  task: { bg: '#f59e0b', border: '#d97706' },
-  finance: { bg: '#10b981', border: '#059669' }
+  manual: '#3b82f6',
+  task: '#f59e0b',
+  finance: '#10b981'
 }
 
 const selectedSources = reactive(new Set(['manual', 'task', 'finance']))
@@ -349,27 +355,24 @@ function itemDateKeys(item) {
 }
 
 const calendarEvents = computed(() =>
-  filteredItems.value.map((item) => {
-    const colors = SOURCE_COLORS[item.source] ?? { bg: '#94a3b8', border: '#64748b' }
-    return {
-      id: item.id,
-      title: item.title,
-      start: item.datetime,
-      end: calendarEnd(item),
-      allDay: isAllDayItem(item),
-      backgroundColor: colors.bg,
-      borderColor: colors.border,
-      classNames: ['agenda-event-clickable'],
-      extendedProps: { item }
-    }
-  })
+  filteredItems.value.map((item) => ({
+    id: item.id,
+    title: item.title,
+    start: item.datetime,
+    end: calendarEnd(item),
+    allDay: isAllDayItem(item),
+    color: SOURCE_COLORS[item.source] ?? '#94a3b8',
+    contrastColor: '#fff',
+    className: 'agenda-event-clickable',
+    extendedProps: { item }
+  }))
 )
 
 const calendarOptions = computed(() => ({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+  plugins: [classicTheme, dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: viewMode.value === 'list' ? 'dayGridMonth' : viewMode.value,
   initialDate: dateFrom.value,
-  locale: 'fr',
+  locale: frLocale,
   firstDay: 1,
   events: calendarEvents.value,
   eventClick: handleEventClick,
@@ -380,9 +383,7 @@ const calendarOptions = computed(() => ({
     center: 'title',
     right: ''
   },
-  buttonText: {
-    today: "Aujourd'hui"
-  },
+  todayText: "Aujourd'hui",
   height: 'auto',
   allDaySlot: true,
   allDayText: 'Toute la journée',
@@ -576,38 +577,30 @@ function taskPriorityLabel(priority) {
 </script>
 
 <style>
-.agenda-fc-theme .fc {
-  --fc-border-color: var(--p-surface-200);
-  --fc-page-bg-color: transparent;
-  --fc-neutral-bg-color: var(--p-surface-50);
-  --fc-today-bg-color: color-mix(in oklch, var(--p-primary-color) 8%, transparent);
-  --fc-event-text-color: #fff;
-  color: var(--p-text-color);
+/*
+ * FullCalendar v7 styles itself through the "classic" theme, which reads a set of
+ * --fc-classic-* custom properties (their defaults live at :root / [data-color-scheme=dark]
+ * in the theme's palette.css). This app drives dark mode with a .dark-mode class rather than
+ * data-color-scheme, so we remap those variables onto PrimeVue tokens here: the semantic
+ * tokens (--p-text-*, --p-primary-color) flip on their own, and the static surface-scale
+ * tokens get an explicit .dark-mode override. Setting --fc-classic-foreground replaces the
+ * per-cell text-colour rules v6 needed (the old .fc-* class names no longer exist in v7).
+ */
+.agenda-fc-theme {
+  --fc-classic-border: var(--p-surface-200);
+  --fc-classic-background: transparent;
+  --fc-classic-faint: var(--p-surface-50);
+  --fc-classic-today: color-mix(in oklch, var(--p-primary-color) 8%, transparent);
+  --fc-classic-foreground: var(--p-text-color);
+  --fc-classic-muted-foreground: var(--p-text-muted-color);
 }
 
-.agenda-fc-theme .fc-col-header-cell-cushion,
-.agenda-fc-theme .fc-daygrid-day-number,
-.agenda-fc-theme .fc-timegrid-axis-cushion,
-.agenda-fc-theme .fc-timegrid-slot-label-cushion,
-.agenda-fc-theme .fc-list-day-cushion {
-  color: var(--p-text-color);
+.dark-mode .agenda-fc-theme {
+  --fc-classic-border: var(--p-surface-700);
+  --fc-classic-faint: var(--p-surface-900);
 }
 
-.agenda-fc-theme .fc-toolbar-title {
-  color: var(--p-text-color);
-}
-
-.agenda-fc-theme .fc-day-other .fc-daygrid-day-number {
-  color: var(--p-text-muted-color);
-  opacity: 0.6;
-}
-
-.dark-mode .agenda-fc-theme .fc {
-  --fc-border-color: var(--p-surface-700);
-  --fc-neutral-bg-color: var(--p-surface-900);
-}
-
-.agenda-fc-theme .fc-event.agenda-event-clickable {
+.agenda-event-clickable {
   cursor: pointer;
 }
 </style>

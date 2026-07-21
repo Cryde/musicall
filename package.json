@@ -17,11 +17,7 @@
     "vite-plugin-symfony": "^8.2.2"
   },
   "dependencies": {
-    "@fullcalendar/core": "^6.1.20",
-    "@fullcalendar/daygrid": "^6.1.20",
-    "@fullcalendar/interaction": "^6.1.20",
-    "@fullcalendar/timegrid": "^6.1.20",
-    "@fullcalendar/vue3": "^6.1.20",
+    "@fullcalendar/vue3": "^7.0.1",
     "@jaseeey/vue-umami-plugin": "^1.4.0",
     "@primeuix/themes": "^2.0.2",
     "@tailwindcss/typography": "^0.5.19",
@@ -50,6 +46,7 @@
     "primevue": "^4.4.1",
     "tailwindcss": "^4.1.14",
     "tailwindcss-primeui": "^0.6.1",
+    "temporal-polyfill": "^1.0.1",
     "vue": "^3.5.22",
     "vue-advanced-cropper": "^2.8.9",
     "vue-draggable-plus": "^0.6.1",
