@@ -44,7 +44,7 @@
           :pt="{ label: { class: 'hidden sm:inline' } }"
           :aria-label="mode.label"
           :title="mode.label"
-          @click="viewMode = mode.key"
+          @click="selectViewMode(mode.key)"
         />
       </div>
     </div>
@@ -157,6 +157,25 @@
           <template #eventContent="arg">
             <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
           </template>
+          <template #dayCellTopContent="arg">
+            <template v-if="arg.view.type === 'multiMonthYear'">
+              <span>{{ arg.dayNumberText }}</span>
+              <span
+                v-if="dayEventSources(arg.date).length"
+                class="agenda-year-dots"
+                role="img"
+                :aria-label="yearDotsLabel(dayEventSources(arg.date))"
+              >
+                <span
+                  v-for="(source, index) in dayEventSources(arg.date).slice(0, YEAR_DOT_LIMIT)"
+                  :key="`${source}-${index}`"
+                  class="agenda-year-dot"
+                  :style="{ backgroundColor: SOURCE_COLORS[source] }"
+                />
+              </span>
+            </template>
+            <template v-else>{{ arg.dayNumberText }}</template>
+          </template>
         </FullCalendar>
       </div>
     </div>
@@ -175,6 +194,7 @@ import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/vue3/daygrid'
 import interactionPlugin from '@fullcalendar/vue3/interaction'
 import frLocale from '@fullcalendar/vue3/locales/fr'
+import multiMonthPlugin from '@fullcalendar/vue3/multimonth'
 import classicTheme from '@fullcalendar/vue3/themes/classic'
 import timeGridPlugin from '@fullcalendar/vue3/timegrid'
 // v7 no longer bundles CSS; the classic theme's stylesheets must be imported explicitly.
@@ -222,11 +242,15 @@ const dateFrom = ref(today)
 const dateTo = ref(addDays(today, 30))
 
 const viewMode = ref('list')
+// When drilling from the year overview into a day, that day's view must open on the
+// clicked date rather than the current range start; null means "use dateFrom".
+const focusDate = ref(null)
 const viewModeOptions = [
-  { key: 'list', label: 'Liste', icon: 'pi pi-list' },
-  { key: 'dayGridMonth', label: 'Mois', icon: 'pi pi-calendar' },
+  { key: 'list', label: 'Planning', icon: 'pi pi-list' },
+  { key: 'timeGridDay', label: 'Jour', icon: 'pi pi-clock' },
   { key: 'timeGridWeek', label: 'Semaine', icon: 'pi pi-calendar-clock' },
-  { key: 'timeGridDay', label: 'Jour', icon: 'pi pi-clock' }
+  { key: 'dayGridMonth', label: 'Mois', icon: 'pi pi-calendar' },
+  { key: 'multiMonthYear', label: 'Année', icon: 'pi pi-th-large' }
 ]
 
 const agendaPresets = [
@@ -298,6 +322,10 @@ const SOURCE_COLORS = {
   finance: '#10b981'
 }
 
+// Max dots drawn per day in the year overview; any extra events are reflected in the
+// aria-label count only.
+const YEAR_DOT_LIMIT = 10
+
 const selectedSources = reactive(new Set(['manual', 'task', 'finance']))
 
 const countsBySource = computed(() => {
@@ -354,6 +382,33 @@ function itemDateKeys(item) {
   return keys
 }
 
+// One entry per event on each day (the same source repeats when a day has several events of
+// that kind), for the year overview's dots. Built from filteredItems so the source chips
+// filter the dots too.
+const dayEventSourcesByDate = computed(() => {
+  const map = new Map()
+  for (const item of filteredItems.value) {
+    for (const key of itemDateKeys(item)) {
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(item.source)
+    }
+  }
+  return map
+})
+
+function dayEventSources(date) {
+  // FullCalendar's default timeZone is 'local', so the cell date passed here is local midnight
+  // of the day shown; format it with the same local getters as itemDateKeys so the dot lookup
+  // lines up with how events are keyed. (Do NOT switch to UTC getters: east of UTC that reads
+  // the previous calendar day and shifts every dot one day forward.)
+  return dayEventSourcesByDate.value.get(format(date, 'yyyy-MM-dd')) ?? []
+}
+
+function yearDotsLabel(sources) {
+  const distinct = Object.keys(SOURCE_COLORS).filter((source) => sources.includes(source))
+  return `${sources.length} événement${sources.length > 1 ? 's' : ''} : ${distinct.map(sourceLabel).join(', ')}`
+}
+
 const calendarEvents = computed(() =>
   filteredItems.value.map((item) => ({
     id: item.id,
@@ -369,12 +424,14 @@ const calendarEvents = computed(() =>
 )
 
 const calendarOptions = computed(() => ({
-  plugins: [classicTheme, dayGridPlugin, timeGridPlugin, interactionPlugin],
+  plugins: [classicTheme, dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
   initialView: viewMode.value === 'list' ? 'dayGridMonth' : viewMode.value,
-  initialDate: dateFrom.value,
+  initialDate: focusDate.value ?? dateFrom.value,
   locale: frLocale,
   firstDay: 1,
-  events: calendarEvents.value,
+  // The year overview draws its own source dots (dayCellTopContent), so it renders no
+  // native events - keeps the tiny month cells clean.
+  events: viewMode.value === 'multiMonthYear' ? [] : calendarEvents.value,
   eventClick: handleEventClick,
   dateClick: handleDateClick,
   datesSet: handleDatesSet,
@@ -397,16 +454,27 @@ onMounted(() => {
   fetchWithCurrentRange()
 })
 
-function fetchWithCurrentRange() {
-  const fromIso = format(dateFrom.value, "yyyy-MM-dd'T'00:00:00")
-  const toIso = format(dateTo.value, "yyyy-MM-dd'T'23:59:59")
+function fetchRange(from, to) {
+  const fromIso = format(from, "yyyy-MM-dd'T'00:00:00")
+  const toIso = format(to, "yyyy-MM-dd'T'23:59:59")
   agendaStore.fetchAgenda(route.params.id, { from: fromIso, to: toIso })
+}
+
+function fetchWithCurrentRange() {
+  fetchRange(dateFrom.value, dateTo.value)
 }
 
 function handleDateRangeApply({ from, to }) {
   dateFrom.value = from
   dateTo.value = to
   fetchWithCurrentRange()
+}
+
+function selectViewMode(key) {
+  // A manual view switch clears any year-overview drill-down so the view opens on the
+  // current range rather than a previously drilled-into day.
+  focusDate.value = null
+  viewMode.value = key
 }
 
 function toggleSource(key) {
@@ -453,6 +521,12 @@ function handleEventClick(info) {
 }
 
 function handleDateClick(info) {
+  if (viewMode.value === 'multiMonthYear') {
+    // From the year overview, a day click drills into that day rather than creating an entry.
+    focusDate.value = new Date(info.date.getTime())
+    viewMode.value = 'timeGridDay'
+    return
+  }
   const clickedDate = new Date(info.date.getTime())
   if (info.allDay) {
     clickedDate.setHours(9, 0, 0, 0)
@@ -465,6 +539,13 @@ function handleDateClick(info) {
 function handleDatesSet(arg) {
   const visibleStart = startOfDay(arg.start)
   const visibleEndInclusive = startOfDay(new Date(arg.end.getTime() - 1))
+
+  // The year overview spans a whole year; load it on its own without dragging the shared
+  // date-range picker (and every other view's initialDate anchor) out to a Jan-Dec window.
+  if (viewMode.value === 'multiMonthYear') {
+    fetchRange(visibleStart, visibleEndInclusive)
+    return
+  }
 
   let newFrom = dateFrom.value
   let newTo = dateTo.value
@@ -602,5 +683,19 @@ function taskPriorityLabel(priority) {
 
 .agenda-event-clickable {
   cursor: pointer;
+}
+
+.agenda-fc-theme .agenda-year-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.agenda-fc-theme .agenda-year-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
 }
 </style>
