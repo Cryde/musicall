@@ -11,9 +11,12 @@
   <Accordion v-model:value="openPanels" multiple>
     <AccordionPanel v-for="pole in poles" :key="pole.id" :value="pole.id">
       <AccordionHeader>
-        <div class="flex items-center justify-between w-full pr-2">
-          <span class="font-semibold">{{ pole.name }}</span>
-          <span class="text-sm text-surface-500 dark:text-surface-400">{{ countEntries(pole) }} entrée{{ countEntries(pole) > 1 ? 's' : '' }}</span>
+        <div class="flex items-center justify-between w-full pr-2 gap-3">
+          <span class="font-semibold min-w-0 truncate">{{ pole.name }}</span>
+          <span class="flex items-baseline gap-2 sm:gap-3 shrink-0">
+            <span class="text-sm font-semibold tabular-nums">{{ formatAmount(poleTotal(pole)) }}</span>
+            <span class="text-xs text-surface-500 dark:text-surface-400">{{ countEntries(pole) }} entrée{{ countEntries(pole) > 1 ? 's' : '' }}</span>
+          </span>
         </div>
       </AccordionHeader>
       <AccordionContent>
@@ -54,6 +57,7 @@
               </template>
               <template v-else>
                 <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300 flex-1 min-w-0 truncate">{{ child.name }}</h4>
+                <span class="text-sm tabular-nums text-surface-600 dark:text-surface-400 shrink-0">{{ formatAmount(categoryTotal(child.id)) }}</span>
                 <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                   <button
                     class="text-xs text-surface-400 hover:text-primary"
@@ -145,7 +149,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { effectiveAmount } from '../../../utils/currency.js'
+import { effectiveAmount, formatAmount } from '../../../utils/currency.js'
 import EntryList from './EntryList.vue'
 
 const STORAGE_KEY_PREFIX = 'finance_open_panels_'
@@ -230,6 +234,14 @@ function countEntries(pole) {
 
 function poleTotal(pole) {
   return poleStats.value.get(pole.id)?.total ?? 0
+}
+
+// Gross total for a single category (used for subcategories); excludes personal-scope entries
+// to match poleStats. Pole-level totals use poleTotal (pole + its children).
+function categoryTotal(categoryId) {
+  return (props.entriesByCategory[categoryId] || [])
+    .filter((entry) => entry.scope !== 'personal')
+    .reduce((sum, entry) => sum + effectiveAmount(entry), 0)
 }
 
 function progressPercent(pole) {
