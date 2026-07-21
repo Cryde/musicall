@@ -30,11 +30,16 @@
     <div v-else>
       <div class="flex items-center justify-between mb-6">
         <DateRangePicker
+          v-if="viewMode !== 'chart'"
           :from="financeStore.dateFrom"
           :to="financeStore.dateTo"
           :presets="financePresets"
           @apply="handleDateRangeApply"
         />
+        <span v-else class="text-sm text-surface-500 dark:text-surface-400 flex items-center gap-2">
+          <i class="pi pi-clock" />
+          Toutes périodes
+        </span>
         <div class="flex items-center gap-1">
           <Button
             :icon="'pi pi-objects-column'"
@@ -54,9 +59,19 @@
             title="Vue chronologique"
             @click="viewMode = 'timeline'"
           />
+          <Button
+            :icon="'pi pi-chart-pie'"
+            size="small"
+            :severity="viewMode === 'chart' ? 'primary' : 'secondary'"
+            :outlined="viewMode !== 'chart'"
+            :text="viewMode !== 'chart'"
+            title="Vue graphique (toutes périodes)"
+            @click="viewMode = 'chart'"
+          />
         </div>
       </div>
 
+      <template v-if="viewMode !== 'chart'">
       <FinanceMetricCards :summary="financeStore.summary" class="mb-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }" />
 
       <div class="flex flex-col lg:flex-row gap-6" :class="{ 'opacity-50 pointer-events-none': isDateRangeLoading }">
@@ -106,6 +121,14 @@
           />
         </div>
       </div>
+      </template>
+
+      <FinancePieChart
+        v-else
+        :entries="financeStore.allTimeEntries"
+        :categoryTree="financeStore.categoryTree"
+        :isLoading="financeStore.isLoadingAllTime"
+      />
     </div>
 
     <CreateCategoryDialog
@@ -161,6 +184,7 @@ import CreateCategoryDialog from '../../components/BandSpace/Finance/CreateCateg
 import FinanceBootstrap from '../../components/BandSpace/Finance/FinanceBootstrap.vue'
 import FinanceDrawer from '../../components/BandSpace/Finance/FinanceDrawer.vue'
 import FinanceMetricCards from '../../components/BandSpace/Finance/FinanceMetricCards.vue'
+import FinancePieChart from '../../components/BandSpace/Finance/FinancePieChart.vue'
 import FinancePoleAccordion from '../../components/BandSpace/Finance/FinancePoleAccordion.vue'
 import FinanceSidebar from '../../components/BandSpace/Finance/FinanceSidebar.vue'
 import FinanceTimeline from '../../components/BandSpace/Finance/FinanceTimeline.vue'
@@ -282,6 +306,11 @@ const viewMode = ref(localStorage.getItem(viewModeStorageKey) || 'categories')
 
 watch(viewMode, (value) => {
   localStorage.setItem(viewModeStorageKey, value)
+  // Refetch on each switch to chart (no cache) so it reflects edits made in the other views -
+  // matches how loadEntries/loadSummary behave.
+  if (value === 'chart') {
+    financeStore.loadAllTimeEntries(bandSpaceId)
+  }
 })
 
 const drawerVisible = ref(false)
@@ -298,6 +327,9 @@ onMounted(() => {
   financeStore.loadEntries(bandSpaceId)
   financeStore.loadSummary(bandSpaceId)
   financeStore.loadRecurrences(bandSpaceId)
+  if (viewMode.value === 'chart') {
+    financeStore.loadAllTimeEntries(bandSpaceId)
+  }
 })
 
 watch(

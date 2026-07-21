@@ -23,9 +23,14 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   const dateFrom = ref(startOfYear(new Date()))
   const dateTo = ref(endOfYear(new Date()))
   const activeEntry = ref(null)
+  // All-time entries for the (non-time-filtered) chart view, loaded lazily. The per-category
+  // pie and the top-10 lists are both derived from these client-side.
+  const allTimeEntries = ref([])
+  const isLoadingAllTime = ref(false)
   let entriesRequestId = 0
   let summaryRequestId = 0
   let categoriesRequestId = 0
+  let allTimeRequestId = 0
 
   const categoryTree = computed(() => buildTree(categories.value))
 
@@ -130,6 +135,26 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     } finally {
       if (requestId === summaryRequestId) {
         isLoadingSummary.value = false
+      }
+    }
+  }
+
+  // Loaded on demand when the chart view opens; ignores the page date range (all-time).
+  async function loadAllTimeEntries(bandSpaceId) {
+    const requestId = ++allTimeRequestId
+    isLoadingAllTime.value = true
+    try {
+      const result = await bandSpaceFinanceApi.getEntries(bandSpaceId)
+      if (requestId === allTimeRequestId) {
+        allTimeEntries.value = result ?? []
+      }
+    } catch {
+      if (requestId === allTimeRequestId) {
+        allTimeEntries.value = []
+      }
+    } finally {
+      if (requestId === allTimeRequestId) {
+        isLoadingAllTime.value = false
       }
     }
   }
@@ -298,6 +323,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     summary.value = null
     loadError.value = null
     activeEntry.value = null
+    allTimeEntries.value = []
   }
 
   return {
@@ -316,12 +342,15 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     dateFrom: readonly(dateFrom),
     dateTo: readonly(dateTo),
     activeEntry: readonly(activeEntry),
+    allTimeEntries: readonly(allTimeEntries),
+    isLoadingAllTime: readonly(isLoadingAllTime),
     categoryTree,
     entriesByDate,
     entriesByCategory,
     loadCategories,
     loadEntries,
     loadSummary,
+    loadAllTimeEntries,
     loadRecurrences,
     setDateRange,
     createCategory,
