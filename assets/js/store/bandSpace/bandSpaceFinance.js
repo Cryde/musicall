@@ -165,6 +165,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   }
 
   function expandDateRangeIfNeeded(entryDate) {
+    if (!entryDate) return
     const date = typeof entryDate === 'string' ? parseISO(entryDate) : entryDate
     if (date < dateFrom.value) {
       dateFrom.value = startOfMonth(date)
@@ -230,6 +231,23 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
       return updated
     } finally {
       isSaving.value = false
+    }
+  }
+
+  // Move an entry to another category (drag-and-drop). Updates entries.value optimistically so the
+  // accordion header totals and the row lists stay in sync during the round-trip, then persists via
+  // updateEntry (which reloads the authoritative state). Rolls back on failure. Mirrors
+  // bandSpaceTasks.moveTaskToColumn.
+  async function moveEntryToCategory(bandSpaceId, entryId, categoryId) {
+    const snapshot = [...entries.value]
+    entries.value = entries.value.map((entry) =>
+      entry.id === entryId ? { ...entry, category_id: categoryId } : entry
+    )
+    try {
+      return await updateEntry(bandSpaceId, entryId, { category_id: categoryId })
+    } catch (error) {
+      entries.value = snapshot
+      throw error
     }
   }
 
@@ -358,6 +376,7 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
     deleteCategory,
     createEntry,
     updateEntry,
+    moveEntryToCategory,
     deleteEntry,
     createRecurrence,
     updateRecurrence,

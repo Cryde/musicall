@@ -32,62 +32,84 @@
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">{{ progressPercent(pole) }}% payé</p>
         </div>
 
-        <!-- Entries at pole level -->
+        <!-- Entries at pole level (always rendered so the pole itself is a drop target, even when it
+             only holds subcategories) -->
         <EntryList
-          v-if="(entriesByCategory[pole.id] || []).length > 0 || pole.children.length === 0"
           :entries="entriesByCategory[pole.id] || []"
+          :categoryId="pole.id"
           :currentMembershipId="currentMembershipId"
+          :hideEmptyState="pole.children.length > 0"
           @edit="(entry) => emit('edit-entry', entry)"
+          @move="(entryId, toCategoryId) => emit('move-entry', entryId, toCategoryId)"
         />
 
-        <!-- Child categories -->
+        <!-- Child categories, linked by a tree rail so they read clearly as nested under the pole -->
         <div v-if="pole.children.length > 0">
-          <div v-for="child in pole.children" :key="child.id" class="mb-4 group">
-            <div class="flex items-center justify-between mb-2 gap-2">
-              <template v-if="editingId === child.id">
-                <InputText
-                  v-model="editingName"
-                  class="flex-1 text-sm"
-                  size="small"
-                  @keydown.enter="saveRename(child)"
-                  @keydown.escape="cancelRename"
-                />
-                <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(child)" />
-                <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
-              </template>
-              <template v-else>
-                <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300 flex-1 min-w-0 truncate">{{ child.name }}</h4>
-                <span class="text-sm tabular-nums text-surface-600 dark:text-surface-400 shrink-0">{{ formatAmount(categoryTotal(child.id)) }}</span>
-                <div class="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                  <button
-                    class="text-xs text-surface-400 hover:text-primary"
-                    title="Renommer la catégorie"
-                    @click="startRename(child)"
-                  >
-                    <i class="pi pi-pencil"></i>
-                  </button>
-                  <button
-                    class="text-xs text-red-500 hover:text-red-700"
-                    title="Supprimer la catégorie"
-                    @click="emit('delete-category', child.id)"
-                  >
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </div>
-              </template>
+          <div
+            v-for="(child, index) in pole.children"
+            :key="child.id"
+            class="group flex"
+          >
+            <!-- Tree rail: a vertical line connecting the subcategories, with a tick into each row -->
+            <div class="relative w-5 shrink-0" aria-hidden="true">
+              <span
+                class="absolute left-2 top-0 w-px bg-surface-300 dark:bg-surface-600"
+                :class="index === pole.children.length - 1 ? 'h-3' : 'h-full'"
+              ></span>
+              <span class="absolute left-2 top-3 w-2 h-px bg-surface-300 dark:bg-surface-600"></span>
             </div>
-            <EntryList
-              :entries="entriesByCategory[child.id] || []"
-              :currentMembershipId="currentMembershipId"
-              @edit="(entry) => emit('edit-entry', entry)"
-            />
-            <button
-              class="mt-1 text-sm text-primary hover:underline flex items-center gap-1"
-              @click="emit('add-entry', child.id)"
-            >
-              <i class="pi pi-plus text-xs"></i>
-              Ajouter une entrée
-            </button>
+
+            <div class="min-w-0 flex-1 pb-4">
+              <div class="flex items-center gap-2 mb-2">
+                <template v-if="editingId === child.id">
+                  <InputText
+                    v-model="editingName"
+                    class="flex-1 text-sm"
+                    size="small"
+                    @keydown.enter="saveRename(child)"
+                    @keydown.escape="cancelRename"
+                  />
+                  <Button icon="pi pi-check" aria-label="Valider" text rounded size="small" @click="saveRename(child)" />
+                  <Button icon="pi pi-times" aria-label="Annuler" text rounded size="small" @click="cancelRename" />
+                </template>
+                <template v-else>
+                  <h4 class="text-sm font-medium text-surface-700 dark:text-surface-300 min-w-0 truncate">{{ child.name }}</h4>
+                  <div class="flex items-center gap-0.5 shrink-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                    <button
+                      class="p-1 text-surface-400 hover:text-primary"
+                      title="Renommer la sous-catégorie"
+                      aria-label="Renommer la sous-catégorie"
+                      @click="startRename(child)"
+                    >
+                      <i class="pi pi-pencil text-xs"></i>
+                    </button>
+                    <button
+                      class="p-1 text-red-500 hover:text-red-700"
+                      title="Supprimer la sous-catégorie"
+                      aria-label="Supprimer la sous-catégorie"
+                      @click="emit('delete-category', child.id)"
+                    >
+                      <i class="pi pi-trash text-xs"></i>
+                    </button>
+                  </div>
+                  <span class="text-sm tabular-nums text-surface-600 dark:text-surface-400 shrink-0 ml-auto">{{ formatAmount(categoryTotal(child.id)) }}</span>
+                </template>
+              </div>
+              <EntryList
+                :entries="entriesByCategory[child.id] || []"
+                :categoryId="child.id"
+                :currentMembershipId="currentMembershipId"
+                @edit="(entry) => emit('edit-entry', entry)"
+                @move="(entryId, toCategoryId) => emit('move-entry', entryId, toCategoryId)"
+              />
+              <button
+                class="mt-1 text-sm text-primary hover:underline flex items-center gap-1"
+                @click="emit('add-entry', child.id)"
+              >
+                <i class="pi pi-plus text-xs"></i>
+                Ajouter une entrée
+              </button>
+            </div>
           </div>
         </div>
 
@@ -163,6 +185,7 @@ const props = defineProps({
 const emit = defineEmits([
   'add-entry',
   'edit-entry',
+  'move-entry',
   'add-category',
   'delete-category',
   'rename-category'
