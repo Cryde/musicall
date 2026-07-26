@@ -4,10 +4,11 @@ oneup_flysystem:
         musicall.flysystem_adapter:
             awss3v3:
                 client: musicall.s3_client
-                bucket: 'musicall-bucket'
+                bucket: 'musicall'
                 prefix: ''
                 options:
-                    ACL: bucket-owner-full-control
+                    # everything is served through the backend, nothing is public
+                    ACL: private
     filesystems:
         musicall:
             adapter: musicall.flysystem_adapter

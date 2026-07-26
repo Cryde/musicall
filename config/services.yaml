@@ -57,10 +57,11 @@ services:
         arguments:
             -
                 version: '2006-03-01'
-                region: "eu-central-1"
+                region: "fr-par"
+                endpoint: "https://s3.fr-par.scw.cloud"
                 credentials:
-                    key: "%env(AWS_KEY)%"
-                    secret: "%env(AWS_SECRET)%"
+                    key: "%env(SCALEWAY_KEY)%"
+                    secret: "%env(SCALEWAY_SECRET)%"
 
     Google\Service\YouTube:
         factory: '@App\Service\Google\YoutubeFactory'
