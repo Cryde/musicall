@@ -132,5 +132,5 @@ class AgendaEntryResource
 
     public ?string $creatorId = null;
     public ?string $creatorUsername = null;
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 }

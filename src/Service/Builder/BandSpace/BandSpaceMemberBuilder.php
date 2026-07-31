@@ -22,9 +22,9 @@ readonly class BandSpaceMemberBuilder
         $dto->username = $membership->user->username;
         $dto->role = $membership->role->value;
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($membership->user);
-        $dto->creationDatetime = $membership->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $membership->creationDatetime;
         $dto->status = $membership->status->value;
-        $dto->leftDatetime = $membership->leftDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->leftDatetime = $membership->leftDatetime;
 
         return $dto;
     }

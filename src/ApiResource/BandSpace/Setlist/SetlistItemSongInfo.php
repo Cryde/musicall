@@ -9,5 +9,5 @@ class SetlistItemSongInfo
     public ?int $tempo = null;
     public ?string $tonality = null;
     public ?int $referenceDuration = null;
-    public ?string $archiveDatetime = null;
+    public ?\DateTimeInterface $archiveDatetime = null;
 }

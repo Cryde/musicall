@@ -91,6 +91,6 @@ class TaskCommentResource
     #[Assert\Length(max: 5000, maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères')]
     public string $content;
 
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

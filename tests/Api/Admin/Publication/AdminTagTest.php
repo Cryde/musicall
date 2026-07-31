@@ -236,14 +236,14 @@ class AdminTagTest extends ApiTestCase
                 ],
                 [
                     'propertyPath' => 'label',
-                    'message' => 'Cette chaîne est trop courte. Elle doit avoir au minimum 1 caractère.',
+                    'message' => 'Cette chaîne est trop courte. Elle doit contenir au minimum 1 caractère.',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
-            'detail' => "label: Le label ne peut pas être vide\nlabel: Cette chaîne est trop courte. Elle doit avoir au minimum 1 caractère.",
+            'detail' => "label: Le label ne peut pas être vide\nlabel: Cette chaîne est trop courte. Elle doit contenir au minimum 1 caractère.",
             'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
-            'description' => "label: Le label ne peut pas être vide\nlabel: Cette chaîne est trop courte. Elle doit avoir au minimum 1 caractère.",
+            'description' => "label: Le label ne peut pas être vide\nlabel: Cette chaîne est trop courte. Elle doit contenir au minimum 1 caractère.",
         ]);
     }
 

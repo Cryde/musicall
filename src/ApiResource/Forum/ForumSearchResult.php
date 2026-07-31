@@ -28,7 +28,7 @@ class ForumSearchResult
 
     public int $topicPostNumber;
 
-    public ?string $lastPostDatetime;
+    public ?\DateTimeInterface $lastPostDatetime;
 
     public string $forumId;
 

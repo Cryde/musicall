@@ -47,5 +47,5 @@ class BandSpaceFileVersionResource
     /** @var array{id: string, username: string, profile_picture_url: string|null}|null */
     public ?array $createdBy = null;
 
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 }

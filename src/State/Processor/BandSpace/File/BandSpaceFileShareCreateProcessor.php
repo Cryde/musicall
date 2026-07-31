@@ -101,7 +101,7 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
         $created = new BandSpaceFileShareCreated();
         $created->shareId = (string) $share->id;
         $created->shareUrl = $shareUrl;
-        $created->expiryDatetime = $expiry->format(\DateTimeInterface::ATOM);
+        $created->expiryDatetime = $expiry;
         $created->hasPassword = $share->passwordHash !== null;
 
         return $created;

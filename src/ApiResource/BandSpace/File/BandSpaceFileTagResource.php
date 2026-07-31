@@ -78,5 +78,5 @@ class BandSpaceFileTagResource
     public string $name;
     public ?string $colorHex = null;
     public int $fileCount = 0;
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 }

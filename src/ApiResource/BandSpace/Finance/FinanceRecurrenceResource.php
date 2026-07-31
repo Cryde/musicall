@@ -91,6 +91,6 @@ class FinanceRecurrenceResource
     public string $endDate;
     public bool $isActive;
     public int $entryCount = 0;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

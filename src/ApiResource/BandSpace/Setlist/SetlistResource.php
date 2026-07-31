@@ -80,9 +80,9 @@ class SetlistResource
     #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
     public string $name;
 
-    public ?string $archiveDatetime = null;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public ?\DateTimeInterface $archiveDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 
     /** @var SetlistItemResource[] */
     #[ApiProperty(readableLink: true)]

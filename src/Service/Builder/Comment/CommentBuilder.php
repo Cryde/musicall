@@ -44,7 +44,7 @@ readonly class CommentBuilder
             'deletion_datetime' => $entity->author->deletionDatetime?->format(\DateTimeInterface::ATOM),
         ];
         $dto->content = $this->appOnlybrSanitizer->sanitize(nl2br($entity->content));
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
         $dto->upvotes = $entity->voteCache->upvoteCount ?? 0;
         $dto->downvotes = $entity->voteCache->downvoteCount ?? 0;
         $dto->userVote = $userVote;

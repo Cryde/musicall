@@ -59,5 +59,5 @@ class TaskActivityResource
     /** @var array<string, mixed>|null */
     public ?array $payload = null;
 
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 }

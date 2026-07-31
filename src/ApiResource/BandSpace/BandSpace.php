@@ -51,5 +51,5 @@ class BandSpace
     /**
      * Set when the space is pending deletion, so members can be warned and admins offered a restore.
      */
-    public ?string $deletionScheduledDatetime = null;
+    public ?\DateTimeInterface $deletionScheduledDatetime = null;
 }

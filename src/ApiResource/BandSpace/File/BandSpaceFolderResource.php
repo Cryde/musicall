@@ -88,6 +88,6 @@ class BandSpaceFolderResource
      */
     public array $children = [];
 
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

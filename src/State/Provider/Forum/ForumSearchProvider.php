@@ -80,7 +80,7 @@ readonly class ForumSearchProvider implements ProviderInterface
         $dto->topicTitle = (string) $row['topic_title'];
         $dto->topicPostNumber = (int) $row['topic_post_number'];
         $dto->lastPostDatetime = $row['last_post_datetime'] !== null
-            ? (new \DateTimeImmutable((string) $row['last_post_datetime']))->format(\DateTimeInterface::ATOM)
+            ? new \DateTimeImmutable((string) $row['last_post_datetime'])
             : null;
         $dto->forumId = (string) $row['forum_id'];
         $dto->forumTitle = (string) $row['forum_title'];

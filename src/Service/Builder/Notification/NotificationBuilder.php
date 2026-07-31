@@ -13,8 +13,8 @@ readonly class NotificationBuilder
         $dto->id = (string) $notification->id;
         $dto->type = $notification->type->value;
         $dto->payload = $notification->payload;
-        $dto->readDatetime = $notification->readDatetime?->format(DATE_ATOM);
-        $dto->creationDatetime = $notification->creationDatetime->format(DATE_ATOM);
+        $dto->readDatetime = $notification->readDatetime;
+        $dto->creationDatetime = $notification->creationDatetime;
 
         return $dto;
     }

@@ -30,9 +30,9 @@ readonly class SongBuilder
         $dto->tonality = $entity->tonality;
         $dto->referenceDuration = $entity->referenceDuration;
         $dto->notes = $entity->notes;
-        $dto->archiveDatetime = $entity->archiveDatetime?->format(DateTimeInterface::ATOM);
-        $dto->creationDatetime = $entity->creationDatetime->format(DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(DateTimeInterface::ATOM);
+        $dto->archiveDatetime = $entity->archiveDatetime;
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

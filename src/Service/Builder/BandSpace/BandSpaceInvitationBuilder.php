@@ -14,8 +14,8 @@ readonly class BandSpaceInvitationBuilder
         $dto->bandSpaceId = (string) $invitation->bandSpace->id;
         $dto->email = $invitation->email;
         $dto->status = $invitation->status->value;
-        $dto->creationDatetime = $invitation->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->expirationDatetime = $invitation->expirationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $invitation->creationDatetime;
+        $dto->expirationDatetime = $invitation->expirationDatetime;
 
         return $dto;
     }

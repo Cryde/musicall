@@ -63,6 +63,6 @@ class BandSpaceInvitationResource
 
     public string $email;
     public string $status;
-    public string $creationDatetime;
-    public string $expirationDatetime;
+    public \DateTimeInterface $creationDatetime;
+    public \DateTimeInterface $expirationDatetime;
 }

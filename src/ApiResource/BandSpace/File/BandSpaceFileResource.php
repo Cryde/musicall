@@ -239,6 +239,6 @@ class BandSpaceFileResource
 
     public ?string $downloadUrl = null;
 
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

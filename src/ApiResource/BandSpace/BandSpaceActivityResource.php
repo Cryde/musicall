@@ -58,5 +58,5 @@ class BandSpaceActivityResource
     /** @var array{id: string, username: string, profile_picture_url: ?string}|null */
     public ?array $actor = null;
 
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 }
