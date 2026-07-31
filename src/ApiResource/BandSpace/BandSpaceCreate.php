@@ -12,6 +12,9 @@ use Symfony\Component\Validator\Constraints as Assert;
     openapi: new Operation(tags: ['Band Space']),
     security: 'is_granted("ROLE_USER")',
     output: BandSpace::class,
+    // Same context as the BandSpace resource itself: the front-end merges this response into the list
+    // fed by GET /band_spaces, so both have to serialise the DTO identically, nulls included.
+    normalizationContext: ['skip_null_values' => false],
     name: 'api_band_spaces_post_collection',
     processor: BandSpaceCreateProcessor::class,
 )]

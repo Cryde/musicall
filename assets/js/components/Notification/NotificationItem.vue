@@ -63,8 +63,6 @@
 </template>
 
 <script setup>
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
@@ -73,6 +71,7 @@ import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import relativeDate from '../../helper/date/relative-date.js'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
+import { formatDateLong } from '../../utils/date.js'
 
 const props = defineProps({
   notification: { type: Object, required: true }
@@ -93,11 +92,6 @@ const isUnread = computed(() => props.notification.read_datetime === null)
 function publicationTarget(payload) {
   const name = payload.is_course ? 'app_course_show' : 'app_publication_show'
   return { name, params: { slug: payload.publication_slug } }
-}
-
-// Agenda has no per-entry deep-link; show the (read-time-refreshed) event date inline.
-function formatEventDate(iso) {
-  return format(new Date(iso), 'd MMMM yyyy', { locale: fr })
 }
 
 // type -> row rendering. Each future producer adds its branch here.
@@ -231,7 +225,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-calendar-plus',
     avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
     title: payload.actor_username,
-    preview: `a ajouté l'événement « ${payload.entry_title} » le ${formatEventDate(payload.event_datetime)}`,
+    preview: `a ajouté l'événement « ${payload.entry_title} » le ${formatDateLong(payload.event_datetime)}`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
   }),
@@ -242,6 +236,24 @@ const TYPE_CONFIG = {
     preview: `vous a attribué une dépense sur « ${payload.entry_label} »`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.FINANCE, params: { id: payload.band_space_id } }
+  }),
+  band_space_deletion_scheduled: (payload) => ({
+    icon: 'pi pi-trash',
+    avatarClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300',
+    title: payload.actor_username,
+    preview: payload.scheduled_for
+      ? `a programmé la suppression de « ${payload.band_space_name} » le ${formatDateLong(payload.scheduled_for)}`
+      : `a programmé la suppression de « ${payload.band_space_name} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
+  }),
+  band_space_deletion_cancelled: (payload) => ({
+    icon: 'pi pi-undo',
+    avatarClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300',
+    title: payload.actor_username,
+    preview: `a annulé la suppression de « ${payload.band_space_name} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.DASHBOARD, params: { id: payload.band_space_id } }
   })
 }
 

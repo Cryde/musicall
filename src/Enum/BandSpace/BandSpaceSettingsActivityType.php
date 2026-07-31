@@ -13,4 +13,6 @@ enum BandSpaceSettingsActivityType: string
     case InvitationDeclined = 'invitation_declined';
     case InvitationRevoked = 'invitation_revoked';
     case InvitationExpired = 'invitation_expired';
+    case DeletionScheduled = 'deletion_scheduled';
+    case DeletionCancelled = 'deletion_cancelled';
 }

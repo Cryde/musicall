@@ -27,6 +27,7 @@ readonly class BandSpaceBuilder
         $dto->id = (string) $entity->id;
         $dto->name = $entity->name;
         $dto->role = $role->value;
+        $dto->deletionScheduledDatetime = $entity->deletionScheduledDatetime?->format(\DateTimeInterface::ATOM);
 
         return $dto;
     }

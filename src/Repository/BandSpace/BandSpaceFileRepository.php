@@ -47,6 +47,24 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Files archived before the cutoff, for app:band-space:purge. Deliberately not scoped to a band
+     * space: the command sweeps the whole table. Unbounded on purpose - the daily run only ever sees
+     * one day's worth of newly-due files; add a limit here if that stops being true.
+     *
+     * @return BandSpaceFile[]
+     */
+    public function findArchivedOlderThan(\DateTimeImmutable $cutoff): array
+    {
+        return $this->createQueryBuilder('bsf')
+            ->where('bsf.archiveDatetime IS NOT NULL')
+            ->andWhere('bsf.archiveDatetime <= :cutoff')
+            ->setParameter('cutoff', $cutoff)
+            ->orderBy('bsf.archiveDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceFile
     {
         return $this->createQueryBuilder('bsf')

@@ -1,3 +1,5 @@
+import { formatDateLong } from '../../../utils/date.js'
+
 const TASK_STATUS_LABELS = {
   todo: 'À faire',
   in_progress: 'En cours',
@@ -162,7 +164,14 @@ const SENTENCES = {
   'settings.invitation_declined': (a) => `a refusé l'invitation pour ${a.payload?.email}`,
   'settings.invitation_revoked': (a) => `a annulé l'invitation pour ${a.payload?.email}`,
   'settings.invitation_expired': (a) =>
-    `l'invitation pour ${a.payload?.email ?? 'un utilisateur'} a expiré`
+    `l'invitation pour ${a.payload?.email ?? 'un utilisateur'} a expiré`,
+
+  // Settings — suppression de l'espace
+  'settings.deletion_scheduled': (a) =>
+    a.payload?.scheduled_for
+      ? `a programmé la suppression du Band Space pour le ${formatDateLong(a.payload.scheduled_for)}`
+      : 'a programmé la suppression du Band Space',
+  'settings.deletion_cancelled': () => 'a annulé la suppression du Band Space'
 }
 
 export function activitySentence(activity) {
