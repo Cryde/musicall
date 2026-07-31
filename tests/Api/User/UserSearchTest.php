@@ -96,12 +96,12 @@ class UserSearchTest extends ApiTestCase
             'violations' => [
                 [
                     'propertyPath' => 'search',
-                    'message' => 'Cette chaîne est trop courte. Elle doit avoir au minimum 3 caractères.',
+                    'message' => 'Cette chaîne est trop courte. Elle doit contenir au minimum 3 caractères.',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ]
             ],
-            'detail' => 'search: Cette chaîne est trop courte. Elle doit avoir au minimum 3 caractères.',
-            'description' => 'search: Cette chaîne est trop courte. Elle doit avoir au minimum 3 caractères.',
+            'detail' => 'search: Cette chaîne est trop courte. Elle doit contenir au minimum 3 caractères.',
+            'description' => 'search: Cette chaîne est trop courte. Elle doit contenir au minimum 3 caractères.',
             'type' => '/validation_errors/9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
         ]);

@@ -168,12 +168,12 @@ class ForumPostEditTest extends ApiTestCase
                 ],
                 [
                     'propertyPath' => 'content',
-                    'message' => 'Cette chaîne est trop courte. Elle doit avoir au minimum 10 caractères.',
+                    'message' => 'Cette chaîne est trop courte. Elle doit contenir au minimum 10 caractères.',
                     'code' => '9ff3fdc4-b214-49db-8718-39c315e33d45',
                 ],
             ],
-            'detail' => "content: Cette valeur ne doit pas être vide.\ncontent: Cette chaîne est trop courte. Elle doit avoir au minimum 10 caractères.",
-            'description' => "content: Cette valeur ne doit pas être vide.\ncontent: Cette chaîne est trop courte. Elle doit avoir au minimum 10 caractères.",
+            'detail' => "content: Cette valeur ne doit pas être vide.\ncontent: Cette chaîne est trop courte. Elle doit contenir au minimum 10 caractères.",
+            'description' => "content: Cette valeur ne doit pas être vide.\ncontent: Cette chaîne est trop courte. Elle doit contenir au minimum 10 caractères.",
             'type' => '/validation_errors/0=c1051bb4-d103-4f74-8988-acbcafc7fdc3;1=9ff3fdc4-b214-49db-8718-39c315e33d45',
             'title' => 'An error occurred',
         ]);
