@@ -33,7 +33,7 @@ readonly class BandSpaceFileTagDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $tag = $this->tagRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$tag instanceof \App\Entity\BandSpace\BandSpaceFileTag) {

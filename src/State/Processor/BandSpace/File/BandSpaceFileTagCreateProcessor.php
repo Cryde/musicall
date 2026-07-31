@@ -38,7 +38,7 @@ readonly class BandSpaceFileTagCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $name = trim($data->name);
         if ($this->tagRepository->nameExists($bandSpace, $name)) {

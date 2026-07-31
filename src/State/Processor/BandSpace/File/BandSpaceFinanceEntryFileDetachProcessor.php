@@ -45,7 +45,7 @@ readonly class BandSpaceFinanceEntryFileDetachProcessor implements ProcessorInte
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
         if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {

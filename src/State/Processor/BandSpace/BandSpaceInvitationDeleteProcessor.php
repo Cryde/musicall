@@ -38,7 +38,7 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->adminChecker->checkAdminForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $invitation = $this->bandSpaceInvitationRepository->findOneByIdAndBandSpace(
             (string) $uriVariables['id'],

@@ -44,7 +44,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $folder = $this->folderRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $membership->bandSpace);
         if (!$folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {

@@ -48,7 +48,7 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         try {
             $eventDatetime = new DateTimeImmutable($data->eventDatetime);

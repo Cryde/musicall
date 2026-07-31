@@ -45,7 +45,7 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $parent = null;
         if ($data->parentId !== null && $data->parentId !== '') {

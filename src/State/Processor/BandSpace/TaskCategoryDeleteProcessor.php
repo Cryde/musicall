@@ -36,7 +36,7 @@ readonly class TaskCategoryDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->adminChecker->checkAdminForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $category = $this->taskCategoryRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$category instanceof \App\Entity\BandSpace\TaskCategory) {

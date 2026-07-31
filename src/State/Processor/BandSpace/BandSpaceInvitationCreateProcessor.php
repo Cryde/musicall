@@ -63,7 +63,7 @@ readonly class BandSpaceInvitationCreateProcessor implements ProcessorInterface
 
         $identifier = trim($data->identifier);
 
-        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $currentUser);
+        [$bandSpace] = $this->adminChecker->checkAdminForWrite((string) $uriVariables['bandSpaceId'], $currentUser);
 
         $isEmail = str_contains($identifier, '@');
 

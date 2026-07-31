@@ -36,7 +36,7 @@ readonly class TaskReorderProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $requestedIds = array_column($data->positions, 'id');
         $foundTasks = $this->taskRepository->findByIdsAndBandSpace($requestedIds, $bandSpace);

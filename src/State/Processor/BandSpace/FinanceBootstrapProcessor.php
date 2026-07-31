@@ -52,7 +52,7 @@ readonly class FinanceBootstrapProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         if ($this->financeCategoryRepository->existsByBandSpace($bandSpace)) {
             $categories = $this->financeCategoryRepository->findByBandSpace($bandSpace);

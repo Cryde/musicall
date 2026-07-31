@@ -41,7 +41,7 @@ readonly class TaskCategoryCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $usedColors = $this->taskCategoryRepository->findColorsByBandSpace($bandSpace);
 
