@@ -26,12 +26,16 @@ class BandSpaceFileShareCollectionTest extends ApiTestCase
 
         $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'doc.pdf'])->create();
 
-        // Active share (no expiry)
-        BandSpaceFileShareFactory::new([
+        // Dates are pinned so the response body can be asserted whole: they are the only
+        // fields the serializer formats itself rather than the builder handing it a string.
+        $activeShare = BandSpaceFileShareFactory::new([
             'bandSpaceFile' => $file,
             'createdBy' => $user,
             'tokenHash' => hash('sha256', 'token-active'),
-            'expiryDatetime' => new \DateTimeImmutable('+1 day'),
+            'expiryDatetime' => new \DateTimeImmutable('2099-03-01T10:00:00+00:00'),
+            'lastAccessDatetime' => new \DateTimeImmutable('2026-02-14T08:30:00+00:00'),
+            'accessCount' => 3,
+            'creationDatetime' => new \DateTime('2026-02-01T09:15:00+00:00'),
         ])->create();
         // Revoked share
         BandSpaceFileShareFactory::new([
@@ -60,11 +64,34 @@ class BandSpaceFileShareCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        $response = $this->getResponseAsArray();
-        $this->assertSame(1, $response['totalItems']);
-        $this->assertTrue($response['member'][0]['is_active']);
-        $this->assertFalse($response['member'][0]['has_password']);
-        $this->assertSame('doc.pdf', $response['member'][0]['file_original_name']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFileShare',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/shares',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    // Composite-identifier fallback IRI: the Delete template is not used to generate it.
+                    '@id' => '/api/band_space_file_shares/id=' . $activeShare->id . ';bandSpaceId=' . $bandSpaceId,
+                    '@type' => 'BandSpaceFileShare',
+                    'id' => (string) $activeShare->id,
+                    'band_space_id' => (string) $bandSpaceId,
+                    'file_id' => (string) $file->id,
+                    'file_original_name' => 'doc.pdf',
+                    'expiry_datetime' => '2099-03-01T10:00:00+00:00',
+                    'revocation_datetime' => null,
+                    'access_count' => 3,
+                    'last_access_datetime' => '2026-02-14T08:30:00+00:00',
+                    'has_password' => false,
+                    'is_active' => true,
+                    'creation_datetime' => '2026-02-01T09:15:00+00:00',
+                    'created_by' => [
+                        'id' => (string) $user->id,
+                        'username' => $user->username,
+                    ],
+                ],
+            ],
+        ]);
     }
 
     public function test_list_empty_returns_empty_collection(): void

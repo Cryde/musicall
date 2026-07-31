@@ -23,7 +23,8 @@ class BandSpaceFilePublicShareMetadataTest extends ApiTestCase
 
     public function test_returns_metadata_for_unprotected_share(): void
     {
-        ['token' => $token] = $this->setupShare();
+        // Pinned so expiry_datetime can be asserted exactly: the serializer formats it, not the provider.
+        ['token' => $token] = $this->setupShare(expiry: new \DateTimeImmutable('2099-03-01T10:00:00+00:00'));
 
         $this->client->jsonRequest('GET', '/api/shares/' . $token . '/metadata', [], [
             'CONTENT_TYPE' => 'application/ld+json',
@@ -31,12 +32,17 @@ class BandSpaceFilePublicShareMetadataTest extends ApiTestCase
         ]);
 
         $this->assertResponseIsSuccessful();
-        $response = $this->getResponseAsArray();
-        $this->assertSame('doc.txt', $response['original_name']);
-        $this->assertSame('text/plain', $response['mime_type']);
-        $this->assertSame(42, $response['size']);
-        $this->assertFalse($response['has_password']);
-        $this->assertNotEmpty($response['expiry_datetime']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFilePublicShareMetadata',
+            '@id' => '/api/shares/' . $token . '/metadata',
+            '@type' => 'BandSpaceFilePublicShareMetadata',
+            'token' => $token,
+            'original_name' => 'doc.txt',
+            'size' => 42,
+            'mime_type' => 'text/plain',
+            'expiry_datetime' => '2099-03-01T10:00:00+00:00',
+            'has_password' => false,
+        ]);
     }
 
     public function test_returns_has_password_true_for_protected_share(): void
