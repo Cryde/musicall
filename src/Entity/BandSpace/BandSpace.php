@@ -4,6 +4,7 @@ namespace App\Entity\BandSpace;
 
 use App\Repository\BandSpace\BandSpaceRepository;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -33,6 +34,14 @@ class BandSpace
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
     public ?int $quotaBytesOverride = null;
+
+    /**
+     * When set, the space is pending deletion and app:band-space:purge removes it once this date has
+     * passed. The due date is stored rather than the request date so the date shown to members and the
+     * purge condition can never drift apart.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $deletionScheduledDatetime = null;
 
     /**
      * @var Collection<int, BandSpaceMembership>

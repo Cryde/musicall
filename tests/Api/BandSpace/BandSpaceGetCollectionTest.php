@@ -49,6 +49,7 @@ class BandSpaceGetCollectionTest extends ApiTestCase
                     'id' => $bandSpace2->id,
                     'name' => 'Jazz Ensemble',
                     'role' => 'user',
+                    'deletion_scheduled_datetime' => null,
                 ],
                 [
                     '@id' => '/api/band_spaces/' . $bandSpace1->id,
@@ -56,6 +57,7 @@ class BandSpaceGetCollectionTest extends ApiTestCase
                     'id' => $bandSpace1->id,
                     'name' => 'The Rockers',
                     'role' => 'user',
+                    'deletion_scheduled_datetime' => null,
                 ],
             ],
             'totalItems' => 2,
@@ -105,6 +107,7 @@ class BandSpaceGetCollectionTest extends ApiTestCase
                     'id' => $userBandSpace->id,
                     'name' => 'My Band',
                     'role' => 'user',
+                    'deletion_scheduled_datetime' => null,
                 ],
             ],
             'totalItems' => 1,

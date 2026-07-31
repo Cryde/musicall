@@ -33,6 +33,7 @@
             <ActivitySection v-else-if="activeSection === 'activity'" />
             <ActiveSharesSection v-else-if="activeSection === 'shares'" />
             <QuotaIndicator v-else-if="activeSection === 'storage'" />
+            <DangerZoneSection v-else-if="activeSection === 'danger'" />
             <ComingSoonSection v-else :title="activeSectionLabel" />
           </div>
         </div>
@@ -48,6 +49,7 @@ import QuotaIndicator from '../../components/BandSpace/Files/QuotaIndicator.vue'
 import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveSharesSection.vue'
 import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
+import DangerZoneSection from '../../components/BandSpace/Settings/DangerZoneSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 
@@ -71,6 +73,19 @@ const activeSection = ref(allSections.find((s) => s.key === route.query.section)
 
 const activeSectionLabel = computed(
   () => allSections.find((s) => s.key === activeSection.value)?.label ?? ''
+)
+
+// The deletion banner links here with ?section=danger, and it is shown on the settings page too. Vue
+// Router reuses this instance on a query-only change, so without re-reading the query the URL would
+// update while the visible section stayed put.
+watch(
+  () => route.query.section,
+  (section) => {
+    const match = allSections.find((s) => s.key === section)
+    if (match) {
+      activeSection.value = match.key
+    }
+  }
 )
 
 watch(visibleSections, (sections) => {

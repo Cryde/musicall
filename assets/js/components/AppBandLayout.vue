@@ -30,6 +30,26 @@
         </aside>
         <main id="main-content" tabindex="-1" class="flex-1 min-w-0 bg-surface-200 dark:bg-surface-950">
           <div class="px-6 py-8 md:px-12 lg:pl-8 lg:pr-20 flex flex-col gap-8">
+            <!-- Pending deletion is shown on every module, not only in the settings: the grace period is
+                 the members' window to retrieve their files, so they have to see it wherever they are. -->
+            <div
+              v-if="deletionScheduledFor"
+              role="alert"
+              class="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300"
+            >
+              <i class="pi pi-exclamation-triangle mt-0.5" aria-hidden="true" />
+              <p class="flex-1 min-w-0">
+                Cet espace sera définitivement supprimé le
+                <strong>{{ formatDateLong(deletionScheduledFor) }}</strong>. Pensez à récupérer vos
+                fichiers.
+                <RouterLink
+                  :to="{ name: BAND_SPACE_ROUTES.PARAMETERS, params: { id: route.params.id }, query: { section: 'danger' } }"
+                  class="underline"
+                >
+                  Gérer la suppression
+                </RouterLink>
+              </p>
+            </div>
             <!-- Force remount on space switch so module views never retain
                  another space's bandSpaceId or store state. -->
             <router-view :key="route.params.id" />
@@ -144,6 +164,7 @@ import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
 import { useBandSpaceStore } from '../store/bandSpace/bandSpace.js'
 import { useNotificationStore } from '../store/notification/notification.js'
 import { useUserSecurityStore } from '../store/user/security.js'
+import { formatDateLong } from '../utils/date.js'
 import MenuBand from '../views/Global/MenuBand.vue'
 import BandSidebar from './BandSpace/BandSidebar.vue'
 import BandSpaceSelector from './BandSpace/BandSpaceSelector.vue'
@@ -225,6 +246,8 @@ function handleUserMenuClick(entry) {
 
 const { currentSpace, setLastSpaceId, handleRedirect, validateCurrentSpace } =
   useBandSpaceNavigation()
+
+const deletionScheduledFor = computed(() => currentSpace.value?.deletion_scheduled_datetime ?? null)
 
 const isLoading = ref(true)
 const hasError = ref(false)

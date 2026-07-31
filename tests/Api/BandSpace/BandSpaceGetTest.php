@@ -36,6 +36,7 @@ class BandSpaceGetTest extends ApiTestCase
             'id' => $bandSpace->id,
             'name' => 'The Rockers',
             'role' => 'user',
+            'deletion_scheduled_datetime' => null,
         ]);
     }
 

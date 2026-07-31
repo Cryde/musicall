@@ -23,4 +23,6 @@ enum NotificationType: string
     case BandSpaceMemberRemoved = 'band_space_member_removed';
     case BandSpaceAgendaEntryCreated = 'band_space_agenda_entry_created';
     case BandSpaceFinanceSplitAssigned = 'band_space_finance_split_assigned';
+    case BandSpaceDeletionScheduled = 'band_space_deletion_scheduled';
+    case BandSpaceDeletionCancelled = 'band_space_deletion_cancelled';
 }

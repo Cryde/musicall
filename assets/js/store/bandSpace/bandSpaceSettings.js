@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
+import { useBandSpaceStore } from './bandSpace.js'
 
 export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => {
   const members = ref([])
@@ -12,6 +13,8 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
   const isKicking = ref(false)
   const isLeaving = ref(false)
   const isCancellingInvitation = ref(false)
+  const isSchedulingDeletion = ref(false)
+  const isRestoring = ref(false)
 
   // Monotonic tokens to prevent stale members/invitations from a previous
   // bandSpace overwriting the current view when the user switches spaces
@@ -103,6 +106,38 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     }
   }
 
+  // Both reload the space list so the banner and the « Zone de danger » reflect the new state without
+  // a page refresh. The refresh is deliberately not allowed to fail the call: the mutation has already
+  // been committed server-side, and surfacing a refresh blip as an error would tell the user their
+  // deletion did not happen when it did. The state is correct again on the next load either way.
+  async function refreshSpacesQuietly() {
+    try {
+      await useBandSpaceStore().loadMyBandSpaces()
+    } catch {
+      // Intentionally swallowed, see above.
+    }
+  }
+
+  async function scheduleDeletion(bandSpaceId) {
+    isSchedulingDeletion.value = true
+    try {
+      await bandSpaceSettingsApi.scheduleBandSpaceDeletion(bandSpaceId)
+      await refreshSpacesQuietly()
+    } finally {
+      isSchedulingDeletion.value = false
+    }
+  }
+
+  async function restore(bandSpaceId) {
+    isRestoring.value = true
+    try {
+      await bandSpaceSettingsApi.restoreBandSpace(bandSpaceId)
+      await refreshSpacesQuietly()
+    } finally {
+      isRestoring.value = false
+    }
+  }
+
   function clear() {
     members.value = []
     invitations.value = []
@@ -118,6 +153,8 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     isKicking: readonly(isKicking),
     isLeaving: readonly(isLeaving),
     isCancellingInvitation: readonly(isCancellingInvitation),
+    isSchedulingDeletion: readonly(isSchedulingDeletion),
+    isRestoring: readonly(isRestoring),
     loadMembers,
     loadInvitations,
     invite,
@@ -125,6 +162,8 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     updateRole,
     kickMember,
     leave,
+    scheduleDeletion,
+    restore,
     clear
   }
 })

@@ -57,6 +57,7 @@ class BandSpaceCreateTest extends ApiTestCase
             'id' => $bandSpace->id,
             'name' => 'The Rockers',
             'role' => 'admin',
+            'deletion_scheduled_datetime' => null,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);

@@ -39,6 +39,23 @@ export default {
       .catch(handleApiError)
   },
 
+  // Schedules the deletion 30 days out, it does not delete: restoreBandSpace cancels it until then.
+  scheduleBandSpaceDeletion(bandSpaceId) {
+    return axios
+      .delete(Routing.generate('api_band_spaces_delete', { id: bandSpaceId }))
+      .catch(handleApiError)
+  },
+
+  restoreBandSpace(bandSpaceId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_restore', { bandSpaceId }),
+        {},
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
   getInvitations(bandSpaceId) {
     return axios
       .get(Routing.generate('api_band_space_invitations_get_collection', { bandSpaceId }))
