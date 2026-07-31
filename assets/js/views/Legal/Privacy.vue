@@ -78,7 +78,8 @@
             <li>Les données déposées dans un Band Space ne sont ni revendues, ni exploitées à des fins publicitaires, ni utilisées pour du profilage. Elles ne sont consultées par l'éditeur que lorsque c'est strictement nécessaire au fonctionnement ou à la sécurité du service, ou pour répondre à une obligation légale.</li>
             <li>Lorsque vous quittez un espace, les contenus que vous y avez déposés y restent, afin que le travail du groupe reste cohérent. Vos entrées financières personnelles récurrentes sont désactivées et leurs échéances futures encore prévues sont supprimées.</li>
             <li>Lorsque vous supprimez votre compte, vos contenus Band Space restent également en place et votre appartenance à l'espace est conservée, mais votre nom d'utilisateur est remplacé par un identifiant anonyme.</li>
-            <li>L'application ne permet pas aujourd'hui de supprimer un Band Space. Les fichiers supprimés depuis l'application sont retirés de l'espace et ne sont plus accessibles à ses membres, mais restent stockés chez notre hébergeur. Pour demander la suppression complète d'un espace et de ses fichiers, écrivez à <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a>.</li>
+            <li>Un administrateur peut supprimer un Band Space. La suppression n'est pas immédiate : l'espace reste accessible pendant 30 jours, afin que chaque membre puisse récupérer ses fichiers, et un administrateur peut l'annuler pendant ce délai. Passé les 30 jours, l'espace et l'ensemble de ses contenus, fichiers compris, sont définitivement supprimés. Les membres sont informés dès qu'une suppression est programmée ou annulée.</li>
+            <li>Un fichier supprimé depuis un Band Space est immédiatement retiré de l'espace et n'est plus accessible à ses membres. Il est définitivement effacé de nos serveurs 30 jours plus tard.</li>
           </ul>
         </section>
 
@@ -129,7 +130,8 @@
             <li><strong>Journaux applicatifs :</strong> 10 jours</li>
             <li><strong>Sauvegardes :</strong> 1 an</li>
             <li><strong>Versions remplacées d'un fichier Band Space :</strong> 30 jours</li>
-            <li><strong>Fichiers Band Space supprimés depuis l'application :</strong> retirés de l'espace et rendus inaccessibles à ses membres, mais conservés chez l'hébergeur, aucune suppression automatique n'étant en place à ce jour</li>
+            <li><strong>Fichiers Band Space supprimés :</strong> 30 jours, puis effacement définitif</li>
+            <li><strong>Band Space supprimé :</strong> 30 jours, puis effacement définitif de l'espace et de tous ses contenus</li>
             <li><strong>Statistiques d'audience :</strong> conservées sous forme agrégée et non nominative</li>
           </ul>
         </section>
@@ -222,5 +224,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '29 juillet 2026'
+const lastUpdate = '31 juillet 2026'
 </script>

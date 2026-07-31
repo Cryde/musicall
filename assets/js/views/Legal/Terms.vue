@@ -84,8 +84,7 @@
             <strong>5.4 Départ d'un espace et suppression de compte.</strong> Lorsque vous quittez un espace, les contenus que vous y avez déposés y restent disponibles pour les autres membres, afin que le travail du groupe reste cohérent. Vos entrées financières personnelles récurrentes sont désactivées et leurs échéances futures encore prévues sont supprimées. Si vous supprimez votre compte, ces contenus restent également en place et votre appartenance à l'espace est conservée, mais votre nom d'utilisateur est remplacé par un identifiant anonyme.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            <strong>5.5 Suppression d'un espace.</strong> L'application ne permet pas aujourd'hui de supprimer un Band Space, et aucun délai de grâce n'est donc prévu. Les membres peuvent quitter l'espace individuellement. Pour demander la suppression complète d'un espace et de ses fichiers, écrivez à
-            <a href="mailto:contact@musicall.com" class="text-primary hover:text-primary-emphasis">contact@musicall.com</a>.
+            <strong>5.5 Suppression d'un espace.</strong> Seul un administrateur de l'espace peut le supprimer. La suppression est programmée et non immédiate : l'espace reste accessible pendant 30 jours, de sorte que chaque membre puisse récupérer ses fichiers, et tout administrateur peut annuler la suppression pendant ce délai. Les membres sont informés dès qu'une suppression est programmée ou annulée. À l'issue des 30 jours, l'espace et l'ensemble de ses contenus, fichiers compris, sont définitivement supprimés et ne peuvent plus être récupérés. Un fichier supprimé individuellement suit le même délai de 30 jours avant son effacement définitif.
           </p>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
             <strong>5.6 Stockage.</strong> Chaque espace dispose d'un quota de stockage de 5 Go. Ce quota peut évoluer. Band Space n'est pas un service d'hébergement de fichiers à usage général : son utilisation doit rester liée à l'activité du groupe.
@@ -255,5 +254,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle("Conditions générales d'utilisation - MusicAll")
 
-const lastUpdate = '29 juillet 2026'
+const lastUpdate = '31 juillet 2026'
 </script>
