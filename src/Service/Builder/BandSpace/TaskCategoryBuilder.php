@@ -26,8 +26,8 @@ readonly class TaskCategoryBuilder
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->name = $entity->name;
         $dto->color = $entity->color;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

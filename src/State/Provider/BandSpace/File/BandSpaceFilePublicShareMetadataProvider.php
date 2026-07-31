@@ -61,7 +61,7 @@ readonly class BandSpaceFilePublicShareMetadataProvider implements ProviderInter
         $dto->originalName = $file->originalName;
         $dto->size = $file->currentVersion->size;
         $dto->mimeType = $file->currentVersion->mimeType;
-        $dto->expiryDatetime = $share->expiryDatetime?->format(\DateTimeInterface::ATOM) ?? '';
+        $dto->expiryDatetime = $share->expiryDatetime;
         $dto->hasPassword = $share->passwordHash !== null;
 
         return $dto;

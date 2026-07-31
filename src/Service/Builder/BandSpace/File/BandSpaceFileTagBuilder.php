@@ -15,7 +15,7 @@ readonly class BandSpaceFileTagBuilder
         $dto->name = $entity->name;
         $dto->colorHex = $entity->colorHex;
         $dto->fileCount = $fileCount;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;
     }

@@ -51,13 +51,13 @@ class BandSpaceFileShareResource
 
     public string $fileId;
     public string $fileOriginalName;
-    public ?string $expiryDatetime = null;
-    public ?string $revocationDatetime = null;
+    public ?\DateTimeInterface $expiryDatetime = null;
+    public ?\DateTimeInterface $revocationDatetime = null;
     public int $accessCount = 0;
-    public ?string $lastAccessDatetime = null;
+    public ?\DateTimeInterface $lastAccessDatetime = null;
     public bool $hasPassword = false;
     public bool $isActive = true;
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 
     /** @var array{id: string, username: string}|null */
     public ?array $createdBy = null;

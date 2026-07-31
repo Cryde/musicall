@@ -73,7 +73,7 @@ class UserNotification
     /** @var array<string, mixed> */
     public array $payload = [];
 
-    public ?string $readDatetime = null;
+    public ?\DateTimeInterface $readDatetime = null;
 
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 }

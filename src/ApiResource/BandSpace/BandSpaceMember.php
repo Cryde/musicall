@@ -86,8 +86,8 @@ class BandSpaceMember
     public string $role;
 
     public ?string $profilePictureUrl = null;
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
     #[Assert\Choice(choices: ['active', 'left', 'kicked'], message: 'Le statut doit être "active", "left" ou "kicked"')]
     public string $status;
-    public ?string $leftDatetime = null;
+    public ?\DateTimeInterface $leftDatetime = null;
 }

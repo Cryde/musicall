@@ -6,6 +6,6 @@ class BandSpaceFileShareCreated
 {
     public string $shareId;
     public string $shareUrl;
-    public string $expiryDatetime;
+    public \DateTimeInterface $expiryDatetime;
     public bool $hasPassword = false;
 }

@@ -45,7 +45,7 @@ readonly class BandSpaceFileVersionBuilder
             ];
         }
 
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;
     }

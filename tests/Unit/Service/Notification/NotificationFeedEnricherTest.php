@@ -75,7 +75,7 @@ class NotificationFeedEnricherTest extends TestCase
         $notification->id = '00000000-0000-0000-0000-000000000000';
         $notification->type = $type->value;
         $notification->payload = $payload;
-        $notification->creationDatetime = '2026-05-31T00:00:00+00:00';
+        $notification->creationDatetime = new \DateTimeImmutable('2026-05-31T00:00:00+00:00');
 
         return $notification;
     }

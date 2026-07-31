@@ -29,7 +29,7 @@ readonly class SetlistItemBuilder
             $songInfo->tempo = $entity->song->tempo;
             $songInfo->tonality = $entity->song->tonality;
             $songInfo->referenceDuration = $entity->song->referenceDuration;
-            $songInfo->archiveDatetime = $entity->song->archiveDatetime?->format(DateTimeInterface::ATOM);
+            $songInfo->archiveDatetime = $entity->song->archiveDatetime;
             $dto->song = $songInfo;
         }
 

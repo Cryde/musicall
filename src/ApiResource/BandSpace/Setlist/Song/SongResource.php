@@ -97,7 +97,7 @@ class SongResource
 
     public ?string $notes = null;
 
-    public ?string $archiveDatetime = null;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public ?\DateTimeInterface $archiveDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

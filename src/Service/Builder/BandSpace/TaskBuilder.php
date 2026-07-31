@@ -54,11 +54,11 @@ readonly class TaskBuilder
             ]
         )->toArray();
         $dto->assignees = array_values($dto->assignees);
-        $dto->archiveDatetime = $entity->archiveDatetime?->format(\DateTimeInterface::ATOM);
-        $dto->completedDatetime = $entity->completedDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->archiveDatetime = $entity->archiveDatetime;
+        $dto->completedDatetime = $entity->completedDatetime;
         $dto->position = $entity->position;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
         $dto->commentCount = $commentCount;
         $dto->fileCount = $fileCount;
 

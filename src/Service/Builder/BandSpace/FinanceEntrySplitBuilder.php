@@ -30,8 +30,8 @@ readonly class FinanceEntrySplitBuilder
         $dto->memberName = $entity->member?->user->username;
         $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
         $dto->amount = $entity->amount;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

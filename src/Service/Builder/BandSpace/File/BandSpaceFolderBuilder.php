@@ -15,8 +15,8 @@ readonly class BandSpaceFolderBuilder
         $dto->name = $entity->name;
         $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $entity->parent->id : null;
         $dto->depth = $depth;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

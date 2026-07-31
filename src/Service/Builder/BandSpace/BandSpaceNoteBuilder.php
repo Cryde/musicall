@@ -35,8 +35,8 @@ readonly class BandSpaceNoteBuilder
         $dto->position = $entity->position;
         $dto->content = null;
         $dto->hasChildren = !$entity->children->isEmpty();
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

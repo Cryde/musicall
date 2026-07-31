@@ -44,8 +44,8 @@ readonly class FinanceEntryBuilder
         $dto->isFormerMember = $entity->member instanceof \App\Entity\BandSpace\BandSpaceMembership && $entity->member->status !== MembershipStatus::Active;
         $dto->recurrenceId = $entity->recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence ? (string) $entity->recurrence->id : null;
         $dto->splitWarning = $splitWarning;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

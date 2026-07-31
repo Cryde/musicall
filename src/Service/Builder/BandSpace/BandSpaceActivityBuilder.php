@@ -36,7 +36,7 @@ readonly class BandSpaceActivityBuilder
             'username' => $entity->actor->username,
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->actor),
         ] : null;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;
     }

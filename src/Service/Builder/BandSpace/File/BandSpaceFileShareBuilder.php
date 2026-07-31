@@ -16,14 +16,14 @@ readonly class BandSpaceFileShareBuilder
         $dto->bandSpaceId = (string) $file->bandSpace->id;
         $dto->fileId = (string) $file->id;
         $dto->fileOriginalName = $file->originalName;
-        $dto->expiryDatetime = $entity->expiryDatetime?->format(\DateTimeInterface::ATOM);
-        $dto->revocationDatetime = $entity->revocationDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->expiryDatetime = $entity->expiryDatetime;
+        $dto->revocationDatetime = $entity->revocationDatetime;
         $dto->accessCount = $entity->accessCount;
-        $dto->lastAccessDatetime = $entity->lastAccessDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->lastAccessDatetime = $entity->lastAccessDatetime;
         $dto->hasPassword = $entity->passwordHash !== null;
         $dto->isActive = !$entity->revocationDatetime instanceof \DateTimeImmutable
             && (!$entity->expiryDatetime instanceof \DateTimeImmutable || $entity->expiryDatetime > $now);
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
 
         if ($entity->createdBy instanceof \App\Entity\User) {
             $dto->createdBy = [

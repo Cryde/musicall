@@ -95,8 +95,8 @@ readonly class BandSpaceFileBuilder
             UrlGeneratorInterface::ABSOLUTE_PATH,
         ) . '/download';
 
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

@@ -47,7 +47,7 @@ readonly class TaskActivityBuilder
         $dto->actorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->actor);
         $dto->type = $entity->type;
         $dto->payload = $entity->payload;
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;
     }

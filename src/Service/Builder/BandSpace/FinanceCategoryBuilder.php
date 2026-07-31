@@ -28,8 +28,8 @@ readonly class FinanceCategoryBuilder
         $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\FinanceCategory ? (string) $entity->parent->id : null;
         $dto->position = $entity->position;
         $dto->hasChildren = !$entity->children->isEmpty();
-        $dto->creationDatetime = $entity->creationDatetime->format(\DateTimeInterface::ATOM);
-        $dto->updateDatetime = $entity->updateDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->creationDatetime = $entity->creationDatetime;
+        $dto->updateDatetime = $entity->updateDatetime;
 
         return $dto;
     }

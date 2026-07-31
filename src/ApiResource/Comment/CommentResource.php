@@ -47,7 +47,7 @@ class CommentResource
 
     public string $content;
 
-    public string $creationDatetime;
+    public \DateTimeInterface $creationDatetime;
 
     public int $upvotes = 0;
 

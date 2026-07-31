@@ -86,6 +86,6 @@ class FinanceCategoryResource
     public int $position;
 
     public bool $hasChildren = false;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

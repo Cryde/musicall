@@ -28,6 +28,6 @@ class BandSpaceFilePublicShareMetadata
     public string $originalName;
     public ?int $size = null;
     public ?string $mimeType = null;
-    public string $expiryDatetime;
+    public ?\DateTimeInterface $expiryDatetime = null;
     public bool $hasPassword = false;
 }

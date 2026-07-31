@@ -85,6 +85,6 @@ class TaskCategoryResource
         message: 'La couleur doit être au format hexadécimal #RRGGBB'
     )]
     public string $color;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }

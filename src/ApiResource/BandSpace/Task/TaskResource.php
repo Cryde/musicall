@@ -109,11 +109,11 @@ class TaskResource
     /** @var array<int, array{id: string, username: string, profile_picture_url: string|null}> */
     public array $assignees = [];
 
-    public ?string $archiveDatetime = null;
-    public ?string $completedDatetime = null;
+    public ?\DateTimeInterface $archiveDatetime = null;
+    public ?\DateTimeInterface $completedDatetime = null;
     public int $position = 0;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
     public int $commentCount = 0;
     public int $fileCount = 0;
 }

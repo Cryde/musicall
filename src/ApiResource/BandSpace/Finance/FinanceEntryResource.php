@@ -96,6 +96,6 @@ class FinanceEntryResource
     public bool $isFormerMember = false;
     public ?string $recurrenceId = null;
     public bool $splitWarning = false;
-    public string $creationDatetime;
-    public ?string $updateDatetime = null;
+    public \DateTimeInterface $creationDatetime;
+    public ?\DateTimeInterface $updateDatetime = null;
 }
