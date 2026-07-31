@@ -37,7 +37,7 @@ readonly class TaskBulkPatchProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $payload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
         $patchPayload = array_intersect_key($payload, array_flip(self::ALLOWED_KEYS));

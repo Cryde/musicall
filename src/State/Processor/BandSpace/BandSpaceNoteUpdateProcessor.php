@@ -8,16 +8,14 @@ use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceNoteActivityType;
-use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
-use App\Repository\BandSpace\BandSpaceRepository;
+use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceNoteBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -27,8 +25,7 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private BandSpaceRepository $bandSpaceRepository,
-        private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private BandSpaceMemberChecker $memberChecker,
         private BandSpaceNoteRepository $bandSpaceNoteRepository,
         private BandSpaceNoteBuilder $bandSpaceNoteBuilder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
@@ -45,14 +42,7 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $bandSpace = $this->bandSpaceRepository->findOneByIdWithMemberships((string) $uriVariables['bandSpaceId']);
-        if (!$bandSpace instanceof \App\Entity\BandSpace\BandSpace) {
-            throw new NotFoundHttpException('Band space not found');
-        }
-
-        if (!$this->bandSpaceMembershipRepository->isMember($bandSpace, $user)) {
-            throw new AccessDeniedHttpException('You are not a member of this band space');
-        }
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {

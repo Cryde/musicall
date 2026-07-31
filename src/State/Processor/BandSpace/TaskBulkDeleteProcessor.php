@@ -33,7 +33,7 @@ readonly class TaskBulkDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $this->taskBulkDeleteProcedure->delete($bandSpace, $membership, $data->taskIds, $user);
     }

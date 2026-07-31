@@ -61,6 +61,12 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
             throw new ConflictHttpException('Vous êtes déjà membre de ce Band Space');
         }
 
+        // No checker to hang the write guard on here, the space comes from the invitation rather than a URI
+        // variable, and joining deserves a clearer message than the generic one.
+        if ($invitation->bandSpace->isPendingDeletion()) {
+            throw new ConflictHttpException('Cet espace est en attente de suppression, vous ne pouvez pas le rejoindre');
+        }
+
         $existingMembership = $this->bandSpaceMembershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
 
         if ($existingMembership instanceof \App\Entity\BandSpace\BandSpaceMembership) {

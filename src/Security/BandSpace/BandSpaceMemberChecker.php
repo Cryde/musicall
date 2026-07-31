@@ -15,7 +15,25 @@ readonly class BandSpaceMemberChecker
     public function __construct(
         private BandSpaceRepository $bandSpaceRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private BandSpaceWriteGuard $writeGuard,
     ) {
+    }
+
+    /**
+     * Same as checkMember(), and additionally rejects a space pending deletion. Processors use this one,
+     * providers keep checkMember() so reads and downloads stay open during the grace period.
+     *
+     * Membership is verified first on purpose: a non-member must get a 403 rather than learn from a 409
+     * that the space is pending deletion.
+     *
+     * @return array{BandSpace, BandSpaceMembership}
+     */
+    public function checkMemberForWrite(string $bandSpaceId, User $user): array
+    {
+        $result = $this->checkMember($bandSpaceId, $user);
+        $this->writeGuard->assertWritable($result[0]);
+
+        return $result;
     }
 
     /**

@@ -42,7 +42,7 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $membership->bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {
