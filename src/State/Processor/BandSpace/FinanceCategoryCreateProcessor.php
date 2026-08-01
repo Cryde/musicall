@@ -41,7 +41,7 @@ readonly class FinanceCategoryCreateProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $parent = null;
         if ($data->parentId !== null) {

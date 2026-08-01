@@ -16,7 +16,25 @@ readonly class BandSpaceAdminChecker
     public function __construct(
         private BandSpaceRepository $bandSpaceRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private BandSpaceWriteGuard $writeGuard,
     ) {
+    }
+
+    /**
+     * Same as checkAdmin(), and additionally rejects a space pending deletion. Processors use this one,
+     * providers keep checkAdmin() so reads stay open during the grace period.
+     *
+     * BandSpaceDeleteProcessor and BandSpaceRestoreProcessor deliberately stay on checkAdmin(): the first
+     * carries its own more precise conflict message, the second is how the deletion gets cancelled.
+     *
+     * @return array{BandSpace, BandSpaceMembership}
+     */
+    public function checkAdminForWrite(string $bandSpaceId, User $user): array
+    {
+        $result = $this->checkAdmin($bandSpaceId, $user);
+        $this->writeGuard->assertWritable($result[0]);
+
+        return $result;
     }
 
     /**

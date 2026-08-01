@@ -40,8 +40,8 @@
               <i class="pi pi-exclamation-triangle mt-0.5" aria-hidden="true" />
               <p class="flex-1 min-w-0">
                 Cet espace sera définitivement supprimé le
-                <strong>{{ formatDateLong(deletionScheduledFor) }}</strong>. Pensez à récupérer vos
-                fichiers.
+                <strong>{{ formatDateLong(deletionScheduledFor) }}</strong>. Les modifications sont
+                désactivées, mais vous pouvez toujours consulter et télécharger vos fichiers.
                 <RouterLink
                   :to="{ name: BAND_SPACE_ROUTES.PARAMETERS, params: { id: route.params.id }, query: { section: 'danger' } }"
                   class="underline"

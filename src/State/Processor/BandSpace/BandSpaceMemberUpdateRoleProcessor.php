@@ -47,6 +47,9 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
+        // Deliberately the read-only checker: role changes stay possible while a deletion is pending.
+        // Leaving requires promoting a successor first, so guarding this would trap the sole admin, and
+        // letting them leave instead would strand the space with nobody able to restore it.
         [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
         $membership = $this->bandSpaceMembershipRepository->findOneByIdAndBandSpace(

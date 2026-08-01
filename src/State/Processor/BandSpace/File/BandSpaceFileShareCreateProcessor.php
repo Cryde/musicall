@@ -53,7 +53,7 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
 
         $this->shareCreateLimiter->create($user->id)->consume()->ensureAccepted();
 
-        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->adminChecker->checkAdminForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $file = $this->fileRepository->findOneByIdAndBandSpace((string) $uriVariables['fileId'], $bandSpace);
         if (!$file instanceof \App\Entity\BandSpace\BandSpaceFile || $file->archiveDatetime instanceof \DateTimeImmutable) {

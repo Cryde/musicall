@@ -37,7 +37,7 @@ readonly class BandSpaceFileShareDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->adminChecker->checkAdminForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $share = $this->shareRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$share instanceof \App\Entity\BandSpace\BandSpaceFileShare) {

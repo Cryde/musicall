@@ -138,11 +138,11 @@ async function handleCreateNote({ title, parentId }) {
       life: 3000
     })
     notesStore.selectNote(bandSpaceId, newNote.id)
-  } catch {
+  } catch (error) {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: 'Impossible de créer la note',
+      detail: error.message || 'Impossible de créer la note',
       life: 5000
     })
   }
@@ -181,11 +181,11 @@ function handleDelete(noteId) {
           summary: 'Note supprimée',
           life: 3000
         })
-      } catch {
+      } catch (error) {
         toast.add({
           severity: 'error',
           summary: 'Erreur',
-          detail: 'Impossible de supprimer la note',
+          detail: error.message || 'Impossible de supprimer la note',
           life: 5000
         })
       }

@@ -43,7 +43,7 @@ readonly class TaskCommentDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [, $membership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $task = $this->taskRepository->findOneByIdAndBandSpace((string) $uriVariables['taskId'], $membership->bandSpace);
         if (!$task instanceof \App\Entity\BandSpace\Task) {

@@ -44,6 +44,13 @@ readonly class BandSpaceInvitationAutoAcceptListener
                 continue;
             }
 
+            // Symmetry with BandSpaceInvitationAcceptProcessor, which rejects joining a condemned space.
+            // Skipped silently rather than thrown: this runs inside registration and must never break it.
+            // The invitation stays pending and gets purged with the space.
+            if ($invitation->bandSpace->isPendingDeletion()) {
+                continue;
+            }
+
             $existingMembership = $this->membershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
 
             if ($existingMembership instanceof \App\Entity\BandSpace\BandSpaceMembership) {

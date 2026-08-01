@@ -59,7 +59,7 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $song = $this->songRepository->findOneByIdAndBandSpace((string) $uriVariables['songId'], $bandSpace);
         if (!$song instanceof \App\Entity\BandSpace\Song) {

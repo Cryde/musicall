@@ -49,7 +49,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace, $currentMembership] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $currentMembership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence) {

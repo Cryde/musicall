@@ -44,6 +44,28 @@ class BandSpaceFileDownloadTest extends ApiTestCase
         $this->assertSame(self::V2_CONTENT, $this->getStreamedBody());
     }
 
+    /**
+     * The grace period exists so members can retrieve their files, so the write block introduced for a
+     * space pending deletion must never reach the download path.
+     */
+    public function test_download_still_works_while_the_space_is_pending_deletion(): void
+    {
+        $this->client->disableReboot();
+        [$user, $bandSpace, $file, , ] = $this->setupFileWithTwoVersions(currentVersionNumber: 2);
+
+        $bandSpace->deletionScheduledDatetime = new \DateTimeImmutable('+30 days');
+        self::getContainer()->get(EntityManagerInterface::class)->flush();
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/download',
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(self::V2_CONTENT, $this->getStreamedBody());
+    }
+
     public function test_download_specific_old_version_returns_v1_bytes(): void
     {
         $this->client->disableReboot();

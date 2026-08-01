@@ -54,7 +54,7 @@ readonly class TaskCreateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $task = new Task();
         $task->bandSpace = $bandSpace;

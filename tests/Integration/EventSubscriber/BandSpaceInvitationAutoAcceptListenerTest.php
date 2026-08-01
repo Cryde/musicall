@@ -128,6 +128,57 @@ class BandSpaceInvitationAutoAcceptListenerTest extends KernelTestCase
         $this->assertFalse($membershipRepo->isMember($bandSpace, $newUser));
     }
 
+    /**
+     * Symmetry with the explicit accept endpoint, which rejects joining a space pending deletion. Skipped
+     * silently rather than thrown: this runs inside registration and must never break it.
+     */
+    public function test_skips_invitations_to_a_space_pending_deletion(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $condemned = BandSpaceFactory::new()->create([
+            'deletionScheduledDatetime' => new \DateTimeImmutable('+30 days'),
+        ]);
+        $healthy = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $condemned, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $healthy, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $condemnedInvitation = BandSpaceInvitationFactory::new([
+            'bandSpace' => $condemned,
+            'invitedBy' => $admin,
+            'email' => 'newuser@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+        BandSpaceInvitationFactory::new([
+            'bandSpace' => $healthy,
+            'invitedBy' => $admin,
+            'email' => 'newuser@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $newUser = new User();
+        $newUser->username = 'newuser';
+        $newUser->email = 'newuser@example.com';
+        $newUser->password = 'hashed';
+        $newUser->profile = new UserProfile();
+        $em->persist($newUser);
+        $em->flush();
+
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $dispatcher->dispatch(new UserRegisteredEvent($newUser));
+
+        $membershipRepo = self::getContainer()->get(BandSpaceMembershipRepository::class);
+        $this->assertFalse($membershipRepo->isMember($condemned, $newUser));
+        // Skipping one invitation must not abort the loop: the healthy space still gets its member.
+        $this->assertTrue($membershipRepo->isMember($healthy, $newUser));
+
+        // The skipped invitation stays pending and gets purged along with the space.
+        $this->assertSame(
+            InvitationStatus::Pending,
+            self::getContainer()->get(BandSpaceInvitationRepository::class)->find($condemnedInvitation->id)?->status,
+        );
+    }
+
     public function test_no_pending_invitations(): void
     {
         $em = self::getContainer()->get(EntityManagerInterface::class);

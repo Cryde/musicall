@@ -68,7 +68,7 @@ readonly class BandSpaceFileUploadProcessor implements ProcessorInterface
 
         $this->uploadLimiter->create($user->id)->consume()->ensureAccepted();
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $upload = $data->uploadedFile;
         if ($upload === null) {

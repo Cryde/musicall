@@ -54,4 +54,9 @@ class BandSpace
         $this->creationDatetime = new DateTime();
         $this->memberships = new ArrayCollection();
     }
+
+    public function isPendingDeletion(): bool
+    {
+        return $this->deletionScheduledDatetime instanceof DateTimeImmutable;
+    }
 }
