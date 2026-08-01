@@ -183,6 +183,41 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Vous n'êtes pas membre de ce Band Space",
+        ]);
+    }
+
+    public function test_create_note_unknown_band_space(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/8f1b0d2a-0000-4000-8000-000000000000/notes',
+            ['title' => 'Note nulle part'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Band Space introuvable',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Band Space introuvable',
+        ]);
     }
 
     public function test_create_note_inactive_member(): void
