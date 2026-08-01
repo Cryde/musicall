@@ -1,8 +1,8 @@
 services:
-    # OpenAI Platform — symfony/ai 0.9: PlatformFactory was renamed Factory
-    # and the createPlatform signature reordered $eventDispatcher from
-    # position 3 to 6. We rely on named arguments here so the rename
-    # doesn't accidentally misbind.
+    # OpenAI Platform. symfony/ai 0.8 renamed PlatformFactory to Factory and moved
+    # $eventDispatcher from position 3 to 6, and the signature has since grown
+    # $modelRouter in 0.12. Named arguments keep this binding correct whatever gets
+    # inserted next, so do not switch these back to positional.
     Symfony\AI\Platform\PlatformInterface:
         factory: ['Symfony\AI\Platform\Bridge\OpenAi\Factory', 'createPlatform']
         arguments:
