@@ -15,19 +15,19 @@ class AnnounceMusicianFilterBuilder
     }
 
     /**
-     * @param array{type?: mixed, instrument?: string, styles?: string[], coordinates?: array{latitude?: float, longitude?: float}} $data
+     * @param array{type?: mixed, instrument?: string|null, styles?: string[], coordinates?: array{latitude?: float, longitude?: float}|null} $data
      */
     public function buildFromArray(array $data): ?AnnounceMusicianFilter
     {
-        if (!isset($data['type'], $data['instrument'])) {
+        if (!isset($data['type'])) {
             return null;
         }
-        if (!$instrumentId = $this->getInstrumentId($data['instrument'])) {
-            return null;
-        }
+
         $filter = new AnnounceMusicianFilter();
-        $filter->type = (int)$data['type'];
-        $filter->instrument = $instrumentId;
+        $filter->type = (int) $data['type'];
+        // Only the type is load bearing. An unresolved instrument or style widens the search instead of
+        // killing it: returning null here would show the user "no result" for a perfectly clear query.
+        $filter->instrument = isset($data['instrument']) ? $this->getInstrumentId($data['instrument']) : null;
         $filter->styles = $this->getStyleIds($data['styles'] ?? []);
         if (isset($data['coordinates']['latitude'], $data['coordinates']['longitude'])) {
             $filter->latitude = $data['coordinates']['latitude'];
@@ -37,10 +37,21 @@ class AnnounceMusicianFilterBuilder
         return $filter;
     }
 
-    public function getInstrumentId(string $instrumentId): ?string
+    /**
+     * Accepts an id or a slug. The prompt hands the model a map of id => slug and it sometimes answers
+     * with the slug, which is a good enough answer to honour rather than discard.
+     */
+    public function getInstrumentId(?string $instrument): ?string
     {
-        /** @var ?string */
-        return $this->instrumentRepository->find($instrumentId)?->id;
+        if ($instrument === null || trim($instrument) === '') {
+            return null;
+        }
+
+        $id = $this->isUuid($instrument)
+            ? $this->instrumentRepository->find($instrument)?->id
+            : $this->instrumentRepository->findOneBy(['slug' => $instrument])?->id;
+
+        return $id !== null ? (string) $id : null;
     }
 
     /**
@@ -50,14 +61,30 @@ class AnnounceMusicianFilterBuilder
      */
     public function getStyleIds(array $styleIds): array
     {
-        return
-            array_values(
-                array_filter(
-                    array_map(
-                        fn(string $styleId): ?string => ($id = $this->styleRepository->find($styleId)?->id) !== null ? (string) $id : null,
-                        $styleIds
-                    )
-                )
-            );
+        return array_values(array_unique(array_filter(
+            array_map($this->getStyleId(...), $styleIds),
+        )));
+    }
+
+    private function getStyleId(string $style): ?string
+    {
+        if (trim($style) === '') {
+            return null;
+        }
+
+        $id = $this->isUuid($style)
+            ? $this->styleRepository->find($style)?->id
+            : $this->styleRepository->findOneBy(['slug' => $style])?->id;
+
+        return $id !== null ? (string) $id : null;
+    }
+
+    /**
+     * Guards the repository lookups: the id columns are UUID typed, so handing Doctrine a plain word
+     * throws ValueNotConvertible, which would surface as a 500 rather than a degraded search.
+     */
+    private function isUuid(string $value): bool
+    {
+        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1;
     }
 }

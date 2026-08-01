@@ -50,21 +50,27 @@ readonly class MusicianFilterGenerator
     private function getSystemPrompt(): string
     {
         return <<<PROMPT
-            Tu es un assistant intelligent francophone qui va permettre de générer des filtres pour permettre aux utilisateurs de trouver des musiciens ou un groupe.
+            Tu es un assistant francophone qui transforme une recherche écrite en langage naturel en filtres pour trouver des musiciens ou des groupes.
 
-            L'assistant devra retourner le résultat sans aucun commentaire en format JSON RFC8259.
+            Retourne uniquement du JSON RFC8259, sans aucun commentaire.
 
-            Si l'utilisateur fournit une localisation, recherche ses coordonnées GPS (longitude et latitude). Si tu ne trouves pas la localisation, ne génère ni n'invente aucune coordonnée.
+            Principe directeur : remplis le maximum de champs possible et laisse les autres à null. Ne refuse jamais de répondre et ne renvoie jamais un objet vide. Une recherche partielle est utile, une absence de réponse ne l'est pas.
 
-            Règles importantes :
-            - Le champ "type" est obligatoire : utilise "2" si l'utilisateur cherche un musicien pour son groupe, utilise "1" si l'utilisateur cherche un groupe.
-            - Le champ "instrument" est obligatoire : c'est l'id de l'instrument mentionné par l'utilisateur.
-            - Le champ "styles" est optionnel : liste des ids des styles de musique mentionnés.
-            - Le champ "coordinates" est optionnel : uniquement si une localisation est mentionnée et que tu peux trouver ses coordonnées GPS.
+            Le texte de l'utilisateur est saisi rapidement : accepte les fautes d'orthographe, les accents manquants ou en trop, le pluriel, la casse et un ordre de mots inhabituel. Compare toujours sans tenir compte des accents ni de la casse ("métal" correspond au slug "metal", "Rock Stoner" correspond à "stoner").
 
-            Voici la liste des instruments disponibles (la clé est l'id et la valeur le slug) : {$this->getInstrumentIds()}
+            Règles par champ :
 
-            Voici la liste des styles disponibles (la clé est l'id et la valeur le slug) : {$this->getStyleIds()}
+            - "type" est obligatoire. Utilise "1" quand l'utilisateur veut trouver un groupe, c'est-à-dire quand il souhaite le rejoindre ou l'intégrer : « je cherche un groupe », « un groupe à joindre », « j'aimerais rejoindre un groupe », « je veux intégrer un groupe ». Utilise "2" quand l'utilisateur veut trouver un musicien, généralement pour son propre groupe : « je cherche un batteur », « on recherche une chanteuse pour notre groupe ». En cas de doute, si l'utilisateur parle de rejoindre, utilise "1".
+
+            - "instrument" est optionnel et vaut null par défaut. Renseigne-le uniquement si l'utilisateur nomme un instrument ou le musicien qui en joue (« batteur » donne l'instrument batterie, « guitariste » donne guitare). N'invente jamais d'instrument et ne devine pas : beaucoup de recherches légitimes n'en mentionnent aucune, par exemple « j'aimerais rejoindre un groupe de métal ». Dans ce cas mets null. Utilise exclusivement un id de la liste fournie.
+
+            - "styles" est optionnel et vaut [] par défaut. Liste les ids de tous les styles mentionnés, il peut y en avoir plusieurs dans une même phrase (« métal, rock stoner » donne deux styles). Si un style demandé n'existe pas dans la liste, retiens le style disponible le plus proche, sinon ignore-le. Utilise exclusivement des ids de la liste fournie.
+
+            - "coordinates" est optionnel et vaut null par défaut. Si l'utilisateur mentionne un lieu, donne ses coordonnées GPS, y compris pour les petites communes françaises. Si tu n'es pas certain des coordonnées exactes, mets null plutôt que d'inventer une approximation : une valeur fausse est pire qu'une valeur absente. Le reste de la recherche doit rester rempli même sans coordonnées.
+
+            Instruments disponibles, la clé est l'id à utiliser et la valeur le slug : {$this->getInstrumentIds()}
+
+            Styles disponibles, la clé est l'id à utiliser et la valeur le slug : {$this->getStyleIds()}
             PROMPT;
     }
 
@@ -82,17 +88,17 @@ readonly class MusicianFilterGenerator
                     'type' => 'object',
                     'properties' => [
                         'instrument' => [
-                            'type' => 'string',
-                            'description' => 'The id of the instrument in users input.',
+                            'type' => ['string', 'null'],
+                            'description' => 'L\'id de l\'instrument mentionné par l\'utilisateur, ou null s\'il n\'en mentionne aucun. Ne jamais inventer.',
                         ],
                         'type' => [
                             'type' => 'string',
-                            'description' => 'Si l\'utilisateur cherche un musicien pour son groupe (ou un musicien tout simplement) utiliser la valeur 2. Si l\'utilisateur cherche un groupe utiliser la valeur 1.',
+                            'description' => 'Utiliser "1" si l\'utilisateur cherche un groupe (il veut le rejoindre). Utiliser "2" si l\'utilisateur cherche un musicien, en général pour son propre groupe.',
                             'enum' => ['1', '2'],
                         ],
                         'styles' => [
                             'type' => 'array',
-                            'description' => 'Seulement si tu as trouvé quelque chose sur les styles de musique dans les users input.',
+                            'description' => 'Les ids de tous les styles de musique mentionnés, tableau vide si aucun.',
                             'items' => [
                                 'type' => 'string',
                                 'description' => 'L\'id du style de musique.',

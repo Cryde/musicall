@@ -33,7 +33,12 @@ use Symfony\Component\Validator\Constraints\Length;
 class AnnounceMusicianFilter
 {
     public int $type;
-    public string $instrument;
+    /**
+     * Optional: plenty of searches name no instrument at all ("je veux rejoindre un groupe de métal").
+     * The announce search filters on the instrument only when one is set, so a null here means
+     * "no instrument filter", not "no result".
+     */
+    public ?string $instrument = null;
     /** @var string[] */
     public array $styles = [];
     public ?float $latitude = null;
