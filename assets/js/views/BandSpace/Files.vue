@@ -41,6 +41,24 @@
         >
           Aucun dossier pour l'instant.
         </p>
+
+        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
+          <button
+            type="button"
+            class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
+            :class="
+              isTrashActive
+                ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 font-medium'
+                : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
+            "
+            :aria-current="isTrashActive ? 'true' : null"
+            @click="handleFolderSelect(TRASH_FOLDER_ID)"
+          >
+            <i class="pi pi-trash" aria-hidden="true"></i>
+            <span class="flex-1 truncate">Corbeille</span>
+            <span class="text-xs text-surface-500 tabular-nums">{{ filesStore.archivedCount }}</span>
+          </button>
+        </div>
       </aside>
 
       <section class="flex-1 flex flex-col gap-4 min-w-0">
@@ -55,7 +73,10 @@
           />
         </div>
 
-        <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
+        <div
+          v-if="!isTrashActive"
+          class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700"
+        >
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex-1 min-w-[200px]">
               <FileFilterBar
@@ -65,7 +86,7 @@
               />
             </div>
             <Button
-              label="Téléverser"
+              label="Importer un fichier"
               icon="pi pi-cloud-upload"
               size="small"
               :disabled="isVirtualFolderActive"
@@ -80,7 +101,15 @@
         </div>
 
         <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
+          <FileTrashList
+            v-if="isTrashActive"
+            :band-space-id="bandSpaceId"
+            :files="filesStore.files"
+            :is-loading="filesStore.isLoadingFiles"
+            :is-admin="isAdmin"
+          />
           <FileList
+            v-else
             :band-space-id="bandSpaceId"
             :files="filesStore.files"
             :is-loading="filesStore.isLoadingFiles"
@@ -149,12 +178,13 @@ import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
 import FileMoveDialog from '../../components/BandSpace/Files/FileMoveDialog.vue'
 import FileShareDialog from '../../components/BandSpace/Files/FileShareDialog.vue'
+import FileTrashList from '../../components/BandSpace/Files/FileTrashList.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
 import FolderBreadcrumb from '../../components/BandSpace/Files/FolderBreadcrumb.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
-import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
+import { TRASH_FOLDER_ID, useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -184,8 +214,11 @@ const bandSpaceId = computed(() => route.params.id)
 const showBreadcrumb = computed(() => {
   const id = filesStore.activeFolderId
   if (id === null) return true
+  if (id === TRASH_FOLDER_ID) return false
   return typeof id === 'string' && !id.startsWith('virtual:')
 })
+
+const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_ID)
 
 const isVirtualFolderActive = computed(() => {
   const id = filesStore.activeFolderId
@@ -230,6 +263,7 @@ function loadAll() {
   filesStore.fetchFolders(bandSpaceId.value)
   filesStore.fetchTags(bandSpaceId.value)
   filesStore.fetchQuota(bandSpaceId.value)
+  filesStore.fetchArchivedCount(bandSpaceId.value)
   filesStore.fetchFiles(bandSpaceId.value)
 }
 

@@ -7,7 +7,7 @@
   >
     <div class="flex flex-col gap-4">
       <p class="text-xs text-surface-400 italic">
-        Téléversez les fichiers liés à ce setlist (timing sheet, notes scéniques, etc.).
+        Importez les fichiers liés à ce setlist (timing sheet, notes scéniques, etc.).
         Ils apparaitront dans le dossier virtuel «&nbsp;Setlists&nbsp;» du module Fichiers.
       </p>
 
@@ -45,7 +45,7 @@
 
       <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
       <Button
-        label="Téléverser un fichier"
+        label="Importer un fichier"
         icon="pi pi-cloud-upload"
         severity="secondary"
         :loading="isUploading"

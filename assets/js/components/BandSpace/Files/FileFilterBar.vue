@@ -16,7 +16,7 @@
       :options="tagOptions"
       option-label="label"
       option-value="value"
-      placeholder="Étiquette"
+      placeholder="Tag"
       size="small"
       :show-clear="true"
       class="min-w-[160px]"

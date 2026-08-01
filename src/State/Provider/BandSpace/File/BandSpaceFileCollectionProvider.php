@@ -75,6 +75,7 @@ readonly class BandSpaceFileCollectionProvider implements ProviderInterface
             order: $query?->getString('order') ?: 'desc',
             limit: $limit,
             offset: $offset,
+            archivedOnly: $query?->getBoolean('archived') ?? false,
         );
     }
 }

@@ -9,9 +9,12 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\File\BandSpaceFileDeleteProcessor;
+use App\State\Processor\BandSpace\File\BandSpaceFilePermanentDeleteProcessor;
+use App\State\Processor\BandSpace\File\BandSpaceFileRestoreProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceFileUpdateProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceFinanceEntryFileDetachProcessor;
 use App\State\Processor\BandSpace\File\BandSpaceNoteFileDetachProcessor;
@@ -47,6 +50,8 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
                 'uploader_id' => new QueryParameter(key: 'uploader_id'),
                 'sort' => new QueryParameter(key: 'sort'),
                 'order' => new QueryParameter(key: 'order'),
+                // archived=true lists the trash instead of the live files. Same shape as the Tasks module.
+                'archived' => new QueryParameter(key: 'archived'),
             ],
         ),
         new Get(
@@ -83,6 +88,33 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
             name: 'api_band_space_files_delete',
             provider: BandSpaceFileItemProvider::class,
             processor: BandSpaceFileDeleteProcessor::class,
+        ),
+        // The two trash operations deliberately carry no provider: BandSpaceFileItemProvider rejects
+        // archived files, which is right for the seven operations above and exactly wrong for these two.
+        new Post(
+            uriTemplate: '/band_spaces/{bandSpaceId}/files/{id}/restore',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            input: false,
+            read: false,
+            name: 'api_band_space_files_restore',
+            processor: BandSpaceFileRestoreProcessor::class,
+        ),
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/files/{id}/permanent',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space File']),
+            security: "is_granted('ROLE_USER')",
+            read: false,
+            name: 'api_band_space_files_permanent_delete',
+            processor: BandSpaceFilePermanentDeleteProcessor::class,
         ),
         new GetCollection(
             uriTemplate: '/band_spaces/{bandSpaceId}/tasks/{taskId}/files',
@@ -241,4 +273,12 @@ class BandSpaceFileResource
 
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;
+
+    /** Set only for files in the trash. */
+    public ?\DateTimeInterface $archiveDatetime = null;
+    /**
+     * When app:band-space:purge will destroy this file, derived server side from one shared retention
+     * parameter so the countdown shown to members cannot drift from the purge condition.
+     */
+    public ?\DateTimeInterface $purgeDatetime = null;
 }

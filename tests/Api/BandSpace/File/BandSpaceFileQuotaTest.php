@@ -48,6 +48,7 @@ class BandSpaceFileQuotaTest extends ApiTestCase
             'quota_bytes' => self::FIVE_GB,
             'used_bytes' => 0,
             'used_percentage' => 0.0,
+            'trash_retention_days' => 30,
             'is_approaching_limit' => false,
             'breakdown_by_source' => [],
         ]);

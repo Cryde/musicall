@@ -4,6 +4,7 @@ namespace App\State\Provider\BandSpace\File;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\ApiResource\BandSpace\File\BandSpaceFileQuotaResource;
 use App\Entity\User;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -20,6 +21,8 @@ readonly class BandSpaceFileQuotaProvider implements ProviderInterface
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFileQuotaService $quotaService,
         private Security $security,
+        #[Autowire('%band_space.file_retention_days%')]
+        private int $retentionDays,
     ) {
     }
 
@@ -43,6 +46,7 @@ readonly class BandSpaceFileQuotaProvider implements ProviderInterface
         $dto->isApproachingLimit = $quotaBytes > 0
             && $usedBytes / $quotaBytes >= BandSpaceFileQuotaService::APPROACHING_LIMIT_RATIO;
         $dto->breakdownBySource = $this->quotaService->getUsageBreakdown($bandSpace);
+        $dto->trashRetentionDays = $this->retentionDays;
 
         return $dto;
     }

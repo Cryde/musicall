@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Téléverser un fichier"
+    header="Importer un fichier"
     :style="{ width: '32rem' }"
     :closable="!isUploading"
     :close-on-escape="!isUploading"
@@ -72,14 +72,14 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Étiquettes</label>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Tags</label>
         <MultiSelect
           v-model="form.tagIds"
-          aria-label="Étiquettes"
+          aria-label="Tags"
           :options="tags"
           option-label="name"
           option-value="id"
-          placeholder="Sélectionner des étiquettes"
+          placeholder="Sélectionner des tags"
           :max-selected-labels="3"
           :disabled="isUploading"
         />
@@ -87,7 +87,7 @@
         <div class="flex items-center gap-2 mt-1">
           <InputText
             v-model="newTagName"
-            placeholder="Créer une nouvelle étiquette"
+            placeholder="Créer un nouveau tag"
             size="small"
             class="flex-1"
             :disabled="isUploading || isCreatingTag"
@@ -95,7 +95,7 @@
           />
           <Button
             icon="pi pi-plus"
-            aria-label="Créer l'étiquette"
+            aria-label="Créer le tag"
             size="small"
             severity="secondary"
             :disabled="isUploading || isCreatingTag || !newTagName.trim()"
@@ -108,7 +108,7 @@
 
       <div v-if="isUploading" class="flex flex-col gap-1">
         <ProgressBar :value="uploadProgress" />
-        <p class="text-xs text-surface-500 text-center">Téléversement… {{ uploadProgress }} %</p>
+        <p class="text-xs text-surface-500 text-center">Import… {{ uploadProgress }} %</p>
       </div>
 
       <Message v-if="globalError" severity="error" :closable="false">{{ globalError }}</Message>
@@ -123,7 +123,7 @@
         @click="visible = false"
       />
       <Button
-        label="Téléverser"
+        label="Importer"
         icon="pi pi-cloud-upload"
         :disabled="!selectedFile || isUploading"
         :loading="isUploading"

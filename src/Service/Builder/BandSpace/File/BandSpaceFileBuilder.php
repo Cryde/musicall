@@ -13,6 +13,7 @@ use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class BandSpaceFileBuilder
@@ -27,6 +28,8 @@ readonly class BandSpaceFileBuilder
         private SetlistRepository $setlistRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private UrlGeneratorInterface $urlGenerator,
+        #[Autowire('%band_space.file_retention_days%')]
+        private int $retentionDays,
     ) {
     }
 
@@ -97,6 +100,9 @@ readonly class BandSpaceFileBuilder
 
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
+        $dto->archiveDatetime = $entity->archiveDatetime;
+        // Derived rather than stored, from the same parameter app:band-space:purge uses for its cutoff.
+        $dto->purgeDatetime = $entity->archiveDatetime?->modify(sprintf('+%d days', $this->retentionDays));
 
         return $dto;
     }

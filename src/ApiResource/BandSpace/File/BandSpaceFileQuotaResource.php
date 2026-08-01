@@ -35,6 +35,12 @@ class BandSpaceFileQuotaResource
     public float $usedPercentage;
     public bool $isApproachingLimit;
 
+    /**
+     * How long the trash keeps a deleted file. Served here so the interface states the same number the
+     * purge actually uses, instead of hardcoding it next to every delete confirmation.
+     */
+    public int $trashRetentionDays;
+
     /** @var array<int, array{source: string, bytes: int}> */
     public array $breakdownBySource = [];
 }

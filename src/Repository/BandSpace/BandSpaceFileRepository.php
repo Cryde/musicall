@@ -163,7 +163,9 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('bsf')
             ->leftJoin('bsf.currentVersion', 'cv')
             ->where('bsf.bandSpace = :bandSpace')
-            ->andWhere('bsf.archiveDatetime IS NULL')
+            // Archived and active are two disjoint views, never merged: the trash lists what the normal
+            // collection hides, so no caller can accidentally mix a deleted file into a live listing.
+            ->andWhere($filter->archivedOnly ? 'bsf.archiveDatetime IS NOT NULL' : 'bsf.archiveDatetime IS NULL')
             ->setParameter('bandSpace', $bandSpace);
 
         if ($filter->folderId !== null) {
