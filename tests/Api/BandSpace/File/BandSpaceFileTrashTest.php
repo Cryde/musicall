@@ -108,6 +108,18 @@ class BandSpaceFileTrashTest extends ApiTestCase
         $this->client->request('POST', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/restore', [], [], self::HEADERS);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        // Asserting the body, not just the status: a 422 from any unrelated validator would otherwise
+        // pass here, on the one test covering the quota rule.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Quota de stockage dépassé : 900 octets utilisés + 900 octets envoyés > 1000 octets autorisés',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Quota de stockage dépassé : 900 octets utilisés + 900 octets envoyés > 1000 octets autorisés',
+        ]);
 
         // Still in the trash.
         $reloaded = self::getContainer()->get(BandSpaceFileRepository::class)

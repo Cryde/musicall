@@ -126,6 +126,13 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   }
 
   function buildFileParams() {
+    // The trash ignores every filter, before they are even read. Its filter bar is hidden, so a search
+    // or tag left over from browsing a folder would silently narrow the trash with no visible control to
+    // clear it, and someone hunting for the file they just deleted would find it apparently missing.
+    if (activeFolderId.value === TRASH_FOLDER_ID) {
+      return { archived: true }
+    }
+
     const params = {}
     const trimmed = filters.query.trim()
     if (trimmed) params.query = trimmed
@@ -133,12 +140,6 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     if (filters.tagId) params.tagId = filters.tagId
     if (filters.sort) params.sort = filters.sort
     if (filters.order) params.order = filters.order
-
-    if (activeFolderId.value === TRASH_FOLDER_ID) {
-      params.archived = true
-
-      return params
-    }
 
     if (activeFolderId.value === 'virtual:task') {
       params.source = 'task'

@@ -22,8 +22,21 @@ readonly class BandSpaceFilePurger
     ) {
     }
 
-    public function purge(BandSpaceFile $file): void
+    /**
+     * @return bool false when the file is no longer in the trash and was therefore left alone
+     */
+    public function purge(BandSpaceFile $file): bool
     {
+        // Re-read before destroying anything. app:band-space:purge loads its whole batch up front and
+        // then purges one file at a time, so by the time it reaches this file a member may have restored
+        // it: the entity in hand would still carry the archiveDatetime it had when the batch was read.
+        // Refusing here is the only thing standing between a last-minute restore and silent, permanent
+        // loss of the file the member just asked to keep.
+        $this->entityManager->refresh($file);
+        if (!$file->archiveDatetime instanceof \DateTimeImmutable) {
+            return false;
+        }
+
         // Detach the pointer first. The database would cope on its own (the FK is ON DELETE SET NULL),
         // but this keeps Doctrine's in-memory graph honest: no managed entity is left pointing at a row
         // that has just been removed.
@@ -41,5 +54,7 @@ readonly class BandSpaceFilePurger
 
         $this->entityManager->remove($file);
         $this->entityManager->flush();
+
+        return true;
     }
 }

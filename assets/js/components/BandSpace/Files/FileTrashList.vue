@@ -40,7 +40,9 @@
           icon="pi pi-replay"
           text
           size="small"
+          :disabled="!canRestore(file)"
           :loading="busyId === file.id"
+          v-tooltip.top="canRestore(file) ? null : 'Seul le créateur ou un administrateur peut restaurer ce fichier'"
           @click="handleRestore(file)"
         />
         <Button
@@ -66,6 +68,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { ref } from 'vue'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { formatDateLong } from '../../../utils/date.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
@@ -77,10 +80,15 @@ const props = defineProps({
 })
 
 const filesStore = useBandFilesStore()
+const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
 const toast = useToast()
 
 const busyId = ref(null)
+
+function canRestore(file) {
+  return props.isAdmin || file.created_by?.id === userSecurityStore.userProfile?.id
+}
 
 function daysRemaining(file) {
   if (!file.purge_datetime) {

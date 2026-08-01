@@ -91,9 +91,9 @@ class PurgeBandSpaceStorageCommand extends Command
     }
 
     /**
-     * Versions are removed one by one through the ORM on purpose: BandSpaceFile has no association to
-     * them, so a plain remove() of the file would drop the rows by FK cascade without VichUploader ever
-     * running, leaving every object behind in the bucket.
+     * The destruction itself lives in BandSpaceFilePurger, shared with the trash's delete-permanently
+     * endpoint. It also declines files restored since this batch was read, so a file skipped here is not
+     * a failure.
      *
      * @return int the number of files that could not be purged
      */
@@ -118,7 +118,11 @@ class PurgeBandSpaceStorageCommand extends Command
             }
 
             try {
-                $this->filePurger->purge($file);
+                if (!$this->filePurger->purge($file)) {
+                    $output->writeln(sprintf('  skipped file %s, restored since this run started', (string) $file->id));
+
+                    continue;
+                }
                 ++$purged;
             } catch (\Throwable $e) {
                 ++$failures;
