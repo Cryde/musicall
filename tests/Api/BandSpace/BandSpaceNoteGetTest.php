@@ -90,6 +90,16 @@ class BandSpaceNoteGetTest extends ApiTestCase
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Vous n'êtes pas membre de ce Band Space",
+        ]);
     }
 
     public function test_get_item_inactive_member(): void
