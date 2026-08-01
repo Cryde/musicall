@@ -250,13 +250,9 @@ const showBreadcrumb = computed(() => {
 const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_ID)
 
 /**
- * The subfolders shown inline above the files. Derived from the tree already in the store, so descending
- * costs no request. Empty for the virtual source folders and the trash: neither is a real folder, so
- * neither has children.
- */
-/**
  * The folder the panel is actually inside, or null at the root. Virtual sources and the trash are not
- * folders, so a new folder created from there belongs at the root rather than inside them.
+ * folders, so a new folder created from there belongs at the root rather than inside them, and their id
+ * must never reach the API as a parent_id.
  */
 const activeRealFolderId = computed(() => {
   if (isTrashActive.value || isVirtualFolderActive.value) {
@@ -266,6 +262,11 @@ const activeRealFolderId = computed(() => {
   return filesStore.activeFolderId
 })
 
+/**
+ * The subfolders shown inline above the files. Derived from the tree already in the store, so descending
+ * costs no request. The guard cannot be folded into activeRealFolderId: that returns null for a virtual
+ * source, and a null id means "the root" here, which would list every root folder inside it.
+ */
 const inlineFolders = computed(() => {
   if (isTrashActive.value || isVirtualFolderActive.value) {
     return []

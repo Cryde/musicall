@@ -22,14 +22,21 @@
         <div class="col-span-2">Ajouté le</div>
       </div>
 
-      <!-- Folders first, in the same grid as the files, so the panel reads as one list. -->
+      <!-- Folders first, in the same grid as the files, so the panel reads as one list. Focusable and
+           operable from the keyboard: #688 established that a clickable div needs this, and unlike the
+           file row below it this one has no nested button to conflict with the button role. -->
       <div
         v-for="folder in folders"
         :key="folder.id"
-        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
+        role="button"
+        tabindex="0"
+        :aria-label="`Ouvrir le dossier ${folder.name}`"
+        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-500"
         :class="dropTargetId === folder.id ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400' : ''"
         :draggable="true"
         @click="emit('open-folder', folder.id)"
+        @keydown.enter.prevent="emit('open-folder', folder.id)"
+        @keydown.space.prevent="emit('open-folder', folder.id)"
         @dragstart="(event) => handleFolderDragStart(event, folder)"
         @dragend="handleDragEnd"
         @dragover.prevent="(event) => handleFolderDragOver(event, folder)"
