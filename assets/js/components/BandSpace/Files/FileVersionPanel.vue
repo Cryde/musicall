@@ -10,7 +10,7 @@
       <div class="flex items-center justify-between">
         <p class="text-sm text-surface-500">{{ versionsCountLabel }}</p>
         <Button
-          label="Téléverser une nouvelle version"
+          label="Importer une nouvelle version"
           icon="pi pi-cloud-upload"
           size="small"
           :disabled="filesStore.isUploadingVersion || filesStore.isRollingBack"

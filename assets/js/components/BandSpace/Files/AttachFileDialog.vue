@@ -10,7 +10,7 @@
   >
     <Tabs v-model:value="activeTab">
       <TabList>
-        <Tab value="upload">Téléverser</Tab>
+        <Tab value="upload">Importer</Tab>
         <Tab value="existing">Choisir parmi les fichiers existants</Tab>
       </TabList>
 
@@ -57,7 +57,7 @@
 
             <div v-if="isUploading" class="flex flex-col gap-1">
               <ProgressBar :value="uploadProgress" />
-              <p class="text-xs text-surface-500 text-center">Téléversement… {{ uploadProgress }} %</p>
+              <p class="text-xs text-surface-500 text-center">Import… {{ uploadProgress }} %</p>
             </div>
 
             <Message v-if="uploadError" severity="error" :closable="false">{{ uploadError }}</Message>
@@ -113,7 +113,7 @@
       />
       <Button
         v-if="activeTab === 'upload'"
-        label="Téléverser"
+        label="Importer"
         icon="pi pi-cloud-upload"
         :disabled="!selectedFile || isUploading"
         :loading="isUploading"

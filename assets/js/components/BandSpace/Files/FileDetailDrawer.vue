@@ -85,7 +85,7 @@
 
       <div class="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <p class="text-xs text-surface-400 uppercase tracking-wide">Téléversé par</p>
+          <p class="text-xs text-surface-400 uppercase tracking-wide">Importé par</p>
           <div class="flex items-center gap-2 mt-1">
             <Avatar
               v-if="file.created_by"
@@ -115,14 +115,14 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <label class="text-xs text-surface-400 uppercase tracking-wide">Étiquettes</label>
+        <label class="text-xs text-surface-400 uppercase tracking-wide">Tags</label>
         <MultiSelect
           v-model="selectedTagIds"
-          aria-label="Étiquettes"
+          aria-label="Tags"
           :options="filesStore.tags"
           option-label="name"
           option-value="id"
-          placeholder="Aucune étiquette"
+          placeholder="Aucun tag"
           :disabled="filesStore.isSavingFile"
           @hide="commitTagsIfChanged"
         />
@@ -402,9 +402,9 @@ function confirmDelete() {
   const name = file.value.original_name
   const fileId = file.value.id
   confirm.require({
-    message: `Supprimer définitivement « ${name} » ?`,
-    header: 'Confirmer la suppression',
-    icon: 'pi pi-exclamation-triangle',
+    message: `« ${name} » sera déplacé dans la corbeille, où vous pourrez le restaurer pendant ${filesStore.trashRetentionDays} jours. Continuer ?`,
+    header: 'Déplacer dans la corbeille',
+    icon: 'pi pi-trash',
     acceptLabel: 'Supprimer',
     rejectLabel: 'Annuler',
     acceptClass: 'p-button-danger',

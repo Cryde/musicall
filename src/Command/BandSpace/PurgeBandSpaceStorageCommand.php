@@ -7,10 +7,9 @@ namespace App\Command\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Repository\BandSpace\BandSpaceFileRepository;
-use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Service\BandSpace\File\BandSpaceFilePurger;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,6 +17,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Makes deletions in Band Space actually reach the object storage (#748).
@@ -36,8 +36,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class PurgeBandSpaceStorageCommand extends Command
 {
-    private const int DEFAULT_DAYS = 30;
-
     /**
      * Mirrors the directory namer of the band_space_file mapping (config/packages/vich_uploader.yaml):
      * every object of a space lives under this prefix, so a space can be wiped in one batched call.
@@ -45,12 +43,13 @@ class PurgeBandSpaceStorageCommand extends Command
     private const string STORAGE_PREFIX = 'band_space_files';
 
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
         private readonly BandSpaceRepository $bandSpaceRepository,
         private readonly BandSpaceFileRepository $bandSpaceFileRepository,
-        private readonly BandSpaceFileVersionRepository $bandSpaceFileVersionRepository,
+        private readonly BandSpaceFilePurger $filePurger,
         private readonly FilesystemOperator $musicallFilesystem,
         private readonly LoggerInterface $logger,
+        #[Autowire('%band_space.file_retention_days%')]
+        private readonly int $retentionDays,
     ) {
         parent::__construct();
     }
@@ -63,7 +62,7 @@ class PurgeBandSpaceStorageCommand extends Command
                 'd',
                 InputOption::VALUE_REQUIRED,
                 'Delete files archived more than this many days ago',
-                (string) self::DEFAULT_DAYS,
+                (string) $this->retentionDays,
             )
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Report what would be deleted without deleting anything');
     }
@@ -92,9 +91,9 @@ class PurgeBandSpaceStorageCommand extends Command
     }
 
     /**
-     * Versions are removed one by one through the ORM on purpose: BandSpaceFile has no association to
-     * them, so a plain remove() of the file would drop the rows by FK cascade without VichUploader ever
-     * running, leaving every object behind in the bucket.
+     * The destruction itself lives in BandSpaceFilePurger, shared with the trash's delete-permanently
+     * endpoint. It also declines files restored since this batch was read, so a file skipped here is not
+     * a failure.
      *
      * @return int the number of files that could not be purged
      */
@@ -119,7 +118,11 @@ class PurgeBandSpaceStorageCommand extends Command
             }
 
             try {
-                $this->purgeFile($file);
+                if (!$this->filePurger->purge($file)) {
+                    $output->writeln(sprintf('  skipped file %s, restored since this run started', (string) $file->id));
+
+                    continue;
+                }
                 ++$purged;
             } catch (\Throwable $e) {
                 ++$failures;
@@ -139,26 +142,6 @@ class PurgeBandSpaceStorageCommand extends Command
         ));
 
         return $failures;
-    }
-
-    private function purgeFile(BandSpaceFile $file): void
-    {
-        // Detach the pointer first. The database would cope on its own (the FK is ON DELETE SET NULL),
-        // but this keeps Doctrine's in-memory graph honest: no managed entity is left pointing at a row
-        // that has just been removed.
-        $file->currentVersion = null;
-        $this->entityManager->flush();
-
-        // No explicit storage call here, unlike purgeBandSpace(): VichUploader listens on the removal of
-        // an uploadable entity and deletes the object itself (delete_on_remove, on by default). That is
-        // the whole reason the versions go through the ORM one by one instead of dying by FK cascade.
-        foreach ($this->bandSpaceFileVersionRepository->findByFileNewestFirst($file) as $version) {
-            $this->entityManager->remove($version);
-        }
-        $this->entityManager->flush();
-
-        $this->entityManager->remove($file);
-        $this->entityManager->flush();
     }
 
     /**

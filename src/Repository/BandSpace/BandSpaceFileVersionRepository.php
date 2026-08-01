@@ -57,6 +57,24 @@ class BandSpaceFileVersionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Total bytes held by every version of one file, archived or not.
+     *
+     * Restoring a file puts all of it back into the band's quota usage, since sumActiveBytesByBandSpace()
+     * counts every version of a non-archived file. This is the amount a restore has to fit.
+     */
+    public function sumBytesByFile(BandSpaceFile $file): int
+    {
+        $result = $this->createQueryBuilder('v')
+            ->select('COALESCE(SUM(v.size), 0)')
+            ->where('v.bandSpaceFile = :file')
+            ->setParameter('file', $file)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result;
+    }
+
+    /**
      * Total bytes used by all versions of all non-archived files in the band.
      */
     public function sumActiveBytesByBandSpace(BandSpace $bandSpace): int

@@ -38,6 +38,7 @@ const FILE_ACTIVITY_LABELS = {
   uploaded: () => 'a téléversé le fichier',
   archived: () => 'a archivé le fichier',
   restored: () => 'a restauré le fichier',
+  purged: () => 'a supprimé définitivement le fichier',
   renamed: (a) => {
     const from = a.payload?.from
     const to = a.payload?.to
@@ -50,11 +51,11 @@ const FILE_ACTIVITY_LABELS = {
   },
   tagged: (a) => {
     const tag = a.payload?.tag_name
-    return tag ? `a ajouté l'étiquette ${tag}` : 'a ajouté une étiquette'
+    return tag ? `a ajouté le tag ${tag}` : 'a ajouté un tag'
   },
   untagged: (a) => {
     const tag = a.payload?.tag_name
-    return tag ? `a retiré l'étiquette ${tag}` : 'a retiré une étiquette'
+    return tag ? `a retiré le tag ${tag}` : 'a retiré un tag'
   },
   version_added: (a) => {
     const num = a.payload?.version_number

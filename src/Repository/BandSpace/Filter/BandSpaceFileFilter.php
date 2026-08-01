@@ -19,6 +19,11 @@ final readonly class BandSpaceFileFilter
         public string $order = 'desc',
         public int $limit = self::DEFAULT_LIMIT,
         public int $offset = 0,
+        /**
+         * Lists the trash instead of the live files: archived only, never both. Drives the ?archived=true
+         * parameter of the file collection.
+         */
+        public bool $archivedOnly = false,
     ) {
     }
 }

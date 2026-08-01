@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="visible"
     modal
-    header="Téléverser une nouvelle version"
+    header="Importer une nouvelle version"
     :style="{ width: '32rem' }"
     :closable="!isUploading"
     :close-on-escape="!isUploading"
@@ -56,7 +56,7 @@
 
       <div v-if="isUploading" class="flex flex-col gap-1">
         <ProgressBar :value="uploadProgress" />
-        <p class="text-xs text-surface-500 text-center">Téléversement… {{ uploadProgress }} %</p>
+        <p class="text-xs text-surface-500 text-center">Import… {{ uploadProgress }} %</p>
       </div>
 
       <Message v-if="globalError" severity="error" :closable="false">{{ globalError }}</Message>
@@ -71,7 +71,7 @@
         @click="visible = false"
       />
       <Button
-        label="Téléverser"
+        label="Importer"
         icon="pi pi-cloud-upload"
         :disabled="!selectedFile || isUploading"
         :loading="isUploading"

@@ -72,7 +72,7 @@
 
         <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
         <Button
-          label="Téléverser un fichier"
+          label="Importer un fichier"
           icon="pi pi-cloud-upload"
           severity="secondary"
           size="small"

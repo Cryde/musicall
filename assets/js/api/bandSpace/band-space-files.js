@@ -17,7 +17,8 @@ export default {
       uploaderId,
       sort,
       order,
-      itemsPerPage
+      itemsPerPage,
+      archived
     } = {}
   ) {
     const params = {}
@@ -32,6 +33,7 @@ export default {
     if (sort) params.sort = sort
     if (order) params.order = order
     if (itemsPerPage) params.itemsPerPage = itemsPerPage
+    if (archived) params.archived = 'true'
 
     return axios
       .get(Routing.generate('api_band_space_files_get_collection', { bandSpaceId }), { params })
@@ -51,6 +53,23 @@ export default {
       .patch(Routing.generate('api_band_space_files_patch', { bandSpaceId, id: fileId }), data, {
         headers: { 'Content-Type': 'application/merge-patch+json' }
       })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  restoreFile(bandSpaceId, fileId) {
+    return axios
+      .post(Routing.generate('api_band_space_files_restore', { bandSpaceId, id: fileId }), {})
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  // Destroys the file and its stored objects immediately, without waiting for the purge. Admin only.
+  permanentDeleteFile(bandSpaceId, fileId) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_files_permanent_delete', { bandSpaceId, id: fileId })
+      )
       .then((resp) => resp.data)
       .catch(handleApiError)
   },

@@ -18,7 +18,7 @@
       >
         <div class="col-span-6">Nom</div>
         <div class="col-span-2">Taille</div>
-        <div class="col-span-2">Étiquettes</div>
+        <div class="col-span-2">Tags</div>
         <div class="col-span-2">Ajouté le</div>
       </div>
 
@@ -172,16 +172,16 @@ function openContextMenu(event, file) {
 
 function confirmDelete(file) {
   confirm.require({
-    message: `Supprimer définitivement « ${file.original_name} » ?`,
-    header: 'Confirmer la suppression',
-    icon: 'pi pi-exclamation-triangle',
+    message: `« ${file.original_name} » sera déplacé dans la corbeille, où vous pourrez le restaurer pendant ${filesStore.trashRetentionDays} jours. Continuer ?`,
+    header: 'Déplacer dans la corbeille',
+    icon: 'pi pi-trash',
     acceptLabel: 'Supprimer',
     rejectLabel: 'Annuler',
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await filesStore.deleteFile(props.bandSpaceId, file.id)
-        toast.add({ severity: 'success', summary: 'Fichier supprimé', life: 3000 })
+        toast.add({ severity: 'success', summary: 'Fichier déplacé dans la corbeille', life: 3000 })
       } catch (e) {
         toast.add({
           severity: 'error',

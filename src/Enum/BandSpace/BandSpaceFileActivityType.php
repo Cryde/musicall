@@ -7,6 +7,8 @@ enum BandSpaceFileActivityType: string
     case Uploaded = 'uploaded';
     case Archived = 'archived';
     case Restored = 'restored';
+    /** Destroyed on demand from the trash, rather than by app:band-space:purge on its schedule. */
+    case Purged = 'purged';
     case Renamed = 'renamed';
     case Moved = 'moved';
     case Tagged = 'tagged';

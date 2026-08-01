@@ -8,6 +8,10 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     locale: 'fr'
+    # Grace period for an archived Band Space file: how long the trash keeps it before
+    # app:band-space:purge destroys the object and the rows. Shared so the countdown shown to members
+    # and the purge condition are derived from one value and cannot drift apart.
+    band_space.file_retention_days: 30
     file_publication_cover_destination: 'images/publication/cover'
     file_user_profile_picture_destination: 'images/user/profile'
     file_musician_media_thumbnail_destination: 'images/musician/media'

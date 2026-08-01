@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceFilesApi from '../../api/bandSpace/band-space-files.js'
 
+export const TRASH_FOLDER_ID = 'trash'
+
 export const useBandFilesStore = defineStore('bandFiles', () => {
   const files = ref([])
   const totalFiles = ref(0)
@@ -17,6 +19,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const versions = ref([])
   // Drag-and-drop source. { type: 'folder'|'file', id, parentId, descendantIds: string[] }
   const dragSource = ref(null)
+  // The trash is selected through activeFolderId, like the virtual source folders, so the whole existing
+  // selection and fetch path is reused. This count feeds the sidebar badge even when the trash is closed.
+  const archivedCount = ref(0)
 
   const filters = reactive({
     query: '',
@@ -47,6 +52,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   let foldersRequestId = 0
   let activeFileRequestId = 0
   let activitiesRequestId = 0
+
+  // Served by the quota endpoint so the interface quotes the same window the purge enforces.
+  const trashRetentionDays = computed(() => quota.value?.trash_retention_days ?? 30)
 
   const activeFile = computed(() => {
     if (!activeFileId.value) return null
@@ -118,6 +126,13 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   }
 
   function buildFileParams() {
+    // The trash ignores every filter, before they are even read. Its filter bar is hidden, so a search
+    // or tag left over from browsing a folder would silently narrow the trash with no visible control to
+    // clear it, and someone hunting for the file they just deleted would find it apparently missing.
+    if (activeFolderId.value === TRASH_FOLDER_ID) {
+      return { archived: true }
+    }
+
     const params = {}
     const trimmed = filters.query.trim()
     if (trimmed) params.query = trimmed
@@ -217,12 +232,44 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     }
   }
 
+  async function fetchArchivedCount(bandSpaceId) {
+    const result = await bandSpaceFilesApi.getFiles(bandSpaceId, {
+      archived: true,
+      itemsPerPage: 1
+    })
+    archivedCount.value = result.totalItems ?? 0
+  }
+
+  async function restoreFile(bandSpaceId, fileId) {
+    await bandSpaceFilesApi.restoreFile(bandSpaceId, fileId)
+    removeFromTrash(fileId)
+    // Restoring puts the file's bytes back into the quota, so the indicator has to catch up.
+    fetchQuota(bandSpaceId)
+  }
+
+  async function permanentDeleteFile(bandSpaceId, fileId) {
+    await bandSpaceFilesApi.permanentDeleteFile(bandSpaceId, fileId)
+    removeFromTrash(fileId)
+  }
+
+  function removeFromTrash(fileId) {
+    files.value = files.value.filter((f) => f.id !== fileId)
+    totalFiles.value = Math.max(0, totalFiles.value - 1)
+    archivedCount.value = Math.max(0, archivedCount.value - 1)
+    if (activeFileId.value === fileId) {
+      activeFileId.value = null
+      activeFileFull.value = null
+    }
+  }
+
   async function deleteFile(bandSpaceId, fileId) {
     isDeletingFile.value = true
     try {
       await bandSpaceFilesApi.deleteFile(bandSpaceId, fileId)
       files.value = files.value.filter((f) => f.id !== fileId)
       totalFiles.value = Math.max(0, totalFiles.value - 1)
+      // Deleting only archives, so the file has moved to the trash rather than gone.
+      archivedCount.value += 1
       if (activeFileId.value === fileId) {
         activeFileId.value = null
         activeFileFull.value = null
@@ -370,6 +417,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   return {
     files: readonly(files),
     totalFiles: readonly(totalFiles),
+    archivedCount: readonly(archivedCount),
+    trashRetentionDays,
     folders: readonly(folders),
     virtualFolders: readonly(virtualFolders),
     tags: readonly(tags),
@@ -407,6 +456,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     fetchFileActivities,
     updateFile,
     deleteFile,
+    fetchArchivedCount,
+    restoreFile,
+    permanentDeleteFile,
     setActiveFile,
     uploadFile,
     createTag,

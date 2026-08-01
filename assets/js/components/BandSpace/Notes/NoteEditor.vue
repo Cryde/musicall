@@ -479,7 +479,7 @@ async function uploadAndInsertImage(file) {
   } catch (e) {
     toast.add({
       severity: 'error',
-      summary: 'Téléversement impossible',
+      summary: 'Import impossible',
       detail: e.message,
       life: 5000
     })
