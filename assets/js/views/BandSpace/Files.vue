@@ -77,25 +77,41 @@
           v-if="!isTrashActive"
           class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700"
         >
-          <div class="flex flex-wrap items-center gap-3">
-            <div class="flex-1 min-w-[200px]">
-              <FileFilterBar
-                :filters="filesStore.filters"
-                :tags="filesStore.tags"
-                @update-filter="handleFilterUpdate"
+          <!-- Two rows on purpose: the four filters need about 700px and the two actions about 340px,
+               so a single row wraps on any laptop and leaves the sort control orphaned underneath. -->
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                label="Nouveau dossier"
+                icon="pi pi-folder-plus"
+                size="small"
+                severity="secondary"
+                :disabled="isVirtualFolderActive"
+                v-tooltip.top="
+                  isVirtualFolderActive
+                    ? 'Les dossiers virtuels sont remplis automatiquement par les attachements.'
+                    : null
+                "
+                @click="createFolderDialogVisible = true"
+              />
+              <Button
+                label="Importer un fichier"
+                icon="pi pi-cloud-upload"
+                size="small"
+                :disabled="isVirtualFolderActive"
+                v-tooltip.top="
+                  isVirtualFolderActive
+                    ? 'Les dossiers virtuels sont remplis automatiquement par les attachements.'
+                    : null
+                "
+                @click="uploadDialogVisible = true"
               />
             </div>
-            <Button
-              label="Importer un fichier"
-              icon="pi pi-cloud-upload"
-              size="small"
-              :disabled="isVirtualFolderActive"
-              v-tooltip.top="
-                isVirtualFolderActive
-                  ? 'Les dossiers virtuels sont remplis automatiquement par les attachements.'
-                  : null
-              "
-              @click="uploadDialogVisible = true"
+
+            <FileFilterBar
+              :filters="filesStore.filters"
+              :tags="filesStore.tags"
+              @update-filter="handleFilterUpdate"
             />
           </div>
         </div>
@@ -110,6 +126,8 @@
           />
           <FileList
             v-else
+            :folders="inlineFolders"
+            @open-folder="handleFolderSelect"
             :band-space-id="bandSpaceId"
             :files="filesStore.files"
             :is-loading="filesStore.isLoadingFiles"
@@ -123,6 +141,14 @@
         </div>
       </section>
     </div>
+
+    <FolderEditDialog
+      v-if="bandSpaceId && createFolderDialogVisible"
+      v-model:visible="createFolderDialogVisible"
+      :band-space-id="bandSpaceId"
+      :mode="activeRealFolderId ? 'create-sub' : 'create-root'"
+      :parent-id="activeRealFolderId"
+    />
 
     <FileUploadDialog
       v-if="bandSpaceId"
@@ -182,8 +208,10 @@ import FileTrashList from '../../components/BandSpace/Files/FileTrashList.vue'
 import FileUploadDialog from '../../components/BandSpace/Files/FileUploadDialog.vue'
 import FileVersionPanel from '../../components/BandSpace/Files/FileVersionPanel.vue'
 import FolderBreadcrumb from '../../components/BandSpace/Files/FolderBreadcrumb.vue'
+import FolderEditDialog from '../../components/BandSpace/Files/FolderEditDialog.vue'
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
+import { directChildren } from '../../composables/useFolderDragDrop.js'
 import { TRASH_FOLDER_ID, useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
@@ -199,6 +227,7 @@ filesStore.clear()
 const isAdmin = computed(() => currentSpace.value?.role === 'admin')
 
 const uploadDialogVisible = ref(false)
+const createFolderDialogVisible = ref(false)
 const detailVisible = ref(false)
 const shareDialogVisible = ref(false)
 const shareDialogFileId = ref(null)
@@ -219,6 +248,32 @@ const showBreadcrumb = computed(() => {
 })
 
 const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_ID)
+
+/**
+ * The folder the panel is actually inside, or null at the root. Virtual sources and the trash are not
+ * folders, so a new folder created from there belongs at the root rather than inside them, and their id
+ * must never reach the API as a parent_id.
+ */
+const activeRealFolderId = computed(() => {
+  if (isTrashActive.value || isVirtualFolderActive.value) {
+    return null
+  }
+
+  return filesStore.activeFolderId
+})
+
+/**
+ * The subfolders shown inline above the files. Derived from the tree already in the store, so descending
+ * costs no request. The guard cannot be folded into activeRealFolderId: that returns null for a virtual
+ * source, and a null id means "the root" here, which would list every root folder inside it.
+ */
+const inlineFolders = computed(() => {
+  if (isTrashActive.value || isVirtualFolderActive.value) {
+    return []
+  }
+
+  return directChildren(filesStore.folders, filesStore.activeFolderId)
+})
 
 const isVirtualFolderActive = computed(() => {
   const id = filesStore.activeFolderId
@@ -242,9 +297,9 @@ const emptyMessage = computed(() => {
     return 'Aucun fichier attaché à une setlist pour le moment.'
   }
   if (filesStore.activeFolderId !== null) {
-    return 'Aucun fichier dans ce dossier — commencez par en téléverser un.'
+    return 'Aucun fichier dans ce dossier — commencez par en importer un.'
   }
-  return 'Aucun fichier — commencez par en téléverser un.'
+  return 'Aucun fichier — commencez par en importer un.'
 })
 
 let queryDebounce = null

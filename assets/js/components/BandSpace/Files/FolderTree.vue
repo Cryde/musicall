@@ -82,7 +82,7 @@ import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
-import { canDrop } from '../../../composables/useFolderDragDrop.js'
+import { applyMove, canDrop } from '../../../composables/useFolderDragDrop.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import FolderDeleteDialog from './FolderDeleteDialog.vue'
 import FolderEditDialog from './FolderEditDialog.vue'
@@ -132,44 +132,20 @@ function handleRootDragLeave() {
 function handleRootDrop() {
   isRootDropTarget.value = false
   if (!filesStore.dragSource || !canDrop(filesStore.dragSource, null)) return
-  applyMove(filesStore.dragSource, null)
+  move(filesStore.dragSource, null)
+}
+
+function move(source, targetFolderId) {
+  applyMove(source, targetFolderId, {
+    bandSpaceId: props.bandSpaceId,
+    filesStore,
+    filesApi: bandSpaceFilesApi,
+    toast
+  })
 }
 
 function handleDropOnFolder({ targetFolderId, source }) {
-  applyMove(source, targetFolderId)
-}
-
-async function applyMove(source, targetFolderId) {
-  if (!props.bandSpaceId) return
-  try {
-    if (source.type === 'folder') {
-      await filesStore.updateFolder(props.bandSpaceId, source.id, { parent_id: targetFolderId })
-      toast.add({
-        severity: 'success',
-        summary: 'Dossier déplacé',
-        life: 2500
-      })
-    } else if (source.type === 'file') {
-      await bandSpaceFilesApi.updateFile(props.bandSpaceId, source.id, {
-        folder_id: targetFolderId
-      })
-      filesStore.fetchFiles(props.bandSpaceId)
-      toast.add({
-        severity: 'success',
-        summary: 'Fichier déplacé',
-        life: 2500
-      })
-    }
-  } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'Déplacement impossible',
-      detail: e.message,
-      life: 5000
-    })
-  } finally {
-    filesStore.endDrag()
-  }
+  move(source, targetFolderId)
 }
 
 function openCreateRoot() {
