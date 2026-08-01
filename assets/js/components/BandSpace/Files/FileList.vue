@@ -5,7 +5,7 @@
     </div>
 
     <div
-      v-else-if="files.length === 0"
+      v-else-if="files.length === 0 && folders.length === 0"
       class="flex flex-col items-center justify-center py-16 text-center text-surface-400"
     >
       <i class="pi pi-folder-open text-5xl mb-4"></i>
@@ -20,6 +20,37 @@
         <div class="col-span-2">Taille</div>
         <div class="col-span-2">Tags</div>
         <div class="col-span-2">Ajouté le</div>
+      </div>
+
+      <!-- Folders first, in the same grid as the files, so the panel reads as one list. -->
+      <div
+        v-for="folder in folders"
+        :key="folder.id"
+        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
+        :class="dropTargetId === folder.id ? 'bg-primary-100 dark:bg-primary-900/40 ring-2 ring-primary-400' : ''"
+        :draggable="true"
+        @click="emit('open-folder', folder.id)"
+        @dragstart="(event) => handleFolderDragStart(event, folder)"
+        @dragend="handleDragEnd"
+        @dragover.prevent="(event) => handleFolderDragOver(event, folder)"
+        @dragleave="handleFolderDragLeave"
+        @drop.prevent="() => handleFolderDrop(folder)"
+      >
+        <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
+          <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
+            <i class="pi pi-folder text-lg text-primary-500 shrink-0" aria-hidden="true"></i>
+            <span class="truncate font-medium">{{ folder.name }}</span>
+          </div>
+
+          <div class="col-span-4 md:col-span-2 text-surface-400">—</div>
+          <div class="col-span-4 md:col-span-2"></div>
+
+          <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
+            {{ formatDate(folder.creation_datetime) }}
+          </div>
+        </div>
+
+        <span class="shrink-0 w-7 h-7" aria-hidden="true"></span>
       </div>
 
       <div
@@ -80,6 +111,12 @@ import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
+import {
+  applyMove,
+  canDrop,
+  collectFolderAndDescendants
+} from '../../../composables/useFolderDragDrop.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -90,11 +127,20 @@ const props = defineProps({
   isLoading: { type: Boolean, default: false },
   emptyMessage: {
     type: String,
-    default: 'Aucun fichier dans ce dossier — commencez par en téléverser un.'
-  }
+    default: 'Aucun fichier dans ce dossier — commencez par en importer un.'
+  },
+  /** Direct subfolders of the folder being shown, rendered above the files. */
+  folders: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['select', 'open-share', 'open-versions', 'open-rename', 'open-move'])
+const emit = defineEmits([
+  'select',
+  'open-share',
+  'open-versions',
+  'open-rename',
+  'open-move',
+  'open-folder'
+])
 
 const filesStore = useBandFilesStore()
 const userSecurityStore = useUserSecurityStore()
@@ -103,6 +149,8 @@ const confirm = useConfirm()
 const toast = useToast()
 
 const isAdmin = computed(() => bandSpaceStore.getById(props.bandSpaceId)?.role === 'admin')
+
+const dropTargetId = ref(null)
 
 const contextMenuRef = ref(null)
 const contextMenuFile = ref(null)
@@ -194,6 +242,43 @@ function confirmDelete(file) {
   })
 }
 
+function handleFolderDragStart(event, folder) {
+  filesStore.startDrag({
+    type: 'folder',
+    id: folder.id,
+    parentId: folder.parent_id ?? null,
+    // Without the descendants a folder could be dropped inside itself, which would orphan the subtree.
+    descendantIds: collectFolderAndDescendants(filesStore.folders, folder.id)
+  })
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', folder.id)
+}
+
+function handleFolderDragOver(event, folder) {
+  if (!filesStore.dragSource) return
+  if (!canDrop(filesStore.dragSource, folder.id)) {
+    event.dataTransfer.dropEffect = 'none'
+    return
+  }
+  event.dataTransfer.dropEffect = 'move'
+  dropTargetId.value = folder.id
+}
+
+function handleFolderDragLeave() {
+  dropTargetId.value = null
+}
+
+function handleFolderDrop(folder) {
+  dropTargetId.value = null
+  if (!filesStore.dragSource || !canDrop(filesStore.dragSource, folder.id)) return
+  applyMove(filesStore.dragSource, folder.id, {
+    bandSpaceId: props.bandSpaceId,
+    filesStore,
+    filesApi: bandSpaceFilesApi,
+    toast
+  })
+}
+
 function handleDragStart(event, file) {
   filesStore.startDrag({
     type: 'file',
@@ -205,6 +290,7 @@ function handleDragStart(event, file) {
 }
 
 function handleDragEnd() {
+  dropTargetId.value = null
   filesStore.endDrag()
 }
 
