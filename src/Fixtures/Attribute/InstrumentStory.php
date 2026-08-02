@@ -29,5 +29,10 @@ class InstrumentStory extends Story
         $this->addToPool(self::ATTRIBUTES_INSTRUMENTS, InstrumentFactory::new()->asVocals());
         $this->addToPool(self::ATTRIBUTES_INSTRUMENTS, InstrumentFactory::new()->asKeyboard());
         $this->addToPool(self::ATTRIBUTES_INSTRUMENTS, InstrumentFactory::new()->asBanjo());
+        // Added for the tech rider, which needs to name what each member plays. A rock or metal
+        // line-up reaches for these and the catalogue had none of them.
+        $this->addToPool(self::ATTRIBUTES_INSTRUMENTS, InstrumentFactory::new()->asBackingVocals());
+        $this->addToPool(self::ATTRIBUTES_INSTRUMENTS, InstrumentFactory::new()->asPercussion());
+        $this->addToPool(self::ATTRIBUTES_INSTRUMENTS, InstrumentFactory::new()->asHarmonica());
     }
 }

@@ -23,6 +23,21 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * Separate from updateMemberRole because the server enforces a different rule: a member may
+   * edit their own profile, an admin anyone's, whereas roles are admin only.
+   */
+  updateMemberProfile(bandSpaceId, memberId, { stageName, instrumentIds }) {
+    return axios
+      .patch(
+        Routing.generate('api_band_space_member_profile_patch', { bandSpaceId, id: memberId }),
+        { stage_name: stageName, instrument_ids: instrumentIds },
+        { headers: { 'Content-Type': 'application/merge-patch+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   kickMember(bandSpaceId, memberId) {
     return axios
       .delete(Routing.generate('api_band_space_members_delete', { bandSpaceId, id: memberId }))

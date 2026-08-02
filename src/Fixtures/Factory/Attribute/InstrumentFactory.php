@@ -176,6 +176,38 @@ final class InstrumentFactory extends PersistentObjectFactory
         ]);
     }
 
+    /**
+     * Backing vocals as a line of their own, because a rider distinguishes them from lead vocals:
+     * the reference document has members billed as "Bass - Backing Vocals". Chant alone could not
+     * express that.
+     */
+    public function asBackingVocals(): self
+    {
+        return $this->with([
+            'musicianName' => 'Choriste',
+            'name' => 'Chœurs',
+            'slug' => 'choeurs',
+        ]);
+    }
+
+    public function asPercussion(): self
+    {
+        return $this->with([
+            'musicianName' => 'Percussionniste',
+            'name' => 'Percussions',
+            'slug' => 'percussions',
+        ]);
+    }
+
+    public function asHarmonica(): self
+    {
+        return $this->with([
+            'musicianName' => 'Harmoniciste',
+            'name' => 'Harmonica',
+            'slug' => 'harmonica',
+        ]);
+    }
+
     public static function class(): string
     {
         return Instrument::class;

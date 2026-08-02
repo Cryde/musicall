@@ -176,6 +176,8 @@ const SENTENCES = {
   'settings.member_removed': (a) =>
     `a exclu ${a.payload?.target_username ?? 'un membre'} du Band Space`,
   'settings.member_left': () => 'a quitté le Band Space',
+  'settings.member_profile_updated': (a) =>
+    `a mis à jour le nom de scène et les instruments de ${a.payload?.target_username ?? 'un membre'}`,
 
   // Settings — invitations
   'settings.invitation_sent': (a) => `a invité ${a.payload?.email ?? 'un utilisateur'}`,

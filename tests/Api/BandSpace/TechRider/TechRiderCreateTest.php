@@ -65,6 +65,7 @@ class TechRiderCreateTest extends ApiTestCase
                 'update_datetime' => null,
                 'file' => null,
                 'patch_list' => null,
+                'contacts' => null,
             ],
             $items,
         );

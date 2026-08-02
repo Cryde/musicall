@@ -3,6 +3,7 @@
 namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\BandSpaceMember;
+use App\Entity\Attribute\Instrument;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
@@ -21,6 +22,16 @@ readonly class BandSpaceMemberBuilder
         $dto->userId = $membership->user->id;
         $dto->username = $membership->user->username;
         $dto->role = $membership->role->value;
+        $dto->stageName = $membership->stageName;
+        // The name a document should use, resolved here so no caller has to repeat the fallback.
+        $dto->displayName = $membership->displayName();
+        $dto->instruments = array_map(
+            static fn (Instrument $instrument): array => [
+                'id' => (string) $instrument->id,
+                'name' => $instrument->name,
+            ],
+            array_values($membership->instruments->toArray()),
+        );
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($membership->user);
         $dto->creationDatetime = $membership->creationDatetime;
         $dto->status = $membership->status->value;

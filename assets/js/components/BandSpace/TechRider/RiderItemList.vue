@@ -130,6 +130,16 @@
           :read-only="readOnly"
           @choose="handleChooseFile"
         />
+        <RiderContactsItemEditor
+          v-else-if="item.type === 'contacts'"
+          :band-space-id="bandSpaceId"
+          :item-id="item.id"
+          :title="item.title"
+          :contacts="item.contacts"
+          :content="item.content"
+          :read-only="readOnly"
+          @save="handleSave"
+        />
         <RiderPatchListEditor
           v-else-if="item.type === 'patch_list'"
           :band-space-id="bandSpaceId"
@@ -201,6 +211,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { reactive, ref } from 'vue'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
+import RiderContactsItemEditor from './RiderContactsItemEditor.vue'
 import RiderDocumentItemEditor from './RiderDocumentItemEditor.vue'
 import RiderPatchListEditor from './RiderPatchListEditor.vue'
 import RiderTextItemEditor from './RiderTextItemEditor.vue'
@@ -225,7 +236,8 @@ const addDialogOpen = ref(false)
 const ITEM_TYPES = [
   { value: 'text', label: 'Texte libre' },
   { value: 'document', label: 'Document (image ou PDF)' },
-  { value: 'patch_list', label: 'Patch list' }
+  { value: 'patch_list', label: 'Patch list' },
+  { value: 'contacts', label: 'Membres et contacts' }
 ]
 
 const newTitle = ref('')

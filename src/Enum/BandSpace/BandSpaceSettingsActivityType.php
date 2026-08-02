@@ -8,6 +8,7 @@ enum BandSpaceSettingsActivityType: string
     case MemberRoleChanged = 'member_role_changed';
     case MemberRemoved = 'member_removed';
     case MemberLeft = 'member_left';
+    case MemberProfileUpdated = 'member_profile_updated';
     case InvitationSent = 'invitation_sent';
     case InvitationAccepted = 'invitation_accepted';
     case InvitationDeclined = 'invitation_declined';
