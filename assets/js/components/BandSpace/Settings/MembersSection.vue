@@ -83,11 +83,25 @@
             >
               {{ member.username.charAt(0).toUpperCase() }}
             </div>
-            <div>
+            <div class="min-w-0">
               <span class="text-sm font-medium text-surface-800 dark:text-surface-100">
-                {{ member.username }}
+                {{ member.display_name }}
+              </span>
+              <!-- Shown only when it differs, so the row says who this is without repeating
+                   itself for the members who never set a stage name. -->
+              <span
+                v-if="member.stage_name && member.stage_name !== member.username"
+                class="text-xs text-surface-500 dark:text-surface-400 ml-1"
+              >
+                ({{ member.username }})
               </span>
               <span v-if="isMe(member)" class="text-xs text-surface-400 ml-1">(vous)</span>
+              <p
+                v-if="member.instruments.length > 0"
+                class="text-xs text-surface-600 dark:text-surface-300"
+              >
+                {{ member.instruments.map((instrument) => instrument.name).join(', ') }}
+              </p>
             </div>
             <Tag
               :value="member.role === 'admin' ? 'Admin' : 'Membre'"
@@ -96,7 +110,20 @@
             />
           </div>
 
-          <div v-if="!isMe(member)" class="flex gap-1">
+          <div class="flex gap-1">
+            <!-- Your own profile, or anyone's if you are an admin. The same rule the server
+                 enforces, so the button is not offered where the request would be refused. -->
+            <Button
+              v-if="canEditProfile(member)"
+              icon="pi pi-pencil"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Nom de scène et instruments'"
+              :aria-label="`Modifier le nom de scène et les instruments de ${member.display_name}`"
+              @click="openProfileDialog(member)"
+            />
+            <template v-if="!isMe(member)">
             <Button
               v-if="member.role === 'user'"
               icon="pi pi-arrow-up"
@@ -130,10 +157,17 @@
               :loading="settingsStore.isKicking"
               @click="handleKick(member)"
             />
+            </template>
           </div>
         </div>
       </div>
     </div>
+
+    <MemberProfileDialog
+      v-model:visible="profileDialogOpen"
+      :band-space-id="bandSpaceId"
+      :member="profileTarget"
+    />
 
     <!-- Leave -->
     <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
@@ -173,6 +207,7 @@ import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import MemberProfileDialog from './MemberProfileDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -191,6 +226,20 @@ const inviteError = ref('')
 const inviteSuccess = ref('')
 
 const isMe = (member) => member.username === userSecurityStore.user?.username
+
+const profileDialogOpen = ref(false)
+const profileTarget = ref(null)
+
+const isAdmin = computed(() => settingsStore.members.find((m) => isMe(m))?.role === 'admin')
+
+function canEditProfile(member) {
+  return isMe(member) || isAdmin.value
+}
+
+function openProfileDialog(member) {
+  profileTarget.value = member
+  profileDialogOpen.value = true
+}
 
 const adminCount = computed(() => settingsStore.members.filter((m) => m.role === 'admin').length)
 const isOnlyAdmin = computed(() => {

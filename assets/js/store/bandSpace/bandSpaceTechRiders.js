@@ -22,6 +22,8 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   let listRequestId = 0
   let activeRequestId = 0
   let reorderRequestId = 0
+  // Per item, not one counter: two items save independently and must not cancel each other.
+  const contentRequestIds = new Map()
 
   async function fetchRiders(bandSpaceId) {
     if (bandSpaceId !== loadedBandSpaceId.value) {
@@ -152,8 +154,26 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     replaceItem(await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, { title }))
   }
 
+  /**
+   * Guarded per item, the same way reorderItems is, because a contacts item has two writers: the
+   * note autosaves on a debounce while the emails switch saves immediately. Both send the whole
+   * `content`, so a slow note save landing after a newer toggle would put the old flag back on
+   * screen. That is worth guarding for its own sake here, since the flag decides whether four
+   * people's addresses appear on a document sent to strangers.
+   */
   async function saveItemContent(bandSpaceId, riderId, itemId, content) {
-    replaceItem(await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, { content }))
+    const requestId = (contentRequestIds.get(itemId) ?? 0) + 1
+    contentRequestIds.set(itemId, requestId)
+
+    const updated = await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, {
+      content
+    })
+
+    // A stale answer is dropped rather than applied. The newer request is already in flight and
+    // its answer is the one that matches what the user last asked for.
+    if (contentRequestIds.get(itemId) !== requestId) return
+
+    replaceItem(updated)
   }
 
   async function setItemFile(bandSpaceId, riderId, itemId, fileId) {
@@ -263,6 +283,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
 
   function clearActive() {
     activeTechRider.value = null
+    contentRequestIds.clear()
     // The editors holding these edits are about to be destroyed, so keeping the ids would leave
     // the guard warning about changes that no longer exist anywhere.
     dirtyItemIds.value = []

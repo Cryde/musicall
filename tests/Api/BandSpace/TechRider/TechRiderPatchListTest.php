@@ -127,6 +127,7 @@ class TechRiderPatchListTest extends ApiTestCase
                 ],
                 'outputs' => [],
             ],
+            'contacts' => null,
             'position' => 0,
             'creation_datetime' => $item->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $item->updateDatetime?->format(\DateTimeInterface::ATOM),

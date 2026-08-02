@@ -50,6 +50,26 @@ final class InstrumentFactory extends PersistentObjectFactory
         ]);
     }
 
+    public function asBass(): \App\Tests\Factory\Attribute\InstrumentFactory
+    {
+        return $this->with([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'musicianName' => 'Bassiste',
+            'name' => 'Basse',
+            'slug' => 'basse',
+        ]);
+    }
+
+    public function asBackingVocals(): \App\Tests\Factory\Attribute\InstrumentFactory
+    {
+        return $this->with([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'musicianName' => 'Choriste',
+            'name' => 'Chœurs',
+            'slug' => 'choeurs',
+        ]);
+    }
+
     public static function class(): string
     {
         return Instrument::class;

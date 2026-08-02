@@ -84,6 +84,7 @@ class TechRiderItemTest extends ApiTestCase
             'update_datetime' => null,
             'file' => null,
             'patch_list' => null,
+            'contacts' => null,
         ]);
 
         $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
@@ -265,6 +266,7 @@ class TechRiderItemTest extends ApiTestCase
             'update_datetime' => $item->updateDatetime?->format(DateTimeInterface::ATOM),
             'file' => null,
             'patch_list' => null,
+            'contacts' => null,
         ]);
     }
 
@@ -306,6 +308,7 @@ class TechRiderItemTest extends ApiTestCase
             'update_datetime' => $item->updateDatetime?->format(DateTimeInterface::ATOM),
             'file' => null,
             'patch_list' => null,
+            'contacts' => null,
         ]);
     }
 

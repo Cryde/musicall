@@ -132,6 +132,16 @@ class TechRiderItemResource
     #[Groups([self::READ])]
     public ?array $patchList = null;
 
+    /**
+     * The member lines a Contacts item prints, null on every other type. Rendered from the band's
+     * current roster on each read rather than stored, so the block cannot go stale when somebody
+     * joins or leaves. Read only: the item's `content` holds the choices that drive it.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[Groups([self::READ])]
+    public ?array $contacts = null;
+
     #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
     #[Groups([self::READ])]
     public int $position = 0;

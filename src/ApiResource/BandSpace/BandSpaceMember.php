@@ -85,6 +85,15 @@ class BandSpaceMember
     #[Assert\Choice(choices: ['admin', 'user'], message: 'Le rôle doit être "admin" ou "user"')]
     public string $role;
 
+    /** Null when the member has not chosen one; display_name is what a document should print. */
+    public ?string $stageName = null;
+
+    /** stageName when set, the username otherwise. Resolved server side so nobody repeats it. */
+    public string $displayName;
+
+    /** @var list<array{id: string, name: string}> */
+    public array $instruments = [];
+
     public ?string $profilePictureUrl = null;
     public \DateTimeInterface $creationDatetime;
     #[Assert\Choice(choices: ['active', 'left', 'kicked'], message: 'Le statut doit être "active", "left" ou "kicked"')]

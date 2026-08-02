@@ -10,6 +10,7 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
   const isLoadingInvitations = ref(false)
   const isInviting = ref(false)
   const isUpdatingRole = ref(false)
+  const isUpdatingProfile = ref(false)
   const isKicking = ref(false)
   const isLeaving = ref(false)
   const isCancellingInvitation = ref(false)
@@ -87,6 +88,23 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     }
   }
 
+  async function updateMemberProfile(bandSpaceId, memberId, { stageName, instrumentIds }) {
+    isUpdatingProfile.value = true
+    try {
+      const updated = await bandSpaceSettingsApi.updateMemberProfile(bandSpaceId, memberId, {
+        stageName,
+        instrumentIds
+      })
+      const index = members.value.findIndex((m) => m.id === memberId)
+      if (index !== -1) {
+        members.value[index] = updated
+      }
+      return updated
+    } finally {
+      isUpdatingProfile.value = false
+    }
+  }
+
   async function kickMember(bandSpaceId, memberId) {
     isKicking.value = true
     try {
@@ -150,6 +168,7 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     isLoadingInvitations: readonly(isLoadingInvitations),
     isInviting: readonly(isInviting),
     isUpdatingRole: readonly(isUpdatingRole),
+    isUpdatingProfile: readonly(isUpdatingProfile),
     isKicking: readonly(isKicking),
     isLeaving: readonly(isLeaving),
     isCancellingInvitation: readonly(isCancellingInvitation),
@@ -160,6 +179,7 @@ export const useBandSpaceSettingsStore = defineStore('bandSpaceSettings', () => 
     invite,
     cancelInvitation,
     updateRole,
+    updateMemberProfile,
     kickMember,
     leave,
     scheduleDeletion,

@@ -54,9 +54,13 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
      */
     public function findByBandSpace(BandSpace $bandSpace, bool $includeInactive = false): array
     {
+        // Instruments come along because every caller that lists members now prints them, so
+        // leaving them lazy would cost one query per member on a roster.
         $qb = $this->createQueryBuilder('m')
             ->innerJoin('m.user', 'u')
             ->addSelect('u')
+            ->leftJoin('m.instruments', 'i')
+            ->addSelect('i')
             ->where('m.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace)
             ->orderBy('m.creationDatetime', 'ASC');

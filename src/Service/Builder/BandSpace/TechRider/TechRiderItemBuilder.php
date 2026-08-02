@@ -6,12 +6,14 @@ use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
 use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\BandSpace\TechRiderPatchRow;
 use App\Enum\BandSpace\TechRiderPatchDirection;
+use App\Service\BandSpace\TechRider\TechRiderContactsRenderer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class TechRiderItemBuilder
 {
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
+        private TechRiderContactsRenderer $contactsRenderer,
     ) {
     }
 
@@ -40,6 +42,7 @@ readonly class TechRiderItemBuilder
         $dto->fileId = $entity->file === null ? null : (string) $entity->file->id;
         $dto->file = $this->buildFile($entity);
         $dto->patchList = $this->buildPatchList($entity);
+        $dto->contacts = $this->buildContacts($entity);
         $dto->position = $entity->position;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
@@ -104,6 +107,31 @@ readonly class TechRiderItemBuilder
         return [
             'inputs' => $grouped[TechRiderPatchDirection::Input->value],
             'outputs' => $grouped[TechRiderPatchDirection::Output->value],
+        ];
+    }
+
+    /**
+     * The member lines a contacts item prints, rendered from the roster on every read.
+     *
+     * `show_emails` is echoed back because it is a stored choice the editor has to reflect, and it
+     * defaults to false: this document goes to strangers, so publishing four people's addresses is
+     * something you do on purpose, never by leaving a field alone.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function buildContacts(TechRiderItem $entity): ?array
+    {
+        if (!$entity->type->rendersFromBandData()) {
+            return null;
+        }
+
+        $showEmails = ($entity->content['showEmails'] ?? false) === true;
+        $rendered = $this->contactsRenderer->render($entity->techRider->bandSpace, $showEmails);
+
+        return [
+            'show_emails' => $showEmails,
+            'lines' => $rendered['lines'],
+            'emails' => $rendered['emails'],
         ];
     }
 
