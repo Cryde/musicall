@@ -4,28 +4,63 @@ namespace App\Service\Builder\BandSpace\TechRider;
 
 use App\ApiResource\BandSpace\TechRider\TechRiderResource;
 use App\Entity\BandSpace\TechRider;
+use App\Entity\BandSpace\TechRiderSection;
+use App\Repository\BandSpace\TechRiderSectionRepository;
 
 readonly class TechRiderBuilder
 {
+    public function __construct(
+        private TechRiderSectionBuilder $sectionBuilder,
+        private TechRiderSectionRepository $sectionRepository,
+    ) {
+    }
+
     /**
-     * The list view reuses buildItem() because a rider is currently name plus dates.
-     * That stops being true once sections, patch rows and the stage plot land: the
-     * collection must not embed them, or listing a space ships every rider's full
-     * content to render a table of names. SetlistBuilder shows the trap, it embeds
-     * every item and runs a duration query per setlist even for the collection.
+     * The list view carries counts, never section content. Riders gain patch rows and a
+     * stage plot next, and embedding all of it to render a dropdown of names is the trap
+     * SetlistBuilder already fell into, where the collection ships every item plus a
+     * duration query per setlist.
+     *
+     * One grouped count query for the whole page rather than one per rider.
      *
      * @param TechRider[] $entities
      * @return TechRiderResource[]
      */
     public function buildFromList(array $entities): array
     {
+        $counts = $this->sectionRepository->countByRiders(
+            array_values(array_map(static fn (TechRider $entity): string => (string) $entity->id, $entities)),
+        );
+
         return array_map(
-            fn (TechRider $entity): TechRiderResource => $this->buildItem($entity),
+            function (TechRider $entity) use ($counts): TechRiderResource {
+                $dto = $this->buildSummary($entity);
+                $dto->sectionCount = $counts[(string) $entity->id] ?? 0;
+
+                return $dto;
+            },
             $entities,
         );
     }
 
+    /** Full rider, sections included. Used by the item operations. */
     public function buildItem(TechRider $entity): TechRiderResource
+    {
+        $dto = $this->buildSummary($entity);
+
+        $sections = $entity->sections->toArray();
+        usort(
+            $sections,
+            static fn (TechRiderSection $a, TechRiderSection $b): int => $a->position <=> $b->position,
+        );
+
+        $dto->sections = $this->sectionBuilder->buildFromList($sections);
+        $dto->sectionCount = count($sections);
+
+        return $dto;
+    }
+
+    private function buildSummary(TechRider $entity): TechRiderResource
     {
         $dto = new TechRiderResource();
         $dto->id = (string) $entity->id;

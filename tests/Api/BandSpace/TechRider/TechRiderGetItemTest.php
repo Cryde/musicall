@@ -47,6 +47,8 @@ class TechRiderGetItemTest extends ApiTestCase
             'archive_datetime' => null,
             'creation_datetime' => $rider->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => null,
+            'sections' => [],
+            'section_count' => 0,
         ]);
     }
 
@@ -82,6 +84,8 @@ class TechRiderGetItemTest extends ApiTestCase
             'archive_datetime' => $rider->archiveDatetime?->format(DateTimeInterface::ATOM),
             'creation_datetime' => $rider->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => null,
+            'sections' => [],
+            'section_count' => 0,
         ]);
     }
 

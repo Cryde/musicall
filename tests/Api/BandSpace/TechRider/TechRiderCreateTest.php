@@ -2,9 +2,11 @@
 
 namespace App\Tests\Api\BandSpace\TechRider;
 
+use App\Entity\BandSpace\TechRiderSection;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TechRiderRepository;
+use App\Repository\BandSpace\TechRiderSectionRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -40,6 +42,29 @@ class TechRiderCreateTest extends ApiTestCase
         $this->assertCount(1, $riders);
         $rider = $riders[0];
 
+        $sections = self::getContainer()->get(TechRiderSectionRepository::class)->findByRider($rider);
+
+        // Ids and timestamps are generated, so the expected sections are built from the rows;
+        // the titles and the order are pinned separately below, which is the part that is a
+        // product decision rather than an implementation detail.
+        $expectedSections = array_map(
+            static fn (TechRiderSection $section): array => [
+                '@id' => '/api/band_spaces/' . $section->techRider->bandSpace->id
+                    . '/tech_riders/' . $section->techRider->id
+                    . '/sections/' . $section->id,
+                '@type' => 'TechRiderSection',
+                'id' => (string) $section->id,
+                'band_space_id' => (string) $bandSpace->id,
+                'rider_id' => (string) $rider->id,
+                'title' => $section->title,
+                'content' => null,
+                'position' => $section->position,
+                'creation_datetime' => $section->creationDatetime->format(\DateTimeInterface::ATOM),
+                'update_datetime' => null,
+            ],
+            $sections,
+        );
+
         $this->assertJsonEquals([
             '@context' => '/api/contexts/TechRider',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/tech_riders/' . $rider->id,
@@ -51,7 +76,28 @@ class TechRiderCreateTest extends ApiTestCase
             'archive_datetime' => null,
             'creation_datetime' => $rider->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
+            'sections' => $expectedSections,
+            'section_count' => 7,
         ]);
+
+        // A new rider opens on a prompt, not a blank page. The set and its order are the
+        // product decision, so they are asserted literally rather than derived from the enum.
+        $this->assertSame(
+            [
+                'Membres et contacts',
+                'Backline et instruments',
+                'Sonorisation',
+                'Retours et in-ears',
+                'Éclairage',
+                'Catering',
+                'Divers',
+            ],
+            array_map(static fn (TechRiderSection $section): string => $section->title, $sections),
+        );
+        $this->assertSame([0, 1, 2, 3, 4, 5, 6], array_map(
+            static fn (TechRiderSection $section): int => $section->position,
+            $sections,
+        ));
 
         $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepository->findForResource($bandSpace, BandSpaceModule::Rider, $rider->id);

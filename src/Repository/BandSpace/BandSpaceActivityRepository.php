@@ -4,6 +4,7 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceActivity;
+use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Service\BandSpace\BandSpaceActivityFilter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -38,6 +39,37 @@ class BandSpaceActivityRepository extends ServiceEntityRepository
             ->orderBy('a.creationDatetime', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * The most recent activity of one type, on one resource, by one actor.
+     *
+     * Exists so a caller can coalesce: an autosaving editor would otherwise write a near
+     * identical row every few seconds, and a feed of forty "a modifié la section" entries
+     * for one afternoon's writing is noise rather than history.
+     */
+    public function findLatestForResource(
+        BandSpace $bandSpace,
+        BandSpaceModule $module,
+        string $type,
+        UuidInterface|string $resourceId,
+        User $actor,
+    ): ?BandSpaceActivity {
+        return $this->createQueryBuilder('a')
+            ->where('a.bandSpace = :bandSpace')
+            ->andWhere('a.module = :module')
+            ->andWhere('a.type = :type')
+            ->andWhere('a.resourceId = :resourceId')
+            ->andWhere('a.actor = :actor')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('module', $module)
+            ->setParameter('type', $type)
+            ->setParameter('resourceId', $resourceId)
+            ->setParameter('actor', $actor)
+            ->orderBy('a.creationDatetime', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /**

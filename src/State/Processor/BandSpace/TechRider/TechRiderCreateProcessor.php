@@ -7,9 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\TechRider\TechRiderCreate;
 use App\ApiResource\BandSpace\TechRider\TechRiderResource;
 use App\Entity\BandSpace\TechRider;
+use App\Entity\BandSpace\TechRiderSection;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
+use App\Enum\BandSpace\TechRiderDefaultSection;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\TechRider\TechRiderBuilder;
@@ -49,6 +51,7 @@ readonly class TechRiderCreateProcessor implements ProcessorInterface
         $techRider->name = $data->name;
 
         $this->entityManager->persist($techRider);
+        $this->seedDefaultSections($techRider);
 
         $this->activityRecorder->record(
             bandSpace: $bandSpace,
@@ -62,5 +65,23 @@ readonly class TechRiderCreateProcessor implements ProcessorInterface
         $this->entityManager->flush();
 
         return $this->techRiderBuilder->buildItem($techRider);
+    }
+
+    /**
+     * A new rider opens on a prompt rather than a blank page. These are ordinary rows from
+     * the moment they exist: rename, reorder or delete them freely. No activity is recorded
+     * for them, they are part of creating the rider rather than seven separate edits.
+     */
+    private function seedDefaultSections(TechRider $techRider): void
+    {
+        foreach (TechRiderDefaultSection::cases() as $position => $default) {
+            $section = new TechRiderSection();
+            $section->techRider = $techRider;
+            $section->title = $default->title();
+            $section->position = $position;
+
+            $techRider->sections->add($section);
+            $this->entityManager->persist($section);
+        }
     }
 }
