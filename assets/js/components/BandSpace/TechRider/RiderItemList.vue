@@ -122,6 +122,14 @@
           :read-only="readOnly"
           @save="handleSave"
         />
+        <RiderDocumentItemEditor
+          v-else-if="item.type === 'document'"
+          :band-space-id="bandSpaceId"
+          :item-id="item.id"
+          :file="item.file"
+          :read-only="readOnly"
+          @choose="handleChooseFile"
+        />
         <p v-else class="text-surface-600 dark:text-surface-300 py-4 text-center">
           Ce type d'élément arrivera prochainement.
         </p>
@@ -139,6 +147,17 @@
             Titre <span class="text-red-600 dark:text-red-400">*</span>
           </label>
           <InputText id="newItemTitle" v-model="newTitle" autofocus class="w-full" placeholder="ex. Loges" />
+        </div>
+        <div>
+          <label for="newItemType" class="block text-sm font-medium mb-1">Type</label>
+          <Select
+            id="newItemType"
+            v-model="newType"
+            :options="ITEM_TYPES"
+            option-label="label"
+            option-value="value"
+            class="w-full"
+          />
         </div>
         <div class="flex justify-end gap-2">
           <Button label="Annuler" severity="secondary" text type="button" @click="addDialogOpen = false" />
@@ -168,11 +187,13 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { reactive, ref } from 'vue'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
+import RiderDocumentItemEditor from './RiderDocumentItemEditor.vue'
 import RiderTextItemEditor from './RiderTextItemEditor.vue'
 
 const props = defineProps({
@@ -192,7 +213,13 @@ const saveError = reactive({})
 const collapsed = reactive({})
 
 const addDialogOpen = ref(false)
+const ITEM_TYPES = [
+  { value: 'text', label: 'Texte libre' },
+  { value: 'document', label: 'Document (image ou PDF)' }
+]
+
 const newTitle = ref('')
+const newType = ref('text')
 const isAdding = ref(false)
 
 const renameDialogOpen = ref(false)
@@ -213,6 +240,14 @@ const TYPE_ICONS = {
 
 function typeIcon(type) {
   return TYPE_ICONS[type] ?? 'pi-align-left'
+}
+
+async function handleChooseFile({ itemId, fileId }) {
+  try {
+    await techRidersStore.setItemFile(props.bandSpaceId, props.riderId, itemId, fileId)
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+  }
 }
 
 async function setIncluded(item, isIncluded) {
@@ -262,10 +297,14 @@ async function handleAdd() {
 
   isAdding.value = true
   try {
-    await techRidersStore.createItem(props.bandSpaceId, props.riderId, { title })
+    await techRidersStore.createItem(props.bandSpaceId, props.riderId, {
+      title,
+      type: newType.value
+    })
     toast.add({ severity: 'success', summary: 'Élément ajouté', life: 2500 })
     addDialogOpen.value = false
     newTitle.value = ''
+    newType.value = 'text'
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
   } finally {
