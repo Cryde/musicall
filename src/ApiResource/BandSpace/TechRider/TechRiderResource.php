@@ -17,6 +17,7 @@ use App\State\Processor\BandSpace\TechRider\TechRiderUnarchiveProcessor;
 use App\State\Processor\BandSpace\TechRider\TechRiderUpdateProcessor;
 use App\State\Provider\BandSpace\TechRider\TechRiderCollectionProvider;
 use App\State\Provider\BandSpace\TechRider\TechRiderItemProvider;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
@@ -30,6 +31,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             paginationEnabled: false,
             security: "is_granted('ROLE_USER')",
+            normalizationContext: ['groups' => [self::LIST], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_get_collection',
             provider: TechRiderCollectionProvider::class,
             parameters: [
@@ -45,6 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             ],
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
+            normalizationContext: ['groups' => [self::ITEM, TechRiderSectionResource::READ], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_get_item',
             provider: TechRiderItemProvider::class,
         ),
@@ -56,6 +59,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             ],
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
+            normalizationContext: ['groups' => [self::ITEM, TechRiderSectionResource::READ], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_patch',
             provider: TechRiderItemProvider::class,
             processor: TechRiderUpdateProcessor::class,
@@ -73,6 +77,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_USER')",
             input: false,
             read: false,
+            normalizationContext: ['groups' => [self::ITEM, TechRiderSectionResource::READ], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_unarchive',
             processor: TechRiderUnarchiveProcessor::class,
         ),
@@ -93,18 +98,48 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class TechRiderResource
 {
+    final const string LIST = 'tech_rider:list';
+    final const string ITEM = 'tech_rider:item';
+
     #[ApiProperty(identifier: true)]
+    #[Groups([self::LIST, self::ITEM])]
     public string $id;
 
     #[ApiProperty(identifier: true)]
+    #[Groups([self::LIST, self::ITEM])]
     public string $bandSpaceId;
 
     #[Assert\NotBlank(message: 'Veuillez spécifier un nom')]
     #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
+    #[Groups([self::LIST, self::ITEM])]
     public string $name;
 
+    #[Groups([self::LIST, self::ITEM])]
     public ?string $createdByUsername = null;
+
+    #[Groups([self::LIST, self::ITEM])]
     public ?\DateTimeInterface $archiveDatetime = null;
+
+    #[Groups([self::LIST, self::ITEM])]
     public \DateTimeInterface $creationDatetime;
+
+    #[Groups([self::LIST, self::ITEM])]
     public ?\DateTimeInterface $updateDatetime = null;
+
+    /**
+     * Item operations only, which is why it is grouped rather than merely left empty on the
+     * collection: a rider with seven sections reported as `sections: []` alongside
+     * `section_count: 7` would be contradictory. The list omits the key entirely.
+     *
+     * Riders gain patch rows and a stage plot next, so the collection must never grow into
+     * shipping a whole space's rider content to render a dropdown of names.
+     *
+     * @var TechRiderSectionResource[]
+     */
+    #[ApiProperty(readableLink: true)]
+    #[Groups([self::ITEM])]
+    public array $sections = [];
+
+    #[Groups([self::LIST, self::ITEM])]
+    public int $sectionCount = 0;
 }

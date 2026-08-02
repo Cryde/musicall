@@ -15,7 +15,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     openapi: new Operation(tags: ['Band Space Tech Rider']),
     security: "is_granted('ROLE_USER')",
-    normalizationContext: ['skip_null_values' => false],
+    normalizationContext: [
+        'groups' => [TechRiderResource::ITEM, TechRiderSectionResource::READ],
+        'skip_null_values' => false,
+    ],
     output: TechRiderResource::class,
     name: 'api_band_space_tech_riders_post',
     processor: TechRiderCreateProcessor::class,
