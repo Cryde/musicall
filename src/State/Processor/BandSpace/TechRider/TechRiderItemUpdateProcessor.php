@@ -12,7 +12,6 @@ use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
-use App\Enum\BandSpace\TechRiderItemType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\TechRiderRepository;
@@ -92,18 +91,27 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
             $titleChanged = true;
         }
 
+        // Refused rather than ignored on the types whose body lives elsewhere. A patch list item
+        // holding prose as well as rows is a state nothing can render, and anything later
+        // walking items by `content !== null` instead of by type would quietly act on it.
         $contentChanged = false;
-        if (array_key_exists('content', $payload) && $item->content !== $data->content) {
-            $item->content = $data->content;
-            $contentChanged = true;
+        if (array_key_exists('content', $payload)) {
+            if (!$item->type->storesContent()) {
+                throw new UnprocessableEntityHttpException(
+                    'Ce type d\'élément ne stocke pas de contenu rédigé',
+                );
+            }
+
+            if ($item->content !== $data->content) {
+                $item->content = $data->content;
+                $contentChanged = true;
+            }
         }
 
         $fileChanged = false;
         if (array_key_exists('file_id', $payload)) {
-            // Refused rather than ignored on other types. A text item holding a file reference
-            // is a state nothing can render, and anything later walking items by `file !== null`
-            // instead of by type would quietly act on it.
-            if ($item->type !== TechRiderItemType::Document) {
+            // Same rule the other way round: only a Document item's body is a file.
+            if (!$item->type->usesFile()) {
                 throw new UnprocessableEntityHttpException(
                     'Seul un élément de type document peut référencer un fichier',
                 );

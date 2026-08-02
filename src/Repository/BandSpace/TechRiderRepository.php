@@ -53,13 +53,15 @@ class TechRiderRepository extends ServiceEntityRepository
         // Items are fetch-joined because every caller of this method builds the full rider,
         // so leaving them lazy just moves the query. Their file and its current version come
         // too, otherwise a document item costs two more queries each, which is the fan-out
-        // this join exists to avoid. buildItem sorts in PHP, so no ORDER BY is needed here.
+        // this join exists to avoid. Same for patch rows, where the fan-out is per item rather
+        // than per row. buildItem sorts in PHP, so no ORDER BY is needed here.
         return $this->createQueryBuilder('r')
-            ->addSelect('author', 'items', 'file', 'fileVersion')
+            ->addSelect('author', 'items', 'file', 'fileVersion', 'patchRows')
             ->leftJoin('r.createdBy', 'author')
             ->leftJoin('r.items', 'items')
             ->leftJoin('items.file', 'file')
             ->leftJoin('file.currentVersion', 'fileVersion')
+            ->leftJoin('items.patchRows', 'patchRows')
             ->where('r.id = :id')
             ->andWhere('r.bandSpace = :bandSpace')
             ->setParameter('id', $id)

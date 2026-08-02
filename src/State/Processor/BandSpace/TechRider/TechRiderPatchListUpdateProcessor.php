@@ -4,45 +4,40 @@ namespace App\State\Processor\BandSpace\TechRider;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\ApiResource\BandSpace\TechRider\TechRiderItemCreate;
 use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
+use App\ApiResource\BandSpace\TechRider\TechRiderPatchList;
 use App\Entity\BandSpace\TechRider;
 use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\User;
-use App\Enum\BandSpace\BandSpaceModule;
-use App\Enum\BandSpace\BandSpaceRiderActivityType;
-use App\Enum\BandSpace\TechRiderItemType;
-use App\Repository\BandSpace\TechRiderRepository;
+use App\Procedure\BandSpace\TechRiderPatchListReplaceProcedure;
 use App\Repository\BandSpace\TechRiderItemRepository;
+use App\Repository\BandSpace\TechRiderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\TechRiderWriteGuard;
-use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\TechRider\TechRiderItemBuilder;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
- * @implements ProcessorInterface<TechRiderItemCreate, TechRiderItemResource>
+ * @implements ProcessorInterface<TechRiderPatchList, TechRiderItemResource>
  */
-readonly class TechRiderItemCreateProcessor implements ProcessorInterface
+readonly class TechRiderPatchListUpdateProcessor implements ProcessorInterface
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private TechRiderWriteGuard $writeGuard,
         private TechRiderRepository $techRiderRepository,
         private TechRiderItemRepository $itemRepository,
-        private BandSpaceActivityRecorder $activityRecorder,
+        private TechRiderPatchListReplaceProcedure $replaceProcedure,
         private TechRiderItemBuilder $itemBuilder,
         private Security $security,
     ) {
     }
 
     /**
-     * @param TechRiderItemCreate $data
+     * @param TechRiderPatchList $data
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TechRiderItemResource
     {
@@ -60,35 +55,20 @@ readonly class TechRiderItemCreateProcessor implements ProcessorInterface
 
         $this->writeGuard->assertWritable($techRider);
 
-        $type = TechRiderItemType::from($data->type);
-
-        // Refused rather than dropped, matching the update path: creating a patch list item with
-        // prose in it would produce an item whose body nothing can render, and silently ignoring
-        // the field would let a client believe it saved.
-        if ($data->content !== null && !$type->storesContent()) {
-            throw new UnprocessableEntityHttpException('Ce type d\'élément ne stocke pas de contenu rédigé');
+        $item = $this->itemRepository->findOneByIdAndRider((string) $uriVariables['itemId'], $techRider);
+        if (!$item instanceof TechRiderItem) {
+            throw new NotFoundHttpException('Élément introuvable');
         }
 
-        $item = new TechRiderItem();
-        $item->techRider = $techRider;
-        $item->type = $type;
-        $item->title = $data->title;
-        $item->content = $data->content;
-        // Appended, never inserted: a new item is written at the end and moved by reorder.
-        $item->position = $this->itemRepository->nextPosition($techRider);
+        if (!$item->type->storesRelationalRows()) {
+            throw new UnprocessableEntityHttpException(
+                'Seul un élément de type patch list peut contenir une patch list',
+            );
+        }
 
-        $this->entityManager->persist($item);
-
-        $this->activityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Rider,
-            type: BandSpaceRiderActivityType::RiderItemAdded,
-            resourceId: (string) $item->id,
-            actor: $user,
-            payload: ['rider_name' => $techRider->name, 'title' => $item->title],
-        );
-
-        $this->entityManager->flush();
+        // Everything the save consists of, including the activity row and the timestamp, happens
+        // inside the procedure's transaction. Nothing is written here afterwards.
+        $this->replaceProcedure->replace($item, $data->inputs, $data->outputs, $user);
 
         return $this->itemBuilder->buildItem($item);
     }

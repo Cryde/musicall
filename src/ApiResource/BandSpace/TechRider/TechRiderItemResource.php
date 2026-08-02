@@ -119,6 +119,19 @@ class TechRiderItemResource
      */
     public ?string $fileId = null;
 
+    /**
+     * The rows of a PatchList item as `{inputs: [...], outputs: [...]}`, null on every other
+     * type. Two named lists rather than one list carrying a direction, because that is how the
+     * page is printed and it saves the client partitioning what the server already knows.
+     *
+     * Written through its own PUT, not here: a patch list is replaced wholesale, and a PATCH
+     * that could carry part of a grid is the shape this deliberately avoids.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[Groups([self::READ])]
+    public ?array $patchList = null;
+
     #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
     #[Groups([self::READ])]
     public int $position = 0;

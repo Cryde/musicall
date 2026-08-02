@@ -164,6 +164,8 @@ const SENTENCES = {
     a.payload?.count
       ? `a réordonné les ${a.payload.count} éléments du tech rider « ${a.payload?.rider_name ?? '—'} »`
       : `a réordonné les éléments du tech rider « ${a.payload?.rider_name ?? '—'} »`,
+  'rider.rider_patch_list_updated': (a) =>
+    `a mis à jour la patch list « ${a.payload?.title ?? '—'} » du tech rider « ${a.payload?.rider_name ?? '—'} » (${a.payload?.input_count ?? 0} entrées, ${a.payload?.output_count ?? 0} retours)`,
 
   // Settings — band
   'settings.band_created': (a) => `a créé le Band Space « ${a.payload?.name ?? '—'} »`,
