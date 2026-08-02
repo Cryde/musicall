@@ -8,6 +8,12 @@ use App\Entity\BandSpace\TechRider;
 readonly class TechRiderBuilder
 {
     /**
+     * The list view reuses buildItem() because a rider is currently name plus dates.
+     * That stops being true once sections, patch rows and the stage plot land: the
+     * collection must not embed them, or listing a space ships every rider's full
+     * content to render a table of names. SetlistBuilder shows the trap, it embeds
+     * every item and runs a duration query per setlist even for the collection.
+     *
      * @param TechRider[] $entities
      * @return TechRiderResource[]
      */

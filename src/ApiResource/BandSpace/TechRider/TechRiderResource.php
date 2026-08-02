@@ -60,8 +60,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             provider: TechRiderItemProvider::class,
             processor: TechRiderUpdateProcessor::class,
         ),
-        // read: false because TechRiderItemProvider would hydrate a resource this
-        // operation never reads, and the processor loads the entity itself anyway.
+        // read: false on this operation and on Delete below: TechRiderItemProvider would
+        // hydrate a resource neither one reads, and both processors load the entity
+        // themselves. Setlist still pays that cost on its Delete.
         new Post(
             uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{id}/unarchive',
             uriVariables: [

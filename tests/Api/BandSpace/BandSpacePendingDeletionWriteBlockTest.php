@@ -193,6 +193,7 @@ class BandSpacePendingDeletionWriteBlockTest extends ApiTestCase
         yield 'agenda' => ['agenda-entries'];
         yield 'setlists' => ['setlists'];
         yield 'finance categories' => ['finance/categories'];
+        yield 'tech riders' => ['tech_riders'];
     }
 
     /**

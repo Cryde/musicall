@@ -111,8 +111,10 @@ class TechRiderGetItemTest extends ApiTestCase
     }
 
     /**
-     * The id column is a uuid, so a non-uuid lookup makes Doctrine throw
-     * ValueNotConvertible. Without the guard in the repository that surfaces as a 500.
+     * The id column is a uuid, so a non-uuid lookup is only safe as long as the repository
+     * keeps binding it as a plain string through the query builder. Switching to find() or
+     * findOneBy() would bind through the uuid type and throw ValueNotConvertible, turning
+     * this 404 into a 500. This test is what catches that.
      */
     public function test_get_tech_rider_with_a_non_uuid_id_is_not_found(): void
     {

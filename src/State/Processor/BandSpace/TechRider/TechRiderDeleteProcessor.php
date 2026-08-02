@@ -23,10 +23,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * Soft delete: sets archiveDatetime. TechRiderUnarchiveProcessor is what undoes it.
  *
- * A second archive returns 409 rather than succeeding silently the way
- * SetlistDeleteProcessor does. Riders stay readable once archived, so the caller can
- * see the state it is asking for and a repeated call means a stale client, which is
- * worth surfacing. Same choice as BandSpaceFileRestoreProcessor.
+ * A second archive returns 409. The codebase has no single convention for this:
+ * SetlistDeleteProcessor succeeds silently, BandSpaceFileDeleteProcessor returns 404
+ * because its lookup excludes archived rows. Neither fits here. Archived riders stay
+ * readable (they are restored and duplicated from the archive), so 404 would be a lie,
+ * and the unarchive direction has no sensible silent behaviour, so it must return 409.
+ * Symmetry with that endpoint is what settles it: the two halves of the same toggle
+ * should answer the same way when the state is already what you asked for.
  */
 readonly class TechRiderDeleteProcessor implements ProcessorInterface
 {

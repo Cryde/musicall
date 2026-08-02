@@ -98,6 +98,36 @@ class TechRiderUpdateTest extends ApiTestCase
         ]);
     }
 
+    public function test_rename_tech_rider_not_member(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $outsider = UserFactory::new()->create(['username' => 'outsider', 'email' => 'outsider@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+
+        $rider = TechRiderFactory::new(['bandSpace' => $bandSpace, 'name' => 'Protected'])->create();
+
+        $this->client->loginUser($outsider);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tech_riders/' . $rider->id,
+            ['name' => 'Hijacked'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Vous n'êtes pas membre de ce Band Space",
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => "Vous n'êtes pas membre de ce Band Space",
+        ]);
+    }
+
     public function test_rename_tech_rider_from_another_band_space_is_not_found(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
