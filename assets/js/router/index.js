@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { RIDER_SUPER_ADMIN_ONLY } from '../constants/bandSpace.js'
 import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
@@ -85,6 +86,16 @@ const routes = [
         path: ':id/setlists',
         name: 'app_band_setlist',
         component: () => import('../views/BandSpace/Setlist.vue')
+      },
+      {
+        // One route for the whole module: the rider on screen is a query param, like
+        // Setlist's ?setlist=. Hiding the sidebar entry alone would leave the URL walkable,
+        // hence the guard flag, whose value lives in constants/bandSpace.js so releasing
+        // the module stays a single flip.
+        path: ':id/tech-riders',
+        name: 'app_band_rider',
+        component: () => import('../views/BandSpace/TechRider.vue'),
+        meta: { superAdminOnly: RIDER_SUPER_ADMIN_ONLY }
       },
       {
         path: ':id/parametres',

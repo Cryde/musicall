@@ -33,7 +33,7 @@
 	php_server {
 		worker  {
 		    file /var/www/musicall/public/index.php
-		    watch /var/www/musicall/**/*.{php,yaml,yml,twig,env,vue,js}
+		    watch /var/www/musicall/**/*.{php,yaml,yml,twig,env,vue,js,json}
 		}
 	}
 }

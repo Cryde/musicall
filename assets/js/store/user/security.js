@@ -158,6 +158,21 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     return userProfile.value?.roles?.includes('ROLE_ADMIN') || false
   })
 
+  /**
+   * Gates features that are merged but not yet announced. Presentation only: the API
+   * stays open, so this hides a module rather than protecting it.
+   *
+   * Reads the JWT claim rather than userProfile, unlike isAdmin above, because a route
+   * guard needs the answer immediately: checkAuthInfo() fills `user` from the token and
+   * then calls fetchUserProfile() WITHOUT awaiting it, so userProfile is still empty on
+   * the first navigation. Reading it there bounced legitimate super admins to the
+   * dashboard whenever they loaded a gated URL directly or hit reload. isAdmin gets away
+   * with the late source because it only drives UI that re-renders when the profile lands.
+   */
+  const isSuperAdmin = computed(() => {
+    return user.value?.roles?.includes('ROLE_SUPER_ADMIN') || false
+  })
+
   function isTokenExpired(decodedJwt) {
     // Refresh if token expires within buffer time
     const currentTime = Math.floor(Date.now() / 1000)
@@ -257,6 +272,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     userProfile: readonly(userProfile),
     profilePictureUrl,
     isAdmin,
+    isSuperAdmin,
     isAuthenticated: readonly(isAuthenticated),
     isAuthenticatedLoading: readonly(isAuthenticatedLoading),
     loginErrors: readonly(loginErrors),
