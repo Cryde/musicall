@@ -6,6 +6,8 @@ use App\Enum\BandSpace\TechRiderItemType;
 use App\Repository\BandSpace\TechRiderItemRepository;
 use DateTime;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
@@ -71,6 +73,23 @@ class TechRiderItem
     #[ORM\Column(type: Types::JSON, nullable: true)]
     public ?array $content = null;
 
+    /**
+     * The rows of a PatchList item.
+     *
+     * Deliberately no cascade and no orphanRemoval, unlike TechRider::$items. Rows are written
+     * only by the replace procedure, which deletes the old set in one bulk query and then resets
+     * this collection to the new rows. With orphanRemoval that reset would not be a reset:
+     * PersistentCollection::clear() initialises the collection and schedules every element it
+     * finds for deletion, so each row would be deleted twice, once in bulk and once by id.
+     *
+     * Deleting the item still takes its rows with it, through the database's ON DELETE CASCADE.
+     *
+     * @var Collection<int, TechRiderPatchRow>
+     */
+    #[ORM\OneToMany(targetEntity: TechRiderPatchRow::class, mappedBy: 'item')]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    public Collection $patchRows;
+
     #[ORM\Column(type: Types::INTEGER)]
     public int $position = 0;
 
@@ -83,5 +102,6 @@ class TechRiderItem
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+        $this->patchRows = new ArrayCollection();
     }
 }

@@ -1,6 +1,6 @@
 /**
- * The only colours a tech rider may use, for section text today and for patch list rows and
- * stage plot items once #768 and #769 land.
+ * The only colours a tech rider may use, for text emphasis and patch list rows today and for
+ * stage plot items once #769 lands.
  *
  * A closed palette rather than a colour picker, for two reasons. Whatever renders the export
  * receives a value from a known list instead of arbitrary user CSS, and one definition keeps
@@ -9,9 +9,10 @@
  * Emphasis here is load bearing, not decoration: a real rider marks the one line that ruins
  * the show in red, and that has to survive into the exported document.
  *
- * #768 introduces the matching PHP enum `TechRiderColour`. Its cases and hex values must stay
- * in step with this list, and at that point the palette should move behind an endpoint so
- * there is a single source rather than two that agree by convention.
+ * This list is the client half of a pair: `App\Enum\BandSpace\TechRiderColour` is the other,
+ * and the export renderer reads the hex from there. They are kept in step by
+ * tests/Unit/Enum/BandSpace/TechRiderColourPaletteTest.php, which explains why the palette is
+ * duplicated rather than served from an endpoint. Edit both, in the same order.
  */
 export const TECH_RIDER_COLOURS = Object.freeze([
   { value: 'red', label: 'Rouge', hex: '#dc2626' },

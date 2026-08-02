@@ -4,6 +4,8 @@ namespace App\Service\Builder\BandSpace\TechRider;
 
 use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
 use App\Entity\BandSpace\TechRiderItem;
+use App\Entity\BandSpace\TechRiderPatchRow;
+use App\Enum\BandSpace\TechRiderPatchDirection;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class TechRiderItemBuilder
@@ -37,6 +39,7 @@ readonly class TechRiderItemBuilder
         $dto->content = $entity->content;
         $dto->fileId = $entity->file === null ? null : (string) $entity->file->id;
         $dto->file = $this->buildFile($entity);
+        $dto->patchList = $this->buildPatchList($entity);
         $dto->position = $entity->position;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
@@ -66,6 +69,62 @@ readonly class TechRiderItemBuilder
                 'bandSpaceId' => (string) $entity->techRider->bandSpace->id,
                 'id' => (string) $file->id,
             ]),
+        ];
+    }
+
+    /**
+     * An empty patch list serialises as two empty arrays rather than null, so the client can
+     * tell "this item is a grid with nothing in it yet" from "this item is not a grid at all".
+     *
+     * Partitioned and sorted in PHP because the rows are already loaded: a rider fetch joins
+     * them, so asking the database for them again in two ordered queries would be slower.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function buildPatchList(TechRiderItem $entity): ?array
+    {
+        if (!$entity->type->storesRelationalRows()) {
+            return null;
+        }
+
+        $grouped = [
+            TechRiderPatchDirection::Input->value => [],
+            TechRiderPatchDirection::Output->value => [],
+        ];
+
+        foreach ($entity->patchRows as $row) {
+            $grouped[$row->direction->value][] = $row;
+        }
+
+        foreach ($grouped as $direction => $rows) {
+            usort($rows, static fn (TechRiderPatchRow $a, TechRiderPatchRow $b): int => $a->position <=> $b->position);
+            $grouped[$direction] = array_map(fn (TechRiderPatchRow $row): array => $this->buildPatchRow($row), $rows);
+        }
+
+        return [
+            'inputs' => $grouped[TechRiderPatchDirection::Input->value],
+            'outputs' => $grouped[TechRiderPatchDirection::Output->value],
+        ];
+    }
+
+    /**
+     * The colour ships as both the stored name and its hex. The name is what a client compares
+     * against the palette, the hex is what it paints with, and deriving one from the other on
+     * the client would be a second copy of the palette.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildPatchRow(TechRiderPatchRow $row): array
+    {
+        return [
+            'id' => (string) $row->id,
+            'channel' => $row->channel,
+            'name' => $row->name,
+            'microphone' => $row->microphone,
+            'routing' => $row->routing,
+            'colour' => $row->colour?->value,
+            'colour_hex' => $row->colour?->hex(),
+            'position' => $row->position,
         ];
     }
 }

@@ -18,4 +18,6 @@ enum BandSpaceRiderActivityType: string
     case RiderItemUpdated = 'rider_item_updated';
     case RiderItemRemoved = 'rider_item_removed';
     case RiderItemReordered = 'rider_item_reordered';
+
+    case RiderPatchListUpdated = 'rider_patch_list_updated';
 }

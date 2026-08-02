@@ -64,6 +64,7 @@ class TechRiderCreateTest extends ApiTestCase
                 'creation_datetime' => $item->creationDatetime->format(\DateTimeInterface::ATOM),
                 'update_datetime' => null,
                 'file' => null,
+                'patch_list' => null,
             ],
             $items,
         );
