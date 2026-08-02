@@ -11,4 +11,5 @@ enum BandSpaceModule: string
     case Notes = 'notes';
     case Settings = 'settings';
     case Setlist = 'setlist';
+    case Rider = 'rider';
 }
