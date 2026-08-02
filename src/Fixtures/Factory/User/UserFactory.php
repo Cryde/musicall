@@ -62,6 +62,22 @@ final class UserFactory extends PersistentObjectFactory
         ]);
     }
 
+    /**
+     * ROLE_SUPER_ADMIN was only a line in the role hierarchy until now, granted to nobody.
+     * It gates features that are merged but not yet announced, so there has to be an
+     * account that can actually reach them in dev.
+     */
+    public function asSuperAdminUser(): static
+    {
+        return $this->with([
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
+            'email' => 'user_super_admin@email.com',
+            'password' => self::DEFAULT_PASSWORD,
+            'roles' => ['ROLE_SUPER_ADMIN'],
+            'username' => 'user_super_admin',
+        ]);
+    }
+
     public static function class(): string
     {
         return User::class;

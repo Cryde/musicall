@@ -75,6 +75,7 @@ import { computed } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
 const props = defineProps({
   disabled: { type: Boolean, default: false },
@@ -87,13 +88,19 @@ const emit = defineEmits(['navigate'])
 
 const { currentSpaceId } = useBandSpaceNavigation()
 const bandSpaceStore = useBandSpaceStore()
+const userSecurityStore = useUserSecurityStore()
 
 const visibleItems = computed(() => {
   const space = bandSpaceStore.getById(currentSpaceId.value)
+  // Two independent gates. `role` is membership in this space; `superAdminOnly` marks a
+  // module that is merged but not yet announced and is dropped when it is released.
+  const items = NAVIGATION_ITEMS.filter(
+    (item) => !item.superAdminOnly || userSecurityStore.isSuperAdmin
+  )
   if (space?.role === 'admin') {
-    return NAVIGATION_ITEMS
+    return items
   }
-  return NAVIGATION_ITEMS.filter((item) => item.route !== BAND_SPACE_ROUTES.PARAMETERS)
+  return items.filter((item) => item.route !== BAND_SPACE_ROUTES.PARAMETERS)
 })
 
 const workItems = computed(() =>
