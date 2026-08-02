@@ -50,13 +50,13 @@ class TechRiderRepository extends ServiceEntityRepository
      */
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?TechRider
     {
-        // Sections are fetch-joined because every caller of this method builds the full
+        // Items are fetch-joined because every caller of this method builds the full
         // rider, so leaving them lazy just moves the query. buildItem sorts them in PHP,
         // so the join needs no ORDER BY of its own.
         return $this->createQueryBuilder('r')
-            ->addSelect('author', 'sections')
+            ->addSelect('author', 'items')
             ->leftJoin('r.createdBy', 'author')
-            ->leftJoin('r.sections', 'sections')
+            ->leftJoin('r.items', 'items')
             ->where('r.id = :id')
             ->andWhere('r.bandSpace = :bandSpace')
             ->setParameter('id', $id)

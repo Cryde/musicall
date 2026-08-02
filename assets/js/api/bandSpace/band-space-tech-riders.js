@@ -58,5 +58,57 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  createItem(bandSpaceId, riderId, data) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_tech_rider_items_post', { bandSpaceId, riderId }),
+        data,
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  /**
+   * Send only the keys being changed: the API tells an absent field from an explicit null, so
+   * a title-only save must not carry `content` or it would overwrite what is there.
+   */
+  updateItem(bandSpaceId, riderId, itemId, data) {
+    return axios
+      .patch(
+        Routing.generate('api_band_space_tech_rider_items_patch', {
+          bandSpaceId,
+          riderId,
+          id: itemId
+        }),
+        data,
+        { headers: { 'Content-Type': 'application/merge-patch+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  deleteItem(bandSpaceId, riderId, itemId) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_tech_rider_items_delete', {
+          bandSpaceId,
+          riderId,
+          id: itemId
+        })
+      )
+      .catch(handleApiError)
+  },
+
+  reorderItems(bandSpaceId, riderId, positions) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_tech_rider_items_reorder', { bandSpaceId, riderId }),
+        { positions },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .catch(handleApiError)
   }
 }

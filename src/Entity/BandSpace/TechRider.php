@@ -59,15 +59,15 @@ class TechRider
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     public ?DateTimeInterface $updateDatetime = null;
 
-    /** @var Collection<int, TechRiderSection> */
-    #[ORM\OneToMany(targetEntity: TechRiderSection::class, mappedBy: 'techRider', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    /** @var Collection<int, TechRiderItem> */
+    #[ORM\OneToMany(targetEntity: TechRiderItem::class, mappedBy: 'techRider', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
-    public Collection $sections;
+    public Collection $items;
 
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
-        $this->sections = new ArrayCollection();
+        $this->items = new ArrayCollection();
     }
 
     public function isArchived(): bool

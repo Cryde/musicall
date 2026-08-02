@@ -9,23 +9,23 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
-use App\State\Processor\BandSpace\TechRider\TechRiderSectionDeleteProcessor;
-use App\State\Processor\BandSpace\TechRider\TechRiderSectionUpdateProcessor;
-use App\State\Provider\BandSpace\TechRider\TechRiderSectionItemProvider;
-use App\Validator\BandSpace\TechRider\TechRiderSectionContent;
+use App\State\Processor\BandSpace\TechRider\TechRiderItemDeleteProcessor;
+use App\State\Processor\BandSpace\TechRider\TechRiderItemUpdateProcessor;
+use App\State\Provider\BandSpace\TechRider\TechRiderItemProvider;
+use App\Validator\BandSpace\TechRider\TechRiderItemContent;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    shortName: 'TechRiderSection',
+    shortName: 'TechRiderItem',
     operations: [
-        // Clients read sections inline on the rider rather than one at a time, but this
+        // Clients read items inline on the rider rather than one at a time, but this
         // operation is not optional: API Platform derives a resource's @id from its item Get,
-        // and without one every embedded section carried a fallback
-        // `/api/tech_rider_sections/id=..;bandSpaceId=..;riderId=..` that routes nowhere.
+        // and without one every embedded item carried a fallback
+        // `/api/tech_rider_items/id=..;bandSpaceId=..;riderId=..` that routes nowhere.
         // Declaring it makes the @id real, and costs nothing beyond reusing the provider.
         new Get(
-            uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{riderId}/sections/{id}',
+            uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{riderId}/items/{id}',
             uriVariables: [
                 'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
                 'riderId' => new Link(fromClass: self::class, identifiers: ['riderId']),
@@ -34,11 +34,11 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
             normalizationContext: ['groups' => [self::READ], 'skip_null_values' => false],
-            name: 'api_band_space_tech_rider_sections_get_item',
-            provider: TechRiderSectionItemProvider::class,
+            name: 'api_band_space_tech_rider_items_get_item',
+            provider: TechRiderItemProvider::class,
         ),
         new Patch(
-            uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{riderId}/sections/{id}',
+            uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{riderId}/items/{id}',
             uriVariables: [
                 'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
                 'riderId' => new Link(fromClass: self::class, identifiers: ['riderId']),
@@ -47,12 +47,12 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
             normalizationContext: ['groups' => [self::READ], 'skip_null_values' => false],
-            name: 'api_band_space_tech_rider_sections_patch',
-            provider: TechRiderSectionItemProvider::class,
-            processor: TechRiderSectionUpdateProcessor::class,
+            name: 'api_band_space_tech_rider_items_patch',
+            provider: TechRiderItemProvider::class,
+            processor: TechRiderItemUpdateProcessor::class,
         ),
         new Delete(
-            uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{riderId}/sections/{id}',
+            uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{riderId}/items/{id}',
             uriVariables: [
                 'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
                 'riderId' => new Link(fromClass: self::class, identifiers: ['riderId']),
@@ -61,18 +61,18 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
             read: false,
-            name: 'api_band_space_tech_rider_sections_delete',
-            processor: TechRiderSectionDeleteProcessor::class,
+            name: 'api_band_space_tech_rider_items_delete',
+            processor: TechRiderItemDeleteProcessor::class,
         ),
     ],
 )]
-class TechRiderSectionResource
+class TechRiderItemResource
 {
     /**
-     * Also applied by TechRiderResource's item context, so a section serializes the same way
+     * Also applied by TechRiderResource's item context, so an item serializes the same way
      * inline on a rider as it does from its own operations.
      */
-    final const string READ = 'tech_rider_section:read';
+    final const string READ = 'tech_rider_item:read';
 
     #[ApiProperty(identifier: true)]
     #[Groups([self::READ])]
@@ -86,13 +86,20 @@ class TechRiderSectionResource
     #[Groups([self::READ])]
     public string $riderId;
 
+    #[Groups([self::READ])]
+    public string $type = 'text';
+
+    /** False keeps the item authored but out of the composed document. */
+    #[Groups([self::READ])]
+    public bool $isIncluded = true;
+
     #[Assert\NotBlank(message: 'Veuillez spécifier un titre')]
     #[Assert\Length(max: 255, maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères')]
     #[Groups([self::READ])]
     public string $title;
 
     /** @var array<string, mixed>|null */
-    #[TechRiderSectionContent]
+    #[TechRiderItemContent]
     #[Groups([self::READ])]
     public ?array $content = null;
 

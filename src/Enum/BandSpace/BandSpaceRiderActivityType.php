@@ -13,9 +13,9 @@ enum BandSpaceRiderActivityType: string
     case RiderArchived = 'rider_archived';
     case RiderUnarchived = 'rider_unarchived';
 
-    case RiderSectionAdded = 'rider_section_added';
-    case RiderSectionRenamed = 'rider_section_renamed';
-    case RiderSectionUpdated = 'rider_section_updated';
-    case RiderSectionRemoved = 'rider_section_removed';
-    case RiderSectionReordered = 'rider_section_reordered';
+    case RiderItemAdded = 'rider_item_added';
+    case RiderItemRenamed = 'rider_item_renamed';
+    case RiderItemUpdated = 'rider_item_updated';
+    case RiderItemRemoved = 'rider_item_removed';
+    case RiderItemReordered = 'rider_item_reordered';
 }

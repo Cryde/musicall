@@ -3,27 +3,27 @@
 namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\TechRider;
-use App\Entity\BandSpace\TechRiderSection;
+use App\Entity\BandSpace\TechRiderItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Ramsey\Uuid\Uuid;
 
 /**
- * @extends ServiceEntityRepository<TechRiderSection>
+ * @extends ServiceEntityRepository<TechRiderItem>
  */
-class TechRiderSectionRepository extends ServiceEntityRepository
+class TechRiderItemRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, TechRiderSection::class);
+        parent::__construct($registry, TechRiderItem::class);
     }
 
     /**
-     * Scoped by rider so a section id from another rider resolves to null rather than
+     * Scoped by rider so an item id from another rider resolves to null rather than
      * granting access. A non-uuid id returns null instead of reaching the uuid column,
      * where it would raise ValueNotConvertible and surface as a 500.
      */
-    public function findOneByIdAndRider(string $id, TechRider $techRider): ?TechRiderSection
+    public function findOneByIdAndRider(string $id, TechRider $techRider): ?TechRiderItem
     {
         if (!Uuid::isValid($id)) {
             return null;
@@ -39,7 +39,7 @@ class TechRiderSectionRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return TechRiderSection[]
+     * @return TechRiderItem[]
      */
     public function findByRider(TechRider $techRider): array
     {
@@ -65,7 +65,7 @@ class TechRiderSectionRepository extends ServiceEntityRepository
 
     /**
      * @param list<string> $riderIds
-     * @return array<string, int> section count keyed by rider id
+     * @return array<string, int> item count keyed by rider id
      */
     public function countByRiders(array $riderIds): array
     {

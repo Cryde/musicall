@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
 use App\Repository\BandSpace\TechRiderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\TechRiderWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\TechRider\TechRiderBuilder;
 use DateTime;
@@ -27,6 +28,7 @@ readonly class TechRiderUpdateProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private TechRiderWriteGuard $writeGuard,
         private TechRiderRepository $techRiderRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private TechRiderBuilder $techRiderBuilder,
@@ -53,6 +55,8 @@ readonly class TechRiderUpdateProcessor implements ProcessorInterface
         if (!$techRider instanceof TechRider) {
             throw new NotFoundHttpException('Tech rider introuvable');
         }
+
+        $this->writeGuard->assertWritable($techRider);
 
         $techRider->name = $data->name;
         $techRider->updateDatetime = new DateTime();

@@ -285,13 +285,7 @@
 
 <script setup>
 import Image from '@tiptap/extension-image'
-import Placeholder from '@tiptap/extension-placeholder'
-import { TableCell } from '@tiptap/extension-table/cell'
-import { TableRow } from '@tiptap/extension-table/row'
-import { Table } from '@tiptap/extension-table/table'
-import TextAlign from '@tiptap/extension-text-align'
-import StarterKit from '@tiptap/starter-kit'
-import { EditorContent, useEditor } from '@tiptap/vue-3'
+import { EditorContent } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -299,8 +293,9 @@ import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
+import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
 
 const props = defineProps({
   note: { type: Object, required: true },
@@ -320,35 +315,6 @@ onClickOutside(emojiPickerRef, () => {
 })
 
 const editableTitle = ref(props.note.title)
-
-let saveTimeout = null
-let pendingContent = null
-
-function debouncedSave(json) {
-  cancelDebouncedSave()
-  pendingContent = json
-  saveTimeout = setTimeout(() => {
-    detachRemovedImages(json)
-    emit('update-content', { noteId: props.note.id, content: json })
-    pendingContent = null
-  }, 2000)
-}
-
-function cancelDebouncedSave() {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout)
-    saveTimeout = null
-  }
-}
-
-function flushPendingSave() {
-  if (pendingContent) {
-    cancelDebouncedSave()
-    detachRemovedImages(pendingContent)
-    emit('update-content', { noteId: props.note.id, content: pendingContent })
-    pendingContent = null
-  }
-}
 
 // Track image src URLs so we can fire detach for any image removed from the
 // editor. The download URL embeds the file's UUID after `/files/`. Matches
@@ -389,31 +355,16 @@ onMounted(() => {
   trackedImageSrcs.value = collectImageSrcs(props.note.content)
 })
 
-const editor = useEditor({
-  extensions: [
-    StarterKit.configure({
-      heading: { levels: [2, 3] }
-    }),
-    TextAlign.configure({
-      types: ['heading', 'paragraph']
-    }),
-    Placeholder.configure({
-      placeholder: 'Commencez à écrire...'
-    }),
-    Table.configure({ resizable: true }),
-    TableRow.extend({ content: 'tableCell*' }),
-    TableCell,
-    Image.configure({ inline: false, allowBase64: false })
-  ],
-  content: props.note.content || '',
-  onUpdate: ({ editor }) => {
-    debouncedSave(editor.getJSON())
+// Shared with the tech rider section editor. Images are Notes only, and so is the detach
+// pass on save, which is why it lives in the callback rather than in the composable.
+const { editor } = useRichTextEditor({
+  content: props.note.content,
+  placeholder: 'Commencez à écrire...',
+  extensions: [Image.configure({ inline: false, allowBase64: false })],
+  onSave: (json) => {
+    detachRemovedImages(json)
+    emit('update-content', { noteId: props.note.id, content: json })
   }
-})
-
-onBeforeUnmount(() => {
-  flushPendingSave()
-  editor.value?.destroy()
 })
 
 function shouldShowTableMenu({ editor }) {

@@ -152,18 +152,18 @@ const SENTENCES = {
   'rider.rider_renamed': (a) => `a renommé le tech rider en « ${a.payload?.name ?? '—'} »`,
   'rider.rider_archived': (a) => `a archivé le tech rider « ${a.payload?.name ?? '—'} »`,
   'rider.rider_unarchived': (a) => `a réintégré le tech rider « ${a.payload?.name ?? '—'} »`,
-  'rider.rider_section_added': (a) =>
-    `a ajouté la section « ${a.payload?.title ?? '—'} » au tech rider « ${a.payload?.rider_name ?? '—'} »`,
-  'rider.rider_section_renamed': (a) =>
-    `a renommé une section du tech rider « ${a.payload?.rider_name ?? '—'} » en « ${a.payload?.title ?? '—'} »`,
-  'rider.rider_section_updated': (a) =>
-    `a modifié la section « ${a.payload?.title ?? '—'} » du tech rider « ${a.payload?.rider_name ?? '—'} »`,
-  'rider.rider_section_removed': (a) =>
-    `a supprimé la section « ${a.payload?.title ?? '—'} » du tech rider « ${a.payload?.rider_name ?? '—'} »`,
-  'rider.rider_section_reordered': (a) =>
+  'rider.rider_item_added': (a) =>
+    `a ajouté l'élément « ${a.payload?.title ?? '—'} » au tech rider « ${a.payload?.rider_name ?? '—'} »`,
+  'rider.rider_item_renamed': (a) =>
+    `a renommé un élément du tech rider « ${a.payload?.rider_name ?? '—'} » en « ${a.payload?.title ?? '—'} »`,
+  'rider.rider_item_updated': (a) =>
+    `a modifié l'élément « ${a.payload?.title ?? '—'} » du tech rider « ${a.payload?.rider_name ?? '—'} »`,
+  'rider.rider_item_removed': (a) =>
+    `a supprimé l'élément « ${a.payload?.title ?? '—'} » du tech rider « ${a.payload?.rider_name ?? '—'} »`,
+  'rider.rider_item_reordered': (a) =>
     a.payload?.count
-      ? `a réordonné les ${a.payload.count} sections du tech rider « ${a.payload?.rider_name ?? '—'} »`
-      : `a réordonné les sections du tech rider « ${a.payload?.rider_name ?? '—'} »`,
+      ? `a réordonné les ${a.payload.count} éléments du tech rider « ${a.payload?.rider_name ?? '—'} »`
+      : `a réordonné les éléments du tech rider « ${a.payload?.rider_name ?? '—'} »`,
 
   // Settings — band
   'settings.band_created': (a) => `a créé le Band Space « ${a.payload?.name ?? '—'} »`,

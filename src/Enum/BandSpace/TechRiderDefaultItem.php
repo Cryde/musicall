@@ -3,14 +3,15 @@
 namespace App\Enum\BandSpace;
 
 /**
- * The sections a new rider starts with, in order.
+ * The items a new rider starts with, in order. All of them text items.
  *
  * A seed, not a schema: these are ordinary rows once created, free to be renamed, reordered
  * or deleted. They exist so a new rider is a prompt rather than a blank page.
  *
- * The patch list and the stage plot are deliberately absent, they are their own tabs.
+ * The patch list and the stage plot are deliberately absent: they arrive as their own item
+ * types, added by the user where they want them in the document.
  */
-enum TechRiderDefaultSection: string
+enum TechRiderDefaultItem: string
 {
     case MembersAndContacts = 'members_and_contacts';
     case Backline = 'backline';
