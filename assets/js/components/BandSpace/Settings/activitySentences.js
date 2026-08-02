@@ -147,6 +147,12 @@ const SENTENCES = {
   'setlist.setlist_file_detached': (a) =>
     `a détaché le fichier « ${a.payload?.original_name ?? '—'} » d'une setlist`,
 
+  // Tech riders
+  'rider.rider_created': (a) => `a créé le tech rider « ${a.payload?.name ?? '—'} »`,
+  'rider.rider_renamed': (a) => `a renommé le tech rider en « ${a.payload?.name ?? '—'} »`,
+  'rider.rider_archived': (a) => `a archivé le tech rider « ${a.payload?.name ?? '—'} »`,
+  'rider.rider_unarchived': (a) => `a réintégré le tech rider « ${a.payload?.name ?? '—'} »`,
+
   // Settings — band
   'settings.band_created': (a) => `a créé le Band Space « ${a.payload?.name ?? '—'} »`,
 
