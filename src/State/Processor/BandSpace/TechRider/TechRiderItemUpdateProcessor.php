@@ -6,17 +6,21 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\TechRider;
 use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
+use App\Enum\BandSpace\TechRiderItemType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\TechRiderRepository;
 use App\Repository\BandSpace\TechRiderItemRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\TechRiderWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\Builder\BandSpace\TechRider\TechRiderItemBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +28,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<TechRiderItemResource, TechRiderItemResource>
@@ -44,6 +49,7 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
         private TechRiderRepository $techRiderRepository,
         private TechRiderItemRepository $itemRepository,
         private BandSpaceActivityRepository $activityRepository,
+        private BandSpaceFileRepository $fileRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private TechRiderItemBuilder $itemBuilder,
         private Security $security,
@@ -92,6 +98,24 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
             $contentChanged = true;
         }
 
+        $fileChanged = false;
+        if (array_key_exists('file_id', $payload)) {
+            // Refused rather than ignored on other types. A text item holding a file reference
+            // is a state nothing can render, and anything later walking items by `file !== null`
+            // instead of by type would quietly act on it.
+            if ($item->type !== TechRiderItemType::Document) {
+                throw new UnprocessableEntityHttpException(
+                    'Seul un élément de type document peut référencer un fichier',
+                );
+            }
+
+            $file = $this->resolveFile($data->fileId, $bandSpace);
+            if ($item->file?->id !== $file?->id) {
+                $item->file = $file;
+                $fileChanged = true;
+            }
+        }
+
         // Composing the document, not editing it: no activity, because toggling an item in
         // and out while deciding what to send is not a change anyone needs a feed entry for.
         $inclusionChanged = false;
@@ -100,7 +124,7 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
             $inclusionChanged = true;
         }
 
-        if (!$titleChanged && !$contentChanged && !$inclusionChanged) {
+        if (!$titleChanged && !$contentChanged && !$inclusionChanged && !$fileChanged) {
             return $this->itemBuilder->buildItem($item);
         }
 
@@ -133,6 +157,33 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
         $this->entityManager->flush();
 
         return $this->itemBuilder->buildItem($item);
+    }
+
+    /**
+     * Null clears the page. Anything else must be a file of this band space that can actually
+     * be rendered as one: the cross-space check is what stops an id from another band being
+     * used to read its files through a rider, and the mime check stops a page that would
+     * render as nothing.
+     */
+    private function resolveFile(?string $fileId, BandSpace $bandSpace): ?BandSpaceFile
+    {
+        if ($fileId === null || $fileId === '') {
+            return null;
+        }
+
+        $file = $this->fileRepository->findOneByIdAndBandSpace($fileId, $bandSpace);
+        if (!$file instanceof BandSpaceFile) {
+            throw new UnprocessableEntityHttpException('Fichier introuvable dans cet espace');
+        }
+
+        $mimeType = $file->currentVersion?->mimeType;
+        if ($mimeType === null || !BandSpaceFileMimeAllowlist::isRenderableAsPage($mimeType)) {
+            throw new UnprocessableEntityHttpException(
+                'Ce type de fichier ne peut pas servir de page (images et PDF uniquement)',
+            );
+        }
+
+        return $file;
     }
 
     private function shouldRecordContentUpdate(BandSpace $bandSpace, TechRiderItem $item, User $user): bool

@@ -51,6 +51,17 @@ class TechRiderItem
     public bool $isIncluded = true;
 
     /**
+     * The page itself, for a Document item: a file the band already has in its files area
+     * rather than a second upload silo, so folders, versions, tags and quota keep working.
+     *
+     * SET NULL rather than cascade: deleting the file must not silently delete a page of the
+     * rider. The item survives, empty, and says so.
+     */
+    #[ORM\ManyToOne(targetEntity: BandSpaceFile::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?BandSpaceFile $file = null;
+
+    /**
      * Payload for the types that store a document: a TipTap doc for Text, the plot for
      * StagePlot. Null until written in, which is how seeded items start. Types backed by
      * their own tables leave it null.

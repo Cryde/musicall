@@ -103,6 +103,22 @@ class TechRiderItemResource
     #[Groups([self::READ])]
     public ?array $content = null;
 
+    /**
+     * The referenced file, for a Document item. Enough to render the page without a second
+     * call, including whether the file has been trashed, which the item has to say out loud
+     * rather than showing a blank page.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[Groups([self::READ])]
+    public ?array $file = null;
+
+    /**
+     * Write side of the above. Deliberately outside the read group: the response carries the
+     * resolved `file` block instead, and echoing both would be two ways to say one thing.
+     */
+    public ?string $fileId = null;
+
     #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
     #[Groups([self::READ])]
     public int $position = 0;

@@ -64,6 +64,11 @@ class BandSpaceFile
     #[ORM\JoinTable(name: 'band_space_file_to_tag')]
     public Collection $tags;
 
+    public function isArchived(): bool
+    {
+        return $this->archiveDatetime instanceof DateTimeImmutable;
+    }
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();

@@ -10,13 +10,14 @@ namespace App\Enum\BandSpace;
  * to follow it. It also lets a rider carry two stage plots (a club setup and a festival one)
  * or two patch lists (electric and acoustic), which fixed pages could not express.
  *
- * Only implemented types appear here. Contacts, StagePlot, PatchList and Document each
- * arrive with their own issue; adding a case before its renderer exists would put a type in
- * the picker that produces a blank block.
+ * Only implemented types appear here. Contacts, StagePlot and PatchList each arrive with
+ * their own issue; adding a case before its renderer exists would put a type in the picker
+ * that produces a blank block.
  */
 enum TechRiderItemType: string
 {
     case Text = 'text';
+    case Document = 'document';
 
     /** @return list<string> for Assert\Choice, which cannot take an enum directly here. */
     public static function values(): array
@@ -28,6 +29,7 @@ enum TechRiderItemType: string
     {
         return match ($this) {
             self::Text => 'Texte libre',
+            self::Document => 'Document',
         };
     }
 }

@@ -59,4 +59,13 @@ final class BandSpaceFileMimeAllowlist
     {
         return in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
     }
+
+    /**
+     * Whether the file can stand as a page of a generated document. Images render directly
+     * and PDF pages can be embedded; anything else has no visual form to place on a page.
+     */
+    public static function isRenderableAsPage(string $mimeType): bool
+    {
+        return self::isImage($mimeType) || $mimeType === 'application/pdf';
+    }
 }

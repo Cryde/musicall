@@ -155,6 +155,12 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     replaceItem(await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, { content }))
   }
 
+  async function setItemFile(bandSpaceId, riderId, itemId, fileId) {
+    replaceItem(
+      await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, { file_id: fileId })
+    )
+  }
+
   async function setItemIncluded(bandSpaceId, riderId, itemId, isIncluded) {
     replaceItem(
       await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, {
@@ -250,6 +256,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     createItem,
     renameItem,
     saveItemContent,
+    setItemFile,
     setItemIncluded,
     deleteItem,
     reorderItems,

@@ -82,6 +82,7 @@ class TechRiderItemTest extends ApiTestCase
             'position' => 1,
             'creation_datetime' => $created->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => null,
+            'file' => null,
         ]);
 
         $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
@@ -261,6 +262,7 @@ class TechRiderItemTest extends ApiTestCase
             'position' => 0,
             'creation_datetime' => $item->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => $item->updateDatetime?->format(DateTimeInterface::ATOM),
+            'file' => null,
         ]);
     }
 
@@ -300,6 +302,7 @@ class TechRiderItemTest extends ApiTestCase
             'position' => 0,
             'creation_datetime' => $item->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => $item->updateDatetime?->format(DateTimeInterface::ATOM),
+            'file' => null,
         ]);
     }
 
