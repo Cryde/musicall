@@ -130,6 +130,14 @@
           :read-only="readOnly"
           @choose="handleChooseFile"
         />
+        <RiderPatchListEditor
+          v-else-if="item.type === 'patch_list'"
+          :band-space-id="bandSpaceId"
+          :rider-id="riderId"
+          :item-id="item.id"
+          :patch-list="item.patch_list"
+          :read-only="readOnly"
+        />
         <p v-else class="text-surface-600 dark:text-surface-300 py-4 text-center">
           Ce type d'élément arrivera prochainement.
         </p>
@@ -194,6 +202,7 @@ import { useToast } from 'primevue/usetoast'
 import { reactive, ref } from 'vue'
 import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRiders.js'
 import RiderDocumentItemEditor from './RiderDocumentItemEditor.vue'
+import RiderPatchListEditor from './RiderPatchListEditor.vue'
 import RiderTextItemEditor from './RiderTextItemEditor.vue'
 
 const props = defineProps({
@@ -215,7 +224,8 @@ const collapsed = reactive({})
 const addDialogOpen = ref(false)
 const ITEM_TYPES = [
   { value: 'text', label: 'Texte libre' },
-  { value: 'document', label: 'Document (image ou PDF)' }
+  { value: 'document', label: 'Document (image ou PDF)' },
+  { value: 'patch_list', label: 'Patch list' }
 ]
 
 const newTitle = ref('')

@@ -116,8 +116,8 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import RiderItemList from '../../components/BandSpace/TechRider/RiderItemList.vue'
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
@@ -166,8 +166,14 @@ function resolveInitialRider() {
   return techRidersStore.liveRiders[0]?.id ?? techRidersStore.archivedRiders[0]?.id ?? null
 }
 
+/**
+ * Switching rider destroys the open editors, so unsaved grid edits are asked about here as well
+ * as on route leave. Losing 24 typed rows to a click in the switcher is the worst outcome this
+ * module has, and the switcher is the easiest way to do it by accident.
+ */
 function selectRider(riderId) {
   if (!riderId || riderId === selectedRiderId.value) return
+  if (!techRidersStore.confirmDiscardingEdits()) return
   selectedRiderId.value = riderId
   localStorage.setItem(rememberedKey(), riderId)
   syncQuery()
@@ -251,5 +257,28 @@ watch(bandSpaceId, () => {
   load()
 })
 
-onMounted(load)
+onBeforeRouteLeave(() => techRidersStore.confirmDiscardingEdits())
+
+// Switching band space changes only the id param, which keeps this route mounted and so never
+// fires onBeforeRouteLeave. The bandSpaceId watcher below then clears the open rider and every
+// editor with it, so the question has to be asked here, before the param change is committed.
+// Guarding the watcher instead would be too late: the URL would already say the new space.
+onBeforeRouteUpdate(() => techRidersStore.confirmDiscardingEdits())
+
+/**
+ * Covers closing the tab and reloading, which the router never sees. The browser shows its own
+ * wording here; returnValue is what makes it show anything at all.
+ */
+function warnOnUnload(event) {
+  if (techRidersStore.dirtyItemIds.length === 0) return
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', warnOnUnload)
+  load()
+})
+
+onBeforeUnmount(() => window.removeEventListener('beforeunload', warnOnUnload))
 </script>
