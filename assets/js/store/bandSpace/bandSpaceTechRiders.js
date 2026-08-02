@@ -9,6 +9,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   const liveRiders = ref([])
   const archivedRiders = ref([])
   const activeTechRider = ref(null)
+  const dirtyItemIds = ref([])
   const isLoading = ref(false)
   const isLoadingActive = ref(false)
   const loadError = ref(null)
@@ -161,6 +162,11 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     )
   }
 
+  async function savePatchList(bandSpaceId, riderId, itemId, grid) {
+    replaceItem(await bandSpaceTechRidersApi.savePatchList(bandSpaceId, riderId, itemId, grid))
+    setItemDirty(itemId, false)
+  }
+
   async function setItemIncluded(bandSpaceId, riderId, itemId, isIncluded) {
     replaceItem(
       await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, {
@@ -217,6 +223,35 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     }
   }
 
+  /**
+   * Items that hold edits the server has not seen.
+   *
+   * Kept here rather than inside the editor because the thing that has to react to it is two
+   * levels up: leaving the route, and switching rider, both destroy the editor without asking.
+   * Losing a 24 row patch list to a mistaken click is the worst outcome this module has.
+   */
+  function setItemDirty(itemId, isDirty) {
+    const without = dirtyItemIds.value.filter((id) => id !== itemId)
+    dirtyItemIds.value = isDirty ? [...without, itemId] : without
+  }
+
+  /**
+   * Asks once, and only when there is something to lose. Returns true when it is safe to carry
+   * on, so callers read as `if (!confirmDiscardingEdits()) return`.
+   */
+  function confirmDiscardingEdits() {
+    if (dirtyItemIds.value.length === 0) return true
+
+    const confirmed = window.confirm(
+      'Des modifications ne sont pas enregistrées et seront perdues. Continuer ?'
+    )
+    if (confirmed) {
+      dirtyItemIds.value = []
+    }
+
+    return confirmed
+  }
+
   /** Looks in both lists, so a remembered id resolves whether or not it has been archived. */
   function findRider(riderId) {
     return (
@@ -228,6 +263,9 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
 
   function clearActive() {
     activeTechRider.value = null
+    // The editors holding these edits are about to be destroyed, so keeping the ids would leave
+    // the guard warning about changes that no longer exist anywhere.
+    dirtyItemIds.value = []
     activeRequestId++
   }
 
@@ -244,6 +282,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     liveRiders: readonly(liveRiders),
     archivedRiders: readonly(archivedRiders),
     activeTechRider: readonly(activeTechRider),
+    dirtyItemIds: readonly(dirtyItemIds),
     isLoading: readonly(isLoading),
     isLoadingActive: readonly(isLoadingActive),
     loadError: readonly(loadError),
@@ -256,8 +295,11 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     createItem,
     renameItem,
     saveItemContent,
+    savePatchList,
     setItemFile,
     setItemIncluded,
+    setItemDirty,
+    confirmDiscardingEdits,
     deleteItem,
     reorderItems,
     findRider,

@@ -102,6 +102,27 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * PUT, because the whole grid is replaced. Positions are not sent: array order is the order
+   * the server stores, so the payload cannot disagree with the list the user is looking at.
+   *
+   * Returns the updated item, which carries the saved rows with their new ids.
+   */
+  savePatchList(bandSpaceId, riderId, itemId, { inputs, outputs }) {
+    return axios
+      .put(
+        Routing.generate('api_band_space_tech_rider_patch_list_put', {
+          bandSpaceId,
+          riderId,
+          itemId
+        }),
+        { inputs, outputs },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   reorderItems(bandSpaceId, riderId, positions) {
     return axios
       .post(
