@@ -7,11 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\TechRider\TechRiderCreate;
 use App\ApiResource\BandSpace\TechRider\TechRiderResource;
 use App\Entity\BandSpace\TechRider;
-use App\Entity\BandSpace\TechRiderSection;
+use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
-use App\Enum\BandSpace\TechRiderDefaultSection;
+use App\Enum\BandSpace\TechRiderDefaultItem;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\TechRider\TechRiderBuilder;
@@ -51,7 +51,7 @@ readonly class TechRiderCreateProcessor implements ProcessorInterface
         $techRider->name = $data->name;
 
         $this->entityManager->persist($techRider);
-        $this->seedDefaultSections($techRider);
+        $this->seedDefaultItems($techRider);
 
         $this->activityRecorder->record(
             bandSpace: $bandSpace,
@@ -72,16 +72,16 @@ readonly class TechRiderCreateProcessor implements ProcessorInterface
      * the moment they exist: rename, reorder or delete them freely. No activity is recorded
      * for them, they are part of creating the rider rather than seven separate edits.
      */
-    private function seedDefaultSections(TechRider $techRider): void
+    private function seedDefaultItems(TechRider $techRider): void
     {
-        foreach (TechRiderDefaultSection::cases() as $position => $default) {
-            $section = new TechRiderSection();
-            $section->techRider = $techRider;
-            $section->title = $default->title();
-            $section->position = $position;
+        foreach (TechRiderDefaultItem::cases() as $position => $default) {
+            $item = new TechRiderItem();
+            $item->techRider = $techRider;
+            $item->title = $default->title();
+            $item->position = $position;
 
-            $techRider->sections->add($section);
-            $this->entityManager->persist($section);
+            $techRider->items->add($item);
+            $this->entityManager->persist($item);
         }
     }
 }

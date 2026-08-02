@@ -89,37 +89,12 @@
             {{ rider.created_by_username ? `par ${rider.created_by_username}` : '' }}
           </p>
 
-          <Tabs v-model:value="activeTab">
-            <TabList>
-              <Tab value="informations">Informations</Tab>
-              <Tab value="stage-plot">Plan de scène</Tab>
-              <Tab value="patch-list">Patch list</Tab>
-              <Tab value="documents">Documents</Tab>
-            </TabList>
-
-            <TabPanels>
-              <TabPanel value="informations">
-                <p class="text-surface-600 dark:text-surface-300 py-6 text-center">
-                  Les sections du tech rider arriveront prochainement.
-                </p>
-              </TabPanel>
-              <TabPanel value="stage-plot">
-                <p class="text-surface-600 dark:text-surface-300 py-6 text-center">
-                  Le plan de scène arrivera prochainement.
-                </p>
-              </TabPanel>
-              <TabPanel value="patch-list">
-                <p class="text-surface-600 dark:text-surface-300 py-6 text-center">
-                  La patch list arrivera prochainement.
-                </p>
-              </TabPanel>
-              <TabPanel value="documents">
-                <p class="text-surface-600 dark:text-surface-300 py-6 text-center">
-                  Les documents arriveront prochainement.
-                </p>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+          <RiderItemList
+            :band-space-id="bandSpaceId"
+            :rider-id="rider.id"
+            :items="[...rider.items]"
+            :read-only="isArchived"
+          />
         </template>
       </div>
     </div>
@@ -139,21 +114,15 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import Tab from 'primevue/tab'
-import TabList from 'primevue/tablist'
-import TabPanel from 'primevue/tabpanel'
-import TabPanels from 'primevue/tabpanels'
-import Tabs from 'primevue/tabs'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import RiderItemList from '../../components/BandSpace/TechRider/RiderItemList.vue'
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
 import { LAST_TECH_RIDER_KEY } from '../../constants/bandSpace.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
-
-const TABS = ['informations', 'stage-plot', 'patch-list', 'documents']
 
 const route = useRoute()
 const router = useRouter()
@@ -171,12 +140,6 @@ const hasAnyRider = computed(
 const selectedRiderId = ref(null)
 const formDialogOpen = ref(false)
 const formDialogMode = ref('create')
-const activeTab = ref(tabFromQuery())
-
-function tabFromQuery() {
-  const requested = route.query.tab
-  return typeof requested === 'string' && TABS.includes(requested) ? requested : TABS[0]
-}
 
 /** localStorage key is per space: each band remembers its own rider. */
 function rememberedKey() {
@@ -211,10 +174,10 @@ function selectRider(riderId) {
   techRidersStore.fetchActive(bandSpaceId.value, riderId)
 }
 
-// Rider and tab both live in the query so a reload or a shared link restores the whole view.
+// The open rider lives in the query so a reload or a shared link restores it.
 function syncQuery() {
-  const next = { ...route.query, rider: selectedRiderId.value ?? undefined, tab: activeTab.value }
-  if (route.query.rider !== next.rider || route.query.tab !== next.tab) {
+  const next = { ...route.query, rider: selectedRiderId.value ?? undefined }
+  if (route.query.rider !== next.rider) {
     router.replace({ query: next })
   }
 }
@@ -280,15 +243,6 @@ function formatDate(value) {
     year: 'numeric'
   })
 }
-
-watch(activeTab, syncQuery)
-
-watch(
-  () => route.query.tab,
-  () => {
-    activeTab.value = tabFromQuery()
-  }
-)
 
 // Switching band space keeps this route mounted, only the id param changes.
 watch(bandSpaceId, () => {

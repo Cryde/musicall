@@ -2,7 +2,8 @@
 
 namespace App\Entity\BandSpace;
 
-use App\Repository\BandSpace\TechRiderSectionRepository;
+use App\Enum\BandSpace\TechRiderItemType;
+use App\Repository\BandSpace\TechRiderItemRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -13,14 +14,14 @@ use Ramsey\Uuid\UuidInterface;
 /**
  * One titled block of a rider's written body.
  *
- * Sections are user-created and user-titled rather than a fixed set of fields, because a
+ * Items are user-created and user-titled rather than a fixed set of fields, because a
  * real rider carries things no fixed form predicts (mixing desk requirements, guest passes,
  * a crew list). Order is meaningful: it is the order the venue reads them in.
  */
-#[ORM\Entity(repositoryClass: TechRiderSectionRepository::class)]
-#[ORM\Table(name: 'band_space_tech_rider_section')]
-#[ORM\Index(name: 'idx_rider_section_rider_position', columns: ['tech_rider_id', 'position'])]
-class TechRiderSection
+#[ORM\Entity(repositoryClass: TechRiderItemRepository::class)]
+#[ORM\Table(name: 'band_space_tech_rider_item')]
+#[ORM\Index(name: 'idx_rider_item_rider_position', columns: ['tech_rider_id', 'position'])]
+class TechRiderItem
 {
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
@@ -32,16 +33,27 @@ class TechRiderSection
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: TechRider::class, inversedBy: 'sections')]
+    #[ORM\ManyToOne(targetEntity: TechRider::class, inversedBy: 'items')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     public TechRider $techRider;
+
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: TechRiderItemType::class)]
+    public TechRiderItemType $type = TechRiderItemType::Text;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $title;
 
     /**
-     * TipTap document, the same shape BandSpaceNote::$content stores. Null until the section
-     * is written in, which is how seeded sections start.
+     * Whether this item appears in the composed document. Excluding is not deleting: a
+     * festival stage plot stays authored and editable while a club rider leaves it out.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $isIncluded = true;
+
+    /**
+     * Payload for the types that store a document: a TipTap doc for Text, the plot for
+     * StagePlot. Null until written in, which is how seeded items start. Types backed by
+     * their own tables leave it null.
      *
      * @var array<string, mixed>|null
      */

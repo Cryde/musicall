@@ -2,11 +2,11 @@
 
 namespace App\Tests\Api\BandSpace\TechRider;
 
-use App\Entity\BandSpace\TechRiderSection;
+use App\Entity\BandSpace\TechRiderItem;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TechRiderRepository;
-use App\Repository\BandSpace\TechRiderSectionRepository;
+use App\Repository\BandSpace\TechRiderItemRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -42,27 +42,29 @@ class TechRiderCreateTest extends ApiTestCase
         $this->assertCount(1, $riders);
         $rider = $riders[0];
 
-        $sections = self::getContainer()->get(TechRiderSectionRepository::class)->findByRider($rider);
+        $items = self::getContainer()->get(TechRiderItemRepository::class)->findByRider($rider);
 
-        // Ids and timestamps are generated, so the expected sections are built from the rows;
+        // Ids and timestamps are generated, so the expected items are built from the rows;
         // the titles and the order are pinned separately below, which is the part that is a
         // product decision rather than an implementation detail.
-        $expectedSections = array_map(
-            static fn (TechRiderSection $section): array => [
-                '@id' => '/api/band_spaces/' . $section->techRider->bandSpace->id
-                    . '/tech_riders/' . $section->techRider->id
-                    . '/sections/' . $section->id,
-                '@type' => 'TechRiderSection',
-                'id' => (string) $section->id,
+        $expectedItems = array_map(
+            static fn (TechRiderItem $item): array => [
+                '@id' => '/api/band_spaces/' . $item->techRider->bandSpace->id
+                    . '/tech_riders/' . $item->techRider->id
+                    . '/items/' . $item->id,
+                '@type' => 'TechRiderItem',
+                'id' => (string) $item->id,
                 'band_space_id' => (string) $bandSpace->id,
                 'rider_id' => (string) $rider->id,
-                'title' => $section->title,
+                'type' => 'text',
+                'is_included' => true,
+                'title' => $item->title,
                 'content' => null,
-                'position' => $section->position,
-                'creation_datetime' => $section->creationDatetime->format(\DateTimeInterface::ATOM),
+                'position' => $item->position,
+                'creation_datetime' => $item->creationDatetime->format(\DateTimeInterface::ATOM),
                 'update_datetime' => null,
             ],
-            $sections,
+            $items,
         );
 
         $this->assertJsonEquals([
@@ -76,8 +78,8 @@ class TechRiderCreateTest extends ApiTestCase
             'archive_datetime' => null,
             'creation_datetime' => $rider->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
-            'sections' => $expectedSections,
-            'section_count' => 7,
+            'items' => $expectedItems,
+            'item_count' => 7,
         ]);
 
         // A new rider opens on a prompt, not a blank page. The set and its order are the
@@ -92,11 +94,11 @@ class TechRiderCreateTest extends ApiTestCase
                 'Catering',
                 'Divers',
             ],
-            array_map(static fn (TechRiderSection $section): string => $section->title, $sections),
+            array_map(static fn (TechRiderItem $item): string => $item->title, $items),
         );
         $this->assertSame([0, 1, 2, 3, 4, 5, 6], array_map(
-            static fn (TechRiderSection $section): int => $section->position,
-            $sections,
+            static fn (TechRiderItem $item): int => $item->position,
+            $items,
         ));
 
         $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);

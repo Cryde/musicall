@@ -28,6 +28,7 @@
     "@tiptap/extension-placeholder": "^3.23.4",
     "@tiptap/extension-table": "^3.23.4",
     "@tiptap/extension-text-align": "^3.23.4",
+    "@tiptap/extension-text-style": "^3.29.2",
     "@tiptap/extension-youtube": "^3.23.4",
     "@tiptap/pm": "^3.23.4",
     "@tiptap/starter-kit": "^3.23.4",

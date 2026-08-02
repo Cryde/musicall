@@ -20,6 +20,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   // Guards against a slow response landing after a newer one and overwriting it.
   let listRequestId = 0
   let activeRequestId = 0
+  let reorderRequestId = 0
 
   async function fetchRiders(bandSpaceId) {
     if (bandSpaceId !== loadedBandSpaceId.value) {
@@ -122,6 +123,94 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     return restored
   }
 
+  /**
+   * Items live on activeTechRider and every mutation returns the updated rider, so the
+   * open document stays the single source the editor renders from.
+   */
+  function replaceItem(updated) {
+    if (!activeTechRider.value) return
+    activeTechRider.value = {
+      ...activeTechRider.value,
+      items: activeTechRider.value.items.map((item) => (item.id === updated.id ? updated : item))
+    }
+  }
+
+  async function createItem(bandSpaceId, riderId, { title, type = 'text' }) {
+    const created = await bandSpaceTechRidersApi.createItem(bandSpaceId, riderId, { title, type })
+    if (activeTechRider.value?.id === riderId) {
+      activeTechRider.value = {
+        ...activeTechRider.value,
+        items: [...activeTechRider.value.items, created],
+        item_count: activeTechRider.value.item_count + 1
+      }
+    }
+    return created
+  }
+
+  async function renameItem(bandSpaceId, riderId, itemId, title) {
+    replaceItem(await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, { title }))
+  }
+
+  async function saveItemContent(bandSpaceId, riderId, itemId, content) {
+    replaceItem(await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, { content }))
+  }
+
+  async function setItemIncluded(bandSpaceId, riderId, itemId, isIncluded) {
+    replaceItem(
+      await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, {
+        is_included: isIncluded
+      })
+    )
+  }
+
+  async function deleteItem(bandSpaceId, riderId, itemId) {
+    await bandSpaceTechRidersApi.deleteItem(bandSpaceId, riderId, itemId)
+    if (activeTechRider.value?.id !== riderId) return
+    activeTechRider.value = {
+      ...activeTechRider.value,
+      items: activeTechRider.value.items.filter((item) => item.id !== itemId),
+      item_count: Math.max(0, activeTechRider.value.item_count - 1)
+    }
+  }
+
+  /**
+   * Applies the new order locally first so the list does not jump while the request is in
+   * flight, then restores the previous order if the server refuses it.
+   */
+  async function reorderItems(bandSpaceId, riderId, orderedIds) {
+    if (activeTechRider.value?.id !== riderId) return
+
+    // Two quick Monter clicks are two independently valid full-order payloads, so the server
+    // keeps whichever lands last while the client shows whichever was sent last. Without this
+    // guard those can disagree, silently, until a reload.
+    const requestId = ++reorderRequestId
+    const previous = activeTechRider.value.items
+    const byId = new Map(previous.map((item) => [item.id, item]))
+    const reordered = orderedIds
+      .map((id, index) => {
+        const item = byId.get(id)
+        return item ? { ...item, position: index } : null
+      })
+      .filter(Boolean)
+
+    activeTechRider.value = { ...activeTechRider.value, items: reordered }
+
+    try {
+      await bandSpaceTechRidersApi.reorderItems(
+        bandSpaceId,
+        riderId,
+        orderedIds.map((id, index) => ({ id, position: index }))
+      )
+    } catch (e) {
+      // Only the newest attempt may roll back: an older failure must not undo a newer,
+      // successful order.
+      if (requestId === reorderRequestId) {
+        activeTechRider.value = { ...activeTechRider.value, items: previous }
+      }
+      throw e
+    }
+  }
+
   /** Looks in both lists, so a remembered id resolves whether or not it has been archived. */
   function findRider(riderId) {
     return (
@@ -158,6 +247,12 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     renameTechRider,
     archiveTechRider,
     unarchiveTechRider,
+    createItem,
+    renameItem,
+    saveItemContent,
+    setItemIncluded,
+    deleteItem,
+    reorderItems,
     findRider,
     clearActive,
     clear

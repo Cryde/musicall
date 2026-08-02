@@ -2,29 +2,31 @@
 
 namespace App\Service\Builder\BandSpace\TechRider;
 
-use App\ApiResource\BandSpace\TechRider\TechRiderSectionResource;
-use App\Entity\BandSpace\TechRiderSection;
+use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
+use App\Entity\BandSpace\TechRiderItem;
 
-readonly class TechRiderSectionBuilder
+readonly class TechRiderItemBuilder
 {
     /**
-     * @param TechRiderSection[] $entities
-     * @return TechRiderSectionResource[]
+     * @param TechRiderItem[] $entities
+     * @return TechRiderItemResource[]
      */
     public function buildFromList(array $entities): array
     {
         return array_map(
-            fn (TechRiderSection $entity): TechRiderSectionResource => $this->buildItem($entity),
+            fn (TechRiderItem $entity): TechRiderItemResource => $this->buildItem($entity),
             $entities,
         );
     }
 
-    public function buildItem(TechRiderSection $entity): TechRiderSectionResource
+    public function buildItem(TechRiderItem $entity): TechRiderItemResource
     {
-        $dto = new TechRiderSectionResource();
+        $dto = new TechRiderItemResource();
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->techRider->bandSpace->id;
         $dto->riderId = (string) $entity->techRider->id;
+        $dto->type = $entity->type->value;
+        $dto->isIncluded = $entity->isIncluded;
         $dto->title = $entity->title;
         $dto->content = $entity->content;
         $dto->position = $entity->position;

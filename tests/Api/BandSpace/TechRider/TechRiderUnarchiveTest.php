@@ -55,8 +55,8 @@ class TechRiderUnarchiveTest extends ApiTestCase
             'archive_datetime' => null,
             'creation_datetime' => $rider->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => null,
-            'sections' => [],
-            'section_count' => 0,
+            'items' => [],
+            'item_count' => 0,
         ]);
 
         $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);

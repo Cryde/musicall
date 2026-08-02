@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Factory\BandSpace;
 
-use App\Entity\BandSpace\TechRiderSection;
+use App\Entity\BandSpace\TechRiderItem;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentObjectFactory<TechRiderSection>
+ * @extends PersistentObjectFactory<TechRiderItem>
  */
-final class TechRiderSectionFactory extends PersistentObjectFactory
+final class TechRiderItemFactory extends PersistentObjectFactory
 {
     protected function defaults(): array
     {
@@ -23,6 +23,6 @@ final class TechRiderSectionFactory extends PersistentObjectFactory
 
     public static function class(): string
     {
-        return TechRiderSection::class;
+        return TechRiderItem::class;
     }
 }

@@ -16,7 +16,7 @@ use App\State\Processor\BandSpace\TechRider\TechRiderDeleteProcessor;
 use App\State\Processor\BandSpace\TechRider\TechRiderUnarchiveProcessor;
 use App\State\Processor\BandSpace\TechRider\TechRiderUpdateProcessor;
 use App\State\Provider\BandSpace\TechRider\TechRiderCollectionProvider;
-use App\State\Provider\BandSpace\TechRider\TechRiderItemProvider;
+use App\State\Provider\BandSpace\TechRider\TechRiderProvider;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -47,9 +47,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             ],
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
-            normalizationContext: ['groups' => [self::ITEM, TechRiderSectionResource::READ], 'skip_null_values' => false],
+            normalizationContext: ['groups' => [self::ITEM, TechRiderItemResource::READ], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_get_item',
-            provider: TechRiderItemProvider::class,
+            provider: TechRiderProvider::class,
         ),
         new Patch(
             uriTemplate: '/band_spaces/{bandSpaceId}/tech_riders/{id}',
@@ -59,12 +59,12 @@ use Symfony\Component\Validator\Constraints as Assert;
             ],
             openapi: new Operation(tags: ['Band Space Tech Rider']),
             security: "is_granted('ROLE_USER')",
-            normalizationContext: ['groups' => [self::ITEM, TechRiderSectionResource::READ], 'skip_null_values' => false],
+            normalizationContext: ['groups' => [self::ITEM, TechRiderItemResource::READ], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_patch',
-            provider: TechRiderItemProvider::class,
+            provider: TechRiderProvider::class,
             processor: TechRiderUpdateProcessor::class,
         ),
-        // read: false on this operation and on Delete below: TechRiderItemProvider would
+        // read: false on this operation and on Delete below: TechRiderProvider would
         // hydrate a resource neither one reads, and both processors load the entity
         // themselves. Setlist still pays that cost on its Delete.
         new Post(
@@ -77,7 +77,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_USER')",
             input: false,
             read: false,
-            normalizationContext: ['groups' => [self::ITEM, TechRiderSectionResource::READ], 'skip_null_values' => false],
+            normalizationContext: ['groups' => [self::ITEM, TechRiderItemResource::READ], 'skip_null_values' => false],
             name: 'api_band_space_tech_riders_unarchive',
             processor: TechRiderUnarchiveProcessor::class,
         ),
@@ -128,18 +128,18 @@ class TechRiderResource
 
     /**
      * Item operations only, which is why it is grouped rather than merely left empty on the
-     * collection: a rider with seven sections reported as `sections: []` alongside
-     * `section_count: 7` would be contradictory. The list omits the key entirely.
+     * collection: a rider with seven items reported as `items: []` alongside
+     * `item_count: 7` would be contradictory. The list omits the key entirely.
      *
      * Riders gain patch rows and a stage plot next, so the collection must never grow into
      * shipping a whole space's rider content to render a dropdown of names.
      *
-     * @var TechRiderSectionResource[]
+     * @var TechRiderItemResource[]
      */
     #[ApiProperty(readableLink: true)]
     #[Groups([self::ITEM])]
-    public array $sections = [];
+    public array $items = [];
 
     #[Groups([self::LIST, self::ITEM])]
-    public int $sectionCount = 0;
+    public int $itemCount = 0;
 }

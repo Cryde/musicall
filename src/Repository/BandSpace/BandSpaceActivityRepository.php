@@ -45,7 +45,7 @@ class BandSpaceActivityRepository extends ServiceEntityRepository
      * The most recent activity of one type, on one resource, by one actor.
      *
      * Exists so a caller can coalesce: an autosaving editor would otherwise write a near
-     * identical row every few seconds, and a feed of forty "a modifié la section" entries
+     * identical row every few seconds, and a feed of forty "a modifié un élément" entries
      * for one afternoon's writing is noise rather than history.
      */
     public function findLatestForResource(

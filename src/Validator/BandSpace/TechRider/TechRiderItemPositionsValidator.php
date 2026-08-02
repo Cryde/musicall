@@ -2,27 +2,27 @@
 
 namespace App\Validator\BandSpace\TechRider;
 
-use App\ApiResource\BandSpace\TechRider\TechRiderSectionReorder;
+use App\ApiResource\BandSpace\TechRider\TechRiderItemReorder;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-class TechRiderSectionPositionsValidator extends ConstraintValidator
+class TechRiderItemPositionsValidator extends ConstraintValidator
 {
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if (!$constraint instanceof TechRiderSectionPositions) {
-            throw new UnexpectedTypeException($constraint, TechRiderSectionPositions::class);
+        if (!$constraint instanceof TechRiderItemPositions) {
+            throw new UnexpectedTypeException($constraint, TechRiderItemPositions::class);
         }
 
-        if (!$value instanceof TechRiderSectionReorder) {
+        if (!$value instanceof TechRiderItemReorder) {
             return;
         }
 
         if ($value->positions === []) {
             $this->context->buildViolation($constraint->emptyMessage)
                 ->atPath('positions')
-                ->setCode(TechRiderSectionPositions::ERROR_CODE)
+                ->setCode(TechRiderItemPositions::ERROR_CODE)
                 ->addViolation();
 
             return;
@@ -40,7 +40,7 @@ class TechRiderSectionPositionsValidator extends ConstraintValidator
                 $shapeOk = false;
                 $this->context->buildViolation($constraint->invalidItemMessage)
                     ->atPath("positions[$index]")
-                    ->setCode(TechRiderSectionPositions::ERROR_CODE)
+                    ->setCode(TechRiderItemPositions::ERROR_CODE)
                     ->addViolation();
             }
         }
@@ -51,14 +51,14 @@ class TechRiderSectionPositionsValidator extends ConstraintValidator
 
         // Uniqueness has to be checked here, on the raw list. The processor keys the payload
         // by id to apply it, which silently collapses a duplicate, and its membership check
-        // then compares that collapsed set against the rider's sections and finds it
+        // then compares that collapsed set against the rider's items and finds it
         // complete. So [{A,0},{B,1},{A,2}] would pass both halves of the rule and leave no
-        // section holding position 0.
+        // item holding position 0.
         $ids = array_column($value->positions, 'id');
         if (count(array_unique($ids)) !== count($ids)) {
             $this->context->buildViolation($constraint->duplicateIdMessage)
                 ->atPath('positions')
-                ->setCode(TechRiderSectionPositions::ERROR_CODE)
+                ->setCode(TechRiderItemPositions::ERROR_CODE)
                 ->addViolation();
 
             return;
@@ -70,7 +70,7 @@ class TechRiderSectionPositionsValidator extends ConstraintValidator
         if ($positionValues !== $expected) {
             $this->context->buildViolation($constraint->notContiguousMessage)
                 ->atPath('positions')
-                ->setCode(TechRiderSectionPositions::ERROR_CODE)
+                ->setCode(TechRiderItemPositions::ERROR_CODE)
                 ->addViolation();
         }
     }

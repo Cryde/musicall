@@ -4,43 +4,46 @@ namespace App\State\Processor\BandSpace\TechRider;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\ApiResource\BandSpace\TechRider\TechRiderSectionCreate;
-use App\ApiResource\BandSpace\TechRider\TechRiderSectionResource;
+use App\ApiResource\BandSpace\TechRider\TechRiderItemCreate;
+use App\ApiResource\BandSpace\TechRider\TechRiderItemResource;
 use App\Entity\BandSpace\TechRider;
-use App\Entity\BandSpace\TechRiderSection;
+use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
+use App\Enum\BandSpace\TechRiderItemType;
 use App\Repository\BandSpace\TechRiderRepository;
-use App\Repository\BandSpace\TechRiderSectionRepository;
+use App\Repository\BandSpace\TechRiderItemRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\TechRiderWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\Builder\BandSpace\TechRider\TechRiderSectionBuilder;
+use App\Service\Builder\BandSpace\TechRider\TechRiderItemBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @implements ProcessorInterface<TechRiderSectionCreate, TechRiderSectionResource>
+ * @implements ProcessorInterface<TechRiderItemCreate, TechRiderItemResource>
  */
-readonly class TechRiderSectionCreateProcessor implements ProcessorInterface
+readonly class TechRiderItemCreateProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private TechRiderWriteGuard $writeGuard,
         private TechRiderRepository $techRiderRepository,
-        private TechRiderSectionRepository $sectionRepository,
+        private TechRiderItemRepository $itemRepository,
         private BandSpaceActivityRecorder $activityRecorder,
-        private TechRiderSectionBuilder $sectionBuilder,
+        private TechRiderItemBuilder $itemBuilder,
         private Security $security,
     ) {
     }
 
     /**
-     * @param TechRiderSectionCreate $data
+     * @param TechRiderItemCreate $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TechRiderSectionResource
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TechRiderItemResource
     {
         $user = $this->security->getUser();
         if (!$user instanceof User) {
@@ -54,26 +57,29 @@ readonly class TechRiderSectionCreateProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Tech rider introuvable');
         }
 
-        $section = new TechRiderSection();
-        $section->techRider = $techRider;
-        $section->title = $data->title;
-        $section->content = $data->content;
-        // Appended, never inserted: a new section is written at the end and moved by reorder.
-        $section->position = $this->sectionRepository->nextPosition($techRider);
+        $this->writeGuard->assertWritable($techRider);
 
-        $this->entityManager->persist($section);
+        $item = new TechRiderItem();
+        $item->techRider = $techRider;
+        $item->type = TechRiderItemType::from($data->type);
+        $item->title = $data->title;
+        $item->content = $data->content;
+        // Appended, never inserted: a new item is written at the end and moved by reorder.
+        $item->position = $this->itemRepository->nextPosition($techRider);
+
+        $this->entityManager->persist($item);
 
         $this->activityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Rider,
-            type: BandSpaceRiderActivityType::RiderSectionAdded,
-            resourceId: (string) $section->id,
+            type: BandSpaceRiderActivityType::RiderItemAdded,
+            resourceId: (string) $item->id,
             actor: $user,
-            payload: ['rider_name' => $techRider->name, 'title' => $section->title],
+            payload: ['rider_name' => $techRider->name, 'title' => $item->title],
         );
 
         $this->entityManager->flush();
 
-        return $this->sectionBuilder->buildItem($section);
+        return $this->itemBuilder->buildItem($item);
     }
 }
