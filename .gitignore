@@ -14,7 +14,12 @@
 ###< symfony/phpunit-bridge ###
 hosts.yml
 
-/public/images/
+# Runtime uploads, per feature directory. The exception is band_space/, which holds artwork that
+# ships with the application rather than anything a user uploaded: the stage plot icons live under
+# public/ on purpose, so their URLs are not fingerprinted by Vite, and they have to be versioned
+# or a fresh clone renders a picker full of broken images.
+/public/images/*
+!/public/images/band_space/
 /public/band_space_files/
 
 ###> liip/imagine-bundle ###

@@ -20,4 +20,5 @@ enum BandSpaceRiderActivityType: string
     case RiderItemReordered = 'rider_item_reordered';
 
     case RiderPatchListUpdated = 'rider_patch_list_updated';
+    case RiderStagePlotUpdated = 'rider_stage_plot_updated';
 }
