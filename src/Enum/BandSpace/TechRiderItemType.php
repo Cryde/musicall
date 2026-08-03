@@ -10,9 +10,9 @@ namespace App\Enum\BandSpace;
  * to follow it. It also lets a rider carry two stage plots (a club setup and a festival one)
  * or two patch lists (electric and acoustic), which fixed pages could not express.
  *
- * Every type in the model now exists. A case is only added once something can render it, so the
- * picker never offers a type that produces a blank block: StagePlot is persisted here but is not
- * offered in the frontend picker until its editor lands (#774).
+ * Every type in the model exists and every one has an editor, so the picker offers all of them.
+ * A case is only added once something can render it: a type in the picker with no renderer would
+ * produce a block that displays nothing.
  */
 enum TechRiderItemType: string
 {
