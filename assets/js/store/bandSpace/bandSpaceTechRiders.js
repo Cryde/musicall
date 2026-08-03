@@ -130,6 +130,17 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   }
 
   /**
+   * The copy is always live, even from an archived source, so it joins the live list regardless of
+   * which list the original was in.
+   */
+  async function duplicateTechRider(bandSpaceId, riderId, name = null) {
+    const created = await bandSpaceTechRidersApi.duplicateTechRider(bandSpaceId, riderId, name)
+    liveRiders.value = [created, ...liveRiders.value]
+
+    return created
+  }
+
+  /**
    * Items live on activeTechRider and every mutation returns the updated rider, so the
    * open document stays the single source the editor renders from.
    */
@@ -344,6 +355,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     renameTechRider,
     archiveTechRider,
     unarchiveTechRider,
+    duplicateTechRider,
     createItem,
     renameItem,
     saveItemContent,

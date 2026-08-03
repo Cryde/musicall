@@ -51,21 +51,32 @@
             @create="openCreateDialog"
           />
         </div>
-        <div v-if="rider && !isArchived" class="flex items-center gap-2">
+        <div v-if="rider" class="flex items-center gap-2">
+          <!-- Offered on an archived rider too: starting next year's from last year's archived one
+               is the main reason this action exists. -->
           <Button
-            label="Renommer"
-            icon="pi pi-pencil"
+            label="Dupliquer"
+            icon="pi pi-copy"
             severity="secondary"
             outlined
-            @click="openRenameDialog"
+            @click="openDuplicateDialog"
           />
-          <Button
-            label="Archiver"
-            icon="pi pi-inbox"
-            severity="secondary"
-            outlined
-            @click="confirmArchive"
-          />
+          <template v-if="!isArchived">
+            <Button
+              label="Renommer"
+              icon="pi pi-pencil"
+              severity="secondary"
+              outlined
+              @click="openRenameDialog"
+            />
+            <Button
+              label="Archiver"
+              icon="pi pi-inbox"
+              severity="secondary"
+              outlined
+              @click="confirmArchive"
+            />
+          </template>
         </div>
       </div>
 
@@ -103,8 +114,8 @@
       v-model:visible="formDialogOpen"
       :band-space-id="bandSpaceId"
       :mode="formDialogMode"
-      :rider-id="formDialogMode === 'rename' ? selectedRiderId : null"
-      :initial-name="formDialogMode === 'rename' ? (rider?.name ?? '') : ''"
+      :rider-id="formDialogMode === 'create' ? null : selectedRiderId"
+      :initial-name="dialogInitialName"
       @saved="handleSaved"
     />
   </div>
@@ -122,6 +133,7 @@ import RiderItemList from '../../components/BandSpace/TechRider/RiderItemList.vu
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
 import { LAST_TECH_RIDER_KEY } from '../../constants/bandSpace.js'
+import { COPY_SUFFIX, MAX_NAME_LENGTH } from '../../constants/techRider.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
 
 const route = useRoute()
@@ -140,6 +152,25 @@ const hasAnyRider = computed(
 const selectedRiderId = ref(null)
 const formDialogOpen = ref(false)
 const formDialogMode = ref('create')
+
+/**
+ * What the dialog's field starts with. The duplicate suffix is proposed here rather than left to
+ * the server default, so the band sees it and can replace it with the year they actually mean.
+ *
+ * Capped with the same arithmetic the server uses, because the dialog always submits the field as
+ * an explicit name and never falls through to that default. Without the cap, duplicating a rider
+ * whose name is already near the limit would pre-fill something over it and 422 on submit, which
+ * is the one-click path breaking for exactly the people with the most descriptive names. The
+ * source is trimmed rather than the result, so the suffix survives: it is what tells a reader
+ * which of two identically named riders is the new one.
+ */
+const dialogInitialName = computed(() => {
+  const current = rider.value?.name ?? ''
+  if (formDialogMode.value === 'rename') return current
+  if (formDialogMode.value !== 'duplicate' || current === '') return ''
+
+  return current.slice(0, MAX_NAME_LENGTH - COPY_SUFFIX.length) + COPY_SUFFIX
+})
 
 /** localStorage key is per space: each band remembers its own rider. */
 function rememberedKey() {
@@ -208,8 +239,17 @@ function openRenameDialog() {
   formDialogOpen.value = true
 }
 
+function openDuplicateDialog() {
+  formDialogMode.value = 'duplicate'
+  formDialogOpen.value = true
+}
+
+/**
+ * A create or a duplicate both produce a new rider worth opening; a rename does not move anywhere.
+ * The dirty guard inside selectRider still applies, so an unsaved plot is not lost by duplicating.
+ */
 function handleSaved(saved) {
-  if (formDialogMode.value === 'create') {
+  if (formDialogMode.value !== 'rename') {
     selectRider(saved.id)
   }
 }
