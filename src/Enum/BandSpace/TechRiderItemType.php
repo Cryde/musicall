@@ -10,8 +10,9 @@ namespace App\Enum\BandSpace;
  * to follow it. It also lets a rider carry two stage plots (a club setup and a festival one)
  * or two patch lists (electric and acoustic), which fixed pages could not express.
  *
- * Only implemented types appear here. StagePlot arrives with its own issue; adding a case before
- * its renderer exists would put a type in the picker that produces a blank block.
+ * Every type in the model now exists. A case is only added once something can render it, so the
+ * picker never offers a type that produces a blank block: StagePlot is persisted here but is not
+ * offered in the frontend picker until its editor lands (#774).
  */
 enum TechRiderItemType: string
 {
@@ -19,6 +20,7 @@ enum TechRiderItemType: string
     case Document = 'document';
     case PatchList = 'patch_list';
     case Contacts = 'contacts';
+    case StagePlot = 'stage_plot';
 
     /** @return list<string> for Assert\Choice, which cannot take an enum directly here. */
     public static function values(): array
@@ -33,22 +35,40 @@ enum TechRiderItemType: string
             self::Document => 'Document',
             self::PatchList => 'Patch list',
             self::Contacts => 'Membres et contacts',
+            self::StagePlot => 'Plan de scène',
         };
     }
 
     /**
-     * Whether the item's body lives in its `content` JSON column. StagePlot joins these when
-     * #769 lands.
+     * Whether a client may write this item's `content` through the generic item endpoints.
      *
-     * A predicate rather than a comparison at each call site: which type may hold what is one
-     * rule, and a processor asking `type !== Text` would have to be found and edited again for
-     * every type added.
+     * Not the same question as "does the body live in the content column", and conflating the two
+     * is a hole: StagePlot's body *is* the content column, but it has a dedicated PUT with a
+     * structural validator behind it. Answering yes here would let the generic PATCH store a plot
+     * with an unknown icon and off-stage coordinates, because that endpoint only checks the
+     * column's size and depth. The strict validator has to be the only door in.
+     *
+     * A predicate rather than a comparison at each call site: which type may do what is one rule,
+     * and a processor asking `type !== Text` would have to be found and edited again for every
+     * type added.
      */
-    public function storesContent(): bool
+    public function acceptsGenericContentWrite(): bool
     {
-        // Contacts stores presentation choices rather than prose, but it is still the content
-        // column that holds them, so the same write path applies.
+        // Text is prose and Contacts is a pair of presentation choices; neither has a dedicated
+        // write path, so the generic one is how they are saved.
         return $this === self::Text || $this === self::Contacts;
+    }
+
+    /**
+     * Why a generic content write was refused. Only meaningful when acceptsGenericContentWrite()
+     * is false, and it lives here so the two processors that refuse cannot word it differently.
+     */
+    public function genericContentWriteRefusal(): string
+    {
+        return match ($this) {
+            self::StagePlot => 'Un plan de scène se modifie via son endpoint dédié',
+            default => 'Ce type d\'élément ne stocke pas de contenu rédigé',
+        };
     }
 
     /** Whether the item's body is a file of the band space rather than something authored here. */

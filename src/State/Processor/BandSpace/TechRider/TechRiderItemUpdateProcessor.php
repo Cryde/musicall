@@ -96,10 +96,8 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
         // walking items by `content !== null` instead of by type would quietly act on it.
         $contentChanged = false;
         if (array_key_exists('content', $payload)) {
-            if (!$item->type->storesContent()) {
-                throw new UnprocessableEntityHttpException(
-                    'Ce type d\'élément ne stocke pas de contenu rédigé',
-                );
+            if (!$item->type->acceptsGenericContentWrite()) {
+                throw new UnprocessableEntityHttpException($item->type->genericContentWriteRefusal());
             }
 
             if ($item->content !== $data->content) {

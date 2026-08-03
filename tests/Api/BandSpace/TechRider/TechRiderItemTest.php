@@ -599,12 +599,12 @@ class TechRiderItemTest extends ApiTestCase
         $this->client->jsonRequest(
             'POST',
             $this->itemsUrl($bandSpace->id, $rider->id),
-            ['title' => 'Bientôt', 'type' => 'stage_plot'],
+            ['title' => 'Bientôt', 'type' => 'hologramme'],
             self::HEADERS,
         );
 
-        // stage_plot arrives with #769. Until its renderer exists, offering the type would
-        // create a block nothing can display.
+        // A value the enum has never held, rather than a type not yet implemented: the previous
+        // example was stage_plot, which stopped being unknown the moment #769 added the case.
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ConstraintViolation',
