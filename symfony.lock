@@ -401,6 +401,9 @@
     "sebastian/version": {
         "version": "3.0.2"
     },
+    "sensiolabs/gotenberg-bundle": {
+        "version": "v1.3.1"
+    },
     "sentry/sdk": {
         "version": "2.1.0"
     },
