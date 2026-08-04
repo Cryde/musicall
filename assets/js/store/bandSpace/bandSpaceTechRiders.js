@@ -25,6 +25,9 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
   // Per item, not one counter: two items save independently and must not cancel each other.
   const contentRequestIds = new Map()
 
+  const stagePlotIcons = ref([])
+  let stagePlotIconsRequest = null
+
   async function fetchRiders(bandSpaceId) {
     if (bandSpaceId !== loadedBandSpaceId.value) {
       liveRiders.value = []
@@ -187,6 +190,33 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     setItemDirty(itemId, false)
   }
 
+  async function saveStagePlot(bandSpaceId, riderId, itemId, plot) {
+    replaceItem(await bandSpaceTechRidersApi.saveStagePlot(bandSpaceId, riderId, itemId, plot))
+    setItemDirty(itemId, false)
+  }
+
+  /**
+   * The icon catalogue is static application data, so it is fetched once per session and shared
+   * by every plot editor on the page. Concurrent callers await the same promise rather than each
+   * firing a request.
+   */
+  async function loadStagePlotIcons() {
+    if (stagePlotIcons.value.length > 0) return stagePlotIcons.value
+    stagePlotIconsRequest ??= bandSpaceTechRidersApi
+      .getStagePlotIcons()
+      .then((icons) => {
+        stagePlotIcons.value = icons
+        return icons
+      })
+      .catch((error) => {
+        // Cleared so a failed load can be retried rather than caching the rejection forever.
+        stagePlotIconsRequest = null
+        throw error
+      })
+
+    return stagePlotIconsRequest
+  }
+
   async function setItemIncluded(bandSpaceId, riderId, itemId, isIncluded) {
     replaceItem(
       await bandSpaceTechRidersApi.updateItem(bandSpaceId, riderId, itemId, {
@@ -304,6 +334,7 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     archivedRiders: readonly(archivedRiders),
     activeTechRider: readonly(activeTechRider),
     dirtyItemIds: readonly(dirtyItemIds),
+    stagePlotIcons: readonly(stagePlotIcons),
     isLoading: readonly(isLoading),
     isLoadingActive: readonly(isLoadingActive),
     loadError: readonly(loadError),
@@ -317,6 +348,8 @@ export const useBandTechRidersStore = defineStore('bandTechRiders', () => {
     renameItem,
     saveItemContent,
     savePatchList,
+    saveStagePlot,
+    loadStagePlotIcons,
     setItemFile,
     setItemIncluded,
     setItemDirty,

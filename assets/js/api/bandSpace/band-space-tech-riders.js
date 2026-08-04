@@ -123,6 +123,35 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * PUT, because the plot is replaced wholesale. Coordinates inside it are fractions of the stage
+   * box, never pixels, so the same numbers place the same items on any surface.
+   *
+   * Returns the updated item, whose `content` is the saved plot.
+   */
+  saveStagePlot(bandSpaceId, riderId, itemId, plot) {
+    return axios
+      .put(
+        Routing.generate('api_band_space_tech_rider_stage_plot_put', {
+          bandSpaceId,
+          riderId,
+          itemId
+        }),
+        { plot },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  /** Static application data, so it is fetched once and kept for the session. */
+  getStagePlotIcons() {
+    return axios
+      .get(Routing.generate('api_band_space_tech_rider_stage_plot_icons_get_collection'))
+      .then((resp) => resp.data.member ?? [])
+      .catch(handleApiError)
+  },
+
   reorderItems(bandSpaceId, riderId, positions) {
     return axios
       .post(

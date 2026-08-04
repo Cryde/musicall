@@ -140,6 +140,14 @@
           :read-only="readOnly"
           @save="handleSave"
         />
+        <RiderStagePlotEditor
+          v-else-if="item.type === 'stage_plot'"
+          :band-space-id="bandSpaceId"
+          :rider-id="riderId"
+          :item-id="item.id"
+          :content="item.content"
+          :read-only="readOnly"
+        />
         <RiderPatchListEditor
           v-else-if="item.type === 'patch_list'"
           :band-space-id="bandSpaceId"
@@ -214,6 +222,7 @@ import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRi
 import RiderContactsItemEditor from './RiderContactsItemEditor.vue'
 import RiderDocumentItemEditor from './RiderDocumentItemEditor.vue'
 import RiderPatchListEditor from './RiderPatchListEditor.vue'
+import RiderStagePlotEditor from './RiderStagePlotEditor.vue'
 import RiderTextItemEditor from './RiderTextItemEditor.vue'
 
 const props = defineProps({
@@ -237,7 +246,8 @@ const ITEM_TYPES = [
   { value: 'text', label: 'Texte libre' },
   { value: 'document', label: 'Document (image ou PDF)' },
   { value: 'patch_list', label: 'Patch list' },
-  { value: 'contacts', label: 'Membres et contacts' }
+  { value: 'contacts', label: 'Membres et contacts' },
+  { value: 'stage_plot', label: 'Plan de scène' }
 ]
 
 const newTitle = ref('')
