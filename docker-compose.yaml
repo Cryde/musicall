@@ -87,6 +87,34 @@ services:
                 ipv4_address: 10.200.200.9
                 aliases:
                     - valkey.musicall
+
+    # Spike for #741: headless Chromium as an HTTP service, evaluated as a dompdf replacement.
+    # Exercised by app:pdf:gotenberg-probe. Remove both together if the answer is no.
+    gotenberg:
+        # The full image, not 8-chromium, because the probe also asks the PDF/A question and the
+        # smaller variant ships without the PDF engines that answer it. Switch to
+        # gotenberg/gotenberg:8-chromium (about 30% smaller) if we adopt Chromium rendering only.
+        image: gotenberg/gotenberg:8
+        container_name: musicall-gotenberg
+        environment:
+            # Chromium renders whatever HTML it is handed, so it gets no way out. Assets are
+            # uploaded alongside the HTML and read from its own working directory, so a render
+            # needs no network at all: anything that does try to dial out is a template bug.
+            CHROMIUM_DENY_PRIVATE_IPS: 'true'
+            CHROMIUM_DENY_PUBLIC_IPS: 'true'
+            # /debug returns the running configuration, which is what makes a dev against prod
+            # comparison possible. Off by default in Gotenberg, and a real prod deployment should
+            # decide for itself: the probe skips the dump rather than failing when it is absent.
+            API_ENABLE_DEBUG_ROUTE: 'true'
+        ports:
+            # Bound to the docker gateway rather than every interface, like elasticsearch above,
+            # so it is reachable from this machine and from nowhere else.
+            - 10.200.200.1:3000:3000
+        networks:
+            musicall:
+                ipv4_address: 10.200.200.10
+                aliases:
+                    - gotenberg.musicall
 networks:
     musicall:
         name: musicall
