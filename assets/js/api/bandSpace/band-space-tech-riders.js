@@ -60,6 +60,21 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * Optional name: a rider is named for a year or a tour, so "Rider 2026 (copie)" is rarely what
+   * the band wanted. Omitting it takes that default.
+   */
+  duplicateTechRider(bandSpaceId, riderId, name = null) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_tech_riders_duplicate', { bandSpaceId, id: riderId }),
+        name === null ? {} : { name },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   createItem(bandSpaceId, riderId, data) {
     return axios
       .post(

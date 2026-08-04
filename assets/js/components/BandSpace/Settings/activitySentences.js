@@ -152,6 +152,8 @@ const SENTENCES = {
   'rider.rider_renamed': (a) => `a renommé le tech rider en « ${a.payload?.name ?? '—'} »`,
   'rider.rider_archived': (a) => `a archivé le tech rider « ${a.payload?.name ?? '—'} »`,
   'rider.rider_unarchived': (a) => `a réintégré le tech rider « ${a.payload?.name ?? '—'} »`,
+  'rider.rider_duplicated': (a) =>
+    `a dupliqué le tech rider « ${a.payload?.source_name ?? '—'} » sous le nom « ${a.payload?.name ?? '—'} »`,
   'rider.rider_item_added': (a) =>
     `a ajouté l'élément « ${a.payload?.title ?? '—'} » au tech rider « ${a.payload?.rider_name ?? '—'} »`,
   'rider.rider_item_renamed': (a) =>

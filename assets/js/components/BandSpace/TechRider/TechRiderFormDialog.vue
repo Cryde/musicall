@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    :header="isRename ? 'Renommer le tech rider' : 'Nouveau tech rider'"
+    :header="HEADERS[mode]"
     modal
     :style="{ width: '28rem' }"
     @hide="resetForm"
@@ -27,7 +27,7 @@
 
       <div class="flex justify-end gap-2 pt-2">
         <Button label="Annuler" severity="secondary" text type="button" @click="visible = false" />
-        <Button :label="isRename ? 'Renommer' : 'Créer'" type="submit" :loading="isSubmitting" />
+        <Button :label="SUBMIT_LABELS[mode]" type="submit" :loading="isSubmitting" />
       </div>
     </form>
   </Dialog>
@@ -43,6 +43,7 @@ import { useBandTechRidersStore } from '../../../store/bandSpace/bandSpaceTechRi
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
+  /** create, rename or duplicate. */
   mode: { type: String, default: 'create' },
   riderId: { type: String, default: null },
   initialName: { type: String, default: '' }
@@ -58,13 +59,33 @@ const name = ref('')
 const isSubmitting = ref(false)
 const violation = ref(null)
 
+const HEADERS = {
+  create: 'Nouveau tech rider',
+  rename: 'Renommer le tech rider',
+  duplicate: 'Dupliquer le tech rider'
+}
+
+const SUBMIT_LABELS = {
+  create: 'Créer',
+  rename: 'Renommer',
+  duplicate: 'Dupliquer'
+}
+
+const SUCCESS_SUMMARIES = {
+  create: 'Tech rider créé',
+  rename: 'Tech rider renommé',
+  duplicate: 'Tech rider dupliqué'
+}
+
 const isRename = computed(() => props.mode === 'rename')
+const isDuplicate = computed(() => props.mode === 'duplicate')
 
 watch(visible, (isOpen) => {
-  if (isOpen) {
-    name.value = isRename.value ? props.initialName : ''
-    violation.value = null
-  }
+  if (!isOpen) return
+  // Rename starts from the current name; duplicate starts from the caller's suggestion, which is
+  // the source name so the band edits a year rather than retyping the lot.
+  name.value = isRename.value || isDuplicate.value ? props.initialName : ''
+  violation.value = null
 })
 
 function resetForm() {
@@ -83,10 +104,12 @@ async function handleSubmit() {
   try {
     const saved = isRename.value
       ? await techRidersStore.renameTechRider(props.bandSpaceId, props.riderId, trimmed)
-      : await techRidersStore.createTechRider(props.bandSpaceId, trimmed)
+      : isDuplicate.value
+        ? await techRidersStore.duplicateTechRider(props.bandSpaceId, props.riderId, trimmed)
+        : await techRidersStore.createTechRider(props.bandSpaceId, trimmed)
     toast.add({
       severity: 'success',
-      summary: isRename.value ? 'Tech rider renommé' : 'Tech rider créé',
+      summary: SUCCESS_SUMMARIES[props.mode],
       life: 3000
     })
     emit('saved', saved)

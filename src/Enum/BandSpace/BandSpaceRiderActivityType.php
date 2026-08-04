@@ -12,6 +12,7 @@ enum BandSpaceRiderActivityType: string
     case RiderRenamed = 'rider_renamed';
     case RiderArchived = 'rider_archived';
     case RiderUnarchived = 'rider_unarchived';
+    case RiderDuplicated = 'rider_duplicated';
 
     case RiderItemAdded = 'rider_item_added';
     case RiderItemRenamed = 'rider_item_renamed';
