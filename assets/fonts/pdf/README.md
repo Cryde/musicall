@@ -10,12 +10,16 @@ regardless of the server's installed fonts.
 | Atkinson Hyperlegible | `AtkinsonHyperlegible-Regular.ttf`, `AtkinsonHyperlegible-Bold.ttf` | https://github.com/google/fonts/tree/main/ofl/atkinsonhyperlegible | SIL Open Font License 1.1 |
 | Source Serif | `SourceSerif-Regular.ttf`, `SourceSerif-Bold.ttf` | https://github.com/adobe-fonts/source-serif (v4.005) | SIL Open Font License 1.1 |
 
-dompdf writes its font metrics cache to `var/cache/dompdf/` (gitignored). To force a
-rebuild of the cache, delete that directory; it will be regenerated on the next render.
+There is no font cache. `SetlistPdfRenderer` uploads the two TTFs of the selected family
+alongside the HTML, and the template declares them with `@font-face`, so Gotenberg's Chromium
+reads them straight from its own working directory. Only the chosen family travels, not all
+three. The previous engine compiled a metrics cache named from the absolute source path, which
+regenerated into a read-only release directory on every deploy and returned a 500 in production;
+nothing here does that any more.
 
 Adding a font:
 1. Drop the Regular + Bold TTFs into this directory.
-2. Add a case to `App\Enum\BandSpace\SetlistPdfFont` and implement `dompdfFamily()`,
-   `regularFile()`, `boldFile()` for it (these methods are the single source of
-   truth — `SetlistPdfRenderer` iterates `SetlistPdfFont::cases()` at render time).
+2. Add a case to `App\Enum\BandSpace\SetlistPdfFont` and implement `cssFamily()`,
+   `regularFile()`, `boldFile()` for it. Those three methods are the single source of truth:
+   the family name reaches the `@font-face` rule and the filenames become the uploaded assets.
 3. Update the frontend dropdown in `PdfExportPopover.vue`.

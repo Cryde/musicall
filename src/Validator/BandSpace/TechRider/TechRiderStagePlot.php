@@ -41,9 +41,13 @@ class TechRiderStagePlot extends Constraint
     public const float MAX_ASPECT_RATIO = 3.0;
 
     /**
-     * Quarter turns only. The reference rider has sideways labels so rotation is a real need, but
-     * arbitrary angles are a trap: dompdf has no CSS transform support at all, and even a
-     * Chromium renderer needs care. These four are implementable on any engine #741 might pick.
+     * Quarter turns only. The reference rider has sideways labels so rotation is a real need, and
+     * four values keep the editor's rotate control a single button rather than an angle picker.
+     *
+     * The original reason was narrower: the export engine was undecided (#741) and arbitrary angles
+     * were not renderable everywhere. That has been settled in favour of Chromium, which does
+     * support CSS transforms, so widening this is now possible. It stays closed because nothing has
+     * asked for it, not because it cannot be done.
      */
     public const array ALLOWED_ROTATIONS = [0, 90, 180, 270];
 

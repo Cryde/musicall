@@ -4,7 +4,11 @@ nelmio_cors:
         allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
         allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
         allow_headers: ['Content-Type', 'Authorization']
-        expose_headers: ['Link']
+        # Content-Disposition because the setlist PDF export is fetched as a blob and takes its
+        # filename from that header. Same-origin today, where exposure rules do not apply, so this is
+        # only insurance: served cross-origin the download would silently fall back to a generic
+        # name, and no test can see that.
+        expose_headers: ['Link', 'Content-Disposition']
         max_age: 3600
     paths:
         '^/': null

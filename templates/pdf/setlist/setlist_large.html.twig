@@ -1,33 +1,36 @@
 {% extends 'pdf/setlist/_base.html.twig' %}
 
 {% block extra_styles %}
-        {% set s = scale|default(1) %}
-        .large-header { width: 100%; }
-        .large-header td { vertical-align: top; }
+        {# A flex header, not a layout table - the table existed only to get left title / right stats on one line. #}
+        .large-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
         .large-header .left .band {
-            font-size: {{ (10 * s)|round(2) }}pt;
+            font-size: 10pt;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
             color: #888;
         }
         .large-header .left .name {
-            font-size: {{ (22 * s)|round(2) }}pt;
+            font-size: 22pt;
             font-weight: bold;
             margin-top: 1mm;
         }
         .large-header .right {
             text-align: right;
-            font-size: {{ (10 * s)|round(2) }}pt;
+            font-size: 10pt;
             color: #555;
-            padding-top: {{ (4 * s)|round(2) }}mm;
+            padding-top: 4mm;
         }
         .large-header .right .total {
-            font-size: {{ (14 * s)|round(2) }}pt;
+            font-size: 14pt;
             font-weight: bold;
             color: #1a1a1a;
         }
         .large-header .right .missing {
-            font-size: {{ (8 * s)|round(2) }}pt;
+            font-size: 8pt;
             color: #b07900;
             margin-top: 1mm;
         }
@@ -35,34 +38,37 @@
         table.items {
             width: 100%;
             border-collapse: collapse;
-            font-size: {{ (10 * s)|round(2) }}pt;
+            font-size: 10pt;
         }
         table.items th {
             text-align: left;
-            padding: {{ (3 * s)|round(2) }}mm {{ (3 * s)|round(2) }}mm;
+            padding: 3mm 3mm;
             border-bottom: 2px solid #ccc;
-            font-size: {{ (8 * s)|round(2) }}pt;
+            font-size: 8pt;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
             color: #666;
             background: transparent;
         }
+        {# Brings the column heads back at the top of a second page, which a long set needs. #}
+        table.items thead { display: table-header-group; }
         table.items td {
             text-align: left;
-            padding: {{ (3 * s)|round(2) }}mm {{ (3 * s)|round(2) }}mm;
+            padding: 3mm 3mm;
             vertical-align: top;
         }
+        table.items tr { break-inside: avoid; }
         table.items tr.zebra td { background: #fafafa; }
-        table.items td.idx { width: {{ (12 * s)|round(2) }}mm; }
+        table.items td.idx { width: 12mm; }
         .idx-pill {
             display: inline-block;
-            min-width: {{ (8 * s)|round(2) }}mm;
+            min-width: 8mm;
             padding: 0.5mm 2mm;
             border-radius: 3mm;
             background: #f5b400;
             color: #ffffff;
             font-weight: bold;
-            font-size: {{ (9 * s)|round(2) }}pt;
+            font-size: 9pt;
             text-align: center;
             font-variant-numeric: tabular-nums;
         }
@@ -73,7 +79,7 @@
         .sub-line {
             display: block;
             margin-top: 1.5mm;
-            font-size: {{ (8.5 * s)|round(2) }}pt;
+            font-size: 8.5pt;
             font-weight: normal;
             color: #555;
         }
@@ -96,35 +102,33 @@
 
         tfoot tr.total-row td {
             border-top: 2px solid #333;
-            padding-top: {{ (3 * s)|round(2) }}mm;
+            padding-top: 3mm;
             font-weight: bold;
-            font-size: {{ (11 * s)|round(2) }}pt;
+            font-size: 11pt;
         }
 {% endblock %}
 
 {% block header %}
     <div class="pdf-header">
-        <table class="large-header">
-            <tr>
-                <td class="left">
-                    <div class="band">{{ setlist.bandSpace.name }}</div>
-                    <div class="name">{{ setlist.name }}</div>
-                </td>
-                <td class="right">
-                    <div>{{ setlist.items|length }} {{ setlist.items|length > 1 ? 'titres' : 'titre' }}</div>
-                    {% if total_duration_seconds > 0 %}
-                        <div class="total">
-                            {{ (total_duration_seconds // 60) }} min {{ (total_duration_seconds % 60) }} s
-                        </div>
-                    {% endif %}
-                    {% if missing_duration_items > 0 %}
-                        <div class="missing">
-                            {{ missing_duration_items }} {{ missing_duration_items > 1 ? 'titres sans durée' : 'titre sans durée' }}
-                        </div>
-                    {% endif %}
-                </td>
-            </tr>
-        </table>
+        <header class="large-header">
+            <div class="left">
+                <div class="band">{{ setlist.bandSpace.name }}</div>
+                <div class="name">{{ setlist.name }}</div>
+            </div>
+            <div class="right">
+                <div>{{ setlist.items|length }} {{ setlist.items|length > 1 ? 'titres' : 'titre' }}</div>
+                {% if total_duration_seconds > 0 %}
+                    <div class="total">
+                        {{ (total_duration_seconds // 60) }} min {{ (total_duration_seconds % 60) }} s
+                    </div>
+                {% endif %}
+                {% if missing_duration_items > 0 %}
+                    <div class="missing">
+                        {{ missing_duration_items }} {{ missing_duration_items > 1 ? 'titres sans durée' : 'titre sans durée' }}
+                    </div>
+                {% endif %}
+            </div>
+        </header>
         <hr class="pdf-header-rule">
     </div>
 {% endblock %}

@@ -85,13 +85,24 @@ services:
             $frontendUrl: '%env(DEFAULT_URI)%'
             $refreshTokenTtl: '%gesdinet_jwt_refresh_token.ttl%'
 
-    App\Service\Setlist\SetlistPdfRenderer:
-        arguments:
-            $projectDir: '%kernel.project_dir%'
-
 when@test:
     services:
         App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
+
+        # The suite renders PDFs without a Gotenberg container. Substituting the client rather than
+        # the renderer keeps the real builder, the real Twig render and the real fit arithmetic under
+        # test, and lets a test assert on what was actually sent.
+        #
+        # Decorating rather than replacing, so the real client stays reachable: an integration test
+        # calls passthrough() to render against a live Gotenberg through the very same wiring.
+        #
+        # Public so a test can fetch it to seed a content height or force a failure; the builders
+        # resolve this id lazily through a service subscriber, so decorating it is enough.
+        App\Tests\Double\RecordingGotenbergClient:
+            public: true
+            decorates: 'sensiolabs_gotenberg.client'
+            arguments:
+                $inner: '@.inner'
 
         # Don't fire UserActivityListener on every test request - it would
         # write to fos_user.last_activity_datetime ~1600 times per suite.

@@ -97,6 +97,7 @@ import Skeleton from 'primevue/skeleton'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import publicShareApi from '../api/publicShare.js'
+import { downloadBlob } from '../utils/downloadBlob.js'
 import { formatBytes } from '../utils/formatBytes.js'
 
 const route = useRoute()
@@ -163,7 +164,7 @@ async function handleDownload() {
         return
       }
       const blob = await probe.blob()
-      triggerDownload(blob, metadata.value.original_name)
+      downloadBlob(blob, metadata.value.original_name)
     } catch {
       passwordError.value = 'Téléchargement impossible.'
     } finally {
@@ -175,17 +176,6 @@ async function handleDownload() {
   // No password — let the browser handle the download natively.
   window.location.href = url
   isDownloading.value = false
-}
-
-function triggerDownload(blob, filename) {
-  const objectUrl = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = objectUrl
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(objectUrl)
 }
 
 function setError(e) {

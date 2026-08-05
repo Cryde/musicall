@@ -5,6 +5,8 @@ namespace App\Tests\Api\BandSpace\Setlist;
 use App\Enum\BandSpace\SetlistItemType;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Double\RecordingGotenbergClient;
+use Sensiolabs\GotenbergBundle\Exception\ClientException;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\SetlistFactory;
@@ -116,13 +118,23 @@ class SetlistPdfExportTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $body = (string) $this->client->getResponse()->getContent();
         $this->assertStringStartsWith('%PDF-', $body);
+        // The compact template really was the one rendered, which the bytes alone cannot show.
+        $this->assertStringContainsString(
+            'stage-items',
+            self::getContainer()->get(RecordingGotenbergClient::class)->sentHtml(),
+        );
     }
 
-    public function test_renderer_toggles_change_output(): void
+    public function test_renderer_forwards_the_display_toggles_into_the_document(): void
     {
         // Tested via the renderer service directly (not the HTTP endpoint)
         // so we can render the same setlist twice in the same test without
         // hitting Symfony's one-request loginUser limitation.
+        //
+        // This used to compare the two PDFs by byte length, which was only ever a proxy for "the
+        // toggles reached the document". Asserting on the HTML that actually went to Gotenberg says
+        // it directly, and covers the one thing the template-only tests below cannot: that the
+        // renderer forwards its options into what it uploads at all.
         $bandSpace = BandSpaceFactory::new()->create();
         $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Toggle set'])->create();
         $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'X', 'tempo' => 120, 'tonality' => 'C'])->create();
@@ -136,6 +148,7 @@ class SetlistPdfExportTest extends ApiTestCase
             'position' => 0,
         ])->create();
 
+        $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);
         $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
         $setlistRepository = self::getContainer()->get(SetlistRepository::class);
         $setlistEntity = $setlistRepository->find((string) $setlist->id);
@@ -149,6 +162,8 @@ class SetlistPdfExportTest extends ApiTestCase
             showNotes: false,
             showTransitions: false,
         ), $totalDuration);
+        $minimalHtml = $gotenberg->sentHtml();
+
         $rich = $renderer->render($setlistEntity, new SetlistPdfOptions(
             layout: SetlistPdfLayout::Large,
             showTempo: true,
@@ -157,14 +172,23 @@ class SetlistPdfExportTest extends ApiTestCase
             showNotes: true,
             showTransitions: true,
         ), $totalDuration);
+        $richHtml = $gotenberg->sentHtml();
 
         $this->assertStringStartsWith('%PDF-', $minimal);
         $this->assertStringStartsWith('%PDF-', $rich);
-        $this->assertGreaterThan(
-            strlen($minimal),
-            strlen($rich),
-            'Enabling all display toggles must produce a larger PDF than disabling them all',
-        );
+
+        $this->assertStringNotContainsString('BPM', $minimalHtml);
+        // The markup, not the class name: the .sub-line rules sit in the stylesheet either way.
+        $this->assertStringNotContainsString('<span class="sub-line">', $minimalHtml);
+        $this->assertStringNotContainsString('rehearse the bridge', $minimalHtml);
+
+        $this->assertStringContainsString('BPM', $richHtml);
+        $this->assertStringContainsString('<span class="sub-line">', $richHtml);
+        $this->assertStringContainsString('rehearse the bridge', $richHtml);
+        $this->assertStringContainsString('segue into next', $richHtml);
+
+        // Two renders, two requests: neither asked to fit, so neither paid for a measurement pass.
+        $this->assertCount(2, $gotenberg->calls());
     }
 
     public function test_pdf_export_works_on_archived_setlist(): void
@@ -231,13 +255,15 @@ class SetlistPdfExportTest extends ApiTestCase
         ]);
     }
 
-    public function test_pdf_export_multi_page_emits_multiple_pages(): void
+    public function test_a_long_set_is_rendered_full_size_in_a_single_request(): void
     {
-        // Many items force dompdf to span 2+ pages. Verified via /Type/Page
-        // count - testing the literal "Page 1 / 2" text via strpos is unreliable
-        // because dompdf compresses content streams by default. The canonical
-        // bug ("Page 1 / 0") was a multi-page rendering issue, so what matters
-        // is that the resulting PDF actually has multiple pages.
+        // Fifty items cannot fit one page and nobody asked them to, so the render must go out at
+        // full size in one request: no measurement pass, no scale. That the renderer does not
+        // secretly shrink an unrequested export is ours to check; how Chromium then paginates it
+        // is not, and that half now lives in SetlistPdfGotenbergRenderTest.
+        //
+        // The item count is scenario colour rather than load bearing: what is asserted below holds
+        // for any number of items, since the trigger is the absent fit flag and not the length.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
@@ -255,9 +281,12 @@ class SetlistPdfExportTest extends ApiTestCase
         $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
 
         $this->assertResponseIsSuccessful();
-        $body = (string) $this->client->getResponse()->getContent();
-        $pageCount = preg_match_all('#/Type\s*/Page[^s]#', $body);
-        $this->assertGreaterThan(1, $pageCount, '50-item setlist must span more than one page');
+        $this->assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+
+        $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);
+        $this->assertCount(1, $gotenberg->calls());
+        $this->assertArrayNotHasKey('scale', $gotenberg->lastCall()['fields']);
+        $this->assertArrayNotHasKey('singlePage', $gotenberg->lastCall()['fields']);
     }
 
     public function test_pdf_export_invalid_font_falls_back_without_error(): void
@@ -273,114 +302,138 @@ class SetlistPdfExportTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+        // The fallback is now observable: an unusable font name lands on the layout's default, and
+        // that is the family whose files get uploaded.
+        $this->assertSame(
+            ['Inter-Regular.ttf', 'Inter-Bold.ttf'],
+            array_keys(self::getContainer()->get(RecordingGotenbergClient::class)->lastCall()['assets']),
+        );
     }
 
-    public function test_pdf_export_actually_embeds_selected_font(): void
+    public function test_fit_to_one_page_measures_the_content_then_scales_it(): void
     {
-        // Regression: dompdf silently falls back to Helvetica if registerFont() fails
-        // (e.g. font dir not in chroot). Each font must produce a PDF that actually
-        // references its own family name in the embedded /BaseFont stream. Calls
-        // the renderer service directly to avoid loginUser's one-request limit
-        // when iterating over the three fonts.
-        $bandSpace = BandSpaceFactory::new()->create();
-        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Font check'])->create();
-        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Talk, 'label' => 'Hello', 'position' => 0])->create();
+        // The fit path is two requests: ask Chromium how tall the document really is, then render it
+        // scaled by exactly enough. Both halves are asserted here, because each has a detail that
+        // fails silently if it drifts - a measurement taken at the wrong width, or a scale applied
+        // to a document that is still in measure mode.
+        $setlist = $this->createCompactSetlistWithSongs(15);
+        $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);
+        // Comfortably taller than an A4 text area, so a scale is genuinely required.
+        $gotenberg->withContentHeightPt(1223.04);
 
         $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
         $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
 
-        $fonts = [
-            [SetlistPdfFont::Inter, 'Inter'],
-            [SetlistPdfFont::AtkinsonHyperlegible, 'AtkinsonHyperlegible'],
-            [SetlistPdfFont::SourceSerif, 'SourceSerif'],
+        $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
+
+        $calls = $gotenberg->calls();
+        $this->assertCount(2, $calls, 'A fit export measures once and renders once');
+
+        // The measurement: one page as tall as the content, no margins eating into the number, and
+        // the body pinned to the printable width. Unpinned, Chromium lays out at its own narrower
+        // screen viewport and under-reports the height by about a fifth.
+        $this->assertSame('true', $calls[0]['fields']['singlePage']);
+        $this->assertSame('0mm', $calls[0]['fields']['marginTop']);
+        $this->assertSame('0mm', $calls[0]['fields']['marginBottom']);
+        $this->assertStringContainsString('width: 182mm', $calls[0]['documents']['index.html']);
+        $this->assertArrayNotHasKey('scale', $calls[0]['fields']);
+
+        // The render: real margins, scaled, and no longer in measure mode.
+        $this->assertSame('18mm', $calls[1]['fields']['marginTop']);
+        $this->assertSame('14mm', $calls[1]['fields']['marginBottom']);
+        $this->assertArrayNotHasKey('singlePage', $calls[1]['fields']);
+        $this->assertStringNotContainsString('width: 182mm', $calls[1]['documents']['index.html']);
+        // 265mm of text area over 1223.04pt of content, less the 2% safety factor.
+        $this->assertEqualsWithDelta(0.6019, (float) $calls[1]['fields']['scale'], 0.0005);
+    }
+
+    public function test_the_fit_scale_is_proportional_and_floored(): void
+    {
+        // The three branches of the arithmetic, driven by what the measurement pass reports. The
+        // text area is 265mm, so 751.18pt: anything shorter needs no scaling, anything taller is
+        // scaled in proportion, and something absurdly tall stops at the legibility floor and
+        // accepts a second page rather than becoming unreadable.
+        $cases = [
+            'already fits, so no scale at all' => [400.0, null],
+            'taller than the page, scaled in proportion' => [1223.04, 0.6019],
+            'far too tall, so the floor takes over' => [4000.0, 0.42],
         ];
 
-        $sizes = [];
-        foreach ($fonts as [$font, $expectedFontMarker]) {
-            $pdf = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Large, font: $font), 0, 0);
-            $this->assertStringStartsWith('%PDF-', $pdf);
-            // dompdf writes the font's PostScript name into /BaseFont entries,
-            // typically uppercase-prefixed with a 6-char subset tag like "ABCDEF+Inter-Regular".
-            $this->assertMatchesRegularExpression(
-                '/\/BaseFont\s*\/[A-Z]{6}\+' . preg_quote($expectedFontMarker, '/') . '/',
-                $pdf,
-                "PDF rendered with font={$font->value} must embed $expectedFontMarker, not silently fall back to Helvetica/DejaVu",
-            );
-            $sizes[$font->value] = strlen($pdf);
+        $setlist = $this->createCompactSetlistWithSongs(10);
+        $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);
+        $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+
+        foreach ($cases as $description => [$contentHeightPt, $expectedScale]) {
+            $gotenberg->withContentHeightPt($contentHeightPt);
+            $callsBefore = \count($gotenberg->calls());
+
+            $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
+
+            // Measurement, then render: the render is the second of the pair.
+            $renderCall = $gotenberg->calls()[$callsBefore + 1];
+
+            if ($expectedScale === null) {
+                $this->assertArrayNotHasKey('scale', $renderCall['fields'], $description);
+
+                continue;
+            }
+
+            $this->assertEqualsWithDelta($expectedScale, (float) $renderCall['fields']['scale'], 0.0005, $description);
         }
-
-        // Sanity: the three PDFs should not be identical-size by coincidence.
-        $this->assertNotSame($sizes['inter'], $sizes['source_serif'], 'Inter and Source Serif must produce visibly different PDFs');
-    }
-
-    public function test_font_cache_writes_to_writable_dir_not_readonly_assets(): void
-    {
-        // Regression: dompdf writes its compiled .ufm/.ttf into fontDir, named from
-        // a hash of the absolute (per-release) source path, so it regenerates on
-        // every deploy. Pointing fontDir at the read-only assets/fonts/pdf shipped
-        // in the release 500'd in prod ("Permission denied" writing inter_normal_*.ufm).
-        // The compiled cache must land in the writable var/ dir instead.
-        $projectDir = (string) self::getContainer()->getParameter('kernel.project_dir');
-        $cacheDir = $projectDir . '/var/cache/dompdf';
-        // Wipe the whole cache dir (metrics + family cache) so dompdf is forced to
-        // regenerate; otherwise it short-circuits on the cached font family and
-        // would not re-emit the .ufm we are asserting on.
-        array_map('unlink', array_filter(glob($cacheDir . '/*') ?: [], 'is_file'));
-
-        $bandSpace = BandSpaceFactory::new()->create();
-        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Cache location'])->create();
-        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Talk, 'label' => 'Hi', 'position' => 0])->create();
-
-        $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
-        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
-        $pdf = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Large), 0, 0);
-
-        $this->assertStringStartsWith('%PDF-', $pdf);
-        $this->assertNotEmpty(
-            glob($cacheDir . '/*.ufm'),
-            'dompdf must write its compiled font metrics into the writable var/cache/dompdf, not the read-only asset dir',
-        );
-    }
-
-    public function test_fit_to_one_page_compresses_a_large_set_onto_one_page(): void
-    {
-        // A 15-item Compact set overflows onto multiple pages at full size; the
-        // fit option must shrink font + spacing so the whole set lands on one page.
-        $setlist = $this->createCompactSetlistWithSongs(15);
-        $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
-        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
-
-        $withoutFit = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact), 0, 0);
-        $withFit = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
-
-        $this->assertGreaterThan(
-            1,
-            preg_match_all('#/Type\s*/Page[^s]#', $withoutFit),
-            '15 compact songs must overflow multiple pages without the fit option',
-        );
-        $this->assertSame(
-            1,
-            preg_match_all('#/Type\s*/Page[^s]#', $withFit),
-            'fit-to-one-page must shrink the set onto a single page',
-        );
     }
 
     public function test_fit_to_one_page_is_ignored_above_the_item_cap(): void
     {
-        // Beyond 15 items a single page would be illegible, so the flag is ignored
-        // and the export stays multi-page (mirrors the frontend cap and blocks a
-        // crafted URL forcing an unreadable fit).
+        // Beyond 15 items a single page would be illegible, so the flag is ignored (mirrors the
+        // frontend cap and blocks a crafted URL forcing an unreadable fit). Asserting on the single
+        // request is stronger than the old page count: it also proves the measurement is skipped,
+        // so an ignored fit costs nothing.
         $setlist = $this->createCompactSetlistWithSongs(20);
+        $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);
         $renderer = self::getContainer()->get(SetlistPdfRenderer::class);
         $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
 
-        $pdf = $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
+        $renderer->render($entity, new SetlistPdfOptions(layout: SetlistPdfLayout::Compact, fitToOnePage: true), 0, 0);
 
-        $this->assertGreaterThan(
-            1,
-            preg_match_all('#/Type\s*/Page[^s]#', $pdf),
-            'above the 15-item cap the fit flag must be ignored (stays multi-page)',
+        $this->assertCount(1, $gotenberg->calls());
+        $this->assertArrayNotHasKey('scale', $gotenberg->lastCall()['fields']);
+        $this->assertArrayNotHasKey('singlePage', $gotenberg->lastCall()['fields']);
+    }
+
+    public function test_pdf_export_returns_502_when_gotenberg_is_unreachable(): void
+    {
+        // New failure mode. dompdf ran in process and could not fail this way; a render is now a
+        // network call, and a dependency being down is a 502, not the 500 an uncaught transport
+        // error would produce.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Panne'])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Talk, 'label' => 'Intro', 'position' => 0])->create();
+
+        self::getContainer()->get(RecordingGotenbergClient::class)->failWith(
+            new ClientException('Could not resolve host: gotenberg.musicall'),
         );
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
+
+        // The status is the contract; the detail is deliberately not. API Platform replaces the
+        // message on any 5xx outside debug mode (ErrorProvider::provide) so an internal failure
+        // cannot leak, which is why the French wording the renderer attaches only reaches the logs
+        // and why the user-facing copy lives in the frontend toast instead.
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_GATEWAY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/502',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Internal Server Error',
+            'status' => 502,
+            'type' => '/errors/502',
+            'description' => 'Internal Server Error',
+        ]);
     }
 
     private function createCompactSetlistWithSongs(int $count): object
@@ -414,12 +467,17 @@ class SetlistPdfExportTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertStringStartsWith('%PDF-', (string) $this->client->getResponse()->getContent());
+        // Two files, the chosen family only. dompdf had to register all three on every render.
+        $this->assertSame(
+            ['AtkinsonHyperlegible-Regular.ttf', 'AtkinsonHyperlegible-Bold.ttf'],
+            array_keys(self::getContainer()->get(RecordingGotenbergClient::class)->lastCall()['assets']),
+        );
     }
 
     public function test_large_template_renders_notes_and_transitions_as_sub_line(): void
     {
-        // Twig is rendered directly here to bypass dompdf compression - the PDF
-        // binary doesn't grep cleanly for arbitrary text.
+        // Twig is rendered directly here because a PDF's content streams are compressed, so the
+        // binary does not grep cleanly for arbitrary text whatever produced it.
         $bandSpace = BandSpaceFactory::new()->create();
         $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
         $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Wonderwall'])->create();
@@ -442,7 +500,7 @@ class SetlistPdfExportTest extends ApiTestCase
             ),
             'total_duration_seconds' => 0,
             'missing_duration_items' => 0,
-            'font_family' => 'Inter',
+            'font' => SetlistPdfFont::Inter,
         ]);
 
         $this->assertStringContainsString('sub-line', $html);
@@ -481,7 +539,7 @@ class SetlistPdfExportTest extends ApiTestCase
             ),
             'total_duration_seconds' => 0,
             'missing_duration_items' => 0,
-            'font_family' => 'Inter',
+            'font' => SetlistPdfFont::Inter,
         ]);
 
         // Three muted cells, one per missing field. The dash itself is U+2014;
@@ -518,7 +576,7 @@ class SetlistPdfExportTest extends ApiTestCase
             'options' => new SetlistPdfOptions(layout: SetlistPdfLayout::Large, showDurations: true),
             'total_duration_seconds' => 180,
             'missing_duration_items' => 1,
-            'font_family' => 'Inter',
+            'font' => SetlistPdfFont::Inter,
         ]);
 
         $this->assertStringContainsString('1 titre sans durée', $html);
@@ -558,7 +616,7 @@ class SetlistPdfExportTest extends ApiTestCase
             'options' => new SetlistPdfOptions(layout: SetlistPdfLayout::Compact),
             'total_duration_seconds' => 258,
             'missing_duration_items' => 0,
-            'font_family' => 'Atkinson Hyperlegible',
+            'font' => SetlistPdfFont::AtkinsonHyperlegible,
         ]);
 
         $this->assertStringContainsString('Wonderwall', $html);

@@ -92,7 +92,12 @@
         </div>
       </div>
 
-      <Button label="Télécharger le PDF" icon="pi pi-download" @click="handleExport" />
+      <Button
+        :label="isExporting ? 'Génération...' : 'Télécharger le PDF'"
+        :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
+        :disabled="isExporting"
+        @click="handleExport"
+      />
     </div>
   </Popover>
 </template>
@@ -103,8 +108,10 @@ import Checkbox from 'primevue/checkbox'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
+import { useToast } from 'primevue/usetoast'
 import { computed, reactive, ref } from 'vue'
 import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
+import { downloadBlob } from '../../../utils/downloadBlob.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -112,7 +119,10 @@ const props = defineProps({
   itemCount: { type: Number, default: 0 }
 })
 
+const toast = useToast()
+
 const popover = ref(null)
+const isExporting = ref(false)
 
 const layoutOptions = [
   { label: 'Large', value: 'large' },
@@ -146,10 +156,42 @@ function toggle(event) {
   popover.value?.toggle(event)
 }
 
-function handleExport() {
-  const url = bandSpaceSetlistsApi.buildPdfUrl(props.bandSpaceId, props.setlistId, { ...options })
-  window.open(url, '_blank')
-  popover.value?.hide()
+async function handleExport() {
+  if (isExporting.value) {
+    return
+  }
+
+  // Downloaded rather than opened in a tab. The render is a call to a service now, so it can be slow
+  // and it can fail, and window.open() offered neither a spinner for the one nor anything but a raw
+  // error page for the other.
+  isExporting.value = true
+
+  try {
+    const { blob, filename } = await bandSpaceSetlistsApi.downloadPdf(
+      props.bandSpaceId,
+      props.setlistId,
+      { ...options }
+    )
+    downloadBlob(blob, filename ?? 'setlist.pdf')
+    popover.value?.hide()
+  } catch (error) {
+    // A 401 is already being handled globally by redirecting to the login page, so a toast on top of
+    // that would only be noise.
+    if (error?.response?.status === 401) {
+      return
+    }
+
+    // The response body carries no usable detail: API Platform blanks the message on any 5xx so a
+    // failing dependency cannot leak through it, which is why the wording lives here.
+    toast.add({
+      severity: 'error',
+      summary: 'Export impossible',
+      detail: 'Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant.',
+      life: 6000
+    })
+  } finally {
+    isExporting.value = false
+  }
 }
 
 defineExpose({ toggle })
