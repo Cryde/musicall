@@ -26,7 +26,7 @@ return [
     Pentatrion\ViteBundle\PentatrionViteBundle::class => ['all' => true],
     JoliCode\Elastically\Bridge\Symfony\ElasticallyBundle::class => ['all' => true],
     KnpU\OAuth2ClientBundle\KnpUOAuth2ClientBundle::class => ['all' => true],
-    // Spike for #741, exercised by app:pdf:gotenberg-probe. In every environment because the
-    // point is to compare dev with prod. Remove with the probe if we stay on dompdf.
+    // Renders the setlist PDF export (#741). Needed in test too, where the client is swapped for a
+    // recording double rather than the bundle being switched off.
     Sensiolabs\GotenbergBundle\SensiolabsGotenbergBundle::class => ['all' => true],
 ];

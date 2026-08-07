@@ -1,18 +1,17 @@
 {% extends 'pdf/setlist/_base.html.twig' %}
 
 {% block extra_styles %}
-        {% set s = scale|default(1) %}
         .compact-header {
-            margin-bottom: {{ (10 * s)|round(2) }}mm;
+            margin-bottom: 10mm;
         }
         .compact-header .band {
-            font-size: {{ (11 * s)|round(2) }}pt;
+            font-size: 11pt;
             color: #888;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
         }
         .compact-header .name {
-            font-size: {{ (26 * s)|round(2) }}pt;
+            font-size: 26pt;
             font-weight: bold;
             margin-top: 1mm;
         }
@@ -23,37 +22,35 @@
             margin: 0;
         }
         ol.stage-items li {
-            padding: {{ (6 * s)|round(2) }}mm 0;
+            padding: 6mm 0;
             border-bottom: 1px solid #eee;
-            page-break-inside: avoid;
+            break-inside: avoid;
         }
+        {# A flex row, not display:table - the table-cell version existed only because dompdf has no flexbox. #}
         .stage-row {
-            display: table;
-            width: 100%;
-        }
-        .stage-num, .stage-title {
-            display: table-cell;
-            vertical-align: middle;
+            display: flex;
+            align-items: center;
         }
         .stage-num {
-            width: {{ (22 * s)|round(2) }}mm;
-            font-size: {{ (32 * s)|round(2) }}pt;
+            flex: 0 0 22mm;
+            font-size: 32pt;
             font-weight: bold;
             color: #f5b400;
             font-variant-numeric: tabular-nums;
         }
         .stage-title {
-            font-size: {{ (38 * s)|round(2) }}pt;
+            flex: 1;
+            font-size: 38pt;
             font-weight: bold;
             line-height: 1.1;
         }
         li.non-song .stage-num {
             color: #bbb;
-            font-size: {{ (22 * s)|round(2) }}pt;
+            font-size: 22pt;
             font-weight: normal;
         }
         li.non-song .stage-title {
-            font-size: {{ (22 * s)|round(2) }}pt;
+            font-size: 22pt;
             font-style: italic;
             color: #777;
             font-weight: normal;

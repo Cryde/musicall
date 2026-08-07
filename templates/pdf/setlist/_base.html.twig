@@ -4,16 +4,52 @@
     <meta charset="UTF-8">
     <title>{{ setlist.name }}</title>
     <style>
-        {% set s = scale|default(1) %}
-        @page { margin: 18mm 14mm 14mm 14mm; }
-        body { font-family: '{{ font_family|default('Inter') }}', sans-serif; color: #1a1a1a; }
+        {#
+            No @page rule. Paper size and margins are set through the Gotenberg builder in
+            SetlistPdfRenderer, because a CSS @page margin silently overrides the builder's margin
+            fields and the fit arithmetic needs exactly one source of truth for the page box.
 
-        .pdf-header { margin-bottom: {{ (8 * s)|round(2) }}mm; }
+            No scale variable either. Shrinking to fit is Chromium's print scale, applied to the
+            whole document at render time, so every length shrinks together - including the borders,
+            letter-spacing and margins that the old hand-multiplied version left at full size.
+        #}
+        {#
+            The two TTFs travel with the document as uploaded assets, so they are referenced by bare
+            filename. Nothing is written to a font cache, which is what made dompdf return a 500 on
+            every fresh release directory.
+
+            `font` is the SetlistPdfFont case rather than three loose strings, so the family name and
+            its two filenames cannot drift apart.
+        #}
+        @font-face {
+            font-family: '{{ font.cssFamily }}';
+            src: url('{{ font.regularFile }}') format('truetype');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: '{{ font.cssFamily }}';
+            src: url('{{ font.boldFile }}') format('truetype');
+            font-weight: bold;
+        }
+
+        body {
+            font-family: '{{ font.cssFamily }}', sans-serif;
+            color: #1a1a1a;
+            margin: 0;
+            {#
+                Measure mode lays the document out at the printable width so the height reported by
+                a singlePage render is the height it will really occupy. Chromium otherwise measures
+                at its own screen viewport, which is narrower and under-reports by about a fifth.
+            #}
+            {% if measure_width_mm is defined %}width: {{ measure_width_mm }}mm;{% endif %}
+        }
+
+        .pdf-header { margin-bottom: 8mm; }
         .pdf-header-rule {
             height: 0;
             border: 0;
             border-top: 2px solid #f5b400;
-            margin: 0 0 {{ (6 * s)|round(2) }}mm 0;
+            margin: 0 0 6mm 0;
         }
 
         {% block extra_styles %}{% endblock %}

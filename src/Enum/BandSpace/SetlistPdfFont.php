@@ -9,9 +9,10 @@ enum SetlistPdfFont: string
     case SourceSerif = 'source_serif';
 
     /**
-     * dompdf font family name as registered in the font cache.
+     * The CSS font-family name, used both by the @font-face rule and by the body declaration that
+     * consumes it.
      */
-    public function dompdfFamily(): string
+    public function cssFamily(): string
     {
         return match ($this) {
             self::Inter => 'Inter',

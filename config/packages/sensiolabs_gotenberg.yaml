@@ -1,9 +1,7 @@
-# Spike for #741: evaluating Gotenberg (headless Chromium over HTTP) against dompdf.
-# Exercised by app:pdf:gotenberg-probe. Delete this file, the bundles.php entry, the compose
-# service, the GOTENBERG_DSN variable and the command together if the answer is no.
+# Gotenberg (headless Chromium behind an HTTP API) renders the setlist PDF export, and is the engine
+# any future PDF feature should use. Adopted in #741 after a measured comparison against dompdf.
 #
-# The scoped client lives here rather than in http_clients.yaml so the whole spike is one file,
-# which is also how the bundle documents it.
+# The scoped client lives here beside the bundle configuration so the whole wiring is one file.
 framework:
     http_client:
         scoped_clients:
@@ -12,3 +10,13 @@ framework:
 
 sensiolabs_gotenberg:
     http_client: 'gotenberg.client'
+    # The oldest Gotenberg we rely on, not the version currently deployed. The bundle uses this to
+    # gate features and to choose how it serialises units, and it only complains when the pin is
+    # LOWER than the server. Pinning above what production runs therefore fails silently, which
+    # would mean singlePage being ignored (a two page "fit to one page") and margins serialised in a
+    # form an older server cannot read. Pinning low is loud instead. Raise it only when a newer
+    # option is actually needed.
+    #
+    # It also stops the bundle asking the server for its version before every render, which is what
+    # lets the test suite run with no Gotenberg at all.
+    version: '8.14.0'

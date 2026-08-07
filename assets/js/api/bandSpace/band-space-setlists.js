@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { filenameFromContentDisposition } from '../../utils/downloadBlob.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
@@ -162,5 +163,25 @@ export default {
       params.set('fitToOnePage', options.fitToOnePage ? '1' : '0')
     const qs = params.toString()
     return qs ? `${baseUrl}?${qs}` : baseUrl
+  },
+
+  /**
+   * Fetches the PDF as a blob rather than letting the browser navigate to it, so the caller can show
+   * progress and report a failure instead of opening a tab onto a raw error page.
+   *
+   * Goes through axios, not fetch, so the global 401 interceptor still applies: the export is a long
+   * request on a stateless firewall, and an expired token has to send the user to log in rather than
+   * look like a broken export.
+   *
+   * The filename comes off the response, which is where App\Http\ContentDisposition already handles
+   * accents and slashes.
+   */
+  downloadPdf(bandSpaceId, setlistId, options = {}) {
+    return axios
+      .get(this.buildPdfUrl(bandSpaceId, setlistId, options), { responseType: 'blob' })
+      .then((resp) => ({
+        blob: resp.data,
+        filename: filenameFromContentDisposition(resp.headers['content-disposition'])
+      }))
   }
 }

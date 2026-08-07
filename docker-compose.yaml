@@ -88,13 +88,17 @@ services:
                 aliases:
                     - valkey.musicall
 
-    # Spike for #741: headless Chromium as an HTTP service, evaluated as a dompdf replacement.
-    # Exercised by app:pdf:gotenberg-probe. Remove both together if the answer is no.
+    # Headless Chromium as an HTTP service, rendering the setlist PDF export (#741). The
+    # integration tests need it running; the rest of the suite substitutes the client.
     gotenberg:
-        # The full image, not 8-chromium, because the probe also asks the PDF/A question and the
-        # smaller variant ships without the PDF engines that answer it. Switch to
-        # gotenberg/gotenberg:8-chromium (about 30% smaller) if we adopt Chromium rendering only.
-        image: gotenberg/gotenberg:8
+        # Chromium only. The full image is about 1.7GB and adds LibreOffice plus the PDF engines,
+        # which are needed for Office conversion and for PDF/A. Bring it back as gotenberg:8 if
+        # invoicing ever arrives, since Factur-X is PDF/A-3.
+        #
+        # Pinned to a patch tag, matching CI, so an upstream change is a deliberate act. The pin in
+        # config/packages/sensiolabs_gotenberg.yaml is the oldest version we rely on and is a
+        # different number on purpose.
+        image: gotenberg/gotenberg:8.34.0-chromium
         container_name: musicall-gotenberg
         environment:
             # Chromium renders whatever HTML it is handed, so it gets no way out. Assets are
@@ -102,10 +106,6 @@ services:
             # needs no network at all: anything that does try to dial out is a template bug.
             CHROMIUM_DENY_PRIVATE_IPS: 'true'
             CHROMIUM_DENY_PUBLIC_IPS: 'true'
-            # /debug returns the running configuration, which is what makes a dev against prod
-            # comparison possible. Off by default in Gotenberg, and a real prod deployment should
-            # decide for itself: the probe skips the dump rather than failing when it is absent.
-            API_ENABLE_DEBUG_ROUTE: 'true'
         ports:
             # Bound to the docker gateway rather than every interface, like elasticsearch above,
             # so it is reachable from this machine and from nowhere else.

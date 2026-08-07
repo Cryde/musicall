@@ -27,6 +27,22 @@ jobs:
                     - 3306:3306
                 options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
+            # Renders the setlist PDF export. Most tests substitute the client and need nothing
+            # running, but two of them read the embedded font table and the real page count out of
+            # Chromium's output, which no fake can produce. They fail rather than skip here on
+            # purpose, so a broken renderer cannot pass as a green run.
+            #
+            # The chromium-only variant: the full image is about 1.7GB and its LibreOffice and PDF
+            # engines are only needed for Office conversion and PDF/A. Pinned to a patch tag so an
+            # upstream change is never a surprise.
+            #
+            # No --health-cmd: that runs inside the container and this image ships no shell tooling
+            # to probe itself with, so the wait happens from the runner below.
+            gotenberg:
+                image: gotenberg/gotenberg:8.34.0-chromium
+                ports:
+                    - 3000:3000
+
         strategy:
             fail-fast: true
             matrix:
@@ -75,9 +91,23 @@ jobs:
                   bin/console -n doctrine:schema:validate
 
             # —— Tests —————————————————————————————————————————————————————————————
+            - name: Wait for Gotenberg
+              run: |
+                  for i in $(seq 1 30); do
+                      if curl -fsS http://localhost:3000/health > /dev/null; then
+                          echo "Gotenberg is up after ${i}s"
+                          exit 0
+                      fi
+                      sleep 1
+                  done
+                  echo "Gotenberg did not become healthy within 30s"
+                  exit 1
+
             - name: Run tests and collect coverage
               env:
                   APP_ENV: test
+                  # .env points this at the docker-compose alias, which does not resolve here.
+                  GOTENBERG_DSN: http://localhost:3000
               run: vendor/bin/phpunit --coverage-clover ./coverage.xml
 
             - name: Upload coverage reports to Codecov

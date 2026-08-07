@@ -9,8 +9,9 @@ They live under `public/` rather than `assets/` on purpose. Vite fingerprints an
 any future server side renderer could each end up naming a different file. An unhashed path keeps
 one name, and a renderer reading from disk can predict it.
 
-PNG with transparency rather than SVG: dompdf's SVG support is partial, and the export engine is
-still open (#741), so this keeps every option available.
+PNG with transparency rather than SVG. The original reason was that the export engine was undecided
+(#741); it is now Chromium, which renders SVG properly, so SVG has become viable. PNG stays because
+these are small raster badges either way and swapping formats would mean redrawing all 21.
 
 ## Current artwork: placeholders
 
