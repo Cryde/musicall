@@ -56,17 +56,54 @@ class TechRiderStagePlotLimitsTest extends TestCase
     }
 
     /**
-     * The editor offers rotations as a button group, so an extra entry there would be a button that
-     * saves and then fails validation.
+     * The editor's rotation range has to be the server's, or the slider offers an angle that saves
+     * and then fails validation.
      */
-    public function test_the_editor_rotations_match_the_constraint(): void
+    public function test_the_editor_rotation_range_matches_the_constraint(): void
+    {
+        $source = $this->read();
+
+        preg_match('/export const MIN_ROTATION = (-?\d+)/', $source, $min);
+        preg_match('/export const MAX_ROTATION = (-?\d+)/', $source, $max);
+        self::assertNotEmpty($min, sprintf('No MIN_ROTATION export found in %s.', self::CONSTANTS_PATH));
+        self::assertNotEmpty($max, sprintf('No MAX_ROTATION export found in %s.', self::CONSTANTS_PATH));
+
+        $this->assertSame(TechRiderStagePlot::MIN_ROTATION, (int) $min[1]);
+        $this->assertSame(TechRiderStagePlot::MAX_ROTATION, (int) $max[1]);
+    }
+
+    /**
+     * The four quarter turns are shortcut buttons rather than the whole domain now, so they no longer
+     * have to equal the constraint. They do still have to be inside it: a shortcut that saves and
+     * then fails validation is the same bug as before, just wearing a different hat.
+     */
+    public function test_every_rotation_shortcut_is_within_the_accepted_range(): void
     {
         preg_match('/export const ROTATIONS = Object\.freeze\(\[([^\]]+)]\)/', $this->read(), $matches);
         self::assertNotEmpty($matches, sprintf('No ROTATIONS export found in %s.', self::CONSTANTS_PATH));
 
         $rotations = array_map('intval', array_map('trim', explode(',', $matches[1])));
+        self::assertNotEmpty($rotations);
 
-        $this->assertSame(TechRiderStagePlot::ALLOWED_ROTATIONS, $rotations);
+        foreach ($rotations as $rotation) {
+            $this->assertGreaterThanOrEqual(TechRiderStagePlot::MIN_ROTATION, $rotation);
+            $this->assertLessThanOrEqual(TechRiderStagePlot::MAX_ROTATION, $rotation);
+        }
+    }
+
+    /**
+     * The on-canvas grip snaps to this step, so it has to divide a quarter turn exactly. At a step of
+     * 20 a snapped drag could never land on 90, and the plot the editor makes easiest to build would
+     * be one nobody wants.
+     */
+    public function test_the_rotation_snap_step_divides_a_quarter_turn(): void
+    {
+        preg_match('/export const ROTATION_SNAP_STEP = (\d+)/', $this->read(), $matches);
+        self::assertNotEmpty($matches, sprintf('No ROTATION_SNAP_STEP export found in %s.', self::CONSTANTS_PATH));
+
+        $step = (int) $matches[1];
+        self::assertGreaterThan(0, $step);
+        $this->assertSame(0, 90 % $step, sprintf('A snap step of %d cannot reach a quarter turn.', $step));
     }
 
     /** The default has to be inside the range the server accepts, or a new plot cannot be saved. */

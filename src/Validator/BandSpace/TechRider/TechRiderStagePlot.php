@@ -41,15 +41,15 @@ class TechRiderStagePlot extends Constraint
     public const float MAX_ASPECT_RATIO = 3.0;
 
     /**
-     * Quarter turns only. The reference rider has sideways labels so rotation is a real need, and
-     * four values keep the editor's rotate control a single button rather than an angle picker.
+     * Any whole degree. A stage is not built on a grid: wedges angle in towards a performer and a
+     * riser sits across a corner, so quarter turns produced a diagram that read as approximate.
      *
-     * The original reason was narrower: the export engine was undecided (#741) and arbitrary angles
-     * were not renderable everywhere. That has been settled in favour of Chromium, which does
-     * support CSS transforms, so widening this is now possible. It stays closed because nothing has
-     * asked for it, not because it cannot be done.
+     * Whole degrees rather than fractions, and 0 to 359 rather than any integer, for the same
+     * reason: one representation per angle. 360 and 0 are the same rotation, so allowing both would
+     * mean two documents that draw identically no longer compare identically.
      */
-    public const array ALLOWED_ROTATIONS = [0, 90, 180, 270];
+    public const int MIN_ROTATION = 0;
+    public const int MAX_ROTATION = 359;
 
     public string $invalidDocumentMessage = 'Le plan de scène doit être un objet';
     public string $unknownKeyMessage = 'Champ inconnu dans le plan de scène';
@@ -62,7 +62,7 @@ class TechRiderStagePlot extends Constraint
     public string $duplicateIdMessage = 'Chaque élément doit avoir un identifiant unique';
     public string $coordinateOutOfRangeMessage = 'La position doit être comprise entre 0 et 1';
     public string $scaleOutOfRangeMessage = 'La taille doit être comprise entre {{ min }} et {{ max }}';
-    public string $invalidRotationMessage = 'La rotation doit valoir 0, 90, 180 ou 270';
+    public string $invalidRotationMessage = 'La rotation doit être un entier de 0 à 359 degrés';
     public string $tooLongLabelMessage = 'Le libellé ne peut pas dépasser {{ limit }} caractères';
     public string $unknownIconMessage = 'Icône inconnue';
     public string $unknownColourMessage = 'Couleur inconnue';

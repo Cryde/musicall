@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node --test \"assets/js/**/*.test.js\"",
     "lint": "npx biome check",
     "lint-fix": "npx biome check --write"
   },
