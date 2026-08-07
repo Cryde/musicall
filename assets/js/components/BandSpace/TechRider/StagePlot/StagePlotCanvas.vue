@@ -80,6 +80,15 @@
             aria-hidden="true"
             @pointerdown.stop="handleScalePointerDown($event, element)"
           />
+
+          <!-- Free rotation, at top-left because the right edge is already taken: at the smallest
+               scale the wrapper is only 20px, and the rotate button and the scale grip between them
+               cover the whole of it. aria-hidden for the same reason as the scale grip. -->
+          <span
+            class="absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full bg-primary border border-surface-0 dark:border-surface-950 cursor-grab"
+            aria-hidden="true"
+            @pointerdown.stop="handleRotatePointerDown($event, element)"
+          />
         </template>
       </div>
 
@@ -96,8 +105,9 @@
       Glissez une icône depuis la liste, ou sélectionnez-la et appuyez sur Entrée. Flèches pour
       déplacer, Maj + flèches pour aller plus vite, Alt + flèches pour un réglage fin, Alt pendant
       un déplacement à la souris pour ignorer la grille, Suppr pour retirer. Sur l'élément
-      sélectionné, la poignée en bas à droite règle la taille et le bouton en haut à droite le fait
-      pivoter.
+      sélectionné, la poignée en bas à droite règle la taille, celle en haut à gauche l'orientation
+      (par pas de 15°, ou Alt pour un angle libre) et le bouton en haut à droite le fait pivoter
+      d'un quart de tour.
     </p>
   </div>
 </template>
@@ -111,7 +121,9 @@ import {
   MAX_SCALE,
   MIN_SCALE,
   NUDGE_STEP,
-  ROTATIONS,
+  nextQuarterTurn,
+  rotationFromPointer,
+  rotationGrabOffset,
   SCALE_STEP,
   SNAP_STEP,
   snapFraction,
@@ -143,6 +155,7 @@ const elementRefs = new Map()
 
 let drag = null
 let scaleDrag = null
+let rotateDrag = null
 
 const gridImage = computed(() => {
   // Drawn with a gradient rather than an SVG asset: it is two lines, and this way it inherits the
@@ -206,7 +219,7 @@ function handleElementPointerDown(event, element) {
   if (props.readOnly || event.button !== 0) return
   // One drag at a time. A second pointer starting on another element would overwrite this state,
   // freezing the first element and leaving its stage listeners attached but inert.
-  if (drag || scaleDrag) return
+  if (drag || scaleDrag || rotateDrag) return
 
   emit('select', element.id)
   const start = stageFractions(event)
@@ -249,10 +262,69 @@ function handlePointerUp(event) {
   elementRefs.get(id)?.focus()
 }
 
-/** Quarter turns cycle, because those are the only values the model accepts. */
+/**
+ * The shortcut button: on to the next quarter turn, from wherever the element currently sits.
+ *
+ * It used to index into ROTATIONS, which returned -1 for anything off the list and so reset the
+ * angle to 0. Harmless while nothing could produce an off-list angle; wrong now that the grip can.
+ */
 function rotateElement(element) {
-  const current = element.rotation ?? 0
-  element.rotation = ROTATIONS[(ROTATIONS.indexOf(current) + 1) % ROTATIONS.length]
+  element.rotation = nextQuarterTurn(element.rotation ?? 0)
+}
+
+/**
+ * Rotation by drag: the element follows the pointer's bearing around its own centre.
+ *
+ * The offset between that bearing and the current angle is taken once, so grabbing the grip does not
+ * swing the icon round to meet the pointer. Snapping to 15 degrees keeps a plot tidy, and Alt frees
+ * it to whole degrees, which is the same bargain Alt already makes with the position grid.
+ */
+function handleRotatePointerDown(event, element) {
+  if (props.readOnly || drag || scaleDrag || rotateDrag) return
+
+  const box = stageRef.value.getBoundingClientRect()
+  const centre = {
+    x: box.left + box.width * element.x,
+    y: box.top + box.height * element.y
+  }
+  const point = { x: event.clientX, y: event.clientY }
+
+  rotateDrag = {
+    element,
+    centre,
+    grabOffset: rotationGrabOffset(centre, point, element.rotation ?? 0),
+    pointerId: event.pointerId
+  }
+
+  stageRef.value.setPointerCapture(event.pointerId)
+  stageRef.value.addEventListener('pointermove', handleRotatePointerMove)
+  stageRef.value.addEventListener('pointerup', handleRotatePointerUp)
+  stageRef.value.addEventListener('pointercancel', handleRotatePointerUp)
+}
+
+function handleRotatePointerMove(event) {
+  if (!rotateDrag || event.pointerId !== rotateDrag.pointerId) return
+
+  rotateDrag.element.rotation = rotationFromPointer(
+    rotateDrag.centre,
+    { x: event.clientX, y: event.clientY },
+    rotateDrag.grabOffset,
+    !event.altKey
+  )
+}
+
+function handleRotatePointerUp(event) {
+  if (!rotateDrag || event.pointerId !== rotateDrag.pointerId) return
+
+  const id = rotateDrag.element.id
+  rotateDrag = null
+
+  stageRef.value.releasePointerCapture(event.pointerId)
+  stageRef.value.removeEventListener('pointermove', handleRotatePointerMove)
+  stageRef.value.removeEventListener('pointerup', handleRotatePointerUp)
+  stageRef.value.removeEventListener('pointercancel', handleRotatePointerUp)
+
+  elementRefs.get(id)?.focus()
 }
 
 /**
@@ -261,7 +333,7 @@ function rotateElement(element) {
  * pointer over a long drag.
  */
 function handleScalePointerDown(event, element) {
-  if (props.readOnly || drag || scaleDrag) return
+  if (props.readOnly || drag || scaleDrag || rotateDrag) return
 
   const box = stageRef.value.getBoundingClientRect()
   const centre = {

@@ -80,10 +80,27 @@
       </div>
 
       <div>
-        <span class="block text-xs font-medium mb-1">Rotation</span>
-        <!-- Quarter turns only, because that is what the model accepts and what every export
-             engine can render. Buttons rather than a free input for the same reason. -->
-        <div class="flex gap-1" role="group" aria-label="Rotation">
+        <label :for="`${uid}-rotation`" class="block text-xs font-medium mb-1">
+          Rotation ({{ element.rotation ?? 0 }}°)
+        </label>
+        <!-- Whole degrees, so the slider can represent every angle the server accepts. A coarser
+             step would quietly rewrite an angle placed freely on the canvas the moment anyone
+             touched this control. -->
+        <Slider
+          :id="`${uid}-rotation`"
+          :model-value="element.rotation ?? 0"
+          :min="MIN_ROTATION"
+          :max="MAX_ROTATION"
+          :step="FINE_ROTATION_STEP"
+          :disabled="readOnly"
+          class="w-full"
+          :aria-label="`Rotation de ${iconLabel}`"
+          @update:model-value="(value) => update({ rotation: value })"
+        />
+        <!-- The quarter turns kept as shortcuts beside the slider. They are one click where the
+             slider is an aim, and they are the keyboard path: arrows on a 360 stop slider would
+             need ninety presses to turn a corner. -->
+        <div class="flex gap-1 mt-1" role="group" aria-label="Quarts de tour">
           <Button
             v-for="rotation in ROTATIONS"
             :key="rotation"
@@ -131,8 +148,11 @@ import Slider from 'primevue/slider'
 import { computed, useId } from 'vue'
 import {
   describePosition,
+  FINE_ROTATION_STEP,
   MAX_LABEL_LENGTH,
+  MAX_ROTATION,
   MAX_SCALE,
+  MIN_ROTATION,
   MIN_SCALE,
   ROTATIONS,
   SCALE_STEP

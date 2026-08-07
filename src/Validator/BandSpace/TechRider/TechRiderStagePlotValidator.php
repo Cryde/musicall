@@ -167,8 +167,14 @@ class TechRiderStagePlotValidator extends ConstraintValidator
             }
         }
 
+        // Deliberately not through toFloat(), unlike every other numeric rule here: an integer keeps
+        // one representation per angle, so 90 and 90.0 cannot both be stored for the same rotation
+        // and two plots that draw identically compare identically. Nothing normalises this
+        // afterwards either, because the document is written back verbatim.
         if (array_key_exists('rotation', $element)
-            && !in_array($element['rotation'], TechRiderStagePlot::ALLOWED_ROTATIONS, true)
+            && (!is_int($element['rotation'])
+                || $element['rotation'] < TechRiderStagePlot::MIN_ROTATION
+                || $element['rotation'] > TechRiderStagePlot::MAX_ROTATION)
         ) {
             $this->violation($constraint->invalidRotationMessage, "$path.rotation", $constraint)->addViolation();
         }

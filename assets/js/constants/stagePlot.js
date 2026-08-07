@@ -22,8 +22,22 @@ export const MAX_ASPECT_RATIO = 3.0
 
 export const DEFAULT_ASPECT_RATIO = 1.4
 
-/** Quarter turns only, matching what the model accepts. */
+/**
+ * Any whole degree from 0 to 359 is stored, so these four are shortcuts rather than the domain.
+ * They stay because a quarter turn is the common case, one click beats aiming a slider at it, and
+ * they are the only sane keyboard path: arrows on a 360 stop slider would need ninety presses.
+ */
+export const MIN_ROTATION = 0
+export const MAX_ROTATION = 359
 export const ROTATIONS = Object.freeze([0, 90, 180, 270])
+
+/**
+ * What the on-canvas rotation grip snaps to, with Alt giving whole degrees, mirroring how Alt frees
+ * a move drag from the position grid. Fifteen divides 90, so snapped dragging can always land on a
+ * quarter turn, which is what TechRiderStagePlotLimitsTest pins.
+ */
+export const ROTATION_SNAP_STEP = 15
+export const FINE_ROTATION_STEP = 1
 
 /**
  * The snap grid, as a fraction of the stage. A plot where nothing lines up looks careless on a
@@ -79,4 +93,53 @@ export function toFraction(value) {
 
 export function snapFraction(value) {
   return toFraction(Math.round(value / SNAP_STEP) * SNAP_STEP)
+}
+
+/**
+ * Folds any angle into the 0 to 359 whole degrees the server stores, so a drag that crosses twelve
+ * o'clock or turns backwards cannot produce 360 or a negative.
+ */
+export function normaliseRotation(degrees) {
+  return ((Math.round(degrees) % 360) + 360) % 360
+}
+
+/**
+ * The pointer's bearing from a centre, in degrees.
+ *
+ * Screen y grows downwards, which is the same direction CSS `rotate()` turns, so this maps onto a
+ * rotation with no sign flip.
+ */
+export function pointerBearing(centre, point) {
+  return (Math.atan2(point.y - centre.y, point.x - centre.x) * 180) / Math.PI
+}
+
+/**
+ * How far the element's rotation runs ahead of the pointer at the moment it is grabbed.
+ *
+ * Recorded once on pointerdown and added back on every move, so grabbing the grip anywhere leaves
+ * the icon where it was instead of snapping it round to meet the pointer.
+ */
+export function rotationGrabOffset(centre, point, currentRotation) {
+  return (currentRotation ?? 0) - pointerBearing(centre, point)
+}
+
+/** Where a rotation drag lands. Snapping is the default; Alt asks for whole degrees. */
+export function rotationFromPointer(centre, point, grabOffset, snap = true) {
+  const step = snap ? ROTATION_SNAP_STEP : FINE_ROTATION_STEP
+  const bearing = pointerBearing(centre, point) + grabOffset
+
+  // Snap first, then fold: rounding 355 to the nearest fifteen gives 360, which is not a value the
+  // server accepts.
+  return normaliseRotation(Math.round(bearing / step) * step)
+}
+
+/**
+ * The next quarter turn clockwise from any angle, for the shortcut button.
+ *
+ * It used to look the current value up in ROTATIONS, which returned -1 for anything off the list and
+ * so reset it to 0. Harmless while nothing could produce an off-list angle, and wrong the moment a
+ * drag can.
+ */
+export function nextQuarterTurn(current) {
+  return normaliseRotation((Math.floor(normaliseRotation(current) / 90) + 1) * 90)
 }

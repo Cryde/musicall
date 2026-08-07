@@ -171,18 +171,41 @@ class TechRiderStagePlotTest extends ApiTestCase
         $this->assertViolation('plot.elements[0].scale', 'La taille doit être comprise entre 0.25 et 4');
     }
 
-    /** Quarter turns only, because arbitrary angles are not renderable on every export engine. */
-    public function test_a_rotation_that_is_not_a_quarter_turn_is_refused(): void
+    /**
+     * The inverse of what this used to assert. Rotation was capped at quarter turns while the export
+     * engine was undecided, because arbitrary angles were not renderable everywhere; #741 settled on
+     * Chromium, which turns by any angle, so 45 is now a perfectly ordinary value.
+     */
+    public function test_an_arbitrary_angle_is_accepted(): void
     {
         [$user, $bandSpace, $rider, $item] = $this->seed();
 
         $this->put($user, $bandSpace, $rider, $item, [
             'plot' => ['version' => 1, 'elements' => [
-                ['id' => 'el-1', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'rotation' => 45],
+                ['id' => 'el-1', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'rotation' => 47],
             ]],
         ]);
 
-        $this->assertViolation('plot.elements[0].rotation', 'La rotation doit valoir 0, 90, 180 ou 270');
+        $this->assertResponseIsSuccessful();
+    }
+
+    /**
+     * Stored verbatim, not rounded to anything. An editor that snaps to 15 degrees is a convenience;
+     * the document has to keep whatever angle it was given, or a plot drawn with Alt held comes back
+     * subtly different from the one that was saved.
+     */
+    public function test_an_arbitrary_angle_survives_the_round_trip_unrounded(): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+        $plot = ['version' => 1, 'elements' => [
+            ['id' => 'el-1', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'rotation' => 47],
+        ]];
+
+        $this->put($user, $bandSpace, $rider, $item, ['plot' => $plot]);
+        $this->assertResponseIsSuccessful();
+
+        $stored = self::getContainer()->get(TechRiderItemRepository::class)->find((string) $item->id);
+        $this->assertSame($plot, $stored?->content);
     }
 
     public function test_a_quarter_turn_is_accepted(): void
@@ -196,6 +219,38 @@ class TechRiderStagePlotTest extends ApiTestCase
         ]);
 
         $this->assertResponseIsSuccessful();
+    }
+
+    /**
+     * What is actually out of bounds now. 360 and a negative are refused so an angle has exactly one
+     * representation, and a float is refused so 90 and 90.0 cannot both mean the same rotation.
+     *
+     * One case per test rather than one payload with three bad elements, because assertViolation
+     * asserts the whole response body and therefore exactly one violation.
+     */
+    #[DataProvider('invalidRotationProvider')]
+    public function test_an_out_of_range_rotation_is_refused(int|float|string $rotation): void
+    {
+        [$user, $bandSpace, $rider, $item] = $this->seed();
+
+        $this->put($user, $bandSpace, $rider, $item, [
+            'plot' => ['version' => 1, 'elements' => [
+                ['id' => 'el-1', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'rotation' => $rotation],
+            ]],
+        ]);
+
+        $this->assertViolation('plot.elements[0].rotation', 'La rotation doit être un entier de 0 à 359 degrés');
+    }
+
+    /**
+     * @return iterable<string, array{int|float|string}>
+     */
+    public static function invalidRotationProvider(): iterable
+    {
+        yield 'a full turn, which is the same angle as zero' => [360];
+        yield 'a negative angle' => [-1];
+        yield 'a whole angle written as a float' => [90.0];
+        yield 'a numeric string' => ['90'];
     }
 
     public function test_an_unknown_icon_is_refused(): void
@@ -381,7 +436,7 @@ class TechRiderStagePlotTest extends ApiTestCase
                     'version' => 999,
                     'unknown_top_level_key' => 'x',
                     'elements' => [
-                        ['id' => 'x', 'icon' => 'pas_une_icone', 'x' => 50.0, 'y' => -30.0, 'rotation' => 45],
+                        ['id' => 'x', 'icon' => 'pas_une_icone', 'x' => 50.0, 'y' => -30.0, 'rotation' => 360],
                     ],
                 ],
             ],
