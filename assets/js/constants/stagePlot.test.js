@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  ALIGNMENT_TOLERANCE,
+  findAlignmentGuides,
   MAX_ROTATION,
   MIN_ROTATION,
   nextQuarterTurn,
@@ -8,7 +10,8 @@ import {
   pointerBearing,
   ROTATION_SNAP_STEP,
   rotationFromPointer,
-  rotationGrabOffset
+  rotationGrabOffset,
+  SNAP_STEP
 } from './stagePlot.js'
 
 /**
@@ -102,6 +105,104 @@ describe('rotationFromPointer', () => {
         assert.ok(angle >= MIN_ROTATION && angle <= MAX_ROTATION, `${angle} is out of range`)
       }
     }
+  })
+})
+
+describe('findAlignmentGuides', () => {
+  const at = (id, x, y) => ({ id, x, y })
+
+  it('finds an alignment on one axis without inventing one on the other', () => {
+    const dragged = at('dragged', 0.5, 0.5)
+    const others = [at('a', 0.5, 0.2)]
+
+    assert.deepEqual(findAlignmentGuides(dragged, others), { x: 0.5, y: null })
+  })
+
+  it('finds both axes when two different elements each line up', () => {
+    const dragged = at('dragged', 0.5, 0.5)
+    const others = [at('a', 0.5, 0.2), at('b', 0.9, 0.5)]
+
+    assert.deepEqual(findAlignmentGuides(dragged, others), { x: 0.5, y: 0.5 })
+  })
+
+  // The line is drawn at the reference element's coordinate, not the dragged one's, so it reads as
+  // "that element is on this line" rather than following the pointer.
+  it('reports the reference coordinate, not the dragged one', () => {
+    const dragged = at('dragged', 0.504, 0.5)
+    const others = [at('a', 0.5, 0.1)]
+
+    assert.deepEqual(findAlignmentGuides(dragged, others).x, 0.5)
+  })
+
+  // Both orderings, because either one alone passes against an implementation that simply lets the
+  // last match win: with the near candidate listed last, "nearest" and "last" agree.
+  it('prefers the nearest candidate whichever order they come in', () => {
+    const dragged = at('dragged', 0.5, 0.5)
+    const near = at('near', 0.502, 0.1)
+    const far = at('far', 0.51, 0.1)
+
+    assert.equal(findAlignmentGuides(dragged, [near, far]).x, 0.502)
+    assert.equal(findAlignmentGuides(dragged, [far, near]).x, 0.502)
+  })
+
+  it('never aligns an element against itself', () => {
+    const dragged = at('dragged', 0.5, 0.5)
+
+    assert.deepEqual(findAlignmentGuides(dragged, [dragged]), { x: null, y: null })
+  })
+
+  it('ignores a centre just outside the tolerance', () => {
+    const dragged = at('dragged', 0.5, 0.5)
+    const justOutside = ALIGNMENT_TOLERANCE + 0.0001
+
+    assert.deepEqual(
+      findAlignmentGuides(dragged, [at('a', 0.5 + justOutside, 0.5 + justOutside)]),
+      { x: null, y: null }
+    )
+  })
+
+  /**
+   * The boundary itself, which is the only value that distinguishes <= from <. Without it an
+   * off-by-one on the comparison ships silently, exactly as it did for MAX_ROTATION in #802.
+   *
+   * Measured from zero deliberately. The obvious construction, a neighbour at 0.5 plus or minus the
+   * tolerance, cannot test this: the two directions land either side of the boundary in floating
+   * point, 0.0124999... one way and 0.0125000... the other. Subtracting from zero is exact.
+   */
+  it('includes a centre exactly at the tolerance', () => {
+    const dragged = at('dragged', 0, 0)
+    const onTheBoundary = at('a', ALIGNMENT_TOLERANCE, ALIGNMENT_TOLERANCE)
+
+    assert.deepEqual(findAlignmentGuides(dragged, [onTheBoundary]), {
+      x: ALIGNMENT_TOLERANCE,
+      y: ALIGNMENT_TOLERANCE
+    })
+  })
+
+  // Two elements that both lack an id must still see each other. Filtering self by id rather than by
+  // identity would drop this, because undefined equals undefined.
+  it('aligns two distinct elements that share an id', () => {
+    const dragged = { x: 0.5, y: 0.5 }
+    const other = { x: 0.5, y: 0.1 }
+
+    assert.equal(findAlignmentGuides(dragged, [dragged, other]).x, 0.5)
+  })
+
+  it('copes with an empty stage', () => {
+    assert.deepEqual(findAlignmentGuides(at('dragged', 0.5, 0.5), []), { x: null, y: null })
+  })
+
+  /**
+   * The tolerance is half a grid step, which means it can never fire on a near miss while snapping is
+   * on: two snapped centres are either identical or a full step apart. So a guide during an ordinary
+   * drag always means exactly aligned, and only Alt placement can produce the approximate kind.
+   */
+  it('cannot report a near miss between two snapped positions', () => {
+    const dragged = at('dragged', 0.5, 0.5)
+    const oneStepAway = at('a', 0.5 + SNAP_STEP, 0.5 + SNAP_STEP)
+
+    assert.deepEqual(findAlignmentGuides(dragged, [oneStepAway]), { x: null, y: null })
+    assert.ok(ALIGNMENT_TOLERANCE < SNAP_STEP, 'the tolerance must stay inside one grid step')
   })
 })
 

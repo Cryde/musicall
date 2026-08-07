@@ -57,6 +57,22 @@ export const NUDGE_STEP = SNAP_STEP
 export const FINE_NUDGE_STEP = 0.005
 export const COARSE_NUDGE_STEP = 0.1
 
+/**
+ * How near two centres have to be before a guide is drawn between them.
+ *
+ * Half a grid step, so it can never fight the grid: two positions that are both on the grid are
+ * either identical or a whole step apart, which is further than this, so a guide between two snapped
+ * elements always means exactly aligned.
+ *
+ * That is as far as the guarantee goes, and it is worth being precise about. It does not extend to
+ * the whole document, because an element can legitimately sit off the grid: Alt frees a drag from it,
+ * and FINE_NUDGE_STEP is 0.005, which is not a multiple of SNAP_STEP. So a snapped element dragged
+ * next to a neighbour nudged one fine step off 0.5 is 0.005 away, inside this tolerance and not
+ * aligned. The guide then slightly overstates the precision, which is tolerable only because guides
+ * inform and never move anything.
+ */
+export const ALIGNMENT_TOLERANCE = SNAP_STEP / 2
+
 const HORIZONTAL_BANDS = [
   { limit: 1 / 3, label: 'à gauche' },
   { limit: 2 / 3, label: 'au centre' },
@@ -93,6 +109,51 @@ export function toFraction(value) {
 
 export function snapFraction(value) {
   return toFraction(Math.round(value / SNAP_STEP) * SNAP_STEP)
+}
+
+/**
+ * The centres the dragged element lines up with, as `{ x, y }`, either being null for no alignment.
+ *
+ * Returns the *other* element's coordinate rather than the dragged one's, because the line has to be
+ * drawn where the reference sits: it says "the batterie is on this line", which is information. A
+ * line drawn at the dragged element's own coordinate would follow the pointer and say nothing.
+ *
+ * Centres only. The document stores no width or height, so an element's rendered box is its icon's
+ * intrinsic ratio times its scale, and asking for edges would mean measuring every element from the
+ * DOM on every pointer move. Centres are also what a stage plot means by aligned: two wedges at the
+ * same depth, a mic in front of an amp.
+ *
+ * Nothing is moved here. Guides inform; the grid is what keeps a plot tidy.
+ */
+export function findAlignmentGuides(dragged, others, tolerance = ALIGNMENT_TOLERANCE) {
+  let x = null
+  let y = null
+  let nearestX = Number.POSITIVE_INFINITY
+  let nearestY = Number.POSITIVE_INFINITY
+
+  for (const other of others) {
+    // An element always aligns with itself, which is never worth drawing. By identity rather than by
+    // id: the caller is dragging one of the entries in this very list, so identity is exact, while
+    // comparing ids silently drops a real alignment between two elements that share an id or, worse,
+    // between two that both lack one, since undefined equals undefined.
+    if (other === dragged) {
+      continue
+    }
+
+    const dx = Math.abs(other.x - dragged.x)
+    if (dx <= tolerance && dx < nearestX) {
+      nearestX = dx
+      x = other.x
+    }
+
+    const dy = Math.abs(other.y - dragged.y)
+    if (dy <= tolerance && dy < nearestY) {
+      nearestY = dy
+      y = other.y
+    }
+  }
+
+  return { x, y }
 }
 
 /**
