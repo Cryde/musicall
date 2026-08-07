@@ -66,7 +66,7 @@
             type="button"
             class="absolute -top-2 -right-2 w-4 h-4 flex items-center justify-center rounded-full bg-primary text-primary-contrast shadow focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary-500"
             :aria-label="`Faire pivoter ${describeElement(element)}, actuellement ${element.rotation ?? 0} degrés`"
-            v-tooltip.top="'Pivoter d\'un quart de tour'"
+            v-tooltip.top="'Aligner sur le prochain quart de tour'"
             @pointerdown.stop
             @click.stop="rotateElement(element)"
           >
@@ -106,8 +106,8 @@
       déplacer, Maj + flèches pour aller plus vite, Alt + flèches pour un réglage fin, Alt pendant
       un déplacement à la souris pour ignorer la grille, Suppr pour retirer. Sur l'élément
       sélectionné, la poignée en bas à droite règle la taille, celle en haut à gauche l'orientation
-      (par pas de 15°, ou Alt pour un angle libre) et le bouton en haut à droite le fait pivoter
-      d'un quart de tour.
+      (par pas de 15°, ou Alt pour un angle libre) et le bouton en haut à droite l'aligne sur le
+      prochain quart de tour.
     </p>
   </div>
 </template>

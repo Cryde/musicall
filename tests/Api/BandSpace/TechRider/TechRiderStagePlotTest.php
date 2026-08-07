@@ -208,17 +208,33 @@ class TechRiderStagePlotTest extends ApiTestCase
         $this->assertSame($plot, $stored?->content);
     }
 
-    public function test_a_quarter_turn_is_accepted(): void
+    /**
+     * Both ends of the range, and 359 is the one that matters: it is the only value that catches the
+     * upper bound being written as >= rather than >. Every other accepted angle sits comfortably
+     * inside, so without this the off-by-one passes.
+     */
+    #[DataProvider('acceptedRotationProvider')]
+    public function test_an_accepted_rotation_is_stored(int $rotation): void
     {
         [$user, $bandSpace, $rider, $item] = $this->seed();
 
         $this->put($user, $bandSpace, $rider, $item, [
             'plot' => ['version' => 1, 'elements' => [
-                ['id' => 'el-1', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'rotation' => 270],
+                ['id' => 'el-1', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'rotation' => $rotation],
             ]],
         ]);
 
         $this->assertResponseIsSuccessful();
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function acceptedRotationProvider(): iterable
+    {
+        yield 'the lower bound' => [TechRiderStagePlot::MIN_ROTATION];
+        yield 'the upper bound' => [TechRiderStagePlot::MAX_ROTATION];
+        yield 'a quarter turn' => [270];
     }
 
     /**
@@ -249,6 +265,10 @@ class TechRiderStagePlotTest extends ApiTestCase
     {
         yield 'a full turn, which is the same angle as zero' => [360];
         yield 'a negative angle' => [-1];
+        // This one only reaches the server as a float because jsonRequest() encodes with
+        // JSON_PRESERVE_ZERO_FRACTION; a plain json_encode(90.0) emits 90 and decodes back to an int.
+        // So it guards against a hand-written or non-JavaScript client, not against our own frontend,
+        // which cannot produce a trailing .0 through JSON.stringify at all.
         yield 'a whole angle written as a float' => [90.0];
         yield 'a numeric string' => ['90'];
     }

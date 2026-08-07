@@ -138,5 +138,10 @@ jobs:
             - name: Lint (Biome)
               run: npm run lint
 
+            # Node's own test runner, so there is no framework to install. It covers the pure helpers
+            # that carry logic worth pinning; anything needing a DOM is still untested.
+            - name: Test (node --test)
+              run: npm test
+
             - name: Build (Vite)
               run: npm run build
