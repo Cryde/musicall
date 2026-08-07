@@ -92,6 +92,23 @@
         </template>
       </div>
 
+      <!-- Alignment guides, drawn after the elements so they sit over the icons. They only inform:
+           the grid is what keeps a plot tidy, and a line that also pulled the element would fight it.
+           aria-hidden and pointer-events-none for the same reason as the drag grips, a purely visual
+           aid during a pointer gesture. -->
+      <div
+        v-if="alignmentGuides.x !== null"
+        class="absolute top-0 bottom-0 w-px bg-primary-500/70 pointer-events-none"
+        :style="{ left: `${alignmentGuides.x * 100}%` }"
+        aria-hidden="true"
+      />
+      <div
+        v-if="alignmentGuides.y !== null"
+        class="absolute left-0 right-0 h-px bg-primary-500/70 pointer-events-none"
+        :style="{ top: `${alignmentGuides.y * 100}%` }"
+        aria-hidden="true"
+      />
+
       <!-- The audience side. Everything on a rider is described relative to it, so an unlabelled
            box is ambiguous. -->
       <div
@@ -118,6 +135,7 @@ import {
   COARSE_NUDGE_STEP,
   describePosition,
   FINE_NUDGE_STEP,
+  findAlignmentGuides,
   MAX_SCALE,
   MIN_SCALE,
   NUDGE_STEP,
@@ -156,6 +174,12 @@ const elementRefs = new Map()
 let drag = null
 let scaleDrag = null
 let rotateDrag = null
+
+/** Frozen because the same reference is assigned on every drag end; nothing may mutate it. */
+const NO_GUIDES = Object.freeze({ x: null, y: null })
+
+/** Only ever set while a move drag is running; scaling and rotating do not move an element. */
+const alignmentGuides = ref(NO_GUIDES)
 
 const gridImage = computed(() => {
   // Drawn with a gradient rather than an SVG asset: it is two lines, and this way it inherits the
@@ -244,6 +268,8 @@ function handlePointerMove(event) {
   const position = stageFractions(event)
   drag.element.x = applySnap(position.x + drag.offsetX, event)
   drag.element.y = applySnap(position.y + drag.offsetY, event)
+
+  alignmentGuides.value = findAlignmentGuides(drag.element, props.elements)
 }
 
 function handlePointerUp(event) {
@@ -251,6 +277,7 @@ function handlePointerUp(event) {
 
   const id = drag.element.id
   drag = null
+  alignmentGuides.value = NO_GUIDES
 
   stageRef.value.releasePointerCapture(event.pointerId)
   stageRef.value.removeEventListener('pointermove', handlePointerMove)
