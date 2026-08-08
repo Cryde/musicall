@@ -1,0 +1,16 @@
+{#
+    A document item is a file already in the band's space. An image is placed here directly; a PDF is
+    merged in as its own pages after this render, so it contributes nothing to the HTML.
+
+    Anything that could not be included says so by name rather than vanishing, because a rider that
+    silently drops an attachment is worse than one that admits it: the band can see what to send
+    separately.
+#}
+{% if item.image is defined %}
+    <img class="attachment-image" src="{{ item.image }}" alt="{{ item.name }}">
+{% elseif item.reason is defined %}
+    <div class="attachment">
+        <div class="attachment-name">{{ item.name }}</div>
+        <div class="attachment-reason">{{ item.reason }}</div>
+    </div>
+{% endif %}

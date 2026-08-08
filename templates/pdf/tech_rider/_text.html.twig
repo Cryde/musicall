@@ -1,0 +1,5 @@
+{#
+    Printed raw because TipTapHtmlRenderer produced it, and that renderer escapes every piece of text
+    and emits only tags it recognises. Nothing else in the request is trusted to build this string.
+#}
+<div class="prose">{{ item.html|raw }}</div>

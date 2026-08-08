@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ rider.name }}</title>
+    <style>
+        {#
+            No @page rule and no scale variable, following what #741 settled for the setlist: paper
+            size and margins are set through the Gotenberg builder, because a CSS @page margin
+            silently overrides the builder's margin fields and the two would disagree.
+
+            The fonts travel with the document as uploaded assets, so they are referenced by bare
+            filename. Nothing is written to a font cache.
+        #}
+        @font-face {
+            font-family: '{{ font_family }}';
+            src: url('{{ font_regular_file }}') format('truetype');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: '{{ font_family }}';
+            src: url('{{ font_bold_file }}') format('truetype');
+            font-weight: bold;
+        }
+
+        :root {
+            --accent: #f5b400;
+            --ink: #1a1a1a;
+            --muted: #666;
+            --rule: #e5e5e5;
+            --wash: #fafafa;
+        }
+
+        * { box-sizing: border-box; }
+
+        html {
+            font-family: '{{ font_family }}', sans-serif;
+            font-size: 10pt;
+            line-height: 1.45;
+            color: var(--ink);
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        body { margin: 0; }
+
+        {% if with_cover %}
+        {# Height in mm rather than vh: the page box is known here and vh in print is not worth betting on. #}
+        .cover {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250mm;
+            break-after: page;
+        }
+        .cover-band {
+            font-size: 11pt;
+            text-transform: uppercase;
+            letter-spacing: 0.35em;
+            color: var(--muted);
+        }
+        .cover-name {
+            margin-top: 3mm;
+            font-size: 34pt;
+            font-weight: bold;
+            line-height: 1.1;
+        }
+        .cover-rule {
+            height: 0;
+            border: 0;
+            border-top: 3px solid var(--accent);
+            margin: 6mm 0 0;
+            width: 40mm;
+        }
+        .cover-meta {
+            font-size: 9pt;
+            color: var(--muted);
+            border-top: 1px solid var(--rule);
+            padding-top: 4mm;
+        }
+        {% endif %}
+
+        .item { margin-bottom: 10mm; }
+        .item-title {
+            font-size: 14pt;
+            margin: 0 0 3mm;
+            padding-bottom: 1.5mm;
+            border-bottom: 2px solid var(--accent);
+            /* A title must never end a page. Without this the stage plot's own break-inside pushed
+               the drawing to the next page and left its heading stranded at the foot of the previous
+               one, which reads as a section with nothing in it. */
+            break-after: avoid;
+        }
+
+        {# Rich text coming out of TipTapHtmlRenderer. Only the tags it can emit are styled. #}
+        .prose { orphans: 3; widows: 3; }
+        .prose h2 { font-size: 12pt; margin: 5mm 0 2mm; }
+        .prose h3 { font-size: 11pt; margin: 4mm 0 2mm; }
+        .prose p { margin: 0 0 2.5mm; }
+        .prose ul, .prose ol { margin: 0 0 2.5mm; padding-left: 6mm; }
+        .prose li { margin-bottom: 1mm; }
+        .prose blockquote {
+            margin: 0 0 2.5mm;
+            padding-left: 4mm;
+            border-left: 2px solid var(--rule);
+            color: var(--muted);
+        }
+        .prose pre {
+            margin: 0 0 2.5mm;
+            padding: 3mm;
+            background: var(--wash);
+            border-radius: 1.5mm;
+            white-space: pre-wrap;
+            font-size: 9pt;
+        }
+        .prose hr { border: 0; border-top: 1px solid var(--rule); margin: 4mm 0; }
+        .prose table { width: 100%; border-collapse: collapse; margin: 0 0 2.5mm; }
+        .prose td { border: 1px solid var(--rule); padding: 1.5mm 2mm; vertical-align: top; }
+        .prose a { color: var(--ink); }
+
+        .patch { width: 100%; border-collapse: collapse; margin-bottom: 5mm; }
+        {# Brings the column heads back at the top of a second page, which a long list needs. #}
+        .patch thead { display: table-header-group; }
+        .patch tr { break-inside: avoid; }
+        .patch th {
+            text-align: left;
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            padding: 1.5mm 2mm;
+            border-bottom: 1px solid var(--rule);
+        }
+        .patch td { padding: 1.4mm 2mm; border-bottom: 1px solid var(--rule); }
+        .patch tbody tr:nth-child(even) { background: var(--wash); }
+        .patch .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .patch-caption {
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 0 0 1.5mm;
+        }
+        .chip {
+            display: inline-block;
+            width: 2.6mm;
+            height: 2.6mm;
+            margin-right: 1.5mm;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        {# A plot is a drawing: splitting it across a page break would make it unreadable. #}
+        .stage-block { break-inside: avoid; }
+        .stage {
+            position: relative;
+            width: 100%;
+            border: 1px solid var(--rule);
+            border-radius: 3mm;
+            background: var(--wash);
+            overflow: hidden;
+        }
+        .stage-item { position: absolute; transform: translate(-50%, -50%); }
+        {# The rotation sits on the image so the label underneath stays level whatever the icon does. #}
+        .stage-item img { display: block; width: 100%; }
+        .stage-label {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.8mm;
+            font-size: 6pt;
+            white-space: nowrap;
+            color: var(--muted);
+        }
+        .stage-front {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 1.2mm 0;
+            text-align: center;
+            font-size: 7pt;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #fff;
+            background: rgba(26, 26, 26, 0.75);
+        }
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2mm 4mm;
+            margin: 4mm 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .legend li { display: flex; align-items: center; gap: 2mm; font-size: 8pt; }
+        .legend img { width: 5mm; }
+
+        .contact-lines { margin: 0 0 3mm; padding: 0; list-style: none; }
+        .contact-lines li { padding: 1.2mm 0; border-bottom: 1px solid var(--rule); }
+        .contact-emails { font-size: 9pt; color: var(--muted); }
+
+        .attachment {
+            padding: 4mm;
+            border: 1px dashed var(--rule);
+            border-radius: 2mm;
+            background: var(--wash);
+            font-size: 9pt;
+            break-inside: avoid;
+        }
+        .attachment-name { font-weight: bold; }
+        .attachment-reason { color: var(--muted); margin-top: 1mm; }
+        .attachment-image { width: 100%; display: block; break-inside: avoid; }
+    </style>
+</head>
+<body>
+{% if with_cover %}
+    <section class="cover">
+        <div>
+            <div class="cover-band">{{ rider.bandSpace.name }}</div>
+            <div class="cover-name">{{ rider.name }}</div>
+            <hr class="cover-rule">
+        </div>
+        <div class="cover-meta">Fiche technique éditée le {{ generated_at }}</div>
+    </section>
+{% endif %}
+
+{% for item in items %}
+    <section class="item">
+        <h1 class="item-title">{{ item.title }}</h1>
+        {% if item.type == 'text' %}
+            {% include 'pdf/tech_rider/_text.html.twig' %}
+        {% elseif item.type == 'patch_list' %}
+            {% include 'pdf/tech_rider/_patch_list.html.twig' %}
+        {% elseif item.type == 'stage_plot' %}
+            {% include 'pdf/tech_rider/_stage_plot.html.twig' %}
+        {% elseif item.type == 'contacts' %}
+            {% include 'pdf/tech_rider/_contacts.html.twig' %}
+        {% elseif item.type == 'document' %}
+            {% include 'pdf/tech_rider/_document.html.twig' %}
+        {% endif %}
+    </section>
+{% endfor %}
+</body>
+</html>

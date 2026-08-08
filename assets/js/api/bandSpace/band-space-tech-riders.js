@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { filenameFromContentDisposition } from '../../utils/downloadBlob.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
@@ -165,6 +166,28 @@ export default {
       .get(Routing.generate('api_band_space_tech_rider_stage_plot_icons_get_collection'))
       .then((resp) => resp.data.member ?? [])
       .catch(handleApiError)
+  },
+
+  /**
+   * Fetches the rider PDF as a blob rather than navigating to it, so the caller can show progress
+   * and report a failure instead of opening a tab onto a raw error page.
+   *
+   * Through axios, not fetch, so the global 401 interceptor still applies: a rider can take a couple
+   * of seconds to render when it has attachments to merge, and an expired token has to send the user
+   * to log in rather than look like a broken export.
+   */
+  downloadPdf(bandSpaceId, riderId) {
+    return axios
+      .get(
+        Routing.generate('api_band_space_tech_riders_pdf_export', { bandSpaceId, id: riderId }),
+        {
+          responseType: 'blob'
+        }
+      )
+      .then((resp) => ({
+        blob: resp.data,
+        filename: filenameFromContentDisposition(resp.headers['content-disposition'])
+      }))
   },
 
   reorderItems(bandSpaceId, riderId, positions) {

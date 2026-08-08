@@ -1,0 +1,35 @@
+{% if item.elements is empty %}
+    <p class="attachment-reason">Aucun élément placé sur ce plan de scène.</p>
+{% else %}
+    <div class="stage-block">
+        {#
+            The aspect ratio is what makes the stored fractions mean the same thing here as on screen:
+            every position is a fraction of this box, so the box has to have the shape the editor had.
+        #}
+        <div class="stage" style="aspect-ratio: {{ item.aspect_ratio }}">
+            {% for element in item.elements %}
+                <div
+                    class="stage-item"
+                    style="left:{{ element.left }}%;top:{{ element.top }}%;width:{{ element.width }}%"
+                >
+                    <img src="{{ element.image }}" alt="" style="transform:rotate({{ element.rotation }}deg)">
+                    {% if element.label %}
+                        <span class="stage-label"{% if element.colour %} style="color:{{ element.colour }}"{% endif %}>{{ element.label }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <p class="stage-front">Face public</p>
+        </div>
+
+        {% if item.legend is not empty %}
+            <ul class="legend">
+                {% for entry in item.legend %}
+                    <li>
+                        <img src="{{ entry.image }}" alt="">
+                        <span>{{ entry.label }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endif %}

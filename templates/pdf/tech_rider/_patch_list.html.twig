@@ -1,0 +1,67 @@
+{% if item.inputs is empty and item.outputs is empty %}
+    <p class="attachment-reason">Aucune ligne dans cette patch list.</p>
+{% endif %}
+
+{% if item.inputs is not empty %}
+    <p class="patch-caption">Entrées</p>
+    <table class="patch">
+        <thead>
+            <tr>
+                <th class="num">Ch.</th>
+                <th>Source</th>
+                <th>Micro ou boîtier</th>
+                <th>Routing</th>
+                <th>Couleur</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in item.inputs %}
+                <tr>
+                    <td class="num">{{ row.channel }}</td>
+                    <td>{{ row.name ?: '—' }}</td>
+                    <td>{{ row.microphone ?: '—' }}</td>
+                    <td>{{ row.routing ?: '—' }}</td>
+                    <td>
+                        {% if row.colour %}
+                            <span class="chip" style="background:{{ row.colour.hex }}"></span>{{ row.colour.label }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if item.outputs is not empty %}
+    <p class="patch-caption">Sorties</p>
+    <table class="patch">
+        <thead>
+            <tr>
+                <th class="num">Ch.</th>
+                <th>Destination</th>
+                <th>Type</th>
+                <th>Routing</th>
+                <th>Couleur</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in item.outputs %}
+                <tr>
+                    <td class="num">{{ row.channel }}</td>
+                    <td>{{ row.name ?: '—' }}</td>
+                    <td>{{ row.microphone ?: '—' }}</td>
+                    <td>{{ row.routing ?: '—' }}</td>
+                    <td>
+                        {% if row.colour %}
+                            <span class="chip" style="background:{{ row.colour.hex }}"></span>{{ row.colour.label }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
