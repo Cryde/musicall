@@ -40,11 +40,15 @@
         @focus="emit('select', element.id)"
         @dblclick.stop="emit('edit-label', element.id)"
       >
-        <img
-          :src="iconImage(element.icon)"
-          :alt="''"
-          class="pointer-events-none w-full block"
-          :style="{ transform: `rotate(${element.rotation ?? 0}deg)` }"
+        <StagePlotIcon
+          :slug="element.icon"
+          :image-url="iconImage(element.icon)"
+          :colour="symbolColour(element)"
+          class="pointer-events-none mx-auto"
+          :style="{
+            transform: `rotate(${element.rotation ?? 0}deg)`,
+            width: `${SYMBOL_SIZE_PERCENT}%`
+          }"
         />
 
         <!-- Real text, not painted into a bitmap: selectable, sharp at any size, and the thing
@@ -132,6 +136,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import {
+  BASE_ICON_PERCENT,
   COARSE_NUDGE_STEP,
   describePosition,
   FINE_NUDGE_STEP,
@@ -144,10 +149,12 @@ import {
   rotationGrabOffset,
   SCALE_STEP,
   SNAP_STEP,
+  SYMBOL_SIZE_PERCENT,
   snapFraction,
   toFraction
 } from '../../../../constants/stagePlot.js'
 import { TECH_RIDER_COLOURS } from '../../../../constants/techRiderColours.js'
+import StagePlotIcon from './StagePlotIcon.vue'
 
 const props = defineProps({
   /** Mutated in place: the parent owns the plot so it can diff the whole document at once. */
@@ -160,13 +167,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'place', 'edit-label', 'delete'])
-
-/**
- * An icon's width as a percentage of the stage at scale 1. A percentage rather than pixels so an
- * icon keeps its size relative to the stage at any viewport width, the same reason positions are
- * fractions.
- */
-const BASE_ICON_PERCENT = 6
 
 const stageRef = ref(null)
 const elementRefs = new Map()
@@ -204,6 +204,11 @@ function iconFor(slug) {
 
 function iconImage(slug) {
   return iconFor(slug)?.image_url ?? ''
+}
+
+/** The element's own colour wins; otherwise the symbol takes its category's. */
+function symbolColour(element) {
+  return colourHex(element.colour) ?? iconFor(element.icon)?.category_colour ?? null
 }
 
 function colourHex(value) {

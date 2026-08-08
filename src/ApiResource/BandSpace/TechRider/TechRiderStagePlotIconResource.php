@@ -56,6 +56,9 @@ class TechRiderStagePlotIconResource
 
     public string $categoryLabel;
 
+    /** Served rather than mapped in the browser so the four values live in one place. */
+    public string $categoryColour;
+
     /** Unhashed and under public/, so this URL is stable across builds. */
     public string $imageUrl;
 }

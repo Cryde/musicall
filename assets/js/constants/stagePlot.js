@@ -23,6 +23,20 @@ export const MAX_ASPECT_RATIO = 3.0
 export const DEFAULT_ASPECT_RATIO = 1.4
 
 /**
+ * How the icons are drawn. Mirrored in TechRiderPdfRenderer so a plot prints as it looks.
+ *
+ * The two SYMBOL_ values are the calibration knobs: tune them here after a test print, and every
+ * surface and the PDF follow. SYMBOL_STROKE_WIDTH is in viewBox units on a 0 0 64 64 canvas, so it
+ * is resolution independent, and the thinner strokes and filled details inside each file are
+ * multiples of it rather than fixed.
+ *
+ * For scale, an element is 10.9mm wide on A4 at scale 1, so stroke 1.4 is 0.24mm of ink.
+ */
+export const BASE_ICON_PERCENT = 6
+export const SYMBOL_STROKE_WIDTH = 1.4
+export const SYMBOL_SIZE_PERCENT = 100
+
+/**
  * Any whole degree from 0 to 359 is stored, so these four are shortcuts rather than the domain.
  * They stay because a quarter turn is the common case, one click beats aiming a slider at it, and
  * they are the only sane keyboard path: arrows on a 360 stop slider would need ninety presses.

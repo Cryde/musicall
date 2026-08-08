@@ -24,4 +24,18 @@ enum TechRiderStagePlotIconCategory: string
             self::Other => 'Divers',
         };
     }
+
+    /**
+     * What a drawn symbol takes when its element has no colour of its own. Same four values the
+     * placeholder PNGs are painted with, which until now existed only as pixels and a README table.
+     */
+    public function hex(): string
+    {
+        return match ($this) {
+            self::Audio => '#2563eb',
+            self::Instrument => '#059669',
+            self::Lighting => '#d97706',
+            self::Other => '#64748b',
+        };
+    }
 }

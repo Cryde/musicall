@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--sp-stroke, 2)">
+  <polygon points="25.6,11.7 38.9,11.7 32.3,23.4"/>
+  <rect x="21.2" y="37" width="21.2" height="14.4"/>
+  <rect x="31.8" y="31.6" width="2.5" height="5.9" rx="0.5"/>
+  <circle cx="9.8" cy="41.7" r="7.8"/>
+  <circle cx="9.8" cy="41.7" r="5.1" style="stroke-width:calc(var(--sp-stroke, 2) * 0.65)"/>
+  <circle cx="52.4" cy="44.5" r="7.8"/>
+  <circle cx="52.4" cy="44.5" r="5" style="stroke-width:calc(var(--sp-stroke, 2) * 0.65)"/>
+  <rect x="49.8" y="20.1" width="5.4" height="2.8" rx="0.5" transform="rotate(-42 52.5 21.5)"/>
+  <circle cx="56.2" cy="28.3" r="5.7"/>
+  <circle cx="56.2" cy="28.3" r="3.7" style="stroke-width:calc(var(--sp-stroke, 2) * 0.65)"/>
+  <g fill="currentColor" stroke="none">
+    <circle cx="20.8" cy="26" r="7.6"/>
+    <circle cx="42" cy="27" r="7"/>
+    <circle cx="26.3" cy="39.2" r="6.2"/>
+    <circle cx="39.1" cy="39.9" r="5.4"/>
+  </g>
+</svg>

@@ -42,7 +42,12 @@
           @dragstart="handleDragStart($event, icon)"
           @click="emit('place', icon.slug)"
         >
-          <img :src="icon.image_url" :alt="''" class="w-8 h-8 object-contain" />
+          <StagePlotIcon
+            :slug="icon.slug"
+            :image-url="icon.image_url"
+            :colour="icon.category_colour"
+            class="w-8 h-8"
+          />
           <span class="text-[10px] leading-tight text-center line-clamp-2">{{ icon.label }}</span>
         </button>
       </li>
@@ -54,6 +59,7 @@
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
+import StagePlotIcon from './StagePlotIcon.vue'
 
 const props = defineProps({
   icons: { type: Array, default: () => [] },

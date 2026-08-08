@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--sp-stroke, 2)">
+  <circle cx="32" cy="32" r="24"/>
+  <circle cx="22" cy="25" r="2.8" fill="currentColor" stroke="none" style="r:calc(var(--sp-stroke, 2) * 2)"/>
+  <circle cx="42" cy="25" r="2.8" fill="currentColor" stroke="none" style="r:calc(var(--sp-stroke, 2) * 2)"/>
+  <polygon points="34,34 27,45 31,45 30,53 38,41 33,41" fill="currentColor" stroke="none"/>
+</svg>

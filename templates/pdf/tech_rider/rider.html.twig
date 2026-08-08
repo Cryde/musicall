@@ -163,6 +163,9 @@
         .stage-item { position: absolute; transform: translate(-50%, -50%); }
         {# The rotation sits on the image so the label underneath stays level whatever the icon does. #}
         .stage-item img { display: block; width: 100%; }
+        {# The symbol is inlined, not an <img>, so that currentColor can reach it. #}
+        .stage-item .stage-symbol { display: block; margin: 0 auto; }
+        .stage-item .stage-symbol svg { display: block; width: 100%; height: auto; }
         .stage-label {
             position: absolute;
             top: 100%;
@@ -197,6 +200,8 @@
         }
         .legend li { display: flex; align-items: center; gap: 2mm; font-size: 8pt; }
         .legend img { width: 5mm; }
+        .legend .legend-symbol { display: block; flex: none; width: 5mm; }
+        .legend .legend-symbol svg { display: block; width: 100%; height: auto; }
 
         .contact-lines { margin: 0 0 3mm; padding: 0; list-style: none; }
         .contact-lines li { padding: 1.2mm 0; border-bottom: 1px solid var(--rule); }

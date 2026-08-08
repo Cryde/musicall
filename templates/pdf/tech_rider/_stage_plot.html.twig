@@ -12,7 +12,11 @@
                     class="stage-item"
                     style="left:{{ element.left }}%;top:{{ element.top }}%;width:{{ element.width }}%"
                 >
-                    <img src="{{ element.image }}" alt="" style="transform:rotate({{ element.rotation }}deg)">
+                    {% if element.symbol %}
+                        <span class="stage-symbol" style="transform:rotate({{ element.rotation }}deg);color:{{ element.symbol_colour }};--sp-stroke:{{ item.symbol_stroke_width }};width:{{ item.symbol_size_percent }}%">{{ element.symbol|raw }}</span>
+                    {% else %}
+                        <img src="{{ element.image }}" alt="" style="transform:rotate({{ element.rotation }}deg)">
+                    {% endif %}
                     {% if element.label %}
                         <span class="stage-label"{% if element.colour %} style="color:{{ element.colour }}"{% endif %}>{{ element.label }}</span>
                     {% endif %}
@@ -25,7 +29,11 @@
             <ul class="legend">
                 {% for entry in item.legend %}
                     <li>
-                        <img src="{{ entry.image }}" alt="">
+                        {% if entry.symbol %}
+                            <span class="legend-symbol" style="color:{{ entry.symbol_colour }};--sp-stroke:{{ item.symbol_stroke_width }}">{{ entry.symbol|raw }}</span>
+                        {% else %}
+                            <img src="{{ entry.image }}" alt="">
+                        {% endif %}
                         <span>{{ entry.label }}</span>
                     </li>
                 {% endfor %}

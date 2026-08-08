@@ -49,8 +49,16 @@ readonly class TechRiderPdfRenderer
     private const float MARGIN_BOTTOM_MM = 14.0;
     private const float MARGIN_SIDE_MM = 14.0;
 
-    /** Matches BASE_ICON_PERCENT in assets/js/constants/stagePlot.js, so a plot prints to scale. */
-    private const float BASE_ICON_PERCENT = 6.0;
+    /**
+     * These three mirror assets/js/constants/stagePlot.js so a plot prints as it looks, and are
+     * public so TechRiderStagePlotLimitsTest can pin the two files together.
+     *
+     * The SYMBOL_ pair is the calibration: tune them after a test print. Stroke is in viewBox units
+     * on a 0 0 64 64 canvas, so an element 10.9mm wide at scale 1 puts stroke 1.4 at 0.24mm of ink.
+     */
+    public const float BASE_ICON_PERCENT = 6.0;
+    public const float SYMBOL_STROKE_WIDTH = 1.4;
+    public const float SYMBOL_SIZE_PERCENT = 100.0;
 
     /** Matches DEFAULT_ASPECT_RATIO in the editor, for a plot saved before `stage` existed. */
     private const float DEFAULT_ASPECT_RATIO = 1.4;
@@ -340,17 +348,25 @@ readonly class TechRiderPdfRenderer
                 continue;
             }
 
-            $assets[] = $this->iconPath($icon);
             $scale = is_numeric($element['scale'] ?? null) ? (float) $element['scale'] : 1.0;
+            $colour = $this->colourHex($element['colour'] ?? null);
+            $symbol = $this->symbolMarkup($icon);
+
+            // Only a PNG needs uploading. A symbol is already in the HTML by the time this runs.
+            if ($symbol === null) {
+                $assets[] = $this->iconPath($icon);
+            }
 
             $elements[] = [
+                'symbol' => $symbol,
                 'image' => $icon->value . '.png',
                 'left' => round(((float) ($element['x'] ?? 0)) * 100, 4),
                 'top' => round(((float) ($element['y'] ?? 0)) * 100, 4),
                 'width' => round(self::BASE_ICON_PERCENT * $scale, 4),
                 'rotation' => is_int($element['rotation'] ?? null) ? $element['rotation'] : 0,
                 'label' => is_string($element['label'] ?? null) ? $element['label'] : null,
-                'colour' => $this->colourHex($element['colour'] ?? null),
+                'colour' => $colour,
+                'symbol_colour' => $colour ?? $icon->category()->hex(),
             ];
         }
 
@@ -365,9 +381,16 @@ readonly class TechRiderPdfRenderer
                 continue;
             }
 
-            $assets[] = $this->iconPath($icon);
+            $symbol = $this->symbolMarkup($icon);
+            if ($symbol === null) {
+                $assets[] = $this->iconPath($icon);
+            }
+
             $legend[] = [
+                'symbol' => $symbol,
                 'image' => $icon->value . '.png',
+                // The legend has no element behind it, so the category colour is the only one it has.
+                'symbol_colour' => $icon->category()->hex(),
                 'label' => is_string($entry['label'] ?? null) && $entry['label'] !== ''
                     ? $entry['label']
                     : $icon->label(),
@@ -378,6 +401,8 @@ readonly class TechRiderPdfRenderer
             'aspect_ratio' => is_numeric($aspectRatio) ? (float) $aspectRatio : self::DEFAULT_ASPECT_RATIO,
             'elements' => $elements,
             'legend' => $legend,
+            'symbol_stroke_width' => self::SYMBOL_STROKE_WIDTH,
+            'symbol_size_percent' => self::SYMBOL_SIZE_PERCENT,
         ];
     }
 
@@ -414,6 +439,22 @@ readonly class TechRiderPdfRenderer
     private function iconPath(TechRiderStagePlotIcon $icon): string
     {
         return $this->projectDir . '/' . self::ICON_DIRECTORY . $icon->imagePath();
+    }
+
+    /**
+     * Inlined rather than uploaded as an asset: an SVG behind an <img> cannot see the page's colour
+     * and would print black. A missing file falls back to the PNG rather than failing the export.
+     */
+    private function symbolMarkup(TechRiderStagePlotIcon $icon): ?string
+    {
+        $path = $icon->symbolPath();
+        if ($path === null) {
+            return null;
+        }
+
+        $markup = @file_get_contents($this->projectDir . '/' . $path);
+
+        return $markup === false ? null : trim($markup);
     }
 
     /**

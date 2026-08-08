@@ -40,6 +40,13 @@ enum TechRiderStagePlotIcon: string
     /** Directory only, so the path is built in one place and the tests can check it. */
     public const string IMAGE_DIRECTORY = 'images/band_space/stage_plot';
 
+    /**
+     * Under assets/ rather than public/ because a symbol is inlined, never fetched by URL: an SVG
+     * behind an <img> is an isolated document that the page's colour cannot reach, so currentColor
+     * would render black.
+     */
+    public const string SYMBOL_DIRECTORY = 'assets/icons/stage_plot';
+
     /** @return list<string> for Assert\Choice, which cannot take an enum directly here. */
     public static function values(): array
     {
@@ -54,6 +61,25 @@ enum TechRiderStagePlotIcon: string
     public function imagePath(): string
     {
         return sprintf('/%s/%s.png', self::IMAGE_DIRECTORY, $this->value);
+    }
+
+    /**
+     * Null is the normal state, not an error: symbols are drawn in batches so the stroke weight can
+     * be calibrated on a real print first. A null means fall back to the placeholder PNG.
+     */
+    public function symbolPath(): ?string
+    {
+        return match ($this) {
+            self::DrumKit,
+            self::WedgeMonitor,
+            self::GuitarAmp,
+            self::BassAmp,
+            self::VocalMic,
+            self::ParCan,
+            self::PowerSocket => sprintf('%s/%s.svg', self::SYMBOL_DIRECTORY, $this->value),
+
+            default => null,
+        };
     }
 
     public function category(): TechRiderStagePlotIconCategory

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Unit\Validator\BandSpace\TechRider;
 
+use App\Service\BandSpace\TechRider\TechRiderPdfRenderer;
 use App\Validator\BandSpace\TechRider\TechRiderStagePlot;
 use PHPUnit\Framework\TestCase;
 
@@ -32,6 +33,11 @@ class TechRiderStagePlotLimitsTest extends TestCase
             'MAX_SCALE' => TechRiderStagePlot::MAX_SCALE,
             'MIN_ASPECT_RATIO' => TechRiderStagePlot::MIN_ASPECT_RATIO,
             'MAX_ASPECT_RATIO' => TechRiderStagePlot::MAX_ASPECT_RATIO,
+            // Not limits but geometry: the PDF redraws the plot from the same numbers, so a plot
+            // that drifts here prints at a different size or weight than the editor showed.
+            'BASE_ICON_PERCENT' => TechRiderPdfRenderer::BASE_ICON_PERCENT,
+            'SYMBOL_STROKE_WIDTH' => TechRiderPdfRenderer::SYMBOL_STROKE_WIDTH,
+            'SYMBOL_SIZE_PERCENT' => TechRiderPdfRenderer::SYMBOL_SIZE_PERCENT,
         ];
     }
 
