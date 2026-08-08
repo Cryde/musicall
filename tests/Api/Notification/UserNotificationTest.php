@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\Notification;
 
 use App\Enum\BandSpace\InvitationStatus;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\Notification\NotificationType;
 use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -12,6 +13,7 @@ use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\AgendaEntryFactory;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceInvitationFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\Notification\NotificationFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -579,6 +581,8 @@ class UserNotificationTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        // The refresh follows the reader's access: only a member is shown the title as it stands now.
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Titre actuel'])->create();
         $notification = NotificationFactory::new([
             'recipient' => $user,
@@ -626,6 +630,7 @@ class UserNotificationTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Titre actuel'])->create();
         $notification = NotificationFactory::new([
             'recipient' => $user,
@@ -675,6 +680,7 @@ class UserNotificationTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $task = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'title' => 'Titre actuel'])->create();
         $notification = NotificationFactory::new([
             'recipient' => $user,
@@ -724,6 +730,7 @@ class UserNotificationTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -766,6 +773,132 @@ class UserNotificationTest extends ApiTestCase
                         'agenda_entry_id' => (string) $entry->id,
                         'entry_title' => 'Titre actuel',
                         'event_datetime' => '2026-08-15T20:00:00+00:00',
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'creator',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_task_notification_keeps_the_stored_title_for_a_former_member(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $user,
+            'status' => MembershipStatus::Kicked,
+            'leftDatetime' => new \DateTime('2026-05-02 10:00:00'),
+        ])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Titre renommé après le départ',
+        ])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::TaskComment,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'task_id' => (string) $task->id,
+                'task_title' => 'Titre au moment de la notification',
+                'comment_id' => 'comment-1',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'commenter',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        // The notification stays in their own history, frozen where it belongs: nothing prunes the
+        // feed when somebody leaves a band space, so without this the payload would go on refreshing
+        // itself from a board they can no longer open.
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'task_comment',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'task_id' => (string) $task->id,
+                        'task_title' => 'Titre au moment de la notification',
+                        'comment_id' => 'comment-1',
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'commenter',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_agenda_entry_notification_keeps_the_stored_title_for_a_former_member(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $user,
+            'status' => MembershipStatus::Left,
+            'leftDatetime' => new \DateTime('2026-05-02 10:00:00'),
+        ])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition chez Paul',
+            'eventDatetime' => new \DateTimeImmutable('2026-08-15T20:00:00+00:00'),
+        ])->create();
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceAgendaEntryCreated,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'band_space_name' => 'The Rockers',
+                'agenda_entry_id' => (string) $entry->id,
+                'entry_title' => 'Titre au moment de la notification',
+                'event_datetime' => '2020-01-01T10:00:00+00:00',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'creator',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        // Neither the title nor the date is refreshed: where and when the band rehearses now is no
+        // longer their business.
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_agenda_entry_created',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'band_space_name' => 'The Rockers',
+                        'agenda_entry_id' => (string) $entry->id,
+                        'entry_title' => 'Titre au moment de la notification',
+                        'event_datetime' => '2020-01-01T10:00:00+00:00',
                         'actor_id' => 'actor-1',
                         'actor_username' => 'creator',
                     ],

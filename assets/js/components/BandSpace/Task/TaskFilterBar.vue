@@ -101,6 +101,21 @@
         </button>
       </div>
 
+      <!-- Unassigned filter: the tasks nobody is on, incl. those a departed member left behind -->
+      <button
+        type="button"
+        class="text-xs px-2 py-1 rounded border transition-colors"
+        :class="
+          filters.unassigned
+            ? 'bg-primary text-primary-contrast border-primary'
+            : 'border-surface-200 dark:border-surface-600 text-surface-500 hover:border-surface-400'
+        "
+        @click="$emit('update-filter', 'unassigned', !filters.unassigned)"
+      >
+        <i class="pi pi-user-minus text-[10px] mr-1"></i>
+        Non assignées
+      </button>
+
       <!-- Priority filters -->
       <div class="flex items-center gap-1">
         <button

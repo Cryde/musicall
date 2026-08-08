@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\Notification\NotificationRepository;
@@ -279,6 +280,87 @@ class TaskCommentNotificationTest extends ApiTestCase
 
         // The author gets nothing.
         $this->assertCount(0, $notificationRepository->findForRecipient($author, 10, 0));
+    }
+
+    public function test_comment_does_not_notify_a_participant_who_left_the_band_space(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create();
+        $bob = UserFactory::new()->create(['username' => 'bob', 'email' => 'bob@test.com']);
+        $gone = UserFactory::new()->create(['username' => 'gone', 'email' => 'gone@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $author])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $bob])->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $gone,
+            'status' => MembershipStatus::Kicked,
+            'leftDatetime' => new \DateTime('2026-01-02 10:00:00'),
+        ])->create();
+        // The departed member is a participant three times over: they created the task, they were
+        // assigned to it and they commented on it. Departure clears the assignment going forward,
+        // but an assignment predating the fix, the authorship of the task and the comment they wrote
+        // all still name them, so the fan-out has to be the one refusing to notify them.
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $gone,
+            'assignees' => new ArrayCollection([$gone, $bob]),
+            'title' => 'Ma tâche',
+        ])->create();
+        TaskCommentFactory::new([
+            'task' => $task,
+            'author' => $gone,
+            'creationDatetime' => new \DateTime('2026-01-01 10:00:00'),
+        ])->create();
+
+        $bandSpaceId = (string) $bandSpace->id;
+        $taskId = (string) $task->id;
+        $content = 'On reprend cette tâche';
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpaceId . '/tasks/' . $taskId . '/comments',
+            ['content' => $content],
+            self::HEADERS
+        );
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $comments = self::getContainer()->get(TaskCommentRepository::class)->findByTask($task);
+        $authorComment = end($comments);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TaskComment',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/tasks/' . $taskId . '/comments/' . $authorComment->id,
+            '@type' => 'TaskComment',
+            'id' => $authorComment->id,
+            'band_space_id' => $bandSpaceId,
+            'task_id' => $taskId,
+            'author_id' => $author->id,
+            'author_username' => $author->username,
+            'author_profile_picture_url' => null,
+            'content' => $content,
+            'creation_datetime' => $authorComment->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+        ]);
+
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+
+        // The member who is still in the band keeps hearing about the task they are on.
+        $bobNotifications = $notificationRepository->findForRecipient($bob, 10, 0);
+        $this->assertCount(1, $bobNotifications);
+        $this->assertSame(NotificationType::TaskComment, $bobNotifications[0]->type);
+        $this->assertSame([
+            'band_space_id' => $bandSpaceId,
+            'task_id' => $taskId,
+            'task_title' => 'Ma tâche',
+            'comment_id' => (string) $authorComment->id,
+            'actor_id' => (string) $author->id,
+            'actor_username' => $author->username,
+        ], $bobNotifications[0]->payload);
+
+        // The one who is out hears nothing, and nobody else was notified either.
+        $this->assertCount(0, $notificationRepository->findForRecipient($gone, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($author, 10, 0));
+        $this->assertCount(1, $notificationRepository->findAll());
     }
 
     public function test_comment_with_no_other_participant_creates_no_notification(): void

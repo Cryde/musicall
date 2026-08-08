@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\Notification\NotificationType;
 use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Service\Notification\NotificationCreator;
@@ -33,6 +34,14 @@ readonly class BandSpaceMemberRoleChangedListener
         $actor = $event->actor;
 
         if ((string) $membership->user->id === (string) $actor->id) {
+            return;
+        }
+
+        // A closed membership can still have its role patched - the update processor resolves the
+        // member by id, not by status - and a role nobody can exercise is not news worth a bell
+        // (#817). The successor promoted when an account is deleted is Active by the time this runs,
+        // so the promotion that matters still gets through.
+        if ($membership->status !== MembershipStatus::Active) {
             return;
         }
 

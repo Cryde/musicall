@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Enum\Notification\NotificationType;
 use App\Event\BandSpaceTaskCommentedEvent;
 use App\Repository\BandSpace\TaskCommentRepository;
+use App\Repository\UserRepository;
 use App\Service\Notification\NotificationCreator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -19,6 +20,12 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
  * per the epic #689 resilience contract: the event is dispatched after the comment is committed, and
  * the whole body (incl. the prior-commenter query) is wrapped so a failure can never roll back or
  * 500 the comment. The comment author is excluded; createForRecipients dedupes by user id.
+ *
+ * The three candidate sources are all read off the task's own graph, so every one of them can name
+ * somebody who has since left the band: a creator, an assignee or a past commenter keeps their row
+ * long after their membership is closed (#817). The candidates are therefore resolved through
+ * findActiveBandSpaceMembersByIds rather than notified directly, the same query the mention path
+ * uses, so a departed member stops hearing about a space they are no longer in.
  */
 #[AsEventListener]
 readonly class BandSpaceTaskCommentedListener
@@ -26,6 +33,7 @@ readonly class BandSpaceTaskCommentedListener
     public function __construct(
         private NotificationCreator $notificationCreator,
         private TaskCommentRepository $taskCommentRepository,
+        private UserRepository $userRepository,
         private LoggerInterface $logger,
     ) {
     }
@@ -47,9 +55,20 @@ readonly class BandSpaceTaskCommentedListener
                 ...$this->taskCommentRepository->findCommentAuthorsByTask($task),
             ];
 
-            $recipients = array_filter(
-                $candidates,
-                static fn (?User $user): bool => $user instanceof User && !isset($excludedIds[(string) $user->id]),
+            $candidateIds = [];
+            foreach ($candidates as $candidate) {
+                if (!$candidate instanceof User) {
+                    continue;
+                }
+                $candidateId = (string) $candidate->id;
+                if (!isset($excludedIds[$candidateId])) {
+                    $candidateIds[$candidateId] = $candidateId;
+                }
+            }
+
+            $recipients = $this->userRepository->findActiveBandSpaceMembersByIds(
+                $task->bandSpace,
+                array_values($candidateIds),
             );
             if ($recipients === []) {
                 return;

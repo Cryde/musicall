@@ -5,6 +5,7 @@ namespace App\Tests\Api\BandSpace;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\InvitationStatus;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
@@ -263,6 +264,48 @@ class BandSpaceInvitationAcceptTest extends ApiTestCase
 
         // The accepter (actor) receives nothing.
         $this->assertCount(0, $notificationRepository->findForRecipient($invitee, 10, 0));
+    }
+
+    public function test_accept_does_not_notify_an_inviter_who_has_left_the_band_space(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $formerAdmin = UserFactory::new()->create(['username' => 'former_admin', 'email' => 'former@example.com']);
+        $invitee = UserFactory::new()->create(['username' => 'invitee', 'email' => 'invitee@example.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $formerAdmin,
+            'role' => Role::Admin,
+            'status' => MembershipStatus::Left,
+            'leftDatetime' => new \DateTime('2026-01-02 10:00:00'),
+        ])->create();
+
+        // A pending invitation outlives the membership that sent it, so by the time it is answered
+        // the inviter can be gone.
+        $invitation = BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace,
+            'invitedBy' => $formerAdmin,
+            'email' => 'invitee@example.com',
+            'existingUser' => $invitee,
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+
+        $this->client->loginUser($invitee);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/invitations/' . $invitation->token . '/accept',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+        $this->assertResponseIsSuccessful();
+
+        // The invitation still works, it is only the notification about it that is dropped.
+        $this->assertTrue(
+            self::getContainer()->get(BandSpaceMembershipRepository::class)->isMember($bandSpace, $invitee),
+        );
+        $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findAll());
     }
 
     public function test_notification_failure_does_not_break_the_accept(): void

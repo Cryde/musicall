@@ -14,6 +14,7 @@ use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\PersonalRecurrenceDeactivator;
+use App\Service\BandSpace\TaskAssignmentRevoker;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -31,6 +32,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
         private BandSpaceAdminChecker $adminChecker,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private PersonalRecurrenceDeactivator $personalRecurrenceDeactivator,
+        private TaskAssignmentRevoker $taskAssignmentRevoker,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private EventDispatcherInterface $eventDispatcher,
@@ -69,6 +71,7 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
             $membership->leftDatetime = new DateTime();
 
             $this->personalRecurrenceDeactivator->deactivateForMember($membership, $user);
+            $this->taskAssignmentRevoker->revokeForMember($membership, $user);
 
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $bandSpace,

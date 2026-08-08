@@ -16,6 +16,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
   const filters = reactive({
     categoryId: null,
     assigneeId: null,
+    unassigned: false,
     priority: null,
     myTasks: false,
     showArchived: false,
@@ -45,6 +46,9 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
       if (filters.categoryId && task.category_id !== filters.categoryId) return false
       if (filters.assigneeId && !task.assignees.some((a) => a.id === filters.assigneeId))
         return false
+      // Work nobody is on. A member leaving the band comes off their tasks, which can leave some
+      // with an empty avatar row, and this is how the rest of the band finds them again.
+      if (filters.unassigned && task.assignees.length > 0) return false
       if (filters.priority && task.priority !== filters.priority) return false
       if (filters.myTasks && !task.assignees.some((a) => a.id === currentUserId)) return false
       return true
@@ -415,6 +419,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     selectedTaskIds.value = new Set()
     filters.categoryId = null
     filters.assigneeId = null
+    filters.unassigned = false
     filters.priority = null
     filters.myTasks = false
     filters.showArchived = false

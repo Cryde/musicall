@@ -6,11 +6,14 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\BandSpace\TaskRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -52,6 +55,58 @@ class BandSpaceLeaveTest extends ApiTestCase
             $activities[0]->payload,
         );
         $this->assertSame($member->id, $activities[0]->actor?->id);
+    }
+
+    public function test_leaving_revokes_the_member_task_assignments(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'member_user', 'email' => 'member@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $sharedTask = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Réserver la salle',
+            'assignees' => new ArrayCollection([$member, $admin]),
+        ])->create();
+        $soleTask = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Envoyer le dossier',
+            'assignees' => new ArrayCollection([$member]),
+        ])->create();
+
+        $sharedTaskId = (string) $sharedTask->id;
+        $soleTaskId = (string) $soleTask->id;
+
+        $this->client->loginUser($member);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/leave',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $taskRepository = self::getContainer()->get(TaskRepository::class);
+        $this->assertCount(0, $taskRepository->findByBandSpaceAndAssignee($bandSpace, $member));
+        $this->assertCount(1, $taskRepository->findByBandSpaceAndAssignee($bandSpace, $admin));
+
+        // The member who quit is the actor of their own departure, here as in the settings feed.
+        $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);
+        foreach ([$sharedTaskId, $soleTaskId] as $taskId) {
+            $activities = $activityRepository->findForResource($bandSpace, BandSpaceModule::Task, $taskId);
+            $this->assertCount(1, $activities);
+            $this->assertSame('assignee_removed', $activities[0]->type);
+            $this->assertSame(
+                ['assignee_id' => $member->id, 'assignee_username' => 'member_user'],
+                $activities[0]->payload,
+            );
+            $this->assertSame($member->id, $activities[0]->actor?->id);
+        }
     }
 
     public function test_admin_can_leave_when_other_admins_exist(): void

@@ -86,7 +86,12 @@ class AgendaEntryRepository extends ServiceEntityRepository
             return [];
         }
 
+        // The band space comes along because the notification enricher reads it on every row to work
+        // out whether the reader may still be shown a live title and date, and one proxy load per
+        // entry would undo the point of fetching them in a single query.
         return $this->createQueryBuilder('a')
+            ->innerJoin('a.bandSpace', 'bs')
+            ->addSelect('bs')
             ->where('a.id IN (:ids)')
             ->setParameter('ids', $ids)
             ->getQuery()

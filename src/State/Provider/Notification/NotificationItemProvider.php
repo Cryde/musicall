@@ -40,7 +40,7 @@ readonly class NotificationItemProvider implements ProviderInterface
         }
 
         $dto = $this->notificationBuilder->buildFromEntity($notification);
-        $this->feedEnricher->enrich([$dto]);
+        $this->feedEnricher->enrich([$dto], $user);
 
         return $dto;
     }
