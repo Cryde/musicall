@@ -87,7 +87,7 @@ const props = defineProps({
   canAttach: { type: Boolean, default: true }
 })
 
-const emit = defineEmits(['attached', 'detached'])
+const emit = defineEmits(['attached', 'detached', 'count'])
 
 const router = useRouter()
 const confirm = useConfirm()
@@ -102,6 +102,14 @@ watch(
   () => {
     loadFiles()
   },
+  { immediate: true }
+)
+
+// Watched rather than emitted from loadFiles(): detaching splices the list in place without reloading,
+// and a parent warning "n fichiers seront détachés" has to follow every path, not just the reloads.
+watch(
+  () => attachedFiles.value.length,
+  (count) => emit('count', count),
   { immediate: true }
 )
 

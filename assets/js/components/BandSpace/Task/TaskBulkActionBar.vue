@@ -110,6 +110,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -175,8 +176,11 @@ function handleAssignees() {
 
 function confirmDelete() {
   const count = tasksStore.selectedTaskIds.size
+  const attachedFileCount = tasksStore.tasks
+    .filter((task) => tasksStore.selectedTaskIds.has(task.id))
+    .reduce((total, task) => total + (task.file_count ?? 0), 0)
   confirm.require({
-    message: `Supprimer ${count} tâche${count > 1 ? 's' : ''} ? Cette action est irréversible.`,
+    message: `Supprimer ${count} tâche${count > 1 ? 's' : ''} ? Cette action est irréversible.${attachedFilesNotice(attachedFileCount)}`,
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Supprimer',

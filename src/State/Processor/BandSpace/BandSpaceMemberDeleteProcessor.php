@@ -60,24 +60,28 @@ readonly class BandSpaceMemberDeleteProcessor implements ProcessorInterface
             throw new ConflictHttpException('Vous ne pouvez pas vous exclure vous-même. Utilisez la fonction "Quitter"');
         }
 
-        $membership->status = MembershipStatus::Kicked;
-        $membership->leftDatetime = new DateTime();
+        // One transaction: deactivating the personal recurrences drops their planned entries through a
+        // bulk DQL delete that reaches the database immediately, while the membership and the files
+        // detached alongside it wait for the flush. Unwrapped, a flush that failed would leave the
+        // entries gone, their attachments orphaned and the member still in the band.
+        $this->entityManager->wrapInTransaction(function () use ($bandSpace, $membership, $user): void {
+            $membership->status = MembershipStatus::Kicked;
+            $membership->leftDatetime = new DateTime();
 
-        $this->personalRecurrenceDeactivator->deactivateForMember($membership);
+            $this->personalRecurrenceDeactivator->deactivateForMember($membership, $user);
 
-        $this->bandSpaceActivityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Settings,
-            type: BandSpaceSettingsActivityType::MemberRemoved,
-            resourceId: $membership->user->id,
-            actor: $user,
-            payload: [
-                'target_user_id' => $membership->user->id,
-                'target_username' => $membership->user->username,
-            ],
-        );
-
-        $this->entityManager->flush();
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Settings,
+                type: BandSpaceSettingsActivityType::MemberRemoved,
+                resourceId: $membership->user->id,
+                actor: $user,
+                payload: [
+                    'target_user_id' => $membership->user->id,
+                    'target_username' => $membership->user->username,
+                ],
+            );
+        });
 
         // Best-effort notification dispatched after the commit (epic #689 contract).
         $this->eventDispatcher->dispatch(new BandSpaceMemberRemovedEvent($membership, $user));

@@ -41,6 +41,43 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * The note plus every note underneath it, whatever the depth, as id => title.
+     *
+     * Deleting a note takes its whole subtree with it: band_space_note.parent_id is ON DELETE CASCADE,
+     * so the descendants vanish at database level without Doctrine ever loading them. Anything that has
+     * to clean up after those rows (their file attachments) needs the ids and titles beforehand.
+     *
+     * Raw SQL because a recursive CTE has no DQL equivalent; the alternative is one query per level.
+     *
+     * @return array<string, string>
+     */
+    public function findSelfAndDescendantTitles(BandSpaceNote $note): array
+    {
+        $sql = <<<'SQL'
+            WITH RECURSIVE descendants(id, title) AS (
+                SELECT id, title FROM band_space_note WHERE id = :rootId
+                UNION ALL
+                SELECT n.id, n.title
+                FROM band_space_note n
+                INNER JOIN descendants d ON n.parent_id = d.id
+            )
+            SELECT id, title FROM descendants
+        SQL;
+
+        $rows = $this->getEntityManager()->getConnection()->executeQuery(
+            $sql,
+            ['rootId' => (string) $note->id],
+        )->fetchAllAssociative();
+
+        $titles = [];
+        foreach ($rows as $row) {
+            $titles[(string) $row['id']] = (string) $row['title'];
+        }
+
+        return $titles;
+    }
+
     public function getNextPosition(BandSpace $bandSpace, ?BandSpaceNote $parent): int
     {
         $qb = $this->createQueryBuilder('n')

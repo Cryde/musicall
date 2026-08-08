@@ -224,6 +224,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import TaskActivityFeed from './TaskActivityFeed.vue'
 import TaskCommentForm from './TaskCommentForm.vue'
@@ -469,7 +470,7 @@ async function handleUnarchive() {
 
 function handleDelete() {
   confirm.require({
-    message: 'Es-tu sûr de vouloir supprimer cette tâche ?',
+    message: `Es-tu sûr de vouloir supprimer cette tâche ?${attachedFilesNotice(task.value?.file_count)}`,
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',

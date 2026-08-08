@@ -54,23 +54,27 @@ readonly class BandSpaceLeaveProcessor implements ProcessorInterface
             throw new ConflictHttpException('Vous devez promouvoir un autre membre administrateur avant de quitter');
         }
 
-        $membership->status = MembershipStatus::Left;
-        $membership->leftDatetime = new DateTime();
+        // One transaction: deactivating the personal recurrences drops their planned entries through a
+        // bulk DQL delete that reaches the database immediately, while the membership and the files
+        // detached alongside it wait for the flush. Unwrapped, a flush that failed would leave the
+        // entries gone, their attachments orphaned and the member still in the band.
+        $this->entityManager->wrapInTransaction(function () use ($bandSpace, $membership, $user): void {
+            $membership->status = MembershipStatus::Left;
+            $membership->leftDatetime = new DateTime();
 
-        $this->personalRecurrenceDeactivator->deactivateForMember($membership);
+            $this->personalRecurrenceDeactivator->deactivateForMember($membership, $user);
 
-        $this->bandSpaceActivityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Settings,
-            type: BandSpaceSettingsActivityType::MemberLeft,
-            resourceId: $user->id,
-            actor: $user,
-            payload: [
-                'target_user_id' => $user->id,
-                'target_username' => $user->username,
-            ],
-        );
-
-        $this->entityManager->flush();
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Settings,
+                type: BandSpaceSettingsActivityType::MemberLeft,
+                resourceId: $user->id,
+                actor: $user,
+                payload: [
+                    'target_user_id' => $user->id,
+                    'target_username' => $user->username,
+                ],
+            );
+        });
     }
 }

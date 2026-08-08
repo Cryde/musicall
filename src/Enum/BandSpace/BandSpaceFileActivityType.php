@@ -20,4 +20,10 @@ enum BandSpaceFileActivityType: string
     case PublicAccessed = 'public_accessed';
     case Attached = 'attached';
     case Detached = 'detached';
+    /**
+     * The file was detached because the task, note or finance entry it hung on was deleted, not because
+     * a member detached it. Distinct from Detached so the feed can say why the link disappeared instead
+     * of crediting the deleter with an action they never took.
+     */
+    case SourceDeleted = 'source_deleted';
 }

@@ -10,12 +10,13 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\FinanceEntryScope;
-use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Enum\BandSpace\RecurrenceInterval;
+use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use App\Service\BandSpace\RecurrenceEntryGenerator;
 use App\Service\Builder\BandSpace\FinanceRecurrenceBuilder;
 use DateTime;
@@ -33,9 +34,11 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
+        private FinanceEntryRepository $financeEntryRepository,
         private FinanceRecurrenceBuilder $financeRecurrenceBuilder,
         private RecurrenceEntryGenerator $recurrenceEntryGenerator,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
+        private BandSpaceFileSourceDetacher $fileSourceDetacher,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -89,56 +92,70 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
             $recurrence->isActive = $data->isActive;
         }
 
-        $endDateChanged = false;
-        $oldEndDateString = $recurrence->endDate->format('Y-m-d');
-        $newEndDateString = $oldEndDateString;
-        if (array_key_exists('end_date', $requestPayload)) {
-            $oldEndDate = $recurrence->endDate;
-            $newEndDate = new DateTime($data->endDate);
-
-            $recurrence->endDate = $newEndDate;
-            $newEndDateString = $newEndDate->format('Y-m-d');
-            $endDateChanged = $oldEndDateString !== $newEndDateString;
-
-            if ($newEndDate > $oldEndDate) {
-                $fromDate = $this->nextIntervalDate($oldEndDate, $recurrence->interval);
-                $member = $recurrence->scope === FinanceEntryScope::Personal ? $currentMembership : null;
-                $entries = $this->recurrenceEntryGenerator->generateEntries($recurrence, $member, $fromDate);
-
-                foreach ($entries as $entry) {
-                    $this->entityManager->persist($entry);
-                }
-            } elseif ($newEndDate < $oldEndDate) {
-                $this->entityManager->createQuery(
-                    'DELETE FROM App\Entity\BandSpace\FinanceEntry e
-                     WHERE e.recurrence = :recurrence
-                     AND e.date > :afterDate
-                     AND e.status = :status'
-                )
-                    ->setParameter('recurrence', $recurrence)
-                    ->setParameter('afterDate', $newEndDate)
-                    ->setParameter('status', FinanceEntryStatus::Planned)
-                    ->execute();
-            }
-        }
-
-        $recurrence->updateDatetime = new DateTime();
-
-        $this->recordChanges(
+        // From here to the flush runs in one transaction: shortening the end date drops the entries
+        // past it through a bulk DQL delete that reaches the database immediately, while the files
+        // detached alongside them wait for the flush. Unwrapped, a flush that failed would leave the
+        // entries gone and their attachments orphaned, which is the leak this change exists to stop.
+        $this->entityManager->wrapInTransaction(function () use (
             $recurrence,
+            $data,
+            $requestPayload,
+            $bandSpace,
             $user,
+            $currentMembership,
             $oldLabel,
             $oldType,
             $oldAmount,
             $oldScope,
             $oldInterval,
             $oldIsActive,
-            $endDateChanged,
-            $oldEndDateString,
-            $newEndDateString,
-        );
+        ): void {
+            $endDateChanged = false;
+            $oldEndDateString = $recurrence->endDate->format('Y-m-d');
+            $newEndDateString = $oldEndDateString;
+            if (array_key_exists('end_date', $requestPayload)) {
+                $oldEndDate = $recurrence->endDate;
+                $newEndDate = new DateTime($data->endDate);
 
-        $this->entityManager->flush();
+                $recurrence->endDate = $newEndDate;
+                $newEndDateString = $newEndDate->format('Y-m-d');
+                $endDateChanged = $oldEndDateString !== $newEndDateString;
+
+                if ($newEndDate > $oldEndDate) {
+                    $fromDate = $this->nextIntervalDate($oldEndDate, $recurrence->interval);
+                    $member = $recurrence->scope === FinanceEntryScope::Personal ? $currentMembership : null;
+                    $entries = $this->recurrenceEntryGenerator->generateEntries($recurrence, $member, $fromDate);
+
+                    foreach ($entries as $entry) {
+                        $this->entityManager->persist($entry);
+                    }
+                } elseif ($newEndDate < $oldEndDate) {
+                    $this->fileSourceDetacher->detachDeletedSources(
+                        $bandSpace,
+                        'finance',
+                        $this->financeEntryRepository->findPlannedLabelsByRecurrence($recurrence, $newEndDate),
+                        $user,
+                    );
+                    $this->financeEntryRepository->deletePlannedByRecurrence($recurrence, $newEndDate);
+                }
+            }
+
+            $recurrence->updateDatetime = new DateTime();
+
+            $this->recordChanges(
+                $recurrence,
+                $user,
+                $oldLabel,
+                $oldType,
+                $oldAmount,
+                $oldScope,
+                $oldInterval,
+                $oldIsActive,
+                $endDateChanged,
+                $oldEndDateString,
+                $newEndDateString,
+            );
+        });
 
         return $this->financeRecurrenceBuilder->buildItem($recurrence);
     }

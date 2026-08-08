@@ -34,6 +34,25 @@ defineProps({
   activities: { type: Array, default: () => [] }
 })
 
+// Worded so they read correctly after « à » or « de » without contracting, which lets the attach,
+// detach and source_deleted sentences share one list.
+const SOURCE_NOUNS = {
+  task: 'la tâche',
+  finance: "l'entrée financière",
+  note: 'la note',
+  song: 'la chanson',
+  setlist: 'la setlist'
+}
+
+function sourceNoun(activity) {
+  return SOURCE_NOUNS[activity.payload?.source_type] ?? null
+}
+
+function quotedSourceLabel(activity) {
+  const label = activity.payload?.source_label
+  return label ? ` « ${label} »` : ''
+}
+
 const FILE_ACTIVITY_LABELS = {
   uploaded: () => 'a téléversé le fichier',
   archived: () => 'a archivé le fichier',
@@ -69,21 +88,18 @@ const FILE_ACTIVITY_LABELS = {
   share_revoked: () => 'a révoqué un lien de partage',
   public_accessed: () => 'le lien public a été consulté',
   attached: (a) => {
-    const type = a.payload?.source_type
-    const label = a.payload?.source_label
-    if (type === 'task')
-      return label ? `a attaché le fichier à la tâche ${label}` : 'a attaché le fichier à une tâche'
-    if (type === 'finance')
-      return label
-        ? `a attaché le fichier à l'entrée ${label}`
-        : 'a attaché le fichier à une entrée financière'
-    return 'a attaché le fichier'
+    const noun = sourceNoun(a)
+    return noun ? `a attaché le fichier à ${noun}${quotedSourceLabel(a)}` : 'a attaché le fichier'
   },
   detached: (a) => {
-    const type = a.payload?.source_type
-    if (type === 'task') return 'a détaché le fichier de la tâche'
-    if (type === 'finance') return "a détaché le fichier de l'entrée financière"
-    return 'a détaché le fichier'
+    const noun = sourceNoun(a)
+    return noun ? `a détaché le fichier de ${noun}${quotedSourceLabel(a)}` : 'a détaché le fichier'
+  },
+  // The file was released because its source was deleted, not because somebody detached it: saying so
+  // keeps the actor from being credited with an action they never took.
+  source_deleted: (a) => {
+    const noun = sourceNoun(a) ?? 'la ressource associée'
+    return `a supprimé ${noun}${quotedSourceLabel(a)}, le fichier a été détaché`
   }
 }
 

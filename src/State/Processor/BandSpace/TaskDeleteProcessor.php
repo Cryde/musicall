@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -23,6 +24,7 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
+        private BandSpaceFileSourceDetacher $fileSourceDetacher,
         private Security $security,
     ) {
     }
@@ -48,6 +50,13 @@ readonly class TaskDeleteProcessor implements ProcessorInterface
         if (!$isCreator && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer cette tâche');
         }
+
+        $this->fileSourceDetacher->detachDeletedSources(
+            $membership->bandSpace,
+            'task',
+            [(string) $task->id => $task->title],
+            $user,
+        );
 
         $this->entityManager->remove($task);
         $this->entityManager->flush();

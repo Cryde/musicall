@@ -7,6 +7,7 @@ use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskRepository;
+use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -16,6 +17,7 @@ readonly class TaskBulkDeleteProcedure
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TaskRepository $taskRepository,
+        private BandSpaceFileSourceDetacher $fileSourceDetacher,
     ) {
     }
 
@@ -43,7 +45,14 @@ readonly class TaskBulkDeleteProcedure
             }
         }
 
-        $this->entityManager->wrapInTransaction(function () use ($tasks): void {
+        $titlesByTaskId = [];
+        foreach ($tasks as $task) {
+            $titlesByTaskId[(string) $task->id] = $task->title;
+        }
+
+        $this->entityManager->wrapInTransaction(function () use ($bandSpace, $tasks, $titlesByTaskId, $user): void {
+            $this->fileSourceDetacher->detachDeletedSources($bandSpace, 'task', $titlesByTaskId, $user);
+
             foreach ($tasks as $task) {
                 $this->entityManager->remove($task);
             }

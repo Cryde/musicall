@@ -13,6 +13,7 @@ use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -29,6 +30,7 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private FinanceEntryRepository $financeEntryRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
+        private BandSpaceFileSourceDetacher $fileSourceDetacher,
         private Security $security,
     ) {
     }
@@ -63,6 +65,13 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
             resourceId: $entry->id,
             actor: $user,
             payload: ['label' => $entry->label, 'amount' => $entry->amount],
+        );
+
+        $this->fileSourceDetacher->detachDeletedSources(
+            $bandSpace,
+            'finance',
+            [(string) $entry->id => $entry->label],
+            $user,
         );
 
         $this->entityManager->remove($entry);
