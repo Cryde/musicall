@@ -310,11 +310,26 @@ watch(task, async () => {
     editPriority.value = task.value.priority
     editCategoryId.value = task.value.category_id
     editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
-    editAssigneeIds.value = task.value.assignees.map((a) => a.id)
+    editAssigneeIds.value = assigneeIdsStillInTheBand()
     return
   }
   populateForm()
 })
+
+/**
+ * The picker only offers the current roster, so an assignment left over from a member who is no
+ * longer in the band renders as no chip at all while staying in the model, and saving any other
+ * change writes it straight back. Dropping it here means the next edit of the task clears it.
+ */
+function assigneeIdsStillInTheBand() {
+  const assignedIds = task.value.assignees.map((a) => a.id)
+  // An empty roster means it has not loaded, never that the band is empty: reading it the other way
+  // would have the next save wipe every assignee off the task.
+  if (members.value.length === 0) return assignedIds
+
+  const rosterIds = new Set(members.value.map((m) => m.user_id))
+  return assignedIds.filter((id) => rosterIds.has(id))
+}
 
 function populateForm() {
   if (!task.value) return
@@ -323,7 +338,7 @@ function populateForm() {
   editPriority.value = task.value.priority
   editCategoryId.value = task.value.category_id
   editDueDate.value = task.value.due_date ? new Date(task.value.due_date) : null
-  editAssigneeIds.value = task.value.assignees.map((a) => a.id)
+  editAssigneeIds.value = assigneeIdsStillInTheBand()
   editDescription.value = task.value.description || ''
   lastPopulatedId.value = task.value.id
 }

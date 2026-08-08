@@ -4,6 +4,7 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\Task;
+use App\Entity\User;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\Filter\TaskFilter;
 use DateTimeImmutable;
@@ -189,9 +190,37 @@ class TaskRepository extends ServiceEntityRepository
             return [];
         }
 
+        // The band space comes along because the enricher reads it on every row to work out whether
+        // the reader may still be shown a live title, and one proxy load per task would undo the
+        // point of fetching them in a single query.
         return $this->createQueryBuilder('t')
+            ->innerJoin('t.bandSpace', 'bs')
+            ->addSelect('bs')
             ->where('t.id IN (:ids)')
             ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Every task of a band space one user is currently assigned to, archived and done ones included:
+     * an assignment says who is on the hook today, so a member on their way out comes off all of them.
+     *
+     * The join filters, it deliberately does not `addSelect('a')`: hydrating the assignee collection
+     * through a join that only matches one member would leave each task holding a partial collection,
+     * and flushing that would drop the co-assignees the query never selected.
+     *
+     * @return Task[]
+     */
+    public function findByBandSpaceAndAssignee(BandSpace $bandSpace, User $assignee): array
+    {
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.assignees', 'a')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('a.id = :assigneeId')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('assigneeId', (string) $assignee->id)
+            ->orderBy('t.creationDatetime', 'ASC')
             ->getQuery()
             ->getResult();
     }

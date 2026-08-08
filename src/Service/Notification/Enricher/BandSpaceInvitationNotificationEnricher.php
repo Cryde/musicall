@@ -3,6 +3,7 @@
 namespace App\Service\Notification\Enricher;
 
 use App\Entity\BandSpace\BandSpaceInvitation;
+use App\Entity\User;
 use App\Enum\BandSpace\InvitationStatus;
 use App\Enum\Notification\NotificationType;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
@@ -12,6 +13,10 @@ use App\Repository\BandSpace\BandSpaceInvitationRepository;
  * invitation notification, so the frontend drops stale Accepter/Décliner once the
  * invite is accepted/declined/cancelled/expired. Batched: one `token IN (...)`
  * query for the whole page.
+ *
+ * Deliberately not gated on membership, unlike the task and agenda enrichers: the recipient here is
+ * the invitee, who is by definition not a member of the space yet. Gating it would leave a dead
+ * Accepter button on an invitation that has already been cancelled (#817).
  */
 readonly class BandSpaceInvitationNotificationEnricher implements NotificationEnricherInterface
 {
@@ -24,7 +29,7 @@ readonly class BandSpaceInvitationNotificationEnricher implements NotificationEn
         return NotificationType::BandSpaceInvitation;
     }
 
-    public function enrich(array $notifications): void
+    public function enrich(array $notifications, User $recipient): void
     {
         $tokens = [];
         foreach ($notifications as $notification) {

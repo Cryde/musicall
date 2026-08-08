@@ -18,6 +18,7 @@ use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
+use App\Repository\BandSpace\TaskRepository;
 use App\Repository\Notification\NotificationRepository;
 use App\Service\Procedure\User\DeleteAccountProcedure;
 use App\Tests\ApiTestAssertionsTrait;
@@ -27,7 +28,9 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\BandSpace\FinanceRecurrenceFactory;
+use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -242,6 +245,57 @@ class DeleteAccountBandSpaceTest extends ApiTestCase
 
         // Nobody was promoted, so nobody is told anything.
         $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findForRecipient($admin, 10, 0));
+    }
+
+    public function test_deleting_an_account_revokes_its_task_assignments_in_every_space(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create();
+        $bandMate = UserFactory::new()->create(['username' => 'band_mate', 'email' => 'mate@test.com']);
+
+        $firstSpace = BandSpaceFactory::new()->create(['name' => 'Premier groupe']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $firstSpace, 'user' => $bandMate, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $firstSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $secondSpace = BandSpaceFactory::new()->create(['name' => 'Second groupe']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $secondSpace, 'user' => $bandMate, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $secondSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $firstTask = TaskFactory::new([
+            'bandSpace' => $firstSpace,
+            'title' => 'Réserver la salle',
+            'assignees' => new ArrayCollection([$member, $bandMate]),
+        ])->create();
+        $secondTask = TaskFactory::new([
+            'bandSpace' => $secondSpace,
+            'title' => 'Envoyer le dossier',
+            'assignees' => new ArrayCollection([$member]),
+        ])->create();
+
+        $memberId = (string) $member->id;
+        $firstTaskId = (string) $firstTask->id;
+        $secondTaskId = (string) $secondTask->id;
+
+        $this->deleteAccount($member);
+
+        // Every space the account belonged to, not just the first one the sweep happens to reach.
+        $taskRepository = self::getContainer()->get(TaskRepository::class);
+        $this->assertCount(0, $taskRepository->findByBandSpaceAndAssignee($firstSpace, $member));
+        $this->assertCount(0, $taskRepository->findByBandSpaceAndAssignee($secondSpace, $member));
+        $this->assertCount(1, $taskRepository->findByBandSpaceAndAssignee($firstSpace, $bandMate));
+
+        // The activity payload carries the anonymized handle, like the departure itself: erasing an
+        // account must not scatter fresh copies of the old username through the band's history.
+        $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);
+        foreach ([[$firstSpace, $firstTaskId], [$secondSpace, $secondTaskId]] as [$space, $taskId]) {
+            $activities = $activityRepository->findForResource($space, BandSpaceModule::Task, $taskId);
+            $this->assertCount(1, $activities);
+            $this->assertSame('assignee_removed', $activities[0]->type);
+            $this->assertSame($memberId, (string) $activities[0]->actor->id);
+            $this->assertSame(
+                ['assignee_id' => $memberId, 'assignee_username' => 'deleted_' . $memberId],
+                $activities[0]->payload,
+            );
+        }
     }
 
     public function test_no_space_is_left_without_an_admin_or_a_deletion_scheduled(): void

@@ -42,7 +42,7 @@ readonly class NotificationCollectionProvider implements ProviderInterface
         $entities = $this->notificationRepository->findForRecipient($user, $limit, $offset);
         $totalItems = $this->notificationRepository->countForRecipient($user);
         $dtos = $this->notificationBuilder->buildFromList($entities);
-        $this->feedEnricher->enrich($dtos);
+        $this->feedEnricher->enrich($dtos, $user);
 
         return new TraversablePaginator(new \ArrayIterator($dtos), $page, $limit, $totalItems);
     }

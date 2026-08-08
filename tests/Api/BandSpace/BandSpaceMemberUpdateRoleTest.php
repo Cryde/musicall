@@ -3,8 +3,10 @@
 namespace App\Tests\Api\BandSpace;
 
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -69,6 +71,55 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             $activities[0]->payload,
         );
         $this->assertSame($admin->id, $activities[0]->actor?->id);
+    }
+
+    public function test_changing_the_role_of_a_removed_member_notifies_nobody(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $removed = UserFactory::new()->create(['username' => 'removed_user', 'email' => 'removed@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin, 'creationDatetime' => new \DateTime('2024-01-01 10:00:00')])->create();
+        // A closed membership can still be patched: the update processor resolves the member by id,
+        // not by status.
+        $removedMembership = BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $removed,
+            'role' => Role::User,
+            'status' => MembershipStatus::Kicked,
+            'leftDatetime' => new \DateTime('2024-06-01 10:00:00'),
+            'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $removedMembership->id,
+            ['role' => 'admin'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceMember',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $removedMembership->id,
+            '@type' => 'BandSpaceMember',
+            'id' => $removedMembership->id,
+            'band_space_id' => $bandSpace->id,
+            'user_id' => $removed->id,
+            'username' => 'removed_user',
+            'role' => 'admin',
+            'stage_name' => null,
+            'display_name' => 'removed_user',
+            'instruments' => [],
+            'profile_picture_url' => null,
+            'creation_datetime' => '2024-01-02T10:00:00+00:00',
+            'status' => 'kicked',
+            'left_datetime' => '2024-06-01T10:00:00+00:00',
+        ]);
+
+        // A role nobody can exercise is not news worth a bell.
+        $this->assertCount(0, self::getContainer()->get(NotificationRepository::class)->findAll());
     }
 
     public function test_demote_admin_to_user(): void

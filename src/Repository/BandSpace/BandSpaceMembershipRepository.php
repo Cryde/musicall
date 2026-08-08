@@ -157,6 +157,40 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * Which of these band spaces the user is still an active member of.
+     *
+     * One query for a whole notification page: read-time enrichment refreshes band space data as it
+     * stands right now, so it may only do that for the spaces the reader can still open.
+     *
+     * @param string[] $bandSpaceIds
+     * @return array<string, true> band space id => true, for an isset() lookup at the call site
+     */
+    public function findActiveBandSpaceIdsForUser(User $user, array $bandSpaceIds): array
+    {
+        if ($bandSpaceIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('m')
+            ->select('IDENTITY(m.bandSpace) AS band_space_id')
+            ->where('m.user = :user')
+            ->andWhere('m.bandSpace IN (:bandSpaceIds)')
+            ->andWhere('m.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('bandSpaceIds', $bandSpaceIds)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getArrayResult();
+
+        $activeIds = [];
+        foreach ($rows as $row) {
+            $activeIds[(string) $row['band_space_id']] = true;
+        }
+
+        return $activeIds;
+    }
+
     public function findMembershipIncludingInactive(BandSpace $bandSpace, User $user): ?BandSpaceMembership
     {
         return $this->createQueryBuilder('m')

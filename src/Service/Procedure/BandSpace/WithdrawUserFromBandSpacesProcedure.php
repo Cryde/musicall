@@ -15,6 +15,7 @@ use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\BandSpaceDeletionScheduler;
 use App\Service\BandSpace\PersonalRecurrenceDeactivator;
+use App\Service\BandSpace\TaskAssignmentRevoker;
 use DateTime;
 
 /**
@@ -54,6 +55,7 @@ readonly class WithdrawUserFromBandSpacesProcedure
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
         private BandSpaceDeletionScheduler $bandSpaceDeletionScheduler,
         private PersonalRecurrenceDeactivator $personalRecurrenceDeactivator,
+        private TaskAssignmentRevoker $taskAssignmentRevoker,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
     ) {
     }
@@ -93,6 +95,7 @@ readonly class WithdrawUserFromBandSpacesProcedure
         $membership->leftDatetime = new DateTime();
 
         $this->personalRecurrenceDeactivator->deactivateForMember($membership, $user);
+        $this->taskAssignmentRevoker->revokeForMember($membership, $user);
 
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,
