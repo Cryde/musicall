@@ -16,6 +16,25 @@
         {{ formError }}
       </Message>
 
+      <!--
+        A recurring entry has no per-occurrence storage, so this form always edits the series. Say so
+        before anything is typed rather than after the fact, and name the series start: it is the one
+        thing the occurrence on screen does not reveal.
+      -->
+      <div
+        v-if="isSeriesOccurrence"
+        class="flex gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-100"
+      >
+        <i class="pi pi-info-circle mt-0.5 flex-shrink-0" aria-hidden="true" />
+        <div>
+          <p>
+            Cet événement fait partie d’une série&nbsp;: vos modifications s’appliqueront à toutes
+            les occurrences, passées comme futures.
+          </p>
+          <p class="mt-1">Début de la série&nbsp;: {{ seriesStartLabel }}.</p>
+        </div>
+      </div>
+
       <div class="flex flex-col gap-1">
         <label for="agenda-title" class="text-sm font-medium">
           Titre <span class="text-red-500">*</span>
@@ -59,6 +78,9 @@
         </div>
         <small v-if="fieldErrors.eventDatetime" class="text-red-500">
           {{ fieldErrors.eventDatetime }}
+        </small>
+        <small v-if="isSeriesOccurrence" class="text-surface-500 dark:text-surface-400">
+          Date de cette occurrence. La déplacer décale toute la série d’autant.
         </small>
       </div>
 
@@ -200,6 +222,41 @@
     </form>
   </Drawer>
 
+  <!--
+    Only shown for the two saves that restructure the series, so a typo fix stays a single click.
+    There is no scope choice to make: "cette occurrence seulement" would need a per-occurrence
+    override the model does not have, and offering it would mean writing the whole series anyway.
+  -->
+  <Dialog
+    v-model:visible="showSeriesSaveDialog"
+    modal
+    :header="seriesSaveDialog.header"
+    :style="{ width: '28rem' }"
+    :closable="!agendaStore.isSaving"
+  >
+    <p class="text-sm text-surface-700 dark:text-surface-200">
+      {{ seriesSaveDialog.message }}
+    </p>
+    <p class="text-sm text-surface-500 dark:text-surface-400 mt-2">
+      {{ seriesSaveDialog.detail }}
+    </p>
+    <template #footer>
+      <Button
+        label="Annuler"
+        severity="secondary"
+        text
+        :disabled="agendaStore.isSaving"
+        @click="showSeriesSaveDialog = false"
+      />
+      <Button
+        :label="seriesSaveDialog.acceptLabel"
+        :severity="seriesSaveDialog.acceptSeverity"
+        :loading="agendaStore.isSaving"
+        @click="confirmSeriesSave"
+      />
+    </template>
+  </Dialog>
+
   <Dialog
     v-model:visible="showDeleteScopeDialog"
     modal
@@ -252,7 +309,8 @@
 </template>
 
 <script setup>
-import { format } from 'date-fns'
+import { differenceInCalendarDays, format, parseISO } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
@@ -267,6 +325,11 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
+import {
+  agendaSeriesSubmission,
+  SERIES_IMPACT_NONE,
+  SERIES_IMPACT_RECURRENCE_REMOVED
+} from '../../../utils/agendaSeriesEdit.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -352,6 +415,36 @@ watch(
 
 const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.source === 'manual')
 
+// The agenda expands a series into occurrences that all share one `source_id`, so editing any of
+// them edits the series. `datetime` is the occurrence on screen, `series_start_datetime` the anchor
+// it was expanded from.
+const isSeriesOccurrence = computed(
+  () => isEditMode.value && props.agendaItem.metadata?.is_recurring_occurrence === true
+)
+const seriesAnchorStart = computed(() => toDate(props.agendaItem?.metadata?.series_start_datetime))
+const occurrenceStart = computed(() => toDate(props.agendaItem?.datetime))
+const seriesStartLabel = computed(() => formatEventMoment(seriesAnchorStart.value))
+
+/**
+ * An all day entry is pinned to UTC midnight whatever offset it was created with, so reading it back
+ * as an instant lands on the previous day west of UTC: Guadeloupe and Martinique are UTC-4, which
+ * makes that a real French user shown the wrong day and weekday for the series start. The date
+ * portion is taken as written instead, the way the agenda range helper already does it.
+ */
+function toDate(isoString) {
+  if (!isoString) return null
+  if (props.agendaItem?.is_all_day === true) return parseISO(isoString.slice(0, 10))
+
+  return new Date(isoString)
+}
+
+function formatEventMoment(date) {
+  if (!date) return ''
+  return form.isAllDay
+    ? format(date, 'EEEE d MMMM yyyy', { locale: fr })
+    : format(date, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })
+}
+
 const eventTimeText = computed({
   get: () => (form.eventDatetime ? format(form.eventDatetime, 'HH:mm') : ''),
   set: (val) => {
@@ -421,6 +514,8 @@ watch(isVisible, (visible) => {
   fieldErrors.endDatetime = null
   fieldErrors.recurrenceUntilDate = null
   fieldErrors.recurrenceMonthlyMode = null
+  showSeriesSaveDialog.value = false
+  pendingSubmission.value = null
 
   skipShiftEnd = true
   if (props.agendaItem && props.agendaItem.source === 'manual') {
@@ -471,7 +566,13 @@ async function handleSubmit() {
       fieldErrors.recurrenceUntilDate = 'Veuillez spécifier une date de fin de récurrence.'
       return
     }
-    if (form.eventDatetime && form.recurrenceUntilDate < form.eventDatetime) {
+    // Calendar days, like the server-side rule: the horizon is a date at midnight, so comparing it
+    // as an instant rejects an evening event on the horizon day itself. That is the last occurrence
+    // of a series, and it would be the one occurrence nobody could edit.
+    if (
+      form.eventDatetime &&
+      differenceInCalendarDays(form.recurrenceUntilDate, form.eventDatetime) < 0
+    ) {
       fieldErrors.recurrenceUntilDate =
         'La date de fin doit être postérieure ou égale au premier événement.'
       return
@@ -482,21 +583,40 @@ async function handleSubmit() {
     }
   }
 
-  const serializeStart = () => {
-    if (!form.eventDatetime) return null
-    return form.isAllDay
-      ? format(form.eventDatetime, 'yyyy-MM-dd')
-      : form.eventDatetime.toISOString()
-  }
-  const serializeEnd = () => {
-    if (!form.endDatetime) return null
-    return form.isAllDay ? format(form.endDatetime, 'yyyy-MM-dd') : form.endDatetime.toISOString()
+  const submission = agendaSeriesSubmission({
+    anchorStart: seriesAnchorStart.value,
+    occurrenceStart: occurrenceStart.value,
+    formStart: form.eventDatetime,
+    formEnd: form.endDatetime,
+    isAllDay: form.isAllDay,
+    keepsRecurrence: form.recurrenceFrequency !== null
+  })
+
+  if (submission.impact === SERIES_IMPACT_NONE) {
+    await persistEntry(submission)
+    return
   }
 
+  // Moving the series or collapsing it touches occurrences the user is not looking at, so it is
+  // spelled out and confirmed first.
+  pendingSubmission.value = submission
+  showSeriesSaveDialog.value = true
+}
+
+function serializeDatetime(date) {
+  if (!date) return null
+  return form.isAllDay ? format(date, 'yyyy-MM-dd') : date.toISOString()
+}
+
+async function persistEntry(submission) {
   const payload = {
     title: form.title.trim(),
-    eventDatetime: serializeStart(),
-    endDatetime: serializeEnd(),
+    // A start of `undefined` means the occurrence on screen was not moved: leaving the key out of
+    // the merge patch is what keeps the series anchored where it is.
+    ...(submission.start === undefined
+      ? {}
+      : { eventDatetime: serializeDatetime(submission.start) }),
+    endDatetime: serializeDatetime(submission.end),
     isAllDay: form.isAllDay,
     location: form.location.trim() === '' ? null : form.location.trim(),
     description: form.description.trim() === '' ? null : form.description.trim(),
@@ -538,6 +658,39 @@ async function handleSubmit() {
     }
     formError.value = error?.message ?? 'Impossible d’enregistrer l’événement'
   }
+}
+
+const showSeriesSaveDialog = ref(false)
+const pendingSubmission = ref(null)
+
+const seriesSaveDialog = computed(() => {
+  const submission = pendingSubmission.value
+
+  if (submission?.impact === SERIES_IMPACT_RECURRENCE_REMOVED) {
+    return {
+      header: 'Supprimer la récurrence',
+      message: `Il ne restera qu’un seul événement, le ${formatEventMoment(submission.start)}.`,
+      detail: 'Toutes les autres occurrences de la série seront supprimées.',
+      acceptLabel: 'Supprimer la récurrence',
+      acceptSeverity: 'danger'
+    }
+  }
+
+  return {
+    header: 'Décaler toute la série',
+    message: `La série commencera le ${formatEventMoment(submission?.start)} au lieu du ${seriesStartLabel.value}.`,
+    detail: 'Toutes les occurrences seront décalées d’autant, y compris celles déjà passées.',
+    acceptLabel: 'Décaler la série',
+    acceptSeverity: null
+  }
+})
+
+async function confirmSeriesSave() {
+  if (pendingSubmission.value === null) return
+
+  // persistEntry reports its own failures in the drawer, so the dialog closes either way.
+  await persistEntry(pendingSubmission.value)
+  showSeriesSaveDialog.value = false
 }
 
 const showDeleteScopeDialog = ref(false)

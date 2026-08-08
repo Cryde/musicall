@@ -88,6 +88,14 @@ readonly class AgendaAggregator
             'recurrence_monthly_mode' => $entry->recurrenceMonthlyMode?->value,
             'recurrence_until_date' => $entry->recurrenceUntilDate?->format('Y-m-d'),
             'series_id' => $isRecurringOccurrence ? (string) $entry->id : null,
+            // The stored anchor, which an expanded occurrence otherwise hides: `datetime` above is
+            // the occurrence, and every occurrence carries the same `source_id`. The editor needs
+            // the anchor to move a whole series by however much the user moved the occurrence they
+            // opened, instead of writing that occurrence's date onto the anchor - which silently
+            // drops every occurrence before it.
+            'series_start_datetime' => $isRecurringOccurrence
+                ? $entry->eventDatetime->format(DateTimeInterface::ATOM)
+                : null,
         ];
 
         return $item;

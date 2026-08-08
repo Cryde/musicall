@@ -93,6 +93,7 @@ class AgendaGetCollectionTest extends ApiTestCase
                         'recurrence_monthly_mode' => null,
                         'recurrence_until_date' => null,
                         'series_id' => null,
+                        'series_start_datetime' => null,
                     ],
                 ],
                 [
@@ -462,6 +463,9 @@ class AgendaGetCollectionTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'recurrence_until_date' => '2026-02-28',
             'series_id' => $entry->id,
+            // The anchor, which is before the requested window: the editor needs it to shift a
+            // series instead of writing an occurrence's date onto it.
+            'series_start_datetime' => '2026-01-04T18:00:00+00:00',
         ];
         $member = function (string $occKey, string $datetime) use ($entry, $bandSpace, $metadata): array {
             $id = 'manual-' . $entry->id . '-' . $occKey;
@@ -534,6 +538,7 @@ class AgendaGetCollectionTest extends ApiTestCase
             'recurrence_monthly_mode' => 'by_weekday',
             'recurrence_until_date' => '2026-06-30',
             'series_id' => $entry->id,
+            'series_start_datetime' => '2026-01-05T19:00:00+00:00',
         ];
         $member = function (string $occKey, string $datetime) use ($entry, $bandSpace, $metadata): array {
             $id = 'manual-' . $entry->id . '-' . $occKey;
@@ -606,6 +611,8 @@ class AgendaGetCollectionTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'recurrence_until_date' => '2027-12-31',
             'series_id' => $entry->id,
+            // Always the stored anchor, never the clamped occurrence.
+            'series_start_datetime' => '2024-02-29T00:00:00+00:00',
         ];
         $member = function (string $occKey, string $datetime) use ($entry, $bandSpace, $metadata): array {
             $id = 'manual-' . $entry->id . '-' . $occKey;
@@ -677,6 +684,7 @@ class AgendaGetCollectionTest extends ApiTestCase
             'recurrence_monthly_mode' => null,
             'recurrence_until_date' => '2026-01-25',
             'series_id' => $entry->id,
+            'series_start_datetime' => '2026-01-04T18:00:00+00:00',
         ];
         $member = function (string $occKey, string $datetime, string $endDatetime) use ($entry, $bandSpace, $metadata): array {
             $id = 'manual-' . $entry->id . '-' . $occKey;
