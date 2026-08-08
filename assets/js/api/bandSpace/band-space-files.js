@@ -17,6 +17,7 @@ export default {
       uploaderId,
       sort,
       order,
+      page,
       itemsPerPage,
       archived
     } = {}
@@ -32,6 +33,7 @@ export default {
     if (uploaderId) params.uploader_id = uploaderId
     if (sort) params.sort = sort
     if (order) params.order = order
+    if (page) params.page = page
     if (itemsPerPage) params.itemsPerPage = itemsPerPage
     if (archived) params.archived = 'true'
 

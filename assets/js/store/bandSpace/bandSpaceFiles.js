@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceFilesApi from '../../api/bandSpace/band-space-files.js'
+import {
+  FILES_PAGE_SIZE,
+  fileCountLabel,
+  hasMoreToLoad,
+  mergePage,
+  nextPageToLoad,
+  queryKeyOf
+} from '../../utils/filePagination.js'
 
 export const TRASH_FOLDER_ID = 'trash'
 
@@ -33,6 +41,13 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   })
 
   const isLoadingFiles = ref(false)
+  // A filter change on a list that already has rows swaps its content with no skeleton, so this
+  // drives a visible refreshing state instead of the content changing under the user in silence.
+  const isRefreshingFiles = ref(false)
+  const isLoadingMoreFiles = ref(false)
+  // Fingerprint of the query the loaded pages belong to, so a page resolving after the filters
+  // moved is recognised as continuing a list that is no longer on screen.
+  const loadedQueryKey = ref(null)
   const isLoadingFolders = ref(false)
   const isLoadingTags = ref(false)
   const isLoadingQuota = ref(false)
@@ -46,6 +61,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const isUploadingVersion = ref(false)
   const isRollingBack = ref(false)
   const loadError = ref(null)
+  // Kept apart from loadError, which replaces the whole panel: a further page failing must not take
+  // away the rows the user is already reading.
+  const loadMoreError = ref(null)
   const activeFileError = ref(null)
 
   let filesRequestId = 0
@@ -56,6 +74,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // Served by the quota endpoint so the interface quotes the same window the purge enforces.
   const trashRetentionDays = computed(() => quota.value?.trash_retention_days ?? 30)
 
+  const hasMoreFiles = computed(() => hasMoreToLoad(files.value.length, totalFiles.value))
+  const filesCountLabel = computed(() => fileCountLabel(files.value.length, totalFiles.value))
+
   const activeFile = computed(() => {
     if (!activeFileId.value) return null
     return activeFileFull.value && activeFileFull.value.id === activeFileId.value
@@ -63,25 +84,71 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       : files.value.find((f) => f.id === activeFileId.value) || null
   })
 
+  /** Loads the first page, replacing whatever was on screen. Every filter change comes through here. */
   async function fetchFiles(bandSpaceId) {
     const requestId = ++filesRequestId
     isLoadingFiles.value = files.value.length === 0
+    isRefreshingFiles.value = true
     loadError.value = null
+    loadMoreError.value = null
 
-    const params = buildFileParams()
+    const params = buildFileParams(1)
 
     try {
       const result = await bandSpaceFilesApi.getFiles(bandSpaceId, params)
       if (requestId !== filesRequestId) return
       files.value = result.member ?? []
       totalFiles.value = result.totalItems ?? 0
+      loadedQueryKey.value = queryKeyOf(params)
     } catch (e) {
       if (requestId !== filesRequestId) return
       loadError.value = e.message
     } finally {
       if (requestId === filesRequestId) {
         isLoadingFiles.value = false
+        isRefreshingFiles.value = false
       }
+    }
+  }
+
+  /**
+   * Appends the next page. The page number comes from the rows already held rather than a counter,
+   * so a file deleted, restored or moved out of the list since the last page cannot open a gap the
+   * next request steps over. See utils/filePagination.js.
+   */
+  async function fetchMoreFiles(bandSpaceId) {
+    if (isLoadingMoreFiles.value || isRefreshingFiles.value || !hasMoreFiles.value) return
+
+    const requestId = ++filesRequestId
+    const params = buildFileParams(nextPageToLoad(files.value.length, FILES_PAGE_SIZE))
+    const requestedQueryKey = queryKeyOf(params)
+    isLoadingMoreFiles.value = true
+    loadMoreError.value = null
+
+    try {
+      const result = await bandSpaceFilesApi.getFiles(bandSpaceId, params)
+      if (requestId !== filesRequestId || requestedQueryKey !== loadedQueryKey.value) return
+      const heldBefore = files.value.length
+      files.value = mergePage(files.value, result.member ?? [])
+      totalFiles.value = result.totalItems ?? totalFiles.value
+
+      // A page that brings nothing new while the server still reports more is the signature of a row
+      // that somebody else slipped in behind the window. The page number is derived from how many
+      // rows are held, so it stops moving too, and every further click re-requests this same offset
+      // for good. Rebuilding from the first page is the only thing that can reach the new row.
+      if (files.value.length === heldBefore && hasMoreFiles.value) {
+        isLoadingMoreFiles.value = false
+        await fetchFiles(bandSpaceId)
+
+        return
+      }
+    } catch (e) {
+      if (requestId !== filesRequestId) return
+      loadMoreError.value = e.message
+    } finally {
+      // Cleared unconditionally: only one further page is ever in flight, and a filter change
+      // superseding this one must not leave the button spinning for good.
+      isLoadingMoreFiles.value = false
     }
   }
 
@@ -125,15 +192,17 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     }
   }
 
-  function buildFileParams() {
+  function buildFileParams(page) {
     // The trash ignores every filter, before they are even read. Its filter bar is hidden, so a search
     // or tag left over from browsing a folder would silently narrow the trash with no visible control to
     // clear it, and someone hunting for the file they just deleted would find it apparently missing.
+    // It pages exactly like the live listing does: without that, a trashed file past the fiftieth is
+    // unrestorable and app:band-space:purge eventually destroys it.
     if (activeFolderId.value === TRASH_FOLDER_ID) {
-      return { archived: true }
+      return { archived: true, page, itemsPerPage: FILES_PAGE_SIZE }
     }
 
-    const params = {}
+    const params = { page, itemsPerPage: FILES_PAGE_SIZE }
     const trimmed = filters.query.trim()
     if (trimmed) params.query = trimmed
     if (filters.mime) params.mime = filters.mime
@@ -230,6 +299,31 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     } finally {
       isSavingFile.value = false
     }
+  }
+
+  /**
+   * A file changed folder, from the move dialog or from a drag and drop. Patching the loaded rows
+   * rather than refetching keeps the pages the user already loaded: a move made after paging deep
+   * into the list would otherwise snap it back to the first page.
+   *
+   * The root and the virtual source folders list the whole space whatever folder a file sits in, so
+   * only a real folder view has to drop the row, and only when the file landed somewhere else.
+   */
+  function applyFileMoved(fileId, targetFolderId) {
+    const isRealFolderView =
+      typeof activeFolderId.value === 'string' &&
+      activeFolderId.value !== TRASH_FOLDER_ID &&
+      !activeFolderId.value.startsWith('virtual:')
+
+    if (isRealFolderView && activeFolderId.value !== targetFolderId) {
+      files.value = files.value.filter((f) => f.id !== fileId)
+      totalFiles.value = Math.max(0, totalFiles.value - 1)
+      return
+    }
+
+    files.value = files.value.map((f) =>
+      f.id === fileId ? { ...f, folder_id: targetFolderId } : f
+    )
   }
 
   async function fetchArchivedCount(bandSpaceId) {
@@ -394,6 +488,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   function clear() {
     files.value = []
     totalFiles.value = 0
+    loadedQueryKey.value = null
+    isRefreshingFiles.value = false
+    isLoadingMoreFiles.value = false
     folders.value = []
     virtualFolders.value = []
     tags.value = []
@@ -411,12 +508,15 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     filters.sort = 'date'
     filters.order = 'desc'
     loadError.value = null
+    loadMoreError.value = null
     activeFileError.value = null
   }
 
   return {
     files: readonly(files),
     totalFiles: readonly(totalFiles),
+    hasMoreFiles,
+    filesCountLabel,
     archivedCount: readonly(archivedCount),
     trashRetentionDays,
     folders: readonly(folders),
@@ -426,10 +526,13 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     activeFolderId: readonly(activeFolderId),
     filters: readonly(filters),
     isLoadingFiles: readonly(isLoadingFiles),
+    isRefreshingFiles: readonly(isRefreshingFiles),
+    isLoadingMoreFiles: readonly(isLoadingMoreFiles),
     isLoadingFolders: readonly(isLoadingFolders),
     isLoadingTags: readonly(isLoadingTags),
     isLoadingQuota: readonly(isLoadingQuota),
     loadError: readonly(loadError),
+    loadMoreError: readonly(loadMoreError),
     activeFileId: readonly(activeFileId),
     activeFile,
     fileActivities: readonly(fileActivities),
@@ -449,12 +552,14 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     isDeletingFile: readonly(isDeletingFile),
     activeFileError: readonly(activeFileError),
     fetchFiles,
+    fetchMoreFiles,
     fetchFolders,
     fetchTags,
     fetchQuota,
     fetchFileById,
     fetchFileActivities,
     updateFile,
+    applyFileMoved,
     deleteFile,
     fetchArchivedCount,
     restoreFile,

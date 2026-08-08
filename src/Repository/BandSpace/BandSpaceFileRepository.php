@@ -8,6 +8,7 @@ use App\Entity\BandSpace\BandSpaceFolder;
 use App\Repository\BandSpace\Filter\BandSpaceFileFilter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -21,6 +22,8 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
+     * One page of files, tags and uploader included.
+     *
      * @return BandSpaceFile[]
      */
     public function findByBandSpace(BandSpace $bandSpace, BandSpaceFileFilter $filter): array
@@ -36,7 +39,14 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         $qb->setMaxResults($filter->limit)
             ->setFirstResult($filter->offset);
 
-        return $qb->getQuery()->getResult();
+        // Paginator, not getResult(): the tags fetch join turns one file into one row per tag, so a
+        // plain LIMIT cuts the window mid file and returns fewer files than asked for. The count
+        // beside this one counts distinct files, so the shortfall reads as a page the caller has
+        // already seen and the files behind it are never requested again.
+        /** @var BandSpaceFile[] $files */
+        $files = iterator_to_array(new Paginator($qb->getQuery()), false);
+
+        return $files;
     }
 
     public function countByBandSpace(BandSpace $bandSpace, BandSpaceFileFilter $filter): int
@@ -233,5 +243,11 @@ class BandSpaceFileRepository extends ServiceEntityRepository
             'size' => $qb->orderBy('cv.size', $direction),
             default => $qb->orderBy('bsf.creationDatetime', $direction),
         };
+
+        // Ties are the rule rather than the exception here: a batch upload stamps one creation
+        // datetime on every file in it, and two files can share a size or a name. Without a total
+        // order the database may put a tied row on two consecutive pages and on neither of them, so
+        // paging would quietly drop files. The id settles every tie.
+        $qb->addOrderBy('bsf.id', $direction);
     }
 }

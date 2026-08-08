@@ -120,7 +120,7 @@ export async function applyMove(
       toast.add({ severity: 'success', summary: 'Dossier déplacé', life: 2500 })
     } else if (source.type === 'file') {
       await filesApi.updateFile(bandSpaceId, source.id, { folder_id: targetFolderId })
-      filesStore.fetchFiles(bandSpaceId)
+      filesStore.applyFileMoved(source.id, targetFolderId)
       toast.add({ severity: 'success', summary: 'Fichier déplacé', life: 2500 })
     }
   } catch (e) {

@@ -2,6 +2,12 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\User;
+use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceRepository;
+use App\Repository\BandSpace\Filter\BandSpaceFileFilter;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -243,6 +249,116 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $this->assertCount(10, $response['member']);
     }
 
+    public function test_list_honours_a_client_page_size(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->createFiles($bandSpace, $user, [
+            'oldest.pdf' => '2026-01-01 10:00:00',
+            'middle.pdf' => '2026-01-02 10:00:00',
+            'newest.pdf' => '2026-01-03 10:00:00',
+        ]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?itemsPerPage=2', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertSame(3, $response['totalItems']);
+        $this->assertSame(['newest.pdf', 'middle.pdf'], array_column($response['member'], 'original_name'));
+    }
+
+    /**
+     * The tags fetch join turns one file into one row per tag, so paging over the joined rows rather
+     * than over distinct files handed back short pages and stepped over the overflow on the next one.
+     */
+    public function test_pages_do_not_drop_files_carrying_several_tags(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $tags = [];
+        foreach (['masters', 'live', 'demos'] as $tagName) {
+            $tags[] = BandSpaceFileTagFactory::new(['bandSpace' => $bandSpace, 'name' => $tagName])->create();
+        }
+
+        foreach ($this->createFiles($bandSpace, $user, [
+            'file-a.pdf' => '2026-03-01 10:00:00',
+            'file-b.pdf' => '2026-03-02 10:00:00',
+            'file-c.pdf' => '2026-03-03 10:00:00',
+            'file-d.pdf' => '2026-03-04 10:00:00',
+        ]) as $file) {
+            foreach ($tags as $tag) {
+                $file->tags->add($tag);
+            }
+            \Zenstruck\Foundry\Persistence\save($file);
+        }
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?itemsPerPage=2&page=1', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $firstPage = $this->getResponseAsArray();
+        $this->assertSame(4, $firstPage['totalItems']);
+        $this->assertSame(['file-d.pdf', 'file-c.pdf'], array_column($firstPage['member'], 'original_name'));
+
+        // The api firewall is stateless, so an authenticated session does not survive into a second
+        // request. Later pages are read through the repository the provider itself calls, which is
+        // also where the fix lives: without the Paginator the tag join cuts the page short here.
+        $this->assertSame(['file-b.pdf', 'file-a.pdf'], $this->pageOfNames($bandSpace, 2, 2));
+    }
+
+    /**
+     * One page of the live file list, straight from the repository the collection provider calls.
+     *
+     * @return list<string> the original names, in the order the query returned them
+     */
+    private function pageOfNames(BandSpace $bandSpace, int $limit, int $offset): array
+    {
+        $bandSpace = self::getContainer()->get(BandSpaceRepository::class)->find($bandSpace->id);
+        $files = self::getContainer()->get(BandSpaceFileRepository::class)->findByBandSpace(
+            $bandSpace,
+            new BandSpaceFileFilter(limit: $limit, offset: $offset),
+        );
+
+        return array_map(static fn(BandSpaceFile $file): string => $file->originalName, $files);
+    }
+
+    /**
+     * The trash is the sharp edge: app:band-space:purge destroys what a member cannot reach to restore.
+     */
+    public function test_trash_pages_past_the_first_page(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        foreach ([
+            'trashed-a.pdf' => '2026-05-01 10:00:00',
+            'trashed-b.pdf' => '2026-05-02 10:00:00',
+            'trashed-c.pdf' => '2026-05-03 10:00:00',
+        ] as $name => $createdAt) {
+            BandSpaceFileFactory::new([
+                'bandSpace' => $bandSpace,
+                'createdBy' => $user,
+                'originalName' => $name,
+                'creationDatetime' => new \DateTime($createdAt),
+                'archiveDatetime' => new \DateTimeImmutable($createdAt),
+            ])->create();
+        }
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?archived=true&itemsPerPage=2&page=2', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertSame(3, $response['totalItems']);
+        $this->assertSame(['trashed-a.pdf'], array_column($response['member'], 'original_name'));
+    }
+
     public function test_list_excludes_archived(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
@@ -287,5 +403,28 @@ class BandSpaceFileCollectionTest extends ApiTestCase
             'type' => '/errors/403',
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
+    }
+
+    /**
+     * Creation datetimes are pinned rather than left to the faker: they decide which file lands on
+     * which page, and the default sort is on them.
+     *
+     * @param array<string, string> $creationDatetimeByName
+     *
+     * @return BandSpaceFile[] in the order given
+     */
+    private function createFiles(BandSpace $bandSpace, User $user, array $creationDatetimeByName): array
+    {
+        $files = [];
+        foreach ($creationDatetimeByName as $name => $createdAt) {
+            $files[] = BandSpaceFileFactory::new([
+                'bandSpace' => $bandSpace,
+                'createdBy' => $user,
+                'originalName' => $name,
+                'creationDatetime' => new \DateTime($createdAt),
+            ])->create();
+        }
+
+        return $files;
     }
 }
