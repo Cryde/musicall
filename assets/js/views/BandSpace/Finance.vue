@@ -180,6 +180,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiErrorDetail } from '../../api/utils/apiErrorDetail.js'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import CreateCategoryDialog from '../../components/BandSpace/Finance/CreateCategoryDialog.vue'
 import FinanceBootstrap from '../../components/BandSpace/Finance/FinanceBootstrap.vue'
@@ -192,6 +193,7 @@ import FinanceTimeline from '../../components/BandSpace/Finance/FinanceTimeline.
 import RecurrenceDrawer from '../../components/BandSpace/Finance/RecurrenceDrawer.vue'
 import RecurrenceList from '../../components/BandSpace/Finance/RecurrenceList.vue'
 import { useBandSpaceFinanceStore } from '../../store/bandSpace/bandSpaceFinance.js'
+import { categoryDeleteMessage } from '../../utils/financeConfirmations.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -447,9 +449,10 @@ async function handleCategoryCreated({ name, parentId }) {
 }
 
 function handleDeleteCategory(categoryId) {
+  const category = financeStore.categories.find((item) => item.id === categoryId)
+
   confirm.require({
-    message:
-      'Es-tu sûr de vouloir supprimer cette catégorie ? Les entrées et récurrences associées seront également supprimées.',
+    message: categoryDeleteMessage(category?.entry_count, category?.has_children === true),
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
@@ -460,11 +463,13 @@ function handleDeleteCategory(categoryId) {
         await financeStore.deleteCategory(bandSpaceId, categoryId)
         trackUmamiEvent('finance-category-delete')
         toast.add({ severity: 'success', summary: 'Catégorie supprimée', life: 3000 })
-      } catch {
+      } catch (error) {
+        // The API refuses a category holding paid entries or sub-categories, and its message is the
+        // only thing that says which of the two it was and what to do about it.
         toast.add({
           severity: 'error',
           summary: 'Erreur',
-          detail: 'Impossible de supprimer la catégorie',
+          detail: apiErrorDetail(error, 'Impossible de supprimer la catégorie'),
           life: 5000
         })
       }

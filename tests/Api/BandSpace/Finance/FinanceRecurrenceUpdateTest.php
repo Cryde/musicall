@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Api\BandSpace\Finance;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\FinanceCategory;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\BandSpace\FinanceRecurrence;
@@ -28,6 +29,8 @@ use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\RecurrenceEndDateValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Choice;
+use Symfony\Component\Validator\Constraints\GreaterThan;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 /**
@@ -601,6 +604,217 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
     }
 
     /**
+     * A personal recurrence answers only to the member its forecasts belong to. The entry endpoints
+     * have always said so; the recurrence endpoints did not, so anybody in the band could reprice, or
+     * shorten, somebody else's personal series.
+     */
+    public function test_updating_a_personal_recurrence_of_another_member_is_refused(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $intruder = UserFactory::new()->create(['username' => 'intruder', 'email' => 'intruder@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $intruder])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3), FinanceEntryScope::Personal);
+        $forecast = $this->createEntry($category, $recurrence, self::monthStart(1), FinanceEntryStatus::Planned, $ownerMembership);
+        $recurrenceId = (string) $recurrence->id;
+        $forecastId = (string) $forecast->id;
+
+        $this->patchRecurrence($intruder, $bandSpace, $recurrenceId, ['amount' => 99000]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Vous ne pouvez modifier que vos propres récurrences personnelles',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous ne pouvez modifier que vos propres récurrences personnelles',
+        ]);
+
+        $this->assertSame(30000, $this->reloadRecurrence($recurrenceId)->amount);
+        $this->assertSame(30000, self::getContainer()->get(FinanceEntryRepository::class)->find($forecastId)->amount);
+    }
+
+    /**
+     * The documented hole in inferring ownership from the entries: a personal recurrence that never
+     * planned anything, or whose entries were all deleted, records nobody, so there is nobody to
+     * protect and the next caller becomes its owner. Reachable, because a member may delete every
+     * Prévu and Engagé entry of their own series. Pinned so the behaviour is a decision rather than
+     * something discovered later: closing it properly needs an owner column on the recurrence.
+     */
+    public function test_updating_a_personal_recurrence_that_records_no_owner_is_allowed(): void
+    {
+        $stranger = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $stranger])->create();
+
+        $category = $this->createCategory($bandSpace);
+        // Personal, but it has planned nothing, so no entry carries a member to read ownership from.
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3), FinanceEntryScope::Personal);
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($stranger, $bandSpace, $recurrenceId, ['amount' => 42000]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(42000, $this->reloadRecurrence($recurrenceId)->amount);
+    }
+
+    /**
+     * Entries can carry two different members, because a member may reassign their own personal entry
+     * to somebody else. Ownership then reads as "either of them", so whichever acts next passes while
+     * an unrelated member is still refused. Pinned because it is the ambiguity the inference cannot
+     * resolve, and because the refusal is the half that must not regress.
+     */
+    public function test_a_personal_recurrence_recording_two_members_admits_both_and_refuses_a_third(): void
+    {
+        $first = UserFactory::new()->asBaseUser()->create();
+        $second = UserFactory::new()->create(['username' => 'second_owner', 'email' => 'second@test.com']);
+        $stranger = UserFactory::new()->create(['username' => 'stranger', 'email' => 'stranger@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $firstMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $first])->create();
+        $secondMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $second])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $stranger])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-2), self::monthStart(3), FinanceEntryScope::Personal);
+        $this->createEntry($category, $recurrence, self::monthStart(-1), FinanceEntryStatus::Paid, $firstMembership);
+        $this->createEntry($category, $recurrence, self::monthStart(1), FinanceEntryStatus::Planned, $secondMembership);
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($stranger, $bandSpace, $recurrenceId, ['amount' => 99000]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertSame(30000, $this->reloadRecurrence($recurrenceId)->amount);
+    }
+
+    /** A band recurrence belongs to nobody in particular, so any member still edits it. */
+    public function test_updating_a_band_recurrence_of_another_member_is_allowed(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create();
+        $otherMember = UserFactory::new()->create(['username' => 'other_member', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $creatorMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $otherMember])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3));
+        // Its forecast carries a member, which on its own must not be read as ownership: only the
+        // recurrence's own scope decides whether anybody owns the series.
+        $this->createEntry($category, $recurrence, self::monthStart(1), FinanceEntryStatus::Planned, $creatorMembership);
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($otherMember, $bandSpace, $recurrenceId, ['amount' => 35000]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(35000, $this->reloadRecurrence($recurrenceId)->amount);
+    }
+
+    /**
+     * Extending used to file the new occurrences under whoever pressed save, which split one personal
+     * series across two owners and put half of it out of its owner's reach. The owner is now read from
+     * the series itself.
+     */
+    public function test_extending_a_personal_recurrence_files_the_new_forecasts_under_its_owner(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(1), FinanceEntryScope::Personal);
+        foreach (range(-1, 1) as $offset) {
+            $this->createEntry($category, $recurrence, self::monthStart($offset), FinanceEntryStatus::Planned, $ownerMembership);
+        }
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($owner, $bandSpace, $recurrenceId, [
+            'end_date' => self::monthStart(3)->format('Y-m-d'),
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $responseData = $this->getResponseAsArray();
+        $this->assertSame(2, $responseData['created_entry_count']);
+        $this->assertSame($this->gridDates(-1, 3), $this->remainingEntryDates($recurrenceId));
+
+        $ownerMembershipId = (string) $ownerMembership->id;
+        foreach ($this->remainingEntries($recurrenceId) as $entry) {
+            $this->assertSame(FinanceEntryScope::Personal, $entry->scope);
+            $this->assertSame($ownerMembershipId, (string) $entry->member->id, $entry->date->format('Y-m-d'));
+        }
+    }
+
+    /** The PATCH carried no constraint on the amount, so a recurrence could be repriced to a debt. */
+    public function test_update_recurrence_with_a_negative_amount_is_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3));
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($user, $bandSpace, $recurrenceId, ['amount' => -35000]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . GreaterThan::TOO_LOW_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'amount',
+                    'message' => 'Le montant doit être positif',
+                    'code' => GreaterThan::TOO_LOW_ERROR,
+                ],
+            ],
+            'detail' => 'amount: Le montant doit être positif',
+            'description' => 'amount: Le montant doit être positif',
+            'type' => '/validation_errors/' . GreaterThan::TOO_LOW_ERROR,
+            'title' => 'An error occurred',
+        ]);
+
+        $this->assertSame(30000, $this->reloadRecurrence($recurrenceId)->amount);
+    }
+
+    /** This one used to be a 500: the value went straight into FinanceEntryType::from(). */
+    public function test_update_recurrence_with_an_unknown_type_is_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3));
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($user, $bandSpace, $recurrenceId, ['type' => 'subvention']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'type',
+                    'message' => 'Type invalide',
+                    'code' => Choice::NO_SUCH_CHOICE_ERROR,
+                ],
+            ],
+            'detail' => 'type: Type invalide',
+            'description' => 'type: Type invalide',
+            'type' => '/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
+            'title' => 'An error occurred',
+        ]);
+    }
+
+    /**
      * The first of a month relative to today, so an occurrence never lands on the boundary between
      * "already due" and "still to come".
      */
@@ -656,13 +870,17 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
         ])->create();
     }
 
-    private function createRecurrence(FinanceCategory $category, \DateTime $startDate, \DateTime $endDate): FinanceRecurrence
-    {
+    private function createRecurrence(
+        FinanceCategory $category,
+        \DateTime $startDate,
+        \DateTime $endDate,
+        FinanceEntryScope $scope = FinanceEntryScope::Band,
+    ): FinanceRecurrence {
         return FinanceRecurrenceFactory::new([
             'category' => $category,
             'label' => self::LABEL,
             'type' => FinanceEntryType::Expense,
-            'scope' => FinanceEntryScope::Band,
+            'scope' => $scope,
             'interval' => RecurrenceInterval::Monthly,
             'amount' => 30000,
             'startDate' => $startDate,
@@ -672,18 +890,21 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
         ])->create();
     }
 
+    /** An entry with a member on it is a personal one: that member is what makes it personal. */
     private function createEntry(
         FinanceCategory $category,
         FinanceRecurrence $recurrence,
         \DateTime $date,
         FinanceEntryStatus $status,
+        ?BandSpaceMembership $member = null,
     ): FinanceEntry {
         return FinanceEntryFactory::new([
             'category' => $category,
             'label' => self::LABEL,
             'type' => FinanceEntryType::Expense,
             'status' => $status,
-            'scope' => FinanceEntryScope::Band,
+            'scope' => $member instanceof BandSpaceMembership ? FinanceEntryScope::Personal : FinanceEntryScope::Band,
+            'member' => $member,
             'amount' => 30000,
             'date' => $date,
             'recurrence' => $recurrence,

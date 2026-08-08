@@ -18,6 +18,7 @@ use App\Enum\BandSpace\RecurrenceInterval;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\FinanceRecurrenceOwnerChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use App\Service\BandSpace\RecurrenceEntryGenerator;
@@ -41,6 +42,9 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * - The start date and the interval define the grid every materialised entry sits on, frozen entries
  *   included, so changing either is refused rather than half applied.
  *
+ * Who may run the edit at all is FinanceRecurrenceOwnerChecker's business: a personal recurrence answers
+ * only to the member its forecasts belong to.
+ *
  * @implements ProcessorInterface<FinanceRecurrenceResource, FinanceRecurrenceResource>
  */
 readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
@@ -48,6 +52,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private FinanceRecurrenceOwnerChecker $recurrenceOwnerChecker,
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private FinanceEntryRepository $financeEntryRepository,
         private FinanceRecurrenceBuilder $financeRecurrenceBuilder,
@@ -73,6 +78,11 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
         if (!$recurrence instanceof FinanceRecurrence) {
             throw new NotFoundHttpException('Récurrence introuvable');
         }
+
+        // The owner of a personal recurrence, and the caller's own membership for a band one. Everything
+        // this processor materialises is filed under it rather than under whoever is calling, so an edit
+        // can never split one series between two members.
+        $ownerMembership = $this->recurrenceOwnerChecker->checkCanUpdate($recurrence, $currentMembership);
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
@@ -116,7 +126,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
                 $requestPayload,
                 $bandSpace,
                 $user,
-                $currentMembership,
+                $ownerMembership,
                 $now,
                 $oldLabel,
                 $oldType,
@@ -160,7 +170,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
                 // stopped recurrence must not refill the budget just because its end date moved.
                 $materialiseFrom = $this->earlierOf($extendedFrom, $reactivated ? $now : null);
                 if ($recurrence->isActive && $materialiseFrom instanceof DateTimeInterface) {
-                    $createdEntries = $this->materialiseAfter($recurrence, $currentMembership, $materialiseFrom);
+                    $createdEntries = $this->materialiseAfter($recurrence, $ownerMembership, $materialiseFrom);
                 }
 
                 foreach ($createdEntries as $entry) {
@@ -177,7 +187,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
                     || $oldAmount !== $recurrence->amount
                     || $oldScope !== $recurrence->scope;
                 $updatedEntryCount = $propagatingFieldChanged
-                    ? $this->syncFutureForecasts($recurrence, $currentMembership, $now)
+                    ? $this->syncFutureForecasts($recurrence, $ownerMembership, $now)
                     : 0;
 
                 $recurrence->updateDatetime = new DateTime();
@@ -284,7 +294,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
     /**
      * @return FinanceEntry[]
      */
-    private function materialiseAfter(FinanceRecurrence $recurrence, BandSpaceMembership $currentMembership, DateTimeInterface $after): array
+    private function materialiseAfter(FinanceRecurrence $recurrence, BandSpaceMembership $ownerMembership, DateTimeInterface $after): array
     {
         $takenDates = array_map(
             static fn (FinanceEntry $entry): string => $entry->date->format('Y-m-d'),
@@ -293,7 +303,7 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
 
         return $this->recurrenceEntryGenerator->generateMissingEntriesAfter(
             $recurrence,
-            $recurrence->scope === FinanceEntryScope::Personal ? $currentMembership : null,
+            $recurrence->scope === FinanceEntryScope::Personal ? $ownerMembership : null,
             $after,
             $takenDates,
         );
@@ -306,13 +316,13 @@ readonly class FinanceRecurrenceUpdateProcessor implements ProcessorInterface
      * An entry is left exactly as it is when it already matches, which is what makes an edit that changes
      * nothing on the recurrence change nothing on the entries.
      */
-    private function syncFutureForecasts(FinanceRecurrence $recurrence, BandSpaceMembership $currentMembership, DateTimeInterface $now): int
+    private function syncFutureForecasts(FinanceRecurrence $recurrence, BandSpaceMembership $ownerMembership, DateTimeInterface $now): int
     {
         $updatedEntryCount = 0;
 
         foreach ($this->financeEntryRepository->findPlannedByRecurrenceAfter($recurrence, $now) as $entry) {
             $member = $recurrence->scope === FinanceEntryScope::Personal
-                ? $entry->member ?? $currentMembership
+                ? $entry->member ?? $ownerMembership
                 : null;
 
             if (

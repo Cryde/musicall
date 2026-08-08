@@ -9,6 +9,7 @@ class FinanceAmountRange extends Constraint
 {
     public string $message = 'Le montant minimum doit être inférieur ou égal au montant maximum';
     public string $exclusiveMessage = 'Vous ne pouvez pas définir un montant exact et une fourchette en même temps';
+    public string $incompleteMessage = 'Une fourchette doit avoir un montant minimum et un montant maximum';
 
     public function getTargets(): string
     {

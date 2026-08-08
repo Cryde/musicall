@@ -136,8 +136,10 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, reactive, watch } from 'vue'
+import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
+import { RECURRENCE_DELETE_MESSAGE } from '../../../utils/financeConfirmations.js'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -161,13 +163,6 @@ const isEditMode = computed(() => props.recurrence !== null)
 // The generated entries all sit on the grid drawn by the start date and the interval, so the API refuses
 // to re-anchor it once entries exist. Say it here rather than let the user hit a 422.
 const frozenScheduleHint = 'Non modifiable : terminez cette récurrence et créez-en une nouvelle.'
-
-// A 4xx carries a message written for the user, anything else carries a technical one in English.
-function apiErrorDetail(error, fallback) {
-  const status = error?.status ?? 0
-
-  return status >= 400 && status < 500 && error?.message ? error.message : fallback
-}
 
 const typeOptions = [
   { label: 'Dépense', value: 'expense' },
@@ -272,7 +267,7 @@ async function handleSave() {
 
 function handleDelete() {
   confirm.require({
-    message: 'Es-tu sûr de vouloir supprimer cette récurrence ?',
+    message: RECURRENCE_DELETE_MESSAGE,
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
@@ -282,11 +277,12 @@ function handleDelete() {
       try {
         await financeStore.deleteRecurrence(props.bandSpaceId, props.recurrence.id)
         emit('deleted')
-      } catch {
+      } catch (error) {
+        // A personal recurrence answers only to its owner, and that 403 says so.
         toast.add({
           severity: 'error',
           summary: 'Erreur',
-          detail: 'Impossible de supprimer la récurrence',
+          detail: apiErrorDetail(error, 'Impossible de supprimer la récurrence'),
           life: 5000
         })
       }

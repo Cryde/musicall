@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
@@ -37,6 +38,7 @@ readonly class FinanceBootstrapProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
+        private FinanceEntryRepository $financeEntryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
@@ -57,7 +59,10 @@ readonly class FinanceBootstrapProcessor implements ProcessorInterface
         if ($this->financeCategoryRepository->existsByBandSpace($bandSpace)) {
             $categories = $this->financeCategoryRepository->findByBandSpace($bandSpace);
 
-            return $this->financeCategoryBuilder->buildFromList($categories);
+            return $this->financeCategoryBuilder->buildFromList(
+                $categories,
+                $this->financeEntryRepository->countByCategories($categories),
+            );
         }
 
         $categories = [];

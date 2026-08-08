@@ -77,11 +77,17 @@ import { computed, reactive, ref, watch } from 'vue'
 import bandSpaceFinanceApi from '../../../api/bandSpace/band-space-finance.js'
 import bandSpaceSettingsApi from '../../../api/bandSpace/band-space-settings.js'
 import { centsToCurrency, currencyToCents, formatAmount } from '../../../utils/currency.js'
+import { planSplitSync } from '../../../utils/splitReconciliation.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   entryId: { type: String, default: null },
+  // What the total line is measured against: the middle of the fourchette when the entry has one.
   amountEuros: { type: Number, default: null },
+  // What the API caps the split total at, which is the entry's exact amount and nothing else: an entry
+  // storing a fourchette has amount NULL and is capped at nothing. Only ever the exact one, so the
+  // guard below refuses exactly what the API would refuse, no more.
+  exactAmountEuros: { type: Number, default: null },
   visible: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false }
 })
@@ -177,24 +183,43 @@ function buildSplitsPayload() {
   return splits
 }
 
+function buildPlan() {
+  const capCents = props.exactAmountEuros != null ? currencyToCents(props.exactAmountEuros) : null
+
+  return planSplitSync(existingSplits.value, buildSplitsPayload(), capCents)
+}
+
+/**
+ * Why the repartition cannot be saved as typed, or null when it can. The drawer asks before it writes
+ * anything at all, so a repartition the API would refuse never costs an existing split.
+ */
+function validateSplits() {
+  return buildPlan().error
+}
+
 async function syncSplits(entryId) {
-  const desired = buildSplitsPayload()
-  const desiredByMember = new Map(desired.map((s) => [s.member_id, s.amount]))
+  const { error, operations } = buildPlan()
+  if (error) {
+    throw new Error(error)
+  }
+  if (operations.length === 0) {
+    return
+  }
 
-  for (const existing of existingSplits.value) {
-    const newAmount = desiredByMember.get(existing.member_id)
-    if (newAmount == null || newAmount !== existing.amount) {
-      await bandSpaceFinanceApi.deleteSplit(props.bandSpaceId, entryId, existing.id)
+  for (const operation of operations) {
+    if (operation.type === 'delete') {
+      await bandSpaceFinanceApi.deleteSplit(props.bandSpaceId, entryId, operation.splitId)
+    } else {
+      await bandSpaceFinanceApi.createSplit(props.bandSpaceId, entryId, {
+        member_id: operation.memberId,
+        amount: operation.amount
+      })
     }
   }
 
-  const existingByMember = new Map(existingSplits.value.map((s) => [s.member_id, s.amount]))
-  for (const split of desired) {
-    const oldAmount = existingByMember.get(split.member_id)
-    if (oldAmount == null || oldAmount !== split.amount) {
-      await bandSpaceFinanceApi.createSplit(props.bandSpaceId, entryId, split)
-    }
-  }
+  // The plan was built against the splits loaded when the drawer opened. Saving twice without
+  // re-reading them would plan the second save against split ids that no longer exist.
+  await loadExistingSplits(entryId)
 }
 
 async function reset(entryId) {
@@ -218,9 +243,9 @@ watch(expanded, (isExpanded) => {
 })
 
 defineExpose({
+  validateSplits,
   syncSplits,
-  activeSplitsCount,
-  existingSplits,
+  loadExistingSplits,
   reset
 })
 </script>

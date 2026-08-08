@@ -197,4 +197,130 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
+
+    /**
+     * Deleting a recurrence hard-deletes every forecast it planned. A personal one belongs to the
+     * member those forecasts are filed under, so this used to let any member destroy planned entries
+     * they are explicitly forbidden from deleting one by one.
+     */
+    public function test_delete_personal_recurrence_of_another_member_is_refused(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $intruder = UserFactory::new()->create(['username' => 'intruder', 'email' => 'intruder@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $intruder])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $recurrence = FinanceRecurrenceFactory::new([
+            'category' => $category,
+            'label' => 'Cordes',
+            'type' => FinanceEntryType::Expense,
+            'scope' => FinanceEntryScope::Personal,
+            'interval' => RecurrenceInterval::Monthly,
+            'amount' => 3000,
+            'startDate' => new \DateTime('2024-01-01'),
+            'endDate' => new \DateTime('2024-06-30'),
+            'isActive' => true,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $forecast = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cordes',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $ownerMembership,
+            'amount' => 3000,
+            'date' => new \DateTime('2024-02-01'),
+            'recurrence' => $recurrence,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $recurrenceId = (string) $recurrence->id;
+        $forecastId = (string) $forecast->id;
+
+        $this->client->loginUser($intruder);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrenceId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Vous ne pouvez supprimer que vos propres récurrences personnelles',
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => 'Vous ne pouvez supprimer que vos propres récurrences personnelles',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertNotNull(self::getContainer()->get(FinanceRecurrenceRepository::class)->find($recurrenceId));
+        $this->assertNotNull(self::getContainer()->get(FinanceEntryRepository::class)->find($forecastId));
+
+        // The clear above detached it, and a detached entity cannot be bound as a query parameter.
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $recurrenceId));
+    }
+
+    public function test_delete_own_personal_recurrence(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $otherMember = UserFactory::new()->create(['username' => 'other_member', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $otherMember])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $recurrence = FinanceRecurrenceFactory::new([
+            'category' => $category,
+            'label' => 'Cordes',
+            'type' => FinanceEntryType::Expense,
+            'scope' => FinanceEntryScope::Personal,
+            'interval' => RecurrenceInterval::Monthly,
+            'amount' => 3000,
+            'startDate' => new \DateTime('2024-01-01'),
+            'endDate' => new \DateTime('2024-06-30'),
+            'isActive' => true,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $forecast = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Cordes',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $ownerMembership,
+            'amount' => 3000,
+            'date' => new \DateTime('2024-02-01'),
+            'recurrence' => $recurrence,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $recurrenceId = (string) $recurrence->id;
+        $forecastId = (string) $forecast->id;
+
+        $this->client->loginUser($owner);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrenceId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertNull(self::getContainer()->get(FinanceRecurrenceRepository::class)->find($recurrenceId));
+        $this->assertNull(self::getContainer()->get(FinanceEntryRepository::class)->find($forecastId));
+    }
 }

@@ -52,6 +52,7 @@ class FinanceCategoryUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'has_children' => false,
+            'entry_count' => 0,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => $category->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);
@@ -94,6 +95,7 @@ class FinanceCategoryUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 5,
             'has_children' => false,
+            'entry_count' => 0,
             'creation_datetime' => $category->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $category->updateDatetime->format(\DateTimeInterface::ATOM),
         ]);

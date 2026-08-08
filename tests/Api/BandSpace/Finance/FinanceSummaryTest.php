@@ -251,4 +251,87 @@ class FinanceSummaryTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
+
+    /**
+     * A fourchette with one bound missing can no longer be written through the API, but rows created
+     * before that rule exist. They used to disappear from every total, because ROUND((min + max) / 2)
+     * is NULL as soon as one side is and the COALESCE fell straight through to 0, and they raised no
+     * estimate warning either since the flag only looked at the minimum. Both now hold.
+     */
+    public function test_get_summary_counts_a_half_filled_estimate_by_the_bound_it_has(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mastering (borne haute inconnue)',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => null,
+            'amountMin' => 40000,
+            'amountMax' => null,
+            'date' => new \DateTime('2024-09-01'),
+        ])->create();
+
+        FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Pressage (borne basse inconnue)',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => null,
+            'amountMin' => null,
+            'amountMax' => 25000,
+            'date' => new \DateTime('2024-09-02'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            [],
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceSummary',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/summary',
+            '@type' => 'FinanceSummary',
+            'band_space_id' => $bandSpace->id,
+            'current_membership_id' => $membership->id,
+            'total_income' => 0,
+            'total_expense' => 0,
+            'total_income_all' => 0,
+            'total_expense_all' => 65000,
+            'total_planned' => 65000,
+            'total_committed' => 0,
+            'total_paid' => 0,
+            'total_personal' => 0,
+            'has_estimates' => true,
+            'min_date' => '2024-09-01T00:00:00+00:00',
+            'max_date' => '2024-09-02T00:00:00+00:00',
+            'by_category' => [
+                [
+                    'id' => $category->id,
+                    'name' => 'Studio',
+                    'paid' => 0,
+                    'committed' => 0,
+                    'planned' => 65000,
+                ],
+            ],
+            'member_contributions' => [],
+            'upcoming_entries' => [],
+        ]);
+    }
 }
