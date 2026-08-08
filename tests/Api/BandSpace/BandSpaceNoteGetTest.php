@@ -56,6 +56,127 @@ class BandSpaceNoteGetTest extends ApiTestCase
         ]);
     }
 
+    /**
+     * The read side is where a note is corrupted for good: the editor is seeded from this response
+     * once at mount, then autosaves it back a couple of seconds later. So a character mangled here
+     * is written to the database on the next keystroke and the note never recovers.
+     */
+    public function test_get_item_preserves_special_characters(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                [
+                    'type' => 'paragraph',
+                    'content' => [[
+                        'type' => 'text',
+                        'text' => 'C\'est l\'heure de la répét « Rock & Roll » : écrire à contact@salle.fr, 2+2=4, et on dit "oui" à 100 %',
+                    ]],
+                ],
+                [
+                    'type' => 'paragraph',
+                    'content' => [
+                        ['type' => 'text', 'marks' => [['type' => 'italic']], 'text' => 'Balances'],
+                        ['type' => 'text', 'text' => ' '],
+                        ['type' => 'text', 'text' => 'à 18h'],
+                    ],
+                ],
+            ],
+        ];
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+            'content' => $content,
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => $note->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => $content,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => '2024-01-01T10:00:00+00:00',
+            'update_datetime' => null,
+        ]);
+    }
+
+    public function test_get_item_dangerous_uri_attributes_are_neutralised(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                ['type' => 'image', 'attrs' => ['src' => 'javascript:alert(1)']],
+                [
+                    'type' => 'paragraph',
+                    'content' => [[
+                        'type' => 'text',
+                        'marks' => [['type' => 'link', 'attrs' => ['href' => 'vbscript:msgbox(1)']]],
+                        'text' => 'Cliquez ici',
+                    ]],
+                ],
+            ],
+        ];
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+            'content' => $content,
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => $note->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => [
+                'type' => 'doc',
+                'content' => [
+                    [
+                        'type' => 'paragraph',
+                        'content' => [[
+                            'type' => 'text',
+                            'marks' => [],
+                            'text' => 'Cliquez ici',
+                        ]],
+                    ],
+                ],
+            ],
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => '2024-01-01T10:00:00+00:00',
+            'update_datetime' => null,
+        ]);
+    }
+
     public function test_get_item_not_found(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
