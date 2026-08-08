@@ -89,6 +89,44 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * The tasks a kanban column currently holds: same band space, same status, not archived.
+     * Reorder and move payloads are checked against it, see TaskColumnPositionsGuard.
+     *
+     * @return Task[]
+     */
+    public function findActiveColumn(BandSpace $bandSpace, TaskStatus $status): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.status = :status')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Where a task joining a column goes when the client sent no ordering, which happens while a
+     * server-side task filter hides part of that column from it: the end, so the task cannot take
+     * a number one of the hidden tasks already holds.
+     */
+    public function findNextPositionInColumn(BandSpace $bandSpace, TaskStatus $status): int
+    {
+        $highestPosition = $this->createQueryBuilder('t')
+            ->select('MAX(t.position)')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.status = :status')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $highestPosition === null ? 0 : (int) $highestPosition + 1;
+    }
+
+    /**
      * @param array<int, array{id: string, position: int}> $positions
      */
     public function bulkUpdatePositions(array $positions): void

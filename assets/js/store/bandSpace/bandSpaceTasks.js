@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import bandSpaceTasksApi from '../../api/bandSpace/band-space-tasks.js'
+import { orderColumnAfterDrag, toPositions } from '../../utils/taskOrdering.js'
 import { useUserSecurityStore } from '../user/security.js'
 
 export const useBandTasksStore = defineStore('bandTasks', () => {
@@ -57,6 +58,30 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
       done: filtered.filter((t) => t.status === 'done').sort(sortByPosition)
     }
   })
+
+  /**
+   * The query, the due-date range and "En retard" are applied by the server: fetchTasks replaces
+   * tasks.value with the matching subset, so the rest of a column is simply not in memory and no
+   * ordering covering it can be built. Positions are absolute, so writing one anyway would give
+   * the visible tasks numbers the hidden ones already hold and scramble the board for every
+   * member. Reordering is therefore refused, and the columns are not draggable, while any of
+   * those filters is on. The other filters hide tasks the store still holds, so they are fine.
+   */
+  const isReorderDisabled = computed(
+    () =>
+      filters.query.trim() !== '' ||
+      Boolean(filters.dueDateFrom) ||
+      Boolean(filters.dueDateTo) ||
+      filters.overdue === true
+  )
+
+  /** Every task of a column, hidden ones included, in board order. */
+  function columnOrderedIds(status) {
+    return tasks.value
+      .filter((t) => t.status === status && !t.archive_datetime)
+      .sort((a, b) => a.position - b.position)
+      .map((t) => t.id)
+  }
 
   const activeTask = computed(() => {
     if (!activeTaskId.value) return null
@@ -202,18 +227,27 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     }
   }
 
-  async function moveTaskToColumn(bandSpaceId, taskId, newStatus, newIndex) {
+  /**
+   * `visibleIndex` is where the card landed in the destination column as the user sees it, or
+   * null to append, which is what the "Déplacer vers" menu asks for since it has no drop point.
+   */
+  async function moveTaskToColumn(bandSpaceId, taskId, newStatus, visibleIndex = null) {
     const snapshot = [...tasks.value]
-    const destinationIds = tasks.value
-      .filter((t) => t.status === newStatus && !t.archive_datetime && t.id !== taskId)
-      .sort((a, b) => a.position - b.position)
-      .map((t) => t.id)
-    destinationIds.splice(newIndex, 0, taskId)
-    const positions = destinationIds.map((id, index) => ({ id, position: index }))
+
+    // Under a server-side filter the rest of the destination column is not in memory, so no
+    // ordering can be sent. An empty payload asks the server to append the task instead, which
+    // is the one placement it can work out on its own.
+    const orderedIds = isReorderDisabled.value
+      ? null
+      : destinationOrder(newStatus, taskId, visibleIndex)
+    const positions = orderedIds === null ? [] : toPositions(orderedIds)
+    // Where the card is drawn until the server answers with the position it really got.
+    const movedPosition =
+      orderedIds === null ? tasksByStatus.value[newStatus].length : orderedIds.indexOf(taskId)
 
     tasks.value = tasks.value.map((t) => {
+      if (t.id === taskId) return { ...t, status: newStatus, position: movedPosition }
       const pos = positions.find((p) => p.id === t.id)
-      if (t.id === taskId) return { ...t, status: newStatus, position: newIndex }
       return pos ? { ...t, position: pos.position } : t
     })
 
@@ -224,6 +258,20 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
       tasks.value = snapshot
       throw e
     }
+  }
+
+  /** The whole destination column with the incoming task in place, hidden tasks included. */
+  function destinationOrder(newStatus, taskId, visibleIndex) {
+    const columnIds = columnOrderedIds(newStatus).filter((id) => id !== taskId)
+    // No drop point: the end of the column, which is what the server does with an empty payload.
+    if (visibleIndex === null) {
+      return [...columnIds, taskId]
+    }
+
+    const visibleIds = tasksByStatus.value[newStatus].map((t) => t.id).filter((id) => id !== taskId)
+    visibleIds.splice(visibleIndex, 0, taskId)
+
+    return orderColumnAfterDrag(columnIds, visibleIds, taskId)
   }
 
   async function deleteTask(bandSpaceId, taskId) {
@@ -248,13 +296,25 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     tasks.value = [updated, ...tasks.value]
   }
 
-  async function reorderTasks(bandSpaceId, status, orderedIds) {
-    const positions = orderedIds.map((id, index) => ({ id, position: index }))
+  /**
+   * `visibleOrderedIds` is the column as the user sees it after the drag, which the category,
+   * assignee, priority and "Mes tâches" filters can cut down. The payload has to cover the whole
+   * column, so the drag is replayed against it here.
+   */
+  async function reorderTasks(bandSpaceId, status, visibleOrderedIds, movedTaskId) {
+    // The columns are not draggable while a server-side filter is on, so this is a backstop.
+    if (isReorderDisabled.value) return
+
+    const orderedIds = orderColumnAfterDrag(
+      columnOrderedIds(status),
+      visibleOrderedIds,
+      movedTaskId
+    )
+    const positions = toPositions(orderedIds)
 
     // Optimistic update
     const snapshot = [...tasks.value]
     tasks.value = tasks.value.map((t) => {
-      if (t.status !== status) return t
       const pos = positions.find((p) => p.id === t.id)
       return pos ? { ...t, position: pos.position } : t
     })
@@ -383,6 +443,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     loadError: readonly(loadError),
     isLoadingActiveTask: readonly(isLoadingActiveTask),
     activeTaskError: readonly(activeTaskError),
+    isReorderDisabled,
     tasksByStatus,
     activeTask,
     fetchTasks,

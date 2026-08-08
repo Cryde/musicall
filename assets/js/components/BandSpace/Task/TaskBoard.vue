@@ -9,8 +9,10 @@
       :categories="categories"
       :band-space-id="bandSpaceId"
       @open-task="$emit('open-task', $event)"
-      @reorder="(status, ids) => $emit('reorder', status, ids)"
-      @status-change="(taskId, status, newIndex) => $emit('status-change', taskId, status, newIndex)"
+      @reorder="(status, ids, movedId) => $emit('reorder', status, ids, movedId)"
+      @status-change="
+        (taskId, status, visibleIndex) => $emit('status-change', taskId, status, visibleIndex)
+      "
       @show-all-done="$emit('show-all-done')"
     />
   </div>

@@ -170,6 +170,124 @@ class TaskMoveTest extends ApiTestCase
         $this->assertNotNull($taskRepo->find($taskId)->completedDatetime);
     }
 
+    /**
+     * The board cannot order a column it only partly holds, which is the case while a server-side
+     * task filter is on. It sends no ordering at all then, and the task goes to the end of its new
+     * column rather than taking a number one of the tasks it cannot see already holds.
+     */
+    public function test_move_task_without_positions_appends_to_the_destination_column(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $moved = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
+        $first = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
+        $second = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 1])->create();
+
+        $movedId = (string) $moved->id;
+        $firstId = (string) $first->id;
+        $secondId = (string) $second->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
+            [
+                'task_id' => $movedId,
+                'status' => 'in_progress',
+                'positions' => [],
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $movedId,
+            '@type' => 'Task',
+            'id' => $movedId,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => $moved->title,
+            'status' => 'in_progress',
+            'priority' => 'normal',
+            'created_by_id' => (string) $user->id,
+            'created_by_username' => $user->username,
+            'assignees' => [],
+            'position' => 2,
+            'creation_datetime' => $moved->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $this->getResponseAsArray()['update_datetime'],
+            'comment_count' => 0,
+            'file_count' => 0,
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $taskRepo = self::getContainer()->get(TaskRepository::class);
+        $this->assertSame(TaskStatus::InProgress, $taskRepo->find($movedId)->status);
+        $this->assertSame(2, $taskRepo->find($movedId)->position);
+        // The tasks already there keep their numbers: an append rewrites nothing else.
+        $this->assertSame(0, $taskRepo->find($firstId)->position);
+        $this->assertSame(1, $taskRepo->find($secondId)->position);
+    }
+
+    /**
+     * A destination ordering that names only part of the column would renumber that part and
+     * leave the rest holding the same numbers, which is the corruption the reorder guard stops.
+     */
+    public function test_move_task_rejects_a_partial_destination_column(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $moved = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
+        $first = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 0])->create();
+        $hidden = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::InProgress, 'position' => 1])->create();
+
+        $movedId = (string) $moved->id;
+        $firstId = (string) $first->id;
+        $hiddenId = (string) $hidden->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
+            [
+                'task_id' => $movedId,
+                'status' => 'in_progress',
+                'positions' => [
+                    ['id' => $firstId, 'position' => 0],
+                    ['id' => $movedId, 'position' => 1],
+                ],
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Les positions doivent couvrir exactement les tâches de cette colonne',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Les positions doivent couvrir exactement les tâches de cette colonne',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $taskRepo = self::getContainer()->get(TaskRepository::class);
+        $this->assertSame(TaskStatus::Todo, $taskRepo->find($movedId)->status);
+        $this->assertSame(0, $taskRepo->find($movedId)->position);
+        $this->assertSame(0, $taskRepo->find($firstId)->position);
+        $this->assertSame(1, $taskRepo->find($hiddenId)->position);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $moved->id));
+    }
+
     public function test_move_task_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();
