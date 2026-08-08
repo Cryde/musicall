@@ -2,8 +2,12 @@
 
 namespace App\Tests\Api\BandSpace\AgendaEntry;
 
+use App\Entity\BandSpace\AgendaEntry;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\BandSpaceRepository;
+use App\Service\BandSpace\AgendaAggregator;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\AgendaEntryFactory;
@@ -367,6 +371,128 @@ class AgendaEntryUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_update_without_event_datetime_leaves_the_series_anchor_alone(): void
+    {
+        // Weekly rehearsal anchored Monday 5 January. Opening the 9 March occurrence to fix a typo
+        // used to PATCH that occurrence's date onto the series, moving the anchor to 9 March and
+        // dropping every January and February occurrence. The drawer now sends everything except
+        // the start, which is what this payload is.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétiton hebdomadaire',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-01-05 20:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-06-30'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            [
+                'title' => 'Répétition hebdomadaire',
+                'endDatetime' => null,
+                'isAllDay' => false,
+                'location' => null,
+                'description' => null,
+                'recurrenceFrequency' => 'weekly',
+                'recurrenceUntilDate' => '2026-06-30',
+                'recurrenceMonthlyMode' => null,
+            ],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition hebdomadaire',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-01-05T20:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => 'weekly',
+            'recurrence_until_date' => '2026-06-30',
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        // Read the row back rather than trusting the response: the anchor is what the expansion
+        // runs from, and the entity held by the test is detached once the kernel reboots.
+        $persisted = self::getContainer()->get(AgendaEntryRepository::class)->find($entry->id);
+        $this->assertInstanceOf(AgendaEntry::class, $persisted);
+        $this->assertSame(
+            '2026-01-05T20:00:00+00:00',
+            $persisted->eventDatetime->format(\DateTimeInterface::ATOM),
+        );
+
+        // The processor records an activity for every field it actually writes, so a lone
+        // title_changed is a second, independent proof that the start was never touched.
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Agenda, $entry->id);
+        $this->assertCount(1, $activities);
+        $this->assertSame('title_changed', $activities[0]->type);
+    }
+
+    public function test_update_title_only_keeps_the_occurrences_before_the_edited_one(): void
+    {
+        // Same series, seen from the agenda: the four January occurrences must survive a title edit
+        // made from a March one.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétiton hebdomadaire',
+            'description' => null,
+            'location' => 'Studio',
+            'eventDatetime' => new DateTimeImmutable('2026-01-05 20:00:00', new \DateTimeZone('UTC')),
+            'recurrenceFrequency' => \App\Enum\BandSpace\AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-06-30'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['title' => 'Répétition hebdomadaire'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+        $this->assertResponseIsSuccessful();
+
+        // The expansion is read through the aggregator rather than through a second GET, because
+        // loginUser only holds for one request and the single call is spent on the PATCH above,
+        // which is the operation under test. The agenda endpoint itself is covered elsewhere.
+        $bandSpace = self::getContainer()->get(BandSpaceRepository::class)->find($bandSpace->id);
+        $occurrences = self::getContainer()->get(AgendaAggregator::class)->aggregate(
+            $bandSpace,
+            new DateTimeImmutable('2026-01-01', new \DateTimeZone('UTC')),
+            new DateTimeImmutable('2026-01-31 23:59:59', new \DateTimeZone('UTC')),
+        );
+
+        $this->assertSame(
+            ['2026-01-05T20:00:00+00:00', '2026-01-12T20:00:00+00:00', '2026-01-19T20:00:00+00:00', '2026-01-26T20:00:00+00:00'],
+            array_map(static fn($item): string => $item->datetime, $occurrences)
+        );
+        $this->assertSame(
+            ['Répétition hebdomadaire', 'Répétition hebdomadaire', 'Répétition hebdomadaire', 'Répétition hebdomadaire'],
+            array_map(static fn($item): string => $item->title, $occurrences)
+        );
     }
 
     public function test_update_only_recurrence_until_date_extends_existing_series(): void
