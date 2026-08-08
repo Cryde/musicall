@@ -20,8 +20,12 @@ readonly class FinanceRecurrenceBuilder
         );
     }
 
-    public function buildItem(FinanceRecurrence $entity): FinanceRecurrenceResource
-    {
+    public function buildItem(
+        FinanceRecurrence $entity,
+        int $updatedEntryCount = 0,
+        int $removedEntryCount = 0,
+        int $createdEntryCount = 0,
+    ): FinanceRecurrenceResource {
         $dto = new FinanceRecurrenceResource();
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->category->bandSpace->id;
@@ -36,6 +40,9 @@ readonly class FinanceRecurrenceBuilder
         $dto->endDate = $entity->endDate->format(DateTimeInterface::ATOM);
         $dto->isActive = $entity->isActive;
         $dto->entryCount = $entity->entries->count();
+        $dto->updatedEntryCount = $updatedEntryCount;
+        $dto->removedEntryCount = $removedEntryCount;
+        $dto->createdEntryCount = $createdEntryCount;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
 

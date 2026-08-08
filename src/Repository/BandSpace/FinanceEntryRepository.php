@@ -322,14 +322,19 @@ class FinanceEntryRepository extends ServiceEntityRepository
      * being deleted) or only those past a date (the recurrence was shortened, or switched off because
      * the member it belongs to left the band).
      *
+     * Only Planned entries go: a Committed or Paid entry is an occurrence somebody has already acted on
+     * and stops belonging to the recurrence.
+     *
      * Deliberately a bulk DQL delete rather than an ORM remove(): a stopped recurrence can carry years
      * of planned rows and hydrating them only to delete them is pointless work. The consequence the
      * caller has to know about is that no lifecycle event fires and already-loaded FinanceEntry objects
      * stay in Doctrine's identity map, so anything re-reading them in the same process still sees them.
      * The file attachments of those entries have no foreign key either, so the caller has to clear them
      * itself, through BandSpaceFileSourceDetacher, before calling this.
+     *
+     * @return int how many entries were dropped
      */
-    public function deletePlannedByRecurrence(FinanceRecurrence $recurrence, ?\DateTimeInterface $after = null): void
+    public function deletePlannedByRecurrence(FinanceRecurrence $recurrence, ?\DateTimeInterface $after = null): int
     {
         $dql = 'DELETE FROM App\Entity\BandSpace\FinanceEntry e
                 WHERE e.recurrence = :recurrence
@@ -347,6 +352,45 @@ class FinanceEntryRepository extends ServiceEntityRepository
             $query->setParameter('after', $after);
         }
 
-        $query->execute();
+        return (int) $query->execute();
+    }
+
+    /**
+     * The forecasts a recurrence still owns past a given date, the only entries an edit of that
+     * recurrence is allowed to rewrite.
+     *
+     * @return FinanceEntry[]
+     */
+    public function findPlannedByRecurrenceAfter(FinanceRecurrence $recurrence, \DateTimeInterface $after): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.member', 'm')->addSelect('m')
+            ->where('e.recurrence = :recurrence')
+            ->andWhere('e.date > :after')
+            ->andWhere('e.status = :status')
+            ->setParameter('recurrence', $recurrence)
+            ->setParameter('after', $after)
+            ->setParameter('status', FinanceEntryStatus::Planned)
+            ->orderBy('e.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Every entry a recurrence has past a given date, whatever its status, so a caller about to
+     * materialise occurrences can tell which dates are already taken.
+     *
+     * @return FinanceEntry[]
+     */
+    public function findByRecurrenceAfter(FinanceRecurrence $recurrence, \DateTimeInterface $after): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.recurrence = :recurrence')
+            ->andWhere('e.date > :after')
+            ->setParameter('recurrence', $recurrence)
+            ->setParameter('after', $after)
+            ->orderBy('e.date', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -497,13 +497,36 @@ function handleEditRecurrence(recurrence) {
   recurrenceDrawerVisible.value = true
 }
 
-function handleRecurrenceSaved() {
-  trackUmamiEvent(
-    editingRecurrence.value ? 'finance-recurrence-update' : 'finance-recurrence-create'
-  )
+// Editing a recurrence rewrites, removes or adds the entries it had already planned, so the toast says
+// how many rather than a bare "enregistrée" that hides whether anything moved.
+const RECURRENCE_ENTRY_IMPACTS = [
+  { key: 'updated_entry_count', singular: 'mise à jour', plural: 'mises à jour' },
+  { key: 'created_entry_count', singular: 'ajoutée', plural: 'ajoutées' },
+  { key: 'removed_entry_count', singular: 'supprimée', plural: 'supprimées' }
+]
+
+function buildRecurrenceImpactDetail(result) {
+  const parts = RECURRENCE_ENTRY_IMPACTS.flatMap(({ key, singular, plural }) => {
+    const count = result?.[key] ?? 0
+    if (count === 0) return []
+
+    return [`${count} ${count > 1 ? `entrées ${plural}` : `entrée ${singular}`}`]
+  })
+
+  return parts.length > 0 ? parts.join(', ') : 'Aucune entrée modifiée'
+}
+
+function handleRecurrenceSaved(result) {
+  const isUpdate = editingRecurrence.value !== null
+  trackUmamiEvent(isUpdate ? 'finance-recurrence-update' : 'finance-recurrence-create')
   recurrenceDrawerVisible.value = false
   editingRecurrence.value = null
-  toast.add({ severity: 'success', summary: 'Récurrence enregistrée', life: 3000 })
+  toast.add({
+    severity: 'success',
+    summary: 'Récurrence enregistrée',
+    detail: isUpdate ? buildRecurrenceImpactDetail(result) : undefined,
+    life: 3000
+  })
 }
 
 function handleRecurrenceDeleted() {
