@@ -46,15 +46,19 @@
         <ProgressSpinner />
       </div>
 
+      <!-- The reload count is in the key so an explicit reload rebuilds the editor around the note
+           that came back. Selecting or saving never changes it, so the caret survives both. -->
       <NoteEditor
         v-else-if="notesStore.selectedNote"
-        :key="notesStore.selectedNoteId"
+        :key="`${notesStore.selectedNoteId}-${notesStore.selectedNoteReloadCount}`"
         :note="notesStore.selectedNote"
         :band-space-id="bandSpaceId"
         :saveStatus="notesStore.saveStatus"
+        :isReloading="notesStore.isReloadingNote"
         @update-content="handleUpdateContent"
         @update-title="handleUpdateTitle"
         @update-emoji="handleUpdateEmoji"
+        @reload="handleReloadNote"
       />
 
       <div v-else class="hidden md:flex flex-col items-center justify-center flex-1 text-center p-8">
@@ -148,8 +152,8 @@ async function handleCreateNote({ title, parentId }) {
   }
 }
 
-function handleUpdateContent({ noteId, content }) {
-  notesStore.updateNoteContent(bandSpaceId, noteId, content)
+function handleUpdateContent({ noteId, content, contentVersion }) {
+  notesStore.updateNoteContent(bandSpaceId, noteId, content, contentVersion)
 }
 
 function handleUpdateTitle(title) {
@@ -161,6 +165,20 @@ function handleUpdateTitle(title) {
 function handleUpdateEmoji(emoji) {
   if (notesStore.selectedNoteId) {
     notesStore.updateNoteEmoji(bandSpaceId, notesStore.selectedNoteId, emoji)
+  }
+}
+
+async function handleReloadNote() {
+  try {
+    await notesStore.reloadSelectedNote(bandSpaceId)
+  } catch (error) {
+    // The editor is untouched on failure, so the member still has their text and can retry.
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: error.message || 'Impossible de recharger la note',
+      life: 5000
+    })
   }
 }
 

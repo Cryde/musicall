@@ -58,6 +58,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => null,
+            'content_version' => 1,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -90,7 +91,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -108,6 +109,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => $content,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -155,6 +157,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 5,
             'content' => null,
+            'content_version' => 1,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -200,6 +203,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => null,
+            'content_version' => 1,
             'has_children' => false,
             'emoji' => '🎵',
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -250,6 +254,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => null,
+            'content_version' => 1,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -278,7 +283,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             [],
             [],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
-            json_encode(['content' => null])
+            json_encode(['content' => null, 'expected_content_version' => 1])
         );
 
         $this->assertResponseIsSuccessful();
@@ -295,6 +300,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => null,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -434,7 +440,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -452,6 +458,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => $content,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -492,7 +499,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -510,6 +517,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => $content,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -551,7 +559,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -569,6 +577,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => $content,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -600,7 +609,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -618,6 +627,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => $content,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -659,7 +669,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -689,6 +699,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
                     ],
                 ],
             ],
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -726,7 +737,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -749,6 +760,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
                     ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Après']]],
                 ],
             ],
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -796,7 +808,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -819,6 +831,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
                     ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Après', 'marks' => []]]],
                 ],
             ],
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -854,7 +867,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -877,6 +890,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
                     ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Après']]],
                 ],
             ],
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -927,7 +941,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         $this->client->jsonRequest(
             'PATCH',
             '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            ['content' => $content],
+            ['content' => $content, 'expected_content_version' => 1],
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
@@ -945,6 +959,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'content' => $content,
+            'content_version' => 2,
             'has_children' => false,
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
@@ -1089,5 +1104,247 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    /**
+     * The loss this guard exists for: one member writes for ten minutes and is autosaved every two
+     * seconds, then a second member fixes a single typo in the copy they opened before any of it.
+     * That second write used to replace the whole document, with neither of them ever choosing to
+     * save, no warning on either side and no history to recover from.
+     */
+    public function test_update_content_refuses_a_body_written_against_an_older_revision(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $storedContent = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Dix minutes de travail']]]]];
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+            'content' => $storedContent,
+            'contentVersion' => 4,
+            'position' => 0,
+        ])->create();
+
+        $staleContent = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Une coquille corrigée']]]]];
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            ['content' => $staleContent, 'expected_content_version' => 3],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Cette note a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => "Cette note a été modifiée par un autre membre depuis que vous l'avez ouverte. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.",
+        ]);
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertSame($storedContent, $refreshed->content);
+        $this->assertSame(4, $refreshed->contentVersion);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id));
+    }
+
+    /**
+     * A guard a caller can skip by leaving one field out is not a guard, so a body write with no
+     * revision is refused outright rather than falling back to the overwrite it replaces. 428 rather
+     * than 409: nothing is in conflict, the caller simply did not say what it was editing.
+     */
+    public function test_update_content_requires_the_revision_it_was_written_against(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $storedContent = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Ce qui est enregistré']]]]];
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+            'content' => $storedContent,
+            'position' => 0,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            ['content' => ['type' => 'doc', 'content' => []]],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_PRECONDITION_REQUIRED);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/428',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Indiquez la version de la note sur laquelle vous avez travaillé pour enregistrer son contenu.',
+            'status' => 428,
+            'type' => '/errors/428',
+            'description' => 'Indiquez la version de la note sur laquelle vous avez travaillé pour enregistrer son contenu.',
+        ]);
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertSame($storedContent, $refreshed->content);
+        $this->assertSame(1, $refreshed->contentVersion);
+    }
+
+    /** The everyday path: each save names the revision the previous one handed back. */
+    public function test_update_content_twice_using_the_revision_the_previous_save_returned(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+            'position' => 0,
+        ])->create();
+
+        // The first save is applied through the processor rather than the endpoint: the api firewall
+        // is stateless, so an authenticated session does not survive into a second request and the
+        // one call has to go to the save under test, the one naming the revision it handed back.
+        $firstContent = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Première phrase']]]]];
+        $note->content = $firstContent;
+        $note->contentVersion = 2;
+        \Zenstruck\Foundry\Persistence\save($note);
+
+        $secondContent = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Première phrase, puis la seconde']]]]];
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            ['content' => $secondContent, 'expected_content_version' => 2],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => $secondContent,
+            'content_version' => 3,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /** A rename made while somebody else is typing must not reject their next autosave. */
+    public function test_update_title_leaves_the_content_revision_alone(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Old Title',
+            'contentVersion' => 3,
+            'position' => 0,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            ['title' => 'New Title'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'New Title',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'content_version' => 3,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /** Re-saving an identical body costs nobody any work, so it must not invalidate anyone's copy. */
+    public function test_update_content_identical_to_the_stored_one_leaves_the_revision_alone(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $content = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Rien de changé']]]]];
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'My Note',
+            'content' => $content,
+            'contentVersion' => 3,
+            'position' => 0,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            ['content' => $content, 'expected_content_version' => 3],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $noteRepository = self::getContainer()->get(BandSpaceNoteRepository::class);
+        $refreshed = $noteRepository->find($note->id);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => (string) $note->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'My Note',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => $content,
+            'content_version' => 3,
+            'has_children' => false,
+            'emoji' => null,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Notes, $note->id));
     }
 }

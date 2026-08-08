@@ -90,6 +90,17 @@ class BandSpaceNote
     public int $position;
     /** @var array<string, mixed>|null */
     public ?array $content = null;
+
+    /** The revision of the body this payload carries. The server owns it, a caller cannot set it. */
+    #[ApiProperty(writable: false)]
+    public int $contentVersion = 1;
+
+    /**
+     * The revision the caller last read, required on a `content` write and refused when it no longer
+     * matches. Write only: a caller sends it, nobody reads it back. See BandSpaceNoteUpdateProcessor.
+     */
+    #[ApiProperty(readable: false)]
+    public ?int $expectedContentVersion = null;
     public bool $hasChildren = false;
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;

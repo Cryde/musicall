@@ -35,12 +35,43 @@
           <template v-else-if="saveStatus === 'saved'">
             <i class="pi pi-check mr-1 text-green-500"></i>Sauvegardé
           </template>
+          <template v-else-if="saveStatus === 'conflict'">
+            <i class="pi pi-exclamation-triangle mr-1 text-orange-500"></i>Non enregistré
+          </template>
           <template v-else-if="saveStatus === 'error'">
             <i class="pi pi-times mr-1 text-red-500"></i>Erreur
           </template>
         </span>
       </div>
     </div>
+
+    <!-- Conflict notice: stays until the member acts on it, autosave is over for this editor -->
+    <Message v-if="saveStatus === 'conflict'" severity="warn" :closable="false" class="m-4">
+      <div class="flex flex-col gap-3">
+        <p class="m-0">
+          Cette note a été modifiée par un autre membre pendant que vous écriviez. Vos modifications
+          n'ont pas été enregistrées afin de ne pas effacer les siennes, et la sauvegarde automatique
+          est arrêtée. Votre texte est toujours affiché ci-dessous : copiez-le avant de recharger la
+          note ou d'en ouvrir une autre, car il ne sera plus récupérable ensuite.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            label="Copier mon texte"
+            icon="pi pi-copy"
+            size="small"
+            @click="handleCopyMyText"
+          />
+          <Button
+            label="Recharger la note"
+            icon="pi pi-refresh"
+            severity="secondary"
+            size="small"
+            :loading="isReloading"
+            @click="emit('reload')"
+          />
+        </div>
+      </div>
+    </Message>
 
     <!-- Toolbar -->
     <div class="sticky top-0 z-30 bg-surface-50 dark:bg-surface-700 border-b border-surface-200 dark:border-surface-600 p-2">
@@ -289,21 +320,23 @@ import { EditorContent } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
 
 const props = defineProps({
   note: { type: Object, required: true },
   bandSpaceId: { type: String, required: true },
-  saveStatus: { type: String, default: null }
+  saveStatus: { type: String, default: null },
+  isReloading: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update-content', 'update-title', 'update-emoji'])
+const emit = defineEmits(['update-content', 'update-title', 'update-emoji', 'reload'])
 
 const toast = useToast()
 
@@ -357,15 +390,53 @@ onMounted(() => {
 
 // Shared with the tech rider section editor. Images are Notes only, and so is the detach
 // pass on save, which is why it lives in the callback rather than in the composable.
-const { editor } = useRichTextEditor({
+const { editor, stopSaving } = useRichTextEditor({
   content: props.note.content,
   placeholder: 'Commencez à écrire...',
   extensions: [Image.configure({ inline: false, allowBase64: false })],
   onSave: (json) => {
     detachRemovedImages(json)
-    emit('update-content', { noteId: props.note.id, content: json })
+    // The revision travels with the save because this component is the only place that still knows
+    // it on the unmount flush: by then the store has already moved on to whichever note was clicked.
+    emit('update-content', {
+      noteId: props.note.id,
+      content: json,
+      contentVersion: props.note.content_version
+    })
   }
 })
+
+// A refused save ends the loop for this editor. Retrying every two seconds would refuse every
+// time, and the flush on unmount would send the same document once more on the way out. The
+// editor stays writable so the member can select and copy what they wrote; the notice above
+// says plainly that none of it is being saved any more.
+watch(
+  () => props.saveStatus,
+  (status) => {
+    if (status === 'conflict') {
+      stopSaving()
+    }
+  }
+)
+
+async function handleCopyMyText() {
+  try {
+    await navigator.clipboard.writeText(editor.value?.getText() ?? '')
+    toast.add({
+      severity: 'success',
+      summary: 'Texte copié',
+      detail: 'Votre version est dans le presse-papiers.',
+      life: 4000
+    })
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Copie impossible',
+      detail: 'Sélectionnez votre texte dans la note, puis copiez-le avec Ctrl+C.',
+      life: 6000
+    })
+  }
+}
 
 function shouldShowTableMenu({ editor }) {
   return editor.isActive('table')

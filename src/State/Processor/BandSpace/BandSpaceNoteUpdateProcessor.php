@@ -5,6 +5,7 @@ namespace App\State\Processor\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
+use App\Entity\BandSpace\BandSpaceNote as BandSpaceNoteEntity;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceNoteActivityType;
@@ -16,7 +17,9 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
 /**
  * @implements ProcessorInterface<BandSpaceNoteDTO, BandSpaceNoteDTO>
@@ -45,11 +48,18 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
-        if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
+        if (!$note instanceof BandSpaceNoteEntity) {
             throw new NotFoundHttpException('Note not found');
         }
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
+
+        // Checked before anything is assigned, so a refused write leaves the note exactly as it was
+        // found rather than relying on nobody flushing after the exception.
+        $writesContent = array_key_exists('content', $requestPayload);
+        if ($writesContent) {
+            $this->refuseAWriteFromAStaleCopy($note, $data->expectedContentVersion);
+        }
 
         $oldTitle = $note->title;
         $oldEmoji = $note->emoji;
@@ -63,7 +73,7 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
             $note->emoji = $data->emoji;
         }
 
-        if (array_key_exists('content', $requestPayload)) {
+        if ($writesContent) {
             $note->content = $data->content;
         }
 
@@ -96,6 +106,10 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         }
 
         if ($oldContent !== $note->content) {
+            // Only a real change bumps the revision. Re-saving an identical body loses nobody any
+            // work, and bumping there would reject the next autosave of everyone else editing.
+            ++$note->contentVersion;
+
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $bandSpace,
                 module: BandSpaceModule::Notes,
@@ -108,5 +122,35 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
         $this->entityManager->flush();
 
         return $this->bandSpaceNoteBuilder->buildItem($note);
+    }
+
+    /**
+     * A note body is written by a two second autosave timer, so a member who left a stale copy open
+     * used to silently replace everything another member had written since, without either of them
+     * ever choosing to save and with no history to recover from. A body write therefore has to name
+     * the revision it was written against.
+     *
+     * A missing precondition is refused rather than waved through: a guard that any caller can skip
+     * by leaving one field out is not a guard. The endpoint has a single client, our own editor, and
+     * it sends the revision back on every body write. Title, emoji and position writes are untouched,
+     * so the note tree, the drag reorder and the emoji picker carry nothing extra.
+     *
+     * Read and write are not atomic here, so two saves landing within the same few milliseconds can
+     * still both pass. Closing that would mean locking the row on every batch of keystrokes, and the
+     * loss this fixes is measured in minutes.
+     */
+    private function refuseAWriteFromAStaleCopy(BandSpaceNoteEntity $note, ?int $expectedContentVersion): void
+    {
+        if ($expectedContentVersion === null) {
+            throw new PreconditionRequiredHttpException(
+                'Indiquez la version de la note sur laquelle vous avez travaillé pour enregistrer son contenu.'
+            );
+        }
+
+        if ($expectedContentVersion !== $note->contentVersion) {
+            throw new ConflictHttpException(
+                'Cette note a été modifiée par un autre membre depuis que vous l\'avez ouverte. Vos modifications n\'ont pas été enregistrées afin de ne pas effacer les siennes.'
+            );
+        }
     }
 }
