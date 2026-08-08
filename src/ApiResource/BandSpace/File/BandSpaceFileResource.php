@@ -35,6 +35,9 @@ use App\State\Provider\BandSpace\File\BandSpaceTaskFileCollectionProvider;
             openapi: new Operation(tags: ['Band Space File']),
             paginationEnabled: true,
             paginationItemsPerPage: 50,
+            // The list pages client side, so the page size belongs to the caller rather than being a
+            // number the two sides have to agree on without seeing each other. Capped just below.
+            paginationClientItemsPerPage: true,
             paginationMaximumItemsPerPage: 200,
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_files_get_collection',

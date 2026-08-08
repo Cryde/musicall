@@ -103,10 +103,10 @@ async function handleConfirm() {
   globalError.value = null
   try {
     await bandSpaceFilesApi.updateFile(props.bandSpaceId, props.file.id, {
-      folder_id: targetFolderId.value
+      folder_id: targetFolderId.value ?? null
     })
-    filesStore.fetchFiles(props.bandSpaceId)
-    emit('moved', { fileId: props.file.id, folderId: targetFolderId.value })
+    filesStore.applyFileMoved(props.file.id, targetFolderId.value ?? null)
+    emit('moved', { fileId: props.file.id, folderId: targetFolderId.value ?? null })
     visible.value = false
   } catch (e) {
     globalError.value = e.message

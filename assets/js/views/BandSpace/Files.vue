@@ -117,27 +117,67 @@
         </div>
 
         <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
-          <FileTrashList
-            v-if="isTrashActive"
-            :band-space-id="bandSpaceId"
-            :files="filesStore.files"
-            :is-loading="filesStore.isLoadingFiles"
-            :is-admin="isAdmin"
-          />
-          <FileList
-            v-else
-            :folders="inlineFolders"
-            @open-folder="handleFolderSelect"
-            :band-space-id="bandSpaceId"
-            :files="filesStore.files"
-            :is-loading="filesStore.isLoadingFiles"
-            :empty-message="emptyMessage"
-            @select="handleFileSelect"
-            @open-rename="handleOpenRename"
-            @open-share="handleOpenShare"
-            @open-versions="handleOpenVersions"
-            @open-move="handleOpenMove"
-          />
+          <!-- The count and the load more control sit here rather than inside the two lists: both
+               page identically, and the trash needs it most, since a file it cannot reach is a file
+               app:band-space:purge eventually destroys. -->
+          <div
+            v-if="filesStore.totalFiles > 0"
+            class="flex items-center justify-between gap-3 pb-3 mb-1 border-b border-surface-100 dark:border-surface-800"
+          >
+            <p
+              class="text-xs text-surface-600 dark:text-surface-300 tabular-nums"
+              aria-live="polite"
+            >
+              {{ filesStore.filesCountLabel }}
+            </p>
+            <span
+              v-if="filesStore.isRefreshingFiles"
+              class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300"
+            >
+              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              Actualisation…
+            </span>
+          </div>
+
+          <div
+            :class="filesStore.isRefreshingFiles ? 'opacity-50 transition-opacity' : ''"
+            :aria-busy="filesStore.isRefreshingFiles ? 'true' : 'false'"
+          >
+            <FileTrashList
+              v-if="isTrashActive"
+              :band-space-id="bandSpaceId"
+              :files="filesStore.files"
+              :is-loading="filesStore.isLoadingFiles"
+              :is-admin="isAdmin"
+            />
+            <FileList
+              v-else
+              :folders="inlineFolders"
+              @open-folder="handleFolderSelect"
+              :band-space-id="bandSpaceId"
+              :files="filesStore.files"
+              :is-loading="filesStore.isLoadingFiles"
+              :empty-message="emptyMessage"
+              @select="handleFileSelect"
+              @open-rename="handleOpenRename"
+              @open-share="handleOpenShare"
+              @open-versions="handleOpenVersions"
+              @open-move="handleOpenMove"
+            />
+          </div>
+
+          <div v-if="filesStore.hasMoreFiles" class="flex flex-col items-center gap-2 mt-4">
+            <Message v-if="filesStore.loadMoreError" severity="error" :closable="false">
+              {{ filesStore.loadMoreError }}
+            </Message>
+            <Button
+              label="Charger plus"
+              :loading="filesStore.isLoadingMoreFiles"
+              severity="secondary"
+              outlined
+              @click="handleLoadMore"
+            />
+          </div>
         </div>
       </section>
     </div>
@@ -325,6 +365,10 @@ function loadAll() {
 function handleFolderSelect(folderId) {
   filesStore.setActiveFolder(folderId)
   filesStore.fetchFiles(bandSpaceId.value)
+}
+
+function handleLoadMore() {
+  filesStore.fetchMoreFiles(bandSpaceId.value)
 }
 
 function handleFilterUpdate({ key, value }) {
