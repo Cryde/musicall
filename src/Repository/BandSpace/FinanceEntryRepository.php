@@ -4,6 +4,7 @@ namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\FinanceEntry;
+use App\Entity\BandSpace\FinanceRecurrence;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -255,5 +256,29 @@ class FinanceEntryRepository extends ServiceEntityRepository
             'username' => $row['username'],
             'total' => (int) $row['total'],
         ], $rows);
+    }
+
+    /**
+     * Drops the entries a recurrence had already planned past a given date, used when the recurrence is
+     * switched off because the member it belongs to left the band.
+     *
+     * Deliberately a bulk DQL delete rather than an ORM remove(): a stopped recurrence can carry years
+     * of planned rows and hydrating them only to delete them is pointless work. The consequence the
+     * caller has to know about is that no lifecycle event fires and already-loaded FinanceEntry objects
+     * stay in Doctrine's identity map, so anything re-reading them in the same process still sees them.
+     */
+    public function deleteFuturePlannedByRecurrence(FinanceRecurrence $recurrence, \DateTimeInterface $after): void
+    {
+        $this->getEntityManager()
+            ->createQuery(
+                'DELETE FROM App\Entity\BandSpace\FinanceEntry e
+                 WHERE e.recurrence = :recurrence
+                 AND e.date > :after
+                 AND e.status = :status'
+            )
+            ->setParameter('recurrence', $recurrence)
+            ->setParameter('after', $after)
+            ->setParameter('status', FinanceEntryStatus::Planned)
+            ->execute();
     }
 }

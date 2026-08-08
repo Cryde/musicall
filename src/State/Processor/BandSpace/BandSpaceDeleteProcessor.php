@@ -6,13 +6,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\BandSpace as BandSpaceResource;
 use App\Entity\User;
-use App\Enum\BandSpace\BandSpaceModule;
-use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Event\BandSpaceDeletionStateChangedEvent;
 use App\Security\BandSpace\BandSpaceAdminChecker;
-use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\BandSpaceDeletionScheduler;
 use DateTimeImmutable;
-use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -27,15 +24,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 readonly class BandSpaceDeleteProcessor implements ProcessorInterface
 {
-    /**
-     * Kept in sync with the durations announced in the privacy policy and the terms.
-     */
-    private const int GRACE_PERIOD_DAYS = 30;
-
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceAdminChecker $adminChecker,
-        private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
+        private BandSpaceDeletionScheduler $bandSpaceDeletionScheduler,
         private Security $security,
         private EventDispatcherInterface $eventDispatcher,
     ) {
@@ -55,17 +47,7 @@ readonly class BandSpaceDeleteProcessor implements ProcessorInterface
             throw new ConflictHttpException('La suppression de cet espace est déjà programmée');
         }
 
-        $scheduledFor = new DateTimeImmutable(sprintf('+%d days', self::GRACE_PERIOD_DAYS));
-        $bandSpace->deletionScheduledDatetime = $scheduledFor;
-
-        $this->bandSpaceActivityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Settings,
-            type: BandSpaceSettingsActivityType::DeletionScheduled,
-            resourceId: (string) $bandSpace->id,
-            actor: $user,
-            payload: ['scheduled_for' => $scheduledFor->format(DateTimeInterface::ATOM)],
-        );
+        $this->bandSpaceDeletionScheduler->schedule($bandSpace, $user);
 
         $this->entityManager->flush();
 

@@ -100,6 +100,63 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countActiveMembers(BandSpace $bandSpace): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.bandSpace = :bandSpace')
+            ->andWhere('m.status = :status')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Every space the user still belongs to, for the account-deletion sweep. The space comes along
+     * because the caller reads and writes it for each membership.
+     *
+     * @return BandSpaceMembership[]
+     */
+    public function findActiveByUser(User $user): array
+    {
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.bandSpace', 'bs')
+            ->addSelect('bs')
+            ->where('m.user = :user')
+            ->andWhere('m.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', MembershipStatus::Active)
+            ->orderBy('m.creationDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The active member who has been in the space the longest, ignoring one of them.
+     *
+     * Used to pick the successor when the last admin disappears. Ordered by join date and then by id so
+     * two members who joined within the same second still resolve to one and the same successor: the
+     * column is a DATETIME, and a batch of invitations accepted at registration writes identical values.
+     */
+    public function findLongestStandingActiveMemberExcept(BandSpace $bandSpace, BandSpaceMembership $excluded): ?BandSpaceMembership
+    {
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.user', 'u')
+            ->addSelect('u')
+            ->where('m.bandSpace = :bandSpace')
+            ->andWhere('m.status = :status')
+            ->andWhere('m.id != :excludedId')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('status', MembershipStatus::Active)
+            ->setParameter('excludedId', (string) $excluded->id)
+            ->orderBy('m.creationDatetime', 'ASC')
+            ->addOrderBy('m.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function findMembershipIncludingInactive(BandSpace $bandSpace, User $user): ?BandSpaceMembership
     {
         return $this->createQueryBuilder('m')
