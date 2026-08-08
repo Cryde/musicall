@@ -510,12 +510,12 @@ async function handleSubmit() {
   }
 
   try {
-    if (isEditMode.value) {
-      await agendaStore.updateEntry(props.bandSpaceId, props.agendaItem.source_id, payload)
-    } else {
-      await agendaStore.createEntry(props.bandSpaceId, payload)
-    }
-    emit('saved')
+    // The saved entry travels with the event: the view needs its dates to tell whether what was
+    // just saved is inside the period on screen.
+    const saved = isEditMode.value
+      ? await agendaStore.updateEntry(props.bandSpaceId, props.agendaItem.source_id, payload)
+      : await agendaStore.createEntry(props.bandSpaceId, payload)
+    emit('saved', saved)
     isVisible.value = false
   } catch (error) {
     if (error?.violationsByField) {
