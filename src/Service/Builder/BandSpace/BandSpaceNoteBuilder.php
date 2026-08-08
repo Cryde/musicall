@@ -51,6 +51,7 @@ readonly class BandSpaceNoteBuilder
         $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\BandSpaceNote ? (string) $entity->parent->id : null;
         $dto->position = $entity->position;
         $dto->content = null;
+        $dto->contentVersion = $entity->contentVersion;
         $dto->hasChildren = !$entity->children->isEmpty();
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;

@@ -51,6 +51,21 @@ class BandSpaceNote
     #[ORM\Column(type: Types::JSON, nullable: true)]
     public ?array $content = null;
 
+    /**
+     * The revision number of the body, bumped by every write that actually changes `content`.
+     *
+     * A save carries the revision it was written against, so a member editing a copy that went stale
+     * is refused instead of silently replacing whatever another member wrote in the meantime. That
+     * matters here because the body is written by an autosave timer, so neither member ever chose to
+     * save and there is no history to recover from.
+     *
+     * It is deliberately not a Doctrine `#[ORM\Version]` column: that would bump on a title, emoji or
+     * position write too, and a rename made while someone is typing would then reject their next
+     * autosave for no reason. Those are single field writes that cannot carry minutes of work.
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
+    public int $contentVersion = 1;
+
     #[ORM\Column(type: Types::INTEGER)]
     public int $position = 0;
 

@@ -6,6 +6,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import StarterKit from '@tiptap/starter-kit'
 import { useEditor } from '@tiptap/vue-3'
 import { onBeforeUnmount } from 'vue'
+import { createDebouncedSaver } from '../utils/debouncedSaver.js'
 
 /**
  * The TipTap setup shared by every rich text surface in the app: Notes and tech rider
@@ -18,6 +19,10 @@ import { onBeforeUnmount } from 'vue'
  * Saving is debounced rather than explicit because this is prose: a save button on a
  * paragraph someone is still writing is friction. The flush on unmount is the important
  * half, without it the last few seconds of typing are lost by navigating away.
+ *
+ * `stopSaving` is the escape hatch for a save the server refuses for good, a note whose
+ * body moved on under the writer being the case that exists today. It ends the loop rather
+ * than letting it re-send the same refused document every couple of seconds.
  *
  * @param {object}   options
  * @param {object|string|null} options.content        initial TipTap document
@@ -35,33 +40,7 @@ export function useRichTextEditor({
   editable = true,
   onSave
 }) {
-  let saveTimeout = null
-  let pendingContent = null
-
-  function cancelDebouncedSave() {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout)
-      saveTimeout = null
-    }
-  }
-
-  function debouncedSave(json) {
-    cancelDebouncedSave()
-    pendingContent = json
-    saveTimeout = setTimeout(() => {
-      pendingContent = null
-      onSave(json)
-    }, debounceMs)
-  }
-
-  /** Writes anything still waiting on the debounce. Safe to call when nothing is pending. */
-  function flushPendingSave() {
-    if (pendingContent === null) return
-    const json = pendingContent
-    pendingContent = null
-    cancelDebouncedSave()
-    onSave(json)
-  }
+  const saver = createDebouncedSaver({ delayMs: debounceMs, onSave })
 
   const editor = useEditor({
     editable,
@@ -80,14 +59,19 @@ export function useRichTextEditor({
     ],
     content: content || '',
     onUpdate: ({ editor }) => {
-      debouncedSave(editor.getJSON())
+      saver.schedule(editor.getJSON())
     }
   })
 
   onBeforeUnmount(() => {
-    flushPendingSave()
+    saver.flush()
     editor.value?.destroy()
   })
 
-  return { editor, flushPendingSave, cancelDebouncedSave }
+  return {
+    editor,
+    flushPendingSave: saver.flush,
+    cancelDebouncedSave: saver.cancel,
+    stopSaving: saver.stop
+  }
 }
