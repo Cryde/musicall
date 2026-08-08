@@ -9,16 +9,21 @@ use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\ORM\EntityManagerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -67,6 +72,70 @@ class FinanceEntryDeleteTest extends ApiTestCase
         $this->assertCount(1, $activities);
         $this->assertSame('entry_deleted', $activities[0]->type);
         $this->assertSame(['label' => 'Mixage', 'amount' => 50000], $activities[0]->payload);
+    }
+
+    public function test_delete_entry_detaches_its_files_and_leaves_them_deletable(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mixage',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 50000,
+        ])->create();
+
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $attachment = BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file,
+            'sourceType' => 'finance',
+            'sourceId' => Uuid::fromString((string) $entry->id),
+            'attachedBy' => $user,
+        ]);
+        $entryId = (string) $entry->id;
+        $fileId = (string) $file->id;
+        $attachmentId = (string) $attachment->id;
+
+        $this->client->loginUser($user);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entryId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $attachmentRepository = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $this->assertNull($attachmentRepository->find($attachmentId));
+
+        $fileRepository = self::getContainer()->get(BandSpaceFileRepository::class);
+        $this->assertNotNull($fileRepository->find($fileId));
+        $this->assertNull($fileRepository->find($fileId)->archiveDatetime);
+
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepository->findForResource($bandSpace, BandSpaceModule::File, $fileId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('source_deleted', $activities[0]->type);
+        $this->assertSame([
+            'source_type' => 'finance',
+            'source_id' => $entryId,
+            'source_label' => 'Mixage',
+        ], $activities[0]->payload);
+
+        // The regression this test exists for. BandSpaceFileDeleteProcessor refuses with a 422 while
+        // findByFile returns anything, and that used to be permanent: the detach endpoint 404s once
+        // the source is gone, so no call could ever release the file. The endpoint is not exercised
+        // here because the stateless api firewall allows one authenticated request per test and it
+        // went to the deletion above, so the guard's own query stands in for it.
+        $this->assertSame([], $attachmentRepository->findByFile($fileRepository->find($fileId)));
     }
 
     public function test_delete_entry_not_member(): void

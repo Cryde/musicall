@@ -3,6 +3,7 @@
 namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\FinanceCategory;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\BandSpace\FinanceRecurrence;
 use App\Enum\BandSpace\FinanceEntryStatus;
@@ -259,26 +260,93 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Drops the entries a recurrence had already planned past a given date, used when the recurrence is
-     * switched off because the member it belongs to left the band.
+     * Id => label of the planned entries deletePlannedByRecurrence() would drop, same predicate.
+     *
+     * A projection, not a hydration: the only caller detaches the files hanging on those entries before
+     * the bulk delete removes them, and for that it needs an id and something to name the source with.
+     *
+     * @return array<string, string>
+     */
+    public function findPlannedLabelsByRecurrence(FinanceRecurrence $recurrence, ?\DateTimeInterface $after = null): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('e.id AS id', 'e.label AS label')
+            ->where('e.recurrence = :recurrence')
+            ->andWhere('e.status = :status')
+            ->setParameter('recurrence', $recurrence)
+            ->setParameter('status', FinanceEntryStatus::Planned);
+
+        if ($after instanceof \DateTimeInterface) {
+            $qb->andWhere('e.date > :after')->setParameter('after', $after);
+        }
+
+        $rows = $qb->getQuery()->getArrayResult();
+
+        $labels = [];
+        foreach ($rows as $row) {
+            $labels[(string) $row['id']] = (string) $row['label'];
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Id => label of every entry filed under a category, whatever its status.
+     *
+     * `finance_entry.category_id` is `ON DELETE CASCADE` and `FinanceCategory` declares no inverse
+     * collection, so deleting a category takes its entries with it in the database without Doctrine
+     * ever loading them. The caller needs this list to detach the files hanging on those entries
+     * first, since nothing afterwards can name a source that no longer exists.
+     *
+     * @return array<string, string>
+     */
+    public function findLabelsByCategory(FinanceCategory $category): array
+    {
+        $rows = $this->createQueryBuilder('e')
+            ->select('e.id AS id', 'e.label AS label')
+            ->where('e.category = :category')
+            ->setParameter('category', $category)
+            ->getQuery()
+            ->getArrayResult();
+
+        $labels = [];
+        foreach ($rows as $row) {
+            $labels[(string) $row['id']] = (string) $row['label'];
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Drops the entries a recurrence had already planned, either all of them (the recurrence itself is
+     * being deleted) or only those past a date (the recurrence was shortened, or switched off because
+     * the member it belongs to left the band).
      *
      * Deliberately a bulk DQL delete rather than an ORM remove(): a stopped recurrence can carry years
      * of planned rows and hydrating them only to delete them is pointless work. The consequence the
      * caller has to know about is that no lifecycle event fires and already-loaded FinanceEntry objects
      * stay in Doctrine's identity map, so anything re-reading them in the same process still sees them.
+     * The file attachments of those entries have no foreign key either, so the caller has to clear them
+     * itself, through BandSpaceFileSourceDetacher, before calling this.
      */
-    public function deleteFuturePlannedByRecurrence(FinanceRecurrence $recurrence, \DateTimeInterface $after): void
+    public function deletePlannedByRecurrence(FinanceRecurrence $recurrence, ?\DateTimeInterface $after = null): void
     {
-        $this->getEntityManager()
-            ->createQuery(
-                'DELETE FROM App\Entity\BandSpace\FinanceEntry e
-                 WHERE e.recurrence = :recurrence
-                 AND e.date > :after
-                 AND e.status = :status'
-            )
+        $dql = 'DELETE FROM App\Entity\BandSpace\FinanceEntry e
+                WHERE e.recurrence = :recurrence
+                AND e.status = :status';
+
+        if ($after instanceof \DateTimeInterface) {
+            $dql .= ' AND e.date > :after';
+        }
+
+        $query = $this->getEntityManager()->createQuery($dql)
             ->setParameter('recurrence', $recurrence)
-            ->setParameter('after', $after)
-            ->setParameter('status', FinanceEntryStatus::Planned)
-            ->execute();
+            ->setParameter('status', FinanceEntryStatus::Planned);
+
+        if ($after instanceof \DateTimeInterface) {
+            $query->setParameter('after', $after);
+        }
+
+        $query->execute();
     }
 }

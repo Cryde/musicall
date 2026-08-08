@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Service\BandSpace;
 
 use App\Entity\BandSpace\BandSpaceMembership;
+use App\Entity\User;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
+use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use DateTime;
 
 /**
@@ -24,10 +26,16 @@ readonly class PersonalRecurrenceDeactivator
     public function __construct(
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private FinanceEntryRepository $financeEntryRepository,
+        private BandSpaceFileSourceDetacher $fileSourceDetacher,
     ) {
     }
 
-    public function deactivateForMember(BandSpaceMembership $membership): void
+    /**
+     * @param User $actor whoever triggered the departure: the member themselves, or the admin who
+     *                    removed them. The file feed drops activities with no actor, so the detached
+     *                    files would go unreported without one.
+     */
+    public function deactivateForMember(BandSpaceMembership $membership, User $actor): void
     {
         $now = new DateTime();
 
@@ -35,7 +43,13 @@ readonly class PersonalRecurrenceDeactivator
             $recurrence->isActive = false;
             $recurrence->updateDatetime = new DateTime();
 
-            $this->financeEntryRepository->deleteFuturePlannedByRecurrence($recurrence, $now);
+            $this->fileSourceDetacher->detachDeletedSources(
+                $membership->bandSpace,
+                'finance',
+                $this->financeEntryRepository->findPlannedLabelsByRecurrence($recurrence, $now),
+                $actor,
+            );
+            $this->financeEntryRepository->deletePlannedByRecurrence($recurrence, $now);
         }
     }
 }

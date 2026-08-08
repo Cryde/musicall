@@ -165,6 +165,7 @@
           source-type="finance"
           :source-id="props.entry.id"
           :can-attach="canEditEntry"
+          @count="attachedFileCount = $event"
         />
       </div>
 
@@ -212,6 +213,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
+import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import SplitManager from './SplitManager.vue'
@@ -230,6 +232,7 @@ const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
 const splitManagerRef = ref(null)
 const formError = ref(null)
+const attachedFileCount = ref(0)
 
 const visibleModel = computed({
   get: () => props.visible,
@@ -478,7 +481,7 @@ async function handleSave() {
 
 function handleDelete() {
   confirm.require({
-    message: 'Es-tu sûr de vouloir supprimer cette entrée ?',
+    message: `Es-tu sûr de vouloir supprimer cette entrée ?${attachedFilesNotice(attachedFileCount.value)}`,
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',

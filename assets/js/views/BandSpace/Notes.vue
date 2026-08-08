@@ -185,7 +185,7 @@ async function handleReloadNote() {
 function handleDelete(noteId) {
   confirm.require({
     message:
-      'Êtes-vous sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées.',
+      'Êtes-vous sûr de vouloir supprimer cette note ? Les sous-notes seront également supprimées. Les images qui s’y trouvent resteront dans Fichiers.',
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',

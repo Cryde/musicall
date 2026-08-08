@@ -83,6 +83,55 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Every attachment hanging on the given sources, file fetch-joined because the caller needs the file
+     * id of each row it is about to drop.
+     *
+     * @param string[] $sourceIds
+     *
+     * @return BandSpaceFileAttachment[]
+     */
+    public function findBySource(string $sourceType, array $sourceIds): array
+    {
+        if (count($sourceIds) === 0) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('a')
+            ->addSelect('bsf')
+            ->innerJoin('a.bandSpaceFile', 'bsf')
+            ->where('a.sourceType = :sourceType')
+            ->andWhere('a.sourceId IN (:sourceIds)')
+            ->setParameter('sourceType', $sourceType)
+            ->setParameter('sourceIds', $sourceIds)
+            ->orderBy('a.attachedDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Attachments pointing at a source row that no longer exists.
+     *
+     * source_id carries no foreign key, so nothing at database level can tell these apart from live
+     * rows: the caller has to say which entity the ids were supposed to point at. A soft-deleted source
+     * (an archived Song, Setlist or Task) still has its row, so it is deliberately NOT an orphan here.
+     *
+     * @param class-string $sourceEntityClass
+     *
+     * @return BandSpaceFileAttachment[]
+     */
+    public function findOrphansBySourceType(string $sourceType, string $sourceEntityClass): array
+    {
+        return $this->getEntityManager()
+            ->createQuery(
+                'SELECT a FROM App\Entity\BandSpace\BandSpaceFileAttachment a
+                 WHERE a.sourceType = :sourceType
+                 AND NOT EXISTS (SELECT 1 FROM ' . $sourceEntityClass . ' source WHERE source.id = a.sourceId)'
+            )
+            ->setParameter('sourceType', $sourceType)
+            ->getResult();
+    }
+
+    /**
      * @param string[] $sourceIds
      *
      * @return array<string, int> source id => unique non-archived file count

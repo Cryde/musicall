@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -25,6 +26,7 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceNoteRepository $bandSpaceNoteRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
+        private BandSpaceFileSourceDetacher $fileSourceDetacher,
         private Security $security,
     ) {
     }
@@ -51,6 +53,15 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
             resourceId: $note->id,
             actor: $user,
             payload: ['title' => $note->title],
+        );
+
+        // The sub-notes go too, by database cascade, and every image dropped in one of them is an
+        // attachment of that sub-note rather than of this one: the whole subtree has to be released.
+        $this->fileSourceDetacher->detachDeletedSources(
+            $bandSpace,
+            'note',
+            $this->bandSpaceNoteRepository->findSelfAndDescendantTitles($note),
+            $user,
         );
 
         $this->entityManager->remove($note);

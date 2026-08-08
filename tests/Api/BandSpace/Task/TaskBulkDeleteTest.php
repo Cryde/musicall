@@ -3,13 +3,18 @@
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -68,6 +73,64 @@ class TaskBulkDeleteTest extends ApiTestCase
         self::getContainer()->get('doctrine')->getManager()->clear();
         $repo = self::getContainer()->get(TaskRepository::class);
         $this->assertNull($repo->find($taskId));
+    }
+
+    public function test_bulk_delete_detaches_the_files_of_every_deleted_task(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task1 = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $task2 = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $keptTask = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+
+        $file1 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $file2 = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+        $keptFile = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+
+        $attachment1 = BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file1,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString((string) $task1->id),
+            'attachedBy' => $user,
+        ]);
+        $attachment2 = BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $file2,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString((string) $task2->id),
+            'attachedBy' => $user,
+        ]);
+        $keptAttachment = BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $keptFile,
+            'sourceType' => 'task',
+            'sourceId' => Uuid::fromString((string) $keptTask->id),
+            'attachedBy' => $user,
+        ]);
+
+        $attachment1Id = (string) $attachment1->id;
+        $attachment2Id = (string) $attachment2->id;
+        $keptAttachmentId = (string) $keptAttachment->id;
+        $file1Id = (string) $file1->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
+            ['task_ids' => [(string) $task1->id, (string) $task2->id]],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $attachmentRepository = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $this->assertNull($attachmentRepository->find($attachment1Id));
+        $this->assertNull($attachmentRepository->find($attachment2Id));
+        $this->assertNotNull($attachmentRepository->find($keptAttachmentId));
+
+        $fileRepository = self::getContainer()->get(BandSpaceFileRepository::class);
+        $this->assertNotNull($fileRepository->find($file1Id));
+        $this->assertNull($fileRepository->find($file1Id)->archiveDatetime);
     }
 
     public function test_bulk_delete_rolls_back_when_user_does_not_own_one_task(): void

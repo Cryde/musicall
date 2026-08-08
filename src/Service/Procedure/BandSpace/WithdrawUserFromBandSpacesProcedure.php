@@ -92,7 +92,7 @@ readonly class WithdrawUserFromBandSpacesProcedure
         $membership->status = MembershipStatus::Left;
         $membership->leftDatetime = new DateTime();
 
-        $this->personalRecurrenceDeactivator->deactivateForMember($membership);
+        $this->personalRecurrenceDeactivator->deactivateForMember($membership, $user);
 
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,
