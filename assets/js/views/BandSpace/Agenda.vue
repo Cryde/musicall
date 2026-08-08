@@ -1,7 +1,17 @@
 <template>
   <div class="p-3 sm:p-4">
     <div class="flex items-center justify-between gap-2 mb-4">
-      <h1 class="text-xl sm:text-2xl font-bold">Agenda</h1>
+      <div class="flex items-center gap-2 min-w-0">
+        <h1 class="text-xl sm:text-2xl font-bold">Agenda</h1>
+        <span
+          v-if="isRefreshing"
+          role="status"
+          class="flex items-center gap-1.5 text-sm text-surface-500 dark:text-surface-400"
+        >
+          <i class="pi pi-spin pi-spinner text-xs" aria-hidden="true" />
+          Mise à jour…
+        </span>
+      </div>
       <Button
         icon="pi pi-plus"
         label="Nouvel événement"
@@ -57,126 +67,133 @@
       {{ agendaStore.loadError }}
     </div>
 
-    <template v-else-if="viewMode === 'list'">
-      <div
-        v-if="agendaStore.items.length === 0"
-        class="text-center text-surface-400 italic py-12"
-      >
-        Aucun événement à venir dans cette période
-      </div>
+    <div
+      v-else
+      class="transition-opacity"
+      :class="{ 'opacity-50': isRefreshing }"
+      :aria-busy="isRefreshing"
+    >
+      <template v-if="viewMode === 'list'">
+        <div
+          v-if="agendaStore.items.length === 0"
+          class="text-center text-surface-400 italic py-12"
+        >
+          Aucun événement à venir dans cette période
+        </div>
 
-      <div
-        v-else-if="filteredItems.length === 0"
-        class="text-center text-surface-400 italic py-12"
-      >
-        Aucun événement avec ces filtres
-      </div>
+        <div
+          v-else-if="filteredItems.length === 0"
+          class="text-center text-surface-400 italic py-12"
+        >
+          Aucun événement avec ces filtres
+        </div>
 
-      <div v-else>
-        <div v-for="group in groupedItems" :key="group.date" class="mb-6">
-          <div class="flex items-center gap-2 mb-2 px-2">
-            <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">
-              {{ formatDateLabel(group.date) }}
-            </span>
-            <span class="text-xs text-surface-400">
-              {{ group.items.length }} événement{{ group.items.length > 1 ? 's' : '' }}
-            </span>
-          </div>
-          <div
-            class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden"
-          >
-            <div
-              v-for="item in group.items"
-              :key="item.id"
-              class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700"
-              :class="sourceBorderClass(item.source)"
-              @click="handleItemClick(item)"
-            >
-              <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
-                <template v-if="isAllDayItem(item)">
-                  <span class="italic text-xs">Toute la journée</span>
-                </template>
-                <template v-else>
-                  {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
-                </template>
+        <div v-else>
+          <div v-for="group in groupedItems" :key="group.date" class="mb-6">
+            <div class="flex items-center gap-2 mb-2 px-2">
+              <span class="text-sm font-semibold text-surface-600 dark:text-surface-300">
+                {{ formatDateLabel(group.date) }}
               </span>
+              <span class="text-xs text-surface-400">
+                {{ group.items.length }} événement{{ group.items.length > 1 ? 's' : '' }}
+              </span>
+            </div>
+            <div
+              class="bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden"
+            >
+              <div
+                v-for="item in group.items"
+                :key="item.id"
+                class="flex items-start gap-3 p-3 border-l-4 border-b border-surface-200 dark:border-surface-700 last:border-b-0 transition-colors cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700"
+                :class="sourceBorderClass(item.source)"
+                @click="handleItemClick(item)"
+              >
+                <span class="text-sm font-medium tabular-nums text-surface-600 dark:text-surface-300 flex-shrink-0 pt-0.5 whitespace-nowrap">
+                  <template v-if="isAllDayItem(item)">
+                    <span class="italic text-xs">Toute la journée</span>
+                  </template>
+                  <template v-else>
+                    {{ formatTime(item.datetime) }}<template v-if="item.end_datetime"> → {{ formatTime(item.end_datetime) }}</template>
+                  </template>
+                </span>
 
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-medium truncate">{{ item.title }}</span>
-                  <span
-                    class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-                    :class="sourceBadgeClass(item.source)"
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-medium truncate">{{ item.title }}</span>
+                    <span
+                      class="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+                      :class="sourceBadgeClass(item.source)"
+                    >
+                      {{ sourceLabel(item.source) }}
+                    </span>
+                  </div>
+
+                  <div
+                    v-if="item.description"
+                    class="text-sm text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-2"
                   >
-                    {{ sourceLabel(item.source) }}
-                  </span>
-                </div>
+                    {{ item.description }}
+                  </div>
 
-                <div
-                  v-if="item.description"
-                  class="text-sm text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-2"
-                >
-                  {{ item.description }}
-                </div>
+                  <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
+                    {{ metadataLine(item) }}
+                  </div>
 
-                <div v-if="metadataLine(item)" class="text-xs text-surface-400 mt-1">
-                  {{ metadataLine(item) }}
-                </div>
-
-                <div
-                  v-if="item.source === 'task' && item.metadata?.assignees?.length"
-                  class="flex items-center gap-1 mt-1.5"
-                >
-                  <Avatar
-                    v-for="a in item.metadata.assignees.slice(0, 3)"
-                    :key="a.id"
-                    :username="a.username"
-                    :picture-url="a.profile_picture_url"
-                    size="sm"
-                  />
-                  <span
-                    v-if="item.metadata.assignees.length > 3"
-                    class="text-xs font-medium text-surface-500 dark:text-surface-400"
+                  <div
+                    v-if="item.source === 'task' && item.metadata?.assignees?.length"
+                    class="flex items-center gap-1 mt-1.5"
                   >
-                    +{{ item.metadata.assignees.length - 3 }}
-                  </span>
+                    <Avatar
+                      v-for="a in item.metadata.assignees.slice(0, 3)"
+                      :key="a.id"
+                      :username="a.username"
+                      :picture-url="a.profile_picture_url"
+                      size="sm"
+                    />
+                    <span
+                      v-if="item.metadata.assignees.length > 3"
+                      class="text-xs font-medium text-surface-500 dark:text-surface-400"
+                    >
+                      +{{ item.metadata.assignees.length - 3 }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </template>
+      </template>
 
-    <div v-else class="overflow-x-auto">
-      <div
-        class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
-        :class="{ 'min-w-[680px]': viewMode === 'timeGridWeek' }"
-      >
-        <FullCalendar :key="viewMode" :options="calendarOptions">
-          <template #eventContent="arg">
-            <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
-          </template>
-          <template #dayCellTopContent="arg">
-            <template v-if="arg.view.type === 'multiMonthYear'">
-              <span>{{ arg.dayNumberText }}</span>
-              <span
-                v-if="dayEventSources(arg.date).length"
-                class="agenda-year-dots"
-                role="img"
-                :aria-label="yearDotsLabel(dayEventSources(arg.date))"
-              >
-                <span
-                  v-for="(source, index) in dayEventSources(arg.date).slice(0, YEAR_DOT_LIMIT)"
-                  :key="`${source}-${index}`"
-                  class="agenda-year-dot"
-                  :style="{ backgroundColor: SOURCE_COLORS[source] }"
-                />
-              </span>
+      <div v-else class="overflow-x-auto">
+        <div
+          class="agenda-fc-theme bg-surface-0 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-2 sm:p-4"
+          :class="{ 'min-w-[680px]': viewMode === 'timeGridWeek' }"
+        >
+          <FullCalendar :key="calendarKey" :options="calendarOptions">
+            <template #eventContent="arg">
+              <AgendaEventChip :item="arg.event.extendedProps.item" :time-text="arg.timeText" :view-type="arg.view.type" />
             </template>
-            <template v-else>{{ arg.dayNumberText }}</template>
-          </template>
-        </FullCalendar>
+            <template #dayCellTopContent="arg">
+              <template v-if="arg.view.type === 'multiMonthYear'">
+                <span>{{ arg.dayNumberText }}</span>
+                <span
+                  v-if="dayEventSources(arg.date).length"
+                  class="agenda-year-dots"
+                  role="img"
+                  :aria-label="yearDotsLabel(dayEventSources(arg.date))"
+                >
+                  <span
+                    v-for="(source, index) in dayEventSources(arg.date).slice(0, YEAR_DOT_LIMIT)"
+                    :key="`${source}-${index}`"
+                    class="agenda-year-dot"
+                    :style="{ backgroundColor: SOURCE_COLORS[source] }"
+                  />
+                </span>
+              </template>
+              <template v-else>{{ arg.dayNumberText }}</template>
+            </template>
+          </FullCalendar>
+        </div>
       </div>
     </div>
 
@@ -185,6 +202,7 @@
       :bandSpaceId="route.params.id"
       :agendaItem="dialogItem"
       :initialDatetime="dialogInitialDatetime"
+      @saved="handleEntrySaved"
     />
   </div>
 </template>
@@ -214,6 +232,7 @@ import {
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
+import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
@@ -221,10 +240,12 @@ import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDraw
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import Avatar from '../../components/User/Avatar.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
-import { formatDateCompactWithYear } from '../../utils/date.js'
+import { agendaViewForSavedEntry } from '../../utils/agendaRange.js'
+import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const agendaStore = useBandAgendaStore()
 // Wipe any previous space's items synchronously before the first render so
 // switching from /band/A/agenda to /band/B/agenda doesn't flash A's entries
@@ -245,6 +266,10 @@ const viewMode = ref('list')
 // When drilling from the year overview into a day, that day's view must open on the
 // clicked date rather than the current range start; null means "use dateFrom".
 const focusDate = ref(null)
+// The span the calendar grid actually displays, which is not the picked period: the grid pads
+// whole weeks and browsing months only ever widens the period. Saving an entry needs the honest
+// answer, otherwise the agenda stays on a month that does not contain what was just saved.
+const calendarSpan = ref(null)
 const viewModeOptions = [
   { key: 'list', label: 'Planning', icon: 'pi pi-list' },
   { key: 'timeGridDay', label: 'Jour', icon: 'pi pi-clock' },
@@ -342,6 +367,17 @@ const filteredItems = computed(() =>
   agendaStore.items.filter((item) => selectedSources.has(item.source))
 )
 
+// The list view has no grid, so there the picked period is what is on screen.
+const viewedRange = computed(() =>
+  viewMode.value === 'list' || calendarSpan.value === null
+    ? { from: dateFrom.value, to: dateTo.value }
+    : calendarSpan.value
+)
+
+// A reload triggered while entries are already displayed: they stay on screen, dimmed, rather
+// than being swapped out silently. The full spinner only covers the first load.
+const isRefreshing = computed(() => agendaStore.isRefreshing && !agendaStore.isLoading)
+
 const groupedItems = computed(() => {
   const groups = new Map()
   for (const item of filteredItems.value) {
@@ -423,6 +459,13 @@ const calendarEvents = computed(() =>
   }))
 )
 
+// FullCalendar reads initialDate at mount only, so the calendar is remounted whenever the agenda
+// has to jump elsewhere: drilling into a day from the year overview, or an entry saved outside
+// the displayed period.
+const calendarKey = computed(
+  () => `${viewMode.value}-${focusDate.value ? format(focusDate.value, 'yyyy-MM-dd') : ''}`
+)
+
 const calendarOptions = computed(() => ({
   plugins: [classicTheme, dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
   initialView: viewMode.value === 'list' ? 'dayGridMonth' : viewMode.value,
@@ -468,6 +511,26 @@ function handleDateRangeApply({ from, to }) {
   dateFrom.value = from
   dateTo.value = to
   fetchWithCurrentRange()
+}
+
+// An entry saved outside the displayed period would come back from the API but land in a period
+// nobody is looking at, and the agenda would look like the save failed. Move to the entry's month
+// instead, and say so, so it is never the user who has to guess where it went.
+function handleEntrySaved(savedEntry) {
+  const nextView = agendaViewForSavedEntry(savedEntry, viewedRange.value.from, viewedRange.value.to)
+  if (nextView === null) return
+
+  dateFrom.value = nextView.from
+  dateTo.value = nextView.to
+  focusDate.value = nextView.focusDate
+  fetchWithCurrentRange()
+
+  toast.add({
+    severity: 'success',
+    summary: 'Événement enregistré',
+    detail: `Il a lieu le ${formatDateLong(savedEntry.event_datetime)} : l'agenda affiche maintenant cette période.`,
+    life: 5000
+  })
 }
 
 function selectViewMode(key) {
@@ -539,6 +602,7 @@ function handleDateClick(info) {
 function handleDatesSet(arg) {
   const visibleStart = startOfDay(arg.start)
   const visibleEndInclusive = startOfDay(new Date(arg.end.getTime() - 1))
+  calendarSpan.value = { from: visibleStart, to: visibleEndInclusive }
 
   // The year overview spans a whole year; load it on its own without dragging the shared
   // date-range picker (and every other view's initialDate anchor) out to a Jan-Dec window.

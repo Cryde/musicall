@@ -5,15 +5,24 @@ import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
 export const useBandAgendaStore = defineStore('bandAgenda', () => {
   const items = ref([])
   const isLoading = ref(false)
+  const isRefreshing = ref(false)
   const isSaving = ref(false)
   const isDeleting = ref(false)
   const loadError = ref(null)
 
   let requestId = 0
+  // The period the view last asked for. Calling fetchAgenda without one reuses it, so the refetch
+  // that follows every mutation reloads what the user is looking at. Letting the API fall back to
+  // its own window (today + 30 days) instead would wipe the items of a month the user navigated
+  // to, and the agenda would look empty even though the save went through.
+  let currentRange = { from: undefined, to: undefined }
 
-  async function fetchAgenda(bandSpaceId, { from, to } = {}) {
+  async function fetchAgenda(bandSpaceId, range) {
+    const { from, to } = range ?? currentRange
+    currentRange = { from, to }
     const currentRequestId = ++requestId
     isLoading.value = items.value.length === 0
+    isRefreshing.value = true
     loadError.value = null
     try {
       const data = await bandSpaceAgendaApi.getAgenda(bandSpaceId, { from, to })
@@ -25,6 +34,7 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
     } finally {
       if (currentRequestId === requestId) {
         isLoading.value = false
+        isRefreshing.value = false
       }
     }
   }
@@ -84,11 +94,13 @@ export const useBandAgendaStore = defineStore('bandAgenda', () => {
   function clear() {
     items.value = []
     loadError.value = null
+    currentRange = { from: undefined, to: undefined }
   }
 
   return {
     items: readonly(items),
     isLoading: readonly(isLoading),
+    isRefreshing: readonly(isRefreshing),
     isSaving: readonly(isSaving),
     isDeleting: readonly(isDeleting),
     loadError: readonly(loadError),
