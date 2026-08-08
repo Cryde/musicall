@@ -4,6 +4,8 @@ namespace App\Tests\Integration\TechRider;
 
 use App\Entity\BandSpace\TechRider;
 use App\Enum\BandSpace\TechRiderColour;
+use App\Enum\BandSpace\TechRiderStagePlotIcon;
+use App\Enum\BandSpace\TechRiderStagePlotIconCategory;
 use App\Enum\BandSpace\TechRiderItemType;
 use App\Repository\BandSpace\TechRiderRepository;
 use App\Service\BandSpace\TechRider\TechRiderPdfRenderer;
@@ -17,6 +19,7 @@ use App\Tests\Factory\BandSpace\TechRiderFactory;
 use App\Tests\Factory\BandSpace\TechRiderItemFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpClient\HttpClient;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -121,12 +124,88 @@ class TechRiderPdfRenderTest extends ApiTestCase
 
         $this->assertStringStartsWith('%PDF-', $pdf);
         $this->assertCount(2, $this->pageSizes($pdf), 'A cover and the plot');
-        // The icons are uploaded assets referenced by bare filename, so an embedded image is the
-        // proof they resolved. A broken reference renders a page that is silently empty.
+    }
+
+    /**
+     * That a drawn symbol reaches the page in the right colour, which is the whole point of inlining
+     * it rather than referencing it: an SVG behind an <img> cannot see the page's colour at all.
+     *
+     * The plot carries one element with no label and no legend, so the symbol is the only coloured
+     * thing on the page. An earlier version of this asserted against a plot that had both, and the
+     * colours it was matching turned out to be the label's and the legend's: Chromium emits a colour
+     * for text as readily as for a path, so the assertion passed with the symbol drawing black.
+     */
+    #[DataProvider('symbolColourProvider')]
+    public function test_a_symbol_draws_in_the_colour_the_element_resolves_to(
+        ?TechRiderColour $elementColour,
+        string $expectedHex,
+        string $unexpectedHex,
+    ): void {
+        [$bandSpace, $rider] = $this->seed();
+        $element = ['id' => 'a', 'icon' => 'drum_kit', 'x' => 0.5, 'y' => 0.5, 'scale' => 2.0, 'rotation' => 0];
+        if ($elementColour instanceof TechRiderColour) {
+            $element['colour'] = $elementColour->value;
+        }
+
+        TechRiderItemFactory::new([
+            'techRider' => $rider,
+            'type' => TechRiderItemType::StagePlot,
+            'title' => 'Plan de scène',
+            'position' => 0,
+            'content' => ['version' => 1, 'stage' => ['aspect_ratio' => 1.4], 'elements' => [$element]],
+        ])->create();
+
+        $streams = $this->contentStreams($this->render($bandSpace, $rider));
+
+        $this->assertMatchesRegularExpression($this->strokeColourPattern($expectedHex), $streams);
+        $this->assertDoesNotMatchRegularExpression($this->strokeColourPattern($unexpectedHex), $streams);
+    }
+
+    /**
+     * @return iterable<string, array{TechRiderColour|null, string, string}>
+     */
+    public static function symbolColourProvider(): iterable
+    {
+        yield 'no colour of its own falls back to the category' => [
+            null,
+            TechRiderStagePlotIconCategory::Instrument->hex(),
+            TechRiderColour::Green->hex(),
+        ];
+
+        yield 'its own colour overrides the category' => [
+            TechRiderColour::Green,
+            TechRiderColour::Green->hex(),
+            TechRiderStagePlotIconCategory::Instrument->hex(),
+        ];
+    }
+
+    /** The other half of the set is still placeholder PNGs, and they have to keep working. */
+    public function test_a_plot_using_an_icon_with_no_symbol_still_embeds_its_png(): void
+    {
+        [$bandSpace, $rider] = $this->seed();
+        $icon = TechRiderStagePlotIcon::Keyboard;
+        self::assertNull($icon->symbolPath(), 'This test needs an icon that has no drawn symbol yet');
+
+        TechRiderItemFactory::new([
+            'techRider' => $rider,
+            'type' => TechRiderItemType::StagePlot,
+            'title' => 'Plan de scène',
+            'position' => 0,
+            'content' => [
+                'version' => 1,
+                'stage' => ['aspect_ratio' => 1.4],
+                'elements' => [
+                    ['id' => 'a', 'icon' => $icon->value, 'x' => 0.5, 'y' => 0.3, 'scale' => 1.0, 'rotation' => 0, 'label' => 'Clavier'],
+                ],
+            ],
+        ])->create();
+
+        $pdf = $this->render($bandSpace, $rider);
+
         $this->assertMatchesRegularExpression(
             '#/Subtype\s*/Image#',
             $pdf,
-            'The stage plot icons must be embedded in the document',
+            'An icon with no drawn symbol must still be uploaded and embedded as its PNG',
         );
     }
 
@@ -245,6 +324,44 @@ class TechRiderPdfRenderTest extends ApiTestCase
 
             return $width > 500 ? 'portrait-a4' : 'attachment-a5';
         }, $matches);
+    }
+
+    /**
+     * The page content, inflated. Chromium compresses it, so vector drawing is invisible in the raw
+     * bytes: an assertion made on those would pass or fail on whether the text happened to compress
+     * the same way, which is not what it claims to test.
+     */
+    private function contentStreams(string $pdf): string
+    {
+        preg_match_all('#stream\r?\n(.*?)endstream#s', $pdf, $matches);
+
+        $inflated = '';
+        foreach ($matches[1] as $stream) {
+            $decoded = @gzuncompress(trim($stream, "\r\n"));
+            if ($decoded !== false) {
+                $inflated .= $decoded . "\n";
+            }
+        }
+
+        self::assertNotSame('', $inflated, 'No content stream could be inflated, so nothing was checked');
+
+        return $inflated;
+    }
+
+    /**
+     * How a PDF writes this colour as a stroke. Derived from the hex rather than pinned, so changing
+     * a colour moves the test with it. Chromium drops the leading zero and keeps 4 decimals.
+     */
+    private function strokeColourPattern(string $hex): string
+    {
+        [$r, $g, $b] = sscanf($hex, '#%02x%02x%02x');
+
+        $component = static fn (int $value): string => preg_quote(
+            substr(sprintf('%.4f', $value / 255), 1),
+            '#',
+        );
+
+        return sprintf('#0?%s\s+0?%s\s+0?%s\s+RG#', $component($r), $component($g), $component($b));
     }
 
     private function requireGotenberg(): void

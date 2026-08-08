@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--sp-stroke, 2)">
+  <polygon points="15,10 49,10 59,54 5,54"/>
+  <line x1="19" y1="18" x2="45" y2="18" style="stroke-width:calc(var(--sp-stroke, 2) * 0.6)"/>
+  <line x1="18" y1="25" x2="46" y2="25" style="stroke-width:calc(var(--sp-stroke, 2) * 0.6)"/>
+</svg>

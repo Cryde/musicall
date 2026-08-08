@@ -7,6 +7,7 @@ use App\Entity\BandSpace\TechRider;
 use App\Enum\BandSpace\TechRiderColour;
 use App\Enum\BandSpace\TechRiderItemType;
 use App\Enum\BandSpace\TechRiderPatchDirection;
+use App\Enum\BandSpace\TechRiderStagePlotIcon;
 use App\Repository\BandSpace\TechRiderRepository;
 use App\Service\BandSpace\TechRider\TechRiderPdfRenderer;
 use App\Tests\ApiTestAssertionsTrait;
@@ -316,6 +317,55 @@ class TechRiderPdfExportTest extends ApiTestCase
         yield 'not opted in' => [false];
     }
 
+    /**
+     * A drawn symbol is inlined with both calibration constants applied, and does not also drag its
+     * now unused placeholder PNG into the upload.
+     *
+     * The constants are the point of this batch: they get tuned after a test print, so a template
+     * that stopped reading them would quietly pin the artwork at today's values.
+     */
+    public function test_a_drawn_symbol_is_inlined_and_carries_the_calibration_constants(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        $icon = TechRiderStagePlotIcon::DrumKit;
+        self::assertNotNull($icon->symbolPath(), 'This test needs an icon that has a drawn symbol');
+
+        $this->seedStagePlot($rider, $icon);
+        $call = $this->render($bandSpace, $rider)->lastCall();
+        $html = $call['documents']['index.html'];
+
+        $this->assertStringContainsString('viewBox="0 0 64 64"', $html, 'The symbol must be inlined');
+        $this->assertStringContainsString(
+            '--sp-stroke:' . TechRiderPdfRenderer::SYMBOL_STROKE_WIDTH,
+            $html,
+            'The stroke constant must reach the page',
+        );
+        $this->assertStringContainsString(
+            'width:' . TechRiderPdfRenderer::SYMBOL_SIZE_PERCENT . '%',
+            $html,
+            'The size constant must reach the page',
+        );
+        $this->assertArrayNotHasKey(
+            $icon->value . '.png',
+            $call['assets'],
+            'An icon with a drawn symbol must not upload its placeholder PNG as well',
+        );
+    }
+
+    /** The other half of the set still travels as an uploaded PNG, which the symbol branch must not break. */
+    public function test_an_icon_with_no_symbol_still_uploads_its_png(): void
+    {
+        [, $bandSpace, $rider] = $this->seed();
+        $icon = TechRiderStagePlotIcon::Keyboard;
+        self::assertNull($icon->symbolPath(), 'This test needs an icon that has no drawn symbol yet');
+
+        $this->seedStagePlot($rider, $icon);
+        $call = $this->render($bandSpace, $rider)->lastCall();
+
+        $this->assertArrayHasKey($icon->value . '.png', $call['assets']);
+        $this->assertStringNotContainsString('viewBox="0 0 64 64"', $call['documents']['index.html']);
+    }
+
     /** Reachable before a file is picked, and again after the referenced file is deleted (SET NULL). */
     public function test_a_document_item_with_no_file_says_so(): void
     {
@@ -446,6 +496,23 @@ class TechRiderPdfExportTest extends ApiTestCase
     }
 
     /** Renders through the service so a rider can be exercised without loginUser's one-request life. */
+    private function seedStagePlot(object $rider, TechRiderStagePlotIcon $icon): void
+    {
+        TechRiderItemFactory::new([
+            'techRider' => $rider,
+            'type' => TechRiderItemType::StagePlot,
+            'title' => 'Plan de scène',
+            'position' => 0,
+            'content' => [
+                'version' => 1,
+                'stage' => ['aspect_ratio' => 1.4],
+                'elements' => [
+                    ['id' => 'a', 'icon' => $icon->value, 'x' => 0.5, 'y' => 0.5, 'scale' => 1.0, 'rotation' => 0],
+                ],
+            ],
+        ])->create();
+    }
+
     private function render(object $bandSpace, object $rider): RecordingGotenbergClient
     {
         $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);

@@ -15,7 +15,12 @@
 
     <ul v-else class="flex flex-col gap-1">
       <li v-for="(entry, index) in legend" :key="`${entry.icon}-${index}`" class="flex items-center gap-1">
-        <img :src="iconImage(entry.icon)" :alt="''" class="w-6 h-6 object-contain shrink-0" />
+        <StagePlotIcon
+          :slug="entry.icon"
+          :image-url="iconImage(entry.icon)"
+          :colour="iconFor(entry.icon)?.category_colour"
+          class="w-6 h-6 shrink-0"
+        />
         <InputText
           :model-value="entry.label ?? ''"
           :disabled="readOnly"
@@ -54,7 +59,12 @@
       >
         <template #option="{ option }">
           <span class="flex items-center gap-2">
-            <img :src="option.image_url" :alt="''" class="w-5 h-5 object-contain" />
+            <StagePlotIcon
+              :slug="option.slug"
+              :image-url="option.image_url"
+              :colour="option.category_colour"
+              class="w-5 h-5"
+            />
             <span>{{ option.label }}</span>
           </span>
         </template>
@@ -78,6 +88,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { ref } from 'vue'
 import { MAX_LABEL_LENGTH, MAX_LEGEND_ENTRIES } from '../../../../constants/stagePlot.js'
+import StagePlotIcon from './StagePlotIcon.vue'
 
 const props = defineProps({
   legend: { type: Array, required: true },

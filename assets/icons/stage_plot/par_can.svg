@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:var(--sp-stroke, 2)">
+  <circle cx="32" cy="42" r="17"/>
+  <circle cx="32" cy="42" r="6.5"/>
+  <line x1="18" y1="31" x2="5" y2="5" stroke-dasharray="3 3" style="stroke-width:calc(var(--sp-stroke, 2) * 0.6)"/>
+  <line x1="46" y1="31" x2="59" y2="5" stroke-dasharray="3 3" style="stroke-width:calc(var(--sp-stroke, 2) * 0.6)"/>
+</svg>
