@@ -52,8 +52,14 @@
           />
         </div>
         <div v-if="rider" class="flex items-center gap-2">
-          <!-- Offered on an archived rider too: starting next year's from last year's archived one
-               is the main reason this action exists. -->
+          <!-- Offered on an archived rider too, like Dupliquer: last year's rider is exactly the
+               thing you send when a venue asks what you used. -->
+          <Button
+            :label="isExporting ? 'Génération...' : 'Télécharger le PDF'"
+            :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
+            :disabled="isExporting"
+            @click="handleExport"
+          />
           <Button
             label="Dupliquer"
             icon="pi pi-copy"
@@ -129,12 +135,14 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import bandSpaceTechRidersApi from '../../api/bandSpace/band-space-tech-riders.js'
 import RiderItemList from '../../components/BandSpace/TechRider/RiderItemList.vue'
 import TechRiderFormDialog from '../../components/BandSpace/TechRider/TechRiderFormDialog.vue'
 import TechRiderSelector from '../../components/BandSpace/TechRider/TechRiderSelector.vue'
 import { LAST_TECH_RIDER_KEY } from '../../constants/bandSpace.js'
 import { COPY_SUFFIX, MAX_NAME_LENGTH } from '../../constants/techRider.js'
 import { useBandTechRidersStore } from '../../store/bandSpace/bandSpaceTechRiders.js'
+import { downloadBlob } from '../../utils/downloadBlob.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -150,6 +158,7 @@ const hasAnyRider = computed(
 )
 
 const selectedRiderId = ref(null)
+const isExporting = ref(false)
 const formDialogOpen = ref(false)
 const formDialogMode = ref('create')
 
@@ -237,6 +246,36 @@ function openCreateDialog() {
 function openRenameDialog() {
   formDialogMode.value = 'rename'
   formDialogOpen.value = true
+}
+
+async function handleExport() {
+  if (isExporting.value || !rider.value) {
+    return
+  }
+
+  isExporting.value = true
+
+  try {
+    const { blob, filename } = await bandSpaceTechRidersApi.downloadPdf(
+      bandSpaceId.value,
+      rider.value.id
+    )
+    downloadBlob(blob, filename ?? 'tech-rider.pdf')
+  } catch (error) {
+    // A 401 already redirects to the login page through the global interceptor, so a toast on top of
+    // that is only noise. Everything else says so here, because API Platform blanks the message on a
+    // 5xx and the response carries no usable detail.
+    if (error?.response?.status !== 401) {
+      toast.add({
+        severity: 'error',
+        summary: 'Export impossible',
+        detail: 'Le PDF n’a pas pu être généré. Veuillez réessayer dans un instant.',
+        life: 6000
+      })
+    }
+  } finally {
+    isExporting.value = false
+  }
 }
 
 function openDuplicateDialog() {

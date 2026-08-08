@@ -1,0 +1,17 @@
+{% if item.lines is empty %}
+    <p class="attachment-reason">Aucun membre actif dans cet espace.</p>
+{% else %}
+    <ul class="contact-lines">
+        {% for line in item.lines %}
+            <li>{{ line }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if item.emails is not empty %}
+        <p class="contact-emails">{{ item.emails|join(' · ') }}</p>
+    {% endif %}
+{% endif %}
+
+{% if item.note_html %}
+    <div class="prose">{{ item.note_html|raw }}</div>
+{% endif %}

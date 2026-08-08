@@ -91,9 +91,11 @@ services:
     # Headless Chromium as an HTTP service, rendering the setlist PDF export (#741). The
     # integration tests need it running; the rest of the suite substitutes the client.
     gotenberg:
-        # Chromium only. The full image is about 1.7GB and adds LibreOffice plus the PDF engines,
-        # which are needed for Office conversion and for PDF/A. Bring it back as gotenberg:8 if
-        # invoicing ever arrives, since Factur-X is PDF/A-3.
+        # Chromium only. The full image is about 1.7GB and what it adds is **LibreOffice**, needed
+        # for Office conversion. It does not add the PDF engines: this variant already reports
+        # `modules: api chromium exiftool pdfcpu pdfengines pdftk prometheus qpdf webhook`, so
+        # /forms/pdfengines/merge works here, which is what the tech rider export relies on to fold a
+        # PDF attachment into the document. An earlier version of this comment said otherwise.
         #
         # Pinned to a patch tag, matching CI, so an upstream change is a deliberate act. The pin in
         # config/packages/sensiolabs_gotenberg.yaml is the oldest version we rely on and is a
