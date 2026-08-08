@@ -59,13 +59,15 @@
         </template>
       </Column>
 
-      <Column header="" headerStyle="width:5rem">
+      <Column v-if="isAdmin" header="" headerStyle="width:5rem">
         <template #body="{ data }">
           <Button
             icon="pi pi-trash"
             size="small"
             severity="danger"
             text
+            v-tooltip.top="'Révoquer le lien'"
+            aria-label="Révoquer le lien de partage"
             @click="confirmRevoke(data)"
           />
         </template>
@@ -85,12 +87,16 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
 const filesStore = useBandFilesStore()
 const confirm = useConfirm()
 const toast = useToast()
+// Every member may read the list, only an admin may revoke a link, so the column is dropped rather
+// than offering a button the server would refuse.
+const { isAdmin } = useBandSpaceNavigation()
 // Wipe previous space's files-store state synchronously before first render
 // so switching from A's Settings/Shares to B's doesn't flash A's shares.
 filesStore.clear()
@@ -116,12 +122,12 @@ function confirmRevoke(share) {
     rejectLabel: 'Annuler',
     acceptClass: 'p-button-danger',
     accept: async () => {
-      await filesStore.revokeShare(bandSpaceId, share.id)
-      toast.add({
-        severity: 'success',
-        summary: 'Lien révoqué',
-        life: 3000
-      })
+      try {
+        await filesStore.revokeShare(bandSpaceId, share.id)
+        toast.add({ severity: 'success', summary: 'Lien révoqué', life: 3000 })
+      } catch (e) {
+        toast.add({ severity: 'error', summary: e.message, life: 5000 })
+      }
     }
   })
 }

@@ -52,27 +52,21 @@ import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSec
 import DangerZoneSection from '../../components/BandSpace/Settings/DangerZoneSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
+import {
+  BAND_SPACE_SETTINGS_SECTIONS,
+  resolveSettingsSection,
+  visibleSettingsSections
+} from '../../constants/bandSpace.js'
 
-const { currentSpace } = useBandSpaceNavigation()
+const { isAdmin } = useBandSpaceNavigation()
 const route = useRoute()
 
-const isAdmin = computed(() => currentSpace.value?.role === 'admin')
+const visibleSections = computed(() => visibleSettingsSections(isAdmin.value))
 
-const allSections = [
-  { key: 'members', label: 'Membres', adminOnly: false },
-  { key: 'activity', label: "Journal d'activité", adminOnly: false },
-  { key: 'shares', label: 'Partages actifs', adminOnly: false },
-  { key: 'storage', label: 'Stockage', adminOnly: false },
-  { key: 'general', label: 'Général', adminOnly: false },
-  { key: 'danger', label: 'Zone de danger', adminOnly: false }
-]
-
-const visibleSections = computed(() => allSections.filter((s) => !s.adminOnly || isAdmin.value))
-
-const activeSection = ref(allSections.find((s) => s.key === route.query.section)?.key ?? 'members')
+const activeSection = ref(resolveSettingsSection(route.query.section, isAdmin.value))
 
 const activeSectionLabel = computed(
-  () => allSections.find((s) => s.key === activeSection.value)?.label ?? ''
+  () => BAND_SPACE_SETTINGS_SECTIONS.find((s) => s.key === activeSection.value)?.label ?? ''
 )
 
 // The deletion banner links here with ?section=danger, and it is shown on the settings page too. Vue
@@ -81,16 +75,16 @@ const activeSectionLabel = computed(
 watch(
   () => route.query.section,
   (section) => {
-    const match = allSections.find((s) => s.key === section)
+    const match = visibleSections.value.find((s) => s.key === section)
     if (match) {
       activeSection.value = match.key
     }
   }
 )
 
-watch(visibleSections, (sections) => {
-  if (!sections.find((s) => s.key === activeSection.value)) {
-    activeSection.value = sections[0]?.key ?? 'members'
-  }
+// The role only arrives with the space list, so the visible set can shrink after the first render.
+// Re-resolving keeps the current section when it is still allowed and falls back otherwise.
+watch(visibleSections, () => {
+  activeSection.value = resolveSettingsSection(activeSection.value, isAdmin.value)
 })
 </script>

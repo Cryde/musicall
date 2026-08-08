@@ -74,7 +74,6 @@
 import { computed } from 'vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, NAVIGATION_ITEMS } from '../../constants/bandSpace.js'
-import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 
 const props = defineProps({
@@ -87,21 +86,15 @@ const collapsed = defineModel('collapsed', { type: Boolean, default: false })
 const emit = defineEmits(['navigate'])
 
 const { currentSpaceId } = useBandSpaceNavigation()
-const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()
 
-const visibleItems = computed(() => {
-  const space = bandSpaceStore.getById(currentSpaceId.value)
-  // Two independent gates. `role` is membership in this space; `superAdminOnly` marks a
-  // module that is merged but not yet announced and is dropped when it is released.
-  const items = NAVIGATION_ITEMS.filter(
-    (item) => !item.superAdminOnly || userSecurityStore.isSuperAdmin
-  )
-  if (space?.role === 'admin') {
-    return items
-  }
-  return items.filter((item) => item.route !== BAND_SPACE_ROUTES.PARAMETERS)
-})
+// `superAdminOnly` marks a module that is merged but not yet announced and is dropped when it is
+// released. Membership role is deliberately not a gate: « Paramètres » is where a member quits the
+// space and sets their stage name and instruments, so every member gets the entry, and the page
+// itself hides whatever is admin only.
+const visibleItems = computed(() =>
+  NAVIGATION_ITEMS.filter((item) => !item.superAdminOnly || userSecurityStore.isSuperAdmin)
+)
 
 const workItems = computed(() =>
   visibleItems.value.filter((item) => item.route !== BAND_SPACE_ROUTES.PARAMETERS)

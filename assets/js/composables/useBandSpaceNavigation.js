@@ -15,6 +15,10 @@ export function useBandSpaceNavigation() {
     return bandSpaceStore.getById(currentSpaceId.value)
   })
 
+  // The membership role rides along with the space list, which the band layout loads before it
+  // renders anything, so this is already settled by the time a view or a section reads it.
+  const isAdmin = computed(() => currentSpace.value?.role === 'admin')
+
   function getLastSpaceId() {
     return localStorage.getItem(LAST_BAND_SPACE_KEY)
   }
@@ -65,6 +69,7 @@ export function useBandSpaceNavigation() {
   return {
     currentSpaceId,
     currentSpace,
+    isAdmin,
     getLastSpaceId,
     setLastSpaceId,
     clearLastSpaceId,

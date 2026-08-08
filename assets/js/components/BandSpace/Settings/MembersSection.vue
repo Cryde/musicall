@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Invite form -->
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
+    <!-- Invite form, admin only: the server refuses an invitation sent by a plain member -->
+    <div v-if="isAdmin" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-6">
       <h3 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-4">
         Inviter un membre
       </h3>
@@ -123,7 +123,9 @@
               :aria-label="`Modifier le nom de scène et les instruments de ${member.display_name}`"
               @click="openProfileDialog(member)"
             />
-            <template v-if="!isMe(member)">
+            <!-- Promoting, demoting and excluding are admin only server side, so a member is not
+                 offered a button that would come back as a red toast. -->
+            <template v-if="isAdmin && !isMe(member)">
             <Button
               v-if="member.role === 'user'"
               icon="pi pi-arrow-up"
@@ -203,6 +205,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES } from '../../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandSpaceSettingsStore } from '../../../store/bandSpace/bandSpaceSettings.js'
@@ -216,6 +219,10 @@ const toast = useToast()
 const settingsStore = useBandSpaceSettingsStore()
 const bandSpaceStore = useBandSpaceStore()
 const userSecurityStore = useUserSecurityStore()
+// The role comes from the space rather than from the roster, like the parent view and the « Zone de
+// danger » do: the space list is loaded before this page renders, so the gate is settled on first
+// paint and the decision below on whether to ask for the invitations cannot be taken too early.
+const { isAdmin } = useBandSpaceNavigation()
 // Wipe previous space's members/invitations synchronously before first
 // render to avoid flashing A's roster when switching to B's Settings.
 settingsStore.clear()
@@ -229,8 +236,6 @@ const isMe = (member) => member.username === userSecurityStore.user?.username
 
 const profileDialogOpen = ref(false)
 const profileTarget = ref(null)
-
-const isAdmin = computed(() => settingsStore.members.find((m) => isMe(m))?.role === 'admin')
 
 function canEditProfile(member) {
   return isMe(member) || isAdmin.value
@@ -352,9 +357,17 @@ function handleLeave() {
   })
 }
 
-onMounted(() => {
-  settingsStore.loadMembers(bandSpaceId)
-  settingsStore.loadInvitations(bandSpaceId)
+onMounted(async () => {
+  try {
+    await settingsStore.loadMembers(bandSpaceId)
+    // Listing the invitations is admin only server side, so asking for them as a plain member would
+    // buy nothing but a 403.
+    if (isAdmin.value) {
+      await settingsStore.loadInvitations(bandSpaceId)
+    }
+  } catch (e) {
+    toast.add({ severity: 'error', summary: e.message, life: 5000 })
+  }
 })
 
 onUnmounted(() => {
