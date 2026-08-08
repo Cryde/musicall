@@ -47,6 +47,7 @@ class FinanceCategoryGetItemTest extends ApiTestCase
             'parent_id' => null,
             'position' => 0,
             'has_children' => false,
+            'entry_count' => 0,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
         ]);

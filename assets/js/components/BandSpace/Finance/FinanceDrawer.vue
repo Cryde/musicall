@@ -155,6 +155,7 @@
         :bandSpaceId="props.bandSpaceId"
         :entryId="isEditMode ? props.entry.id : null"
         :amountEuros="effectiveAmountEuros"
+        :exactAmountEuros="form.amountMode === 'exact' ? form.amountEuros : null"
         :visible="props.visible"
         :disabled="isLocked"
       />
@@ -210,7 +211,6 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
-import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
@@ -228,7 +228,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'saved', 'deleted'])
 const confirm = useConfirm()
-const toast = useToast()
 const financeStore = useBandSpaceFinanceStore()
 const splitManagerRef = ref(null)
 const formError = ref(null)
@@ -443,6 +442,17 @@ async function handleSave() {
     formError.value = 'Veuillez sélectionner une catégorie'
     return
   }
+
+  const splitManager = splitManagerRef.value
+
+  // Asked before the entry is written, because raising one member's share means deleting their split
+  // and creating it again: a repartition the API would refuse used to cost that member their share.
+  const splitError = splitManager?.validateSplits()
+  if (splitError) {
+    formError.value = splitError
+    return
+  }
+
   try {
     const data = buildPayload()
     let entryId
@@ -455,21 +465,16 @@ async function handleSave() {
       entryId = created?.id
     }
 
-    const splitManager = splitManagerRef.value
     if (entryId && splitManager) {
       try {
-        if (splitManager.activeSplitsCount > 0) {
-          await splitManager.syncSplits(entryId)
-        } else if (splitManager.existingSplits.length > 0) {
-          await splitManager.syncSplits(entryId)
-        }
-      } catch {
-        toast.add({
-          severity: 'warn',
-          summary: 'Attention',
-          detail: 'L\u2019entrée a été enregistrée mais la répartition a échoué',
-          life: 5000
-        })
+        await splitManager.syncSplits(entryId)
+      } catch (error) {
+        // The entry itself is saved, so this is not a failed save, but the repartition on screen is no
+        // longer what the entry carries. The drawer stays open on the reloaded splits instead of
+        // closing on a success message, which is how a lost share used to go unnoticed.
+        await splitManager.loadExistingSplits(entryId)
+        formError.value = `L\u2019entrée a été enregistrée mais la répartition a échoué : ${error.message || 'erreur inconnue'}`
+        return
       }
     }
 

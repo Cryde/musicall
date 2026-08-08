@@ -13,6 +13,7 @@ use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\FinanceCategoryRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -76,11 +77,13 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
         $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio'])->create();
+        // Planned, not Paid: a paid entry now blocks the delete outright, so the cascade this test is
+        // about would never run.
         $entry = FinanceEntryFactory::new([
             'category' => $category,
             'label' => 'Mixage',
             'type' => FinanceEntryType::Expense,
-            'status' => FinanceEntryStatus::Paid,
+            'status' => FinanceEntryStatus::Planned,
             'scope' => FinanceEntryScope::Band,
             'amount' => 12000,
             'date' => new \DateTime('2026-03-01'),
@@ -94,6 +97,7 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         ]);
 
         $categoryId = (string) $category->id;
+        $entryId = (string) $entry->id;
         $fileId = (string) $file->id;
         $attachmentId = (string) $attachment->id;
 
@@ -103,6 +107,8 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertNull(self::getContainer()->get(FinanceEntryRepository::class)->find($entryId));
+
         $attachmentRepository = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
         $this->assertNull($attachmentRepository->find($attachmentId));
 
@@ -189,5 +195,131 @@ class FinanceCategoryDeleteTest extends ApiTestCase
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * FinanceEntryDeleteProcessor refuses to delete a paid entry, and `finance_entry.category_id` is
+     * ON DELETE CASCADE, so deleting the category took the paid entry out anyway. That made this the
+     * one route in the module that destroyed accounting history, silently and in bulk.
+     */
+    public function test_delete_category_holding_a_paid_entry_is_refused(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio'])->create();
+        $paidEntry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mastering',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Paid,
+            'scope' => FinanceEntryScope::Band,
+            'amount' => 42000,
+            'date' => new \DateTime('2026-03-01'),
+        ])->create();
+        $categoryId = (string) $category->id;
+        $paidEntryId = (string) $paidEntry->id;
+
+        $this->client->loginUser($admin);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $categoryId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette catégorie contient une entrée payée. Repassez son statut à Engagé ou déplacez-la d\'abord.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Cette catégorie contient une entrée payée. Repassez son statut à Engagé ou déplacez-la d\'abord.',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertNotNull(self::getContainer()->get(FinanceCategoryRepository::class)->find($categoryId));
+        $this->assertNotNull(self::getContainer()->get(FinanceEntryRepository::class)->find($paidEntryId));
+
+        // The clear above detached it, and a detached entity cannot be bound as a query parameter.
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Finance, $categoryId));
+    }
+
+    public function test_delete_category_holding_several_paid_entries_names_the_count(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio'])->create();
+        foreach (['Mastering', 'Mixage'] as $index => $label) {
+            FinanceEntryFactory::new([
+                'category' => $category,
+                'label' => $label,
+                'type' => FinanceEntryType::Expense,
+                'status' => FinanceEntryStatus::Paid,
+                'scope' => FinanceEntryScope::Band,
+                'amount' => 42000,
+                'date' => new \DateTime('2026-03-0' . ($index + 1)),
+            ])->create();
+        }
+
+        $this->client->loginUser($admin);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $category->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette catégorie contient 2 entrées payées. Repassez leur statut à Engagé ou déplacez-les d\'abord.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Cette catégorie contient 2 entrées payées. Repassez leur statut à Engagé ou déplacez-les d\'abord.',
+        ]);
+    }
+
+    /**
+     * `finance_category.parent_id` is SET NULL, so a sub-category was never deleted with its parent: it
+     * resurfaced as a top-level pole, which contradicted the confirmation the interface showed and put
+     * its own paid entries out of reach of the check above. Emptying the subtree first is explicit.
+     */
+    public function test_delete_category_with_a_sub_category_is_refused(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $pole = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        $child = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Mixage',
+            'position' => 0,
+            'parent' => $pole,
+        ])->create();
+        $poleId = (string) $pole->id;
+        $childId = (string) $child->id;
+
+        $this->client->loginUser($admin);
+        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/categories/' . $poleId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette catégorie contient une sous-catégorie. Supprimez-la d\'abord.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Cette catégorie contient une sous-catégorie. Supprimez-la d\'abord.',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $categoryRepository = self::getContainer()->get(FinanceCategoryRepository::class);
+        $this->assertNotNull($categoryRepository->find($poleId));
+        $this->assertNotNull($categoryRepository->find($childId));
     }
 }

@@ -11,12 +11,22 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
-use Symfony\Component\Validator\Constraints\Date;
 use App\State\Processor\BandSpace\FinanceEntryDeleteProcessor;
 use App\State\Processor\BandSpace\FinanceEntryUpdateProcessor;
 use App\State\Provider\BandSpace\FinanceEntryCollectionProvider;
 use App\State\Provider\BandSpace\FinanceEntryItemProvider;
+use App\Validator\BandSpace\FinanceAmountRange;
+use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * The PATCH is validated on this class, not on a dedicated input: API Platform merges the request into
+ * the resource the provider returned, so the constraints below see the entry as it will be once the
+ * write lands. That is the point. The old shape carried no constraint at all, and every rule the create
+ * endpoint enforces was reachable in reverse through an edit: a negative amount, a minimum above its
+ * maximum, an exact amount next to a fourchette, a blank libellé, and a date string that only ever
+ * failed inside new DateTime().
+ */
+#[FinanceAmountRange]
 #[ApiResource(
     shortName: 'FinanceEntry',
     operations: [
@@ -31,8 +41,8 @@ use App\State\Provider\BandSpace\FinanceEntryItemProvider;
             name: 'api_band_space_finance_entries_get_collection',
             provider: FinanceEntryCollectionProvider::class,
             parameters: [
-                'from' => new QueryParameter(key: 'from', constraints: [new Date()]),
-                'to' => new QueryParameter(key: 'to', constraints: [new Date()]),
+                'from' => new QueryParameter(key: 'from', constraints: [new Assert\Date()]),
+                'to' => new QueryParameter(key: 'to', constraints: [new Assert\Date()]),
             ],
         ),
         new Get(
@@ -81,17 +91,41 @@ class FinanceEntryResource
     #[ApiProperty(identifier: true)]
     public string $bandSpaceId;
 
+    #[Assert\NotBlank(message: 'Veuillez spécifier une catégorie')]
+    #[Assert\Uuid(message: 'Identifiant de catégorie invalide')]
     public string $categoryId;
+
     public string $categoryName;
+
+    #[Assert\NotBlank(message: 'Veuillez spécifier un libellé')]
+    #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
     public string $label;
+
+    #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]
     public string $type;
+
+    #[Assert\Choice(choices: ['planned', 'committed', 'paid'], message: 'Statut invalide')]
     public string $status;
+
+    #[Assert\PositiveOrZero(message: 'Le montant doit être positif ou zéro')]
     public ?int $amount = null;
+
+    #[Assert\PositiveOrZero(message: 'Le montant minimum doit être positif ou zéro')]
     public ?int $amountMin = null;
+
+    #[Assert\PositiveOrZero(message: 'Le montant maximum doit être positif ou zéro')]
     public ?int $amountMax = null;
+
+    #[Assert\NotBlank(message: 'Veuillez spécifier une date')]
+    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
     public string $date;
+
+    #[Assert\Choice(choices: ['band', 'personal'], message: 'Périmètre invalide')]
     public string $scope;
+
+    #[Assert\Uuid(message: 'Identifiant de membre invalide')]
     public ?string $memberId = null;
+
     public ?string $memberName = null;
     public bool $isFormerMember = false;
     public ?string $recurrenceId = null;

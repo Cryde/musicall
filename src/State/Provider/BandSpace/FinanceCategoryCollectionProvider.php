@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\User;
 use App\Repository\BandSpace\FinanceCategoryRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
@@ -20,6 +21,7 @@ readonly class FinanceCategoryCollectionProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
+        private FinanceEntryRepository $financeEntryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
         private Security $security,
     ) {
@@ -39,6 +41,9 @@ readonly class FinanceCategoryCollectionProvider implements ProviderInterface
 
         $categories = $this->financeCategoryRepository->findByBandSpace($bandSpace);
 
-        return $this->financeCategoryBuilder->buildFromList($categories);
+        return $this->financeCategoryBuilder->buildFromList(
+            $categories,
+            $this->financeEntryRepository->countByCategories($categories),
+        );
     }
 }
