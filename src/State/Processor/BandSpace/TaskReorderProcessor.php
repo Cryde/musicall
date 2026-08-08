@@ -9,6 +9,7 @@ use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\TaskColumnPositionsGuard;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -22,6 +23,7 @@ readonly class TaskReorderProcessor implements ProcessorInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
+        private TaskColumnPositionsGuard $columnPositionsGuard,
         private Security $security,
     ) {
     }
@@ -38,6 +40,7 @@ readonly class TaskReorderProcessor implements ProcessorInterface
 
         [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
+        /** @var string[] $requestedIds every entry is a string id, TaskReorderPositions checked */
         $requestedIds = array_column($data->positions, 'id');
         $foundTasks = $this->taskRepository->findByIdsAndBandSpace($requestedIds, $bandSpace);
         $foundIds = array_map(fn(\App\Entity\BandSpace\Task $task): string => (string) $task->id, $foundTasks);
@@ -51,6 +54,14 @@ readonly class TaskReorderProcessor implements ProcessorInterface
         if (count($statuses) > 1) {
             throw new UnprocessableEntityHttpException('Toutes les tâches doivent avoir le même statut');
         }
+
+        $firstTask = current($foundTasks);
+        if (!$firstTask instanceof Task) {
+            // Unreachable: the payload is never empty and every id it named was just resolved.
+            throw new BadRequestHttpException('Aucune tâche à réordonner');
+        }
+
+        $this->columnPositionsGuard->assertCoversColumn($bandSpace, $firstTask->status, $requestedIds);
 
         $this->taskRepository->bulkUpdatePositions($data->positions);
     }

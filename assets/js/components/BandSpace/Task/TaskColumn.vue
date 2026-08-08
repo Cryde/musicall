@@ -10,7 +10,7 @@
       v-model="localTasks"
       group="tasks"
       :animation="200"
-      :disabled="tasksStore.isSelectionMode"
+      :disabled="tasksStore.isSelectionMode || tasksStore.isReorderDisabled"
       ghost-class="opacity-30"
       :data-status="status"
       class="flex flex-col gap-2 min-h-[100px]"
@@ -96,12 +96,14 @@ function handleDragEnd(event) {
   const toStatus = event.to?.dataset?.status
 
   if (fromStatus === toStatus) {
-    // Same-column reorder: localTasks is already updated by v-model
-    const orderedIds = localTasks.value.map((t) => t.id)
-    emit('reorder', props.status, orderedIds)
+    // Same-column reorder: localTasks is already updated by v-model. It holds the column as this
+    // member sees it, which a filter can cut down, so the store replays the drag against the
+    // whole column before writing any position.
+    const visibleOrderedIds = localTasks.value.map((t) => t.id)
+    emit('reorder', props.status, visibleOrderedIds, taskId)
   } else {
-    // Cross-column move: @end fires on the source column
-    // Pass the drop index so the store can compute the correct order
+    // Cross-column move: @end fires on the source column, so only the drop index is known here.
+    // The store resolves it against the whole destination column, hidden tasks included.
     emit('status-change', taskId, toStatus, event.newIndex)
   }
 }

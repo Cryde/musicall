@@ -19,12 +19,8 @@ class TaskMovePayloadValidator extends ConstraintValidator
             return;
         }
 
+        // No ordering at all means "append to the destination column", which the server resolves.
         if ($value->positions === []) {
-            $this->context->buildViolation($constraint->emptyMessage)
-                ->atPath('positions')
-                ->setCode(TaskMovePayload::ERROR_CODE)
-                ->addViolation();
-
             return;
         }
 
@@ -50,6 +46,30 @@ class TaskMovePayloadValidator extends ConstraintValidator
         }
 
         $positionIds = array_column($value->positions, 'id');
+
+        // A duplicate would pass the column-membership check, which compares sets, and then leave
+        // one of the positions the payload named unused.
+        if (count(array_unique($positionIds)) !== count($positionIds)) {
+            $this->context->buildViolation($constraint->duplicateIdMessage)
+                ->atPath('positions')
+                ->setCode(TaskMovePayload::ERROR_CODE)
+                ->addViolation();
+
+            return;
+        }
+
+        $positionValues = array_column($value->positions, 'position');
+        $expected = range(0, count($positionValues) - 1);
+        sort($positionValues);
+        if ($positionValues !== $expected) {
+            $this->context->buildViolation($constraint->notContiguousMessage)
+                ->atPath('positions')
+                ->setCode(TaskMovePayload::ERROR_CODE)
+                ->addViolation();
+
+            return;
+        }
+
         if (!in_array($value->taskId, $positionIds, true)) {
             $this->context->buildViolation($constraint->taskNotInPositionsMessage)
                 ->atPath('task_id')

@@ -138,9 +138,10 @@ const toast = useToast()
 const popoverRef = ref()
 const actionMenuRef = ref()
 
-// Touch fallback for the drag-only kanban: build "Déplacer vers ..." items
-// for the statuses that aren't the task's current one. Appends to the end
-// of the target column (newIndex = current count in that column).
+// Touch fallback for the drag-only kanban, and the only way to change a status while a
+// server-side filter has drag turned off: build "Déplacer vers ..." items for the statuses that
+// aren't the task's current one. There is no drop point, so the task goes to the end of the
+// target column.
 const STATUS_OPTIONS = [
   { value: 'todo', label: 'À faire' },
   { value: 'in_progress', label: 'En cours' },
@@ -156,11 +157,8 @@ const actionMenuItems = computed(() => {
 })
 
 async function moveToStatus(newStatus) {
-  const newIndex = tasksStore.tasks.filter(
-    (t) => t.status === newStatus && !t.archive_datetime
-  ).length
   try {
-    await tasksStore.moveTaskToColumn(props.bandSpaceId, props.task.id, newStatus, newIndex)
+    await tasksStore.moveTaskToColumn(props.bandSpaceId, props.task.id, newStatus, null)
   } catch {
     toast.add({
       severity: 'error',

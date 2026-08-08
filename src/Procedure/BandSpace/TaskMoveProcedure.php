@@ -10,6 +10,7 @@ use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\TaskColumnPositionsGuard;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,12 +21,14 @@ readonly class TaskMoveProcedure
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TaskRepository $taskRepository,
+        private TaskColumnPositionsGuard $columnPositionsGuard,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
     ) {
     }
 
     /**
-     * @param array<int, array{id: string, position: int}> $positions
+     * @param array<int, array{id: string, position: int}> $positions the whole destination column,
+     *        or empty to append the task to it when the client could not build that ordering
      */
     public function move(
         BandSpace $bandSpace,
@@ -35,9 +38,11 @@ readonly class TaskMoveProcedure
         User $user,
     ): Task {
         $task = $this->taskRepository->findOneByIdAndBandSpace($taskId, $bandSpace);
-        if (!$task instanceof \App\Entity\BandSpace\Task) {
+        if (!$task instanceof Task) {
             throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', $taskId));
         }
+
+        $targetStatus = TaskStatus::from($newStatus);
 
         $requestedIds = array_column($positions, 'id');
         $foundTasks = $this->taskRepository->findByIdsAndBandSpace($requestedIds, $bandSpace);
@@ -48,35 +53,53 @@ readonly class TaskMoveProcedure
             throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missingIds)));
         }
 
-        return $this->entityManager->wrapInTransaction(function () use ($task, $newStatus, $positions, $user): Task {
-            $oldStatus = $task->status->value;
-            if ($oldStatus !== $newStatus) {
-                $task->status = TaskStatus::from($newStatus);
-                $task->completedDatetime = $task->status === TaskStatus::Done ? new DateTimeImmutable() : null;
-                $this->bandSpaceActivityRecorder->record(
-                    bandSpace: $task->bandSpace,
-                    module: BandSpaceModule::Task,
-                    type: BandSpaceTaskActivityType::StatusChanged,
-                    resourceId: $task->id,
-                    actor: $user,
-                    payload: ['from' => $oldStatus, 'to' => $newStatus],
-                );
-            }
+        if ($positions !== []) {
+            $this->columnPositionsGuard->assertCoversColumn(
+                $bandSpace,
+                $targetStatus,
+                $requestedIds,
+                (string) $task->id,
+            );
+        }
 
-            foreach ($positions as $item) {
-                if ($item['id'] === (string) $task->id) {
-                    $task->position = $item['position'];
-                    break;
+        return $this->entityManager->wrapInTransaction(
+            function () use ($bandSpace, $task, $targetStatus, $positions, $user): Task {
+                $oldStatus = $task->status->value;
+                if ($oldStatus !== $targetStatus->value) {
+                    $task->status = $targetStatus;
+                    $task->completedDatetime = $task->status === TaskStatus::Done ? new DateTimeImmutable() : null;
+                    $this->bandSpaceActivityRecorder->record(
+                        bandSpace: $task->bandSpace,
+                        module: BandSpaceModule::Task,
+                        type: BandSpaceTaskActivityType::StatusChanged,
+                        resourceId: $task->id,
+                        actor: $user,
+                        payload: ['from' => $oldStatus, 'to' => $targetStatus->value],
+                    );
                 }
+
+                if ($positions === []) {
+                    // The end of the destination column. Whether or not the status change has
+                    // reached the database by now, the highest position it holds plus one is above
+                    // every number in use there, so the task cannot land on a taken one.
+                    $task->position = $this->taskRepository->findNextPositionInColumn($bandSpace, $targetStatus);
+                } else {
+                    foreach ($positions as $item) {
+                        if ($item['id'] === (string) $task->id) {
+                            $task->position = $item['position'];
+                            break;
+                        }
+                    }
+
+                    $this->taskRepository->bulkUpdatePositions($positions);
+                }
+
+                $task->updateDatetime = new DateTime();
+
+                $this->entityManager->flush();
+
+                return $task;
             }
-
-            $task->updateDatetime = new DateTime();
-
-            $this->taskRepository->bulkUpdatePositions($positions);
-
-            $this->entityManager->flush();
-
-            return $task;
-        });
+        );
     }
 }

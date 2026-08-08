@@ -96,16 +96,28 @@
       </div>
 
       <!-- Kanban board -->
-      <TaskBoard
-        v-else
-        :tasks-by-status="tasksStore.tasksByStatus"
-        :categories="tasksStore.categories"
-        :band-space-id="bandSpaceId"
-        @open-task="handleOpenTask"
-        @reorder="handleReorder"
-        @status-change="handleStatusChange"
-        @show-all-done="showAllDone = true"
-      />
+      <div v-else>
+        <Message
+          v-if="tasksStore.isReorderDisabled"
+          severity="info"
+          :closable="false"
+          class="mb-3"
+        >
+          Réorganisation désactivée : la recherche, le filtre d'échéance et « En retard » masquent
+          des tâches qui ne sont pas chargées, et un déplacement décalerait ces tâches masquées.
+          Effacez ces filtres pour réordonner le tableau. Le menu d'une carte permet toujours de
+          changer son statut.
+        </Message>
+        <TaskBoard
+          :tasks-by-status="tasksStore.tasksByStatus"
+          :categories="tasksStore.categories"
+          :band-space-id="bandSpaceId"
+          @open-task="handleOpenTask"
+          @reorder="handleReorder"
+          @status-change="handleStatusChange"
+          @show-all-done="showAllDone = true"
+        />
+      </div>
     </div>
 
     <!-- Task detail drawer -->
@@ -230,19 +242,40 @@ function handleFilterUpdate(key, value) {
   tasksStore.setFilter(key, value)
 }
 
-async function handleReorder(status, orderedIds) {
+/**
+ * The server refuses a payload that no longer matches the column, which is what happens when
+ * somebody else archived, deleted or moved one of its tasks since this board was loaded. The board
+ * is stale rather than wrong, so it is reloaded before the user tries again: retrying against the
+ * same stale column would only be refused a second time.
+ */
+async function resyncAfterRejectedDrag(summary) {
+  toast.add({
+    severity: 'warn',
+    summary,
+    detail: "Le tableau a été modifié entre temps, il vient d'être rechargé.",
+    life: 5000
+  })
+
   try {
-    await tasksStore.reorderTasks(bandSpaceId, status, orderedIds)
+    await tasksStore.fetchTasks(bandSpaceId)
   } catch {
-    toast.add({ severity: 'error', summary: 'Impossible de réordonner les tâches', life: 5000 })
+    toast.add({ severity: 'error', summary: 'Rechargement du tableau impossible', life: 5000 })
   }
 }
 
-async function handleStatusChange(taskId, newStatus, newIndex) {
+async function handleReorder(status, visibleOrderedIds, movedTaskId) {
   try {
-    await tasksStore.moveTaskToColumn(bandSpaceId, taskId, newStatus, newIndex)
+    await tasksStore.reorderTasks(bandSpaceId, status, visibleOrderedIds, movedTaskId)
   } catch {
-    toast.add({ severity: 'error', summary: 'Impossible de déplacer la tâche', life: 5000 })
+    await resyncAfterRejectedDrag('Impossible de réordonner les tâches')
+  }
+}
+
+async function handleStatusChange(taskId, newStatus, visibleIndex) {
+  try {
+    await tasksStore.moveTaskToColumn(bandSpaceId, taskId, newStatus, visibleIndex)
+  } catch {
+    await resyncAfterRejectedDrag('Impossible de déplacer la tâche')
   }
 }
 
