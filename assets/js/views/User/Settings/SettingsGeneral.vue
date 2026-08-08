@@ -174,6 +174,11 @@
         <Message severity="warn" :closable="false">
           Cette action est irréversible. Toutes vos données personnelles seront supprimées.
         </Message>
+        <p class="text-sm text-surface-600 dark:text-surface-400">
+          <span class="font-semibold">Vos Band Spaces :</span> vous quitterez tous vos espaces. Si vous êtes le seul
+          membre de l'un d'eux, sa suppression sera programmée sous 30 jours. Si vous en êtes le dernier
+          administrateur, le membre le plus ancien sera promu administrateur.
+        </p>
         <template v-if="hasPassword">
           <p class="text-sm text-surface-600 dark:text-surface-400">
             Pour confirmer la suppression, veuillez saisir votre mot de passe.
