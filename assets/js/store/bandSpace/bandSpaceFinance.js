@@ -286,10 +286,11 @@ export const useBandSpaceFinanceStore = defineStore('bandSpaceFinance', () => {
   async function updateRecurrence(bandSpaceId, recurrenceId, data) {
     isSaving.value = true
     try {
-      await bandSpaceFinanceApi.updateRecurrence(bandSpaceId, recurrenceId, data)
+      const result = await bandSpaceFinanceApi.updateRecurrence(bandSpaceId, recurrenceId, data)
       await loadRecurrences(bandSpaceId)
       await loadEntries(bandSpaceId)
       await loadSummary(bandSpaceId)
+      return result
     } finally {
       isSaving.value = false
     }

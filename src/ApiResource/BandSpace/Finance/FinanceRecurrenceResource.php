@@ -14,8 +14,10 @@ use App\State\Processor\BandSpace\FinanceRecurrenceDeleteProcessor;
 use App\State\Processor\BandSpace\FinanceRecurrenceUpdateProcessor;
 use App\State\Provider\BandSpace\FinanceRecurrenceCollectionProvider;
 use App\State\Provider\BandSpace\FinanceRecurrenceItemProvider;
+use App\Validator\BandSpace\RecurrenceEndDate;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[RecurrenceEndDate]
 #[ApiResource(
     shortName: 'FinanceRecurrence',
     operations: [
@@ -91,6 +93,15 @@ class FinanceRecurrenceResource
     public string $endDate;
     public bool $isActive;
     public int $entryCount = 0;
+
+    /**
+     * What the last write did to the entries the recurrence had already materialised. Zero everywhere
+     * except in the answer to a PATCH, where they are what the interface reports back to the band.
+     */
+    public int $updatedEntryCount = 0;
+    public int $removedEntryCount = 0;
+    public int $createdEntryCount = 0;
+
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;
 }

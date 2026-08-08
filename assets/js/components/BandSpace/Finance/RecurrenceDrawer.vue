@@ -68,12 +68,21 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Sélectionne un intervalle"
+          :disabled="isEditMode"
         />
+        <small v-if="isEditMode" class="text-surface-600 dark:text-surface-300">{{ frozenScheduleHint }}</small>
       </div>
 
       <div class="flex flex-col gap-1">
         <label for="recurrence-start-date" class="text-sm font-medium">Date de début <span class="text-red-500">*</span></label>
-        <DatePicker id="recurrence-start-date" v-model="form.startDate" dateFormat="dd/mm/yy" showIcon />
+        <DatePicker
+          id="recurrence-start-date"
+          v-model="form.startDate"
+          dateFormat="dd/mm/yy"
+          showIcon
+          :disabled="isEditMode"
+        />
+        <small v-if="isEditMode" class="text-surface-600 dark:text-surface-300">{{ frozenScheduleHint }}</small>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -149,6 +158,17 @@ const visibleModel = computed({
 
 const isEditMode = computed(() => props.recurrence !== null)
 
+// The generated entries all sit on the grid drawn by the start date and the interval, so the API refuses
+// to re-anchor it once entries exist. Say it here rather than let the user hit a 422.
+const frozenScheduleHint = 'Non modifiable : terminez cette récurrence et créez-en une nouvelle.'
+
+// A 4xx carries a message written for the user, anything else carries a technical one in English.
+function apiErrorDetail(error, fallback) {
+  const status = error?.status ?? 0
+
+  return status >= 400 && status < 500 && error?.message ? error.message : fallback
+}
+
 const typeOptions = [
   { label: 'Dépense', value: 'expense' },
   { label: 'Revenu', value: 'income' }
@@ -210,14 +230,15 @@ function buildPayload() {
     label: form.label,
     type: form.type,
     scope: form.scope,
-    interval: form.interval,
     amount: form.amountEuros != null ? currencyToCents(form.amountEuros) : null,
-    start_date: form.startDate ? format(form.startDate, 'yyyy-MM-dd') : null,
     end_date: form.endDate ? format(form.endDate, 'yyyy-MM-dd') : null
   }
 
+  // The schedule is set once, at creation: sending it on an edit would only be rejected.
   if (!isEditMode.value) {
     data.category_id = form.categoryId
+    data.interval = form.interval
+    data.start_date = form.startDate ? format(form.startDate, 'yyyy-MM-dd') : null
   }
 
   return data
@@ -228,17 +249,22 @@ async function handleSave() {
     const data = buildPayload()
 
     if (isEditMode.value) {
-      await financeStore.updateRecurrence(props.bandSpaceId, props.recurrence.id, data)
-    } else {
-      await financeStore.createRecurrence(props.bandSpaceId, data)
+      const result = await financeStore.updateRecurrence(
+        props.bandSpaceId,
+        props.recurrence.id,
+        data
+      )
+      emit('saved', result)
+      return
     }
 
+    await financeStore.createRecurrence(props.bandSpaceId, data)
     emit('saved')
-  } catch {
+  } catch (error) {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: 'Impossible d\u2019enregistrer la récurrence',
+      detail: apiErrorDetail(error, 'Impossible d\u2019enregistrer la récurrence'),
       life: 5000
     })
   }
@@ -270,15 +296,15 @@ function handleDelete() {
 
 async function handleToggleActive() {
   try {
-    await financeStore.updateRecurrence(props.bandSpaceId, props.recurrence.id, {
+    const result = await financeStore.updateRecurrence(props.bandSpaceId, props.recurrence.id, {
       is_active: !props.recurrence.is_active
     })
-    emit('saved')
-  } catch {
+    emit('saved', result)
+  } catch (error) {
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: 'Impossible de modifier le statut de la récurrence',
+      detail: apiErrorDetail(error, 'Impossible de modifier le statut de la récurrence'),
       life: 5000
     })
   }

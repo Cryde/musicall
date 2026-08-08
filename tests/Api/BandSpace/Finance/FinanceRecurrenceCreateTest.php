@@ -82,6 +82,9 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
             'end_date' => '2024-06-30T00:00:00+00:00',
             'is_active' => true,
             'entry_count' => 6,
+            'updated_entry_count' => 0,
+            'removed_entry_count' => 0,
+            'created_entry_count' => 0,
             'creation_datetime' => $responseData['creation_datetime'],
             'update_datetime' => null,
         ]);
