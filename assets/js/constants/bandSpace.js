@@ -40,6 +40,46 @@ export const SECTION_NAMES = {
   [BAND_SPACE_ROUTES.INDEX]: 'Band Space'
 }
 
+/**
+ * The « Paramètres » page tabs, in display order. `adminOnly` is the only gate, and nothing carries
+ * it today: leaving the space, the stage name and instruments dialog, the roster, the activity log
+ * and the storage quota are all member level, which is why the sidebar entry is shown to every
+ * member and not only to admins.
+ */
+export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
+  { key: 'members', label: 'Membres', adminOnly: false },
+  { key: 'activity', label: "Journal d'activité", adminOnly: false },
+  { key: 'shares', label: 'Partages actifs', adminOnly: false },
+  { key: 'storage', label: 'Stockage', adminOnly: false },
+  { key: 'general', label: 'Général', adminOnly: false },
+  { key: 'danger', label: 'Zone de danger', adminOnly: false }
+])
+
+/**
+ * Takes the sections rather than reading the constant directly, so the exclusion branch stays
+ * provable the day a section is finally flagged `adminOnly`. Filtering the frozen constant here
+ * would leave an inverted predicate undetectable for as long as nothing carries the flag.
+ */
+export function filterSectionsByRole(sections, isAdmin) {
+  return sections.filter((section) => !section.adminOnly || isAdmin)
+}
+
+export function visibleSettingsSections(isAdmin) {
+  return filterSectionsByRole(BAND_SPACE_SETTINGS_SECTIONS, isAdmin)
+}
+
+/**
+ * The section to show for a `?section=` value: the requested one when the role may see it, the
+ * first visible one otherwise. Every entry point goes through here (the deep links from the
+ * deletion banner and the dashboard activity widget, and the re-check when the role finally
+ * arrives with the space list), so a member can never land on a tab reserved for admins.
+ */
+export function resolveSettingsSection(requestedKey, isAdmin) {
+  const sections = visibleSettingsSections(isAdmin)
+
+  return sections.find((section) => section.key === requestedKey)?.key ?? sections[0]?.key ?? null
+}
+
 export const NAVIGATION_ITEMS = Object.freeze([
   { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD, icon: 'pi-th-large' },
   { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA, icon: 'pi-calendar' },
