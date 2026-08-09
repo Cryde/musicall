@@ -5,6 +5,7 @@ namespace App\Enum\BandSpace;
 enum BandSpaceSettingsActivityType: string
 {
     case BandCreated = 'band_created';
+    case BandRenamed = 'band_renamed';
     case MemberRoleChanged = 'member_role_changed';
     case MemberRemoved = 'member_removed';
     case MemberLeft = 'member_left';

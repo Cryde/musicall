@@ -173,6 +173,8 @@ const SENTENCES = {
 
   // Settings — band
   'settings.band_created': (a) => `a créé le Band Space « ${a.payload?.name ?? '—'} »`,
+  'settings.band_renamed': (a) =>
+    `a renommé le Band Space de « ${a.payload?.from} » à « ${a.payload?.to} »`,
 
   // Settings — membership
   'settings.member_role_changed': (a) =>

@@ -33,6 +33,7 @@
             <ActivitySection v-else-if="activeSection === 'activity'" />
             <ActiveSharesSection v-else-if="activeSection === 'shares'" />
             <QuotaIndicator v-else-if="activeSection === 'storage'" />
+            <GeneralSection v-else-if="activeSection === 'general'" />
             <DangerZoneSection v-else-if="activeSection === 'danger'" />
             <ComingSoonSection v-else :title="activeSectionLabel" />
           </div>
@@ -50,6 +51,7 @@ import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveShare
 import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
 import DangerZoneSection from '../../components/BandSpace/Settings/DangerZoneSection.vue'
+import GeneralSection from '../../components/BandSpace/Settings/GeneralSection.vue'
 import MembersSection from '../../components/BandSpace/Settings/MembersSection.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import {

@@ -24,8 +24,8 @@ class BandSpaceCreate
     #[Assert\Length(
         min: 3,
         max: 255,
-        minMessage: 'Band space name must be at least {{ limit }} characters long',
-        maxMessage: 'Band space name cannot be longer than {{ limit }} characters'
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
     )]
     public string $name;
 }

@@ -7,6 +7,7 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
   const isLoading = ref(false)
   const isCreateModalOpen = ref(false)
   const isCreating = ref(false)
+  const isRenaming = ref(false)
   const error = ref(null)
 
   // Computed getters for derived state
@@ -53,6 +54,21 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
     }
   }
 
+  // Replaces the entry rather than reloading the list: the sidebar, the page title and the space
+  // selector all read the name through getById, so swapping the one space is enough for the new name
+  // to appear everywhere it is shown.
+  async function renameBandSpace(id, name) {
+    isRenaming.value = true
+
+    try {
+      const updated = await bandSpaceApi.rename(id, name)
+      spaces.value = spaces.value.map((space) => (space.id === id ? updated : space))
+      return updated
+    } finally {
+      isRenaming.value = false
+    }
+  }
+
   function getById(id) {
     return spacesMap.value.get(id) || null
   }
@@ -78,6 +94,7 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
     // Actions
     loadMyBandSpaces,
     createBandSpace,
+    renameBandSpace,
     getById,
     openCreateModal,
     closeCreateModal,
@@ -88,6 +105,7 @@ export const useBandSpaceStore = defineStore('bandSpaces', () => {
     isLoading: readonly(isLoading),
     isCreateModalOpen: readonly(isCreateModalOpen),
     isCreating: readonly(isCreating),
+    isRenaming: readonly(isRenaming),
     error: readonly(error),
     // Computed getters
     hasSpaces,
