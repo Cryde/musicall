@@ -518,7 +518,20 @@ class FinanceEntryUpdateTest extends ApiTestCase
             ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        // 404 rather than the processor's 403 since somebody else's personal entry became invisible on
+        // every operation: a 403 would confirm it exists, which is part of what is private about it.
+        // The processor still refuses it too, as the layer behind this one.
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Entrée introuvable',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Entrée introuvable',
+        ]);
     }
 
     public function test_update_personal_entry_by_owner(): void

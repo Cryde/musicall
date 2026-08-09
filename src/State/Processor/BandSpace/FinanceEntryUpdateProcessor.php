@@ -180,6 +180,15 @@ readonly class FinanceEntryUpdateProcessor implements ProcessorInterface
         string $oldCategoryId,
         string $oldCategoryName,
     ): void {
+        // A personal entry writes nothing to the band wide journal. The payloads below carry the
+        // label and the amount, and that journal is readable by every member, so recording them
+        // would hand back through the feed exactly what the read rules now keep private. Not
+        // recorded rather than recorded and hidden: what is never written cannot leak later through
+        // an export, a log or an endpoint nobody has written yet.
+        if ($entry->scope === FinanceEntryScope::Personal) {
+            return;
+        }
+
         if ($oldStatus !== $entry->status) {
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $entry->category->bandSpace,

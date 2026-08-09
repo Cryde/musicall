@@ -624,16 +624,19 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
 
         $this->patchRecurrence($intruder, $bandSpace, $recurrenceId, ['amount' => 99000]);
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        // 404 rather than the 403 this used to answer: somebody else's personal recurrence became
+        // invisible on every operation, and a 403 would confirm it exists. The owner checks behind
+        // this still refuse the write.
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
-            '@id' => '/api/errors/403',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez modifier que vos propres récurrences personnelles',
-            'status' => 403,
-            'type' => '/errors/403',
-            'description' => 'Vous ne pouvez modifier que vos propres récurrences personnelles',
+            'detail' => 'Récurrence introuvable',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Récurrence introuvable',
         ]);
 
         $this->assertSame(30000, $this->reloadRecurrence($recurrenceId)->amount);
@@ -688,7 +691,8 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
 
         $this->patchRecurrence($stranger, $bandSpace, $recurrenceId, ['amount' => 99000]);
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        // Invisible now, so refused as an unknown id rather than as a forbidden one.
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertSame(30000, $this->reloadRecurrence($recurrenceId)->amount);
     }
 

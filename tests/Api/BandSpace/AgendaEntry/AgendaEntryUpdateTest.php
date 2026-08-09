@@ -28,7 +28,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -80,7 +80,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -130,7 +130,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -183,7 +183,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -237,7 +237,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -276,7 +276,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -329,7 +329,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -356,7 +356,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -381,7 +381,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
         // the start, which is what this payload is.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -454,7 +454,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
         // made from a March one.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -481,6 +481,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
         $bandSpace = self::getContainer()->get(BandSpaceRepository::class)->find($bandSpace->id);
         $occurrences = self::getContainer()->get(AgendaAggregator::class)->aggregate(
             $bandSpace,
+            $viewerMembership,
             new DateTimeImmutable('2026-01-01', new \DateTimeZone('UTC')),
             new DateTimeImmutable('2026-01-31 23:59:59', new \DateTimeZone('UTC')),
         );
@@ -501,7 +502,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
         // (without `recurrence_frequency`) must persist on an already-recurring entry.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -547,7 +548,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -594,7 +595,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -641,7 +642,7 @@ class AgendaEntryUpdateTest extends ApiTestCase
         $owner = UserFactory::new()->asBaseUser()->create();
         $otherUser = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $entry = AgendaEntryFactory::new(['bandSpace' => $bandSpace, 'creator' => $owner])->create();
 
         $this->client->loginUser($otherUser);

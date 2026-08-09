@@ -75,19 +75,25 @@ readonly class FinanceRecurrenceCreateProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
-        $this->bandSpaceActivityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Finance,
-            type: BandSpaceFinanceActivityType::RecurrenceCreated,
-            resourceId: $recurrence->id,
-            actor: $user,
-            payload: [
-                'label' => $recurrence->label,
-                'amount' => $recurrence->amount,
-                'interval' => $recurrence->interval->value,
-                'generated_entries' => count($entries),
-            ],
-        );
+        // A personal recurrence writes nothing to the band wide journal, for the same reason its
+        // entries do not: this payload carries the label and the amount, and every member reads that
+        // journal. A recurring private cost is if anything more revealing than a single one.
+        if ($recurrence->scope !== FinanceEntryScope::Personal) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::RecurrenceCreated,
+                resourceId: $recurrence->id,
+                actor: $user,
+                payload: [
+                    'label' => $recurrence->label,
+                    'amount' => $recurrence->amount,
+                    'interval' => $recurrence->interval->value,
+                    'generated_entries' => count($entries),
+                ],
+            );
+        }
+
         $this->entityManager->flush();
 
         return $this->financeRecurrenceBuilder->buildItem($recurrence);

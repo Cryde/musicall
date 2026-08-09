@@ -8,6 +8,7 @@ use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
+use App\Enum\BandSpace\FinanceEntryScope;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
@@ -144,7 +145,11 @@ readonly class BandSpaceFileBuilder
         $entryLabels = [];
         foreach ($entryIds as $entryId) {
             $entry = $this->financeEntryRepository->findOneByIdAndBandSpace($entryId, $bandSpace);
-            if ($entry instanceof \App\Entity\BandSpace\FinanceEntry) {
+
+            // A personal entry's label is never named here, not even for its owner. This builder feeds
+            // the band wide file browser and has no reader to compare against, so the choice is between
+            // naming it to everybody or to nobody; the attachment still shows, only unnamed.
+            if ($entry instanceof \App\Entity\BandSpace\FinanceEntry && $entry->scope !== FinanceEntryScope::Personal) {
                 $entryLabels[$entryId] = $entry->label;
             }
         }

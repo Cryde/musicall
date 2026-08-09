@@ -10,6 +10,7 @@ use App\Enum\BandSpace\FinanceEntryStatus;
 use App\Enum\BandSpace\FinanceEntryType;
 use App\Enum\BandSpace\RecurrenceInterval;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -35,7 +36,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -112,7 +113,9 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
 
         // Planned entries should be deleted
         $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
-        $remainingEntries = $entryRepository->findByBandSpace($bandSpace);
+        // Reloaded because the request detached it, and the finder binds it as a query parameter.
+        $viewerMembership = self::getContainer()->get(BandSpaceMembershipRepository::class)->find((string) $viewerMembership->id);
+        $remainingEntries = $entryRepository->findByBandSpace($bandSpace, $viewerMembership);
         $this->assertCount(1, $remainingEntries);
 
         // Paid entry should still exist with recurrence_id = null
@@ -132,7 +135,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         $owner = UserFactory::new()->asBaseUser()->create();
         $otherUser = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -165,8 +168,8 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $owner = UserFactory::new()->create(['username' => 'owner_user', 'email' => 'owner@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
-        BandSpaceMembershipFactory::new([
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new([
             'bandSpace' => $bandSpace,
             'user' => $user,
             'status' => MembershipStatus::Left,
@@ -209,7 +212,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         $intruder = UserFactory::new()->create(['username' => 'intruder', 'email' => 'intruder@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
         $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $intruder])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $intruder])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -249,16 +252,19 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         $this->client->loginUser($intruder);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/finance/recurrences/' . $recurrenceId);
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        // 404 rather than the 403 this used to answer: somebody else's personal recurrence became
+        // invisible on every operation, and a 403 would confirm it exists. The owner checks behind
+        // this still refuse the write.
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Error',
-            '@id' => '/api/errors/403',
+            '@id' => '/api/errors/404',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Vous ne pouvez supprimer que vos propres récurrences personnelles',
-            'status' => 403,
-            'type' => '/errors/403',
-            'description' => 'Vous ne pouvez supprimer que vos propres récurrences personnelles',
+            'detail' => 'Récurrence introuvable',
+            'status' => 404,
+            'type' => '/errors/404',
+            'description' => 'Récurrence introuvable',
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
@@ -277,7 +283,7 @@ class FinanceRecurrenceDeleteTest extends ApiTestCase
         $otherMember = UserFactory::new()->create(['username' => 'other_member', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
         $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $otherMember])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $otherMember])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,

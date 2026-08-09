@@ -30,7 +30,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -59,7 +59,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
-        $entries = $entryRepository->findByBandSpace($bandSpace);
+        $entries = $entryRepository->findByBandSpace($bandSpace, $viewerMembership);
         $this->assertCount(6, $entries);
 
         $responseData = $this->getResponseAsArray();
@@ -104,7 +104,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
         $owner = UserFactory::new()->asBaseUser()->create();
         $otherUser = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -138,8 +138,8 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $owner = UserFactory::new()->create(['username' => 'owner_user', 'email' => 'owner@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
-        BandSpaceMembershipFactory::new([
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new([
             'bandSpace' => $bandSpace,
             'user' => $user,
             'status' => MembershipStatus::Left,
@@ -176,7 +176,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -232,7 +232,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,
@@ -282,7 +282,7 @@ class FinanceRecurrenceCreateTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $category = FinanceCategoryFactory::new([
             'bandSpace' => $bandSpace,

@@ -37,13 +37,13 @@ readonly class AgendaCollectionProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $filters = $context['filters'] ?? [];
         $from = $this->parseDatetime($filters['from'] ?? null) ?? (new DateTimeImmutable('today'));
         $to = $this->parseDatetime($filters['to'] ?? null) ?? $from->modify('+' . self::DEFAULT_WINDOW_DAYS . ' days')->setTime(23, 59, 59);
 
-        return $this->agendaAggregator->aggregate($bandSpace, $from, $to);
+        return $this->agendaAggregator->aggregate($bandSpace, $viewer, $from, $to);
     }
 
     private function parseDatetime(?string $value): ?DateTimeImmutable

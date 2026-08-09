@@ -3,11 +3,14 @@
 namespace App\Repository\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\FinanceCategory;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\BandSpace\FinanceRecurrence;
+use App\Enum\BandSpace\FinanceEntryScope;
 use App\Enum\BandSpace\FinanceEntryStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -53,10 +56,42 @@ class FinanceEntryRepository extends ServiceEntityRepository
     }
 
     /**
+     * What a given member is allowed to read: everything the band owns, plus their own personal
+     * entries and nobody else's.
+     *
+     * The rule lives here rather than in each caller because it is a read rule for the whole module,
+     * and a query that forgets it does not fail, it quietly hands one member another member's private
+     * spending. The `$viewer` argument is required for the same reason: adding a read path that
+     * should have been filtered then does not compile.
+     *
+     * A personal entry with no member is deliberately visible to nobody. It should not exist (the
+     * create and update paths both refuse one, and memberships are closed rather than deleted so the
+     * SET NULL never fires), so if one ever appears it is a data fault, and hiding somebody's private
+     * row is the safer failure.
+     */
+    private function applyVisibleTo(QueryBuilder $qb, BandSpaceMembership $viewer): QueryBuilder
+    {
+        return $qb
+            ->andWhere('e.scope = :bandScope OR e.member = :viewer')
+            ->setParameter('bandScope', FinanceEntryScope::Band)
+            ->setParameter('viewer', $viewer);
+    }
+
+    /** The same rule for the raw SQL aggregates, which cannot go through the query builder. */
+    private function visibleToSql(string $alias = 'e'): string
+    {
+        return "({$alias}.scope = 'band' OR {$alias}.member_id = :viewerId)";
+    }
+
+    /**
      * @return FinanceEntry[]
      */
-    public function findByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
-    {
+    public function findByBandSpace(
+        BandSpace $bandSpace,
+        BandSpaceMembership $viewer,
+        ?\DateTimeImmutable $from = null,
+        ?\DateTimeImmutable $to = null,
+    ): array {
         $qb = $this->createQueryBuilder('e')
             ->join('e.category', 'c')->addSelect('c')
             ->join('c.bandSpace', 'bs')->addSelect('bs')
@@ -65,6 +100,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->where('c.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace)
             ->orderBy('e.date', 'DESC');
+
+        $this->applyVisibleTo($qb, $viewer);
 
         if ($from instanceof \DateTimeImmutable) {
             $qb->andWhere('e.date >= :from')->setParameter('from', $from);
@@ -94,18 +131,22 @@ class FinanceEntryRepository extends ServiceEntityRepository
     /**
      * @return array{min_date: ?string, max_date: ?string}
      */
-    public function getDateBoundaries(BandSpace $bandSpace): array
+    public function getDateBoundaries(BandSpace $bandSpace, BandSpaceMembership $viewer): array
     {
         $conn = $this->getEntityManager()->getConnection();
+        $visible = $this->visibleToSql();
 
-        $sql = <<<'SQL'
+        $sql = <<<SQL
             SELECT MIN(e.date) AS min_date, MAX(e.date) AS max_date
             FROM finance_entry e
             JOIN finance_category c ON e.category_id = c.id
-            WHERE c.band_space_id = :bandSpaceId
+            WHERE c.band_space_id = :bandSpaceId AND {$visible}
             SQL;
 
-        $result = $conn->executeQuery($sql, ['bandSpaceId' => (string) $bandSpace->id])->fetchAssociative();
+        $result = $conn->executeQuery($sql, [
+            'bandSpaceId' => (string) $bandSpace->id,
+            'viewerId' => (string) $viewer->id,
+        ])->fetchAssociative();
         \assert($result !== false);
 
         return [
@@ -117,11 +158,17 @@ class FinanceEntryRepository extends ServiceEntityRepository
     /**
      * @return array{total_income: int, total_expense: int, total_income_all: int, total_expense_all: int, total_planned: int, total_committed: int, total_paid: int, total_personal: int, has_estimates: bool}
      */
-    public function getSummaryByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
-    {
+    public function getSummaryByBandSpace(
+        BandSpace $bandSpace,
+        BandSpaceMembership $viewer,
+        ?\DateTimeImmutable $from = null,
+        ?\DateTimeImmutable $to = null,
+    ): array {
         $conn = $this->getEntityManager()->getConnection();
         $effectiveAmount = $this->effectiveAmountSql();
         [$dateFilter, $params] = $this->buildDateFilter($bandSpace, $from, $to);
+        $params['viewerId'] = (string) $viewer->id;
+        $visible = $this->visibleToSql();
 
         $sql = <<<SQL
             SELECT
@@ -136,7 +183,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
                 MAX(CASE WHEN e.amount IS NULL AND (e.amount_min IS NOT NULL OR e.amount_max IS NOT NULL) THEN 1 ELSE 0 END) AS has_estimates
             FROM finance_entry e
             JOIN finance_category c ON e.category_id = c.id
-            WHERE c.band_space_id = :bandSpaceId{$dateFilter}
+            WHERE c.band_space_id = :bandSpaceId AND {$visible}{$dateFilter}
             SQL;
 
         $result = $conn->executeQuery($sql, $params)->fetchAssociative();
@@ -158,11 +205,17 @@ class FinanceEntryRepository extends ServiceEntityRepository
     /**
      * @return array<int, array{pole_id: string, pole_name: string, paid: int, committed: int, planned: int}>
      */
-    public function getSummaryByCategory(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null): array
-    {
+    public function getSummaryByCategory(
+        BandSpace $bandSpace,
+        BandSpaceMembership $viewer,
+        ?\DateTimeImmutable $from = null,
+        ?\DateTimeImmutable $to = null,
+    ): array {
         $conn = $this->getEntityManager()->getConnection();
         $effectiveAmount = $this->effectiveAmountSql();
         [$dateFilter, $params] = $this->buildDateFilter($bandSpace, $from, $to);
+        $params['viewerId'] = (string) $viewer->id;
+        $visible = $this->visibleToSql();
 
         $sql = <<<SQL
             SELECT
@@ -173,7 +226,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
                 COALESCE(SUM(CASE WHEN e.status = 'planned' THEN {$effectiveAmount} ELSE 0 END), 0) AS planned
             FROM finance_category pole
             LEFT JOIN finance_category child ON child.parent_id = pole.id
-            LEFT JOIN finance_entry e ON (e.category_id = pole.id OR e.category_id = child.id){$dateFilter}
+            LEFT JOIN finance_entry e ON (e.category_id = pole.id OR e.category_id = child.id) AND {$visible}{$dateFilter}
             WHERE pole.band_space_id = :bandSpaceId AND pole.parent_id IS NULL
             GROUP BY pole.id, pole.name
             ORDER BY pole.position ASC
@@ -193,9 +246,13 @@ class FinanceEntryRepository extends ServiceEntityRepository
     /**
      * @return FinanceEntry[]
      */
-    public function findUpcomingForBand(BandSpace $bandSpace, \DateTimeInterface $from, \DateTimeInterface $to): array
-    {
-        return $this->createQueryBuilder('e')
+    public function findUpcomingForBand(
+        BandSpace $bandSpace,
+        BandSpaceMembership $viewer,
+        \DateTimeInterface $from,
+        \DateTimeInterface $to,
+    ): array {
+        $qb = $this->createQueryBuilder('e')
             ->addSelect('c')
             ->join('e.category', 'c')
             ->where('c.bandSpace = :bandSpace')
@@ -204,16 +261,21 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->setParameter('bandSpace', $bandSpace)
             ->setParameter('from', $from)
             ->setParameter('to', $to)
-            ->orderBy('e.date', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('e.date', 'ASC');
+
+        return $this->applyVisibleTo($qb, $viewer)->getQuery()->getResult();
     }
 
     /**
      * @return FinanceEntry[]
      */
-    public function getUpcomingByBandSpace(BandSpace $bandSpace, ?\DateTimeImmutable $from = null, ?\DateTimeImmutable $to = null, int $limit = 5): array
-    {
+    public function getUpcomingByBandSpace(
+        BandSpace $bandSpace,
+        BandSpaceMembership $viewer,
+        ?\DateTimeImmutable $from = null,
+        ?\DateTimeImmutable $to = null,
+        int $limit = 5,
+    ): array {
         $now = new \DateTimeImmutable();
         $effectiveFrom = $from instanceof \DateTimeImmutable && $from > $now ? $from : $now;
 
@@ -227,6 +289,8 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->setParameter('statuses', [FinanceEntryStatus::Planned->value, FinanceEntryStatus::Committed->value])
             ->orderBy('e.date', 'ASC')
             ->setMaxResults($limit);
+
+        $this->applyVisibleTo($qb, $viewer);
 
         if ($to instanceof \DateTimeImmutable) {
             $qb->andWhere('e.date < :to')->setParameter('to', $to);

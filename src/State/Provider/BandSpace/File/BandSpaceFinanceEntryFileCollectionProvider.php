@@ -7,6 +7,8 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
+use App\Entity\BandSpace\BandSpaceMembership;
+use App\Enum\BandSpace\FinanceEntryScope;
 use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\Filter\BandSpaceFileFilter;
@@ -39,10 +41,17 @@ readonly class BandSpaceFinanceEntryFileCollectionProvider implements ProviderIn
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['entryId'], $bandSpace);
-        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
+
+        // The same rule as reading the entry itself: what is attached to somebody else's personal
+        // entry is theirs too, and listing it would say what the entry is about.
+        $isVisible = $entry instanceof \App\Entity\BandSpace\FinanceEntry
+            && ($entry->scope !== FinanceEntryScope::Personal
+                || ($entry->member instanceof BandSpaceMembership && $entry->member->id === $viewer->id));
+
+        if (!$isVisible) {
             throw new NotFoundHttpException('Entrée introuvable');
         }
 

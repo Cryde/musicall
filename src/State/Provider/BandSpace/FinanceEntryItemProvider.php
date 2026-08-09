@@ -5,7 +5,10 @@ namespace App\State\Provider\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Finance\FinanceEntryResource;
+use App\Entity\BandSpace\BandSpaceMembership;
+use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\User;
+use App\Enum\BandSpace\FinanceEntryScope;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceEntrySplitRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -35,10 +38,15 @@ readonly class FinanceEntryItemProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $entry = $this->financeEntryRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry) {
+
+        // Somebody else's personal entry answers exactly like an id that does not exist. The finder is
+        // shared with the write paths, which need the entry in order to refuse the write with a reason,
+        // so the read rule is applied here rather than in the query. A 404 rather than a 403 because a
+        // 403 would confirm the entry exists, which is itself part of what is private about it.
+        if (!$entry instanceof \App\Entity\BandSpace\FinanceEntry || !$this->isVisibleTo($entry, $viewer)) {
             throw new NotFoundHttpException('Entrée introuvable');
         }
 
@@ -49,5 +57,18 @@ readonly class FinanceEntryItemProvider implements ProviderInterface
         }
 
         return $this->financeEntryBuilder->buildItem($entry, $splitWarning);
+    }
+
+    /**
+     * The band's own entries are everybody's, a personal one is only its owner's. An ownerless
+     * personal entry is nobody's: it should not exist, and hiding it is the safer reading of a fault.
+     */
+    private function isVisibleTo(FinanceEntry $entry, BandSpaceMembership $viewer): bool
+    {
+        if ($entry->scope !== FinanceEntryScope::Personal) {
+            return true;
+        }
+
+        return $entry->member instanceof BandSpaceMembership && $entry->member->id === $viewer->id;
     }
 }

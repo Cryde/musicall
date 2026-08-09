@@ -31,7 +31,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -56,6 +56,9 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         // as a Doctrine query parameter keeps a valid identifier.
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        // Reloaded for the same reason as the band space: the clear above detached it, and the
+        // aggregator binds it as a query parameter to filter personal finance entries.
+        $reloadedMembership = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceMembershipRepository::class)->find((string) $viewerMembership->id);
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
         $reloaded = $repo->findOneByIdAndBandSpace($entryId, $reloadedBand);
         $this->assertNotNull($reloaded);
@@ -66,6 +69,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $aggregator = self::getContainer()->get(AgendaAggregator::class);
         $items = $aggregator->aggregate(
             $reloadedBand,
+            $reloadedMembership,
             new DateTimeImmutable('2026-06-01 00:00:00', new DateTimeZone('UTC')),
             new DateTimeImmutable('2026-06-30 23:59:59', new DateTimeZone('UTC')),
         );
@@ -90,7 +94,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         // so two API calls in one test would fail auth on the second.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -125,7 +129,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -157,7 +161,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -192,7 +196,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $owner = UserFactory::new()->asBaseUser()->create();
         $other = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $owner,
@@ -228,7 +232,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -251,6 +255,9 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();
         $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        // Reloaded for the same reason as the band space: the clear above detached it, and the
+        // aggregator binds it as a query parameter to filter personal finance entries.
+        $reloadedMembership = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceMembershipRepository::class)->find((string) $viewerMembership->id);
         $repo = self::getContainer()->get(AgendaEntryRepository::class);
         $reloaded = $repo->findOneByIdAndBandSpace($entryId, $reloadedBand);
         $this->assertNotNull($reloaded);
@@ -259,6 +266,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $aggregator = self::getContainer()->get(AgendaAggregator::class);
         $items = $aggregator->aggregate(
             $reloadedBand,
+            $reloadedMembership,
             new DateTimeImmutable('2026-06-01 00:00:00', new DateTimeZone('UTC')),
             new DateTimeImmutable('2026-07-31 23:59:59', new DateTimeZone('UTC')),
         );
@@ -281,7 +289,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -306,6 +314,9 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $bandSpace));
 
         $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        // Reloaded for the same reason as the band space: the clear above detached it, and the
+        // aggregator binds it as a query parameter to filter personal finance entries.
+        $reloadedMembership = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceMembershipRepository::class)->find((string) $viewerMembership->id);
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
         $this->assertCount(1, $activities);
@@ -316,7 +327,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $user,
@@ -349,7 +360,7 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $owner = UserFactory::new()->asBaseUser()->create();
         $other = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $viewerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
         $entry = AgendaEntryFactory::new([
             'bandSpace' => $bandSpace,
             'creator' => $owner,
