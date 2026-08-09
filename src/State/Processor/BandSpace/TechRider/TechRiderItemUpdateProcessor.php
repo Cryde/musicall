@@ -12,7 +12,6 @@ use App\Entity\BandSpace\TechRiderItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceRiderActivityType;
-use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\TechRiderRepository;
 use App\Repository\BandSpace\TechRiderItemRepository;
@@ -34,20 +33,12 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
 {
-    /**
-     * A content change by the same person on the same item inside this window reuses the
-     * existing activity row instead of adding one. The editor autosaves on a debounce, so
-     * without this an afternoon of writing becomes forty near identical feed entries.
-     */
-    private const int ACTIVITY_COALESCE_MINUTES = 15;
-
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private TechRiderWriteGuard $writeGuard,
         private TechRiderRepository $techRiderRepository,
         private TechRiderItemRepository $itemRepository,
-        private BandSpaceActivityRepository $activityRepository,
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private TechRiderItemBuilder $itemBuilder,
@@ -149,8 +140,8 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
             );
         }
 
-        if ($contentChanged && $this->shouldRecordContentUpdate($bandSpace, $item, $user)) {
-            $this->activityRecorder->record(
+        if ($contentChanged) {
+            $this->activityRecorder->recordCoalesced(
                 bandSpace: $bandSpace,
                 module: BandSpaceModule::Rider,
                 type: BandSpaceRiderActivityType::RiderItemUpdated,
@@ -190,22 +181,5 @@ readonly class TechRiderItemUpdateProcessor implements ProcessorInterface
         }
 
         return $file;
-    }
-
-    private function shouldRecordContentUpdate(BandSpace $bandSpace, TechRiderItem $item, User $user): bool
-    {
-        $latest = $this->activityRepository->findLatestForResource(
-            $bandSpace,
-            BandSpaceModule::Rider,
-            BandSpaceRiderActivityType::RiderItemUpdated->value,
-            (string) $item->id,
-            $user,
-        );
-
-        if ($latest === null) {
-            return true;
-        }
-
-        return $latest->creationDatetime < new DateTime(sprintf('-%d minutes', self::ACTIVITY_COALESCE_MINUTES));
     }
 }

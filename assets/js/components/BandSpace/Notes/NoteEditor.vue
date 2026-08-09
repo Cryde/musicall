@@ -325,9 +325,10 @@ import { useToast } from 'primevue/usetoast'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import { onClickOutside } from '@vueuse/core'
-import { onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import bandSpaceNoteImagesApi from '../../../api/bandSpace/band-space-note-images.js'
 import { useRichTextEditor } from '../../../composables/useRichTextEditor.js'
+import { useBandSpaceNotesStore } from '../../../store/bandSpace/bandSpaceNotes.js'
 
 const props = defineProps({
   note: { type: Object, required: true },
@@ -336,9 +337,10 @@ const props = defineProps({
   isReloading: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update-content', 'update-title', 'update-emoji', 'reload'])
+const emit = defineEmits(['update-title', 'update-emoji', 'reload', 'pending-edits-change'])
 
 const toast = useToast()
+const notesStore = useBandSpaceNotesStore()
 
 const showEmojiPicker = ref(false)
 const emojiPickerRef = ref(null)
@@ -390,34 +392,75 @@ onMounted(() => {
 
 // Shared with the tech rider section editor. Images are Notes only, and so is the detach
 // pass on save, which is why it lives in the callback rather than in the composable.
-const { editor, stopSaving } = useRichTextEditor({
+const { editor, stopSaving, hasPendingEdits } = useRichTextEditor({
   content: props.note.content,
   placeholder: 'Commencez à écrire...',
   extensions: [Image.configure({ inline: false, allowBase64: false })],
   onSave: (json) => {
     detachRemovedImages(json)
+
     // The revision travels with the save because this component is the only place that still knows
     // it on the unmount flush: by then the store has already moved on to whichever note was clicked.
-    emit('update-content', {
-      noteId: props.note.id,
-      content: json,
-      contentVersion: props.note.content_version
-    })
+    //
+    // Returned rather than fired and forgotten, because that is what holds the next save until this
+    // one has answered. Two saves in flight both name the revision they started from, so the second
+    // comes back refused as though another member had written, when nobody but this editor has.
+    return saveContent(props.note.id, json, props.note.content_version)
   }
 })
 
-// A refused save ends the loop for this editor. Retrying every two seconds would refuse every
-// time, and the flush on unmount would send the same document once more on the way out. The
-// editor stays writable so the member can select and copy what they wrote; the notice above
-// says plainly that none of it is being saved any more.
-watch(
-  () => props.saveStatus,
-  (status) => {
-    if (status === 'conflict') {
-      stopSaving()
-    }
+/**
+ * Nobody pressed save here, a timer did, so a failure has to say so out loud. The status in the
+ * header is eleven pixels wide, and once the note has been left it is not on screen at all, which
+ * is exactly when the last save of a writing session goes out.
+ */
+async function saveContent(noteId, content, contentVersion) {
+  const { status, noteTitle } = await notesStore.updateNoteContent(
+    props.bandSpaceId,
+    noteId,
+    content,
+    contentVersion
+  )
+  if (status === 'saved') return
+
+  const noteName = noteTitle ? `« ${noteTitle} »` : 'La note'
+  if (status === 'conflict') {
+    // Ends the loop here rather than from a watcher on the status, and that placement is the whole
+    // guarantee: the saver only re-checks `stopped` once this callback has been awaited, so a save
+    // queued behind this one while the request was in flight can no longer go out. Stopping from a
+    // watcher instead would put that behind Vue's scheduler, one flush option or one extra await
+    // away from letting the refused document be sent again. See "is stopped in time by a save that
+    // stops the loop itself" in debouncedSaver.test.js.
+    //
+    // The editor stays writable so the member can select and copy what they wrote; the notice
+    // above says plainly that none of it is being saved any more.
+    stopSaving()
+
+    toast.add({
+      severity: 'warn',
+      summary: 'Modifications non enregistrées',
+      detail: `${noteName} a été modifiée par un autre membre. Vos modifications n'ont pas été enregistrées afin de ne pas effacer les siennes.`,
+      life: 8000
+    })
+
+    return
   }
-)
+
+  toast.add({
+    severity: 'error',
+    summary: 'Sauvegarde impossible',
+    detail: `${noteName} n'a pas pu être enregistrée. Ne fermez pas cet onglet : votre texte est toujours affiché et sera renvoyé à votre prochaine modification.`,
+    life: 8000
+  })
+}
+
+// The guard that protects this text lives one level up, on the route and on the tab, because both
+// destroy this component without asking.
+watch(hasPendingEdits, (pending) => emit('pending-edits-change', pending))
+
+// Unmounting flushes what was waiting, so the save owns it from here and the guard must not go on
+// warning about typing that is on its way to the server.
+onBeforeUnmount(() => emit('pending-edits-change', false))
 
 async function handleCopyMyText() {
   try {

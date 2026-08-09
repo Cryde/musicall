@@ -145,6 +145,45 @@ describe('createDebouncedSaver', () => {
 
       assert.deepEqual(saves, ['première'], 'the queued document is never sent after a stop')
     })
+
+    /**
+     * The contract the note editor relies on: it stops from inside the save callback, on the
+     * refused answer, rather than from a watcher on the save status where the stop would land a
+     * scheduling hop later and the refused document could go out once more.
+     *
+     * Stated rather than defended: the saver guards this twice, since `stop` clears the queue as
+     * well as raising the flag, so no single change to it makes this fail on its own. What it fixes
+     * in place is that a stop made from inside an awaited save is in time, which is what allows the
+     * editor to have no ordering assumption left to get wrong.
+     */
+    it('is stopped in time by a save that stops the loop itself', async () => {
+      const saves = []
+      let releaseFirstSave = null
+      const saver = createDebouncedSaver({
+        delayMs: DELAY_MS,
+        onSave: async (content) => {
+          saves.push(content)
+          await new Promise((resolve) => {
+            releaseFirstSave = resolve
+          })
+          saver.stop()
+        }
+      })
+
+      saver.schedule('première')
+      mock.timers.tick(DELAY_MS)
+      await settle()
+
+      // The writer keeps typing while the save that is about to be refused is still in flight.
+      saver.schedule('deuxième')
+      mock.timers.tick(DELAY_MS)
+      await settle()
+
+      releaseFirstSave()
+      await settle()
+
+      assert.deepEqual(saves, ['première'], 'the queued document is never sent after the refusal')
+    })
   })
 
   describe('flush, which is what runs when the editor is unmounted', () => {

@@ -55,10 +55,10 @@
         :band-space-id="bandSpaceId"
         :saveStatus="notesStore.saveStatus"
         :isReloading="notesStore.isReloadingNote"
-        @update-content="handleUpdateContent"
         @update-title="handleUpdateTitle"
         @update-emoji="handleUpdateEmoji"
         @reload="handleReloadNote"
+        @pending-edits-change="editorHasPendingEdits = $event"
       />
 
       <div v-else class="hidden md:flex flex-col items-center justify-center flex-1 text-center p-8">
@@ -85,8 +85,8 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
 import CreateNoteDialog from '../../components/BandSpace/Notes/CreateNoteDialog.vue'
 import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
 import NoteTree from '../../components/BandSpace/Notes/NoteTree.vue'
@@ -105,19 +105,69 @@ const showCreateDialog = ref(false)
 const createParentId = ref(null)
 const mobileView = ref('tree') // 'tree' | 'editor'
 const noteTreeRef = ref(null)
+// Only one editor is ever mounted, the open note's, so one flag is the whole answer.
+const editorHasPendingEdits = ref(false)
 
 const bandSpaceId = route.params.id
 
 onMounted(() => {
+  window.addEventListener('beforeunload', warnOnUnload)
   notesStore.loadNotes(bandSpaceId)
 })
+
+onBeforeUnmount(() => window.removeEventListener('beforeunload', warnOnUnload))
 
 onUnmounted(() => {
   notesStore.clear()
 })
 
-function handleSelect(noteId) {
+/**
+ * Covers closing the tab and reloading, which the router never sees and which the flush on unmount
+ * never runs for. Up to two seconds of typing lives on the debounce, and a save the server refused
+ * lives nowhere else at all.
+ *
+ * The browser shows its own wording here; returnValue is what makes it show anything at all.
+ */
+function warnOnUnload(event) {
+  if (!editorHasPendingEdits.value && !notesStore.hasUnsavedContent) return
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+onBeforeRouteLeave(() => notesStore.confirmDiscardingEdits())
+
+// Switching band space changes only the id param, which keeps this route matched and so never
+// fires onBeforeRouteLeave. The keyed router-view then rebuilds this view around the new space and
+// the notes of the old one are gone, so the question has to be asked here, before the param change
+// is committed.
+onBeforeRouteUpdate(() => notesStore.confirmDiscardingEdits())
+
+/**
+ * Guarded like the route guards above, and for the same reason: opening another note unmounts the
+ * editor holding this one, so text a save was refused for goes with it. This is the exit path the
+ * conflict banner tells the member to copy their text before taking, so it is the one that most
+ * has to enforce what the banner says.
+ *
+ * The route leave predicate is the right one here rather than the tab close one: the unmount
+ * flushes whatever is still on the debounce, so pending keystrokes are on their way to the server
+ * and only a save already refused is actually lost.
+ *
+ * @returns {boolean} false when the member chose to keep what is open
+ */
+function openNote(noteId) {
+  // Re-opening the note already on screen unmounts nothing, so there is nothing to ask about.
+  if (noteId === notesStore.selectedNoteId) return true
+
+  if (!notesStore.confirmDiscardingEdits()) return false
+
   notesStore.selectNote(bandSpaceId, noteId)
+
+  return true
+}
+
+function handleSelect(noteId) {
+  if (!openNote(noteId)) return
+
   mobileView.value = 'editor'
 }
 
@@ -141,7 +191,9 @@ async function handleCreateNote({ title, parentId }) {
       summary: 'Note créée',
       life: 3000
     })
-    notesStore.selectNote(bandSpaceId, newNote.id)
+    // Created either way, opened only if the note being left has nothing to lose. Same unmount,
+    // same loss, so the same question as clicking another note in the tree.
+    openNote(newNote.id)
   } catch (error) {
     toast.add({
       severity: 'error',
@@ -152,19 +204,31 @@ async function handleCreateNote({ title, parentId }) {
   }
 }
 
-function handleUpdateContent({ noteId, content, contentVersion }) {
-  notesStore.updateNoteContent(bandSpaceId, noteId, content, contentVersion)
-}
+async function handleUpdateTitle(title) {
+  if (!notesStore.selectedNoteId) return
 
-function handleUpdateTitle(title) {
-  if (notesStore.selectedNoteId) {
-    notesStore.updateNoteTitle(bandSpaceId, notesStore.selectedNoteId, title)
+  const { status } = await notesStore.updateNoteTitle(bandSpaceId, notesStore.selectedNoteId, title)
+  if (status === 'error') {
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: "Le titre n'a pas pu être modifié",
+      life: 5000
+    })
   }
 }
 
-function handleUpdateEmoji(emoji) {
-  if (notesStore.selectedNoteId) {
-    notesStore.updateNoteEmoji(bandSpaceId, notesStore.selectedNoteId, emoji)
+async function handleUpdateEmoji(emoji) {
+  if (!notesStore.selectedNoteId) return
+
+  const { status } = await notesStore.updateNoteEmoji(bandSpaceId, notesStore.selectedNoteId, emoji)
+  if (status === 'error') {
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: "L'emoji n'a pas pu être modifié",
+      life: 5000
+    })
   }
 }
 
