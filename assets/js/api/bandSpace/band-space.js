@@ -35,5 +35,27 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  /**
+   * Renames a band space. Admin only, the server refuses a plain member.
+   * @param {string} id - The band space id
+   * @param {string} name - The new name
+   * @returns {Promise<Object>} The updated band space
+   */
+  rename(id, name) {
+    return axios
+      .patch(
+        Routing.generate('api_band_spaces_patch', { id }),
+        { name },
+        {
+          headers: {
+            'Content-Type': 'application/merge-patch+json',
+            Accept: 'application/ld+json'
+          }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }

@@ -7,10 +7,13 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\BandSpaceDeleteProcessor;
+use App\State\Processor\BandSpace\BandSpaceUpdateProcessor;
 use App\State\Provider\BandSpace\BandSpaceCollectionProvider;
 use App\State\Provider\BandSpace\BandSpaceItemProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -29,6 +32,14 @@ use App\State\Provider\BandSpace\BandSpaceItemProvider;
             name: 'api_band_spaces_get_item',
             provider: BandSpaceItemProvider::class,
         ),
+        new Patch(
+            uriTemplate: '/band_spaces/{id}',
+            openapi: new Operation(tags: ['Band Space']),
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_spaces_patch',
+            provider: BandSpaceItemProvider::class,
+            processor: BandSpaceUpdateProcessor::class,
+        ),
         // Schedules the deletion, it does not delete: app:band-space:purge removes the space and its
         // files once deletionScheduledDatetime has passed. Restore with api_band_space_restore.
         new Delete(
@@ -45,6 +56,19 @@ use App\State\Provider\BandSpace\BandSpaceItemProvider;
 class BandSpace
 {
     public string $id;
+
+    /**
+     * Same rules as BandSpaceCreate, so a rename cannot produce a name creation would have refused.
+     * The trim normalizer makes both constraints judge the value the processor actually stores.
+     */
+    #[Assert\NotBlank(message: 'Veuillez spécifier un nom', normalizer: 'trim')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères',
+        normalizer: 'trim'
+    )]
     public string $name;
     public string $role;
 
