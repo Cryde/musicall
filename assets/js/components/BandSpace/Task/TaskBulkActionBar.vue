@@ -10,15 +10,20 @@
 
     <div class="w-px h-6 bg-surface-600"></div>
 
-    <Button
-      label="Archiver"
-      icon="pi pi-box"
-      size="small"
-      severity="secondary"
-      :loading="busy === 'archive'"
-      :disabled="!!busy"
-      @click="handleArchive"
-    />
+    <!-- The tooltip sits on the wrapper, since a disabled button fires no pointer event of its
+         own, and a tooltip carries no accessible name either, hence the sr-only twin. -->
+    <span v-tooltip.top="archiveBlockedReason">
+      <Button
+        label="Archiver"
+        icon="pi pi-box"
+        size="small"
+        severity="secondary"
+        :loading="busy === 'archive'"
+        :disabled="!!busy || archiveBlockers.length > 0"
+        @click="handleArchive"
+      />
+      <span v-if="archiveBlockedReason" class="sr-only">{{ archiveBlockedReason }}</span>
+    </span>
 
     <Button
       label="Catégorie"
@@ -76,15 +81,18 @@
       </div>
     </Popover>
 
-    <Button
-      label="Supprimer"
-      icon="pi pi-trash"
-      size="small"
-      severity="danger"
-      :loading="busy === 'delete'"
-      :disabled="!!busy"
-      @click="confirmDelete"
-    />
+    <span v-tooltip.top="deleteBlockedReason">
+      <Button
+        label="Supprimer"
+        icon="pi pi-trash"
+        size="small"
+        severity="danger"
+        :loading="busy === 'delete'"
+        :disabled="!!busy || deleteBlockers.length > 0"
+        @click="confirmDelete"
+      />
+      <span v-if="deleteBlockedReason" class="sr-only">{{ deleteBlockedReason }}</span>
+    </span>
 
     <div class="w-px h-6 bg-surface-600"></div>
 
@@ -109,8 +117,12 @@ import Select from 'primevue/select'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { apiErrorDetail } from '../../../api/utils/apiErrorDetail.js'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
+import { tasksBlockingArchive, tasksBlockingDelete } from '../../../utils/taskActions.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -119,6 +131,8 @@ const props = defineProps({
 })
 
 const tasksStore = useBandTasksStore()
+const userSecurityStore = useUserSecurityStore()
+const { isAdmin } = useBandSpaceNavigation()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -133,16 +147,46 @@ const categoryOptions = computed(() => [
   ...props.categories.map((c) => ({ label: c.name, value: c.id }))
 ])
 
+// Selection only happens on the board, so every ticked card is one of the loaded tasks.
+const selectedTasks = computed(() =>
+  tasksStore.tasks.filter((task) => tasksStore.selectedTaskIds.has(task.id))
+)
+
+const archiveBlockers = computed(() => tasksBlockingArchive(selectedTasks.value))
+
+const deleteBlockers = computed(() =>
+  tasksBlockingDelete(selectedTasks.value, userSecurityStore.userProfile?.id ?? null, isAdmin.value)
+)
+
+/**
+ * The batch is one transaction, so a single card in the way takes the whole selection down. Rather
+ * than let somebody run it and read a refusal, the button is greyed out and says which cards it is
+ * waiting on. The names are the point: with eight cards ticked, "une tâche n'est pas terminée" is
+ * not something a member can act on.
+ */
+const archiveBlockedReason = computed(() =>
+  archiveBlockers.value.length === 0
+    ? null
+    : `Seules les tâches terminées peuvent être archivées : ${archiveBlockers.value.join(', ')}`
+)
+
+const deleteBlockedReason = computed(() =>
+  deleteBlockers.value.length === 0
+    ? null
+    : `Seul le créateur ou un administrateur peut supprimer ces tâches : ${deleteBlockers.value.join(', ')}`
+)
+
 async function runBulk(name, fn) {
   busy.value = name
   try {
     await fn()
   } catch (e) {
+    // The refusal names the tasks that blocked the batch, which is the only part worth reading.
     toast.add({
       severity: 'error',
       summary: 'Action en lot impossible',
-      detail: e?.message ?? 'Erreur inconnue',
-      life: 5000
+      detail: apiErrorDetail(e, 'Une erreur est survenue'),
+      life: 8000
     })
   } finally {
     busy.value = null

@@ -74,6 +74,61 @@ class TaskBulkPatchTest extends ApiTestCase
         $this->assertNull($reloadedDone->archiveDatetime);
     }
 
+    public function test_bulk_archive_names_every_task_that_is_not_done(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $done = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Mix final',
+            'status' => TaskStatus::Done,
+        ])->create();
+        $todo = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Réserver le studio',
+            'status' => TaskStatus::Todo,
+        ])->create();
+        $inProgress = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Écrire le pont',
+            'status' => TaskStatus::InProgress,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_patch',
+            [
+                'task_ids' => [$done->id, $todo->id, $inProgress->id],
+                'archived' => true,
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        // The batch is all or nothing, so the answer has to say which cards of the selection are in
+        // the way, not just that one of them was.
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $detail = 'Seules les tâches terminées peuvent être archivées : Réserver le studio, Écrire le pont';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => $detail,
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => $detail,
+        ]);
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $repo = self::getContainer()->get(TaskRepository::class);
+        $this->assertNull($repo->find($done->id)->archiveDatetime);
+    }
+
     public function test_bulk_set_category(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

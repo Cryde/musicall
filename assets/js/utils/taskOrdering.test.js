@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { orderColumnAfterDrag, toPositions } from './taskOrdering.js'
+import {
+  dropIndexForColumn,
+  isCompletionOrderedColumn,
+  orderColumnAfterDrag,
+  toPositions
+} from './taskOrdering.js'
 
 /**
  * These pin the fix for the reorder corruption: a drag made inside a filtered column used to be
@@ -124,5 +129,41 @@ describe('toPositions', () => {
 
   it('returns an empty payload for an empty column', () => {
     assert.deepEqual(toPositions([]), [])
+  })
+})
+
+/**
+ * These pin the second reorder corruption, the one the filter fix above did not reach: the
+ * "Terminé" column renders its model re-sorted by completion date and cut to the most recent few,
+ * so the indices a drag reports there address a list the stored positions do not describe.
+ */
+describe('isCompletionOrderedColumn', () => {
+  it('reports the Terminé column, which is drawn by completion date', () => {
+    assert.equal(isCompletionOrderedColumn('done'), true)
+  })
+
+  it('reports the other columns, which are drawn by position', () => {
+    assert.equal(isCompletionOrderedColumn('todo'), false)
+    assert.equal(isCompletionOrderedColumn('in_progress'), false)
+  })
+})
+
+describe('dropIndexForColumn', () => {
+  it('drops the index of a card landing in Terminé, so the card is appended', () => {
+    assert.equal(dropIndexForColumn('done', 3), null)
+  })
+
+  it('drops the index even when the card lands first, which the top five cannot address either', () => {
+    assert.equal(dropIndexForColumn('done', 0), null)
+  })
+
+  it('keeps the index of a card landing in a column drawn by position', () => {
+    assert.equal(dropIndexForColumn('todo', 3), 3)
+    assert.equal(dropIndexForColumn('in_progress', 0), 0)
+  })
+
+  it('appends when the drag reported no index at all', () => {
+    assert.equal(dropIndexForColumn('todo', undefined), null)
+    assert.equal(dropIndexForColumn('todo', null), null)
   })
 })

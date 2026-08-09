@@ -37,17 +37,28 @@
       <!-- Archived list view -->
       <div v-if="tasksStore.filters.showArchived">
         <div class="flex flex-col gap-2">
+          <!-- The row opens the drawer read-only: the description, the comments, the activity and
+               the attachments of an archived task were otherwise unreachable without taking it out
+               of the archive first. A button rather than a clickable div, so it is operable from
+               the keyboard without borrowing a role from the one sitting next to it. -->
           <div
             v-for="task in tasksStore.archivedTasks"
             :key="task.id"
             class="flex items-center justify-between p-3 rounded-lg bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700"
           >
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-surface-800 dark:text-surface-100 truncate">{{ task.title }}</p>
-              <span class="text-xs text-surface-400">
+            <button
+              type="button"
+              class="flex-1 min-w-0 text-left rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              :aria-label="`Ouvrir la tâche archivée ${task.title}`"
+              @click="handleOpenTask(task.id)"
+            >
+              <span class="block text-sm font-medium text-surface-800 dark:text-surface-100 truncate">
+                {{ task.title }}
+              </span>
+              <span class="block text-xs text-surface-400">
                 Archivée le {{ formatDate(task.archive_datetime) }}
               </span>
-            </div>
+            </button>
             <Button
               label="Désarchiver"
               icon="pi pi-replay"

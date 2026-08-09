@@ -75,3 +75,42 @@ export function orderColumnAfterDrag(fullOrderedIds, visibleOrderedIds, movedId)
 export function toPositions(orderedIds) {
   return orderedIds.map((id, index) => ({ id, position: index }))
 }
+
+/** The one column the board draws by completion date rather than by position. */
+const COMPLETION_ORDERED_STATUS = 'done'
+
+/**
+ * Whether the board draws this column in an order its stored positions do not carry.
+ *
+ * "Terminé" is drawn most recently finished first and cut to the few that fit, because the column
+ * has no pagination yet (#568). Its cards therefore sit in an order that owes nothing to their
+ * positions: a drag inside it reports indices into the list on screen while the write renumbers
+ * the list behind it, so a card nobody touched gets a new position for the whole band, and the
+ * re-sort that follows hides it. There is also no ordering worth saving there, since the column
+ * re-sorts whatever it is given, so it simply does not reorder.
+ *
+ * @param {string} status
+ * @returns {boolean}
+ */
+export function isCompletionOrderedColumn(status) {
+  return status === COMPLETION_ORDERED_STATUS
+}
+
+/**
+ * The index a card dropped into `status` should take, or null to append it to the column.
+ *
+ * A drop point inside a completion-ordered column says nothing about where the card belongs: it
+ * has just been finished, so it comes back at the top of that column whatever position it holds.
+ * Appending is the one placement that is honest about it.
+ *
+ * @param {string} status The destination column.
+ * @param {number|null|undefined} visibleIndex Where the card landed among the cards on screen.
+ * @returns {number|null}
+ */
+export function dropIndexForColumn(status, visibleIndex) {
+  if (isCompletionOrderedColumn(status)) {
+    return null
+  }
+
+  return visibleIndex ?? null
+}

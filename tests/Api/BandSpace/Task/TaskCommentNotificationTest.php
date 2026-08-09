@@ -156,6 +156,126 @@ class TaskCommentNotificationTest extends ApiTestCase
         $this->assertCount(0, $notificationRepository->findForRecipient($author, 10, 0));
     }
 
+    public function test_editing_a_comment_notifies_the_member_it_newly_mentions(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create();
+        $alice = UserFactory::new()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $carol = UserFactory::new()->create(['username' => 'carol', 'email' => 'carol@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $author])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $alice])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $carol])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $author,
+            'assignees' => new ArrayCollection([$carol]),
+            'title' => 'Ma tâche',
+        ])->create();
+        $comment = TaskCommentFactory::new([
+            'task' => $task,
+            'author' => $author,
+            'content' => 'Premier jet',
+            'creationDatetime' => new \DateTime('2026-01-01 10:00:00'),
+        ])->create();
+
+        $bandSpaceId = (string) $bandSpace->id;
+        $taskId = (string) $task->id;
+        $commentId = (string) $comment->id;
+        $content = 'Premier jet, @[' . $alice->id . '] ton avis ?';
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpaceId . '/tasks/' . $taskId . '/comments/' . $commentId,
+            ['content' => $content],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+        $this->assertResponseIsSuccessful();
+
+        $refreshed = self::getContainer()->get(TaskCommentRepository::class)->find($commentId);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TaskComment',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/tasks/' . $taskId . '/comments/' . $commentId,
+            '@type' => 'TaskComment',
+            'id' => $commentId,
+            'band_space_id' => $bandSpaceId,
+            'task_id' => $taskId,
+            'author_id' => (string) $author->id,
+            'author_username' => $author->username,
+            'author_profile_picture_url' => null,
+            'content' => $content,
+            'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+        $aliceNotifications = $notificationRepository->findForRecipient($alice, 10, 0);
+        $this->assertCount(1, $aliceNotifications);
+        $this->assertSame(NotificationType::TaskMention, $aliceNotifications[0]->type);
+        $this->assertSame([
+            'band_space_id' => $bandSpaceId,
+            'task_id' => $taskId,
+            'task_title' => 'Ma tâche',
+            'comment_id' => $commentId,
+            'actor_id' => (string) $author->id,
+            'actor_username' => $author->username,
+        ], $aliceNotifications[0]->payload);
+
+        // An edit is not a new comment: the assignee who was not named hears nothing, and neither
+        // does the author.
+        $this->assertCount(0, $notificationRepository->findForRecipient($carol, 10, 0));
+        $this->assertCount(0, $notificationRepository->findForRecipient($author, 10, 0));
+        $this->assertCount(1, $notificationRepository->findAll());
+    }
+
+    public function test_editing_a_comment_does_not_notify_a_member_it_already_mentioned(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create();
+        $alice = UserFactory::new()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bob = UserFactory::new()->create(['username' => 'bob', 'email' => 'bob@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $author])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $alice])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $bob])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $author,
+            'title' => 'Ma tâche',
+        ])->create();
+        $comment = TaskCommentFactory::new([
+            'task' => $task,
+            'author' => $author,
+            'content' => 'Salut @[' . $alice->id . ']',
+            'creationDatetime' => new \DateTime('2026-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($author);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments/' . $comment->id,
+            ['content' => 'Salut @[' . $alice->id . '] et @[' . $bob->id . ']'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+        $this->assertResponseIsSuccessful();
+
+        // Alice was named by the text the comment already held, so she was told when it was written.
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+        $bobNotifications = $notificationRepository->findForRecipient($bob, 10, 0);
+        $this->assertCount(1, $bobNotifications);
+        $this->assertSame(NotificationType::TaskMention, $bobNotifications[0]->type);
+        $this->assertSame([
+            'band_space_id' => (string) $bandSpace->id,
+            'task_id' => (string) $task->id,
+            'task_title' => 'Ma tâche',
+            'comment_id' => (string) $comment->id,
+            'actor_id' => (string) $author->id,
+            'actor_username' => $author->username,
+        ], $bobNotifications[0]->payload);
+
+        $this->assertCount(0, $notificationRepository->findForRecipient($alice, 10, 0));
+        $this->assertCount(1, $notificationRepository->findAll());
+    }
+
     public function test_comment_notifies_task_participants_not_the_author(): void
     {
         $author = UserFactory::new()->asBaseUser()->create();

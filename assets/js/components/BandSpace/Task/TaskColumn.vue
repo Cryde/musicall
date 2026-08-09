@@ -1,7 +1,17 @@
 <template>
   <div class="flex-1 min-w-[280px] bg-surface-100 dark:bg-surface-800 rounded-xl p-3">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="font-semibold text-sm text-surface-700 dark:text-surface-200">{{ label }}</h3>
+      <div class="flex items-center gap-1.5 min-w-0">
+        <h3 class="font-semibold text-sm text-surface-700 dark:text-surface-200">{{ label }}</h3>
+        <span
+          v-if="isDoneColumn"
+          class="text-surface-500 dark:text-surface-400"
+          v-tooltip.top="COMPLETION_ORDER_HINT"
+        >
+          <i class="pi pi-sort-amount-down text-xs" aria-hidden="true" />
+          <span class="sr-only">{{ COMPLETION_ORDER_HINT }}</span>
+        </span>
+      </div>
       <span class="text-xs text-surface-400 bg-surface-200 dark:bg-surface-700 rounded-full px-2 py-0.5">
         {{ tasks.length }}
       </span>
@@ -10,6 +20,7 @@
       v-model="localTasks"
       group="tasks"
       :animation="200"
+      :sort="!isDoneColumn"
       :disabled="tasksStore.isSelectionMode || tasksStore.isReorderDisabled"
       ghost-class="opacity-30"
       :data-status="status"
@@ -40,11 +51,15 @@
 import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import { dropIndexForColumn, isCompletionOrderedColumn } from '../../../utils/taskOrdering.js'
 import TaskCard from './TaskCard.vue'
 
 const tasksStore = useBandTasksStore()
 
 const MAX_DONE_VISIBLE = 5
+
+const COMPLETION_ORDER_HINT =
+  'Classées par date de fin, les plus récentes en premier. Cette colonne ne se réordonne pas.'
 
 const props = defineProps({
   status: { type: String, required: true },
@@ -65,7 +80,7 @@ watch(
   }
 )
 
-const isDoneColumn = computed(() => props.status === 'done')
+const isDoneColumn = computed(() => isCompletionOrderedColumn(props.status))
 
 const visibleTasks = computed(() => {
   if (!isDoneColumn.value) return localTasks.value
@@ -89,6 +104,14 @@ function getCategoryColor(categoryId) {
 }
 
 function handleDragEnd(event) {
+  // v-model splices localTasks at the indices the drag reports, and those address the cards on
+  // screen. Here that is a re-sorted, cut-down view of the model, so a card leaving the column
+  // takes a different one out of it, and both the cards drawn and the "voir tout" button are built
+  // from what is left. The model is rebuilt from the board rather than trusted.
+  if (isDoneColumn.value) {
+    localTasks.value = [...props.tasks]
+  }
+
   const taskId = event.item?.dataset?.taskId
   if (!taskId) return
 
@@ -96,6 +119,11 @@ function handleDragEnd(event) {
   const toStatus = event.to?.dataset?.status
 
   if (fromStatus === toStatus) {
+    // Dragging inside a column drawn by completion date writes a position the column never reads
+    // back, so the gesture is dropped rather than persisted for the whole band. The cards do not
+    // move under the pointer either, since sorting is off there.
+    if (isDoneColumn.value) return
+
     // Same-column reorder: localTasks is already updated by v-model. It holds the column as this
     // member sees it, which a filter can cut down, so the store replays the drag against the
     // whole column before writing any position.
@@ -103,8 +131,9 @@ function handleDragEnd(event) {
     emit('reorder', props.status, visibleOrderedIds, taskId)
   } else {
     // Cross-column move: @end fires on the source column, so only the drop index is known here.
-    // The store resolves it against the whole destination column, hidden tasks included.
-    emit('status-change', taskId, toStatus, event.newIndex)
+    // The store resolves it against the whole destination column, hidden tasks included, unless
+    // the destination is the one whose drop points address nothing.
+    emit('status-change', taskId, toStatus, dropIndexForColumn(toStatus, event.newIndex))
   }
 }
 </script>

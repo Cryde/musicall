@@ -4,6 +4,7 @@ namespace App\Procedure\BandSpace;
 
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
+use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\TaskRepository;
@@ -31,18 +32,14 @@ readonly class TaskBulkDeleteProcedure
         }
 
         $tasks = $this->taskRepository->findByIdsAndBandSpace($taskIds, $bandSpace);
-        $foundIds = array_map(fn(\App\Entity\BandSpace\Task $task): string => (string) $task->id, $tasks);
+        $foundIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);
         $missing = array_diff($taskIds, $foundIds);
         if (count($missing) > 0) {
             throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', reset($missing)));
         }
 
-        $isAdmin = $membership->role === Role::Admin;
-        foreach ($tasks as $task) {
-            $isCreator = $task->createdBy !== null && $task->createdBy->id === $user->id;
-            if (!$isAdmin && !$isCreator) {
-                throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ces tâches');
-            }
+        if ($membership->role !== Role::Admin) {
+            $this->assertEveryTaskIsOwnedBy($tasks, $user);
         }
 
         $titlesByTaskId = [];
@@ -57,5 +54,31 @@ readonly class TaskBulkDeleteProcedure
                 $this->entityManager->remove($task);
             }
         });
+    }
+
+    /**
+     * The batch is one transaction, so a single task somebody else created takes the whole selection
+     * down with it. Someone who ticked eight cards cannot act on that unless the answer says which
+     * ones are not theirs, hence the up-front pass: it names them instead of failing on whichever the
+     * loop reached first.
+     *
+     * @param Task[] $tasks
+     */
+    private function assertEveryTaskIsOwnedBy(array $tasks, User $user): void
+    {
+        $userId = (string) $user->id;
+        $foreign = array_filter(
+            $tasks,
+            static fn(Task $task): bool => !$task->createdBy instanceof User || (string) $task->createdBy->id !== $userId,
+        );
+
+        if ($foreign === []) {
+            return;
+        }
+
+        throw new AccessDeniedHttpException(sprintf(
+            'Seul le créateur ou un administrateur peut supprimer ces tâches : %s',
+            implode(', ', array_map(static fn(Task $task): string => $task->title, $foreign)),
+        ));
     }
 }

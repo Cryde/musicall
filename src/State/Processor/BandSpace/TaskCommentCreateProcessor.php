@@ -13,10 +13,9 @@ use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Event\BandSpaceTaskCommentedEvent;
 use App\Event\BandSpaceTaskMentionedEvent;
 use App\Repository\BandSpace\TaskRepository;
-use App\Repository\UserRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\BandSpace\MentionParserService;
+use App\Service\BandSpace\TaskCommentMentionRecorder;
 use App\Service\Builder\BandSpace\TaskCommentBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -33,8 +32,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
-        private UserRepository $userRepository,
-        private MentionParserService $mentionParserService,
+        private TaskCommentMentionRecorder $mentionRecorder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskCommentBuilder $taskCommentBuilder,
         private Security $security,
@@ -74,21 +72,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
             actor: $user,
         );
 
-        $mentionedUuids = $this->mentionParserService->extractMentions($data->content);
-        $mentionedMembers = $this->userRepository->findActiveBandSpaceMembersByIds($bandSpace, $mentionedUuids);
-        foreach ($mentionedMembers as $mentionedUser) {
-            $this->bandSpaceActivityRecorder->record(
-                bandSpace: $task->bandSpace,
-                module: BandSpaceModule::Task,
-                type: BandSpaceTaskActivityType::Mention,
-                resourceId: $task->id,
-                actor: $user,
-                payload: [
-                    'mentioned_user_id' => $mentionedUser->id,
-                    'mentioned_username' => $mentionedUser->username,
-                ],
-            );
-        }
+        $mentionedMembers = $this->mentionRecorder->recordNewMentions($task, $user, $data->content);
 
         $this->entityManager->flush();
 

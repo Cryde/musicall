@@ -32,13 +32,14 @@
               {{ category.name }}
             </span>
             <Button
+              v-if="isAdmin"
               icon="pi pi-trash"
               text
               rounded
               size="small"
               severity="danger"
-              v-tooltip.left="'Supprimer'"
-              aria-label="Supprimer"
+              v-tooltip.left="`Supprimer la catégorie ${category.name}`"
+              :aria-label="`Supprimer la catégorie ${category.name}`"
               @click="handleDelete(category)"
             />
           </template>
@@ -76,6 +77,7 @@ import InputText from 'primevue/inputtext'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 
 const props = defineProps({
@@ -87,6 +89,9 @@ const emit = defineEmits(['update:visible'])
 const confirm = useConfirm()
 const toast = useToast()
 const tasksStore = useBandTasksStore()
+// Creating and renaming a category is any member's, deleting one is an administrator's, so the
+// trash is the only control of this drawer that comes and goes with the role.
+const { isAdmin } = useBandSpaceNavigation()
 
 const visibleModel = computed({
   get: () => props.visible,

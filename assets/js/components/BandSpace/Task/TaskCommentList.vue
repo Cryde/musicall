@@ -92,7 +92,9 @@ import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
   comments: { type: Array, default: () => [] },
-  members: { type: Array, default: () => [] }
+  members: { type: Array, default: () => [] },
+  // The thread of an archived task is history: it is still read, never written.
+  readOnly: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['edit', 'delete'])
@@ -114,10 +116,12 @@ const currentMember = computed(() => {
 const isBandSpaceAdmin = computed(() => currentMember.value?.role === 'admin')
 
 function canEdit(comment) {
+  if (props.readOnly) return false
   return currentUserId.value !== null && comment.author_id === currentUserId.value
 }
 
 function canDelete(comment) {
+  if (props.readOnly) return false
   return canEdit(comment) || isBandSpaceAdmin.value
 }
 
