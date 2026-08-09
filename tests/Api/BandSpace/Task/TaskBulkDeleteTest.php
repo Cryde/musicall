@@ -161,6 +161,58 @@ class TaskBulkDeleteTest extends ApiTestCase
         $this->assertNotNull($repo->find($foreignId));
     }
 
+    public function test_bulk_delete_names_every_task_the_member_did_not_create(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'mem_u', 'email' => 'm@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
+        $ownTask = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $member,
+            'title' => 'Ma tâche',
+        ])->create();
+        $firstForeign = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $creator,
+            'title' => 'Mix final',
+        ])->create();
+        $secondForeign = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $creator,
+            'title' => 'Réserver le studio',
+        ])->create();
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_delete',
+            ['task_ids' => [$ownTask->id, $firstForeign->id, $secondForeign->id]],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        // The batch is all or nothing, so the answer has to say which cards of the selection are in
+        // the way, not just that one of them was.
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $detail = 'Seul le créateur ou un administrateur peut supprimer ces tâches : Mix final, Réserver le studio';
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/403',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => $detail,
+            'status' => 403,
+            'type' => '/errors/403',
+            'description' => $detail,
+        ]);
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $repo = self::getContainer()->get(TaskRepository::class);
+        $this->assertNotNull($repo->find($ownTask->id));
+        $this->assertNotNull($repo->find($firstForeign->id));
+    }
+
     public function test_bulk_delete_rejects_unknown_task_id(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

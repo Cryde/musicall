@@ -212,7 +212,10 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     isSaving.value = true
     try {
       const updated = await bandSpaceTasksApi.updateTask(bandSpaceId, taskId, data)
+      // Both lists, since the drawer reads whichever holds the task: an archived one written back
+      // only to `tasks` left the drawer showing what was there before the save it just confirmed.
       tasks.value = tasks.value.map((t) => (t.id === taskId ? updated : t))
+      archivedTasks.value = archivedTasks.value.map((t) => (t.id === taskId ? updated : t))
       return updated
     } finally {
       isSaving.value = false
@@ -283,6 +286,7 @@ export const useBandTasksStore = defineStore('bandTasks', () => {
     try {
       await bandSpaceTasksApi.deleteTask(bandSpaceId, taskId)
       tasks.value = tasks.value.filter((t) => t.id !== taskId)
+      archivedTasks.value = archivedTasks.value.filter((t) => t.id !== taskId)
     } finally {
       isDeleting.value = false
     }

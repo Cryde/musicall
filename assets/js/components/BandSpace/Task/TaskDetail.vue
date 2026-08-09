@@ -24,11 +24,17 @@
     </div>
 
     <div v-else-if="task" class="flex flex-col gap-5">
+      <Message v-if="isArchived" severity="info" :closable="false">
+        Cette tâche est archivée, elle est en lecture seule. Désarchivez-la pour la modifier.
+      </Message>
+
       <!-- Title (inline edit, save on Enter or via Save button) -->
       <div>
         <input
           v-model="editTitle"
-          class="w-full text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1"
+          :readonly="isArchived"
+          aria-label="Titre de la tâche"
+          class="w-full text-lg font-semibold bg-transparent border-none outline-none text-surface-800 dark:text-surface-100 focus:ring-1 focus:ring-primary rounded px-1 -mx-1 read-only:text-surface-500 dark:read-only:text-surface-400"
           @keydown.enter.prevent="saveTextFields"
         />
       </div>
@@ -44,6 +50,7 @@
             optionValue="value"
             size="small"
             aria-label="Statut"
+            :disabled="isArchived"
             @change="saveField('status', editStatus)"
           />
         </div>
@@ -56,6 +63,7 @@
             optionValue="value"
             size="small"
             aria-label="Priorité"
+            :disabled="isArchived"
             @change="saveField('priority', editPriority)"
           />
         </div>
@@ -70,6 +78,7 @@
             showClear
             size="small"
             aria-label="Catégorie"
+            :disabled="isArchived"
             @change="saveField('category_id', editCategoryId)"
           />
         </div>
@@ -82,6 +91,7 @@
             showButtonBar
             size="small"
             aria-label="Échéance"
+            :disabled="isArchived"
             @date-select="saveDueDate"
             @clear-click="saveDueDate"
           />
@@ -100,6 +110,7 @@
           display="chip"
           size="small"
           aria-label="Assignés"
+          :disabled="isArchived"
           @change="saveAssignees"
         />
       </div>
@@ -119,11 +130,12 @@
           v-model="editDescription"
           rows="4"
           autoResize
-          placeholder="Ajouter une description..."
+          :placeholder="isArchived ? 'Aucune description' : 'Ajouter une description...'"
           class="text-sm"
           aria-label="Description"
+          :disabled="isArchived"
         />
-        <div class="flex justify-end gap-2">
+        <div v-if="!isArchived" class="flex justify-end gap-2">
           <Button
             v-if="hasTextChanges"
             label="Annuler"
@@ -152,6 +164,7 @@
         :band-space-id="bandSpaceId"
         source-type="task"
         :source-id="task.id"
+        :can-attach="!isArchived"
         @attached="tasksStore.bumpFileCount(task.id, 1)"
         @detached="tasksStore.bumpFileCount(task.id, -1)"
       />
@@ -161,13 +174,21 @@
 
       <!-- Comments -->
       <TaskCommentForm
+        v-if="!isArchived"
         :members="members"
         :is-submitting="isSubmittingComment"
         @submit="handleCommentSubmit"
       />
+      <h4
+        v-else
+        class="text-sm font-semibold text-surface-700 dark:text-surface-200"
+      >
+        Commentaires
+      </h4>
       <TaskCommentList
         :comments="comments"
         :members="members"
+        :read-only="isArchived"
         @edit="handleCommentEdit"
         @delete="handleCommentDelete"
       />
@@ -176,9 +197,12 @@
       <TaskActivityFeed :activities="activities" />
 
       <!-- Archive / Unarchive / Delete -->
-      <div class="border-t border-surface-200 dark:border-surface-700 pt-4 flex flex-col gap-2">
+      <div
+        v-if="canArchive || isArchived || canDelete"
+        class="border-t border-surface-200 dark:border-surface-700 pt-4 flex flex-col gap-2"
+      >
         <Button
-          v-if="task.status === 'done' && !task.archive_datetime"
+          v-if="canArchive"
           label="Archiver"
           severity="secondary"
           text
@@ -187,7 +211,7 @@
           @click="handleArchive"
         />
         <Button
-          v-if="task.archive_datetime"
+          v-if="isArchived"
           label="Désarchiver"
           severity="secondary"
           text
@@ -196,6 +220,7 @@
           @click="handleUnarchive"
         />
         <Button
+          v-if="canDelete"
           label="Supprimer la tâche"
           severity="danger"
           text
@@ -223,8 +248,11 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
+import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
+import { canDeleteTask } from '../../../utils/taskActions.js'
 import AttachedFilesSection from '../Files/AttachedFilesSection.vue'
 import TaskActivityFeed from './TaskActivityFeed.vue'
 import TaskCommentForm from './TaskCommentForm.vue'
@@ -240,6 +268,8 @@ const emit = defineEmits(['update:visible', 'deleted'])
 const confirm = useConfirm()
 const toast = useToast()
 const tasksStore = useBandTasksStore()
+const userSecurityStore = useUserSecurityStore()
+const { isAdmin } = useBandSpaceNavigation()
 
 const visibleModel = computed({
   get: () => props.visible,
@@ -249,6 +279,21 @@ const visibleModel = computed({
 const task = computed(() => tasksStore.activeTask)
 const categories = computed(() => tasksStore.categories)
 const members = computed(() => tasksStore.members)
+
+/**
+ * An archived task is a closed record and the API refuses every write to it, so the drawer opens
+ * read-only rather than offering fields that come back with a refusal. Unarchiving and deleting
+ * stay: neither edits the record, and taking the task back out is how it becomes editable again.
+ */
+const isArchived = computed(() => Boolean(task.value?.archive_datetime))
+
+const canArchive = computed(() => task.value?.status === 'done' && !isArchived.value)
+
+// Only the creator and an administrator get past TaskDeleteProcessor, so only they are offered the
+// button. Everyone else used to confirm a destructive dialog and read the refusal afterwards.
+const canDelete = computed(() =>
+  canDeleteTask(task.value, userSecurityStore.userProfile?.id ?? null, isAdmin.value)
+)
 
 const comments = ref([])
 const activities = ref([])

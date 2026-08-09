@@ -8,16 +8,19 @@ use App\ApiResource\BandSpace\Task\TaskCommentResource;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
+use App\Event\BandSpaceTaskMentionedEvent;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\TaskCommentMentionRecorder;
 use App\Service\Builder\BandSpace\TaskCommentBuilder;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<TaskCommentResource, TaskCommentResource>
@@ -29,9 +32,11 @@ readonly class TaskCommentUpdateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
+        private TaskCommentMentionRecorder $mentionRecorder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private TaskCommentBuilder $taskCommentBuilder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -61,6 +66,7 @@ readonly class TaskCommentUpdateProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul l\'auteur peut modifier ce commentaire');
         }
 
+        $previousContent = $comment->content;
         $comment->content = $data->content;
         $comment->updateDatetime = new DateTime();
 
@@ -73,7 +79,21 @@ readonly class TaskCommentUpdateProcessor implements ProcessorInterface
             payload: ['comment_id' => (string) $comment->id],
         );
 
+        $newlyMentionedMembers = $this->mentionRecorder->recordNewMentions(
+            $task,
+            $user,
+            $data->content,
+            $previousContent,
+        );
+
         $this->entityManager->flush();
+
+        // Best-effort notification dispatched after the commit (epic #689 contract). Only the members
+        // the edit brings in are told, and there is no participant fan-out: an edit is not a new
+        // comment, so the thread must not be pinged again over one.
+        if ($newlyMentionedMembers !== []) {
+            $this->eventDispatcher->dispatch(new BandSpaceTaskMentionedEvent($comment, $newlyMentionedMembers));
+        }
 
         return $this->taskCommentBuilder->buildItem($comment);
     }

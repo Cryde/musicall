@@ -377,6 +377,88 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertSame('task_unarchived', $activities[0]->type);
     }
 
+    public function test_archived_task_refuses_a_status_change(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // The board never opens an archived task, but ?task={id} does, and reopening one would leave
+        // the archive holding something it would have refused to take in.
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Master cassette',
+            'status' => TaskStatus::Done,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['status' => 'todo'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id));
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);
+        $this->assertSame(TaskStatus::Done, $refreshed->status);
+        $this->assertNotNull($refreshed->archiveDatetime);
+    }
+
+    public function test_archived_task_refuses_a_title_change(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Master cassette',
+            'status' => TaskStatus::Done,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['title' => 'Master vinyle'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);
+        $this->assertSame('Master cassette', $refreshed->title);
+    }
+
     public function test_update_task_not_member(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

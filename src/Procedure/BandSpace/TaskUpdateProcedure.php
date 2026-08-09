@@ -45,6 +45,8 @@ readonly class TaskUpdateProcedure
         BandSpace $bandSpace,
         User $user,
     ): Task {
+        $this->assertArchivedTaskIsReadOnly($task, $payload);
+
         if (array_key_exists('title', $payload)) {
             $task->title = $data->title;
         }
@@ -90,6 +92,28 @@ readonly class TaskUpdateProcedure
         }
 
         return $task;
+    }
+
+    /**
+     * An archived task is a closed record: archiving demands a task be done, so anything that could
+     * reopen it, its status first of all, would leave the archive holding something it would never
+     * have accepted. The board gives no way in, but a deep link to the drawer does, so the refusal
+     * belongs here rather than in the interface. Taking the task back out of the archive is the one
+     * write left, and everything is editable again once it is out.
+     *
+     * @param array<string, mixed> $payload
+     */
+    private function assertArchivedTaskIsReadOnly(Task $task, array $payload): void
+    {
+        if (!$task->archiveDatetime instanceof DateTimeImmutable) {
+            return;
+        }
+
+        if (array_diff(array_keys($payload), ['archived']) === []) {
+            return;
+        }
+
+        throw new HttpException(422, 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier');
     }
 
     private function applyStatusChange(Task $task, string $newStatus, User $user): void

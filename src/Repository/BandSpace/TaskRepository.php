@@ -159,6 +159,10 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * The tasks come back in the order the ids were given. A bulk write applies them one by one and
+     * can refuse the whole batch over any of them, so the caller's own order is what makes a batch
+     * behave the same way twice and lets an answer name the tasks in the way they were selected.
+     *
      * @param string[] $ids
      * @return Task[]
      */
@@ -168,13 +172,19 @@ class TaskRepository extends ServiceEntityRepository
             return [];
         }
 
-        return $this->createQueryBuilder('t')
+        $tasks = $this->createQueryBuilder('t')
             ->where('t.id IN (:ids)')
             ->andWhere('t.bandSpace = :bandSpace')
             ->setParameter('ids', $ids)
             ->setParameter('bandSpace', $bandSpace)
             ->getQuery()
             ->getResult();
+
+        $rank = array_flip(array_values($ids));
+        usort($tasks, static fn(Task $a, Task $b): int
+            => ($rank[(string) $a->id] ?? PHP_INT_MAX) <=> ($rank[(string) $b->id] ?? PHP_INT_MAX));
+
+        return $tasks;
     }
 
     /**
