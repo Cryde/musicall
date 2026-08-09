@@ -8,7 +8,6 @@ use App\ApiResource\BandSpace\BandSpaceMember;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
-use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Event\BandSpaceMemberRoleChangedEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
@@ -63,6 +62,15 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
 
         $requestPayload = $this->requestStack->getCurrentRequest()?->toArray() ?? [];
 
+        // Reopening a closed membership is the invitation flow's job, and only that flow applies the
+        // rules joining deserves: the invitee's own consent, a space that is not pending deletion, and a
+        // return as a plain member rather than with the powers they were excluded with. This endpoint
+        // used to flip the status back to active with none of that, so it now says no and points there.
+        // Sending the status the member already has stays a no-op, so a full-object PATCH still works.
+        if (array_key_exists('status', $requestPayload) && $data->status !== $membership->status->value) {
+            throw new ConflictHttpException("Le statut d'un membre ne se modifie pas ici. Un membre exclu ou parti revient en acceptant une nouvelle invitation.");
+        }
+
         $oldRole = $membership->role;
 
         if (array_key_exists('role', $requestPayload)) {
@@ -77,11 +85,6 @@ readonly class BandSpaceMemberUpdateRoleProcessor implements ProcessorInterface
             }
 
             $membership->role = $newRole;
-        }
-
-        if (array_key_exists('status', $requestPayload) && ($data->status === 'active' && $membership->status !== MembershipStatus::Active)) {
-            $membership->status = MembershipStatus::Active;
-            $membership->leftDatetime = null;
         }
 
         $roleChanged = $oldRole !== $membership->role;

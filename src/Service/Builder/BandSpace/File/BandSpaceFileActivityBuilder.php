@@ -5,6 +5,7 @@ namespace App\Service\Builder\BandSpace\File;
 use App\ApiResource\BandSpace\File\BandSpaceFileActivityResource;
 use App\Entity\BandSpace\BandSpaceActivity;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Privacy\ActivityPayloadMask;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class BandSpaceFileActivityBuilder
@@ -45,7 +46,7 @@ readonly class BandSpaceFileActivityBuilder
         $dto->actorUsername = $entity->actor->username;
         $dto->actorProfilePictureUrl = $this->profilePictureUrlBuilder->build($entity->actor);
         $dto->type = $entity->type;
-        $dto->payload = $entity->payload;
+        $dto->payload = ActivityPayloadMask::mask($entity->payload);
         $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;

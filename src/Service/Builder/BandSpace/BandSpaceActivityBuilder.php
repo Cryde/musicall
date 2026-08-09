@@ -4,6 +4,7 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\BandSpaceActivityResource;
 use App\Entity\BandSpace\BandSpaceActivity;
+use App\Privacy\ActivityPayloadMask;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class BandSpaceActivityBuilder
@@ -30,7 +31,7 @@ readonly class BandSpaceActivityBuilder
         $dto->module = $entity->module->value;
         $dto->resourceId = $entity->resourceId?->toString();
         $dto->type = $entity->type;
-        $dto->payload = $entity->payload;
+        $dto->payload = ActivityPayloadMask::mask($entity->payload);
         $dto->actor = $entity->actor instanceof \App\Entity\User ? [
             'id' => (string) $entity->actor->id,
             'username' => $entity->actor->username,

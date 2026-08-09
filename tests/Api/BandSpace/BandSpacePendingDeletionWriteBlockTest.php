@@ -65,7 +65,7 @@ class BandSpacePendingDeletionWriteBlockTest extends ApiTestCase
     }
 
     /**
-     * Representative of the 8 processors on checkAdminForWrite().
+     * Representative of the 7 processors on checkAdminForWrite().
      */
     public function test_an_admin_cannot_invite_anyone(): void
     {

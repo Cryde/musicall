@@ -288,6 +288,9 @@ const resolvedLabel = computed(() => {
   if (invitationStatus.value === 'declined') {
     return 'Invitation déclinée'
   }
+  if (invitationStatus.value === 'revoked') {
+    return 'Invitation annulée'
+  }
   return 'Invitation expirée'
 })
 

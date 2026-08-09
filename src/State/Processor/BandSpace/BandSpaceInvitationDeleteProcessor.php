@@ -38,7 +38,10 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace] = $this->adminChecker->checkAdminForWrite((string) $uriVariables['bandSpaceId'], $user);
+        // Deliberately the read-only checker: revoking is the one write worth keeping open while a
+        // deletion is pending. It only ever takes an invitation away, accepting one is refused for the
+        // whole grace period anyway, and an admin tidying up before the space goes should not be stopped.
+        [$bandSpace] = $this->adminChecker->checkAdmin((string) $uriVariables['bandSpaceId'], $user);
 
         $invitation = $this->bandSpaceInvitationRepository->findOneByIdAndBandSpace(
             (string) $uriVariables['id'],
@@ -49,7 +52,7 @@ readonly class BandSpaceInvitationDeleteProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Invitation introuvable');
         }
 
-        $invitation->status = InvitationStatus::Expired;
+        $invitation->status = InvitationStatus::Revoked;
 
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,

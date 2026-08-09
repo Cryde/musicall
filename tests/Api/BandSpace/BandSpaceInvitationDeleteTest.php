@@ -45,7 +45,9 @@ class BandSpaceInvitationDeleteTest extends ApiTestCase
 
         $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
         $updated = $invitationRepo->find($invitation->id);
-        $this->assertSame(InvitationStatus::Expired, $updated->status);
+        // Revoked, not Expired: the clock did not run out, an admin cancelled it, and the two must stay
+        // distinguishable in the database.
+        $this->assertSame(InvitationStatus::Revoked, $updated->status);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Settings, $invitation->id);
@@ -53,6 +55,38 @@ class BandSpaceInvitationDeleteTest extends ApiTestCase
         $this->assertSame('invitation_revoked', $activities[0]->type);
         $this->assertSame(['email' => 'invited@example.com'], $activities[0]->payload);
         $this->assertSame($admin->id, $activities[0]->actor?->id);
+    }
+
+    /**
+     * The grace period makes a space read only, but revoking only ever takes an invitation away, and
+     * accepting one is refused for the whole period anyway. Blocking it left an admin unable to tidy up.
+     */
+    public function test_cancel_invitation_on_a_space_pending_deletion(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create([
+            'name' => 'Groupe condamné',
+            'deletionScheduledDatetime' => new \DateTimeImmutable('+30 days'),
+        ]);
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $invitation = BandSpaceInvitationFactory::new([
+            'bandSpace' => $bandSpace,
+            'invitedBy' => $admin,
+            'email' => 'invited@example.com',
+            'expirationDatetime' => (new \DateTime())->modify('+7 days'),
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->request(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/invitations/' . $invitation->id
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $invitationRepo = self::getContainer()->get(BandSpaceInvitationRepository::class);
+        $this->assertSame(InvitationStatus::Revoked, $invitationRepo->find($invitation->id)->status);
     }
 
     public function test_non_admin_cannot_cancel_invitation(): void

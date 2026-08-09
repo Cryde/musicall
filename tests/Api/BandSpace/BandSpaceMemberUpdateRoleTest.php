@@ -6,6 +6,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
+use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Notification\NotificationRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
@@ -184,6 +185,132 @@ class BandSpaceMemberUpdateRoleTest extends ApiTestCase
             'status' => 409,
             'type' => '/errors/409',
             'description' => 'Vous ne pouvez pas vous rétrograder car vous êtes le seul administrateur',
+        ]);
+    }
+
+    /**
+     * Reactivation used to be a second, silent door into the space: no consent from the person, no
+     * refusal on a space pending deletion, and an excluded admin walked back in with their powers.
+     * Joining is the invitation flow's job, and that flow is where those rules live.
+     */
+    public function test_a_kicked_membership_cannot_be_reactivated_through_the_status(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $kicked = UserFactory::new()->create(['username' => 'kicked_user', 'email' => 'kicked@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $kickedMembership = BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $kicked,
+            'role' => Role::Admin,
+            'status' => MembershipStatus::Kicked,
+            'leftDatetime' => new \DateTime('2024-06-01 10:00:00'),
+            'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $kickedMembership->id,
+            ['status' => 'active'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Le statut d'un membre ne se modifie pas ici. Un membre exclu ou parti revient en acceptant une nouvelle invitation.",
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => "Le statut d'un membre ne se modifie pas ici. Un membre exclu ou parti revient en acceptant une nouvelle invitation.",
+        ]);
+
+        $membershipRepository = self::getContainer()->get(BandSpaceMembershipRepository::class);
+        $this->assertSame(MembershipStatus::Kicked, $membershipRepository->find($kickedMembership->id)->status);
+    }
+
+    public function test_a_member_who_left_cannot_be_dragged_back_in_through_the_status(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $gone = UserFactory::new()->create(['username' => 'gone_user', 'email' => 'gone@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        $goneMembership = BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $gone,
+            'role' => Role::User,
+            'status' => MembershipStatus::Left,
+            'leftDatetime' => new \DateTime('2024-06-01 10:00:00'),
+            'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $goneMembership->id,
+            ['status' => 'active'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Le statut d'un membre ne se modifie pas ici. Un membre exclu ou parti revient en acceptant une nouvelle invitation.",
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => "Le statut d'un membre ne se modifie pas ici. Un membre exclu ou parti revient en acceptant une nouvelle invitation.",
+        ]);
+
+        $membershipRepository = self::getContainer()->get(BandSpaceMembershipRepository::class);
+        $this->assertSame(MembershipStatus::Left, $membershipRepository->find($goneMembership->id)->status);
+    }
+
+    /**
+     * Sending back the status the member already has is not an attempt to change anything, so a client
+     * that PATCHes the whole object it just read still gets its role change through.
+     */
+    public function test_resending_the_current_status_alongside_a_role_is_not_refused(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'member_user', 'email' => 'member@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin, 'creationDatetime' => new \DateTime('2024-01-01 10:00:00')])->create();
+        $memberMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User, 'creationDatetime' => new \DateTime('2024-01-02 10:00:00')])->create();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id,
+            ['role' => 'admin', 'status' => 'active'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceMember',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/members/' . $memberMembership->id,
+            '@type' => 'BandSpaceMember',
+            'id' => $memberMembership->id,
+            'band_space_id' => $bandSpace->id,
+            'user_id' => $member->id,
+            'username' => 'member_user',
+            'role' => 'admin',
+            'stage_name' => null,
+            'display_name' => 'member_user',
+            'instruments' => [],
+            'profile_picture_url' => null,
+            'creation_datetime' => '2024-01-02T10:00:00+00:00',
+            'status' => 'active',
+            'left_datetime' => null,
         ]);
     }
 
