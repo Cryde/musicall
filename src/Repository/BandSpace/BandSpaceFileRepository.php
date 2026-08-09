@@ -75,6 +75,74 @@ class BandSpaceFileRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * How many live files sit directly in any of the given folders.
+     *
+     * Asked before findActiveByFolderIds() hydrates anything, so a subtree too large to archive in one
+     * request is refused without ever being loaded into memory.
+     *
+     * @param string[] $folderIds
+     */
+    public function countActiveByFolderIds(array $folderIds): int
+    {
+        if (count($folderIds) === 0) {
+            return 0;
+        }
+
+        return (int) $this->createQueryBuilder('bsf')
+            ->select('COUNT(bsf.id)')
+            ->where('bsf.folder IN (:folderIds)')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->setParameter('folderIds', $folderIds)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Live files sitting directly in any of the given folders, uploader and folder included.
+     *
+     * Entities rather than a bulk UPDATE on purpose: archiving a folder subtree has to write one
+     * Archived activity per file and revoke the share links of each, so every row is needed anyway.
+     * Only ever called on a subtree countActiveByFolderIds() has already found small enough.
+     *
+     * @param string[] $folderIds
+     *
+     * @return BandSpaceFile[]
+     */
+    public function findActiveByFolderIds(array $folderIds): array
+    {
+        if (count($folderIds) === 0) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('bsf')
+            ->addSelect('u', 'f')
+            ->leftJoin('bsf.createdBy', 'u')
+            ->leftJoin('bsf.folder', 'f')
+            ->where('bsf.folder IN (:folderIds)')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->setParameter('folderIds', $folderIds)
+            ->orderBy('bsf.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Sends every file of $folder back to the root, without touching its subfolders.
+     *
+     * Bulk DQL, not an ORM loop: the rows are only ever loaded to have one nullable column blanked,
+     * and the caller discards them immediately. Being a bulk update it fires no lifecycle event and
+     * leaves any file already in the identity map pointing at the deleted folder, so read it back
+     * through the repository rather than from an entity held across the call.
+     */
+    public function detachFromFolder(BandSpaceFolder $folder): void
+    {
+        $this->getEntityManager()
+            ->createQuery('UPDATE App\Entity\BandSpace\BandSpaceFile bsf SET bsf.folder = NULL WHERE bsf.folder = :folder')
+            ->setParameter('folder', $folder)
+            ->execute();
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceFile
     {
         return $this->createQueryBuilder('bsf')

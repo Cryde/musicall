@@ -57,6 +57,40 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * The distinct source types each of the given files is attached to. Files with no attachment are
+     * absent from the result, so an empty array means "none of them is attached".
+     *
+     * A projection rather than the rows themselves: the folder cascade only needs to know which files
+     * are pinned and by what kind of source, and a subtree can hold far more attachments than the
+     * sentence it ends up building has room for.
+     *
+     * @param string[] $fileIds
+     *
+     * @return array<string, string[]> file id => distinct source types
+     */
+    public function findSourceTypesByFileIds(array $fileIds): array
+    {
+        if (count($fileIds) === 0) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('a')
+            ->select('IDENTITY(a.bandSpaceFile) AS file_id', 'a.sourceType AS source_type')
+            ->where('a.bandSpaceFile IN (:ids)')
+            ->groupBy('a.bandSpaceFile', 'a.sourceType')
+            ->setParameter('ids', $fileIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $sourceTypesByFile = [];
+        foreach ($rows as $row) {
+            $sourceTypesByFile[(string) $row['file_id']][] = (string) $row['source_type'];
+        }
+
+        return $sourceTypesByFile;
+    }
+
+    /**
      * @param string[] $fileIds
      *
      * @return array<string, BandSpaceFileAttachment[]> file id => attachments

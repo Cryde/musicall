@@ -69,6 +69,8 @@ readonly class BandSpaceFileRestoreProcessor implements ProcessorInterface
         // the band's usage. Refuse rather than let a restore push the space over its limit.
         $this->quotaService->assertCanUpload($bandSpace, $this->versionRepository->sumBytesByFile($file));
 
+        // Only the archive flag comes off. The share links revoked on the way into the trash stay
+        // revoked: a link the band watched disappear must not come back to life behind their back.
         $file->archiveDatetime = null;
 
         $this->activityRecorder->record(

@@ -44,7 +44,25 @@ class BandSpaceFolderRepository extends ServiceEntityRepository
     }
 
     /**
+     * Sends the direct children of $folder back to the root, so deleting it does not take them with it.
+     *
+     * Bulk DQL, not an ORM loop: the rows are only ever loaded to have their parent blanked. Being a
+     * bulk update it fires no lifecycle event and leaves any child already in the identity map still
+     * pointing at $folder, which the DELETE that follows would then cascade over.
+     */
+    public function detachChildrenFrom(BandSpaceFolder $folder): void
+    {
+        $this->getEntityManager()
+            ->createQuery('UPDATE App\Entity\BandSpace\BandSpaceFolder f SET f.parent = NULL WHERE f.parent = :folder')
+            ->setParameter('folder', $folder)
+            ->execute();
+    }
+
+    /**
      * Returns the IDs of $folder and every descendant beneath it.
+     *
+     * Raw SQL because DQL has no recursive CTE and the tree has no materialised path: walking it in
+     * PHP would mean one SELECT per level per branch.
      *
      * @return string[]
      */

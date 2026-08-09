@@ -29,11 +29,23 @@
           class="flex items-start gap-3 cursor-pointer"
         >
           <RadioButton v-model="strategy" value="cascade" name="folder-delete-strategy" />
-          <div class="flex flex-col gap-0.5">
+          <div class="flex flex-col gap-1">
             <span class="text-sm font-medium text-red-600">Tout supprimer</span>
             <span class="text-xs text-surface-500">
-              Archive tous les fichiers contenus dans ce dossier et ses sous-dossiers. Réservé aux administrateurs.
+              Les fichiers de ce dossier et de ses sous-dossiers partent à la corbeille pendant
+              {{ filesStore.trashRetentionDays }} jours. Réservé aux administrateurs.
             </span>
+            <ul class="text-xs text-surface-500 list-disc pl-4">
+              <li>
+                Leurs liens de partage sont révoqués : une restauration ne les réactive pas.
+              </li>
+              <li>
+                Si l'un d'eux est attaché à {{ FILE_SOURCE_LIST_LABEL }}, la suppression est refusée.
+              </li>
+              <li>
+                Les sous-dossiers disparaissent : les fichiers restaurés reviennent à la racine.
+              </li>
+            </ul>
           </div>
         </label>
       </div>
@@ -65,6 +77,7 @@ import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import RadioButton from 'primevue/radiobutton'
 import { ref, watch } from 'vue'
+import { FILE_SOURCE_LIST_LABEL } from '../../../constants/fileSources.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 
 const props = defineProps({

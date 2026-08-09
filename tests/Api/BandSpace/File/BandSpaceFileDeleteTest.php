@@ -2,15 +2,21 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Enum\BandSpace\BandSpaceFileActivityType;
+use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceFileShareRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileAttachmentFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileShareFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -54,6 +60,76 @@ class BandSpaceFileDeleteTest extends ApiTestCase
         $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * The admin share list hides shares of archived files, so trashing a file used to take its link off
+     * the only screen that can revoke it while the row stayed live underneath. A restore weeks later
+     * silently reopened the URL until its original expiry.
+     */
+    public function test_delete_revokes_the_share_links_of_the_file(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
+        $other = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin])->create();
+
+        $live = BandSpaceFileShareFactory::new([
+            'bandSpaceFile' => $file,
+            'createdBy' => $admin,
+            'tokenHash' => hash('sha256', 'live-token'),
+            'expiryDatetime' => new \DateTimeImmutable('+30 days'),
+        ])->create();
+        $alreadyRevoked = BandSpaceFileShareFactory::new([
+            'bandSpaceFile' => $file,
+            'createdBy' => $admin,
+            'tokenHash' => hash('sha256', 'revoked-token'),
+            'revocationDatetime' => new \DateTimeImmutable('2026-01-02T03:04:05+00:00'),
+        ])->create();
+        $untouched = BandSpaceFileShareFactory::new([
+            'bandSpaceFile' => $other,
+            'createdBy' => $admin,
+            'tokenHash' => hash('sha256', 'other-file-token'),
+        ])->create();
+
+        $bandSpaceId = $bandSpace->id;
+        $fileId = (string) $file->id;
+        $liveId = $live->id;
+        $alreadyRevokedId = $alreadyRevoked->id;
+        $untouchedId = $untouched->id;
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest('DELETE', '/api/band_spaces/' . $bandSpaceId . '/files/' . $fileId, [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+
+        /** @var BandSpaceFileShareRepository $shareRepo */
+        $shareRepo = self::getContainer()->get(BandSpaceFileShareRepository::class);
+        $this->assertNotNull($shareRepo->find($liveId)?->revocationDatetime);
+        // An already revoked link keeps the date it was revoked on, it is not re-stamped.
+        $this->assertSame(
+            '2026-01-02T03:04:05+00:00',
+            $shareRepo->find($alreadyRevokedId)?->revocationDatetime?->format(\DATE_ATOM),
+        );
+        // A link on another file is none of this delete's business.
+        $this->assertNull($shareRepo->find($untouchedId)?->revocationDatetime);
+
+        /** @var BandSpaceActivityRepository $activityRepo */
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $types = array_map(
+            static fn ($activity): string => $activity->type,
+            $activityRepo->findForResource($bandSpace, BandSpaceModule::File, $fileId),
+        );
+        sort($types);
+        $this->assertSame(
+            [BandSpaceFileActivityType::Archived->value, BandSpaceFileActivityType::ShareRevoked->value],
+            $types,
+        );
     }
 
     public function test_delete_by_random_member_returns_403(): void

@@ -13,6 +13,8 @@ use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\File\BandSpaceFileAttachmentLabels;
+use App\Service\BandSpace\File\BandSpaceFileShareRevoker;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -30,6 +32,7 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
+        private BandSpaceFileShareRevoker $shareRevoker,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
     ) {
@@ -56,11 +59,16 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
 
         $attachments = $this->attachmentRepository->findByFile($file);
         if (count($attachments) > 0) {
-            $sourceTypes = array_unique(array_map(fn ($a): string => $a->sourceType, $attachments));
-            throw new UnprocessableEntityHttpException($this->buildAttachmentMessage($sourceTypes));
+            $sourceTypes = array_map(static fn ($attachment): string => $attachment->sourceType, $attachments);
+            throw new UnprocessableEntityHttpException(sprintf(
+                "Ce fichier est attaché à %s. Détachez-le d'abord depuis la ressource concernée.",
+                BandSpaceFileAttachmentLabels::describe($sourceTypes),
+            ));
         }
 
         $file->archiveDatetime = new DateTimeImmutable();
+
+        $this->shareRevoker->revokeForArchivedFiles($membership->bandSpace, [(string) $file->id], $user);
 
         $this->activityRecorder->record(
             $membership->bandSpace,
@@ -72,26 +80,5 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
         );
 
         $this->entityManager->flush();
-    }
-
-    /**
-     * @param string[] $sourceTypes
-     */
-    private function buildAttachmentMessage(array $sourceTypes): string
-    {
-        $labels = array_map(static fn (string $type): string => match ($type) {
-            'task' => 'une tâche',
-            'finance' => 'une entrée financière',
-            'note' => 'une note',
-            default => 'une autre ressource',
-        }, $sourceTypes);
-
-        $list = match (count($labels)) {
-            1 => $labels[0],
-            2 => $labels[0] . ' et ' . $labels[1],
-            default => implode(', ', array_slice($labels, 0, -1)) . ' et ' . end($labels),
-        };
-
-        return "Ce fichier est attaché à {$list}. Détachez-le d'abord depuis la ressource concernée.";
     }
 }

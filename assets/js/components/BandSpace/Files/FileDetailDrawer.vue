@@ -194,7 +194,7 @@
           severity="danger"
           :disabled="!canDelete || isAttachedToSource"
           :loading="filesStore.isDeletingFile"
-          v-tooltip.top="isAttachedToSource ? attachedSourceMessage : null"
+          v-tooltip.top="deleteDisabledReason"
           @click="confirmDelete"
         />
       </div>
@@ -214,6 +214,7 @@ import { computed, ref, watch } from 'vue'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import Avatar from '../../User/Avatar.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
 
@@ -241,12 +242,9 @@ const selectedTagIds = ref([])
 
 const selectedFolderId = computed(() => file.value?.folder_id ?? null)
 
-const canDelete = computed(() => {
-  const f = file.value
-  if (!f) return false
-  const userId = userSecurityStore.userProfile?.id
-  return f.created_by?.id === userId
-})
+const canDelete = computed(() =>
+  isFileCreatorOrAdmin(file.value, userSecurityStore.userProfile?.id, isAdmin.value)
+)
 
 const attachments = computed(() => file.value?.attachments ?? [])
 
@@ -268,6 +266,12 @@ const attachedSourceMessage = computed(() => {
     default:
       return "Ce fichier est attaché à une autre ressource. Détachez-le d'abord."
   }
+})
+
+const deleteDisabledReason = computed(() => {
+  if (isAttachedToSource.value) return attachedSourceMessage.value
+  if (!canDelete.value) return 'Seul le créateur ou un administrateur peut supprimer ce fichier'
+  return null
 })
 
 function attachmentIcon(sourceType) {
