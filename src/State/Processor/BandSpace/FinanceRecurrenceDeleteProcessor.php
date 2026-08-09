@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\FinanceRecurrenceOwnerChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +26,7 @@ readonly class FinanceRecurrenceDeleteProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private FinanceRecurrenceOwnerChecker $recurrenceOwnerChecker,
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private FinanceEntryRepository $financeEntryRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
@@ -41,12 +43,14 @@ readonly class FinanceRecurrenceDeleteProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $currentMembership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence) {
             throw new NotFoundHttpException('Récurrence introuvable');
         }
+
+        $this->recurrenceOwnerChecker->checkCanDelete($recurrence, $currentMembership);
 
         // One transaction, because the entries go out through a bulk DQL delete that reaches the
         // database immediately while the detached attachments wait for the flush. Unwrapped, a flush

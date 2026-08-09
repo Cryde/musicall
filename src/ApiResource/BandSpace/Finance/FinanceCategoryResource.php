@@ -86,6 +86,13 @@ class FinanceCategoryResource
     public int $position;
 
     public bool $hasChildren = false;
+
+    /**
+     * Entries filed directly under this category, whatever their status. Exactly what a delete would
+     * take with it, which is why the confirmation dialog can finally name a number.
+     */
+    public int $entryCount = 0;
+
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;
 }

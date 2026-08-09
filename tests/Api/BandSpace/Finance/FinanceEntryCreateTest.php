@@ -574,4 +574,60 @@ class FinanceEntryCreateTest extends ApiTestCase
             'title' => 'An error occurred',
         ]);
     }
+
+    /**
+     * A fourchette with one side missing used to be accepted, and then counted as zero everywhere: the
+     * totals read the entry through ROUND((amount_min + amount_max) / 2) and an addition with a NULL
+     * side is NULL. Nothing warned about it either, because the estimate flag only looked at the
+     * minimum.
+     */
+    public function test_create_entry_with_only_a_minimum_is_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $category = FinanceCategoryFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Studio',
+            'position' => 0,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries',
+            [
+                'categoryId' => (string) $category->id,
+                'label' => 'Mastering (devis partiel)',
+                'type' => 'expense',
+                'status' => 'planned',
+                'scope' => 'band',
+                'amountMin' => 40000,
+                'date' => '2024-01-15',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . FinanceAmountRangeValidator::ERROR_CODE_INCOMPLETE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'amount_max',
+                    'message' => 'Une fourchette doit avoir un montant minimum et un montant maximum',
+                    'code' => FinanceAmountRangeValidator::ERROR_CODE_INCOMPLETE,
+                ],
+            ],
+            'detail' => 'amount_max: Une fourchette doit avoir un montant minimum et un montant maximum',
+            'description' => 'amount_max: Une fourchette doit avoir un montant minimum et un montant maximum',
+            'type' => '/validation_errors/' . FinanceAmountRangeValidator::ERROR_CODE_INCOMPLETE,
+            'title' => 'An error occurred',
+        ]);
+
+        $this->assertSame([], self::getContainer()->get(FinanceEntryRepository::class)->findByBandSpace($bandSpace));
+    }
 }

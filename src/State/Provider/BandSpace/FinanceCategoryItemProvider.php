@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Finance\FinanceCategoryResource;
 use App\Entity\User;
 use App\Repository\BandSpace\FinanceCategoryRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -21,6 +22,7 @@ readonly class FinanceCategoryItemProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
+        private FinanceEntryRepository $financeEntryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
         private Security $security,
     ) {
@@ -40,6 +42,9 @@ readonly class FinanceCategoryItemProvider implements ProviderInterface
             throw new NotFoundHttpException('Catégorie introuvable');
         }
 
-        return $this->financeCategoryBuilder->buildItem($category);
+        return $this->financeCategoryBuilder->buildItem(
+            $category,
+            $this->financeEntryRepository->countByCategory($category),
+        );
     }
 }

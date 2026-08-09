@@ -85,10 +85,22 @@ class FinanceRecurrenceResource
     #[Assert\Length(max: 255, maxMessage: 'Le libellé ne peut pas dépasser {{ limit }} caractères')]
     public string $label;
 
+    // The PATCH reads type, scope and interval straight back into an enum, so without a Choice an
+    // unknown value reached ::from() and came out as a 500 instead of a violation. The dates carry no
+    // Assert\Date because the provider hands them back in ATOM while the interface sends AAAA-MM-JJ;
+    // RecurrenceEndDate parses both and reports an unparsable one itself.
+    #[Assert\Choice(choices: ['expense', 'income'], message: 'Type invalide')]
     public string $type;
+
+    #[Assert\Positive(message: 'Le montant doit être positif')]
     public int $amount;
+
+    #[Assert\Choice(choices: ['band', 'personal'], message: 'Périmètre invalide')]
     public string $scope;
+
+    #[Assert\Choice(choices: ['weekly', 'monthly', 'quarterly', 'yearly'], message: 'Intervalle de récurrence invalide')]
     public string $interval;
+
     public string $startDate;
     public string $endDate;
     public bool $isActive;

@@ -20,9 +20,17 @@ class FinanceEntryRepository extends ServiceEntityRepository
         parent::__construct($registry, FinanceEntry::class);
     }
 
+    /**
+     * What an entry contributes to a total: its exact amount, else the middle of its estimate.
+     *
+     * The two lone bounds are the safety net for rows written before a fourchette had to carry both of
+     * them. `amount_min + amount_max` is NULL as soon as one side is, so those rows used to fall all the
+     * way through to 0 and vanish from every total. Falling back to the bound that is actually there is
+     * wrong by at most half a bracket, where 0 was wrong by the whole entry.
+     */
     private function effectiveAmountSql(string $alias = 'e'): string
     {
-        return "COALESCE({$alias}.amount, ROUND(({$alias}.amount_min + {$alias}.amount_max) / 2), 0)";
+        return "COALESCE({$alias}.amount, ROUND(({$alias}.amount_min + {$alias}.amount_max) / 2), {$alias}.amount_min, {$alias}.amount_max, 0)";
     }
 
     /**
@@ -125,7 +133,7 @@ class FinanceEntryRepository extends ServiceEntityRepository
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'committed' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_committed,
                 COALESCE(SUM(CASE WHEN e.scope = 'band' AND e.status = 'paid' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_paid,
                 COALESCE(SUM(CASE WHEN e.scope = 'personal' THEN {$effectiveAmount} ELSE 0 END), 0) AS total_personal,
-                MAX(CASE WHEN e.amount IS NULL AND e.amount_min IS NOT NULL THEN 1 ELSE 0 END) AS has_estimates
+                MAX(CASE WHEN e.amount IS NULL AND (e.amount_min IS NOT NULL OR e.amount_max IS NOT NULL) THEN 1 ELSE 0 END) AS has_estimates
             FROM finance_entry e
             JOIN finance_category c ON e.category_id = c.id
             WHERE c.band_space_id = :bandSpaceId{$dateFilter}
@@ -315,6 +323,93 @@ class FinanceEntryRepository extends ServiceEntityRepository
         }
 
         return $labels;
+    }
+
+    /**
+     * How many entries each of these categories holds, keyed by category id. A category with none is
+     * absent from the map rather than present at zero, so callers default it themselves.
+     *
+     * One query for the whole tree: the interface names the number in the delete confirmation of every
+     * category it draws, and that must not cost one round trip per pole.
+     *
+     * @param FinanceCategory[] $categories
+     * @return array<string, int>
+     */
+    public function countByCategories(array $categories): array
+    {
+        if ($categories === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('e')
+            ->select('IDENTITY(e.category) AS category_id, COUNT(e.id) AS cnt')
+            ->where('e.category IN (:categories)')
+            ->setParameter('categories', $categories)
+            ->groupBy('e.category')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['category_id']] = (int) $row['cnt'];
+        }
+
+        return $counts;
+    }
+
+    public function countByCategory(FinanceCategory $category): int
+    {
+        return (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.category = :category')
+            ->setParameter('category', $category)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * How many Paid entries a category holds. Deleting the category cascades them in the database, which
+     * is the one route around FinanceEntryDeleteProcessor's refusal to delete a paid entry, so the
+     * delete asks this first.
+     */
+    public function countPaidByCategory(FinanceCategory $category): int
+    {
+        return (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.category = :category')
+            ->andWhere('e.status = :status')
+            ->setParameter('category', $category)
+            ->setParameter('status', FinanceEntryStatus::Paid)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * The memberships the entries of a recurrence were generated for, as plain ids.
+     *
+     * A FinanceRecurrence carries no owner column: a personal one is owned by whoever it planned its
+     * entries for, and that is only readable from those entries. Ids rather than entities because the
+     * only caller compares them, and because ORM 3 refuses to select a joined alias on its own.
+     *
+     * @return string[]
+     */
+    public function findMemberIdsByRecurrence(FinanceRecurrence $recurrence): array
+    {
+        $rows = $this->createQueryBuilder('e')
+            ->select('IDENTITY(e.member) AS member_id')
+            ->where('e.recurrence = :recurrence')
+            ->andWhere('e.member IS NOT NULL')
+            ->setParameter('recurrence', $recurrence)
+            ->groupBy('e.member')
+            ->getQuery()
+            ->getArrayResult();
+
+        $memberIds = [];
+        foreach ($rows as $row) {
+            $memberIds[] = (string) $row['member_id'];
+        }
+
+        return $memberIds;
     }
 
     /**

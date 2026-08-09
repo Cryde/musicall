@@ -9,17 +9,21 @@ readonly class FinanceCategoryBuilder
 {
     /**
      * @param FinanceCategory[] $entities
+     * @param array<string, int> $entryCounts entry count keyed by category id, absent meaning none
      * @return FinanceCategoryResource[]
      */
-    public function buildFromList(array $entities): array
+    public function buildFromList(array $entities, array $entryCounts = []): array
     {
         return array_map(
-            fn (FinanceCategory $entity): FinanceCategoryResource => $this->buildItem($entity),
+            fn (FinanceCategory $entity): FinanceCategoryResource => $this->buildItem(
+                $entity,
+                $entryCounts[(string) $entity->id] ?? 0
+            ),
             $entities
         );
     }
 
-    public function buildItem(FinanceCategory $entity): FinanceCategoryResource
+    public function buildItem(FinanceCategory $entity, int $entryCount = 0): FinanceCategoryResource
     {
         $dto = new FinanceCategoryResource();
         $dto->id = (string) $entity->id;
@@ -28,6 +32,7 @@ readonly class FinanceCategoryBuilder
         $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\FinanceCategory ? (string) $entity->parent->id : null;
         $dto->position = $entity->position;
         $dto->hasChildren = !$entity->children->isEmpty();
+        $dto->entryCount = $entryCount;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
 

@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\FinanceCategoryRepository;
+use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\FinanceCategoryBuilder;
@@ -28,6 +29,7 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private FinanceCategoryRepository $financeCategoryRepository,
+        private FinanceEntryRepository $financeEntryRepository,
         private FinanceCategoryBuilder $financeCategoryBuilder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
@@ -95,6 +97,9 @@ readonly class FinanceCategoryUpdateProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
-        return $this->financeCategoryBuilder->buildItem($category);
+        return $this->financeCategoryBuilder->buildItem(
+            $category,
+            $this->financeEntryRepository->countByCategory($category),
+        );
     }
 }
