@@ -83,6 +83,9 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
 
         $note->updateDatetime = new DateTime();
 
+        // A rename and an emoji pick are deliberate single acts, made by leaving a field or by
+        // choosing in a picker, so they are recorded every time. Only the body is written by a
+        // timer, and only the body is coalesced.
         if ($oldTitle !== $note->title) {
             $this->bandSpaceActivityRecorder->record(
                 bandSpace: $bandSpace,
@@ -110,11 +113,13 @@ readonly class BandSpaceNoteUpdateProcessor implements ProcessorInterface
             // work, and bumping there would reject the next autosave of everyone else editing.
             ++$note->contentVersion;
 
-            $this->bandSpaceActivityRecorder->record(
+            // Coalesced, unlike the two above: this one is written by the two second autosave, so
+            // recording each one would bury the whole space's feed under a single writing session.
+            $this->bandSpaceActivityRecorder->recordCoalesced(
                 bandSpace: $bandSpace,
                 module: BandSpaceModule::Notes,
                 type: BandSpaceNoteActivityType::ContentUpdated,
-                resourceId: $note->id,
+                resourceId: (string) $note->id,
                 actor: $user,
             );
         }

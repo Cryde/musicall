@@ -1,9 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceNotesApi from '../../api/bandSpace/band-space-notes.js'
-
-/** What the API answers when the body was written against a revision that is no longer current. */
-const HTTP_CONFLICT = 409
+import { saveNoteContentWithRetries } from '../../utils/noteContentSave.js'
+import {
+  failedSaveNoteIds,
+  holdsUnsavedContent,
+  noteSaveStatus,
+  withNoteSaveStatus,
+  withoutNoteSaveStatus
+} from '../../utils/noteSaveStatus.js'
 
 export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
   const notes = ref([])
@@ -15,7 +20,10 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
   const isCreating = ref(false)
   const isDeleting = ref(false)
   const isReloadingNote = ref(false)
-  const saveStatus = ref(null) // 'saving' | 'saved' | 'error' | 'conflict'
+  // Per note, because a save is fired by a timer and can land long after the member has opened
+  // another note: a single store wide status put the previous note's failure on whichever note
+  // happened to be open, an error badge on a note nobody had touched.
+  const saveStatusByNoteId = ref({}) // noteId -> 'saving' | 'saved' | 'error' | 'conflict'
   const loadError = ref(null)
   // Bumped only by an explicit reload, and part of the editor's key, so the editor is rebuilt
   // around the note that came back. A save must never remount it: that would drop the caret
@@ -28,6 +36,46 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
   let selectedNoteLoadToken = 0
 
   const tree = computed(() => buildTree(notes.value))
+
+  const saveStatus = computed(() => noteSaveStatus(saveStatusByNoteId.value, selectedNoteId.value))
+
+  const hasUnsavedContent = computed(() => holdsUnsavedContent(saveStatusByNoteId.value))
+
+  function setSaveStatus(noteId, status) {
+    saveStatusByNoteId.value = withNoteSaveStatus(saveStatusByNoteId.value, noteId, status)
+  }
+
+  function clearSaveStatus(noteId) {
+    saveStatusByNoteId.value = withoutNoteSaveStatus(saveStatusByNoteId.value, noteId)
+  }
+
+  /**
+   * Asks once, and only about text nothing is going to save. A save still on the debounce is
+   * deliberately not asked about: leaving the route unmounts the editor, which flushes it, so the
+   * question would be about a save already on its way.
+   *
+   * Returns true when it is safe to carry on, so callers read as
+   * `if (!confirmDiscardingEdits()) return`.
+   */
+  function confirmDiscardingEdits() {
+    const unsaved = failedSaveNoteIds(saveStatusByNoteId.value)
+    if (unsaved.length === 0) return true
+
+    const confirmed = window.confirm(
+      'Des modifications ne sont pas enregistrées et seront perdues. Continuer ?'
+    )
+    if (confirmed) {
+      for (const noteId of unsaved) {
+        clearSaveStatus(noteId)
+      }
+    }
+
+    return confirmed
+  }
+
+  function titleOf(noteId) {
+    return notes.value.find((note) => note.id === noteId)?.title ?? null
+  }
 
   function buildTree(flatList) {
     const map = new Map()
@@ -87,10 +135,11 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     selectedNote.value = null
     isLoadingNote.value = true
     loadError.value = null
-    // The save status belongs to the note being left, not to the one being opened. Carrying a
-    // conflict across would show the next note a blocking banner about an edit nobody made to it,
-    // and the editor only watches for the transition into that state, so it would never clear.
-    saveStatus.value = null
+    // What comes back is a fresh copy, so whatever the last save of this note answered no longer
+    // says anything about it. Above all a leftover conflict would open the note under a blocking
+    // banner about an edit nobody has made to it, and the editor only watches for the transition
+    // into that state, so it would never clear.
+    clearSaveStatus(noteId)
 
     try {
       const data = await bandSpaceNotesApi.getNote(bandSpaceId, noteId)
@@ -131,25 +180,37 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
    *
    * Every response carries the new revision, so replacing the open note here is what keeps the
    * following save valid.
+   *
+   * A failure is retried before it is reported, and always with the same payload, so a retry is
+   * refused rather than allowed to overwrite. Nothing else would ever send this text: it was never
+   * a member pressing save, so there is nothing for them to press again. What the caller gets back
+   * is the outcome, because a note whose save failed on the way out is no longer the one on
+   * screen, and a toast is then the only place it can be said.
+   *
+   * @returns {Promise<{status: 'saved'|'conflict'|'error', noteTitle: string|null}>}
    */
   async function updateNoteContent(bandSpaceId, noteId, content, contentVersion) {
-    saveStatus.value = 'saving'
+    // Read now rather than at the end: the last save of a session answers after the module has been
+    // left, and by then the tree it would have been looked up in has been cleared.
+    const noteTitle = titleOf(noteId)
+
+    setSaveStatus(noteId, 'saving')
     isSaving.value = true
     try {
-      const updated = await bandSpaceNotesApi.update(bandSpaceId, noteId, {
-        content,
-        expected_content_version: contentVersion
+      const outcome = await saveNoteContentWithRetries({
+        save: () =>
+          bandSpaceNotesApi.update(bandSpaceId, noteId, {
+            content,
+            expected_content_version: contentVersion
+          })
       })
-      if (selectedNote.value && selectedNote.value.id === noteId) {
-        selectedNote.value = updated
+
+      if (outcome.status === 'saved' && selectedNote.value && selectedNote.value.id === noteId) {
+        selectedNote.value = outcome.note
       }
-      saveStatus.value = 'saved'
-    } catch (error) {
-      // A conflict belongs to the note that was refused. A save flushed on the way out of a note
-      // can land once another one is open, and flagging that one would stop an editor that has
-      // nothing to resolve, so it falls back to the plain error state.
-      const isStillOpen = selectedNote.value !== null && selectedNote.value.id === noteId
-      saveStatus.value = isStillOpen && error.status === HTTP_CONFLICT ? 'conflict' : 'error'
+      setSaveStatus(noteId, outcome.status)
+
+      return { status: outcome.status, noteTitle }
     } finally {
       isSaving.value = false
     }
@@ -173,13 +234,20 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
       const data = await bandSpaceNotesApi.getNote(bandSpaceId, noteId)
       if (token !== selectedNoteLoadToken) return
       selectedNote.value = data
-      saveStatus.value = null
+      clearSaveStatus(noteId)
       selectedNoteReloadCount.value++
     } finally {
       isReloadingNote.value = false
     }
   }
 
+  /**
+   * Renaming and picking an emoji are single deliberate acts, so a failure is rolled back and
+   * reported rather than left as a status: the save badge belongs to the body, and showing "Erreur"
+   * there for a rename that has already been undone points the member at the wrong thing.
+   *
+   * @returns {Promise<{status: 'saved'|'error'}>}
+   */
   async function updateNoteTitle(bandSpaceId, noteId, title) {
     const noteIndex = notes.value.findIndex((n) => n.id === noteId)
     const previousTitle = noteIndex !== -1 ? notes.value[noteIndex].title : null
@@ -193,14 +261,18 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
       if (selectedNote.value && selectedNote.value.id === noteId) {
         selectedNote.value = updated
       }
+
+      return { status: 'saved' }
     } catch {
       if (noteIndex !== -1 && previousTitle !== null) {
         notes.value[noteIndex] = { ...notes.value[noteIndex], title: previousTitle }
       }
-      saveStatus.value = 'error'
+
+      return { status: 'error' }
     }
   }
 
+  /** @returns {Promise<{status: 'saved'|'error'}>} */
   async function updateNoteEmoji(bandSpaceId, noteId, emoji) {
     const noteIndex = notes.value.findIndex((n) => n.id === noteId)
     const previousEmoji = noteIndex !== -1 ? notes.value[noteIndex].emoji : null
@@ -214,11 +286,14 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
       if (selectedNote.value && selectedNote.value.id === noteId) {
         selectedNote.value = updated
       }
+
+      return { status: 'saved' }
     } catch {
       if (noteIndex !== -1) {
         notes.value[noteIndex] = { ...notes.value[noteIndex], emoji: previousEmoji }
       }
-      saveStatus.value = 'error'
+
+      return { status: 'error' }
     }
   }
 
@@ -240,7 +315,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     notes.value = []
     selectedNoteId.value = null
     selectedNote.value = null
-    saveStatus.value = null
+    saveStatusByNoteId.value = {}
     loadError.value = null
     selectedNoteReloadCount.value = 0
   }
@@ -255,7 +330,8 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     isCreating: readonly(isCreating),
     isDeleting: readonly(isDeleting),
     isReloadingNote: readonly(isReloadingNote),
-    saveStatus: readonly(saveStatus),
+    saveStatus,
+    hasUnsavedContent,
     loadError: readonly(loadError),
     selectedNoteReloadCount: readonly(selectedNoteReloadCount),
     tree,
@@ -266,6 +342,7 @@ export const useBandSpaceNotesStore = defineStore('bandSpaceNotes', () => {
     updateNoteContent,
     updateNoteTitle,
     updateNoteEmoji,
+    confirmDiscardingEdits,
     deleteNote,
     clear
   }

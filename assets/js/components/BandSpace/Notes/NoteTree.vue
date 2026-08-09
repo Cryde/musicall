@@ -63,7 +63,7 @@
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Tree from 'primevue/tree'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 const MAX_DEPTH = 3
 
@@ -119,17 +119,11 @@ function canCreateChild(nodeKey) {
   return (depthMap.value[nodeKey] || 1) < MAX_DEPTH
 }
 
-watch(
-  () => props.selectedKey,
-  (newKey) => {
-    if (newKey) {
-      selectionKeys.value = { [newKey]: true }
-    } else {
-      selectionKeys.value = {}
-    }
-  },
-  { immediate: true }
-)
+function highlightOpenNote(noteId) {
+  selectionKeys.value = noteId ? { [noteId]: true } : {}
+}
+
+watch(() => props.selectedKey, highlightOpenNote, { immediate: true })
 
 function expandNode(key) {
   expandedKeys.value = { ...expandedKeys.value, [key]: true }
@@ -137,8 +131,16 @@ function expandNode(key) {
 
 defineExpose({ expandNode })
 
-function handleSelect(node) {
+/**
+ * Tree moves its own highlight before it tells us, and the parent may refuse the switch when the
+ * open note holds text no save has taken. The highlight is therefore put back on whatever note is
+ * actually open once the answer is in, so the sidebar never points at a note the editor did not
+ * open. Idempotent when the switch went through.
+ */
+async function handleSelect(node) {
   emit('select', node.key)
+  await nextTick()
+  highlightOpenNote(props.selectedKey)
 }
 </script>
 

@@ -5,7 +5,7 @@ import { Table } from '@tiptap/extension-table/table'
 import TextAlign from '@tiptap/extension-text-align'
 import StarterKit from '@tiptap/starter-kit'
 import { useEditor } from '@tiptap/vue-3'
-import { onBeforeUnmount } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { createDebouncedSaver } from '../utils/debouncedSaver.js'
 
 /**
@@ -24,6 +24,10 @@ import { createDebouncedSaver } from '../utils/debouncedSaver.js'
  * body moved on under the writer being the case that exists today. It ends the loop rather
  * than letting it re-send the same refused document every couple of seconds.
  *
+ * `hasPendingEdits` is what the unsaved changes guards read. The flush on unmount covers
+ * navigating away inside the app, but nothing covers a closed tab or an F5, so the view has to
+ * be able to ask whether there is typing in here that no save has been started for.
+ *
  * @param {object}   options
  * @param {object|string|null} options.content        initial TipTap document
  * @param {string}   options.placeholder
@@ -40,7 +44,19 @@ export function useRichTextEditor({
   editable = true,
   onSave
 }) {
-  const saver = createDebouncedSaver({ delayMs: debounceMs, onSave })
+  // True from the first keystroke until the debounce hands the text to a save. What happens to that
+  // save afterwards is the consumer's business; this only answers "is there typing no save has been
+  // started for", which is what a tab closed mid sentence would take with it.
+  const hasPendingEdits = ref(false)
+
+  const saver = createDebouncedSaver({
+    delayMs: debounceMs,
+    onSave: (content) => {
+      hasPendingEdits.value = false
+
+      return onSave(content)
+    }
+  })
 
   const editor = useEditor({
     editable,
@@ -59,6 +75,9 @@ export function useRichTextEditor({
     ],
     content: content || '',
     onUpdate: ({ editor }) => {
+      // Set even when the loop has been stopped: a refused save leaves the text on screen, and it
+      // is unsaved whether or not anything is still trying.
+      hasPendingEdits.value = true
       saver.schedule(editor.getJSON())
     }
   })
@@ -70,6 +89,7 @@ export function useRichTextEditor({
 
   return {
     editor,
+    hasPendingEdits,
     flushPendingSave: saver.flush,
     cancelDebouncedSave: saver.cancel,
     stopSaving: saver.stop
