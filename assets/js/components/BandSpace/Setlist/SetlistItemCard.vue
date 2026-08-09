@@ -1,8 +1,9 @@
 <template>
   <div
-    class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-primary"
+    class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded-xl p-3 flex items-center gap-3"
+    :class="readonly ? 'cursor-default' : 'cursor-pointer hover:border-primary'"
     :data-item-id="item.id"
-    @click="emit('edit', item)"
+    @click="handleClick"
   >
     <div class="text-surface-400 text-sm font-semibold tabular-nums w-8 text-center">
       {{ item.position + 1 }}
@@ -39,6 +40,7 @@
     </div>
 
     <Button
+      v-if="!readonly"
       icon="pi pi-ellipsis-v"
       severity="secondary"
       text
@@ -56,10 +58,17 @@ import Button from 'primevue/button'
 import { computed } from 'vue'
 
 const props = defineProps({
-  item: { type: Object, required: true }
+  item: { type: Object, required: true },
+  /** An archived setlist is read only: the card still renders, it just stops offering to edit. */
+  readonly: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['edit', 'open-menu'])
+
+function handleClick() {
+  if (props.readonly) return
+  emit('edit', props.item)
+}
 
 const isSong = computed(() => props.item.type === 'song')
 

@@ -133,6 +133,11 @@ import Drawer from 'primevue/drawer'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
+import {
+  openLivePositionStorage,
+  readLivePosition,
+  writeLivePosition
+} from '../../utils/setlistLivePosition.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -141,6 +146,7 @@ const setlistsStore = useBandSetlistsStore()
 const rootEl = ref(null)
 const currentIndex = ref(0)
 const overviewOpen = ref(false)
+const positionStorage = openLivePositionStorage()
 
 const bandSpaceId = computed(() => route.params.bandSpaceId)
 const setlistId = computed(() => route.params.setlistId)
@@ -296,11 +302,27 @@ function handleVisibilityChange() {
   }
 }
 
-// Reset currentIndex if the setlist changes (e.g. items reload).
+// The position outlives the page, because a phone evicts a backgrounded tab whenever it wants and
+// an accidental refresh mid-show must not send the singer back to the first track.
+let hasRestoredPosition = false
+
 watch(items, (next, prev) => {
+  // First load of the setlist: pick the stored position back up, clamped to what is on screen now.
+  if (!hasRestoredPosition && next.length > 0) {
+    hasRestoredPosition = true
+    currentIndex.value = readLivePosition(positionStorage, setlistId.value, next.length)
+
+    return
+  }
+
+  // Reset currentIndex if the setlist changes (e.g. items reload).
   if (prev && next.length !== prev.length) {
     currentIndex.value = Math.min(currentIndex.value, Math.max(0, next.length - 1))
   }
+})
+
+watch(currentIndex, (index) => {
+  writeLivePosition(positionStorage, setlistId.value, index)
 })
 
 onMounted(() => {

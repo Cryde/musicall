@@ -20,6 +20,8 @@ use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
+use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +39,8 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
+        private SongWriteGuard $songWriteGuard,
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private TaskRepository $taskRepository,
@@ -155,6 +159,8 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Chanson introuvable');
         }
 
+        $this->songWriteGuard->assertWritable($song);
+
         return $song->title;
     }
 
@@ -164,6 +170,8 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
             throw new NotFoundHttpException('Setlist introuvable');
         }
+
+        $this->setlistWriteGuard->assertWritable($setlist);
 
         return $setlist->name;
     }

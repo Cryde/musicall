@@ -186,4 +186,47 @@ class SongUpdateTest extends ApiTestCase
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
     }
+
+    /**
+     * The song finder returns archived rows on purpose, so a setlist item can still render the song
+     * it was built with. That left the edit endpoint open on a song the band has retired, and the
+     * write landed on a row the repertoire no longer lists.
+     */
+    public function test_update_an_archived_song_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $song = SongFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Retirée du répertoire',
+            'archiveDatetime' => new \DateTimeImmutable('2026-06-13T09:00:00+00:00'),
+        ])->create();
+        $songId = (string) $song->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $songId,
+            ['title' => 'Modifiée malgré tout'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $stored = self::getContainer()->get(SongRepository::class)->find($songId);
+        $this->assertSame('Retirée du répertoire', $stored?->title);
+    }
 }

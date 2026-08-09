@@ -43,14 +43,18 @@
 
       <p v-else class="text-xs text-surface-400 italic">Aucun fichier pour le moment.</p>
 
-      <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
-      <Button
-        label="Importer un fichier"
-        icon="pi pi-cloud-upload"
-        severity="secondary"
-        :loading="isUploading"
-        @click="fileInput?.click()"
-      />
+      <!-- Import only: detaching stays available on an archived setlist, the same way the API keeps
+           it open, because it frees a file rather than adding to a list nobody can see. -->
+      <template v-if="!readonly">
+        <input ref="fileInput" type="file" class="hidden" @change="handleFileSelected" />
+        <Button
+          label="Importer un fichier"
+          icon="pi pi-cloud-upload"
+          severity="secondary"
+          :loading="isUploading"
+          @click="fileInput?.click()"
+        />
+      </template>
     </div>
   </Drawer>
 </template>
@@ -66,7 +70,9 @@ import bandSpaceSetlistsApi from '../../../api/bandSpace/band-space-setlists.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
-  setlistId: { type: String, required: true }
+  setlistId: { type: String, required: true },
+  /** An archived setlist accepts no new attachment, so the import button goes away. */
+  readonly: { type: Boolean, default: false }
 })
 
 const visible = defineModel('visible', { type: Boolean, default: false })

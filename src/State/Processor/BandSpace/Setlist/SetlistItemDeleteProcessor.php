@@ -13,6 +13,7 @@ use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\Repository\BandSpace\SetlistItemRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -27,6 +28,7 @@ readonly class SetlistItemDeleteProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
         private SetlistRepository $setlistRepository,
         private SetlistItemRepository $setlistItemRepository,
         private BandSpaceActivityRecorder $activityRecorder,
@@ -53,6 +55,8 @@ readonly class SetlistItemDeleteProcessor implements ProcessorInterface
         if (!$setlist instanceof Setlist) {
             throw new NotFoundHttpException('Setlist introuvable');
         }
+
+        $this->setlistWriteGuard->assertWritable($setlist);
 
         $item = $this->setlistItemRepository->findOneByIdAndSetlist((string) $uriVariables['id'], $setlist);
         if (!$item instanceof SetlistItem) {

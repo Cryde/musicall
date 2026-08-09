@@ -143,6 +143,30 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Attachments hanging on a single source, archived files left out.
+     *
+     * Used when a source is copied: the copy should carry the documents the band still sees, and an
+     * attachment pointing at a file in the trash is invisible everywhere the copy is rendered, so
+     * cloning it would only add a row nobody can act on.
+     *
+     * @return BandSpaceFileAttachment[]
+     */
+    public function findActiveBySource(string $sourceType, string $sourceId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('bsf')
+            ->innerJoin('a.bandSpaceFile', 'bsf')
+            ->where('a.sourceType = :sourceType')
+            ->andWhere('a.sourceId = :sourceId')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->setParameter('sourceType', $sourceType)
+            ->setParameter('sourceId', $sourceId)
+            ->orderBy('a.attachedDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Attachments pointing at a source row that no longer exists.
      *
      * source_id carries no foreign key, so nothing at database level can tell these apart from live

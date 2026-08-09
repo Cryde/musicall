@@ -18,6 +18,7 @@ use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
@@ -40,6 +41,7 @@ readonly class BandSpaceSetlistFileAttachProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
         private SetlistRepository $setlistRepository,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFileTagRepository $tagRepository,
@@ -65,6 +67,8 @@ readonly class BandSpaceSetlistFileAttachProcessor implements ProcessorInterface
         if (!$setlist instanceof \App\Entity\BandSpace\Setlist) {
             throw new NotFoundHttpException('Setlist introuvable');
         }
+
+        $this->setlistWriteGuard->assertWritable($setlist);
 
         $upload = $data->uploadedFile;
         if ($upload === null) {

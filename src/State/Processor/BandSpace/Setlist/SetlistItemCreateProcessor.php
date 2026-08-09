@@ -16,6 +16,8 @@ use App\Enum\BandSpace\SetlistItemType;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
+use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\SetlistItemBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,6 +34,8 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
+        private SongWriteGuard $songWriteGuard,
         private SetlistRepository $setlistRepository,
         private SongRepository $songRepository,
         private BandSpaceActivityRecorder $activityRecorder,
@@ -57,12 +61,20 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Setlist introuvable');
         }
 
+        $this->setlistWriteGuard->assertWritable($setlist);
+
         $song = null;
         if ($data->type === SetlistItemType::Song) {
             $song = $this->songRepository->findOneByIdAndBandSpace((string) $data->songId, $bandSpace);
             if (!$song instanceof Song) {
                 throw new UnprocessableEntityHttpException('La chanson référencée n\'appartient pas à ce Band Space');
             }
+
+            // A song retired from the repertoire cannot start a new life as a fresh item. The
+            // picker never offers one, so this only closes the direct call. Items that predate the
+            // archiving keep working: they are read, never recreated, and duplicating a setlist
+            // copies the song reference straight across instead of coming through here.
+            $this->songWriteGuard->assertWritable($song);
         }
 
         // Type is non-null by Assert\NotNull on SetlistItemCreate; narrow for PHPStan.

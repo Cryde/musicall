@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\SetlistBuilder;
 use DateTime;
@@ -27,6 +28,7 @@ readonly class SetlistUpdateProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
         private SetlistRepository $setlistRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private SetlistBuilder $setlistBuilder,
@@ -54,6 +56,8 @@ readonly class SetlistUpdateProcessor implements ProcessorInterface
         if (!$setlist instanceof Setlist) {
             throw new NotFoundHttpException('Setlist introuvable');
         }
+
+        $this->setlistWriteGuard->assertWritable($setlist);
 
         $setlist->name = $data->name;
         $setlist->updateDatetime = new DateTime();

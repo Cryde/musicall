@@ -353,4 +353,48 @@ class SetlistItemCreateTest extends ApiTestCase
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
     }
+    /**
+     * A song archived after a setlist was built keeps rendering in the items that already point at
+     * it, so the finder returns archived rows and the create path saw nothing wrong with a fresh
+     * reference to one. The picker never offers an archived song, so this closes the direct call
+     * only: "retired from the repertoire" now means the same thing to the API and to the interface.
+     */
+    public function test_create_song_item_referencing_an_archived_song_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        $song = SongFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Retirée du répertoire',
+            'archiveDatetime' => new \DateTimeImmutable('2026-06-13T09:00:00+00:00'),
+        ])->create();
+        $setlistId = (string) $setlist->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlistId . '/items',
+            ['type' => 'song', 'song_id' => (string) $song->id],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+        ]);
+
+        $this->assertCount(
+            0,
+            self::getContainer()->get(SetlistItemRepository::class)->findBy(['setlist' => $setlistId]),
+        );
+    }
 }
