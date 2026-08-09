@@ -37,12 +37,12 @@ readonly class FinanceEntryCollectionProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $from = isset($context['filters']['from']) ? new \DateTimeImmutable($context['filters']['from']) : null;
         $to = isset($context['filters']['to']) ? (new \DateTimeImmutable($context['filters']['to']))->modify('+1 day') : null;
 
-        $entries = $this->financeEntryRepository->findByBandSpace($bandSpace, $from, $to);
+        $entries = $this->financeEntryRepository->findByBandSpace($bandSpace, $viewer, $from, $to);
 
         $entriesWithAmount = array_filter($entries, fn (\App\Entity\BandSpace\FinanceEntry $e): bool => $e->amount !== null);
         $splitSums = $this->financeEntrySplitRepository->getSumsByEntries($entriesWithAmount);

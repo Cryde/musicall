@@ -58,14 +58,20 @@ readonly class FinanceEntryDeleteProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('Impossible de supprimer une entrée payée. Repassez le statut à Engagé d\'abord.');
         }
 
-        $this->bandSpaceActivityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Finance,
-            type: BandSpaceFinanceActivityType::EntryDeleted,
-            resourceId: $entry->id,
-            actor: $user,
-            payload: ['label' => $entry->label, 'amount' => $entry->amount],
-        );
+        // A personal entry writes nothing to the band wide journal: this payload carries the label and
+        // the amount, and that journal is readable by every member. Deleting is the case that forces
+        // the rule to live here rather than in the reader: once the row is gone nothing downstream can
+        // still tell whether the entry it names was private.
+        if ($entry->scope !== FinanceEntryScope::Personal) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryDeleted,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: ['label' => $entry->label, 'amount' => $entry->amount],
+            );
+        }
 
         $this->fileSourceDetacher->detachDeletedSources(
             $bandSpace,

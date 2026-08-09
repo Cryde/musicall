@@ -78,19 +78,26 @@ readonly class FinanceEntryCreateProcessor implements ProcessorInterface
         $this->entityManager->persist($entry);
         $this->entityManager->flush();
 
-        $this->bandSpaceActivityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Finance,
-            type: BandSpaceFinanceActivityType::EntryCreated,
-            resourceId: $entry->id,
-            actor: $user,
-            payload: [
-                'label' => $entry->label,
-                'amount' => $entry->amount,
-                'type' => $entry->type->value,
-                'status' => $entry->status->value,
-            ],
-        );
+        // A personal entry writes nothing to the band wide journal: this payload carries the label and
+        // the amount, and that journal is readable by every member, so recording it would hand back
+        // through the feed exactly what the read rules keep private. Not recorded rather than recorded
+        // and hidden, so what is private is never written down somewhere shared to begin with.
+        if ($entry->scope !== FinanceEntryScope::Personal) {
+            $this->bandSpaceActivityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Finance,
+                type: BandSpaceFinanceActivityType::EntryCreated,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: [
+                    'label' => $entry->label,
+                    'amount' => $entry->amount,
+                    'type' => $entry->type->value,
+                    'status' => $entry->status->value,
+                ],
+            );
+        }
+
         $this->entityManager->flush();
 
         return $this->financeEntryBuilder->buildItem($entry);

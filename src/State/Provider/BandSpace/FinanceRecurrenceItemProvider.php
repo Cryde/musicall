@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\Finance\FinanceRecurrenceResource;
 use App\Entity\User;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\FinanceRecurrenceOwnerChecker;
 use App\Service\Builder\BandSpace\FinanceRecurrenceBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -20,6 +21,7 @@ readonly class FinanceRecurrenceItemProvider implements ProviderInterface
 {
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
+        private FinanceRecurrenceOwnerChecker $ownerChecker,
         private FinanceRecurrenceRepository $financeRecurrenceRepository,
         private FinanceRecurrenceBuilder $financeRecurrenceBuilder,
         private Security $security,
@@ -33,10 +35,12 @@ readonly class FinanceRecurrenceItemProvider implements ProviderInterface
             throw new AccessDeniedHttpException();
         }
 
-        [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $recurrence = $this->financeRecurrenceRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence) {
+
+        // Somebody else's personal recurrence answers like an id that does not exist, as its entries do.
+        if (!$recurrence instanceof \App\Entity\BandSpace\FinanceRecurrence || !$this->ownerChecker->isVisibleTo($recurrence, $viewer)) {
             throw new NotFoundHttpException('Récurrence introuvable');
         }
 

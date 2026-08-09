@@ -8,6 +8,7 @@ use App\ApiResource\BandSpace\Finance\FinanceRecurrenceResource;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFinanceActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\FinanceEntryScope;
 use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\FinanceRecurrenceRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -65,14 +66,18 @@ readonly class FinanceRecurrenceDeleteProcessor implements ProcessorInterface
             );
             $this->financeEntryRepository->deletePlannedByRecurrence($recurrence);
 
-            $this->bandSpaceActivityRecorder->record(
-                bandSpace: $bandSpace,
-                module: BandSpaceModule::Finance,
-                type: BandSpaceFinanceActivityType::RecurrenceDeleted,
-                resourceId: $recurrence->id,
-                actor: $user,
-                payload: ['label' => $recurrence->label],
-            );
+            // A personal recurrence writes nothing to the band wide journal: this payload carries its
+            // label, and every member reads that journal.
+            if ($recurrence->scope !== FinanceEntryScope::Personal) {
+                $this->bandSpaceActivityRecorder->record(
+                    bandSpace: $bandSpace,
+                    module: BandSpaceModule::Finance,
+                    type: BandSpaceFinanceActivityType::RecurrenceDeleted,
+                    resourceId: $recurrence->id,
+                    actor: $user,
+                    payload: ['label' => $recurrence->label],
+                );
+            }
 
             $this->entityManager->remove($recurrence);
         });

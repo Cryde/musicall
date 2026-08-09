@@ -35,11 +35,11 @@ readonly class FinanceSummaryProvider implements ProviderInterface
         $from = isset($context['filters']['from']) ? new \DateTimeImmutable($context['filters']['from']) : null;
         $to = isset($context['filters']['to']) ? (new \DateTimeImmutable($context['filters']['to']))->modify('+1 day') : null;
 
-        $boundaries = $this->financeEntryRepository->getDateBoundaries($bandSpace);
-        $totals = $this->financeEntryRepository->getSummaryByBandSpace($bandSpace, $from, $to);
-        $byCategory = $this->financeEntryRepository->getSummaryByCategory($bandSpace, $from, $to);
+        $boundaries = $this->financeEntryRepository->getDateBoundaries($bandSpace, $currentMembership);
+        $totals = $this->financeEntryRepository->getSummaryByBandSpace($bandSpace, $currentMembership, $from, $to);
+        $byCategory = $this->financeEntryRepository->getSummaryByCategory($bandSpace, $currentMembership, $from, $to);
         $contributions = $this->financeEntryRepository->getMemberContributions($bandSpace, $from, $to);
-        $upcoming = $this->financeEntryRepository->getUpcomingByBandSpace($bandSpace, $from, $to);
+        $upcoming = $this->financeEntryRepository->getUpcomingByBandSpace($bandSpace, $currentMembership, $from, $to);
 
         $summary = new FinanceSummary();
         $summary->bandSpaceId = (string) $bandSpace->id;

@@ -477,7 +477,9 @@ class DeleteAccountBandSpaceTest extends ApiTestCase
         // The books keep what already happened, only what was planned ahead is dropped.
         $labels = array_map(
             static fn (FinanceEntry $entry): string => $entry->label,
-            self::getContainer()->get(FinanceEntryRepository::class)->findByBandSpace($bandSpace),
+            // From the departed member's own point of view: these are their personal entries, and nobody
+            // else can see them now.
+            self::getContainer()->get(FinanceEntryRepository::class)->findByBandSpace($bandSpace, $memberMembership),
         );
         $this->assertSame(['past contribution'], $labels);
     }

@@ -5,6 +5,7 @@ namespace App\Service\BandSpace;
 use App\ApiResource\BandSpace\AgendaItem;
 use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\FinanceEntry;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
@@ -31,7 +32,12 @@ readonly class AgendaAggregator
     /**
      * @return AgendaItem[]
      */
-    public function aggregate(BandSpace $bandSpace, DateTimeImmutable $from, DateTimeImmutable $to): array
+    public function aggregate(
+        BandSpace $bandSpace,
+        BandSpaceMembership $viewer,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): array
     {
         $manualItems = [];
         foreach ($this->agendaEntryRepository->findUpcomingForBand($bandSpace, $from, $to) as $entry) {
@@ -49,7 +55,7 @@ readonly class AgendaAggregator
         $items = [
             ...$manualItems,
             ...array_map(fn(Task $t): AgendaItem => $this->buildTask($bandSpace, $t), $this->taskRepository->findUpcomingForBand($bandSpace, $from, $to)),
-            ...array_map(fn(FinanceEntry $f): AgendaItem => $this->buildFinance($bandSpace, $f), $this->financeEntryRepository->findUpcomingForBand($bandSpace, $from, $to)),
+            ...array_map(fn(FinanceEntry $f): AgendaItem => $this->buildFinance($bandSpace, $f), $this->financeEntryRepository->findUpcomingForBand($bandSpace, $viewer, $from, $to)),
         ];
 
         usort(

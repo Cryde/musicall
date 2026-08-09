@@ -41,6 +41,25 @@ readonly class FinanceRecurrenceOwnerChecker
         $this->checkOwner($recurrence, $membership, 'Vous ne pouvez supprimer que vos propres récurrences personnelles');
     }
 
+    /**
+     * Whether a member may read the recurrence at all. A personal one carries its own label and its
+     * own amount, so it is as private as the entries it plans, and it was readable band wide.
+     *
+     * The same rule as the write checks deliberately, ownerless included: a recurrence nobody may be
+     * identified with is one anybody may claim, and a read rule stricter than the write rule would
+     * make it invisible to the very members allowed to edit it.
+     */
+    public function isVisibleTo(FinanceRecurrence $recurrence, BandSpaceMembership $membership): bool
+    {
+        if ($recurrence->scope !== FinanceEntryScope::Personal) {
+            return true;
+        }
+
+        $ownerIds = $this->financeEntryRepository->findMemberIdsByRecurrence($recurrence);
+
+        return $ownerIds === [] || in_array((string) $membership->id, $ownerIds, true);
+    }
+
     private function checkOwner(FinanceRecurrence $recurrence, BandSpaceMembership $membership, string $message): BandSpaceMembership
     {
         if ($recurrence->scope !== FinanceEntryScope::Personal) {
