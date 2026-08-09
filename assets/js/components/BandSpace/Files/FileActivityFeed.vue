@@ -55,7 +55,12 @@ function quotedSourceLabel(activity) {
 
 const FILE_ACTIVITY_LABELS = {
   uploaded: () => 'a téléversé le fichier',
-  archived: () => 'a archivé le fichier',
+  // folder_path is only set when the file was swept up by a folder cascade: the folder is gone, so
+  // the feed is the only place left saying where the file used to live.
+  archived: (a) => {
+    const path = a.payload?.folder_path
+    return path ? `a archivé le fichier (dossier « ${path} » supprimé)` : 'a archivé le fichier'
+  },
   restored: () => 'a restauré le fichier',
   purged: () => 'a supprimé définitivement le fichier',
   renamed: (a) => {

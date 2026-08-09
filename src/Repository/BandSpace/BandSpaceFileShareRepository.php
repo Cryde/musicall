@@ -48,6 +48,29 @@ class BandSpaceFileShareRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Every share of the given files that has not been revoked yet, expired ones included: an expiry
+     * can be read off the row, a revocation is what makes the link dead for good.
+     *
+     * @param string[] $fileIds
+     *
+     * @return BandSpaceFileShare[]
+     */
+    public function findUnrevokedByFileIds(array $fileIds): array
+    {
+        if (count($fileIds) === 0) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->where('s.bandSpaceFile IN (:fileIds)')
+            ->andWhere('s.revocationDatetime IS NULL')
+            ->setParameter('fileIds', $fileIds)
+            ->orderBy('s.creationDatetime', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceFileShare
     {
         return $this->createQueryBuilder('s')

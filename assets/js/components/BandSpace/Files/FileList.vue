@@ -127,6 +127,7 @@ import {
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -162,12 +163,9 @@ const dropTargetId = ref(null)
 const contextMenuRef = ref(null)
 const contextMenuFile = ref(null)
 
-const canDeleteContextFile = computed(() => {
-  const f = contextMenuFile.value
-  if (!f) return false
-  const userId = userSecurityStore.userProfile?.id
-  return f.created_by?.id === userId
-})
+const canDeleteContextFile = computed(() =>
+  isFileCreatorOrAdmin(contextMenuFile.value, userSecurityStore.userProfile?.id, isAdmin.value)
+)
 
 const contextFileSourceLabel = computed(() => {
   const attachments = contextMenuFile.value?.attachments ?? []

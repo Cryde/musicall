@@ -69,6 +69,7 @@ import { useToast } from 'primevue/usetoast'
 import { ref } from 'vue'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { formatDateLong } from '../../../utils/date.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
@@ -87,7 +88,7 @@ const toast = useToast()
 const busyId = ref(null)
 
 function canRestore(file) {
-  return props.isAdmin || file.created_by?.id === userSecurityStore.userProfile?.id
+  return isFileCreatorOrAdmin(file, userSecurityStore.userProfile?.id, props.isAdmin)
 }
 
 function daysRemaining(file) {

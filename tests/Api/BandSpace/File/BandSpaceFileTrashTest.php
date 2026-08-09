@@ -8,12 +8,14 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceFileShareRepository;
 use App\Repository\BandSpace\BandSpaceFileVersionRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileShareFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -85,6 +87,51 @@ class BandSpaceFileTrashTest extends ApiTestCase
         $activities = self::getContainer()->get(BandSpaceActivityRepository::class)
             ->findForResource($bandSpace, BandSpaceModule::File, $fileId);
         $this->assertSame(BandSpaceFileActivityType::Restored->value, $activities[0]->type);
+    }
+
+    /**
+     * Deleting a file revokes its share links. Restoring brings the file back, never the links: an
+     * admin who deleted a rough mix to unshare it must not have the old public URL work again weeks
+     * later because a bandmate pulled the file out of the trash.
+     *
+     * A guard rather than a reproducer: the restore endpoint never touched the shares, which is what
+     * makes revoking on archive enough. Undoing the revocation here would silently give the fix back.
+     */
+    public function test_restoring_does_not_bring_a_revoked_share_link_back_to_life(): void
+    {
+        [$admin, $bandSpace, $file] = $this->setupArchivedFile();
+        $fileId = (string) $file->id;
+
+        $revokedAt = new \DateTimeImmutable('2026-07-01T08:00:00+00:00');
+        $share = BandSpaceFileShareFactory::new([
+            'bandSpaceFile' => $file,
+            'createdBy' => $admin,
+            'tokenHash' => hash('sha256', 'restored-file-token'),
+            'expiryDatetime' => new \DateTimeImmutable('+90 days'),
+            'revocationDatetime' => $revokedAt,
+        ])->create();
+        $shareId = $share->id;
+
+        $this->client->loginUser($admin);
+        $this->client->request('POST', '/api/band_spaces/' . $bandSpace->id . '/files/' . $fileId . '/restore', [], [], self::HEADERS);
+
+        $this->assertResponseIsSuccessful();
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+
+        $reloaded = self::getContainer()->get(BandSpaceFileRepository::class)->findOneByIdAndBandSpace($fileId, $bandSpace);
+        $this->assertNull($reloaded?->archiveDatetime);
+
+        /** @var BandSpaceFileShareRepository $shareRepo */
+        $shareRepo = self::getContainer()->get(BandSpaceFileShareRepository::class);
+        $this->assertSame(
+            $revokedAt->format(\DATE_ATOM),
+            $shareRepo->find($shareId)?->revocationDatetime?->format(\DATE_ATOM),
+        );
+
+        // And the restored file is not offered a live link again by the admin share list either.
+        $this->assertCount(0, $shareRepo->findActiveByBandSpace($bandSpace, new \DateTimeImmutable()));
     }
 
     /**
