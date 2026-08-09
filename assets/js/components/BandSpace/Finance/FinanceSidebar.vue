@@ -17,7 +17,7 @@
           <div class="h-1.5 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden">
             <div
               class="h-full rounded-full bg-primary transition-all"
-              :style="{ width: contributionPercent(member.total) + '%' }"
+              :style="{ width: barWidth(member.total) + '%' }"
             ></div>
           </div>
         </div>
@@ -50,6 +50,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { contributionPercent, largestContribution } from '../../../utils/contributionBar.js'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
 import FinanceStatusDot from './FinanceStatusDot.vue'
@@ -61,14 +62,10 @@ const props = defineProps({
 const memberContributions = computed(() => props.summary?.member_contributions ?? [])
 const upcomingEntries = computed(() => props.summary?.upcoming_entries ?? [])
 
-const maxContribution = computed(() => {
-  if (!memberContributions.value.length) return 0
-  return Math.max(...memberContributions.value.map((m) => m.amount))
-})
+const maxContribution = computed(() => largestContribution(memberContributions.value))
 
-function contributionPercent(amount) {
-  if (maxContribution.value === 0) return 0
-  return Math.round((amount / maxContribution.value) * 100)
+function barWidth(total) {
+  return contributionPercent(total, maxContribution.value)
 }
 
 function formatEntryAmount(entry) {
