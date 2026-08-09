@@ -239,4 +239,49 @@ class BandSpaceSetlistFileAttachTest extends ApiTestCase
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
     }
+
+    /**
+     * Uploading into an archived setlist would file a document under a list nobody can see, and
+     * the quota would still be spent on it. Detaching stays open: that is how a file gets freed.
+     */
+    public function test_attach_to_an_archived_setlist_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $setlist = SetlistFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Concert 12/06',
+            'archiveDatetime' => new \DateTimeImmutable('2026-06-13T09:00:00+00:00'),
+        ])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette setlist est archivée, les modifications sont désactivées',
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => 'Cette setlist est archivée, les modifications sont désactivées',
+        ]);
+
+        $this->assertCount(
+            0,
+            self::getContainer()->get(BandSpaceFileRepository::class)->findBy(['bandSpace' => $bandSpace->id]),
+        );
+    }
 }

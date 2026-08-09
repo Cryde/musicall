@@ -13,6 +13,7 @@ use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\Repository\BandSpace\SetlistItemRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -29,6 +30,7 @@ readonly class SetlistReorderProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
         private SetlistRepository $setlistRepository,
         private SetlistItemRepository $itemRepository,
         private BandSpaceActivityRecorder $activityRecorder,
@@ -52,6 +54,8 @@ readonly class SetlistReorderProcessor implements ProcessorInterface
         if (!$setlist instanceof Setlist) {
             throw new NotFoundHttpException('Setlist introuvable');
         }
+
+        $this->setlistWriteGuard->assertWritable($setlist);
 
         $requestedIds = array_column($data->positions, 'id');
         $foundItems = $this->itemRepository->findByIdsAndSetlist($requestedIds, $setlist);

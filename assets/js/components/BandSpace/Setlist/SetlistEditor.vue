@@ -10,6 +10,11 @@
     </div>
 
     <div v-else class="flex flex-col gap-4">
+      <Message v-if="isArchived" severity="warn" :closable="false" icon="pi pi-archive">
+        Cette setlist est archivée, elle est en lecture seule. Dupliquez-la pour repartir de son
+        contenu.
+      </Message>
+
       <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
         <div class="flex flex-wrap items-center gap-3 mb-3">
           <div class="flex-1 min-w-0">
@@ -24,8 +29,9 @@
             />
             <h2
               v-else
-              class="font-semibold text-xl truncate cursor-text hover:text-primary"
-              v-tooltip.top="'Cliquez pour renommer'"
+              class="font-semibold text-xl truncate"
+              :class="isArchived ? '' : 'cursor-text hover:text-primary'"
+              v-tooltip.top="isArchived ? null : 'Cliquez pour renommer'"
               @click="startRename"
             >
               {{ setlist.name }}
@@ -48,7 +54,7 @@
               v-tooltip.top="setlist.items.length === 0 ? 'Ajoutez au moins un titre' : null"
               @click="openLiveMode"
             />
-            <Button label="Archiver" icon="pi pi-archive" severity="danger" outlined size="small" @click="confirmArchive" />
+            <Button v-if="!isArchived" label="Archiver" icon="pi pi-archive" severity="danger" outlined size="small" @click="confirmArchive" />
           </div>
         </div>
       </div>
@@ -56,7 +62,7 @@
       <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-semibold">Programme</h3>
-          <Button label="Ajouter un titre" icon="pi pi-plus" size="small" @click="addDialogOpen = true" />
+          <Button v-if="!isArchived" label="Ajouter un titre" icon="pi pi-plus" size="small" @click="addDialogOpen = true" />
         </div>
 
         <div v-if="setlist.items.length === 0" class="text-center py-8 text-surface-500">
@@ -68,6 +74,7 @@
           v-else
           v-model="localItems"
           :animation="200"
+          :disabled="isArchived"
           ghost-class="opacity-30"
           handle=".cursor-pointer"
           class="flex flex-col gap-2"
@@ -77,6 +84,7 @@
             v-for="item in localItems"
             :key="item.id"
             :item="item"
+            :readonly="isArchived"
             @edit="openItemEdit"
             @open-menu="openItemMenu"
           />
@@ -111,6 +119,7 @@
       v-model:visible="filesDrawerOpen"
       :band-space-id="bandSpaceId"
       :setlist-id="setlistId"
+      :readonly="isArchived"
     />
   </div>
 </template>
@@ -119,6 +128,7 @@
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Menu from 'primevue/menu'
+import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
@@ -152,6 +162,11 @@ function openLiveMode() {
 }
 
 const setlist = computed(() => setlistsStore.activeSetlist)
+
+// An archived setlist stays reachable through ?setlist=<id> and through a tab left open, and the
+// API now refuses every write on it. Showing the state and dropping the editing affordances is the
+// visible half of that: without it the buttons are there, they just fail.
+const isArchived = computed(() => Boolean(setlist.value?.archive_datetime))
 
 const localItems = ref([])
 
@@ -193,6 +208,7 @@ const editingName = ref(false)
 const nameDraft = ref('')
 
 function startRename() {
+  if (isArchived.value) return
   nameDraft.value = setlist.value?.name ?? ''
   editingName.value = true
 }
@@ -233,11 +249,13 @@ const itemMenu = ref(null)
 const menuTargetItem = ref(null)
 
 function openItemEdit(item) {
+  if (isArchived.value) return
   editingItem.value = item
   editDrawerOpen.value = true
 }
 
 function openItemMenu(event, item) {
+  if (isArchived.value) return
   menuTargetItem.value = item
   itemMenu.value?.toggle(event)
 }

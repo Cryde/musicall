@@ -18,6 +18,7 @@ use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
@@ -40,6 +41,7 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SongWriteGuard $songWriteGuard,
         private SongRepository $songRepository,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFileTagRepository $tagRepository,
@@ -65,6 +67,8 @@ readonly class BandSpaceSongFileAttachProcessor implements ProcessorInterface
         if (!$song instanceof \App\Entity\BandSpace\Song) {
             throw new NotFoundHttpException('Chanson introuvable');
         }
+
+        $this->songWriteGuard->assertWritable($song);
 
         $upload = $data->uploadedFile;
         if ($upload === null) {

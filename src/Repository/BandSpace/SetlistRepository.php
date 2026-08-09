@@ -37,6 +37,9 @@ class SetlistRepository extends ServiceEntityRepository
     /**
      * Direct id lookup does NOT filter archived setlists - clients need
      * archived setlists to render in activity logs / restore flows.
+     *
+     * So this is a READ finder, and a write path cannot treat what it returns as writable: every
+     * processor that mutates the setlist has to run SetlistWriteGuard on the result.
      */
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?Setlist
     {

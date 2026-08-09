@@ -37,6 +37,9 @@ class SongRepository extends ServiceEntityRepository
     /**
      * Direct id lookup does NOT filter archived songs - clients need the
      * archived song to render in setlist items / file detail drawers.
+     *
+     * So this is a READ finder, and a write path cannot treat what it returns as writable: every
+     * processor that mutates the song has to run SongWriteGuard on the result.
      */
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?Song
     {

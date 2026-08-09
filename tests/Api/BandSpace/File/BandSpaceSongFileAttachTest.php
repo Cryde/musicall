@@ -243,4 +243,49 @@ class BandSpaceSongFileAttachTest extends ApiTestCase
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
     }
+
+    /**
+     * Same rule one level down: a song the band has retired takes no new document, while detaching
+     * one already attached stays possible.
+     */
+    public function test_attach_to_an_archived_song_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $song = SongFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Retirée du répertoire',
+            'archiveDatetime' => new \DateTimeImmutable('2026-06-13T09:00:00+00:00'),
+        ])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $song->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/409',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Cette chanson est archivée, les modifications sont désactivées',
+            'status' => 409,
+            'type' => '/errors/409',
+            'description' => 'Cette chanson est archivée, les modifications sont désactivées',
+        ]);
+
+        $this->assertCount(
+            0,
+            self::getContainer()->get(BandSpaceFileRepository::class)->findBy(['bandSpace' => $bandSpace->id]),
+        );
+    }
 }

@@ -13,6 +13,7 @@ use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\Repository\BandSpace\SetlistItemRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SetlistWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\SetlistItemBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,14 +26,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * Update of item-level fields only (label/durationOverride/note/transition).
  * Type and song are immutable post-creation: callers must delete + recreate to
- * change them, which keeps the create-time validator (type/songId/label combo)
- * the single source of consistency truth.
+ * change them. The label still has to match the type, so ValidSetlistItemPayload
+ * sits on SetlistItemResource as well and has already run by the time we get here.
  */
 readonly class SetlistItemUpdateProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SetlistWriteGuard $setlistWriteGuard,
         private SetlistRepository $setlistRepository,
         private SetlistItemRepository $setlistItemRepository,
         private BandSpaceActivityRecorder $activityRecorder,
@@ -58,14 +60,15 @@ readonly class SetlistItemUpdateProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Setlist introuvable');
         }
 
+        $this->setlistWriteGuard->assertWritable($setlist);
+
         $item = $this->setlistItemRepository->findOneByIdAndSetlist((string) $uriVariables['id'], $setlist);
         if (!$item instanceof SetlistItem) {
             throw new NotFoundHttpException('Item introuvable');
         }
 
-        // Label is a snapshot/display field on any item type; create-time validator
-        // already gates the song/label exclusivity, so PATCH just stores whatever
-        // the client sends.
+        // ValidSetlistItemPayload has already checked the label against the type, so what
+        // arrives here is either a filled label on a non-song row or nothing on a song row.
         $item->label = $data->label;
         $item->durationOverride = $data->durationOverride;
         $item->note = $data->note;

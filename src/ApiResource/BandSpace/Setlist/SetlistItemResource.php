@@ -13,6 +13,7 @@ use App\Enum\BandSpace\SetlistItemType;
 use App\State\Processor\BandSpace\Setlist\SetlistItemDeleteProcessor;
 use App\State\Processor\BandSpace\Setlist\SetlistItemUpdateProcessor;
 use App\State\Provider\BandSpace\Setlist\SetlistItemReadProvider;
+use App\Validator\BandSpace\Setlist\ValidSetlistItemPayload;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
@@ -59,6 +60,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     normalizationContext: ['skip_null_values' => false],
 )]
+// Same rule as on SetlistItemCreate, on the way back in: a PATCH that empties the label of a pause
+// or an MC slot would leave a row nothing can identify. Only reached on PATCH, since API Platform
+// does not validate a DELETE and the provider hydrates `type` before the payload is applied.
+#[ValidSetlistItemPayload]
 class SetlistItemResource
 {
     #[ApiProperty(identifier: true)]

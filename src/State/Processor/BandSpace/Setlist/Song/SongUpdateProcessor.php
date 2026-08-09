@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSetlistActivityType;
 use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\SongBuilder;
 use DateTime;
@@ -27,6 +28,7 @@ readonly class SongUpdateProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private SongWriteGuard $songWriteGuard,
         private SongRepository $songRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private SongBuilder $songBuilder,
@@ -50,6 +52,8 @@ readonly class SongUpdateProcessor implements ProcessorInterface
         if (!$song instanceof Song) {
             throw new NotFoundHttpException('Chanson introuvable');
         }
+
+        $this->songWriteGuard->assertWritable($song);
 
         $song->title = $data->title;
         $song->tempo = $data->tempo;
