@@ -39,6 +39,9 @@ class BandSpaceWriteGuardCoverageTest extends TestCase
         'BandSpaceRestoreProcessor.php' => 'Cancels the deletion. Guarding it would make the deletion unrecoverable.',
         'BandSpaceLeaveProcessor.php' => 'A member must be able to walk away from a condemned space.',
         'BandSpaceInvitationDeclineProcessor.php' => 'Declining is the invitee cleaning up their own state.',
+        'BandSpaceInvitationDeleteProcessor.php' => 'Revoking only ever takes an invitation away, and accepting one '
+            . 'is refused for the whole grace period anyway, so blocking it bought nothing and left an admin unable '
+            . 'to tidy up the pending invitations of a condemned space.',
         'BandSpaceMemberUpdateRoleProcessor.php' => 'Leaving requires promoting a successor first, so guarding '
             . 'this would trap the sole admin of a condemned space. Letting them leave without a successor is '
             . 'not the alternative: it would strand the space with nobody able to restore it.',

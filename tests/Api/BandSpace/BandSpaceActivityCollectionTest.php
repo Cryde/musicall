@@ -220,6 +220,70 @@ class BandSpaceActivityCollectionTest extends ApiTestCase
         $this->assertSame('status_changed', $data['member'][0]['type']);
     }
 
+    /**
+     * The pending-invitation list is admin only, this feed is open to every member, and both carry the
+     * invitee's address. Masking happens when the stored row is turned into the response, so the rows
+     * written in plaintext before the fix are covered too and the raw address never reaches the wire.
+     */
+    public function test_an_invitee_email_is_masked_for_a_plain_member_reading_the_feed(): void
+    {
+        $admin = UserFactory::new()->asBaseUser()->create();
+        $member = UserFactory::new()->create(['username' => 'member', 'email' => 'member@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member, 'role' => Role::User])->create();
+
+        $activity = BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Settings,
+            'type' => 'invitation_sent',
+            'actor' => $admin,
+            'payload' => ['email' => 'john.doe@gmail.com', 'invited_user_id' => null, 'invited_username' => null],
+            'creationDatetime' => new \DateTime('2026-04-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/activities',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceActivity',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/activities',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/activities/' . $activity->id,
+                    '@type' => 'BandSpaceActivity',
+                    'id' => $activity->id,
+                    'band_space_id' => $bandSpace->id,
+                    'module' => 'settings',
+                    'resource_id' => null,
+                    'type' => 'invitation_sent',
+                    'payload' => [
+                        'email' => 'j***@gmail.com',
+                        'invited_user_id' => null,
+                        'invited_username' => null,
+                    ],
+                    'actor' => [
+                        'id' => $admin->id,
+                        'username' => $admin->username,
+                        'profile_picture_url' => null,
+                    ],
+                    'creation_datetime' => '2026-04-01T10:00:00+00:00',
+                ],
+            ],
+        ]);
+        // Belt and braces: the address must be absent from the whole body, not just from the field we
+        // happened to look at. Masking in the frontend would still have shipped it here.
+        $this->assertStringNotContainsString('john.doe@gmail.com', (string) $this->client->getResponse()->getContent());
+    }
+
     public function test_non_member_forbidden(): void
     {
         $stranger = UserFactory::new()->asBaseUser()->create();
