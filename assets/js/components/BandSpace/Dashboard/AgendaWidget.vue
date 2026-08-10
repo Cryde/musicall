@@ -21,7 +21,7 @@
         <div class="flex-1 min-w-0">
           <p class="font-medium text-surface-900 dark:text-surface-0 truncate">{{ item.title }}</p>
           <p class="text-xs text-surface-500 dark:text-surface-400 mt-0.5">
-            {{ formatDayLabel(item.datetime) }} - {{ formatTime(item.datetime) }}
+            {{ formatDayLabel(item.datetime) }}<template v-if="!isAllDayItem(item)"> - {{ formatTime(item.datetime) }}</template>
           </p>
         </div>
       </li>
@@ -35,6 +35,7 @@ import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
+import { isAllDayItem } from '../../../utils/agendaItem.js'
 import DashboardWidget from './DashboardWidget.vue'
 
 const WINDOW_DAYS = 7
