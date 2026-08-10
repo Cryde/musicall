@@ -13,6 +13,7 @@ use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\AgendaSeriesReconciler;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\AgendaEntryBuilder;
 use DateTimeImmutable;
@@ -34,6 +35,7 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private AgendaEntryRepository $agendaEntryRepository,
         private AgendaEntryBuilder $agendaEntryBuilder,
+        private AgendaSeriesReconciler $agendaSeriesReconciler,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private RequestStack $requestStack,
@@ -142,6 +144,12 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
                 $entry->recurrenceMonthlyMode = null;
             }
         }
+
+        // The anchor and the rule have just been rewritten, so cancellations may now point at dates
+        // the series no longer has. Asked unconditionally rather than only when a recurrence field
+        // was in the payload: a cancellation outside the rule is dead data whatever wrote it, and
+        // the entries that carry no cancellation at all leave here without expanding anything.
+        $this->agendaSeriesReconciler->dropExceptionsOutsideRule($entry);
 
         $this->recordChanges(
             $entry,

@@ -18,9 +18,16 @@ use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 
 readonly class AgendaAggregator
 {
+    /**
+     * The civil timezone a band reads its agenda in. France and Belgium share it, which covers the
+     * whole audience, and a per band space timezone would replace this single constant.
+     */
+    private const string CIVIL_TIMEZONE = 'Europe/Paris';
+
     public function __construct(
         private AgendaEntryRepository $agendaEntryRepository,
         private TaskRepository $taskRepository,
@@ -108,9 +115,26 @@ readonly class AgendaAggregator
     }
 
     /**
+     * Every calendar date the entry's recurrence rule lands on, from its anchor to its horizon.
+     *
+     * Cancellations are deliberately not applied: this is the rule itself, which is what the write
+     * side needs to tell a cancellation that still points at a real occurrence from one the rule no
+     * longer produces. Empty for a one-off entry, and for a rule with no horizon, which has no
+     * finite set of dates to list.
+     *
+     * @return string[] 'Y-m-d', in chronological order
+     */
+    public function ruleOccurrenceDates(AgendaEntry $entry): array
+    {
+        return array_map(
+            static fn(DateTimeImmutable $occurrence): string => $occurrence->format('Y-m-d'),
+            $this->expandRule($entry, $entry->eventDatetime, null),
+        );
+    }
+
+    /**
      * Expand a recurring entry into the list of occurrence start datetimes whose date falls
-     * within [$from, $to] and on or before `recurrenceUntilDate`. Bounded by the 5-year horizon
-     * enforced at validation time, so the iteration count is safe.
+     * within [$from, $to] and on or before `recurrenceUntilDate`.
      *
      * Cancelled occurrences (entries in `$entry->exceptions`) are filtered out by date here -
      * matching the user-perceived "this occurrence" granularity (date-only, not date+time).
@@ -119,22 +143,7 @@ readonly class AgendaAggregator
      */
     private function expandOccurrences(AgendaEntry $entry, DateTimeImmutable $from, DateTimeImmutable $to): array
     {
-        if ($entry->recurrenceFrequency === null || $entry->recurrenceUntilDate === null) {
-            return [];
-        }
-
-        // Use the end of `recurrenceUntilDate` so occurrences scheduled later that day still count.
-        $horizon = $entry->recurrenceUntilDate->setTime(23, 59, 59);
-        $windowEnd = $to < $horizon ? $to : $horizon;
-
-        $occurrences = match ($entry->recurrenceFrequency) {
-            AgendaRecurrenceFrequency::Daily => $this->expandFixedStep($entry->eventDatetime, $from, $windowEnd, new DateInterval('P1D')),
-            AgendaRecurrenceFrequency::Weekly => $this->expandFixedStep($entry->eventDatetime, $from, $windowEnd, new DateInterval('P7D')),
-            AgendaRecurrenceFrequency::Monthly => $entry->recurrenceMonthlyMode === AgendaRecurrenceMonthlyMode::ByWeekday
-                ? $this->expandMonthlyByWeekday($entry->eventDatetime, $from, $windowEnd)
-                : $this->expandMonthlyByDate($entry->eventDatetime, $from, $windowEnd),
-            AgendaRecurrenceFrequency::Yearly => $this->expandYearly($entry->eventDatetime, $from, $windowEnd),
-        };
+        $occurrences = $this->expandRule($entry, $from, $to);
 
         if ($entry->exceptions->isEmpty()) {
             return $occurrences;
@@ -152,17 +161,90 @@ readonly class AgendaAggregator
     }
 
     /**
+     * Every occurrence the recurrence rule lands on inside [$from, $to], cancellations included.
+     * A `$to` of null means "as far as the horizon goes", which is what enumerating a whole series
+     * needs. Bounded by the 5-year horizon enforced at validation time, so the iteration count is
+     * safe.
+     *
+     * The stepping happens in civil time and the result is converted back to UTC. Adding a fixed
+     * interval to a UTC instant preserves the UTC time of day, so a weekly 20:00 Paris rehearsal
+     * anchored in winter starts showing as 21:00 the moment the clocks go forward, and keeps that
+     * hour for the whole remainder of the series. Stepping in civil time preserves the wall clock,
+     * which is what a band means by "every Monday at 20:00".
+     *
      * @return DateTimeImmutable[]
      */
-    private function expandFixedStep(DateTimeImmutable $start, DateTimeImmutable $from, DateTimeImmutable $windowEnd, DateInterval $step): array
+    private function expandRule(AgendaEntry $entry, DateTimeImmutable $from, ?DateTimeImmutable $to): array
+    {
+        if ($entry->recurrenceFrequency === null || $entry->recurrenceUntilDate === null) {
+            return [];
+        }
+
+        $timezone = $this->expansionTimezone($entry);
+        $anchor = $entry->eventDatetime->setTimezone($timezone);
+
+        // The horizon is a calendar date, so the series runs to the end of that civil day and an
+        // occurrence scheduled later that day still counts.
+        $horizon = new DateTimeImmutable($entry->recurrenceUntilDate->format('Y-m-d') . ' 23:59:59', $timezone);
+        $windowEnd = $to instanceof DateTimeImmutable && $to < $horizon ? $to : $horizon;
+
+        $occurrences = match ($entry->recurrenceFrequency) {
+            AgendaRecurrenceFrequency::Daily => $this->expandFixedStep($anchor, $from, $windowEnd, 1),
+            AgendaRecurrenceFrequency::Weekly => $this->expandFixedStep($anchor, $from, $windowEnd, 7),
+            AgendaRecurrenceFrequency::Monthly => $entry->recurrenceMonthlyMode === AgendaRecurrenceMonthlyMode::ByWeekday
+                ? $this->expandMonthlyByWeekday($anchor, $from, $windowEnd)
+                : $this->expandMonthlyByDate($anchor, $from, $windowEnd),
+            AgendaRecurrenceFrequency::Yearly => $this->expandYearly($anchor, $from, $windowEnd),
+        };
+
+        // Back to UTC. The occurrence is the same instant either way, and every consumer reads it
+        // as UTC: the ATOM datetime on the item, the date an exception is matched on, and the date
+        // the front end slices back off that ATOM string to cancel an occurrence.
+        $utc = new DateTimeZone('UTC');
+
+        return array_map(
+            static fn(DateTimeImmutable $occurrence): DateTimeImmutable => $occurrence->setTimezone($utc),
+            $occurrences,
+        );
+    }
+
+    /**
+     * The timezone a series is stepped in.
+     *
+     * A timed entry stores a real instant, so it is stepped in the civil timezone the band reads
+     * its agenda in. An all-day entry stores no instant at all: it is a calendar date pinned at UTC
+     * midnight by the create and update processors. Reading that marker in Paris and writing it
+     * back would land it on 23:00 the day before every winter, which is the off-by-one #819 fixed
+     * on the front end, so an all-day series keeps being stepped in UTC.
+     */
+    private function expansionTimezone(AgendaEntry $entry): DateTimeZone
+    {
+        return new DateTimeZone($entry->isAllDay ? 'UTC' : self::CIVIL_TIMEZONE);
+    }
+
+    /**
+     * Every occurrence is measured from the anchor rather than from the one before it.
+     *
+     * Chaining the cursor makes any normalisation permanent. An occurrence that lands in the hour
+     * the clocks skip on the spring forward night (02:00 to 03:00 does not exist) is pushed to
+     * 03:30 by PHP, and stepping on from there keeps every later occurrence at 03:30 for the rest
+     * of the series. Measuring from the anchor confines the shift to the one occurrence that really
+     * has no valid time, which is what the monthly and yearly expanders already do by recomputing
+     * from the anchor with setDate().
+     *
+     * @return DateTimeImmutable[]
+     */
+    private function expandFixedStep(DateTimeImmutable $start, DateTimeImmutable $from, DateTimeImmutable $windowEnd, int $stepDays): array
     {
         $occurrences = [];
-        $cursor = $start;
-        while ($cursor <= $windowEnd) {
-            if ($cursor >= $from) {
-                $occurrences[] = $cursor;
+        for ($stepCount = 0; ; ++$stepCount) {
+            $occurrence = $start->add(new DateInterval('P' . ($stepCount * $stepDays) . 'D'));
+            if ($occurrence > $windowEnd) {
+                break;
             }
-            $cursor = $cursor->add($step);
+            if ($occurrence >= $from) {
+                $occurrences[] = $occurrence;
+            }
         }
 
         return $occurrences;

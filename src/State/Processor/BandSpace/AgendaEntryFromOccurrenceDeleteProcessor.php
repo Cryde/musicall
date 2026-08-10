@@ -11,6 +11,7 @@ use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\AgendaSeriesReconciler;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +37,7 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private AgendaEntryRepository $agendaEntryRepository,
+        private AgendaSeriesReconciler $agendaSeriesReconciler,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
@@ -69,10 +71,19 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
         $occurrenceDate = $this->parseDate($rawDate);
         $firstOccurrenceDate = new DateTimeImmutable($entry->eventDatetime->format('Y-m-d'));
 
-        if ($occurrenceDate <= $firstOccurrenceDate) {
-            // Picked date is on or before the first occurrence - the resulting
-            // series would be empty, so remove the entry outright (matches the
-            // user-facing semantic of "and all the rest").
+        $newUntil = $occurrenceDate->modify('-1 day');
+        if ($occurrenceDate > $firstOccurrenceDate) {
+            $entry->recurrenceUntilDate = $newUntil;
+            // The cancellations past the new horizon are now dead rows. Left behind, they would
+            // silently re-apply themselves the day someone extends the series again.
+            $this->agendaSeriesReconciler->dropExceptionsOutsideRule($entry);
+        }
+
+        // Either the picked date is on or before the first occurrence, or everything the truncated
+        // series still produces has already been cancelled one occurrence at a time. Both leave a
+        // series that expands to nothing, which renders nowhere and can no longer be reached from
+        // the agenda, so the entry goes (this is the user-facing semantic of "and all the rest").
+        if ($occurrenceDate <= $firstOccurrenceDate || !$this->agendaSeriesReconciler->hasLiveOccurrence($entry)) {
             $this->activityRecorder->record(
                 bandSpace: $bandSpace,
                 module: BandSpaceModule::Agenda,
@@ -87,9 +98,6 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
 
             return;
         }
-
-        $newUntil = $occurrenceDate->modify('-1 day');
-        $entry->recurrenceUntilDate = $newUntil;
 
         $this->activityRecorder->record(
             bandSpace: $bandSpace,

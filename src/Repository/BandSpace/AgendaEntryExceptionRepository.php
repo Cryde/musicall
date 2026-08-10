@@ -18,6 +18,18 @@ class AgendaEntryExceptionRepository extends ServiceEntityRepository
         parent::__construct($registry, AgendaEntryException::class);
     }
 
+    /**
+     * Every cancelled occurrence of an entry. Read through the repository rather than through
+     * `AgendaEntry::$exceptions`, which is the inverse side of the association and therefore only
+     * ever holds what has already been loaded from the database.
+     *
+     * @return AgendaEntryException[]
+     */
+    public function findByEntry(AgendaEntry $entry): array
+    {
+        return $this->findBy(['agendaEntry' => $entry]);
+    }
+
     public function findOneByEntryAndDate(AgendaEntry $entry, DateTimeImmutable $occurrenceDate): ?AgendaEntryException
     {
         return $this->findOneBy([
