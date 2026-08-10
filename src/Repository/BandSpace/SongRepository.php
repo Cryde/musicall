@@ -20,27 +20,17 @@ class SongRepository extends ServiceEntityRepository
     /**
      * @return Song[]
      */
-    public function findByBandSpace(BandSpace $bandSpace, bool $includeArchived = false): array
+    public function findByBandSpace(BandSpace $bandSpace, bool $archivedOnly = false): array
     {
-        $qb = $this->createQueryBuilder('s')
+        return $this->createQueryBuilder('s')
             ->where('s.bandSpace = :bandSpace')
+            ->andWhere($archivedOnly ? 's.archiveDatetime IS NOT NULL' : 's.archiveDatetime IS NULL')
             ->setParameter('bandSpace', $bandSpace)
-            ->orderBy('s.title', 'ASC');
-
-        if (!$includeArchived) {
-            $qb->andWhere('s.archiveDatetime IS NULL');
-        }
-
-        return $qb->getQuery()->getResult();
+            ->orderBy('s.title', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
-    /**
-     * Direct id lookup does NOT filter archived songs - clients need the
-     * archived song to render in setlist items / file detail drawers.
-     *
-     * So this is a READ finder, and a write path cannot treat what it returns as writable: every
-     * processor that mutates the song has to run SongWriteGuard on the result.
-     */
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?Song
     {
         return $this->createQueryBuilder('s')

@@ -9,6 +9,7 @@ use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\SetlistBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
@@ -21,6 +22,7 @@ readonly class SetlistCollectionProvider implements ProviderInterface
         private SetlistRepository $setlistRepository,
         private SetlistBuilder $setlistBuilder,
         private Security $security,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -36,8 +38,11 @@ readonly class SetlistCollectionProvider implements ProviderInterface
 
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
-        $setlists = $this->setlistRepository->findByBandSpace($bandSpace);
+        // The two lists never mix: archived=true is the trash, its absence is the live sidebar.
+        $archivedOnly = $this->requestStack->getCurrentRequest()?->query->getBoolean('archived') ?? false;
 
-        return $this->setlistBuilder->buildFromList($setlists);
+        return $this->setlistBuilder->buildFromList(
+            $this->setlistRepository->findByBandSpace($bandSpace, $archivedOnly),
+        );
     }
 }

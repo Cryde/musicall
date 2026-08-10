@@ -27,8 +27,12 @@ class SongDeleteTest extends ApiTestCase
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Doomed'])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Trop tard'])->create();
         $songId = (string) $song->id;
+        // A second title, left alone, so the two assertions below can tell the repertoire from the
+        // trash. With only the archived song in the band, both lists hold one row under either
+        // meaning of the flag and the assertions pass without checking anything.
+        SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Toujours là'])->create();
 
         $this->client->loginUser($user);
         $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/songs/' . $songId);
@@ -43,19 +47,27 @@ class SongDeleteTest extends ApiTestCase
         $this->assertNotNull($refreshed);
         $this->assertNotNull($refreshed->archiveDatetime);
 
-        // Excluded from collection / included with includeArchived. Re-fetch
-        // the band space because clear() detached the test's reference.
+        // Out of the repertoire, into the trash: findByBandSpace($band, true) selects the archived
+        // rows, it does not widen to both lists. Asserting the titles rather than just the counts is
+        // what makes that concrete. Re-fetch the band space because clear() detached the test's
+        // reference.
         $bandSpaceId = (string) $bandSpace->id;
         $reloadedBand = self::getContainer()->get(BandSpaceRepository::class)->find($bandSpaceId);
-        $this->assertCount(0, $repo->findByBandSpace($reloadedBand));
-        $this->assertCount(1, $repo->findByBandSpace($reloadedBand, true));
+
+        $live = $repo->findByBandSpace($reloadedBand);
+        $this->assertCount(1, $live);
+        $this->assertSame('Toujours là', $live[0]->title);
+
+        $archived = $repo->findByBandSpace($reloadedBand, true);
+        $this->assertCount(1, $archived);
+        $this->assertSame('Trop tard', $archived[0]->title);
 
         // Activity row recorded
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Setlist, $songId);
         $this->assertCount(1, $activities);
         $this->assertSame('song_archived', $activities[0]->type);
-        $this->assertSame(['title' => 'Doomed'], $activities[0]->payload);
+        $this->assertSame(['title' => 'Trop tard'], $activities[0]->payload);
     }
 
     public function test_delete_song_twice_is_idempotent(): void

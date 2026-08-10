@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\Setlist\SetlistDeleteProcessor;
 use App\State\Processor\BandSpace\Setlist\SetlistUpdateProcessor;
@@ -29,6 +30,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_setlists_get_collection',
             provider: SetlistCollectionProvider::class,
+            parameters: [
+                'archived' => new QueryParameter(key: 'archived'),
+            ],
         ),
         new Get(
             uriTemplate: '/band_spaces/{bandSpaceId}/setlists/{id}',

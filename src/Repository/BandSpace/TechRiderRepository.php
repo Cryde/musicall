@@ -18,10 +18,6 @@ class TechRiderRepository extends ServiceEntityRepository
     }
 
     /**
-     * Live riders by default; $archivedOnly swaps to the archive view rather than
-     * widening the result, matching the files trash (?archived=true) rather than
-     * SetlistRepository::findByBandSpace, which includes both.
-     *
      * @return TechRider[]
      */
     public function findByBandSpace(BandSpace $bandSpace, bool $archivedOnly = false): array
