@@ -82,6 +82,10 @@ framework:
             limit: 60
             interval: '1 minute'
             cache_pool: "rate_limiter.cache"
+        # Mirrored by hand in assets/js/utils/fileUploadQueue.js as UPLOAD_RATE_LIMIT and
+        # UPLOAD_RATE_WINDOW_MS: the Files import dialog paces a batch against these numbers so it
+        # does not walk into a 429 at file thirty one. Nothing checks the two agree, because a JS
+        # test cannot read this file. Changing limit or interval here means changing them there too.
         band_space_file_upload:
             policy: sliding_window
             limit: 30

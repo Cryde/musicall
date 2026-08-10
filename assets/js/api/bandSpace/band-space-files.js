@@ -143,7 +143,9 @@ export default {
       .catch(handleApiError)
   },
 
-  uploadFile(bandSpaceId, { file, folderId, tagIds }, onProgress) {
+  // `signal` lets a batch drop a file that is still going up when the member closes the dialog,
+  // rather than spending their upstream on bytes nothing is waiting for any more.
+  uploadFile(bandSpaceId, { file, folderId, tagIds }, onProgress, signal) {
     const formData = new FormData()
     formData.append('uploadedFile', file)
     if (folderId) formData.append('folderId', folderId)
@@ -156,6 +158,7 @@ export default {
     return axios
       .post(Routing.generate('api_band_space_files_upload', { bandSpaceId }), formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        signal,
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)

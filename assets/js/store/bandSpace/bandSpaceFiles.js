@@ -455,8 +455,12 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     }
   }
 
-  async function uploadFile(bandSpaceId, payload, onProgress) {
-    const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress)
+  /**
+   * One file. A batch calls this once per file, so each one lands in the list as it arrives and an
+   * interrupted batch leaves behind exactly what the server actually took.
+   */
+  async function uploadFile(bandSpaceId, payload, onProgress, signal) {
+    const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress, signal)
     files.value = [result.file, ...files.value]
     totalFiles.value = totalFiles.value + 1
     fetchQuota(bandSpaceId)
