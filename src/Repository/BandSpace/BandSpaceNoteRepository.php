@@ -30,6 +30,31 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Every note that has a body, oldest first, with its band space already loaded.
+     *
+     * Deliberately unfiltered. The one shot encoding repair of #859 has to read inside the JSON to
+     * tell a note the old read path mangled from one whose author typed the entities by hand, and no
+     * index reaches in there, so narrowing on a LIKE would make the scan count a lie while still
+     * reading the whole table. Notes are a handful per band space, so the set fits in memory.
+     *
+     * The band space is join fetched rather than merely joined: the repair names every note it
+     * reports by its space, so a lazy association would mean one extra query per reported note.
+     *
+     * @return BandSpaceNote[]
+     */
+    public function findAllWithContent(): array
+    {
+        return $this->createQueryBuilder('n')
+            ->addSelect('bs')
+            ->join('n.bandSpace', 'bs')
+            ->where('n.content IS NOT NULL')
+            ->orderBy('n.creationDatetime', 'ASC')
+            ->addOrderBy('n.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceNote
     {
         return $this->createQueryBuilder('n')
