@@ -60,6 +60,98 @@ class SetlistGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    /**
+     * archived=true swaps the list rather than widening it, so the trash shows the archived setlists
+     * and nothing else. Before #761 an archived setlist was reachable from no list at all.
+     */
+    public function test_collection_with_archived_lists_only_the_trash(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        SetlistFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Active list',
+            'creationDatetime' => new \DateTime('2026-05-01T10:00:00+00:00'),
+        ])->create();
+        $archived = SetlistFactory::new([
+            'bandSpace' => $bandSpace,
+            'name' => 'Archived list',
+            'archiveDatetime' => new \DateTimeImmutable('2026-05-10T10:00:00+00:00'),
+            'creationDatetime' => new \DateTime('2026-04-01T10:00:00+00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists?archived=true');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Setlist',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists',
+            '@type' => 'Collection',
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists?archived=true',
+                '@type' => 'PartialCollectionView',
+            ],
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $archived->id,
+                    '@type' => 'Setlist',
+                    'id' => $archived->id,
+                    'band_space_id' => $bandSpace->id,
+                    'name' => 'Archived list',
+                    'archive_datetime' => $archived->archiveDatetime->format(\DateTimeInterface::ATOM),
+                    'creation_datetime' => $archived->creationDatetime->format(\DateTimeInterface::ATOM),
+                    'update_datetime' => null,
+                    'items' => [],
+                    'total_duration_seconds' => 0,
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    /**
+     * The live setlist in my own band is what makes this test bite: an empty trash must come back empty
+     * rather than falling back to the live list, and the other band's archived row must not leak in.
+     */
+    public function test_collection_with_archived_is_scoped_to_band(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $myBand = BandSpaceFactory::new()->create();
+        $otherBand = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $myBand, 'user' => $user])->create();
+
+        SetlistFactory::new([
+            'bandSpace' => $myBand,
+            'name' => 'My live list',
+            'creationDatetime' => new \DateTime('2026-05-01T10:00:00+00:00'),
+        ])->create();
+        SetlistFactory::new([
+            'bandSpace' => $otherBand,
+            'name' => 'Their archived list',
+            'archiveDatetime' => new \DateTimeImmutable('2026-05-10T10:00:00+00:00'),
+            'creationDatetime' => new \DateTime('2026-04-01T10:00:00+00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $myBand->id . '/setlists?archived=true');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Setlist',
+            '@id' => '/api/band_spaces/' . $myBand->id . '/setlists',
+            '@type' => 'Collection',
+            'view' => [
+                '@id' => '/api/band_spaces/' . $myBand->id . '/setlists?archived=true',
+                '@type' => 'PartialCollectionView',
+            ],
+            'member' => [],
+            'totalItems' => 0,
+        ]);
+    }
+
     public function test_collection_scoped_to_band(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

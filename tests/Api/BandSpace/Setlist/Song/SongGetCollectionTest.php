@@ -63,26 +63,31 @@ class SongGetCollectionTest extends ApiTestCase
         ]);
     }
 
-    public function test_get_collection_with_include_archived(): void
+    /**
+     * archived=true swaps the list rather than widening it, so the trash shows the archived titles and
+     * nothing else. It replaced includeArchived, which returned the repertoire and the archive mixed
+     * together: a shape no caller ever asked for and one a trash view cannot use.
+     */
+    public function test_get_collection_with_archived_lists_only_the_trash(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        $active = SongFactory::new([
+        SongFactory::new([
             'bandSpace' => $bandSpace,
-            'title' => 'A',
+            'title' => 'Toujours là',
             'creationDatetime' => new \DateTime('2026-05-01T10:00:00+00:00'),
         ])->create();
         $archived = SongFactory::new([
             'bandSpace' => $bandSpace,
-            'title' => 'B',
+            'title' => 'Trop tard',
             'archiveDatetime' => new \DateTimeImmutable('2026-05-10T10:00:00+00:00'),
             'creationDatetime' => new \DateTime('2026-04-01T10:00:00+00:00'),
         ])->create();
 
         $this->client->loginUser($user);
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/songs?includeArchived=1');
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/songs?archived=true');
 
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
@@ -90,30 +95,16 @@ class SongGetCollectionTest extends ApiTestCase
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs',
             '@type' => 'Collection',
             'view' => [
-                '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs?includeArchived=1',
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs?archived=true',
                 '@type' => 'PartialCollectionView',
             ],
             'member' => [
-                [
-                    '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $active->id,
-                    '@type' => 'Song',
-                    'id' => $active->id,
-                    'band_space_id' => $bandSpace->id,
-                    'title' => 'A',
-                    'tempo' => null,
-                    'tonality' => null,
-                    'reference_duration' => null,
-                    'notes' => null,
-                    'archive_datetime' => null,
-                    'creation_datetime' => $active->creationDatetime->format(\DateTimeInterface::ATOM),
-                    'update_datetime' => null,
-                ],
                 [
                     '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $archived->id,
                     '@type' => 'Song',
                     'id' => $archived->id,
                     'band_space_id' => $bandSpace->id,
-                    'title' => 'B',
+                    'title' => 'Trop tard',
                     'tempo' => null,
                     'tonality' => null,
                     'reference_duration' => null,
@@ -123,7 +114,47 @@ class SongGetCollectionTest extends ApiTestCase
                     'update_datetime' => null,
                 ],
             ],
-            'totalItems' => 2,
+            'totalItems' => 1,
+        ]);
+    }
+
+    /**
+     * The live title in my own band is what makes this test bite: an empty trash must come back empty
+     * rather than falling back to the repertoire, and the other band's archived row must not leak in.
+     */
+    public function test_get_collection_with_archived_is_scoped_to_band(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $myBand = BandSpaceFactory::new()->create();
+        $otherBand = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $myBand, 'user' => $user])->create();
+
+        SongFactory::new([
+            'bandSpace' => $myBand,
+            'title' => 'My live title',
+            'creationDatetime' => new \DateTime('2026-05-01T10:00:00+00:00'),
+        ])->create();
+        SongFactory::new([
+            'bandSpace' => $otherBand,
+            'title' => 'Their archived title',
+            'archiveDatetime' => new \DateTimeImmutable('2026-05-10T10:00:00+00:00'),
+            'creationDatetime' => new \DateTime('2026-04-01T10:00:00+00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $myBand->id . '/songs?archived=true');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Song',
+            '@id' => '/api/band_spaces/' . $myBand->id . '/songs',
+            '@type' => 'Collection',
+            'view' => [
+                '@id' => '/api/band_spaces/' . $myBand->id . '/songs?archived=true',
+                '@type' => 'PartialCollectionView',
+            ],
+            'member' => [],
+            'totalItems' => 0,
         ]);
     }
 

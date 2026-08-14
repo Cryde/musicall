@@ -25,10 +25,10 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
  * Archiving a setlist used to hide it and nothing more: the finder behind every write returns
  * archived rows on purpose, so a member who still had the list open, or who came back through a
  * bookmarked ?setlist=<id>, could rename it and rework its programme, every request answered with
- * a 200, into a row nobody can see and nothing can restore.
+ * a 200, into a row that stays invisible until somebody thinks to restore it.
  *
  * Reads have to keep working, so each refusal is paired with proof the row is still readable and
- * still duplicable, which is the only way back out of the archive today.
+ * still duplicable. Restore itself is exempt by construction and is covered in SetlistRestoreTest.
  */
 #[ResetDatabase]
 class SetlistArchivedWriteGuardTest extends ApiTestCase
@@ -283,8 +283,9 @@ class SetlistArchivedWriteGuardTest extends ApiTestCase
     }
 
     /**
-     * Duplicating reads the archived list without touching it, and with no restore yet (#761) it is
-     * the only way to get the work back, so the guard must never catch it.
+     * Duplicating reads the archived list without touching it, so the guard must never catch it.
+     * Restore (#761) is now how the original comes back; duplicating serves the other case, building
+     * this year's list from last year's while the archived one stays archived.
      */
     public function test_an_archived_setlist_can_still_be_duplicated(): void
     {

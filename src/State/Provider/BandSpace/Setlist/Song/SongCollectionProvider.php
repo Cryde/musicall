@@ -10,6 +10,7 @@ use App\Repository\BandSpace\SongRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\SongBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
@@ -22,6 +23,7 @@ readonly class SongCollectionProvider implements ProviderInterface
         private SongRepository $songRepository,
         private SongBuilder $songBuilder,
         private Security $security,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -37,11 +39,11 @@ readonly class SongCollectionProvider implements ProviderInterface
 
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
-        $includeArchived = isset($context['filters']['includeArchived'])
-            && filter_var($context['filters']['includeArchived'], FILTER_VALIDATE_BOOLEAN);
+        // The two lists never mix: archived=true is the trash, its absence is the live repertoire.
+        $archivedOnly = $this->requestStack->getCurrentRequest()?->query->getBoolean('archived') ?? false;
 
-        $songs = $this->songRepository->findByBandSpace($bandSpace, $includeArchived);
-
-        return $this->songBuilder->buildFromList($songs);
+        return $this->songBuilder->buildFromList(
+            $this->songRepository->findByBandSpace($bandSpace, $archivedOnly),
+        );
     }
 }

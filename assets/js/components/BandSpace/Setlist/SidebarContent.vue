@@ -45,6 +45,22 @@
         @click="emit('new-setlist')"
       />
     </div>
+
+    <!-- Same Corbeille entry as the Files sidebar, so a member who has met one trash recognises the
+         other. It holds archived setlists and archived titles together: they are one module. -->
+    <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
+      <button
+        type="button"
+        class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
+        :class="trashButtonClasses"
+        :aria-current="activeView === 'trash' ? 'true' : null"
+        @click="emit('select-trash')"
+      >
+        <i class="pi pi-trash" aria-hidden="true"></i>
+        <span class="flex-1 truncate">Corbeille</span>
+        <span class="text-xs text-surface-500 tabular-nums">{{ trashCount }}</span>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -58,16 +74,23 @@ const props = defineProps({
   songsCount: { type: Number, required: true },
   setlists: { type: Array, required: true },
   isLoadingSetlists: { type: Boolean, default: false },
-  activeView: { type: String, required: true }, // 'repertoire' | 'setlist'
-  activeSetlistId: { type: String, default: null }
+  activeView: { type: String, required: true }, // 'repertoire' | 'setlist' | 'trash'
+  activeSetlistId: { type: String, default: null },
+  trashCount: { type: Number, default: 0 }
 })
 
-const emit = defineEmits(['select-repertoire', 'select-setlist', 'new-setlist'])
+const emit = defineEmits(['select-repertoire', 'select-setlist', 'select-trash', 'new-setlist'])
 
 const repertoireButtonClasses = computed(() =>
   props.activeView === 'repertoire'
     ? 'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100'
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
+)
+
+const trashButtonClasses = computed(() =>
+  props.activeView === 'trash'
+    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 font-medium'
+    : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
 )
 
 function setlistButtonClasses(id) {

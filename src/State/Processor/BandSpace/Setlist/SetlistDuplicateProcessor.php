@@ -48,10 +48,6 @@ readonly class SetlistDuplicateProcessor implements ProcessorInterface
         }
 
         [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
-
-        // Deliberately not guarded by SetlistWriteGuard: an archived setlist is a valid source and
-        // duplicating it does not touch it. It is also the only way back out of the archive while
-        // there is no restore (#761), so refusing it here would strand the work for good.
         $source = $this->setlistRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$source instanceof Setlist) {
             throw new NotFoundHttpException('Setlist introuvable');

@@ -29,6 +29,13 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  *
  * Storage is always deleted before the rows: if storage fails, the rows survive and the next run retries.
  * The reverse order would lose the only pointer to the object and orphan it permanently.
+ *
+ * Archived setlists and songs are deliberately NOT swept (#761). Files get a retention window because
+ * every archived one holds bytes that cost money and count against the band's quota; a setlist row and
+ * a song row cost neither, so the deadline would buy nothing and would only add a way to lose work.
+ * Songs in particular must never be destroyed on a timer: a SetlistItem keeps pointing at its song
+ * after the song is archived, which is what lets last year's setlist still render and export, so
+ * purging the row would quietly gut setlists nobody archived. Their trash is unbounded on purpose.
  */
 #[AsCommand(
     name: 'app:band-space:purge',

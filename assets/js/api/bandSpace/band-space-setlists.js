@@ -5,9 +5,13 @@ import { filenameFromContentDisposition } from '../../utils/downloadBlob.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
-  getSetlists(bandSpaceId) {
+  /**
+   * @param {boolean} archived true lists the trash instead of the live setlists
+   */
+  getSetlists(bandSpaceId, { archived = false } = {}) {
+    const url = Routing.generate('api_band_space_setlists_get_collection', { bandSpaceId })
     return axios
-      .get(Routing.generate('api_band_space_setlists_get_collection', { bandSpaceId }))
+      .get(archived ? `${url}?archived=true` : url)
       .then((resp) => resp.data.member ?? [])
       .catch(handleApiError)
   },
@@ -39,9 +43,21 @@ export default {
       .catch(handleApiError)
   },
 
+  /** Soft delete: the setlist moves to the trash, it is not destroyed. */
   deleteSetlist(bandSpaceId, setlistId) {
     return axios
       .delete(Routing.generate('api_band_space_setlists_delete', { bandSpaceId, id: setlistId }))
+      .catch(handleApiError)
+  },
+
+  restoreSetlist(bandSpaceId, setlistId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_setlists_restore', { bandSpaceId, id: setlistId }),
+        {},
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
       .catch(handleApiError)
   },
 

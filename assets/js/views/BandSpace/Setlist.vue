@@ -15,8 +15,10 @@
           :is-loading-setlists="setlistsStore.isLoading"
           :active-view="activeView"
           :active-setlist-id="activeSetlistId"
+          :trash-count="trashCount"
           @select-repertoire="selectRepertoire"
           @select-setlist="selectSetlist"
+          @select-trash="selectTrash"
           @new-setlist="newSetlistDialogOpen = true"
         />
       </aside>
@@ -43,8 +45,10 @@
           :is-loading-setlists="setlistsStore.isLoading"
           :active-view="activeView"
           :active-setlist-id="activeSetlistId"
+          :trash-count="trashCount"
           @select-repertoire="selectRepertoire"
           @select-setlist="selectSetlist"
+          @select-trash="selectTrash"
           @new-setlist="newSetlistDialogOpen = true"
         />
       </Drawer>
@@ -67,6 +71,13 @@
           @archived="handleSetlistArchived"
           @duplicated="handleSetlistDuplicated"
         />
+        <SetlistTrashList
+          v-else-if="activeView === 'trash'"
+          :band-space-id="bandSpaceId"
+          :setlists="[...setlistsStore.archivedSetlists]"
+          :songs="[...songsStore.archivedSongs]"
+          :is-loading="setlistsStore.isLoadingArchived || songsStore.isLoadingArchived"
+        />
       </section>
     </div>
   </div>
@@ -81,6 +92,7 @@ import { useRoute, useRouter } from 'vue-router'
 import NewSetlistDialog from '../../components/BandSpace/Setlist/NewSetlistDialog.vue'
 import RepertoireView from '../../components/BandSpace/Setlist/RepertoireView.vue'
 import SetlistEditor from '../../components/BandSpace/Setlist/SetlistEditor.vue'
+import SetlistTrashList from '../../components/BandSpace/Setlist/SetlistTrashList.vue'
 import SidebarContent from '../../components/BandSpace/Setlist/SidebarContent.vue'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../store/bandSpace/bandSpaceSongs.js'
@@ -96,7 +108,7 @@ setlistsStore.clear()
 
 const bandSpaceId = computed(() => route.params.id)
 
-const activeView = ref('repertoire') // 'repertoire' | 'setlist'
+const activeView = ref('repertoire') // 'repertoire' | 'setlist' | 'trash'
 const activeSetlistId = ref(null)
 const mobileNavOpen = ref(false)
 const newSetlistDialogOpen = ref(false)
@@ -106,9 +118,16 @@ const activeSetlist = computed(() =>
     ? (setlistsStore.setlists.find((s) => s.id === activeSetlistId.value) ?? null)
     : null
 )
-const currentSelectionLabel = computed(() =>
-  activeView.value === 'setlist' && activeSetlist.value ? activeSetlist.value.name : 'Répertoire'
+
+const trashCount = computed(
+  () => setlistsStore.archivedSetlists.length + songsStore.archivedSongs.length
 )
+
+const currentSelectionLabel = computed(() => {
+  if (activeView.value === 'trash') return 'Corbeille'
+  if (activeView.value === 'setlist' && activeSetlist.value) return activeSetlist.value.name
+  return 'Répertoire'
+})
 
 function selectRepertoire() {
   activeView.value = 'repertoire'
@@ -124,11 +143,23 @@ function selectSetlist(id) {
   mobileNavOpen.value = false
 }
 
+function selectTrash() {
+  activeView.value = 'trash'
+  activeSetlistId.value = null
+  router.replace({ query: { view: 'trash' } })
+  mobileNavOpen.value = false
+}
+
 function syncFromQuery() {
   const setlistParam = route.query.setlist
   if (typeof setlistParam === 'string' && setlistParam) {
     activeView.value = 'setlist'
     activeSetlistId.value = setlistParam
+    return
+  }
+  if (route.query.view === 'trash') {
+    activeView.value = 'trash'
+    activeSetlistId.value = null
     return
   }
   activeView.value = 'repertoire'
@@ -139,6 +170,10 @@ function loadAll() {
   if (!bandSpaceId.value) return
   songsStore.fetchSongs(bandSpaceId.value)
   setlistsStore.fetchSetlists(bandSpaceId.value)
+  // The trash is loaded up front rather than on first open, because its count sits in the sidebar
+  // next to the live lists. Both collections are unpaginated and hold a handful of rows.
+  songsStore.fetchArchivedSongs(bandSpaceId.value)
+  setlistsStore.fetchArchivedSetlists(bandSpaceId.value)
 }
 
 function handleSetlistCreated(created) {

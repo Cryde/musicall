@@ -31,9 +31,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'api_band_space_songs_get_collection',
             provider: SongCollectionProvider::class,
             parameters: [
-                'includeArchived' => new QueryParameter(
-                    schema: ['type' => 'boolean'],
-                ),
+                'archived' => new QueryParameter(key: 'archived'),
             ],
         ),
         new Get(

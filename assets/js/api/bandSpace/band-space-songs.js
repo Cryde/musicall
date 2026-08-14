@@ -4,11 +4,13 @@ import axios from 'axios'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
-  getSongs(bandSpaceId, { includeArchived = false } = {}) {
-    const params = {}
-    if (includeArchived) params.includeArchived = 1
+  /**
+   * @param {boolean} archived true lists the trash instead of the live repertoire
+   */
+  getSongs(bandSpaceId, { archived = false } = {}) {
+    const url = Routing.generate('api_band_space_songs_get_collection', { bandSpaceId })
     return axios
-      .get(Routing.generate('api_band_space_songs_get_collection', { bandSpaceId }), { params })
+      .get(archived ? `${url}?archived=true` : url)
       .then((resp) => resp.data.member ?? [])
       .catch(handleApiError)
   },
@@ -38,9 +40,21 @@ export default {
       .catch(handleApiError)
   },
 
+  /** Soft delete: the title moves to the trash, it is not destroyed. */
   deleteSong(bandSpaceId, songId) {
     return axios
       .delete(Routing.generate('api_band_space_songs_delete', { bandSpaceId, id: songId }))
+      .catch(handleApiError)
+  },
+
+  restoreSong(bandSpaceId, songId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_songs_restore', { bandSpaceId, id: songId }),
+        {},
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
       .catch(handleApiError)
   },
 

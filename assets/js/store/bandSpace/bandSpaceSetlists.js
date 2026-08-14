@@ -4,13 +4,25 @@ import bandSpaceSetlistsApi from '../../api/bandSpace/band-space-setlists.js'
 
 export const useBandSetlistsStore = defineStore('bandSetlists', () => {
   const setlists = ref([])
+  // Two lists rather than one filtered list, because the sidebar shows the live setlists and the
+  // trash count side by side. A band has a handful of archived setlists and the collection is
+  // unpaginated, so this costs one small request on module load.
+  const archivedSetlists = ref([])
   const activeSetlist = ref(null)
   const isLoading = ref(false)
+  const isLoadingArchived = ref(false)
   const isLoadingActive = ref(false)
   const loadError = ref(null)
 
   let setlistsRequestId = 0
+  let archivedRequestId = 0
   let activeRequestId = 0
+
+  // Both collections come back newest first, so a row moved between them locally has to be placed
+  // rather than pushed: restoring a setlist from two years ago must not park it above this month's.
+  function byCreationDesc(a, b) {
+    return new Date(b.creation_datetime) - new Date(a.creation_datetime)
+  }
 
   async function fetchSetlists(bandSpaceId) {
     const requestId = ++setlistsRequestId
@@ -27,6 +39,24 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     } finally {
       if (requestId === setlistsRequestId) {
         isLoading.value = false
+      }
+    }
+  }
+
+  async function fetchArchivedSetlists(bandSpaceId) {
+    const requestId = ++archivedRequestId
+    isLoadingArchived.value = archivedSetlists.value.length === 0
+
+    try {
+      const result = await bandSpaceSetlistsApi.getSetlists(bandSpaceId, { archived: true })
+      if (requestId !== archivedRequestId) return
+      archivedSetlists.value = result
+    } catch (e) {
+      if (requestId !== archivedRequestId) return
+      loadError.value = e.message
+    } finally {
+      if (requestId === archivedRequestId) {
+        isLoadingArchived.value = false
       }
     }
   }
@@ -63,12 +93,30 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     return updated
   }
 
+  /**
+   * Archiving moves the setlist to the trash rather than destroying it, so both lists are updated:
+   * the trash entry is what the sidebar counts and what offers the way back.
+   */
   async function archiveSetlist(bandSpaceId, setlistId) {
     await bandSpaceSetlistsApi.deleteSetlist(bandSpaceId, setlistId)
+    const archived = setlists.value.find((s) => s.id === setlistId)
     setlists.value = setlists.value.filter((s) => s.id !== setlistId)
+    if (archived) {
+      archivedSetlists.value = [
+        { ...archived, archive_datetime: new Date().toISOString() },
+        ...archivedSetlists.value
+      ].sort(byCreationDesc)
+    }
     if (activeSetlist.value?.id === setlistId) {
       activeSetlist.value = null
     }
+  }
+
+  async function restoreSetlist(bandSpaceId, setlistId) {
+    const restored = await bandSpaceSetlistsApi.restoreSetlist(bandSpaceId, setlistId)
+    archivedSetlists.value = archivedSetlists.value.filter((s) => s.id !== setlistId)
+    setlists.value = [restored, ...setlists.value].sort(byCreationDesc)
+    return restored
   }
 
   async function duplicateSetlist(bandSpaceId, setlistId) {
@@ -152,23 +200,29 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
 
   function clear() {
     setlists.value = []
+    archivedSetlists.value = []
     activeSetlist.value = null
     isLoading.value = false
+    isLoadingArchived.value = false
     isLoadingActive.value = false
     loadError.value = null
   }
 
   return {
     setlists: readonly(setlists),
+    archivedSetlists: readonly(archivedSetlists),
     activeSetlist: readonly(activeSetlist),
     isLoading: readonly(isLoading),
+    isLoadingArchived: readonly(isLoadingArchived),
     isLoadingActive: readonly(isLoadingActive),
     loadError: readonly(loadError),
     fetchSetlists,
+    fetchArchivedSetlists,
     fetchActive,
     createSetlist,
     renameSetlist,
     archiveSetlist,
+    restoreSetlist,
     duplicateSetlist,
     reorderItems,
     addItem,
