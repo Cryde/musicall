@@ -240,6 +240,7 @@ import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDraw
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import Avatar from '../../components/User/Avatar.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
+import { isAllDayItem } from '../../utils/agendaItem.js'
 import { agendaViewForSavedEntry } from '../../utils/agendaRange.js'
 import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
 
@@ -644,10 +645,6 @@ function calendarEnd(item) {
   if (!item.is_all_day) return item.end_datetime
   // FullCalendar all-day events use exclusive end: bump last-day-inclusive to the day after.
   return format(addDays(parseISO(item.end_datetime), 1), 'yyyy-MM-dd')
-}
-
-function isAllDayItem(item) {
-  return item.is_all_day || item.source === 'finance' || item.source === 'task'
 }
 
 function sourceLabel(source) {
