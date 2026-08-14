@@ -55,7 +55,8 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
 
         // Create BandSpace entity
         $bandSpace = new BandSpace();
-        $bandSpace->name = $data->name;
+        // Trimmed like the rename path, so the stored name is the one the constraints measured.
+        $bandSpace->name = trim($data->name);
 
         // Create creator membership
         $creatorMembership = new BandSpaceMembership();
