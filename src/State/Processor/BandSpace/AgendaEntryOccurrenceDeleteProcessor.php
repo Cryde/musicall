@@ -13,6 +13,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\AgendaEntryExceptionRepository;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\AgendaSeriesReconciler;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,6 +40,7 @@ readonly class AgendaEntryOccurrenceDeleteProcessor implements ProcessorInterfac
         private BandSpaceMemberChecker $memberChecker,
         private AgendaEntryRepository $agendaEntryRepository,
         private AgendaEntryExceptionRepository $exceptionRepository,
+        private AgendaSeriesReconciler $agendaSeriesReconciler,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
         private RequestStack $requestStack,
@@ -73,6 +75,27 @@ readonly class AgendaEntryOccurrenceDeleteProcessor implements ProcessorInterfac
 
         $existing = $this->exceptionRepository->findOneByEntryAndDate($entry, $occurrenceDate);
         if ($existing instanceof AgendaEntryException) {
+            return;
+        }
+
+        // Cancelling the last occurrence would leave a series that expands to nothing: it renders
+        // nowhere, and the expanded agenda is the only place it can be reached from, so it could
+        // never be edited or deleted again. Remove it outright instead, the way truncating a series
+        // before its first occurrence already does. The cancellation itself is not written: it
+        // would be cascaded away with the entry on the same flush.
+        if (!$this->agendaSeriesReconciler->hasLiveOccurrence($entry, $occurrenceDate)) {
+            $this->activityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Agenda,
+                type: BandSpaceAgendaActivityType::EntryDeleted,
+                resourceId: $entry->id,
+                actor: $user,
+                payload: ['title' => $entry->title],
+            );
+
+            $this->entityManager->remove($entry);
+            $this->entityManager->flush();
+
             return;
         }
 

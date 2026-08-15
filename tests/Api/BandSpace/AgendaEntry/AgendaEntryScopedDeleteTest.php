@@ -125,6 +125,93 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         $this->assertCount(1, $exceptionRepo->findBy(['agendaEntry' => $entryId]), 'no duplicate row created');
     }
 
+    public function test_cancelling_the_last_live_occurrence_deletes_the_series(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // Three Mondays: 1, 8 and 15 June. The first two are already cancelled.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-06-15'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        foreach (['2026-06-01', '2026-06-08'] as $cancelledDate) {
+            $cancellation = new \App\Entity\BandSpace\AgendaEntryException();
+            $cancellation->agendaEntry = $entry;
+            $cancellation->occurrenceDate = new DateTimeImmutable($cancelledDate);
+            $entityManager->persist($cancellation);
+        }
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId . '/occurrences/2026-06-15',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        // A series with nothing left to expand renders nowhere, and the expanded agenda is the only
+        // place it could be reached from, so it goes instead of being left unreachable.
+        $entityManager->clear();
+        $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $reloadedBand));
+        $exceptionRepo = self::getContainer()->get(AgendaEntryExceptionRepository::class);
+        $this->assertSame([], $exceptionRepo->findBy(['agendaEntry' => $entryId]));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_deleted', $activities[0]->type);
+        $this->assertSame(['title' => 'Répétition'], $activities[0]->payload);
+    }
+
+    public function test_cancelling_an_occurrence_of_an_endless_series_keeps_the_entry(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // No horizon, so the rule has no finite list of occurrences and can never be cancelled down
+        // to nothing. ValidRecurrence forbids writing that through the API; the guard is here so a
+        // row that ever escaped it is left alone rather than deleted for being unenumerable.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => null,
+        ])->create();
+        $entryId = $entry->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId . '/occurrences/2026-06-15',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertNotNull($repo->findOneByIdAndBandSpace($entryId, $reloadedBand));
+        $exceptionRepo = self::getContainer()->get(AgendaEntryExceptionRepository::class);
+        $this->assertCount(1, $exceptionRepo->findBy(['agendaEntry' => $entryId]));
+    }
+
     public function test_delete_single_occurrence_on_non_recurring_entry_returns_422(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
@@ -317,6 +404,157 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         // Reloaded for the same reason as the band space: the clear above detached it, and the
         // aggregator binds it as a query parameter to filter personal finance entries.
         $reloadedMembership = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceMembershipRepository::class)->find((string) $viewerMembership->id);
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_deleted', $activities[0]->type);
+    }
+
+    public function test_truncating_a_series_drops_the_cancellations_past_the_new_horizon(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        foreach (['2026-06-15', '2026-07-20'] as $cancelledDate) {
+            $cancellation = new \App\Entity\BandSpace\AgendaEntryException();
+            $cancellation->agendaEntry = $entry;
+            $cancellation->occurrenceDate = new DateTimeImmutable($cancelledDate);
+            $entityManager->persist($cancellation);
+        }
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId . '/from/2026-07-01',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        // The series now stops on 30 June, so the July cancellation points at nothing. Left behind,
+        // it would silently re-apply itself the day someone pushes the horizon back out.
+        $entityManager->clear();
+        $exceptionRepo = self::getContainer()->get(AgendaEntryExceptionRepository::class);
+        $this->assertSame(
+            ['2026-06-15'],
+            array_map(
+                static fn(\App\Entity\BandSpace\AgendaEntryException $e): string => $e->occurrenceDate->format('Y-m-d'),
+                $exceptionRepo->findBy(['agendaEntry' => $entryId]),
+            ),
+        );
+    }
+
+    /**
+     * Dropping a stale cancellation and deleting the whole entry both happen inside this one call:
+     * the reconciler schedules a single AgendaEntryException for removal, and the entry is then
+     * removed too, which cascades onto that same row. Doctrine tolerates the double scheduling, but
+     * nothing else in the suite exercises the two together, so a refactor of either the reconciler
+     * or this processor could reintroduce an orphaned row or an error with no test noticing.
+     */
+    public function test_truncating_deletes_the_series_while_dropping_a_cancellation_it_orphans(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        // The first three survive the truncation and cancel everything it leaves; 20 July falls
+        // outside the shortened rule and is the row the reconciler has to drop.
+        foreach (['2026-06-01', '2026-06-08', '2026-06-15', '2026-07-20'] as $cancelledDate) {
+            $cancellation = new \App\Entity\BandSpace\AgendaEntryException();
+            $cancellation->agendaEntry = $entry;
+            $cancellation->occurrenceDate = new DateTimeImmutable($cancelledDate);
+            $entityManager->persist($cancellation);
+        }
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId . '/from/2026-06-22',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $entityManager->clear();
+        $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $reloadedBand));
+        $exceptionRepo = self::getContainer()->get(AgendaEntryExceptionRepository::class);
+        $this->assertSame([], $exceptionRepo->findBy(['agendaEntry' => $entryId]), 'no cancellation row outlives its entry');
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $activities = $activityRepo->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
+        $this->assertCount(1, $activities);
+        $this->assertSame('entry_deleted', $activities[0]->type);
+    }
+
+    public function test_truncating_onto_an_entirely_cancelled_tail_deletes_the_series(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // Mondays from 1 June, and every one that survives the truncation below is cancelled.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        foreach (['2026-06-01', '2026-06-08', '2026-06-15'] as $cancelledDate) {
+            $cancellation = new \App\Entity\BandSpace\AgendaEntryException();
+            $cancellation->agendaEntry = $entry;
+            $cancellation->occurrenceDate = new DateTimeImmutable($cancelledDate);
+            $entityManager->persist($cancellation);
+        }
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId . '/from/2026-06-22',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        // Truncating on 22 June leaves 1, 8 and 15 June, all three already cancelled: the series
+        // expands to nothing and would be as unreachable as one cancelled occurrence by occurrence.
+        $entityManager->clear();
+        $reloadedBand = self::getContainer()->get(\App\Repository\BandSpace\BandSpaceRepository::class)->find((string) $bandSpace->id);
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertNull($repo->findOneByIdAndBandSpace($entryId, $reloadedBand));
+
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $activities = $activityRepo->findForResource($reloadedBand, BandSpaceModule::Agenda, $entryId);
         $this->assertCount(1, $activities);

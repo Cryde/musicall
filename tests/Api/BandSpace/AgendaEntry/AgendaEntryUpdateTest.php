@@ -3,7 +3,10 @@
 namespace App\Tests\Api\BandSpace\AgendaEntry;
 
 use App\Entity\BandSpace\AgendaEntry;
+use App\Entity\BandSpace\AgendaEntryException;
+use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Repository\BandSpace\AgendaEntryExceptionRepository;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
@@ -15,6 +18,8 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
+use DateTimeZone;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -635,6 +640,197 @@ class AgendaEntryUpdateTest extends ApiTestCase
             'creator_username' => $user->username,
             'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
         ]);
+    }
+
+    public function test_moving_a_series_to_another_weekday_drops_the_cancellations_it_orphans(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // Every Monday from 1 June. 15 June is one of its occurrences, 16 June is not.
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        foreach (['2026-06-15', '2026-06-16'] as $cancelledDate) {
+            $cancellation = new AgendaEntryException();
+            $cancellation->agendaEntry = $entry;
+            $cancellation->occurrenceDate = new DateTimeImmutable($cancelledDate);
+            $entityManager->persist($cancellation);
+        }
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['eventDatetime' => '2026-06-02T18:00:00+00:00'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            '@type' => 'AgendaEntry',
+            'id' => $entryId,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-06-02T18:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => 'weekly',
+            'recurrence_until_date' => '2026-07-31',
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        // The series runs on Tuesdays now: the cancelled Monday points at nothing and goes, while
+        // the Tuesday the rule has just started producing is a real cancellation and stays.
+        $entityManager->clear();
+        $cancellations = self::getContainer()->get(AgendaEntryExceptionRepository::class)
+            ->findBy(['agendaEntry' => $entryId]);
+        $this->assertSame(
+            ['2026-06-16'],
+            array_map(static fn(AgendaEntryException $e): string => $e->occurrenceDate->format('Y-m-d'), $cancellations),
+        );
+    }
+
+    public function test_an_edit_that_leaves_the_rule_alone_keeps_the_cancellations(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $cancellation = new AgendaEntryException();
+        $cancellation->agendaEntry = $entry;
+        $cancellation->occurrenceDate = new DateTimeImmutable('2026-06-15');
+        $entityManager->persist($cancellation);
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['title' => 'Répétition générale'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            '@type' => 'AgendaEntry',
+            'id' => $entryId,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition générale',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-06-01T18:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => 'weekly',
+            'recurrence_until_date' => '2026-07-31',
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        $entityManager->clear();
+        $cancellations = self::getContainer()->get(AgendaEntryExceptionRepository::class)
+            ->findBy(['agendaEntry' => $entryId]);
+        $this->assertSame(
+            ['2026-06-15'],
+            array_map(static fn(AgendaEntryException $e): string => $e->occurrenceDate->format('Y-m-d'), $cancellations),
+        );
+    }
+
+    public function test_dropping_the_recurrence_drops_every_cancellation(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+        $entryId = $entry->id;
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $cancellation = new AgendaEntryException();
+        $cancellation->agendaEntry = $entry;
+        $cancellation->occurrenceDate = new DateTimeImmutable('2026-06-15');
+        $entityManager->persist($cancellation);
+        $entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            ['recurrenceFrequency' => null],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entryId,
+            '@type' => 'AgendaEntry',
+            'id' => $entryId,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-06-01T18:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        // A single event has nothing to cancel, so the rows would never be read again and would
+        // come back to life the day someone turns the repetition on again.
+        $entityManager->clear();
+        $this->assertSame(
+            [],
+            self::getContainer()->get(AgendaEntryExceptionRepository::class)->findBy(['agendaEntry' => $entryId]),
+        );
     }
 
     public function test_update_agenda_entry_not_member(): void

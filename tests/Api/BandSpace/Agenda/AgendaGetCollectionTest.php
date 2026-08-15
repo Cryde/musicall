@@ -531,6 +531,9 @@ class AgendaGetCollectionTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         // First Mondays: 2026-01-05, 2026-02-02, 2026-03-02, 2026-04-06, 2026-05-04, 2026-06-01.
+        // The anchor is 20:00 in Paris, and the window straddles the 29 March switch to summer
+        // time, so the last three occurrences are an hour earlier in UTC for the same 20:00 on the
+        // clock. AgendaRecurrenceDstTest covers that on its own.
         $metadata = [
             'location' => null,
             'is_recurring_occurrence' => true,
@@ -566,9 +569,9 @@ class AgendaGetCollectionTest extends ApiTestCase
                 $member('20260105-1900', '2026-01-05T19:00:00+00:00'),
                 $member('20260202-1900', '2026-02-02T19:00:00+00:00'),
                 $member('20260302-1900', '2026-03-02T19:00:00+00:00'),
-                $member('20260406-1900', '2026-04-06T19:00:00+00:00'),
-                $member('20260504-1900', '2026-05-04T19:00:00+00:00'),
-                $member('20260601-1900', '2026-06-01T19:00:00+00:00'),
+                $member('20260406-1800', '2026-04-06T18:00:00+00:00'),
+                $member('20260504-1800', '2026-05-04T18:00:00+00:00'),
+                $member('20260601-1800', '2026-06-01T18:00:00+00:00'),
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-01&to=2026-06-30',
