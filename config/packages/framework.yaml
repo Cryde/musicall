@@ -3,7 +3,21 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        # Sessions live in Valkey, not on disk: the filesystem handler resolves a different
+        # save_path under PHP-FPM and under FrankenPHP, and session files are not shared
+        # between Deployer releases. SESSION_DSN points at its own database index so a
+        # cache:pool:clear or a FLUSHDB on the cache database cannot take sessions with it.
+        handler_id: '%env(SESSION_DSN)%'
+        save_path: null
+        # Pinned rather than inherited from the runtime php.ini, which is about to change:
+        # these are the values in force today. gc_maxlifetime doubles as the Valkey key TTL.
+        name: PHPSESSID
+        cookie_lifetime: 0
+        gc_maxlifetime: 1440
+        cookie_secure: auto
+        cookie_httponly: true
+        cookie_samesite: lax
 
     #esi: true
     #fragments: true
@@ -15,4 +29,7 @@ when@test:
     framework:
         test: true
         session:
+            # CI runs no Valkey. mock_file storage ignores the handler anyway, so this only
+            # makes it impossible for a test to reach for the connection by accident.
+            handler_id: null
             storage_factory_id: session.storage.factory.mock_file
