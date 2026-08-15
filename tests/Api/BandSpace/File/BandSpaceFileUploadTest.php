@@ -10,6 +10,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileTagFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
+use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +22,21 @@ use Zenstruck\Foundry\Attribute\ResetDatabase;
 class BandSpaceFileUploadTest extends ApiTestCase
 {
     use ApiTestAssertionsTrait;
+
+    /** @var string[] */
+    private array $temporaryFiles = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->temporaryFiles as $path) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+        $this->temporaryFiles = [];
+
+        parent::tearDown();
+    }
 
     public function test_upload_happy_path(): void
     {
@@ -217,6 +233,87 @@ class BandSpaceFileUploadTest extends ApiTestCase
             'type' => '/errors/403',
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
+    }
+
+    /**
+     * The other half of the contract the Files import dialog's error handling rests on.
+     *
+     * A batch tells a refusal that stops the whole batch (the space's quota is full, a 422 with no
+     * violation) from one that only concerns the file in hand (a 422 carrying violations, which is
+     * this one) by whether violations are present, and stops or carries on accordingly. Both shapes
+     * therefore have to be pinned: test_upload_no_file_returns_422 covers Assert\NotNull, and this
+     * covers a file that is simply too big, which is the one a member meets dragging in video.
+     *
+     * The message quotes PHP's upload_max_filesize rather than BandSpaceFileMimeAllowlist's 500 MiB
+     * cap because the ini limit is the lower of the two and is reached first: HttpKernelBrowser and
+     * PHP itself both reject the upload before Assert\File is consulted. Both routes end in the same
+     * shape, which is all the dialog reads. Raising the ini limit past the cap would put the
+     * constraint's own message here instead, and this assertion is what would say so.
+     */
+    public function test_upload_over_the_per_file_cap_returns_422_with_a_violation(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $oversized = $this->createSparseFile(BandSpaceFileMimeAllowlist::MAX_UPLOAD_SIZE_BYTES + 1);
+        $upload = new UploadedFile($oversized, 'concert-4k.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $violation = sprintf(
+            'Le fichier est trop volumineux. Sa taille ne doit pas dépasser %d bytes.',
+            UploadedFile::getMaxFilesize(),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/1',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'uploaded_file',
+                    'message' => $violation,
+                    'code' => '1',
+                ],
+            ],
+            'detail' => 'uploaded_file: ' . $violation,
+            'description' => 'uploaded_file: ' . $violation,
+            'type' => '/validation_errors/1',
+            'title' => 'An error occurred',
+        ]);
+
+        // Nothing persisted: validation runs before the processor is ever called.
+        $repo = self::getContainer()->get(BandSpaceFileRepository::class);
+        $this->assertCount(0, $repo->findBy(['bandSpace' => $bandSpace]));
+    }
+
+    /**
+     * A file that reports the given size without occupying it. Half a gigabyte of real bytes would
+     * make this test unusable; the size cap is checked with filesize(), which a hole satisfies.
+     */
+    private function createSparseFile(int $size): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'm862_oversized_');
+        $this->temporaryFiles[] = $path;
+
+        $handle = fopen($path, 'w');
+        ftruncate($handle, $size);
+        fclose($handle);
+        clearstatcache(true, $path);
+
+        $this->assertSame($size, filesize($path), 'the filesystem did not honour the sparse file');
+
+        return $path;
     }
 
     public function test_upload_returns_429_when_rate_limit_exceeded(): void

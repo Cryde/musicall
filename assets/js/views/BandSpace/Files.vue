@@ -441,13 +441,17 @@ watch(
   { immediate: true }
 )
 
-function handleUploadSaved({ quotaApproaching }) {
-  toast.add({
-    severity: 'success',
-    summary: 'Fichier téléversé',
-    detail: 'Le fichier a bien été ajouté.',
-    life: 3000
-  })
+function handleUploadSaved({ uploadedCount, total, label, quotaApproaching, interrupted }) {
+  if (uploadedCount > 0) {
+    toast.add({
+      severity: 'success',
+      summary: uploadedCount > 1 ? 'Fichiers téléversés' : 'Fichier téléversé',
+      // One file keeps the sentence it has always been given: a bare count reads as a fragment when
+      // there was never a batch to count. The tally is only worth quoting for a real batch.
+      detail: total === 1 ? 'Le fichier a bien été ajouté.' : label,
+      life: 3000
+    })
+  }
   if (quotaApproaching) {
     toast.add({
       severity: 'warn',
@@ -455,6 +459,11 @@ function handleUploadSaved({ quotaApproaching }) {
       detail: 'Vous avez atteint 80 % de votre quota de stockage.',
       life: 6000
     })
+  }
+  // A batch stopped in the middle may have left an upload the server took after the browser gave up
+  // on it, so the only honest listing is the one read back from the server.
+  if (interrupted) {
+    filesStore.fetchFiles(bandSpaceId.value)
   }
   filesStore.fetchFolders(bandSpaceId.value)
 }
