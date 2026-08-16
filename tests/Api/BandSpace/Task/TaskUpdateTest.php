@@ -377,6 +377,94 @@ class TaskUpdateTest extends ApiTestCase
         $this->assertSame('task_unarchived', $activities[0]->type);
     }
 
+    public function test_update_refuses_a_position_write(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        // The reorder endpoint proves a payload covers the whole column before it writes anything.
+        // A position sent here carries no such proof, so it would drop this task onto the number the
+        // other one holds and leave the column with two cards on 0 for every member of the band.
+        $first = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'position' => 0,
+        ])->create();
+        $second = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'position' => 1,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $second->id,
+            ['position' => 0],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+        ]);
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $repo = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class);
+        $this->assertSame(0, $repo->find($first->id)->position);
+        $this->assertSame(1, $repo->find($second->id)->position);
+    }
+
+    public function test_update_refuses_a_position_write_sent_alongside_an_editable_field(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Réserver le studio',
+            'status' => TaskStatus::Todo,
+            'position' => 3,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id,
+            ['title' => 'Réserver la salle', 'position' => 0],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne',
+        ]);
+
+        // The refusal lands before any write, so the title the same request carried is not saved
+        // either: a client cannot slip a position through by pairing it with a legitimate edit.
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $refreshed = self::getContainer()->get(\App\Repository\BandSpace\TaskRepository::class)->find($task->id);
+        $this->assertSame('Réserver le studio', $refreshed->title);
+        $this->assertSame(3, $refreshed->position);
+    }
+
     public function test_archived_task_refuses_a_status_change(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
