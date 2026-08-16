@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\File;
 
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -118,5 +119,52 @@ class BandSpaceTaskFileAttachTest extends ApiTestCase
             'type' => '/errors/403',
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
+    }
+
+    /**
+     * The second door onto a task attachment: this one uploads instead of reusing an existing file,
+     * and an archived task refuses it before anything is stored or the quota is touched.
+     */
+    public function test_upload_to_an_archived_task_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'title' => 'Mix master',
+            'status' => TaskStatus::Done,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $upload = new UploadedFile(__DIR__ . '/fixtures/sample.txt', 'sample.txt', 'text/plain', null, true);
+
+        $this->client->loginUser($user);
+        $this->client->request(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/files',
+            [],
+            ['uploadedFile' => $upload],
+            ['CONTENT_TYPE' => 'multipart/form-data'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        $this->assertCount(
+            0,
+            self::getContainer()->get(BandSpaceFileRepository::class)->findBy(['bandSpace' => $bandSpace->id]),
+        );
     }
 }

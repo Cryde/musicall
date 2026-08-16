@@ -14,6 +14,7 @@ use App\Event\BandSpaceTaskCommentedEvent;
 use App\Event\BandSpaceTaskMentionedEvent;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\TaskCommentMentionRecorder;
 use App\Service\Builder\BandSpace\TaskCommentBuilder;
@@ -37,6 +38,7 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         private TaskCommentBuilder $taskCommentBuilder,
         private Security $security,
         private EventDispatcherInterface $eventDispatcher,
+        private TaskWriteGuard $taskWriteGuard,
     ) {
     }
 
@@ -56,6 +58,10 @@ readonly class TaskCommentCreateProcessor implements ProcessorInterface
         if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
+
+        // The thread of an archived task is history: still read, never added to. The drawer hides
+        // the composer, so a comment arriving here at all means the call bypassed it.
+        $this->taskWriteGuard->assertWritable($task);
 
         $comment = new TaskComment();
         $comment->task = $task;

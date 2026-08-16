@@ -411,4 +411,116 @@ class TaskMoveTest extends ApiTestCase
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
         $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $moved->id));
     }
+
+    /**
+     * Archiving demands a task be done, so a move back to todo would leave the archive holding
+     * something it would have refused to take in. The board never renders an archived card as
+     * draggable, which is why only a hand-crafted call reaches this.
+     */
+    public function test_move_an_archived_task_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $archived = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Done,
+            'position' => 3,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $archivedId = (string) $archived->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
+            [
+                'task_id' => $archivedId,
+                'status' => 'todo',
+                'positions' => [
+                    ['id' => $archivedId, 'position' => 0],
+                ],
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $taskRepo = self::getContainer()->get(TaskRepository::class);
+        $refreshed = $taskRepo->find($archivedId);
+        $this->assertSame(TaskStatus::Done, $refreshed->status);
+        $this->assertSame(3, $refreshed->position);
+        $this->assertNotNull($refreshed->archiveDatetime);
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $archivedId));
+    }
+
+    /**
+     * The append form skips the column-membership check entirely, so the refusal cannot depend on
+     * an ordering being sent.
+     */
+    public function test_move_an_archived_task_without_positions_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $archived = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Done,
+            'position' => 3,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $archivedId = (string) $archived->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/move',
+            [
+                'task_id' => $archivedId,
+                'status' => 'in_progress',
+                'positions' => [],
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        \Zenstruck\Foundry\Persistence\refresh($bandSpace);
+        $taskRepo = self::getContainer()->get(TaskRepository::class);
+        $refreshed = $taskRepo->find($archivedId);
+        $this->assertSame(TaskStatus::Done, $refreshed->status);
+        $this->assertSame(3, $refreshed->position);
+        $this->assertNotNull($refreshed->archiveDatetime);
+    }
 }
