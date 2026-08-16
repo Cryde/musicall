@@ -86,6 +86,23 @@ class FinanceEntrySplitRepository extends ServiceEntityRepository
         return $sums;
     }
 
+    /**
+     * @param FinanceEntry[] $entries
+     */
+    public function countByEntries(array $entries): int
+    {
+        if (\count($entries) === 0) {
+            return 0;
+        }
+
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where('s.entry IN (:entries)')
+            ->setParameter('entries', array_map(fn (FinanceEntry $e): string => (string) $e->id, $entries))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function getSumByEntry(FinanceEntry $entry): int
     {
         $result = $this->createQueryBuilder('s')

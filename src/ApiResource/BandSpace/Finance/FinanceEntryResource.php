@@ -16,6 +16,7 @@ use App\State\Processor\BandSpace\FinanceEntryUpdateProcessor;
 use App\State\Provider\BandSpace\FinanceEntryCollectionProvider;
 use App\State\Provider\BandSpace\FinanceEntryItemProvider;
 use App\Validator\BandSpace\FinanceAmountRange;
+use App\Validator\BandSpace\PersonalScopeWithoutSplits;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -27,6 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * failed inside new DateTime().
  */
 #[FinanceAmountRange]
+#[PersonalScopeWithoutSplits]
 #[ApiResource(
     shortName: 'FinanceEntry',
     operations: [

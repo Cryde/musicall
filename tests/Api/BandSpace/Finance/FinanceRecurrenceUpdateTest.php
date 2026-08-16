@@ -24,8 +24,10 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\BandSpace\FinanceEntrySplitFactory;
 use App\Tests\Factory\BandSpace\FinanceRecurrenceFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Validator\BandSpace\PersonalScopeWithoutSplitsValidator;
 use App\Validator\BandSpace\RecurrenceEndDateValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -750,6 +752,69 @@ class FinanceRecurrenceUpdateTest extends ApiTestCase
             $this->assertSame(FinanceEntryScope::Personal, $entry->scope);
             $this->assertSame($ownerMembershipId, (string) $entry->member->id, $entry->date->format('Y-m-d'));
         }
+    }
+
+    /**
+     * The second way into the state #858 is about: the entry PATCH refuses the flip while splits exist,
+     * and this one propagates the recurrence's scope onto its future forecasts, splits included. Refused
+     * whole rather than per entry, because the recurrence and the forecasts it owns must not disagree.
+     */
+    public function test_turning_a_recurrence_personal_is_refused_while_a_forecast_carries_splits(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $other = UserFactory::new()->create(['username' => 'other_member', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+        $otherMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3));
+        $forecast = $this->createEntry($category, $recurrence, self::monthStart(2), FinanceEntryStatus::Planned);
+        FinanceEntrySplitFactory::new(['entry' => $forecast, 'member' => $otherMembership, 'amount' => 15000])->create();
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($owner, $bandSpace, $recurrenceId, ['scope' => 'personal']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . PersonalScopeWithoutSplitsValidator::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'scope',
+                    'message' => 'Supprimez d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
+                    'code' => PersonalScopeWithoutSplitsValidator::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'scope: Supprimez d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
+            'description' => 'scope: Supprimez d\'abord la répartition des échéances de cette récurrence pour la passer en personnelle.',
+            'type' => '/validation_errors/' . PersonalScopeWithoutSplitsValidator::ERROR_CODE,
+            'title' => 'An error occurred',
+        ]);
+
+        $this->assertSame(FinanceEntryScope::Band, $this->reloadRecurrence($recurrenceId)->scope);
+        $this->assertSame(FinanceEntryScope::Band, $this->remainingEntries($recurrenceId)[0]->scope);
+    }
+
+    /** A forecast without splits is nobody else's business, so the series may still go personal. */
+    public function test_turning_a_recurrence_personal_is_allowed_without_splits(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $owner])->create();
+
+        $category = $this->createCategory($bandSpace);
+        $recurrence = $this->createRecurrence($category, self::monthStart(-1), self::monthStart(3));
+        $this->createEntry($category, $recurrence, self::monthStart(2), FinanceEntryStatus::Planned);
+        $recurrenceId = (string) $recurrence->id;
+
+        $this->patchRecurrence($owner, $bandSpace, $recurrenceId, ['scope' => 'personal']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(FinanceEntryScope::Personal, $this->reloadRecurrence($recurrenceId)->scope);
+        $this->assertSame(FinanceEntryScope::Personal, $this->remainingEntries($recurrenceId)[0]->scope);
     }
 
     /** The PATCH carried no constraint on the amount, so a recurrence could be repriced to a debt. */

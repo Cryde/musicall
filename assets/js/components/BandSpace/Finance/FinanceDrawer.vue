@@ -212,6 +212,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { ERROR_CODES } from '../../../constants/errorCodes.js'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
 import { centsToCurrency, currencyToCents } from '../../../utils/currency.js'
@@ -480,8 +481,25 @@ async function handleSave() {
 
     emit('saved')
   } catch (error) {
+    await restoreScopeIfSplitsBlockedIt(error)
     formError.value = error.message || 'Impossible d\u2019enregistrer l\u2019entrée'
   }
+}
+
+/**
+ * The refusal asks for the répartition to be cleared first, but the SplitManager only renders on a band
+ * entry: left on « Personnel », the drawer would show the instruction with nothing to act on. Putting
+ * the select back brings the splits into view, already expanded.
+ */
+async function restoreScopeIfSplitsBlockedIt(error) {
+  const blockedBySplits = (error.violationsByField?.scope ?? []).some(
+    (violation) => violation.code === ERROR_CODES.PERSONAL_SCOPE_WITH_SPLITS
+  )
+  if (!blockedBySplits) return
+
+  form.scope = 'band'
+  await nextTick()
+  await splitManagerRef.value?.reset(props.entry?.id ?? null)
 }
 
 function handleDelete() {
