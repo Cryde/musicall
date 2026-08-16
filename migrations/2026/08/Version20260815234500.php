@@ -92,6 +92,7 @@ final class Version20260815234500 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->reportSkippedWindow();
+        $this->reportZeroDates();
         $this->convertAll(self::CIVIL_TIMEZONE, 'UTC');
     }
 
@@ -150,10 +151,15 @@ final class Version20260815234500 extends AbstractMigration
 
         foreach (self::TARGETS as [$table, $primaryKey, $column]) {
             $rows = $this->connection->fetchAllAssociative(sprintf(
-                'SELECT %s AS pk, %s AS value FROM %s WHERE %s IS NOT NULL AND %s < ?',
+                'SELECT %s AS pk, %s AS value FROM %s'
+                . ' WHERE %s IS NOT NULL AND %s < ?'
+                . ' AND YEAR(%s) > 0 AND MONTH(%s) > 0 AND DAY(%s) > 0',
                 $primaryKey,
                 $column,
                 $table,
+                $column,
+                $column,
+                $column,
                 $column,
                 $column,
             ), [self::CUTOFF]);
@@ -167,6 +173,48 @@ final class Version20260815234500 extends AbstractMigration
             foreach (array_chunk($converted, self::BATCH_SIZE, true) as $chunk) {
                 $this->addSql($this->buildUpdate($table, $primaryKey, $column, $chunk));
             }
+        }
+    }
+
+    /**
+     * Names the zero and partial-zero dates that are deliberately left alone.
+     *
+     * MySQL allows `0000-00-00 00:00:00`, and partial forms with a zero month or day, outside strict
+     * mode. This database began life as raw PHP and MySQL in 2008, and production still carries such
+     * rows: the first production run of this migration aborted on `publication.edition_datetime` holding
+     * exactly `0000-00-00 00:00:00`.
+     *
+     * They are excluded rather than converted, because a zero date is a "no value" placeholder and
+     * carries no instant, so there is nothing to shift. PHP cannot represent one either: it reads that
+     * value as -0001-11-30, so converting would have replaced the placeholder with a nonsense date and
+     * destroyed the only signal that the field was never set.
+     *
+     * Reported rather than silently skipped, so the count is visible to whoever runs this.
+     */
+    private function reportZeroDates(): void
+    {
+        foreach (self::TARGETS as [$table, , $column]) {
+            $zeroes = (int) $this->connection->fetchOne(sprintf(
+                'SELECT COUNT(*) FROM %s WHERE %s IS NOT NULL'
+                . ' AND (YEAR(%s) = 0 OR MONTH(%s) = 0 OR DAY(%s) = 0)',
+                $table,
+                $column,
+                $column,
+                $column,
+                $column,
+            ));
+
+            $this->warnIf(
+                $zeroes > 0,
+                sprintf(
+                    '%s.%s has %d zero or partial-zero date(s), for example 0000-00-00 00:00:00. They are '
+                    . 'placeholders rather than instants, so they are left untouched. Nothing is lost, but '
+                    . 'they are worth cleaning up separately.',
+                    $table,
+                    $column,
+                    $zeroes,
+                )
+            );
         }
     }
 
@@ -194,8 +242,10 @@ final class Version20260815234500 extends AbstractMigration
             $roundTrip !== $stored,
             sprintf(
                 '%s.%s holds the value "%s", which does not survive a %s to %s round trip (it comes back '
-                . 'as "%s"). That is almost certainly a wall clock inside a spring forward gap. Converting '
-                . 'it would make down() lossy. Inspect that row before running this migration.',
+                . 'as "%s"). Converting it would make down() lossy, so nothing has been changed. '
+                . 'The usual cause is a wall clock inside a spring forward hour that never existed, for '
+                . 'example 02:30 on the last Sunday of March. Zero and partial-zero dates are already '
+                . 'excluded, so if this fires it is something else. Inspect that row before retrying.',
                 $table,
                 $column,
                 $stored,
