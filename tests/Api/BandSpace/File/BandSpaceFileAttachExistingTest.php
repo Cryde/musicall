@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\File;
 
 use App\Enum\BandSpace\FinanceEntryScope;
+use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -210,5 +211,48 @@ class BandSpaceFileAttachExistingTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * Same rule as the archived song and the archived setlist, one module over: a task the band has
+     * closed takes no new document, while detaching one already attached stays possible.
+     */
+    public function test_attach_existing_to_an_archived_task_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Done,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+        $file = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/files/' . $file->id . '/attach',
+            ['sourceType' => 'task', 'sourceId' => $task->id],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
+        $attachmentRepo = self::getContainer()->get(BandSpaceFileAttachmentRepository::class);
+        $this->assertNull($attachmentRepo->findOneByFileAndSource($fileRepo->find($file->id), 'task', $task->id));
     }
 }

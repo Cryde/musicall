@@ -9,6 +9,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceTaskActivityType;
 use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\TaskRepository;
+use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\TaskColumnPositionsGuard;
 use DateTime;
@@ -23,6 +24,7 @@ readonly class TaskMoveProcedure
         private TaskRepository $taskRepository,
         private TaskColumnPositionsGuard $columnPositionsGuard,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
+        private TaskWriteGuard $taskWriteGuard,
     ) {
     }
 
@@ -41,6 +43,10 @@ readonly class TaskMoveProcedure
         if (!$task instanceof Task) {
             throw new BadRequestHttpException(sprintf('Tâche %s introuvable dans ce Band Space', $taskId));
         }
+
+        // Refused outright rather than per field: status, completedDatetime and position are the
+        // three this writes, and none of them means anything on a task that is out of the board.
+        $this->taskWriteGuard->assertWritable($task);
 
         $targetStatus = TaskStatus::from($newStatus);
 

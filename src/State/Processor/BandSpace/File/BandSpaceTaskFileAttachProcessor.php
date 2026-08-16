@@ -16,6 +16,7 @@ use App\Repository\BandSpace\BandSpaceFileTagRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\TaskWriteGuard;
 use App\EventListener\BandSpaceFileQuotaApproachingHeaderListener;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
@@ -39,6 +40,7 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private TaskWriteGuard $taskWriteGuard,
         private TaskRepository $taskRepository,
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFileTagRepository $tagRepository,
@@ -64,6 +66,10 @@ readonly class BandSpaceTaskFileAttachProcessor implements ProcessorInterface
         if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
+
+        // Refused before the upload is stored or the quota is touched: this is the second door onto
+        // the same attachment, the one that uploads instead of reusing an existing file.
+        $this->taskWriteGuard->assertWritable($task);
 
         $upload = $data->uploadedFile;
         if ($upload === null) {

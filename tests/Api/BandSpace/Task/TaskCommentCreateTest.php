@@ -3,6 +3,7 @@
 namespace App\Tests\Api\BandSpace\Task;
 
 use App\Enum\BandSpace\BandSpaceModule;
+use App\Enum\BandSpace\TaskStatus;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Tests\ApiTestAssertionsTrait;
@@ -166,5 +167,47 @@ class TaskCommentCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * The drawer hides the composer on an archived task and calls it read-only, so the server has
+     * to mean it: the thread of a closed record is still read, never added to.
+     */
+    public function test_comment_on_an_archived_task_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Done,
+            'archiveDatetime' => new \DateTimeImmutable('2026-04-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/' . $task->id . '/comments',
+            ['content' => 'Un mot après coup'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Une tâche archivée est en lecture seule, désarchivez-la pour la modifier',
+        ]);
+
+        $this->assertCount(0, self::getContainer()->get(TaskCommentRepository::class)->findByTask($task));
+
+        $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
+        $this->assertCount(0, $activityRepo->findForResource($bandSpace, BandSpaceModule::Task, $task->id));
     }
 }

@@ -255,6 +255,62 @@ class TaskReorderTest extends ApiTestCase
         $this->assertSame(2, $taskRepo->find($archivedId)->position);
     }
 
+    /**
+     * Reorder is the one write path onto a Task that TaskWriteGuard does not cover, because it is
+     * already refused: assertCoversColumn compares the payload against findActiveColumn, which
+     * filters archived tasks out, so naming one is a set mismatch. That protection is a side
+     * effect of a rule written for stale filtered boards, not a decision about archived tasks, so
+     * it would disappear silently if the guard ever moved from exact-set to subset semantics.
+     */
+    public function test_reorder_refuses_a_payload_naming_an_archived_task(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $active = TaskFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'status' => TaskStatus::Todo, 'position' => 0])->create();
+        $archived = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'position' => 1,
+            'archiveDatetime' => new \DateTimeImmutable('-1 day'),
+        ])->create();
+
+        $activeId = (string) $active->id;
+        $archivedId = (string) $archived->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/reorder',
+            [
+                'positions' => [
+                    ['id' => $archivedId, 'position' => 0],
+                    ['id' => $activeId, 'position' => 1],
+                ],
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Les positions doivent couvrir exactement les tâches de cette colonne',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Les positions doivent couvrir exactement les tâches de cette colonne',
+        ]);
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $taskRepo = self::getContainer()->get(TaskRepository::class);
+        $this->assertSame(0, $taskRepo->find($activeId)->position);
+        $this->assertSame(1, $taskRepo->find($archivedId)->position);
+    }
+
     public function test_reorder_rejects_non_contiguous_positions(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

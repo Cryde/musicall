@@ -22,6 +22,7 @@ use App\Repository\BandSpace\TaskRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\SetlistWriteGuard;
 use App\Security\BandSpace\SongWriteGuard;
+use App\Security\BandSpace\TaskWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\File\BandSpaceFileBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,6 +42,7 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         private BandSpaceMemberChecker $memberChecker,
         private SetlistWriteGuard $setlistWriteGuard,
         private SongWriteGuard $songWriteGuard,
+        private TaskWriteGuard $taskWriteGuard,
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private TaskRepository $taskRepository,
@@ -124,6 +126,8 @@ readonly class BandSpaceFileAttachProcessor implements ProcessorInterface
         if (!$task instanceof \App\Entity\BandSpace\Task) {
             throw new NotFoundHttpException('Tâche introuvable');
         }
+
+        $this->taskWriteGuard->assertWritable($task);
 
         return $task->title;
     }
