@@ -773,6 +773,69 @@ class UserNotificationTest extends ApiTestCase
                         'agenda_entry_id' => (string) $entry->id,
                         'entry_title' => 'Titre actuel',
                         'event_datetime' => '2026-08-15T20:00:00+00:00',
+                        'is_all_day' => false,
+                        'actor_id' => 'actor-1',
+                        'actor_username' => 'creator',
+                    ],
+                    'read_datetime' => null,
+                    'creation_datetime' => $notification->creationDatetime->format(\DATE_ATOM),
+                ],
+            ],
+        ]);
+    }
+
+    public function test_agenda_entry_notification_recovers_an_all_day_flag_its_payload_never_carried(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Festival',
+            'eventDatetime' => new \DateTimeImmutable('2026-08-15T00:00:00+00:00'),
+            'isAllDay' => true,
+        ])->create();
+        // Written before the payload said whether an entry covers a day: the key is simply absent.
+        $notification = NotificationFactory::new([
+            'recipient' => $user,
+            'type' => NotificationType::BandSpaceAgendaEntryCreated,
+            'payload' => [
+                'band_space_id' => (string) $bandSpace->id,
+                'band_space_name' => 'The Rockers',
+                'agenda_entry_id' => (string) $entry->id,
+                'entry_title' => 'Festival',
+                'event_datetime' => '2026-08-15T00:00:00+00:00',
+                'actor_id' => 'actor-1',
+                'actor_username' => 'creator',
+            ],
+            'creationDatetime' => new \DateTimeImmutable('2026-05-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
+
+        // The entry still exists, so the flag comes back from it and the feed stops having to guess
+        // an all-day datetime from its shape (#877).
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserNotification',
+            '@id' => '/api/user/notifications',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/user/notifications/' . $notification->id,
+                    '@type' => 'UserNotification',
+                    'id' => (string) $notification->id,
+                    'type' => 'band_space_agenda_entry_created',
+                    'payload' => [
+                        'band_space_id' => (string) $bandSpace->id,
+                        'band_space_name' => 'The Rockers',
+                        'agenda_entry_id' => (string) $entry->id,
+                        'entry_title' => 'Festival',
+                        'event_datetime' => '2026-08-15T00:00:00+00:00',
+                        'is_all_day' => true,
                         'actor_id' => 'actor-1',
                         'actor_username' => 'creator',
                     ],
@@ -880,7 +943,9 @@ class UserNotificationTest extends ApiTestCase
         $this->client->jsonRequest('GET', '/api/user/notifications', [], ['HTTP_ACCEPT' => 'application/ld+json']);
 
         // Neither the title nor the date is refreshed: where and when the band rehearses now is no
-        // longer their business.
+        // longer their business. Nothing is added either, so a payload stored before `is_all_day`
+        // existed keeps no such key, and the feed reads a missing flag as false: the datetime is
+        // shown as the instant it was already being shown as.
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/UserNotification',

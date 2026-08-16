@@ -71,6 +71,7 @@ import bandSpaceSettingsApi from '../../api/bandSpace/band-space-settings.js'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import relativeDate from '../../helper/date/relative-date.js'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
+import { withoutAllDayPin } from '../../utils/agendaDate.js'
 import { formatDateLong } from '../../utils/date.js'
 
 const props = defineProps({
@@ -92,6 +93,14 @@ const isUnread = computed(() => props.notification.read_datetime === null)
 function publicationTarget(payload) {
   const name = payload.is_course ? 'app_course_show' : 'app_publication_show'
   return { name, params: { slug: payload.publication_slug } }
+}
+
+// An all day event covers a written day rather than an instant, and reading it as one shows the
+// previous day to anyone west of UTC. The payload says which it is; a notification stored before
+// that flag existed carries no key and reads as timed, which is what it was stored as, and the
+// enricher puts the real flag back on any entry that still exists.
+function agendaEventDay(payload) {
+  return formatDateLong(withoutAllDayPin(payload.event_datetime, payload.is_all_day === true))
 }
 
 // type -> row rendering. Each future producer adds its branch here.
@@ -225,7 +234,7 @@ const TYPE_CONFIG = {
     icon: 'pi pi-calendar-plus',
     avatarClass: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300',
     title: payload.actor_username,
-    preview: `a ajouté l'événement « ${payload.entry_title} » le ${formatDateLong(payload.event_datetime)}`,
+    preview: `a ajouté l'événement « ${payload.entry_title} » le ${agendaEventDay(payload)}`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.AGENDA, params: { id: payload.band_space_id } }
   }),

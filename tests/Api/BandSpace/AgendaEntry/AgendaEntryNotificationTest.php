@@ -78,6 +78,7 @@ class AgendaEntryNotificationTest extends ApiTestCase
             'agenda_entry_id' => (string) $entry->id,
             'entry_title' => 'Répétition générale',
             'event_datetime' => '2026-06-15T20:00:00+00:00',
+            'is_all_day' => false,
             'actor_id' => $creatorId,
             'actor_username' => $creatorUsername,
         ];
@@ -91,6 +92,66 @@ class AgendaEntryNotificationTest extends ApiTestCase
 
         // The creator is never notified of their own entry.
         $this->assertCount(0, $notificationRepository->findForRecipient($creator, 10, 0));
+    }
+
+    public function test_creating_an_all_day_entry_says_so_in_the_notification(): void
+    {
+        $creator = UserFactory::new()->asBaseUser()->create();
+        $alice = UserFactory::new()->create(['username' => 'alice', 'email' => 'alice@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create(['name' => 'The Rockers']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $creator])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $alice])->create();
+
+        $bandSpaceId = (string) $bandSpace->id;
+        $creatorId = (string) $creator->id;
+        $creatorUsername = $creator->username;
+
+        $this->client->loginUser($creator);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpaceId . '/agenda-entries',
+            ['title' => 'Festival', 'eventDatetime' => '2026-06-15', 'isAllDay' => true],
+            self::HEADERS
+        );
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $entry = self::getContainer()->get(AgendaEntryRepository::class)->findByBandSpace($bandSpace)[0];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpaceId,
+            'title' => 'Festival',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-06-15T00:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => true,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $creator->id,
+            'creator_username' => $creatorUsername,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+
+        // The entry is pinned to UTC midnight, which reads as the day before for a member in
+        // Martinique unless the payload says the datetime is a written day (#877).
+        $notificationRepository = self::getContainer()->get(NotificationRepository::class);
+        $notifications = $notificationRepository->findForRecipient($alice, 10, 0);
+        $this->assertCount(1, $notifications);
+        $this->assertSame(NotificationType::BandSpaceAgendaEntryCreated, $notifications[0]->type);
+        $this->assertSame([
+            'band_space_id' => $bandSpaceId,
+            'band_space_name' => 'The Rockers',
+            'agenda_entry_id' => (string) $entry->id,
+            'entry_title' => 'Festival',
+            'event_datetime' => '2026-06-15T00:00:00+00:00',
+            'is_all_day' => true,
+            'actor_id' => $creatorId,
+            'actor_username' => $creatorUsername,
+        ], $notifications[0]->payload);
     }
 
     public function test_creating_an_entry_in_a_solo_band_space_notifies_no_one(): void
