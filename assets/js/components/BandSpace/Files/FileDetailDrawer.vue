@@ -148,17 +148,29 @@
           Attaché à ({{ attachments.length }})
         </label>
         <div class="flex flex-col gap-1">
-          <div
-            v-for="att in attachments"
+          <component
+            :is="att.route ? RouterLink : 'div'"
+            v-for="att in attachmentLinks"
             :key="`${att.source_type}-${att.source_id}`"
+            :to="att.route"
             class="flex items-center gap-2 p-2 rounded-md border border-surface-200 dark:border-surface-700 text-sm"
+            :class="
+              att.route
+                ? 'transition-colors hover:border-primary-500 hover:bg-surface-50 dark:hover:bg-surface-800'
+                : ''
+            "
           >
-            <i :class="attachmentIcon(att.source_type)"></i>
+            <i :class="fileSourceIcon(att.source_type)"></i>
             <div class="flex-1 min-w-0">
-              <div class="text-xs text-surface-400">{{ attachmentTypeLabel(att.source_type) }}</div>
+              <div class="text-xs text-surface-400">{{ fileSourceLabel(att.source_type) }}</div>
               <div class="truncate font-medium">{{ att.source_label }}</div>
             </div>
-          </div>
+            <i
+              v-if="att.route"
+              class="pi pi-arrow-right text-xs text-surface-400"
+              aria-hidden="true"
+            ></i>
+          </component>
         </div>
         <small class="text-xs text-surface-400 italic">
           Pour détacher ce fichier, utilisez la ressource d'origine.
@@ -211,6 +223,13 @@ import Select from 'primevue/select'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import {
+  fileSourceAttachedMessage,
+  fileSourceIcon,
+  fileSourceLabel,
+  fileSourceRoute
+} from '../../../constants/fileSources.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -248,6 +267,14 @@ const canDelete = computed(() =>
 
 const attachments = computed(() => file.value?.attachments ?? [])
 
+/** Each attachment paired with where it sends the member, null when there is nowhere to go. */
+const attachmentLinks = computed(() =>
+  attachments.value.map((att) => ({
+    ...att,
+    route: fileSourceRoute(att.source_type, props.bandSpaceId, att.source_id)
+  }))
+)
+
 const isAttachedToSource = computed(() => attachments.value.length > 0)
 
 const attachedSourceMessage = computed(() => {
@@ -256,16 +283,8 @@ const attachedSourceMessage = computed(() => {
   if (list.length > 1) {
     return `Ce fichier est attaché à ${list.length} ressources. Détachez-le d'abord depuis chacune.`
   }
-  switch (list[0].source_type) {
-    case 'task':
-      return "Ce fichier est attaché à une tâche. Détachez-le d'abord depuis la tâche."
-    case 'finance':
-      return "Ce fichier est attaché à une entrée financière. Détachez-le d'abord depuis l'entrée."
-    case 'note':
-      return "Ce fichier est attaché à une note. Détachez-le d'abord depuis la note."
-    default:
-      return "Ce fichier est attaché à une autre ressource. Détachez-le d'abord."
-  }
+
+  return fileSourceAttachedMessage(list[0].source_type)
 })
 
 const deleteDisabledReason = computed(() => {
@@ -273,32 +292,6 @@ const deleteDisabledReason = computed(() => {
   if (!canDelete.value) return 'Seul le créateur ou un administrateur peut supprimer ce fichier'
   return null
 })
-
-function attachmentIcon(sourceType) {
-  switch (sourceType) {
-    case 'task':
-      return 'pi pi-check-square text-blue-500'
-    case 'finance':
-      return 'pi pi-euro text-amber-600'
-    case 'note':
-      return 'pi pi-file-edit text-purple-500'
-    default:
-      return 'pi pi-link text-surface-500'
-  }
-}
-
-function attachmentTypeLabel(sourceType) {
-  switch (sourceType) {
-    case 'task':
-      return 'Tâche'
-    case 'finance':
-      return 'Entrée financière'
-    case 'note':
-      return 'Note'
-    default:
-      return 'Ressource'
-  }
-}
 
 const folderOptions = computed(() => {
   const out = [{ label: 'Racine', value: null }]

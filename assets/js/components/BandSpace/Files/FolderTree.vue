@@ -52,7 +52,7 @@
         :class="virtualButtonClasses(virtual.id)"
         @click="emit('select', virtual.id)"
       >
-        <i :class="virtualIcon(virtual.source)"></i>
+        <i :class="fileSourceIcon(virtual.source)"></i>
         <span class="flex-1 truncate">{{ virtual.name }}</span>
         <span class="text-xs text-surface-500 tabular-nums">{{ virtual.file_count }}</span>
       </button>
@@ -83,6 +83,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { applyMove, canDrop } from '../../../composables/useFolderDragDrop.js'
+import { fileSourceIcon } from '../../../constants/fileSources.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import FolderDeleteDialog from './FolderDeleteDialog.vue'
 import FolderEditDialog from './FolderEditDialog.vue'
@@ -184,14 +185,5 @@ function virtualButtonClasses(id) {
   return props.activeFolderId === id
     ? 'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-medium'
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
-}
-
-function virtualIcon(source) {
-  if (source === 'task') return 'pi pi-check-square text-blue-500'
-  if (source === 'finance') return 'pi pi-euro text-amber-600'
-  if (source === 'note') return 'pi pi-file-edit text-purple-500'
-  if (source === 'song') return 'pi pi-headphones text-emerald-600'
-  if (source === 'setlist') return 'pi pi-list text-rose-600'
-  return 'pi pi-folder text-surface-500'
 }
 </script>

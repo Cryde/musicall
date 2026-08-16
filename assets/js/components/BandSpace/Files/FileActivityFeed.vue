@@ -28,24 +28,17 @@
 <script setup>
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { fileSourceDefiniteNoun } from '../../../constants/fileSources.js'
 import Avatar from '../../User/Avatar.vue'
 
 defineProps({
   activities: { type: Array, default: () => [] }
 })
 
-// Worded so they read correctly after « à » or « de » without contracting, which lets the attach,
-// detach and source_deleted sentences share one list.
-const SOURCE_NOUNS = {
-  task: 'la tâche',
-  finance: "l'entrée financière",
-  note: 'la note',
-  song: 'la chanson',
-  setlist: 'la setlist'
-}
-
+// The shared nouns are worded so they read correctly after « à » or « de » without contracting,
+// which lets the attach, detach and source_deleted sentences share one list.
 function sourceNoun(activity) {
-  return SOURCE_NOUNS[activity.payload?.source_type] ?? null
+  return fileSourceDefiniteNoun(activity.payload?.source_type)
 }
 
 function quotedSourceLabel(activity) {
