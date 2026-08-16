@@ -141,19 +141,24 @@ import {
   describePosition,
   FINE_NUDGE_STEP,
   findAlignmentGuides,
-  MAX_SCALE,
-  MIN_SCALE,
   NUDGE_STEP,
   nextQuarterTurn,
-  rotationFromPointer,
-  rotationGrabOffset,
-  SCALE_STEP,
   SNAP_STEP,
   SYMBOL_SIZE_PERCENT,
   snapFraction,
   toFraction
 } from '../../../../constants/stagePlot.js'
 import { TECH_RIDER_COLOURS } from '../../../../constants/techRiderColours.js'
+import {
+  distanceFrom,
+  moveDraggedElement,
+  placeFraction,
+  rotateDraggedElement,
+  scaleDraggedElement,
+  startMoveDrag,
+  startRotateDrag,
+  startScaleDrag
+} from '../../../../utils/stagePlotDrag.js'
 import StagePlotIcon from './StagePlotIcon.vue'
 
 const props = defineProps({
@@ -233,12 +238,6 @@ function stageFractions(event) {
   }
 }
 
-// Alt places freely; without it everything lands on the grid, because a plot where nothing lines
-// up looks careless on a printed page.
-function applySnap(value, event) {
-  return event.altKey ? toFraction(value) : snapFraction(value)
-}
-
 function handleStagePointerDown() {
   if (props.readOnly) return
   emit('select', null)
@@ -251,13 +250,7 @@ function handleElementPointerDown(event, element) {
   if (drag || scaleDrag || rotateDrag) return
 
   emit('select', element.id)
-  const start = stageFractions(event)
-  drag = {
-    element,
-    offsetX: element.x - start.x,
-    offsetY: element.y - start.y,
-    pointerId: event.pointerId
-  }
+  drag = startMoveDrag(element, stageFractions(event), event.pointerId)
 
   // Captured on the stage, so a fast drag that outruns the pointer keeps moving the element
   // instead of dropping it the moment the cursor leaves the icon.
@@ -267,27 +260,36 @@ function handleElementPointerDown(event, element) {
   stageRef.value.addEventListener('pointercancel', handlePointerUp)
 }
 
+function endMoveDrag(pointerId) {
+  drag = null
+  alignmentGuides.value = NO_GUIDES
+
+  stageRef.value.releasePointerCapture(pointerId)
+  stageRef.value.removeEventListener('pointermove', handlePointerMove)
+  stageRef.value.removeEventListener('pointerup', handlePointerUp)
+  stageRef.value.removeEventListener('pointercancel', handlePointerUp)
+}
+
 function handlePointerMove(event) {
   if (!drag || event.pointerId !== drag.pointerId) return
 
-  const position = stageFractions(event)
-  drag.element.x = applySnap(position.x + drag.offsetX, event)
-  drag.element.y = applySnap(position.y + drag.offsetY, event)
+  const moved = moveDraggedElement(drag, props.elements, stageFractions(event), event.altKey)
+  // The element left the list under the gesture, a reseed dropping it or a delete elsewhere. There
+  // is nothing to move, so the gesture ends here rather than throwing on every further move.
+  if (!moved) {
+    endMoveDrag(event.pointerId)
 
-  alignmentGuides.value = findAlignmentGuides(drag.element, props.elements)
+    return
+  }
+
+  alignmentGuides.value = findAlignmentGuides(moved, props.elements)
 }
 
 function handlePointerUp(event) {
   if (!drag || event.pointerId !== drag.pointerId) return
 
-  const id = drag.element.id
-  drag = null
-  alignmentGuides.value = NO_GUIDES
-
-  stageRef.value.releasePointerCapture(event.pointerId)
-  stageRef.value.removeEventListener('pointermove', handlePointerMove)
-  stageRef.value.removeEventListener('pointerup', handlePointerUp)
-  stageRef.value.removeEventListener('pointercancel', handlePointerUp)
+  const id = drag.elementId
+  endMoveDrag(event.pointerId)
 
   // No change event to emit: the parent's dirty state is computed from the same reactive elements
   // this mutates, so it already knows. Focus follows the drag so the arrows act on what moved.
@@ -321,12 +323,7 @@ function handleRotatePointerDown(event, element) {
   }
   const point = { x: event.clientX, y: event.clientY }
 
-  rotateDrag = {
-    element,
-    centre,
-    grabOffset: rotationGrabOffset(centre, point, element.rotation ?? 0),
-    pointerId: event.pointerId
-  }
+  rotateDrag = startRotateDrag(element, centre, point, event.pointerId)
 
   stageRef.value.setPointerCapture(event.pointerId)
   stageRef.value.addEventListener('pointermove', handleRotatePointerMove)
@@ -334,27 +331,28 @@ function handleRotatePointerDown(event, element) {
   stageRef.value.addEventListener('pointercancel', handleRotatePointerUp)
 }
 
+function endRotateDrag(pointerId) {
+  rotateDrag = null
+
+  stageRef.value.releasePointerCapture(pointerId)
+  stageRef.value.removeEventListener('pointermove', handleRotatePointerMove)
+  stageRef.value.removeEventListener('pointerup', handleRotatePointerUp)
+  stageRef.value.removeEventListener('pointercancel', handleRotatePointerUp)
+}
+
 function handleRotatePointerMove(event) {
   if (!rotateDrag || event.pointerId !== rotateDrag.pointerId) return
 
-  rotateDrag.element.rotation = rotationFromPointer(
-    rotateDrag.centre,
-    { x: event.clientX, y: event.clientY },
-    rotateDrag.grabOffset,
-    !event.altKey
-  )
+  const point = { x: event.clientX, y: event.clientY }
+  const turned = rotateDraggedElement(rotateDrag, props.elements, point, !event.altKey)
+  if (!turned) endRotateDrag(event.pointerId)
 }
 
 function handleRotatePointerUp(event) {
   if (!rotateDrag || event.pointerId !== rotateDrag.pointerId) return
 
-  const id = rotateDrag.element.id
-  rotateDrag = null
-
-  stageRef.value.releasePointerCapture(event.pointerId)
-  stageRef.value.removeEventListener('pointermove', handleRotatePointerMove)
-  stageRef.value.removeEventListener('pointerup', handleRotatePointerUp)
-  stageRef.value.removeEventListener('pointercancel', handleRotatePointerUp)
+  const id = rotateDrag.elementId
+  endRotateDrag(event.pointerId)
 
   elementRefs.get(id)?.focus()
 }
@@ -372,16 +370,10 @@ function handleScalePointerDown(event, element) {
     x: box.left + box.width * element.x,
     y: box.top + box.height * element.y
   }
-  const startDistance = Math.hypot(event.clientX - centre.x, event.clientY - centre.y)
+  const startDistance = distanceFrom(centre, { x: event.clientX, y: event.clientY })
   if (startDistance < 1) return
 
-  scaleDrag = {
-    element,
-    centre,
-    startDistance,
-    startScale: element.scale ?? 1,
-    pointerId: event.pointerId
-  }
+  scaleDrag = startScaleDrag(element, centre, startDistance, event.pointerId)
 
   stageRef.value.setPointerCapture(event.pointerId)
   stageRef.value.addEventListener('pointermove', handleScalePointerMove)
@@ -389,33 +381,28 @@ function handleScalePointerDown(event, element) {
   stageRef.value.addEventListener('pointercancel', handleScalePointerUp)
 }
 
+function endScaleDrag(pointerId) {
+  scaleDrag = null
+
+  stageRef.value.releasePointerCapture(pointerId)
+  stageRef.value.removeEventListener('pointermove', handleScalePointerMove)
+  stageRef.value.removeEventListener('pointerup', handleScalePointerUp)
+  stageRef.value.removeEventListener('pointercancel', handleScalePointerUp)
+}
+
 function handleScalePointerMove(event) {
   if (!scaleDrag || event.pointerId !== scaleDrag.pointerId) return
 
-  const distance = Math.hypot(
-    event.clientX - scaleDrag.centre.x,
-    event.clientY - scaleDrag.centre.y
-  )
-  const next = (scaleDrag.startScale * distance) / scaleDrag.startDistance
-
-  // Clamped and stepped to what the inspector's slider offers, so dragging cannot produce a value
-  // the panel is then unable to show or the server would refuse.
-  scaleDrag.element.scale = Math.min(
-    MAX_SCALE,
-    Math.max(MIN_SCALE, Math.round(next / SCALE_STEP) * SCALE_STEP)
-  )
+  const point = { x: event.clientX, y: event.clientY }
+  const resized = scaleDraggedElement(scaleDrag, props.elements, point)
+  if (!resized) endScaleDrag(event.pointerId)
 }
 
 function handleScalePointerUp(event) {
   if (!scaleDrag || event.pointerId !== scaleDrag.pointerId) return
 
-  const id = scaleDrag.element.id
-  scaleDrag = null
-
-  stageRef.value.releasePointerCapture(event.pointerId)
-  stageRef.value.removeEventListener('pointermove', handleScalePointerMove)
-  stageRef.value.removeEventListener('pointerup', handleScalePointerUp)
-  stageRef.value.removeEventListener('pointercancel', handleScalePointerUp)
+  const id = scaleDrag.elementId
+  endScaleDrag(event.pointerId)
 
   elementRefs.get(id)?.focus()
 }
@@ -428,7 +415,11 @@ function handleDrop(event) {
   if (!slug) return
 
   const position = stageFractions(event)
-  emit('place', { slug, x: applySnap(position.x, event), y: applySnap(position.y, event) })
+  emit('place', {
+    slug,
+    x: placeFraction(position.x, event.altKey),
+    y: placeFraction(position.y, event.altKey)
+  })
 }
 
 /**
