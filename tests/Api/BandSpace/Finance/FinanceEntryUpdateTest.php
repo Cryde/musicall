@@ -18,8 +18,10 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\BandSpace\FinanceEntrySplitFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\FinanceAmountRangeValidator;
+use App\Validator\BandSpace\PersonalScopeWithoutSplitsValidator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Choice;
@@ -1000,5 +1002,211 @@ class FinanceEntryUpdateTest extends ApiTestCase
             'type' => '/validation_errors/' . Choice::NO_SUCH_CHOICE_ERROR,
             'title' => 'An error occurred',
         ]);
+    }
+
+    /**
+     * The flip was the one way to reach a personal entry carrying splits: creating a split on an entry
+     * that is already personal is refused by SplitNotPersonal. Left open, it turned shared accounting
+     * into a private row while the splits stayed behind, naming members who could no longer see the
+     * entry they belonged to and still weighing on their contribution total.
+     */
+    public function test_update_entry_scope_to_personal_is_refused_while_splits_exist(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $other = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $otherMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        $entry = $this->createPlannedEntry($category);
+
+        FinanceEntrySplitFactory::new(['entry' => $entry, 'member' => $otherMembership, 'amount' => 25000])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['scope' => 'personal'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . PersonalScopeWithoutSplitsValidator::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'scope',
+                    'message' => 'Supprimez d\'abord la répartition de cette entrée pour la passer en personnelle.',
+                    'code' => PersonalScopeWithoutSplitsValidator::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'scope: Supprimez d\'abord la répartition de cette entrée pour la passer en personnelle.',
+            'description' => 'scope: Supprimez d\'abord la répartition de cette entrée pour la passer en personnelle.',
+            'type' => '/validation_errors/' . PersonalScopeWithoutSplitsValidator::ERROR_CODE,
+            'title' => 'An error occurred',
+        ]);
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $this->assertSame(FinanceEntryScope::Band, $entryRepository->find($entry->id)->scope);
+    }
+
+    /** The refusal is the transition, not the scope: nothing to strand means nothing to refuse. */
+    public function test_update_entry_scope_to_personal_is_allowed_without_splits(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        $entry = $this->createPlannedEntry($category);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['scope' => 'personal'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $updatedEntry = $entryRepository->find($entry->id);
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FinanceEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            '@type' => 'FinanceEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'category_id' => $category->id,
+            'category_name' => 'Studio',
+            'label' => 'Mixage',
+            'type' => 'expense',
+            'status' => 'planned',
+            'amount' => 50000,
+            'amount_min' => null,
+            'amount_max' => null,
+            'date' => '2024-01-15',
+            'scope' => 'personal',
+            'member_id' => $membership->id,
+            'member_name' => 'base_admin',
+            'recurrence_id' => null,
+            'is_former_member' => false,
+            'split_warning' => false,
+            'creation_datetime' => '2024-02-01T10:00:00+00:00',
+            'update_datetime' => $updatedEntry->updateDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /** The other direction widens who may see the entry, so it stays open. */
+    public function test_update_entry_scope_from_personal_to_band_is_allowed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Mon achat perso',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'amount' => 50000,
+            'member' => $membership,
+            'date' => new \DateTime('2024-01-15'),
+            'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['scope' => 'band'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $this->assertSame(FinanceEntryScope::Band, $entryRepository->find($entry->id)->scope);
+    }
+
+    /**
+     * The guard watches the band to personal transition, not the personal scope itself. An entry
+     * stranded before this rule existed still carries splits, and the drawer sends scope on every
+     * save, so guarding the scope rather than the change would leave those entries uneditable with
+     * no way out: the split UI is hidden on a personal entry, so the user cannot clear what blocks
+     * them. The early return this pins reads as redundant until you know that.
+     */
+    public function test_update_a_personal_entry_that_already_carries_splits_is_allowed(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $other = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $otherMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+
+        $entry = FinanceEntryFactory::new([
+            'category' => $category,
+            'label' => 'Entrée héritée',
+            'type' => FinanceEntryType::Expense,
+            'status' => FinanceEntryStatus::Planned,
+            'scope' => FinanceEntryScope::Personal,
+            'amount' => 50000,
+            'member' => $membership,
+            'date' => new \DateTime('2024-01-15'),
+            'creationDatetime' => new \DateTime('2024-02-01 10:00:00'),
+        ])->create();
+        FinanceEntrySplitFactory::new(['entry' => $entry, 'member' => $otherMembership, 'amount' => 25000])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['label' => 'Entrée héritée renommée', 'scope' => 'personal'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $saved = $entryRepository->find($entry->id);
+        $this->assertSame('Entrée héritée renommée', $saved->label);
+        $this->assertSame(FinanceEntryScope::Personal, $saved->scope);
+    }
+
+    /**
+     * A band entry carrying splits stays fully editable: the drawer sends the whole form on every save,
+     * so scope: band travels with a libellé change and must not be read as a transition.
+     */
+    public function test_update_entry_with_splits_is_untouched_when_the_scope_does_not_change(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $other = UserFactory::new()->create(['username' => 'other_user', 'email' => 'other@test.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $otherMembership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $other])->create();
+        $category = FinanceCategoryFactory::new(['bandSpace' => $bandSpace, 'name' => 'Studio', 'position' => 0])->create();
+        $entry = $this->createPlannedEntry($category);
+
+        FinanceEntrySplitFactory::new(['entry' => $entry, 'member' => $otherMembership, 'amount' => 25000])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/finance/entries/' . $entry->id,
+            ['label' => 'Mixage final', 'scope' => 'band'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $entryRepository = self::getContainer()->get(FinanceEntryRepository::class);
+        $this->assertSame('Mixage final', $entryRepository->find($entry->id)->label);
     }
 }

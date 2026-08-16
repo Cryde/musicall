@@ -14,10 +14,12 @@ use App\State\Processor\BandSpace\FinanceRecurrenceDeleteProcessor;
 use App\State\Processor\BandSpace\FinanceRecurrenceUpdateProcessor;
 use App\State\Provider\BandSpace\FinanceRecurrenceCollectionProvider;
 use App\State\Provider\BandSpace\FinanceRecurrenceItemProvider;
+use App\Validator\BandSpace\PersonalScopeWithoutSplits;
 use App\Validator\BandSpace\RecurrenceEndDate;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[RecurrenceEndDate]
+#[PersonalScopeWithoutSplits]
 #[ApiResource(
     shortName: 'FinanceRecurrence',
     operations: [
