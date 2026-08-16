@@ -10,6 +10,7 @@ use App\Service\BandSpace\BandSpaceActivityFilter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
@@ -68,6 +69,29 @@ class BandSpaceActivityRepository extends ServiceEntityRepository
             ->setParameter('actor', $actor)
             ->orderBy('a.creationDatetime', 'DESC')
             ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Scoped by band space so an activity id belonging to another space resolves to null
+     * rather than leaking that row. The uuid check only short circuits an id that cannot match
+     * anything: a QueryBuilder lookup already returns null on a malformed id, unlike find() and
+     * findOneBy(), which coerce the identifier through the field type first and do throw.
+     */
+    public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceActivity
+    {
+        if (!Uuid::isValid($id)) {
+            return null;
+        }
+
+        return $this->createQueryBuilder('a')
+            ->addSelect('u')
+            ->leftJoin('a.actor', 'u')
+            ->where('a.id = :id')
+            ->andWhere('a.bandSpace = :bandSpace')
+            ->setParameter('id', $id)
+            ->setParameter('bandSpace', $bandSpace)
             ->getQuery()
             ->getOneOrNullResult();
     }

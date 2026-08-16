@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\BandSpace\BandSpaceActivityCollectionProvider;
+use App\State\Provider\BandSpace\BandSpaceActivityItemProvider;
 
 #[ApiResource(
     shortName: 'BandSpaceActivity',
@@ -35,7 +36,7 @@ use App\State\Provider\BandSpace\BandSpaceActivityCollectionProvider;
             openapi: new Operation(tags: ['Band Space Activity']),
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_activities_get_item',
-            provider: BandSpaceActivityCollectionProvider::class,
+            provider: BandSpaceActivityItemProvider::class,
         ),
     ],
     normalizationContext: ['skip_null_values' => false],
