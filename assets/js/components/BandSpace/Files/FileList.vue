@@ -124,6 +124,7 @@ import {
   canDrop,
   collectFolderAndDescendants
 } from '../../../composables/useFolderDragDrop.js'
+import { fileSourceDetachHint } from '../../../constants/fileSources.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -173,16 +174,8 @@ const contextFileSourceLabel = computed(() => {
   if (attachments.length > 1) {
     return "Détachez-le d'abord depuis chaque ressource"
   }
-  switch (attachments[0]?.source_type) {
-    case 'task':
-      return "Détachez-le d'abord depuis la tâche"
-    case 'finance':
-      return "Détachez-le d'abord depuis l'entrée"
-    case 'note':
-      return "Détachez-le d'abord depuis la note"
-    default:
-      return "Détachez-le d'abord depuis la ressource concernée"
-  }
+
+  return fileSourceDetachHint(attachments[0]?.source_type)
 })
 
 const contextMenuItems = computed(() => {

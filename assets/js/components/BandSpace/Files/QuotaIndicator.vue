@@ -81,6 +81,7 @@ import ProgressBar from 'primevue/progressbar'
 import Skeleton from 'primevue/skeleton'
 import { computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { QUOTA_BREAKDOWN_SOURCES } from '../../../constants/fileSources.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
@@ -101,39 +102,28 @@ const cappedPercentage = computed(() => {
 
 const quotaHint = 'Les versions précédentes des fichiers comptent dans le quota.'
 
-const SOURCE_LABELS = {
-  manual: 'Manuels',
-  task: 'Tâches',
-  finance: 'Finances'
-}
-const SOURCE_COLORS = {
-  manual: '#3b82f6',
-  task: '#8b5cf6',
-  finance: '#f59e0b'
-}
-
 const totalBreakdownBytes = computed(() => {
   if (!quota.value) return 0
   return (quota.value.breakdown_by_source ?? []).reduce((sum, row) => sum + (row.bytes || 0), 0)
 })
 
+// Walking the known buckets rather than the response keeps the order and the colours stable, and a
+// bucket the frontend has never heard of is left out on purpose: it would have no legend entry.
 const segments = computed(() => {
   if (!quota.value) return []
   const total = totalBreakdownBytes.value
-  return ['manual', 'task', 'finance']
-    .map((key) => {
-      const row = (quota.value.breakdown_by_source ?? []).find((r) => r.source === key)
-      const bytes = row?.bytes ?? 0
-      return {
-        key,
-        label: SOURCE_LABELS[key],
-        color: SOURCE_COLORS[key],
-        bytes,
-        pct: total > 0 ? (bytes / total) * 100 : 0,
-        widthPct: total > 0 ? (bytes / total) * 100 : 0
-      }
-    })
-    .filter((s) => s.bytes > 0)
+  return QUOTA_BREAKDOWN_SOURCES.map((source) => {
+    const row = (quota.value.breakdown_by_source ?? []).find((r) => r.source === source.key)
+    const bytes = row?.bytes ?? 0
+    return {
+      key: source.key,
+      label: source.label,
+      color: source.color,
+      bytes,
+      pct: total > 0 ? (bytes / total) * 100 : 0,
+      widthPct: total > 0 ? (bytes / total) * 100 : 0
+    }
+  }).filter((s) => s.bytes > 0)
 })
 
 const progressBarClass = computed(() => {
