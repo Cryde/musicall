@@ -468,7 +468,15 @@ async function handleSave() {
 
     if (entryId && splitManager) {
       try {
-        await splitManager.syncSplits(entryId)
+        // The répartition is written after the entry, so createEntry/updateEntry reloaded the lists
+        // while the old shares were still in place. Without this second reload the row keeps the
+        // split_warning badge the member just fixed, and the contributions bar keeps the old totals.
+        if (await splitManager.syncSplits(entryId)) {
+          await Promise.all([
+            financeStore.loadEntries(props.bandSpaceId),
+            financeStore.loadSummary(props.bandSpaceId)
+          ])
+        }
       } catch (error) {
         // The entry itself is saved, so this is not a failed save, but the repartition on screen is no
         // longer what the entry carries. The drawer stays open on the reloaded splits instead of

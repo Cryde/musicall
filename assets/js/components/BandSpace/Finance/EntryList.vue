@@ -72,6 +72,11 @@
           {{ entry.type === 'expense' ? 'Dépense' : 'Revenu' }}
         </span>
 
+        <!-- Répartition that no longer matches the amount. Sits against the amount because that is
+             what it disagrees with, and stays visible on mobile: it is the only place the mismatch
+             is reported outside the drawer. -->
+        <FinanceSplitWarning v-if="entry.split_warning" />
+
         <!-- Amount -->
         <span class="text-sm font-medium tabular-nums flex-shrink-0 text-right w-20 sm:w-24">
           {{ formatEntryAmount(entry) }}
@@ -100,6 +105,7 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { useBandSpaceFinanceStore } from '../../../store/bandSpace/bandSpaceFinance.js'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompact } from '../../../utils/date.js'
+import FinanceSplitWarning from './FinanceSplitWarning.vue'
 import FinanceStatusDot from './FinanceStatusDot.vue'
 
 const props = defineProps({
