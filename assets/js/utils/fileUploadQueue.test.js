@@ -47,7 +47,7 @@ const quotaError = {
   status: 422,
   isValidationError: false,
   message:
-    'Quota de stockage dépassé : 5000 octets utilisés + 900 octets envoyés > 5200 octets autorisés'
+    'Quota de stockage dépassé : 4.9 Ko utilisés sur 5.1 Ko autorisés, il manque 700 o pour ajouter 900 o.'
 }
 const rateLimitError = { status: 429, isValidationError: false, message: 'Rate Limit Exceeded' }
 const tooLargeError = {

@@ -162,10 +162,10 @@ class BandSpaceFileTrashTest extends ApiTestCase
             '@id' => '/api/errors/422',
             '@type' => 'Error',
             'title' => 'An error occurred',
-            'detail' => 'Quota de stockage dépassé : 900 octets utilisés + 900 octets envoyés > 1000 octets autorisés',
+            'detail' => 'Quota de stockage dépassé : 900 o utilisés sur 1000 o autorisés, il manque 800 o pour ajouter 900 o.',
             'status' => 422,
             'type' => '/errors/422',
-            'description' => 'Quota de stockage dépassé : 900 octets utilisés + 900 octets envoyés > 1000 octets autorisés',
+            'description' => 'Quota de stockage dépassé : 900 o utilisés sur 1000 o autorisés, il manque 800 o pour ajouter 900 o.',
         ]);
 
         // Still in the trash.

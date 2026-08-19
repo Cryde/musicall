@@ -208,7 +208,7 @@ export function rateLimitPauseNotice(waitMs) {
  * The quota is the one refusal with no violation attached: BandSpaceFileUploadProcessor answers 422
  * from QuotaExceededException only, every other rejection it raises is a 400, a 403, a 409 or a 415,
  * and API Platform's own 422 always carries violations. Matching on that rather than on the French
- * sentence keeps the wording free to change, which issue #830 is going to do.
+ * sentence is what let the wording be rewritten without touching this file.
  *
  * @param {{status?: number, isValidationError?: boolean, originalError?: {code?: string, name?: string}}} error
  * @returns {'quota'|'rate_limit'|'cancelled'|'file'}
@@ -283,8 +283,9 @@ export function applyUploadFailure(queue, id, error) {
   }
 
   if (kind === 'quota') {
-    // The server's own sentence is kept on the file that tripped it, raw byte counts and all: it is
-    // the only place the numbers appear, and issue #830 owns how they read.
+    // The server's own sentence is kept on the file that tripped it: QuotaExceededException already
+    // writes the figures in French units and states the shortfall, and this is the only place in the
+    // batch report where the numbers appear at all.
     const failed = withQueueItem(queue, id, {
       status: UPLOAD_STATUS.Failed,
       error: messageOf(error)
