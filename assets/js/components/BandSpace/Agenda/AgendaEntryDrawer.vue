@@ -309,7 +309,7 @@
 </template>
 
 <script setup>
-import { differenceInCalendarDays, format, parseISO } from 'date-fns'
+import { differenceInCalendarDays, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -325,6 +325,7 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useBandAgendaStore } from '../../../store/bandSpace/bandSpaceAgenda.js'
+import { toAgendaDate } from '../../../utils/agendaDate.js'
 import {
   agendaSeriesSubmission,
   SERIES_IMPACT_NONE,
@@ -421,22 +422,14 @@ const isEditMode = computed(() => props.agendaItem !== null && props.agendaItem.
 const isSeriesOccurrence = computed(
   () => isEditMode.value && props.agendaItem.metadata?.is_recurring_occurrence === true
 )
-const seriesAnchorStart = computed(() => toDate(props.agendaItem?.metadata?.series_start_datetime))
-const occurrenceStart = computed(() => toDate(props.agendaItem?.datetime))
+const isAllDayEntry = computed(() => props.agendaItem?.is_all_day === true)
+const seriesAnchorStart = computed(() =>
+  toAgendaDate(props.agendaItem?.metadata?.series_start_datetime, isAllDayEntry.value)
+)
+const occurrenceStart = computed(() =>
+  toAgendaDate(props.agendaItem?.datetime, isAllDayEntry.value)
+)
 const seriesStartLabel = computed(() => formatEventMoment(seriesAnchorStart.value))
-
-/**
- * An all day entry is pinned to UTC midnight whatever offset it was created with, so reading it back
- * as an instant lands on the previous day west of UTC: Guadeloupe and Martinique are UTC-4, which
- * makes that a real French user shown the wrong day and weekday for the series start. The date
- * portion is taken as written instead, the way the agenda range helper already does it.
- */
-function toDate(isoString) {
-  if (!isoString) return null
-  if (props.agendaItem?.is_all_day === true) return parseISO(isoString.slice(0, 10))
-
-  return new Date(isoString)
-}
 
 function formatEventMoment(date) {
   if (!date) return ''
@@ -520,10 +513,11 @@ watch(isVisible, (visible) => {
   skipShiftEnd = true
   if (props.agendaItem && props.agendaItem.source === 'manual') {
     form.title = props.agendaItem.title ?? ''
-    form.eventDatetime = props.agendaItem.datetime ? new Date(props.agendaItem.datetime) : null
-    form.endDatetime = props.agendaItem.end_datetime
-      ? new Date(props.agendaItem.end_datetime)
-      : null
+    // The pickers are filled with the day as written, not with the instant: serializeDatetime
+    // writes an all day entry back with local getters, so seeding them from the UTC midnight pin
+    // would move the entry one day earlier on every save west of UTC.
+    form.eventDatetime = toAgendaDate(props.agendaItem.datetime, isAllDayEntry.value)
+    form.endDatetime = toAgendaDate(props.agendaItem.end_datetime, isAllDayEntry.value)
     form.isAllDay = !!props.agendaItem.is_all_day
     form.location = props.agendaItem.metadata?.location ?? ''
     form.description = props.agendaItem.description ?? ''

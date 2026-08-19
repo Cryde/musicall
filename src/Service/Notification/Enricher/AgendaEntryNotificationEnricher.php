@@ -9,10 +9,14 @@ use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 
 /**
- * Refreshes a band-space agenda-entry notification's `entry_title` + `event_datetime` at feed-read
- * (#722), so it stays accurate after the entry is renamed or rescheduled. The agenda has no
- * per-entry/per-date deep-link, so both fields are load-bearing. Batched: two queries for the whole
- * page. A deleted entry keeps its last-known stored values (graceful staleness).
+ * Refreshes a band-space agenda-entry notification's `entry_title`, `event_datetime` and
+ * `is_all_day` at feed-read (#722), so it stays accurate after the entry is renamed, rescheduled or
+ * switched between a day and a moment. The agenda has no per-entry/per-date deep-link, so all three
+ * are load-bearing: `is_all_day` is what tells the feed to read the datetime as a written day rather
+ * than an instant, which is the whole difference west of UTC (#877). Batched: two queries for the
+ * whole page. A deleted entry keeps its last-known stored values (graceful staleness), and a
+ * notification written before `is_all_day` existed carries no such value: the feed reads a missing
+ * flag as false, which is how those datetimes were being read when they were stored.
  *
  * Like the task-title refresh, it follows the reader's current access (#817): a recipient who has
  * left the band space keeps the title and date as they stood when they were told, rather than a live
@@ -77,6 +81,7 @@ readonly class AgendaEntryNotificationEnricher implements NotificationEnricherIn
                 $entry = $entriesById[$entryId];
                 $notification->payload['entry_title'] = $entry->title;
                 $notification->payload['event_datetime'] = $entry->eventDatetime->format(\DateTimeInterface::ATOM);
+                $notification->payload['is_all_day'] = $entry->isAllDay;
             }
         }
     }

@@ -240,6 +240,11 @@ import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDraw
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import Avatar from '../../components/User/Avatar.vue'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
+import {
+  agendaCalendarEventDates,
+  agendaItemDayKeys,
+  withoutAllDayPin
+} from '../../utils/agendaDate.js'
 import { isAllDayItem } from '../../utils/agendaItem.js'
 import { agendaViewForSavedEntry } from '../../utils/agendaRange.js'
 import { formatDateCompactWithYear, formatDateLong } from '../../utils/date.js'
@@ -382,7 +387,7 @@ const isRefreshing = computed(() => agendaStore.isRefreshing && !agendaStore.isL
 const groupedItems = computed(() => {
   const groups = new Map()
   for (const item of filteredItems.value) {
-    for (const date of itemDateKeys(item)) {
+    for (const date of agendaItemDayKeys(item)) {
       if (!groups.has(date)) {
         groups.set(date, [])
       }
@@ -402,30 +407,13 @@ const groupedItems = computed(() => {
   }))
 })
 
-function itemDateKeys(item) {
-  const startKey = format(parseISO(item.datetime), 'yyyy-MM-dd')
-  // Only all-day events expand across days — a timed multi-day event would mislead with
-  // its start-day time range showing on every intermediate day.
-  if (!item.is_all_day || !item.end_datetime) return [startKey]
-  const endKey = format(parseISO(item.end_datetime), 'yyyy-MM-dd')
-  if (endKey === startKey) return [startKey]
-  const keys = []
-  let cursor = parseISO(item.datetime)
-  const end = parseISO(item.end_datetime)
-  while (cursor <= end) {
-    keys.push(format(cursor, 'yyyy-MM-dd'))
-    cursor = addDays(cursor, 1)
-  }
-  return keys
-}
-
 // One entry per event on each day (the same source repeats when a day has several events of
 // that kind), for the year overview's dots. Built from filteredItems so the source chips
 // filter the dots too.
 const dayEventSourcesByDate = computed(() => {
   const map = new Map()
   for (const item of filteredItems.value) {
-    for (const key of itemDateKeys(item)) {
+    for (const key of agendaItemDayKeys(item)) {
       if (!map.has(key)) map.set(key, [])
       map.get(key).push(item.source)
     }
@@ -435,9 +423,9 @@ const dayEventSourcesByDate = computed(() => {
 
 function dayEventSources(date) {
   // FullCalendar's default timeZone is 'local', so the cell date passed here is local midnight
-  // of the day shown; format it with the same local getters as itemDateKeys so the dot lookup
-  // lines up with how events are keyed. (Do NOT switch to UTC getters: east of UTC that reads
-  // the previous calendar day and shifts every dot one day forward.)
+  // of the day shown; format it with the same local getters as agendaItemDayKeys so the dot
+  // lookup lines up with how events are keyed. (Do NOT switch to UTC getters: east of UTC that
+  // reads the previous calendar day and shifts every dot one day forward.)
   return dayEventSourcesByDate.value.get(format(date, 'yyyy-MM-dd')) ?? []
 }
 
@@ -450,8 +438,7 @@ const calendarEvents = computed(() =>
   filteredItems.value.map((item) => ({
     id: item.id,
     title: item.title,
-    start: item.datetime,
-    end: calendarEnd(item),
+    ...agendaCalendarEventDates(item),
     allDay: isAllDayItem(item),
     color: SOURCE_COLORS[item.source] ?? '#94a3b8',
     contrastColor: '#fff',
@@ -526,10 +513,11 @@ function handleEntrySaved(savedEntry) {
   focusDate.value = nextView.focusDate
   fetchWithCurrentRange()
 
+  const savedDay = withoutAllDayPin(savedEntry.event_datetime, savedEntry.is_all_day === true)
   toast.add({
     severity: 'success',
     summary: 'Événement enregistré',
-    detail: `Il a lieu le ${formatDateLong(savedEntry.event_datetime)} : l'agenda affiche maintenant cette période.`,
+    detail: `Il a lieu le ${formatDateLong(savedDay)} : l'agenda affiche maintenant cette période.`,
     life: 5000
   })
 }
@@ -638,13 +626,6 @@ function formatDateLabel(dateString) {
 
 function formatTime(datetimeString) {
   return format(parseISO(datetimeString), 'HH:mm')
-}
-
-function calendarEnd(item) {
-  if (!item.end_datetime) return undefined
-  if (!item.is_all_day) return item.end_datetime
-  // FullCalendar all-day events use exclusive end: bump last-day-inclusive to the day after.
-  return format(addDays(parseISO(item.end_datetime), 1), 'yyyy-MM-dd')
 }
 
 function sourceLabel(source) {

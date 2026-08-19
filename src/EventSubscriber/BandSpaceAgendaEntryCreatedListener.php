@@ -19,8 +19,8 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
  * whole body - including the member-resolution query - is wrapped in try/catch so it can never roll
  * back or 500 the creation. The creator is excluded; createForRecipients dedupes by user id.
  *
- * No per-task-style note here, but see AgendaEntryNotificationEnricher: entry_title + event_datetime
- * are refreshed at feed-read because the agenda has no per-entry deep-link.
+ * No per-task-style note here, but see AgendaEntryNotificationEnricher: entry_title, event_datetime
+ * and is_all_day are refreshed at feed-read because the agenda has no per-entry deep-link.
  */
 #[AsEventListener]
 readonly class BandSpaceAgendaEntryCreatedListener
@@ -55,6 +55,10 @@ readonly class BandSpaceAgendaEntryCreatedListener
                 'agenda_entry_id' => (string) $entry->id,
                 'entry_title' => $entry->title,
                 'event_datetime' => $entry->eventDatetime->format(\DateTimeInterface::ATOM),
+                // An all-day entry is stored pinned to UTC midnight, so the datetime alone cannot say
+                // whether it is a day or a moment. The feed needs to know: read as an instant, an
+                // all-day entry shows the previous day to anyone west of UTC (#877).
+                'is_all_day' => $entry->isAllDay,
                 'actor_id' => $actorId,
                 'actor_username' => $actor->username,
             ]);
