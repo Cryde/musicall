@@ -109,6 +109,17 @@
                 :aria-label="`Citer le message de ${creatorName}`"
                 @click="handleQuote"
               />
+              <Button
+                v-if="canReport"
+                icon="pi pi-flag"
+                label="Signaler"
+                text
+                size="small"
+                severity="secondary"
+                class="ml-auto"
+                :aria-label="`Signaler le message de ${creatorName}`"
+                @click="showReportModal = true"
+              />
             </div>
           </template>
         </div>
@@ -119,6 +130,12 @@
   <SendMessageModal
     v-model:visible="showMessageModal"
     :selected-recipient="post.creator"
+  />
+
+  <ReportPostModal
+    v-model:visible="showReportModal"
+    :post-id="post.id"
+    @reported="handleReported"
   />
 
   <AuthRequiredModal
@@ -142,6 +159,7 @@ import { formatDate } from '../../utils/date.js'
 import AuthRequiredModal from '../Auth/AuthRequiredModal.vue'
 import SendMessageModal from '../Message/SendMessageModal.vue'
 import MessageEditor from './MessageEditor.vue'
+import ReportPostModal from './ReportPostModal.vue'
 
 const props = defineProps({
   post: {
@@ -164,6 +182,7 @@ const creatorName = computed(() => displayName(props.post.creator))
 
 const showMessageModal = ref(false)
 const showAuthModal = ref(false)
+const showReportModal = ref(false)
 
 const localUpvotes = ref(props.post.upvotes ?? 0)
 const localDownvotes = ref(props.post.downvotes ?? 0)
@@ -242,6 +261,20 @@ const canContact = computed(() => {
 const canQuote = computed(
   () => userSecurityStore.isAuthenticated && !props.isLocked && !isEditing.value
 )
+
+const canReport = computed(() => {
+  if (!userSecurityStore.isAuthenticated) return false
+  return userSecurityStore.userProfile?.id !== props.post.creator.id
+})
+
+function handleReported() {
+  toast.add({
+    severity: 'success',
+    summary: 'Message signalé',
+    detail: 'Un modérateur va examiner ce message.',
+    life: 4000
+  })
+}
 
 function handleQuote() {
   emit('quote', {
