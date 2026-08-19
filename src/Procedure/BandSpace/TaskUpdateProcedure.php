@@ -48,6 +48,7 @@ readonly class TaskUpdateProcedure
         User $user,
     ): Task {
         $this->taskWriteGuard->assertWritableForPayload($task, $payload);
+        $this->assertPositionIsNotWritable($payload);
 
         if (array_key_exists('title', $payload)) {
             $task->title = $data->title;
@@ -81,10 +82,6 @@ readonly class TaskUpdateProcedure
             $this->applyArchivedChange($task, (bool) $payload['archived'], $user);
         }
 
-        if (array_key_exists('position', $payload)) {
-            $task->position = (int) $payload['position'];
-        }
-
         $task->updateDatetime = new DateTime();
 
         $this->entityManager->flush();
@@ -94,6 +91,27 @@ readonly class TaskUpdateProcedure
         }
 
         return $task;
+    }
+
+    /**
+     * A position only means something next to the rest of its column. The reorder and move endpoints
+     * take the whole column and prove the payload covers every task in it before writing a number,
+     * which is what keeps two cards off the same index. A position sent to this endpoint carries no
+     * such payload, so it could drop a task on an index another already holds, with nothing left to
+     * reconcile them, and the board comes back scrambled for every member and stays that way.
+     *
+     * Refused rather than quietly dropped: nothing in the interface sends a position here, so anyone
+     * who does is asking for a reorder and needs to hear that this is not where it happens.
+     *
+     * @param array<string, mixed> $payload
+     */
+    private function assertPositionIsNotWritable(array $payload): void
+    {
+        if (!array_key_exists('position', $payload)) {
+            return;
+        }
+
+        throw new HttpException(422, 'La position ne se modifie pas ici, utilisez le réordonnancement de la colonne');
     }
 
     private function applyStatusChange(Task $task, string $newStatus, User $user): void

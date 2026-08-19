@@ -111,7 +111,11 @@ class TaskResource
 
     public ?\DateTimeInterface $archiveDatetime = null;
     public ?\DateTimeInterface $completedDatetime = null;
+
+    /** Column relative, so only the reorder endpoint can set it. A caller cannot write it here. */
+    #[ApiProperty(writable: false)]
     public int $position = 0;
+
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;
     public int $commentCount = 0;

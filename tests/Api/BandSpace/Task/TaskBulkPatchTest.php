@@ -129,6 +129,42 @@ class TaskBulkPatchTest extends ApiTestCase
         $this->assertNull($repo->find($done->id)->archiveDatetime);
     }
 
+    public function test_bulk_patch_drops_a_position_sent_in_the_payload(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $category = TaskCategoryFactory::new(['bandSpace' => $bandSpace])->create();
+        $task = TaskFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'status' => TaskStatus::Todo,
+            'category' => null,
+            'position' => 2,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks/bulk_patch',
+            [
+                'task_ids' => [$task->id],
+                'category_id' => $category->id,
+                'position' => 0,
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        // This endpoint keeps a whitelist of the fields it forwards, so a position never reaches the
+        // update procedure and never gets the chance to be refused. The batch goes through.
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $refreshed = self::getContainer()->get(TaskRepository::class)->find($task->id);
+        $this->assertSame((string) $category->id, (string) $refreshed->category->id);
+        $this->assertSame(2, $refreshed->position);
+    }
+
     public function test_bulk_set_category(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
