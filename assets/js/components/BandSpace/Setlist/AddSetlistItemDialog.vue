@@ -117,16 +117,16 @@
               <small v-if="labelError" class="text-red-500">{{ labelError }}</small>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Durée (s, optionnel)</label>
-              <InputNumber
+              <label class="block text-sm font-medium mb-1">Durée (mm:ss, optionnel)</label>
+              <InputText
                 v-model="otherDuration"
-                :min="1"
-                :max="86400"
-                :useGrouping="false"
+                placeholder="3:47"
                 class="w-full"
-                inputClass="w-full"
-                aria-label="Durée (s, optionnel)"
+                :invalid="!!otherDurationError"
+                aria-label="Durée au format mm:ss, optionnel"
               />
+              <small v-if="otherDurationError" class="text-red-500">{{ otherDurationError }}</small>
+              <small v-else class="text-surface-500">Minutes et secondes, par exemple 3:47.</small>
             </div>
             <div class="flex justify-end gap-2 pt-2">
               <Button label="Annuler" severity="secondary" text @click="visible = false" />
@@ -145,7 +145,6 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import SelectButton from 'primevue/selectbutton'
 import Tab from 'primevue/tab'
@@ -157,6 +156,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { formatDuration, parseDurationInput } from '../../../utils/setlistDuration.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -179,7 +179,9 @@ const query = ref('')
 
 const otherType = ref('talk')
 const otherLabel = ref('')
-const otherDuration = ref(null)
+// Text, converted to seconds once on submit. Empty stays empty: the duration is optional here.
+const otherDuration = ref('')
+const otherDurationError = ref(null)
 const labelError = ref(null)
 
 const otherTypeOptions = [
@@ -230,12 +232,6 @@ function toggle(songId, checked) {
   selectedIds.value = next
 }
 
-function formatDuration(seconds) {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}′${String(s).padStart(2, '0')}″`
-}
-
 watch(visible, (isOpen) => {
   if (isOpen) reset()
 })
@@ -247,7 +243,8 @@ function reset() {
   query.value = ''
   otherType.value = 'talk'
   otherLabel.value = ''
-  otherDuration.value = null
+  otherDuration.value = ''
+  otherDurationError.value = null
   labelError.value = null
 }
 
@@ -300,12 +297,16 @@ async function submitOther() {
     labelError.value = 'Veuillez spécifier un libellé'
     return
   }
+  const duration = parseDurationInput(otherDuration.value)
+  otherDurationError.value = duration.error
+  if (duration.error) return
+
   isSubmitting.value = true
   try {
     await setlistsStore.addItem(props.bandSpaceId, props.setlistId, {
       type: otherType.value,
       label: trimmed,
-      duration_override: otherDuration.value ?? null
+      duration_override: duration.seconds
     })
     toast.add({ severity: 'success', summary: 'Élément ajouté', life: 3000 })
     emit('added')

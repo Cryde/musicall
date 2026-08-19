@@ -133,6 +133,7 @@ import Drawer from 'primevue/drawer'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSetlistsStore } from '../../store/bandSpace/bandSpaceSetlists.js'
+import { formatDuration } from '../../utils/setlistDuration.js'
 import {
   openLivePositionStorage,
   readLivePosition,
@@ -187,11 +188,7 @@ function titleFor(item) {
 }
 
 function durationFor(item) {
-  const duration = item?.duration_override ?? item?.song?.reference_duration ?? null
-  if (!duration) return ''
-  const m = Math.floor(duration / 60)
-  const s = duration % 60
-  return `${m}′${String(s).padStart(2, '0')}″`
+  return formatDuration(item?.duration_override ?? item?.song?.reference_duration ?? null)
 }
 
 const currentTypeIcon = computed(() => iconFor(current.value))
@@ -207,11 +204,9 @@ const currentMeta = computed(() => {
   if (item.type === 'song' && item.song?.tempo) {
     meta.push({ key: 'tempo', label: `${item.song.tempo} BPM` })
   }
-  const duration = item.duration_override ?? item.song?.reference_duration ?? null
+  const duration = durationFor(item)
   if (duration) {
-    const m = Math.floor(duration / 60)
-    const s = duration % 60
-    meta.push({ key: 'duration', label: `${m}′${String(s).padStart(2, '0')}″` })
+    meta.push({ key: 'duration', label: duration })
   }
   return meta
 })

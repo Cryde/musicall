@@ -119,7 +119,7 @@
                 <div>{{ setlist.items|length }} {{ setlist.items|length > 1 ? 'titres' : 'titre' }}</div>
                 {% if total_duration_seconds > 0 %}
                     <div class="total">
-                        {{ (total_duration_seconds // 60) }} min {{ (total_duration_seconds % 60) }} s
+                        {{ total_duration_seconds|duration_format }}
                     </div>
                 {% endif %}
                 {% if missing_duration_items > 0 %}
@@ -185,7 +185,7 @@
                     {% endif %}
                     {% if options.showDurations %}
                         <td class="numeric {{ duration ? '' : 'muted' }}">
-                            {{ duration ? ((duration // 60) ~ '′' ~ ('%02d'|format(duration % 60)) ~ '″') : '—' }}
+                            {{ duration ? duration|duration_format : '—' }}
                         </td>
                     {% endif %}
                 </tr>
@@ -196,7 +196,7 @@
                 <tr class="total-row">
                     <td colspan="{{ visible_cols - 1 }}">Total</td>
                     <td class="numeric">
-                        {{ (total_duration_seconds // 60) }}′{{ '%02d'|format(total_duration_seconds % 60) }}″
+                        {{ total_duration_seconds|duration_format }}
                     </td>
                 </tr>
             </tfoot>

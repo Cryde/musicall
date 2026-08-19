@@ -33,7 +33,7 @@
       <div
         v-if="hasOverride"
         class="text-[10px] text-amber-600 uppercase tracking-wide"
-        v-tooltip.top="`Durée surchargée (référence : ${formatSeconds(item.song?.reference_duration)})`"
+        v-tooltip.top="`Durée surchargée (référence : ${formatDuration(item.song?.reference_duration) || '—'})`"
       >
         surch.
       </div>
@@ -56,6 +56,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed } from 'vue'
+import { formatDuration } from '../../../utils/setlistDuration.js'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -100,12 +101,5 @@ const hasOverride = computed(
   () => props.item.duration_override !== null && props.item.duration_override !== undefined
 )
 
-function formatSeconds(seconds) {
-  if (!seconds) return '—'
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}′${String(s).padStart(2, '0')}″`
-}
-
-const formattedDuration = computed(() => formatSeconds(effectiveDuration.value))
+const formattedDuration = computed(() => formatDuration(effectiveDuration.value))
 </script>

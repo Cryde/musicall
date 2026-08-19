@@ -17,7 +17,7 @@
         </div>
         <div>
           <div class="text-xs uppercase text-surface-500 mb-1">Durée</div>
-          <div>{{ formatDuration(song.reference_duration) }}</div>
+          <div>{{ formatDuration(song.reference_duration) || '—' }}</div>
         </div>
       </div>
 
@@ -101,6 +101,7 @@ import { useToast } from 'primevue/usetoast'
 import { ref, watch } from 'vue'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { formatDuration } from '../../../utils/setlistDuration.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -118,13 +119,6 @@ const fileInput = ref(null)
 const isUploading = ref(false)
 const files = ref([])
 const isLoadingFiles = ref(false)
-
-function formatDuration(seconds) {
-  if (!seconds) return '—'
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}′${String(s).padStart(2, '0')}″`
-}
 
 function formatBytes(bytes) {
   if (!bytes) return ''

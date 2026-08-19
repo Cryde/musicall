@@ -36,18 +36,17 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-1">Durée de référence (secondes)</label>
-        <InputNumber
-          v-model="form.reference_duration"
-          :min="1"
-          :max="86400"
-          :useGrouping="false"
+        <label class="block text-sm font-medium mb-1">Durée de référence (mm:ss)</label>
+        <InputText
+          v-model="durationInput"
+          placeholder="3:47"
           class="w-full"
-          inputClass="w-full"
-          :invalid="!!violationFor('reference_duration')"
-          aria-label="Durée de référence (secondes)"
+          :invalid="!!durationError || !!violationFor('reference_duration')"
+          aria-label="Durée de référence au format mm:ss"
         />
-        <small v-if="violationFor('reference_duration')" class="text-red-500">{{ violationFor('reference_duration') }}</small>
+        <small v-if="durationError" class="text-red-500">{{ durationError }}</small>
+        <small v-else-if="violationFor('reference_duration')" class="text-red-500">{{ violationFor('reference_duration') }}</small>
+        <small v-else class="text-surface-500">Minutes et secondes, par exemple 3:47.</small>
       </div>
 
       <div>
@@ -72,6 +71,7 @@ import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { formatDuration, parseDurationInput } from '../../../utils/setlistDuration.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -84,7 +84,11 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 const songsStore = useBandSongsStore()
 const toast = useToast()
 
-const form = ref({ title: '', tonality: null, tempo: null, reference_duration: null, notes: null })
+const form = ref({ title: '', tonality: null, tempo: null, notes: null })
+// Held as text, not as seconds: the field is a duration a member reads and types, and the
+// conversion to the stored unit happens once, on submit.
+const durationInput = ref('')
+const durationError = ref(null)
 const isSubmitting = ref(false)
 const violations = ref({})
 
@@ -99,10 +103,11 @@ watch(
             title: song.title,
             tonality: song.tonality,
             tempo: song.tempo,
-            reference_duration: song.reference_duration,
             notes: song.notes
           }
-        : { title: '', tonality: null, tempo: null, reference_duration: null, notes: null }
+        : { title: '', tonality: null, tempo: null, notes: null }
+      durationInput.value = song ? formatDuration(song.reference_duration) : ''
+      durationError.value = null
       violations.value = {}
     }
   },
@@ -114,11 +119,17 @@ function violationFor(field) {
 }
 
 function resetForm() {
-  form.value = { title: '', tonality: null, tempo: null, reference_duration: null, notes: null }
+  form.value = { title: '', tonality: null, tempo: null, notes: null }
+  durationInput.value = ''
+  durationError.value = null
   violations.value = {}
 }
 
 async function handleSubmit() {
+  const duration = parseDurationInput(durationInput.value)
+  durationError.value = duration.error
+  if (duration.error) return
+
   isSubmitting.value = true
   violations.value = {}
   try {
@@ -126,7 +137,7 @@ async function handleSubmit() {
       title: form.value.title?.trim() ?? '',
       tonality: form.value.tonality?.trim() || null,
       tempo: form.value.tempo ?? null,
-      reference_duration: form.value.reference_duration ?? null,
+      reference_duration: duration.seconds,
       notes: form.value.notes?.trim() || null
     }
     if (isEdit.value) {
