@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
   getCategories() {
@@ -126,6 +127,18 @@ export default {
         }
       )
       .then((resp) => resp.data)
+  },
+
+  reportForumPost(id, reason) {
+    return axios
+      .post(
+        Routing.generate('api_forum_post_report', { id }),
+        { reason },
+        {
+          headers: { 'Content-Type': 'application/ld+json' }
+        }
+      )
+      .catch(handleApiError)
   },
 
   uploadImage(file) {
