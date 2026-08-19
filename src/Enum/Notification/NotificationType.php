@@ -21,6 +21,7 @@ enum NotificationType: string
     case GalleryRejected = 'gallery_rejected';
     case BandSpaceRoleChanged = 'band_space_role_changed';
     case BandSpaceMemberRemoved = 'band_space_member_removed';
+    case BandSpaceMemberLeft = 'band_space_member_left';
     case BandSpaceAgendaEntryCreated = 'band_space_agenda_entry_created';
     case BandSpaceFinanceSplitAssigned = 'band_space_finance_split_assigned';
     case BandSpaceDeletionScheduled = 'band_space_deletion_scheduled';

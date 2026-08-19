@@ -9,6 +9,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSettingsActivityType;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Enum\BandSpace\Role;
+use App\Event\BandSpaceMemberLeftEvent;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -20,6 +21,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<mixed, void>
@@ -34,6 +36,7 @@ readonly class BandSpaceLeaveProcessor implements ProcessorInterface
         private TaskAssignmentRevoker $taskAssignmentRevoker,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -79,5 +82,8 @@ readonly class BandSpaceLeaveProcessor implements ProcessorInterface
                 ],
             );
         });
+
+        // Best-effort notification dispatched after the commit (epic #689 contract).
+        $this->eventDispatcher->dispatch(new BandSpaceMemberLeftEvent($membership));
     }
 }
