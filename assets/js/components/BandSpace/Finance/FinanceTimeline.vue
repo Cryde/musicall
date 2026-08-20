@@ -65,6 +65,9 @@
             {{ entry.type === 'expense' ? 'Dépense' : 'Revenu' }}
           </span>
 
+          <!-- Répartition that no longer matches the amount, against the amount it disagrees with -->
+          <FinanceSplitWarning v-if="entry.split_warning" />
+
           <!-- Amount -->
           <span class="text-sm font-medium tabular-nums flex-shrink-0 text-right w-20 sm:w-24">
             {{ formatEntryAmount(entry) }}
@@ -90,6 +93,7 @@ import Button from 'primevue/button'
 import { computed } from 'vue'
 import { formatAmount } from '../../../utils/currency.js'
 import { formatDateCompactWithYear } from '../../../utils/date.js'
+import FinanceSplitWarning from './FinanceSplitWarning.vue'
 import FinanceStatusDot from './FinanceStatusDot.vue'
 
 const props = defineProps({

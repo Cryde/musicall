@@ -51,18 +51,28 @@
         <!-- Total line -->
         <div class="border-t border-surface-200 dark:border-surface-700 mt-2 pt-2 flex items-center justify-between text-sm">
           <span class="text-surface-500">Total</span>
+          <!-- 700 in light mode: the 500 level of both colours fails AA as text. The icon carries an
+               accessible name of its own, so the mismatch is stated and not only coloured, and it says
+               the same thing as the badge the row shows for the same entry. -->
           <span
-            :class="splitsMatchAmount ? 'text-green-500' : 'text-orange-500'"
+            :class="
+              splitsMatchAmount
+                ? 'text-green-700 dark:text-green-400'
+                : 'text-amber-700 dark:text-amber-400'
+            "
             class="font-medium"
           >
             {{ formatAmount(splitsTotal) }}
             <span v-if="amountEuros != null">
               / {{ formatAmount(Math.round(amountEuros * 100)) }}
             </span>
-            <i
-              :class="splitsMatchAmount ? 'pi pi-check' : 'pi pi-exclamation-triangle'"
-              class="text-xs ml-1"
-            ></i>
+            <span role="img" :aria-label="totalMatchLabel">
+              <i
+                :class="splitsMatchAmount ? 'pi pi-check' : 'pi pi-exclamation-triangle'"
+                class="text-xs ml-1"
+                aria-hidden="true"
+              ></i>
+            </span>
           </span>
         </div>
       </div>
@@ -123,6 +133,12 @@ const activeSplitsCount = computed(() => {
   }
   return count
 })
+
+const totalMatchLabel = computed(() =>
+  splitsMatchAmount.value
+    ? 'Le total réparti correspond au montant de l’entrée'
+    : 'Le total réparti ne correspond pas au montant de l’entrée'
+)
 
 const splitsSummaryText = computed(() => {
   if (activeSplitsCount.value === 0) return 'Aucune répartition'
@@ -197,13 +213,18 @@ function validateSplits() {
   return buildPlan().error
 }
 
+/**
+ * @returns {Promise<boolean>} whether a split was actually written, which the caller needs because
+ *          the répartition is saved after the entry: the lists it reloaded before this ran describe
+ *          the previous shares, so they have to be reloaded again, but only when there is a change.
+ */
 async function syncSplits(entryId) {
   const { error, operations } = buildPlan()
   if (error) {
     throw new Error(error)
   }
   if (operations.length === 0) {
-    return
+    return false
   }
 
   for (const operation of operations) {
@@ -220,6 +241,8 @@ async function syncSplits(entryId) {
   // The plan was built against the splits loaded when the drawer opened. Saving twice without
   // re-reading them would plan the second save against split ids that no longer exist.
   await loadExistingSplits(entryId)
+
+  return true
 }
 
 async function reset(entryId) {
