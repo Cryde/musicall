@@ -580,10 +580,42 @@ class SetlistPdfExportTest extends ApiTestCase
         ]);
 
         $this->assertStringContainsString('1 titre sans durée', $html);
-        $this->assertStringContainsString('3 min 0 s', $html);
+        // The header total, the item cell and the footer total row all read the same way now: 3:00,
+        // not "3 min 0 s" in one place and 3′00″ in the next.
+        $this->assertSame(3, substr_count($html, '3:00'));
         // Total row in the table footer
         $this->assertStringContainsString('total-row', $html);
         $this->assertStringContainsString('Total', $html);
+    }
+
+    public function test_large_template_rolls_a_total_over_one_hour_into_hours(): void
+    {
+        // Regression (#831): the header printed the total in minutes only, so a normal set came out
+        // as "97 min 30 s" while the editor showed 01:37:30 for the very same number.
+        $bandSpace = BandSpaceFactory::new()->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'referenceDuration' => 5850])->create();
+        SetlistItemFactory::new([
+            'setlist' => $setlist,
+            'type' => SetlistItemType::Song,
+            'song' => $song,
+            'durationOverride' => null,
+            'position' => 0,
+        ])->create();
+
+        $entity = self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id);
+        $html = self::getContainer()->get(Environment::class)->render('pdf/setlist/setlist_large.html.twig', [
+            'setlist' => $entity,
+            'options' => new SetlistPdfOptions(layout: SetlistPdfLayout::Large, showDurations: true),
+            'total_duration_seconds' => 5850,
+            'missing_duration_items' => 0,
+            'font' => SetlistPdfFont::Inter,
+        ]);
+
+        // Header total, item cell, footer total row.
+        $this->assertSame(3, substr_count($html, '1:37:30'));
+        $this->assertStringNotContainsString('97 min', $html);
+        $this->assertStringNotContainsString('97:30', $html);
     }
 
     public function test_compact_template_omits_per_field_data_even_if_options_say_otherwise(): void

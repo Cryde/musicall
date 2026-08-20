@@ -136,6 +136,7 @@ import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useRouter } from 'vue-router'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
+import { formatDuration } from '../../../utils/setlistDuration.js'
 import AddSetlistItemDialog from './AddSetlistItemDialog.vue'
 import PdfExportPopover from './PdfExportPopover.vue'
 import SetlistFileDrawer from './SetlistFileDrawer.vue'
@@ -195,13 +196,7 @@ const totalDurationSeconds = computed(() =>
   )
 )
 
-const formattedTotalDuration = computed(() => {
-  const total = totalDurationSeconds.value
-  const h = Math.floor(total / 3600)
-  const m = Math.floor((total % 3600) / 60)
-  const s = total % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-})
+const formattedTotalDuration = computed(() => formatDuration(totalDurationSeconds.value))
 
 // Inline rename
 const editingName = ref(false)

@@ -47,7 +47,7 @@
             <td class="px-4 py-3 hidden md:table-cell text-surface-600 dark:text-surface-300">{{ song.tonality || '—' }}</td>
             <td class="px-4 py-3 hidden md:table-cell text-right tabular-nums text-surface-600 dark:text-surface-300">{{ song.tempo || '—' }}</td>
             <td class="px-4 py-3 hidden lg:table-cell text-right tabular-nums text-surface-600 dark:text-surface-300">
-              {{ formatDuration(song.reference_duration) }}
+              {{ formatDuration(song.reference_duration) || '—' }}
             </td>
             <td class="px-4 py-3 text-right">
               <Button
@@ -95,6 +95,7 @@ import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
+import { formatDuration } from '../../../utils/setlistDuration.js'
 import SongDetailDrawer from './SongDetailDrawer.vue'
 import SongFormDialog from './SongFormDialog.vue'
 
@@ -170,13 +171,6 @@ const menuItems = computed(() => [
     command: () => confirmArchive(menuTargetSong.value)
   }
 ])
-
-function formatDuration(seconds) {
-  if (!seconds) return '—'
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}′${String(s).padStart(2, '0')}″`
-}
 
 function openCreateDialog() {
   editingSong.value = null
