@@ -4,6 +4,13 @@ namespace App\Service\BandSpace\File;
 
 final class BandSpaceFileMimeAllowlist
 {
+    /**
+     * Served to the browser by BandSpaceFileQuotaProvider so the upload dialog can refuse an oversize
+     * file before spending minutes sending it. `assets/js/store/bandSpace/bandSpaceFiles.js` also hand
+     * copies this number as the fallback used before the quota endpoint has answered: change one and
+     * change the other. A drift there only makes the browser refuse too eagerly or too late, never
+     * bypasses anything, because Assert\File still validates on the way in.
+     */
     public const int MAX_UPLOAD_SIZE_BYTES = 500 * 1024 * 1024;
 
     /**

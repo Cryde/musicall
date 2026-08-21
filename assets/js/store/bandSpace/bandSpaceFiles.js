@@ -74,6 +74,12 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // Served by the quota endpoint so the interface quotes the same window the purge enforces.
   const trashRetentionDays = computed(() => quota.value?.trash_retention_days ?? 30)
 
+  // Same reason, for the per-file upload limit: the dialog refuses an oversize file before sending it,
+  // and it has to refuse against the server's real number. The fallback only covers the window before
+  // the quota has loaded, and it is deliberately the value the server ships today rather than a
+  // rounder guess, so a mismatch shows up as a refusal the server then disagrees with.
+  const maxUploadSizeBytes = computed(() => quota.value?.max_upload_size_bytes ?? 500 * 1024 * 1024)
+
   const hasMoreFiles = computed(() => hasMoreToLoad(files.value.length, totalFiles.value))
   const filesCountLabel = computed(() => fileCountLabel(files.value.length, totalFiles.value))
 
@@ -523,6 +529,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     filesCountLabel,
     archivedCount: readonly(archivedCount),
     trashRetentionDays,
+    maxUploadSizeBytes,
     folders: readonly(folders),
     virtualFolders: readonly(virtualFolders),
     tags: readonly(tags),

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\BandSpace\File;
 
+use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -51,6 +52,9 @@ class BandSpaceFileQuotaTest extends ApiTestCase
             'trash_retention_days' => 30,
             'is_approaching_limit' => false,
             'breakdown_by_source' => [],
+            // The browser refuses an oversize file before sending it, and this is where it learns the
+            // number to refuse against, so the endpoint has to keep reporting it.
+            'max_upload_size_bytes' => BandSpaceFileMimeAllowlist::MAX_UPLOAD_SIZE_BYTES,
         ]);
     }
 

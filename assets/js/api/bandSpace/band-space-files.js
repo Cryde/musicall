@@ -1,6 +1,7 @@
 /** global: Routing */
 
 import axios from 'axios'
+import { assertUploadedFile } from '../../utils/fileUploadQueue.js'
 import { handleApiError } from '../utils/handleApiError.js'
 
 export default {
@@ -167,7 +168,7 @@ export default {
         }
       })
       .then((resp) => ({
-        file: resp.data,
+        file: assertUploadedFile(resp.data),
         quotaApproaching: resp.headers['x-quota-approaching'] === 'true'
       }))
       .catch(handleApiError)
@@ -232,7 +233,7 @@ export default {
         }
       )
       .then((resp) => ({
-        version: resp.data,
+        version: assertUploadedFile(resp.data),
         quotaApproaching: resp.headers['x-quota-approaching'] === 'true'
       }))
       .catch(handleApiError)
@@ -291,7 +292,7 @@ export default {
         }
       })
       .then((resp) => ({
-        file: resp.data,
+        file: assertUploadedFile(resp.data),
         quotaApproaching: resp.headers['x-quota-approaching'] === 'true'
       }))
       .catch(handleApiError)
