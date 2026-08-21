@@ -48,6 +48,14 @@ use DateTime;
  * departing member and that account is gone; neither is BandSpaceDeletionStateChangedEvent, since the
  * space only gets scheduled when nobody is left to read it. The departure itself lands in the settings
  * activity feed, which is where the band looks for who came and went.
+ *
+ * BandSpaceMemberLeftEvent is not dispatched either, and that one is an open question rather than a
+ * settled call. The manual Quitter button does dispatch it, on the argument that the activity feed is
+ * not where admins notice a departure that silently deactivated the leaver's finance recurrences. The
+ * same consequence happens here. The reason it is still not dispatched is that the handle is already
+ * anonymized by this point, so admins would be told that deleted_<uuid> left, which carries the fact
+ * but not the person. Deciding to send it anyway is a behaviour change on the account-deletion path,
+ * so it belongs in its own issue rather than riding along with the one that added the event.
  */
 readonly class WithdrawUserFromBandSpacesProcedure
 {

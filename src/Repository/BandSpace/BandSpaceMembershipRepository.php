@@ -100,6 +100,27 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * The active admins of a band space. The user comes along because the caller notifies them, and
+     * leaving it lazy would cost one query per admin.
+     *
+     * @return BandSpaceMembership[]
+     */
+    public function findActiveAdmins(BandSpace $bandSpace): array
+    {
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.user', 'u')
+            ->addSelect('u')
+            ->where('m.bandSpace = :bandSpace')
+            ->andWhere('m.role = :role')
+            ->andWhere('m.status = :status')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('role', Role::Admin)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function countActiveMembers(BandSpace $bandSpace): int
     {
         return (int) $this->createQueryBuilder('m')

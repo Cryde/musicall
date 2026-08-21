@@ -214,6 +214,21 @@ const TYPE_CONFIG = {
     actions: null,
     target: null
   }),
+  // Sent to the remaining admins, so it deep-links to the roster they will want to look at. A
+  // different icon and colour from band_space_member_removed on purpose: quitting and being removed
+  // sit side by side in the same feed and must not read as the same event.
+  band_space_member_left: (payload) => ({
+    icon: 'pi pi-sign-out',
+    avatarClass: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
+    title: payload.actor_username,
+    preview: `a quitté « ${payload.band_space_name} »`,
+    actions: null,
+    target: {
+      name: BAND_SPACE_ROUTES.PARAMETERS,
+      params: { id: payload.band_space_id },
+      query: { section: 'members' }
+    }
+  }),
   task_mention: (payload) => ({
     icon: 'pi pi-at',
     avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
