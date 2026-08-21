@@ -197,9 +197,18 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $response = $this->getResponseAsArray();
-        $this->assertSame('Error', $response['@type']);
-        $this->assertStringContainsString('Quota de stockage dépassé', $response['detail']);
+        // The whole sentence, because it is the only thing the upload dialog shows the member: any
+        // figure slipping back to a raw byte count is the regression this asserts against.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Quota de stockage dépassé : 80 o utilisés sur 100 o autorisés, il manque 10 o pour ajouter 30 o.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Quota de stockage dépassé : 80 o utilisés sur 100 o autorisés, il manque 10 o pour ajouter 30 o.',
+        ]);
     }
 
     public function test_upload_crossing_80_percent_sets_quota_approaching_header(): void
@@ -266,7 +275,15 @@ class BandSpaceFileQuotaTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $response = $this->getResponseAsArray();
-        $this->assertStringContainsString('Quota de stockage dépassé', $response['detail']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Quota de stockage dépassé : 80 o utilisés sur 100 o autorisés, il manque 10 o pour ajouter 30 o.',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Quota de stockage dépassé : 80 o utilisés sur 100 o autorisés, il manque 10 o pour ajouter 30 o.',
+        ]);
     }
 }
