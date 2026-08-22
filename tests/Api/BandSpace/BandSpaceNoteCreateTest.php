@@ -44,6 +44,8 @@ class BandSpaceNoteCreateTest extends ApiTestCase
         $this->assertCount(1, $notes);
 
         $note = $notes[0];
+        // Asserted on the row and not only in the payload: this column is what NoteOwnerChecker reads.
+        $this->assertSame($user->id, $note->createdBy?->id);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceNote',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
@@ -56,6 +58,7 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
+            'created_by' => ['id' => $user->id, 'username' => 'base_admin'],
             'emoji' => null,
             'creation_datetime' => $note->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
@@ -105,6 +108,7 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
+            'created_by' => ['id' => $user->id, 'username' => 'base_admin'],
             'emoji' => null,
             'creation_datetime' => $created->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,
@@ -147,6 +151,7 @@ class BandSpaceNoteCreateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
+            'created_by' => ['id' => $user->id, 'username' => 'base_admin'],
             'emoji' => null,
             'creation_datetime' => $created->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,

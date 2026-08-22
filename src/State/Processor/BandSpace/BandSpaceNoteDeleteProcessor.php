@@ -10,6 +10,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceNoteActivityType;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Security\BandSpace\NoteOwnerChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileSourceDetacher;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +25,7 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
+        private NoteOwnerChecker $noteOwnerChecker,
         private BandSpaceNoteRepository $bandSpaceNoteRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private BandSpaceFileSourceDetacher $fileSourceDetacher,
@@ -39,12 +41,15 @@ readonly class BandSpaceNoteDeleteProcessor implements ProcessorInterface
         /** @var User $user */
         $user = $this->security->getUser();
 
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
         $note = $this->bandSpaceNoteRepository->findOneByIdAndBandSpace($data->id, $bandSpace);
         if (!$note instanceof \App\Entity\BandSpace\BandSpaceNote) {
             throw new NotFoundHttpException('Note not found');
         }
+
+        // After the lookup on purpose: a member has no business learning from a 403 which note ids exist.
+        $this->noteOwnerChecker->checkCanDelete($note, $membership);
 
         $this->bandSpaceActivityRecorder->record(
             bandSpace: $bandSpace,

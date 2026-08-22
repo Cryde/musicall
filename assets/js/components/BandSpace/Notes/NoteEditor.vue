@@ -43,6 +43,12 @@
           </template>
         </span>
       </div>
+      <p
+        v-if="note.created_by"
+        class="mt-1 ml-10 pl-2 text-xs text-surface-500 dark:text-surface-400"
+      >
+        Créée par {{ note.created_by.username }}
+      </p>
     </div>
 
     <!-- Conflict notice: stays until the member acts on it, autosave is over for this editor -->

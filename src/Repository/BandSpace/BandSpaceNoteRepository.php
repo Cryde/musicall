@@ -18,11 +18,16 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * The author is fetch joined because every note in the tree carries one in its payload, and a lazy
+     * association would be one query per note.
+     *
      * @return BandSpaceNote[]
      */
     public function findByBandSpace(BandSpace $bandSpace): array
     {
         return $this->createQueryBuilder('n')
+            ->leftJoin('n.createdBy', 'author')
+            ->addSelect('author')
             ->where('n.bandSpace = :bandSpace')
             ->setParameter('bandSpace', $bandSpace)
             ->orderBy('n.position', 'ASC')
@@ -33,6 +38,8 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceNote
     {
         return $this->createQueryBuilder('n')
+            ->leftJoin('n.createdBy', 'author')
+            ->addSelect('author')
             ->where('n.id = :id')
             ->andWhere('n.bandSpace = :bandSpace')
             ->setParameter('id', $id)

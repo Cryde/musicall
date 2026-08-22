@@ -26,10 +26,13 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
+        // One authored and one not, so the tree payload is asserted on both shapes: notes predating the
+        // author column, and notes whose author has closed their account, both come back with none.
         $note1 = BandSpaceNoteFactory::new([
             'bandSpace' => $bandSpace,
             'title' => 'First Note',
             'position' => 0,
+            'createdBy' => $user,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
         $note2 = BandSpaceNoteFactory::new([
@@ -59,6 +62,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
                     'content' => null,
                     'content_version' => 1,
                     'has_children' => false,
+                    'created_by' => ['id' => $user->id, 'username' => 'base_admin'],
                     'emoji' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
                     'update_datetime' => null,
@@ -74,6 +78,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
                     'content' => null,
                     'content_version' => 1,
                     'has_children' => false,
+                    'created_by' => null,
                     'emoji' => null,
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
                     'update_datetime' => null,
@@ -184,6 +189,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
                     'content' => null,
                     'content_version' => 1,
                     'has_children' => false,
+                    'created_by' => null,
                     'emoji' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
                     'update_datetime' => null,

@@ -2,6 +2,7 @@
 
 namespace App\Entity\BandSpace;
 
+use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use DateTime;
 use DateTimeInterface;
@@ -29,6 +30,10 @@ class BandSpaceNote
     #[ORM\ManyToOne(targetEntity: BandSpace::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     public BandSpace $bandSpace;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    public ?User $createdBy = null;
 
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
     #[ORM\JoinColumn(onDelete: 'CASCADE')]

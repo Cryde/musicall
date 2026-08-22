@@ -32,6 +32,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'title' => 'My Note',
             'content' => $content,
             'position' => 0,
+            'createdBy' => $user,
             'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
         ])->create();
 
@@ -51,6 +52,97 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'content' => $content,
             'content_version' => 1,
             'has_children' => false,
+            'created_by' => ['id' => $user->id, 'username' => 'base_admin'],
+            'emoji' => null,
+            'creation_datetime' => '2024-01-01T10:00:00+00:00',
+            'update_datetime' => null,
+        ]);
+    }
+
+    /**
+     * A note written before the author column existed reports no author rather than a placeholder. The
+     * header hides its byline on exactly this shape. A closed account is the other way in, and it is a
+     * separate case with a separate mechanism, so it gets its own test below.
+     */
+    public function test_get_item_without_an_author_reports_none(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Note héritée',
+            'position' => 0,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => $note->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Note héritée',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'content_version' => 1,
+            'has_children' => false,
+            'created_by' => null,
+            'emoji' => null,
+            'creation_datetime' => '2024-01-01T10:00:00+00:00',
+            'update_datetime' => null,
+        ]);
+    }
+
+    /**
+     * Closing an account does not null this FK. DeleteAccountProcedure anonymises the fos_user row in
+     * place and keeps its primary key, so ON DELETE SET NULL never fires and the author still resolves,
+     * to a deleted_<uuid> handle. The byline has to be suppressed on the read side instead, or it would
+     * name a handle nobody recognises.
+     */
+    public function test_get_item_hides_the_byline_of_a_closed_account(): void
+    {
+        $reader = UserFactory::new()->asBaseUser()->create();
+        // Its own email, because asBaseUser pins a fixed one and the column is unique.
+        $departed = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2024-06-01 09:00:00'),
+        ]);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $reader])->create();
+
+        $note = BandSpaceNoteFactory::new([
+            'bandSpace' => $bandSpace,
+            'title' => 'Note orpheline',
+            'position' => 0,
+            'createdBy' => $departed,
+            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
+        ])->create();
+
+        $this->client->loginUser($reader);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceNote',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
+            '@type' => 'BandSpaceNote',
+            'id' => $note->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Note orpheline',
+            'parent_id' => null,
+            'position' => 0,
+            'content' => null,
+            'content_version' => 1,
+            'has_children' => false,
+            'created_by' => null,
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
@@ -112,6 +204,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'content' => $content,
             'content_version' => 1,
             'has_children' => false,
+            'created_by' => null,
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
@@ -174,6 +267,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             ],
             'content_version' => 1,
             'has_children' => false,
+            'created_by' => null,
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,

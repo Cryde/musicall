@@ -53,6 +53,7 @@ readonly class BandSpaceNoteCreateProcessor implements ProcessorInterface
 
         $note = new BandSpaceNote();
         $note->bandSpace = $bandSpace;
+        $note->createdBy = $user;
         $note->title = $data->title;
         $note->parent = $parent;
         $note->position = $this->bandSpaceNoteRepository->getNextPosition($bandSpace, $parent);
