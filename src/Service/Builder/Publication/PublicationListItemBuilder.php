@@ -8,7 +8,6 @@ use App\ApiResource\Publication\PublicationListItem;
 use App\ApiResource\Publication\PublicationListItem\Author;
 use App\ApiResource\Publication\PublicationListItem\SubCategory;
 use App\Entity\Image\PublicationCover;
-use App\Entity\Metric\VoteCache;
 use App\Entity\Publication;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
@@ -32,10 +31,17 @@ readonly class PublicationListItemBuilder
     public function buildList(array $publications, array $userVotesByCacheId = []): array
     {
         return array_map(
-            fn (Publication $publication): PublicationListItem => $this->buildItem(
-                $publication,
-                $publication->voteCache instanceof VoteCache ? ($userVotesByCacheId[$publication->voteCache->id] ?? null) : null,
-            ),
+            function (Publication $publication) use ($userVotesByCacheId): PublicationListItem {
+                // Read into a variable so the null is ruled out before the lookup: a vote cache id is
+                // nullable until the row is persisted, and null is not a key this int-keyed map can
+                // hold. PHP would quietly cast it to "" and never match.
+                $cacheId = $publication->voteCache?->id;
+
+                return $this->buildItem(
+                    $publication,
+                    $cacheId === null ? null : ($userVotesByCacheId[$cacheId] ?? null),
+                );
+            },
             $publications,
         );
     }

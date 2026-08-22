@@ -46,7 +46,7 @@ jobs:
         strategy:
             fail-fast: true
             matrix:
-                php-versions: ['8.4']
+                php-versions: ['8.4', '8.5']
         steps:
             # —— Setup ——————————————————————————————————————————————————————————————
             - name: Checkout

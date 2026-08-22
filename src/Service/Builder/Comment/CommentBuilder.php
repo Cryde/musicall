@@ -23,10 +23,17 @@ readonly class CommentBuilder
     public function buildList(array $entities, array $userVotesByCacheId = []): array
     {
         return array_map(
-            fn(Comment $entity): CommentResource => $this->buildItem(
-                $entity,
-                $entity->voteCache instanceof \App\Entity\Metric\VoteCache ? ($userVotesByCacheId[$entity->voteCache->id] ?? null) : null,
-            ),
+            function (Comment $entity) use ($userVotesByCacheId): CommentResource {
+                // Read into a variable so the null is ruled out before the lookup: a vote cache id is
+                // nullable until the row is persisted, and null is not a key this int-keyed map can
+                // hold. PHP would quietly cast it to "" and never match.
+                $cacheId = $entity->voteCache?->id;
+
+                return $this->buildItem(
+                    $entity,
+                    $cacheId === null ? null : ($userVotesByCacheId[$cacheId] ?? null),
+                );
+            },
             $entities,
         );
     }

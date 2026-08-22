@@ -1,48 +1,34 @@
-FROM dunglas/frankenphp:1.12-php8.4-alpine
+FROM dunglas/frankenphp:1.12-php8.5-alpine
 
-RUN apk add --update --no-cache \
-    libpq-dev \
-    libzip-dev \
+RUN install-php-extensions \
+    bcmath \
+    gd \
+    intl \
+    pdo_mysql \
+    zip
+
+# Not PHP extensions, so install-php-extensions cannot supply them:
+#  - icu-data-full: Alpine ships English-only ICU data, intl would format French dates as English
+#  - jpegoptim / optipng: LiipImagine post-processors, see config/packages/liip_imagine.yaml
+#  - shadow: usermod and groupmod for the UID remap below
+RUN apk add --no-cache \
     shadow \
-    libgd  \
-    libpng \
-    libpng-dev  \
-    libwebp-dev \
-    libjpeg-turbo \
-    libjpeg-turbo-dev \
-    freetype \
-    freetype-dev \
-    icu-dev  \
     icu-data-full \
     jpegoptim \
     optipng
 
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
+# Files written from inside the container land on the host as this UID, so it has to match
+# the host user or everything generated (var/cache, migrations, composer.lock) comes back
+# root owned. Hardcoded rather than an ARG: nothing passes build args, so an ARG only
+# suggested a flexibility that was never wired up.
+RUN usermod -u 1000 www-data \
+ && groupmod -g 1000 www-data \
+ # Lets a non-root process bind 80 and 443.
+ && setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \
+ && chown -R www-data:www-data /data/caddy /config/caddy
 
-RUN docker-php-ext-install \
-    opcache  \
-    bcmath  \
-    zip  \
-    pdo  \
-    pdo_mysql \
-    gd  \
-    intl
-
-ARG USER=www-data
-ARG UID=1000
-
-RUN usermod -u ${UID} ${USER}
-RUN groupmod -g ${UID} ${USER}
-
-RUN \
-	# Use "adduser -D ${USER}" for alpine based distros
-	#adduser -D ${USER}; \
-	# Add additional capability to bind to port 80 and 443
-	setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp; \
-	# Give write access to /data/caddy and /config/caddy
-	chown -R ${USER}:${USER} /data/caddy && chown -R ${USER}:${USER} /config/caddy
-
-USER ${USER}
-
-COPY . /var/www/musicall
+USER www-data
 WORKDIR /var/www/musicall
+
+# No COPY on purpose: compose bind mounts the working tree over this path, so anything
+# copied in would be shadowed at startup. Dev-only image, unusable without that mount.

@@ -7,42 +7,38 @@ services:
             - "443:443" # HTTPS
             - "443:443/udp" # HTTP/3
         volumes:
-            - $PWD:/var/www/musicall
+            - .:/var/www/musicall
             - caddy_data:/data
             - caddy_config:/config
             - ./.docker/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile
             - ./.docker/frankenphp/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
         environment:
-            APP_ENV: 'dev'
             # we need localhost for google oauth...
             SERVER_NAME: 'musicall.local, localhost'
-            # comment the following line in production, it allows to have nice human-readable logs in dev
         tty: true
         networks:
             musicall:
                 ipv4_address: 10.200.200.7
 
     node:
-        image: node:22
+        image: node:24-alpine3.24
         container_name: node
         command: /bin/true
-        working_dir: /var/www
+        working_dir: /var/www/musicall
         volumes:
-            - .:/var/www:cached
+            - .:/var/www/musicall
         networks:
-            musicall:
-                ipv4_address: 10.200.200.4
+            - musicall
 
     php-cli:
         build: .docker/cli-musicall
         container_name: php-cli
-        working_dir: /var/www
+        working_dir: /var/www/musicall
         command: /bin/true
         networks:
-            musicall:
-                ipv4_address: 10.200.200.5
+            - musicall
         volumes:
-            - .:/var/www:cached
+            - .:/var/www/musicall
             - ./.docker/cli-musicall/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
 
     db:
@@ -52,8 +48,8 @@ services:
             MYSQL_ROOT_PASSWORD: toor
             MYSQL_DATABASE: musicall
         volumes:
-            - db_files:/var/lib/mysql:cached
-            - ./volumes/db/logs:/var/log/mysql:cached
+            - db_files:/var/lib/mysql
+            - ./volumes/db/logs:/var/log/mysql
         networks:
             musicall:
                 ipv4_address: 10.200.200.6
@@ -76,7 +72,7 @@ services:
                 aliases:
                     - elasticsearch.musicall
         volumes:
-            - es_files:/usr/share/elasticsearch/data:cached
+            - es_files:/usr/share/elasticsearch/data
 
     valkey:
         image: valkey/valkey:8-alpine

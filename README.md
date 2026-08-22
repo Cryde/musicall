@@ -23,10 +23,10 @@ MusicAll is a platform where people can share videos, articles, and courses, sea
 ## Tech Stack
 
 This project uses:
-- PHP 8.4
-- Symfony 7.4
+- PHP 8.5
+- Symfony 8.1
 - MariaDB version 10.11
-- Node 20
+- Node 24
 - Vue.js 3
 
 ## Prerequisites

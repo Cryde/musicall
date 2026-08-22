@@ -1,43 +1,41 @@
-FROM php:8.4-cli-alpine3.22
+FROM php:8.5-cli-alpine3.24
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# The official php images do not ship install-php-extensions, unlike dunglas/frankenphp,
+# so it is copied in. It resolves each extension's build dependencies, compiles, then
+# removes them again, which is why there is no build-base or autoconf here.
+COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN apk add --update --no-cache git
-RUN apk add --update --no-cache \
-    build-base  \
-    autoconf \
-    shadow \
-    libzip-dev \
-    libgd  \
-    libpng \
-    libpng-dev  \
-    libwebp-dev \
-    libjpeg-turbo \
-    libjpeg-turbo-dev \
-    freetype \
-    freetype-dev \
-    icu-dev  \
+# Same list as .docker/frankenphp/Dockerfile, plus pcov: keep the two in sync.
+# pcov rather than xdebug, matching what CI uses for coverage.
+RUN install-php-extensions \
+    bcmath \
+    gd \
+    intl \
+    pdo_mysql \
+    zip \
+    pcov
+
+# Not PHP extensions, so install-php-extensions cannot supply them:
+#  - icu-data-full: Alpine ships English-only ICU data, intl would format French dates as English
+#  - jpegoptim / optipng: LiipImagine post-processors, see config/packages/liip_imagine.yaml
+#  - git: composer needs it for anything not installed from a dist archive
+#  - shadow: usermod and groupmod for the UID remap below
+RUN apk add --no-cache \
+    git \
     icu-data-full \
     jpegoptim \
-    optipng
+    optipng \
+    shadow
 
-RUN docker-php-ext-configure intl
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
-RUN docker-php-ext-install  \
-    mysqli  \
-    pdo_mysql  \
-    gd  \
-    intl
+# Files written from inside the container land on the host as this UID, so it has to match
+# the host user or everything generated (var/cache, migrations, composer.lock) comes back
+# root owned.
+RUN usermod -u 1000 www-data \
+ && groupmod -g 1000 www-data
 
-RUN pecl install pcov  && docker-php-ext-enable pcov
+USER www-data
+WORKDIR /var/www/musicall
 
-ARG USER=www-data
-ARG UID=1000
-
-RUN usermod -u ${UID} ${USER}
-RUN groupmod -g ${UID} ${USER}
-
-USER ${USER}
-
-COPY . /var/www/musicall
-WORKDIR /var/www
+# No COPY on purpose: compose bind mounts the working tree over this path, so anything
+# copied in would be shadowed at startup. Dev-only image, unusable without that mount.

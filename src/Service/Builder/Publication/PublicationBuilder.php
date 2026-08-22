@@ -11,7 +11,6 @@ use App\ApiResource\Publication\Publication\Thread;
 use App\ApiResource\Publication\Publication\Type;
 use App\Entity\Comment\CommentThread;
 use App\Entity\Image\PublicationCover;
-use App\Entity\Metric\VoteCache;
 use App\Entity\Publication as PublicationEntity;
 use App\Entity\PublicationSubCategory;
 use App\Entity\User;
@@ -38,10 +37,17 @@ readonly class PublicationBuilder
     public function buildList(array $entities, array $userVotesByCacheId = []): array
     {
         return array_map(
-            fn (PublicationEntity $entity): Publication => $this->buildItem(
-                $entity,
-                $entity->voteCache instanceof VoteCache ? ($userVotesByCacheId[$entity->voteCache->id] ?? null) : null,
-            ),
+            function (PublicationEntity $entity) use ($userVotesByCacheId): Publication {
+                // Read into a variable so the null is ruled out before the lookup: a vote cache id is
+                // nullable until the row is persisted, and null is not a key this int-keyed map can
+                // hold. PHP would quietly cast it to "" and never match.
+                $cacheId = $entity->voteCache?->id;
+
+                return $this->buildItem(
+                    $entity,
+                    $cacheId === null ? null : ($userVotesByCacheId[$cacheId] ?? null),
+                );
+            },
             $entities,
         );
     }
