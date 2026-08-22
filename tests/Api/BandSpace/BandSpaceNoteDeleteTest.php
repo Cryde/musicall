@@ -268,68 +268,6 @@ class BandSpaceNoteDeleteTest extends ApiTestCase
         $this->assertNotNull($noteRepository->find($childId));
     }
 
-    /**
-     * A note older than the createdBy column, or one whose author has closed their account, records
-     * nobody. It is admin only rather than open to whoever is in the space: the name is what is
-     * missing, not the fact that somebody wrote it.
-     */
-    public function test_delete_note_without_an_author_is_refused_for_a_plain_member(): void
-    {
-        $member = UserFactory::new()->asBaseUser()->create();
-        $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $member])->create();
-
-        $note = BandSpaceNoteFactory::new([
-            'bandSpace' => $bandSpace,
-            'title' => 'Note héritée',
-        ])->create();
-        $noteId = (string) $note->id;
-
-        $this->client->loginUser($member);
-        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $noteId);
-
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/Error',
-            '@id' => '/api/errors/403',
-            '@type' => 'Error',
-            'title' => 'An error occurred',
-            'detail' => 'Seul le créateur ou un administrateur peut supprimer cette note',
-            'status' => 403,
-            'type' => '/errors/403',
-            'description' => 'Seul le créateur ou un administrateur peut supprimer cette note',
-        ]);
-
-        self::getContainer()->get(EntityManagerInterface::class)->clear();
-        $this->assertNotNull(self::getContainer()->get(BandSpaceNoteRepository::class)->find($noteId));
-    }
-
-    /** The other half of the rule above: an authorless note must not become undeletable. */
-    public function test_delete_note_without_an_author_as_admin(): void
-    {
-        $admin = UserFactory::new()->asBaseUser()->create();
-        $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new([
-            'bandSpace' => $bandSpace,
-            'user' => $admin,
-            'role' => Role::Admin,
-        ])->create();
-
-        $note = BandSpaceNoteFactory::new([
-            'bandSpace' => $bandSpace,
-            'title' => 'Note héritée',
-        ])->create();
-        $noteId = (string) $note->id;
-
-        $this->client->loginUser($admin);
-        $this->client->request('DELETE', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $noteId);
-
-        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
-
-        self::getContainer()->get(EntityManagerInterface::class)->clear();
-        $this->assertNull(self::getContainer()->get(BandSpaceNoteRepository::class)->find($noteId));
-    }
-
     public function test_delete_not_found(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

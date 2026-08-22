@@ -103,9 +103,9 @@ class BandSpaceNote
     public ?int $expectedContentVersion = null;
     public bool $hasChildren = false;
 
-    /** @var array{id: string, username: string}|null */
+    /** @var array{id: string, username: string} */
     #[ApiProperty(writable: false)]
-    public ?array $createdBy = null;
+    public array $createdBy;
 
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;

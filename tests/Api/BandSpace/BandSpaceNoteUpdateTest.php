@@ -84,6 +84,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'Old Title',
             'position' => 0,
@@ -114,7 +115,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -134,6 +138,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -166,7 +171,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -186,6 +194,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -215,7 +224,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -233,6 +245,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -262,7 +275,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => '🎵',
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -282,6 +298,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'emoji' => '🎵',
@@ -314,7 +331,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -329,6 +349,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
 
         $content = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Some content']]]]];
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'content' => $content,
@@ -361,7 +382,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -477,6 +501,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -520,7 +545,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -538,6 +566,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -580,7 +609,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -598,6 +630,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -641,7 +674,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -656,6 +692,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -692,7 +729,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -707,6 +747,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -765,7 +806,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             ],
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -783,6 +827,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -827,7 +872,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             ],
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -847,6 +895,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -899,7 +948,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             ],
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -917,6 +969,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -959,7 +1012,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             ],
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -977,6 +1033,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -1029,7 +1086,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 2,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -1280,6 +1340,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'position' => 0,
@@ -1318,7 +1379,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $secondContent,
             'content_version' => 3,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -1333,6 +1397,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'Old Title',
             'contentVersion' => 3,
@@ -1363,7 +1428,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => null,
             'content_version' => 3,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
@@ -1379,6 +1447,7 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
 
         $content = ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Rien de changé']]]]];
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'content' => $content,
@@ -1410,7 +1479,10 @@ class BandSpaceNoteUpdateTest extends ApiTestCase
             'content' => $content,
             'content_version' => 3,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $user->id,
+                'username' => $user->username,
+            ],
             'emoji' => null,
             'creation_datetime' => $refreshed->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
