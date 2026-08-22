@@ -7,6 +7,9 @@ use App\Entity\BandSpace\BandSpaceNote as BandSpaceNoteEntity;
 
 readonly class BandSpaceNoteBuilder
 {
+    /** Stands in for a closed account, whose anonymised handle would name nobody. */
+    private const string DELETED_AUTHOR_USERNAME = 'Utilisateur supprimé';
+
     /**
      * The only values in a stored note a browser ever dereferences: an image node's `src` and a link
      * mark's `href`. A text node is not one of them, which is why text is handed back byte for byte.
@@ -54,15 +57,16 @@ readonly class BandSpaceNoteBuilder
         $dto->contentVersion = $entity->contentVersion;
         $dto->hasChildren = !$entity->children->isEmpty();
 
-        // isDeleted, not just a null check: closing an account anonymises the row in place and keeps its
-        // primary key, so the FK never breaks and the author reads back as the deleted_<uuid> handle.
-        // Without this the byline would say "Créée par deleted_c7c9f2e1-...", which names nobody.
-        if ($entity->createdBy instanceof \App\Entity\User && !$entity->createdBy->isDeleted()) {
-            $dto->createdBy = [
-                'id' => $entity->createdBy->id,
-                'username' => $entity->createdBy->username,
-            ];
-        }
+        // isDeleted, not a null check: the column is NOT NULL, so the author is always there, but closing
+        // an account anonymises the row in place and keeps its primary key. Read back raw, the byline
+        // would say "Créée par deleted_c7c9f2e1-...", which names nobody. The placeholder keeps the line
+        // truthful without leaking the handle.
+        $dto->createdBy = [
+            'id' => $entity->createdBy->id,
+            'username' => $entity->createdBy->isDeleted()
+                ? self::DELETED_AUTHOR_USERNAME
+                : $entity->createdBy->username,
+        ];
 
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;

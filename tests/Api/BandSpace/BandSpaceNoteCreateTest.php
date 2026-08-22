@@ -45,7 +45,7 @@ class BandSpaceNoteCreateTest extends ApiTestCase
 
         $note = $notes[0];
         // Asserted on the row and not only in the payload: this column is what NoteOwnerChecker reads.
-        $this->assertSame($user->id, $note->createdBy?->id);
+        $this->assertSame($user->id, $note->createdBy->id);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/BandSpaceNote',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,

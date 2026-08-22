@@ -60,53 +60,12 @@ class BandSpaceNoteGetTest extends ApiTestCase
     }
 
     /**
-     * A note written before the author column existed reports no author rather than a placeholder. The
-     * header hides its byline on exactly this shape. A closed account is the other way in, and it is a
-     * separate case with a separate mechanism, so it gets its own test below.
+     * Closing an account keeps the note's author. DeleteAccountProcedure anonymises the fos_user row in
+     * place and keeps its primary key, so the FK still resolves, to a deleted_<uuid> handle. The read
+     * side substitutes a label, because the raw handle names nobody. The note keeps a byline either
+     * way, which is what lets created_by be non-nullable.
      */
-    public function test_get_item_without_an_author_reports_none(): void
-    {
-        $user = UserFactory::new()->asBaseUser()->create();
-        $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $note = BandSpaceNoteFactory::new([
-            'bandSpace' => $bandSpace,
-            'title' => 'Note héritée',
-            'position' => 0,
-            'creationDatetime' => new \DateTime('2024-01-01 10:00:00'),
-        ])->create();
-
-        $this->client->loginUser($user);
-        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id);
-
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/BandSpaceNote',
-            '@id' => '/api/band_spaces/' . $bandSpace->id . '/notes/' . $note->id,
-            '@type' => 'BandSpaceNote',
-            'id' => $note->id,
-            'band_space_id' => $bandSpace->id,
-            'title' => 'Note héritée',
-            'parent_id' => null,
-            'position' => 0,
-            'content' => null,
-            'content_version' => 1,
-            'has_children' => false,
-            'created_by' => null,
-            'emoji' => null,
-            'creation_datetime' => '2024-01-01T10:00:00+00:00',
-            'update_datetime' => null,
-        ]);
-    }
-
-    /**
-     * Closing an account does not null this FK. DeleteAccountProcedure anonymises the fos_user row in
-     * place and keeps its primary key, so ON DELETE SET NULL never fires and the author still resolves,
-     * to a deleted_<uuid> handle. The byline has to be suppressed on the read side instead, or it would
-     * name a handle nobody recognises.
-     */
-    public function test_get_item_hides_the_byline_of_a_closed_account(): void
+    public function test_get_item_labels_the_author_of_a_closed_account(): void
     {
         $reader = UserFactory::new()->asBaseUser()->create();
         // Its own email, because asBaseUser pins a fixed one and the column is unique.
@@ -142,7 +101,10 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'content' => null,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => [
+                'id' => $departed->id,
+                'username' => 'Utilisateur supprimé',
+            ],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
@@ -181,6 +143,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             ],
         ];
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'content' => $content,
@@ -204,7 +167,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             'content' => $content,
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => ['id' => $user->id, 'username' => $user->username],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,
@@ -232,6 +195,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             ],
         ];
         $note = BandSpaceNoteFactory::new([
+            'createdBy' => $user,
             'bandSpace' => $bandSpace,
             'title' => 'My Note',
             'content' => $content,
@@ -267,7 +231,7 @@ class BandSpaceNoteGetTest extends ApiTestCase
             ],
             'content_version' => 1,
             'has_children' => false,
-            'created_by' => null,
+            'created_by' => ['id' => $user->id, 'username' => $user->username],
             'emoji' => null,
             'creation_datetime' => '2024-01-01T10:00:00+00:00',
             'update_datetime' => null,

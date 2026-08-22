@@ -4,7 +4,6 @@ namespace App\Security\BandSpace;
 
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\BandSpaceNote;
-use App\Entity\User;
 use App\Enum\BandSpace\Role;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -15,12 +14,10 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * ON DELETE CASCADE, so any member could take a whole subtree of somebody else's pages behind a single
  * confirm dialog, with nothing but the activity feed left to say what had been there.
  *
- * An authorless note is admin only, exactly as an authorless file is. Both halves of that matter: a
- * note older than the createdBy column, or one whose author has closed their account, must not become
- * undeletable, and it must not become deletable by anyone who happens to be in the space either. That
- * is deliberately the opposite reading from FinanceRecurrenceOwnerChecker, which treats an ownerless
- * recurrence as claimable: a recurrence with no entries left protects nobody, whereas an old note is
- * still somebody's writing and the missing name is the only thing that is gone.
+ * There is no authorless case to handle: band_space_note.created_by_id is NOT NULL. The notes written
+ * before the column existed were backfilled from their note_created activity, so "nobody recorded"
+ * stopped being a state a note can be in. A closed account still compares by id, and cannot log in to
+ * reach this check anyway.
  */
 readonly class NoteOwnerChecker
 {
@@ -30,7 +27,7 @@ readonly class NoteOwnerChecker
             return;
         }
 
-        if ($note->createdBy instanceof User && $note->createdBy->id === $membership->user->id) {
+        if ($note->createdBy->id === $membership->user->id) {
             return;
         }
 

@@ -26,8 +26,15 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
         $bandSpace = BandSpaceFactory::new(['name' => 'The Rockers'])->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
-        // One authored and one not, so the tree payload is asserted on both shapes: notes predating the
-        // author column, and notes whose author has closed their account, both come back with none.
+        // Its own email, because asBaseUser pins a fixed one and the column is unique.
+        $departed = UserFactory::new()->asBaseUser()->create([
+            'username' => 'deleted_c7c9f2e1',
+            'email' => 'deleted_c7c9f2e1@email.com',
+            'deletionDatetime' => new \DateTimeImmutable('2024-06-01 09:00:00'),
+        ]);
+
+        // One live author and one closed account, so the tree payload is asserted on both shapes a
+        // byline can take. Every note carries one, created_by being non-nullable.
         $note1 = BandSpaceNoteFactory::new([
             'bandSpace' => $bandSpace,
             'title' => 'First Note',
@@ -39,6 +46,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
             'bandSpace' => $bandSpace,
             'title' => 'Second Note',
             'position' => 1,
+            'createdBy' => $departed,
             'creationDatetime' => new \DateTime('2024-01-02 10:00:00'),
         ])->create();
 
@@ -78,7 +86,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
                     'content' => null,
                     'content_version' => 1,
                     'has_children' => false,
-                    'created_by' => null,
+                    'created_by' => ['id' => $departed->id, 'username' => 'Utilisateur supprimé'],
                     'emoji' => null,
                     'creation_datetime' => '2024-01-02T10:00:00+00:00',
                     'update_datetime' => null,
@@ -163,6 +171,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
 
         $note = BandSpaceNoteFactory::new([
             'bandSpace' => $bandSpace,
+            'createdBy' => $user,
             'title' => 'Note with content',
             'content' => ['type' => 'doc', 'content' => [['type' => 'paragraph']]],
             'position' => 0,
@@ -189,7 +198,7 @@ class BandSpaceNoteGetCollectionTest extends ApiTestCase
                     'content' => null,
                     'content_version' => 1,
                     'has_children' => false,
-                    'created_by' => null,
+                    'created_by' => ['id' => $user->id, 'username' => $user->username],
                     'emoji' => null,
                     'creation_datetime' => '2024-01-01T10:00:00+00:00',
                     'update_datetime' => null,
