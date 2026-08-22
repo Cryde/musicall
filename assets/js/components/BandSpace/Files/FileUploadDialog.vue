@@ -144,7 +144,7 @@
 
       <Message
         v-if="summary.isFinished && !isUploading"
-        :severity="summary.unsent > 0 ? 'warn' : 'success'"
+        :severity="summary.hasFailures ? 'warn' : 'success'"
         :closable="false"
       >
         {{ summary.label }}
@@ -320,7 +320,9 @@ function handleDrop(event) {
 
 function addFiles(files) {
   if (!files || files.length === 0) return
-  queue.value = appendToQueue(queue.value, files)
+  // The limit is passed in rather than read inside the queue module so the module stays pure and
+  // testable. An oversize file lands in the list already failed and is never sent.
+  queue.value = appendToQueue(queue.value, files, filesStore.maxUploadSizeBytes)
   batchNotice.value = null
 }
 
@@ -534,7 +536,8 @@ const STATUS_ICONS = {
   [UPLOAD_STATUS.Uploaded]: 'pi pi-check-circle text-green-600',
   [UPLOAD_STATUS.Failed]: 'pi pi-times-circle text-red-600',
   [UPLOAD_STATUS.Skipped]: 'pi pi-ban text-amber-600',
-  [UPLOAD_STATUS.Cancelled]: 'pi pi-ban text-surface-400'
+  [UPLOAD_STATUS.Cancelled]: 'pi pi-ban text-surface-400',
+  [UPLOAD_STATUS.Rejected]: 'pi pi-ban text-red-600'
 }
 
 const STATUS_LABELS = {
@@ -543,7 +546,8 @@ const STATUS_LABELS = {
   [UPLOAD_STATUS.Uploaded]: 'Importé',
   [UPLOAD_STATUS.Failed]: 'Échec',
   [UPLOAD_STATUS.Skipped]: 'Non envoyé',
-  [UPLOAD_STATUS.Cancelled]: 'Interrompu'
+  [UPLOAD_STATUS.Cancelled]: 'Interrompu',
+  [UPLOAD_STATUS.Rejected]: 'Refusé'
 }
 
 function statusIconClass(status) {

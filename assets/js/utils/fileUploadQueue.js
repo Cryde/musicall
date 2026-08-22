@@ -20,6 +20,8 @@
  * Pure on purpose, so the rules are tested without a browser. See fileUploadQueue.test.js.
  */
 
+import { formatBytes } from './formatBytes.js'
+
 /**
  * What the API accepts per user.
  *
@@ -47,14 +49,20 @@ export const UPLOAD_STATUS = Object.freeze({
   Failed: 'failed',
   /** Never sent, because something upstream made sending pointless. Retryable. */
   Skipped: 'skipped',
-  Cancelled: 'cancelled'
+  Cancelled: 'cancelled',
+  /**
+   * Refused here, before anything was sent, on grounds that cannot change by trying again: the file
+   * is simply too large. Deliberately not retryable, because a retry would re-queue it with its error
+   * cleared and then actually upload it, which is the whole thing the check exists to prevent.
+   */
+  Rejected: 'rejected'
 })
 
 /** Statuses a retry can put back in the queue. */
 const RETRYABLE_STATUSES = [UPLOAD_STATUS.Failed, UPLOAD_STATUS.Skipped, UPLOAD_STATUS.Cancelled]
 
 /** Statuses nothing more is going to happen to. */
-const TERMINAL_STATUSES = [UPLOAD_STATUS.Uploaded, ...RETRYABLE_STATUSES]
+const TERMINAL_STATUSES = [UPLOAD_STATUS.Uploaded, UPLOAD_STATUS.Rejected, ...RETRYABLE_STATUSES]
 
 const QUOTA_REACHED_MESSAGE = 'Quota de stockage atteint, fichier non envoyé'
 const QUOTA_BATCH_NOTICE =
@@ -66,28 +74,77 @@ const CANCELLED_MESSAGE = 'Import interrompu'
 const CANCELLED_BATCH_NOTICE = "Import interrompu. Les fichiers restants n'ont pas été envoyés."
 
 /**
+ * A 2xx upload response that is not actually a file resource is a failure, and has to be turned into
+ * one here because nothing downstream will.
+ *
+ * A request whose body exceeds PHP's post_max_size dies before the controller runs, and under
+ * FrankenPHP's worker mode that surfaces as HTTP 200 carrying an HTML fatal error page, not as a 4xx.
+ * Axios resolves on a 200, so handleApiError never runs, applyUploadFailure never runs, and the batch
+ * counted the file as uploaded while nothing was stored. Checking the shape is what turns that silent
+ * false success into a visible failure.
+ *
+ * @param {unknown} data
+ * @returns {Object} the file resource, unchanged, when it is one
+ */
+export function assertUploadedFile(data) {
+  if (data !== null && typeof data === 'object' && typeof data.id === 'string') {
+    return data
+  }
+
+  throw new Error("Le serveur a renvoyé une réponse inattendue, le fichier n'a pas été enregistré.")
+}
+
+/**
+ * Why a file is refused before it is sent, or null when it is acceptable.
+ *
+ * Size is the only thing the browser can judge on its own: the mime allowlist and the storage quota
+ * both need the server. Checking it here is not a security boundary, the endpoint validates the size
+ * again, it is about not spending minutes of someone's upstream on a file that cannot be accepted.
+ *
+ * @param {{size: number}} file
+ * @param {number|null} maxSizeBytes the server's own limit, or null when it is not known yet
+ * @returns {string|null}
+ */
+export function uploadRejectionReason(file, maxSizeBytes) {
+  if (!maxSizeBytes || !Number.isFinite(file?.size)) return null
+  if (file.size <= maxSizeBytes) return null
+
+  return `Fichier trop volumineux (${formatBytes(file.size)}). La taille maximale est de ${formatBytes(maxSizeBytes)}.`
+}
+
+/**
  * Adds files to the end of the queue, keeping whatever is already there.
  *
  * Two files sharing a name both stay, with their own id: see the note at the top of this file.
  *
+ * A file over the limit is added as already Rejected rather than dropped, so the member sees which
+ * file was refused and why instead of watching it silently not appear. It never reaches Queued, so the
+ * upload loop never picks it up and not one byte of it goes over the wire. Rejected rather than Failed
+ * because Failed is retryable, and retrying would clear the error and send it after all.
+ *
  * @param {{id: number}[]} queue
  * @param {Iterable<{name: string, size: number}>} files a FileList or an array of File
+ * @param {number|null} [maxSizeBytes] the server's per-file limit, when the quota has been loaded
  * @returns {Object[]} a new queue
  */
-export function appendToQueue(queue, files) {
+export function appendToQueue(queue, files, maxSizeBytes = null) {
   let nextId = queue.reduce((max, item) => Math.max(max, item.id), 0) + 1
 
-  const added = Array.from(files ?? []).map((file) => ({
-    id: nextId++,
-    file,
-    name: file.name,
-    size: file.size,
-    status: UPLOAD_STATUS.Queued,
-    progress: 0,
-    error: null,
-    /** How many times the rate limiter has pushed this file back. */
-    attempts: 0
-  }))
+  const added = Array.from(files ?? []).map((file) => {
+    const rejection = uploadRejectionReason(file, maxSizeBytes)
+
+    return {
+      id: nextId++,
+      file,
+      name: file.name,
+      size: file.size,
+      status: rejection === null ? UPLOAD_STATUS.Queued : UPLOAD_STATUS.Rejected,
+      progress: 0,
+      error: rejection,
+      /** How many times the rate limiter has pushed this file back. */
+      attempts: 0
+    }
+  })
 
   return [...queue, ...added]
 }
@@ -406,7 +463,10 @@ export function summarizeQueue(queue) {
   const total = queue.length
   const uploaded = countByStatus(queue, UPLOAD_STATUS.Uploaded)
   const unsent = queue.filter((item) => RETRYABLE_STATUSES.includes(item.status)).length
-  const done = uploaded + unsent
+  // Counted apart from unsent because the retry button is driven by unsent, and offering to retry a
+  // file that is too large would be offering something that cannot work.
+  const rejected = countByStatus(queue, UPLOAD_STATUS.Rejected)
+  const done = uploaded + unsent + rejected
 
   const percent =
     total === 0
@@ -422,12 +482,20 @@ export function summarizeQueue(queue) {
     total,
     uploaded,
     unsent,
+    rejected,
     done,
     /** Which file the batch is on, one based, for « Fichier 3 sur 20 ». */
     position: Math.min(total, done + 1),
     isFinished: total > 0 && done === total,
+    /**
+     * Whether anything went wrong, so the closing banner is not styled as a success. Decided here
+     * rather than in the dialog because it has to account for every way a file can end up unimported,
+     * and this module is the one that is tested: reading only `unsent` painted "Aucun fichier importé,
+     * 1 refusé" green.
+     */
+    hasFailures: unsent > 0 || rejected > 0,
     percent,
-    label: outcomeLabel(uploaded, unsent)
+    label: outcomeLabel(uploaded, unsent, rejected)
   }
 }
 
@@ -446,15 +514,17 @@ function countByStatus(queue, status) {
  * @param {number} unsent
  * @returns {string}
  */
-function outcomeLabel(uploaded, unsent) {
+function outcomeLabel(uploaded, unsent, rejected = 0) {
   const importedPart =
     uploaded === 0
       ? 'Aucun fichier importé'
       : `${uploaded} fichier${uploaded > 1 ? 's' : ''} importé${uploaded > 1 ? 's' : ''}`
 
-  if (unsent === 0) {
-    return importedPart
-  }
+  // "non envoyé" says the batch stopped before reaching it, which invites a retry. A refused file was
+  // reached and turned down, and no retry will change that, so it gets its own word.
+  const parts = []
+  if (unsent > 0) parts.push(`${unsent} non ${unsent > 1 ? 'envoyés' : 'envoyé'}`)
+  if (rejected > 0) parts.push(`${rejected} refusé${rejected > 1 ? 's' : ''}`)
 
-  return `${importedPart}, ${unsent} non ${unsent > 1 ? 'envoyés' : 'envoyé'}`
+  return parts.length === 0 ? importedPart : `${importedPart}, ${parts.join(', ')}`
 }

@@ -41,6 +41,14 @@ class BandSpaceFileQuotaResource
      */
     public int $trashRetentionDays;
 
+    /**
+     * The largest a single file may be, as opposed to quotaBytes which is the whole space. Served for
+     * the same reason as trashRetentionDays: the browser has to refuse an oversize file before it
+     * spends minutes uploading it, and the only way it can do that against the real limit rather than
+     * a copy is to be told what the limit is.
+     */
+    public int $maxUploadSizeBytes;
+
     /** @var array<int, array{source: string, bytes: int}> */
     public array $breakdownBySource = [];
 }

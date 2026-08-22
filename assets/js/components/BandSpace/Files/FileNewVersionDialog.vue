@@ -88,6 +88,7 @@ import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
 import { computed, reactive, ref } from 'vue'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { uploadRejectionReason } from '../../../utils/fileUploadQueue.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -120,11 +121,28 @@ function triggerFilePicker() {
   fileInput.value?.click()
 }
 
+/**
+ * Both ways of choosing a file go through here, so an oversize one is refused once rather than in two
+ * places that could drift. It is refused at selection because the alternative is uploading it first.
+ */
+function selectFile(file) {
+  const rejection = uploadRejectionReason(file, filesStore.maxUploadSizeBytes)
+  if (rejection !== null) {
+    selectedFile.value = null
+    fieldErrors.uploadedFile = rejection
+    if (fileInput.value) fileInput.value.value = ''
+
+    return
+  }
+
+  selectedFile.value = file
+  fieldErrors.uploadedFile = null
+}
+
 function handleFileChange(event) {
   const file = event.target.files?.[0]
   if (file) {
-    selectedFile.value = file
-    fieldErrors.uploadedFile = null
+    selectFile(file)
   }
 }
 
@@ -132,8 +150,7 @@ function handleDrop(event) {
   isDragging.value = false
   const file = event.dataTransfer?.files?.[0]
   if (file) {
-    selectedFile.value = file
-    fieldErrors.uploadedFile = null
+    selectFile(file)
   }
 }
 

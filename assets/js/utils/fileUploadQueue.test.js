@@ -3,6 +3,7 @@ import { describe, it } from 'node:test'
 import {
   appendToQueue,
   applyUploadFailure,
+  assertUploadedFile,
   cancelPendingUploads,
   classifyUploadFailure,
   hasUnsentItems,
@@ -20,8 +21,12 @@ import {
   UPLOAD_RATE_LIMIT,
   UPLOAD_RATE_WINDOW_MS,
   UPLOAD_STATUS,
+  uploadRejectionReason,
   withQueueItem
 } from './fileUploadQueue.js'
+
+/** The per-file limit the server ships, 500 MiB, which the quota endpoint now reports. */
+const LIMIT = 500 * 1024 * 1024
 
 /**
  * The rules a batch of file uploads follows.
@@ -100,6 +105,118 @@ describe('appendToQueue', () => {
 
     assert.equal(appendToQueue([], [file])[0].file, file)
     assert.equal(appendToQueue([], [file])[0].size, 4096)
+  })
+
+  it('adds an oversize file already rejected, so it is shown but never sent', () => {
+    const queue = appendToQueue([], [fakeFile('film.mov', LIMIT + 1)], LIMIT)
+
+    assert.equal(queue.length, 1, 'the file stays in the list rather than vanishing')
+    assert.equal(queue[0].status, UPLOAD_STATUS.Rejected)
+    assert.match(queue[0].error, /trop volumineux/)
+    assert.equal(nextQueuedItem(queue), null, 'the upload loop must never pick it up')
+  })
+
+  it('does not offer to retry an oversize file, and a retry cannot resurrect it', () => {
+    // Rejected has to stay out of the retryable set. As Failed, the retry button appeared, and
+    // requeueUnsentItems put the file back as Queued with its error cleared, so pressing retry
+    // uploaded the very file the check had just refused.
+    const queue = appendToQueue([], [fakeFile('film.mov', LIMIT * 4)], LIMIT)
+
+    assert.equal(hasUnsentItems(queue), false, 'no retry button for a file that cannot be accepted')
+
+    const retried = requeueUnsentItems(queue)
+    assert.equal(retried[0].status, UPLOAD_STATUS.Rejected, 'still rejected after a retry')
+    assert.match(retried[0].error, /trop volumineux/, 'and it keeps saying why')
+    assert.equal(nextQueuedItem(retried), null, 'so it is still never sent')
+  })
+
+  it('still offers to retry a genuinely unsent file alongside a rejected one', () => {
+    const queue = withQueueItem(
+      appendToQueue([], [fakeFile('petit.jpg', 1024), fakeFile('film.mov', LIMIT * 4)], LIMIT),
+      1,
+      { status: UPLOAD_STATUS.Skipped, error: 'Quota de stockage atteint, fichier non envoyé' }
+    )
+
+    assert.equal(hasUnsentItems(queue), true)
+
+    const retried = requeueUnsentItems(queue)
+    assert.equal(retried[0].status, UPLOAD_STATUS.Queued, 'the skipped file goes back in the queue')
+    assert.equal(retried[1].status, UPLOAD_STATUS.Rejected, 'the oversize one does not')
+  })
+
+  it('keeps a file exactly on the limit, since the server accepts it', () => {
+    const queue = appendToQueue([], [fakeFile('juste.zip', LIMIT)], LIMIT)
+
+    assert.equal(queue[0].status, UPLOAD_STATUS.Queued)
+    assert.equal(queue[0].error, null)
+  })
+
+  it('refuses only the oversize files in a mixed selection', () => {
+    const queue = appendToQueue(
+      [],
+      [fakeFile('petit.jpg', 1024), fakeFile('enorme.mov', LIMIT * 3), fakeFile('moyen.pdf', 2048)],
+      LIMIT
+    )
+
+    assert.deepEqual(
+      queue.map((item) => item.status),
+      [UPLOAD_STATUS.Queued, UPLOAD_STATUS.Rejected, UPLOAD_STATUS.Queued]
+    )
+    // The first still-queued file is picked up, so one refusal does not stall the batch.
+    assert.equal(nextQueuedItem(queue).name, 'petit.jpg')
+  })
+
+  it('queues everything when the limit is not known yet', () => {
+    // The quota endpoint has not answered, so there is nothing to check against and the server
+    // stays the one that decides. Guessing a limit here would refuse files it would have accepted.
+    for (const unknown of [null, undefined, 0]) {
+      const queue = appendToQueue([], [fakeFile('film.mov', LIMIT * 5)], unknown)
+
+      assert.equal(queue[0].status, UPLOAD_STATUS.Queued)
+      assert.equal(queue[0].error, null)
+    }
+  })
+})
+
+describe('assertUploadedFile', () => {
+  it('passes a real file resource straight through', () => {
+    const resource = { id: '16bca0e5-8202-402d-9444-7e111692cd61', original_name: 'demo.mp3' }
+
+    assert.equal(assertUploadedFile(resource), resource)
+  })
+
+  it('refuses the HTML fatal error a body over post_max_size returns with a 200', () => {
+    // The real observed body: PHP warns that Content-Length exceeds post_max_size, the warning becomes
+    // an uncaught ErrorException in the FrankenPHP worker, and the status stays 200. Without this the
+    // batch reported the file as uploaded.
+    const fatal = '<br />\n<b>Fatal error</b>:  Uncaught ErrorException: Warning: ...'
+
+    assert.throws(() => assertUploadedFile(fatal), /réponse inattendue/)
+  })
+
+  it('refuses anything else a 200 might carry instead of a resource', () => {
+    for (const body of [null, undefined, '', 0, [], {}, { id: 42 }]) {
+      assert.throws(() => assertUploadedFile(body), /réponse inattendue/)
+    }
+  })
+})
+
+describe('uploadRejectionReason', () => {
+  it('names both the file size and the limit, in French units', () => {
+    const reason = uploadRejectionReason({ size: 2299496872 }, LIMIT)
+
+    assert.equal(reason, 'Fichier trop volumineux (2.14 Go). La taille maximale est de 500.0 Mo.')
+  })
+
+  it('accepts anything at or under the limit', () => {
+    assert.equal(uploadRejectionReason({ size: LIMIT }, LIMIT), null)
+    assert.equal(uploadRejectionReason({ size: 0 }, LIMIT), null)
+  })
+
+  it('does not refuse when the size is unusable', () => {
+    assert.equal(uploadRejectionReason({}, LIMIT), null)
+    assert.equal(uploadRejectionReason({ size: Number.NaN }, LIMIT), null)
+    assert.equal(uploadRejectionReason(null, LIMIT), null)
   })
 })
 
@@ -382,6 +499,22 @@ describe('cancelPendingUploads', () => {
     assert.equal(cancelled.queue[0].error, quotaError.message)
     assert.equal(cancelled.queue[1].status, UPLOAD_STATUS.Skipped)
   })
+
+  it('does not relabel a rejected file as interrupted', () => {
+    // Rejected is terminal, so cancelling has to leave it saying why it was refused rather than
+    // overwriting that with "Import interrompu", which would lose the only explanation there is.
+    const queue = appendToQueue(
+      [],
+      [fakeFile('petit.jpg', 1024), fakeFile('film.mov', LIMIT * 4)],
+      LIMIT
+    )
+
+    const cancelled = cancelPendingUploads(queue)
+
+    assert.equal(cancelled.queue[0].status, UPLOAD_STATUS.Cancelled, 'the queued file is abandoned')
+    assert.equal(cancelled.queue[1].status, UPLOAD_STATUS.Rejected, 'the refused one is untouched')
+    assert.match(cancelled.queue[1].error, /trop volumineux/)
+  })
 })
 
 describe('hasUploadInFlight', () => {
@@ -532,5 +665,35 @@ describe('summarizeQueue', () => {
     const queue = applyUploadFailure(queueOf('un.jpg'), 1, quotaError).queue
 
     assert.equal(summarizeQueue(queue).label, 'Aucun fichier importé, 1 non envoyé')
+  })
+
+  it('calls a file refused before sending refused, not unsent', () => {
+    const queue = appendToQueue([], [fakeFile('film.mov', LIMIT * 4)], LIMIT)
+    const summary = summarizeQueue(queue)
+
+    assert.equal(summary.rejected, 1)
+    assert.equal(summary.unsent, 0, 'it is not waiting to be sent, it will not be sent')
+    assert.equal(summary.label, 'Aucun fichier importé, 1 refusé')
+    assert.equal(summary.isFinished, true, 'the batch is over, not stalled on it')
+    // Reading only `unsent` painted this banner green while it said nothing had been imported.
+    assert.equal(summary.hasFailures, true, 'so the closing banner is not styled as a success')
+  })
+
+  it('reports no failures when every file went up', () => {
+    const queue = withQueueItem(appendToQueue([], [fakeFile('un.jpg')], LIMIT), 1, {
+      status: UPLOAD_STATUS.Uploaded
+    })
+
+    assert.equal(summarizeQueue(queue).hasFailures, false)
+  })
+
+  it('words the two kinds of failure separately when both happened', () => {
+    const queue = withQueueItem(
+      appendToQueue([], [fakeFile('petit.jpg', 1024), fakeFile('film.mov', LIMIT * 4)], LIMIT),
+      1,
+      { status: UPLOAD_STATUS.Skipped }
+    )
+
+    assert.equal(summarizeQueue(queue).label, 'Aucun fichier importé, 1 non envoyé, 1 refusé')
   })
 })

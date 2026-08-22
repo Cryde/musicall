@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\ApiResource\BandSpace\File\BandSpaceFileQuotaResource;
 use App\Entity\User;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\File\BandSpaceFileMimeAllowlist;
 use App\Service\BandSpace\File\BandSpaceFileQuotaService;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -47,6 +48,7 @@ readonly class BandSpaceFileQuotaProvider implements ProviderInterface
             && $usedBytes / $quotaBytes >= BandSpaceFileQuotaService::APPROACHING_LIMIT_RATIO;
         $dto->breakdownBySource = $this->quotaService->getUsageBreakdown($bandSpace);
         $dto->trashRetentionDays = $this->retentionDays;
+        $dto->maxUploadSizeBytes = BandSpaceFileMimeAllowlist::MAX_UPLOAD_SIZE_BYTES;
 
         return $dto;
     }
