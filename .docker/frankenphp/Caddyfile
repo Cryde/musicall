@@ -16,6 +16,10 @@
 {$CADDY_EXTRA_CONFIG}
 
 {$SERVER_NAME:localhost} {
+
+    request_body {
+        max_size 528MB
+    }
 	#log {
 	#	# Redact the authorization query parameter that can be set by Mercure
 	#	format filter {
