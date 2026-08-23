@@ -188,6 +188,11 @@ import MultiSelect from 'primevue/multiselect'
 import ProgressBar from 'primevue/progressbar'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
+import {
+  isVirtualFolderId,
+  listedFolderId,
+  NO_FOLDER_LISTED
+} from '../../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import {
   appendToQueue,
@@ -262,9 +267,7 @@ let tally = { uploadedCount: 0, quotaApproaching: false, interrupted: false }
 const tags = computed(() => filesStore.tags)
 
 const activeFolderId = computed(() => filesStore.activeFolderId)
-const activeFolderIsVirtual = computed(
-  () => typeof activeFolderId.value === 'string' && activeFolderId.value.startsWith('virtual:')
-)
+const activeFolderIsVirtual = computed(() => isVirtualFolderId(activeFolderId.value))
 
 const folderOptions = computed(() => {
   const out = []
@@ -291,13 +294,12 @@ const summary = computed(() => summarizeQueue(queue.value))
 const hasQueuedFiles = computed(() => nextQueuedItem(queue.value) !== null)
 const hasUnsent = computed(() => hasUnsentItems(queue.value))
 
+// The folder on screen, so the member sees where the file is about to land and can still change it.
+// The root and the selections that are not folders leave the field on its « Racine » placeholder.
 watch(visible, (open) => {
   if (open) {
-    if (!activeFolderIsVirtual.value && typeof activeFolderId.value === 'string') {
-      form.folderId = activeFolderId.value
-    } else {
-      form.folderId = null
-    }
+    const listedFolder = listedFolderId(activeFolderId.value)
+    form.folderId = listedFolder === NO_FOLDER_LISTED ? null : listedFolder
   }
 })
 

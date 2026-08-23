@@ -42,7 +42,27 @@
           Aucun dossier pour l'instant.
         </p>
 
-        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
+        <!-- Under the tree rather than in it: neither is a folder. One is every file in the space
+             whatever folder it sits in, the other is what has been deleted. -->
+        <div
+          class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 flex flex-col gap-1"
+        >
+          <button
+            type="button"
+            class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
+            :class="
+              isAllFilesActive
+                ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 font-medium'
+                : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
+            "
+            :aria-current="isAllFilesActive ? 'true' : null"
+            v-tooltip.top="'Tous les fichiers du space, quel que soit leur dossier'"
+            @click="handleFolderSelect(null)"
+          >
+            <i class="pi pi-list" aria-hidden="true"></i>
+            <span class="flex-1 truncate">Tous les fichiers</span>
+          </button>
+
           <button
             type="button"
             class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
@@ -252,7 +272,13 @@ import FolderEditDialog from '../../components/BandSpace/Files/FolderEditDialog.
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { directChildren } from '../../composables/useFolderDragDrop.js'
-import { TRASH_FOLDER_ID, useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
+import {
+  isVirtualFolderId,
+  listedFolderId,
+  NO_FOLDER_LISTED,
+  TRASH_FOLDER_ID
+} from '../../constants/folderSelection.js'
+import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -280,45 +306,35 @@ const autoStartRename = ref(false)
 
 const bandSpaceId = computed(() => route.params.id)
 
-const showBreadcrumb = computed(() => {
-  const id = filesStore.activeFolderId
-  if (id === null) return true
-  if (id === TRASH_FOLDER_ID) return false
-  return typeof id === 'string' && !id.startsWith('virtual:')
-})
+/** null at the root, the folder id inside a folder, NO_FOLDER_LISTED anywhere that is not a place. */
+const listedFolder = computed(() => listedFolderId(filesStore.activeFolderId))
+
+/** A place in the tree, so there is a path to show and subfolders to descend into. */
+const isInTree = computed(() => listedFolder.value !== NO_FOLDER_LISTED)
+
+const showBreadcrumb = computed(() => isInTree.value)
 
 const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_ID)
 
-/**
- * The folder the panel is actually inside, or null at the root. Virtual sources and the trash are not
- * folders, so a new folder created from there belongs at the root rather than inside them, and their id
- * must never reach the API as a parent_id.
- */
-const activeRealFolderId = computed(() => {
-  if (isTrashActive.value || isVirtualFolderActive.value) {
-    return null
-  }
+const isAllFilesActive = computed(() => filesStore.activeFolderId === null)
 
-  return filesStore.activeFolderId
-})
+/**
+ * The folder the panel is actually inside, or null at the root. Neither the root nor the selections that
+ * are not folders at all can reach the API as a parent_id, so a folder created from any of them belongs
+ * at the root.
+ */
+const activeRealFolderId = computed(() => (isInTree.value ? listedFolder.value : null))
 
 /**
  * The subfolders shown inline above the files. Derived from the tree already in the store, so descending
- * costs no request. The guard cannot be folded into activeRealFolderId: that returns null for a virtual
- * source, and a null id means "the root" here, which would list every root folder inside it.
+ * costs no request. Only a place in the tree has any: the flat listing holds files from every folder, so
+ * folder rows there would say nothing about where its files are.
  */
-const inlineFolders = computed(() => {
-  if (isTrashActive.value || isVirtualFolderActive.value) {
-    return []
-  }
+const inlineFolders = computed(() =>
+  isInTree.value ? directChildren(filesStore.folders, listedFolder.value) : []
+)
 
-  return directChildren(filesStore.folders, filesStore.activeFolderId)
-})
-
-const isVirtualFolderActive = computed(() => {
-  const id = filesStore.activeFolderId
-  return typeof id === 'string' && id.startsWith('virtual:')
-})
+const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
 
 const emptyMessage = computed(() => {
   if (filesStore.activeFolderId === 'virtual:task') {
@@ -336,7 +352,10 @@ const emptyMessage = computed(() => {
   if (filesStore.activeFolderId === 'virtual:setlist') {
     return 'Aucun fichier attaché à une setlist pour le moment.'
   }
-  if (filesStore.activeFolderId !== null) {
+  if (listedFolder.value === null) {
+    return 'Aucun fichier à la racine, commencez par en importer un.'
+  }
+  if (isInTree.value) {
     return 'Aucun fichier dans ce dossier — commencez par en importer un.'
   }
   return 'Aucun fichier — commencez par en importer un.'

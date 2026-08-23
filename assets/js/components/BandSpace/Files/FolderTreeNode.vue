@@ -1,5 +1,5 @@
 <template>
-  <div :style="{ paddingLeft: `${folder.depth * 12}px` }" class="flex flex-col gap-1">
+  <div class="flex flex-col">
     <div
       class="group relative flex items-center h-8 px-2 rounded-md text-sm transition-colors duration-150"
       :class="rowClasses"
@@ -30,17 +30,25 @@
       </button>
     </div>
 
-    <FolderTreeNode
-      v-for="child in folder.children"
-      :key="child.id"
-      :folder="child"
-      :active-id="activeId"
-      @select="(id) => emit('select', id)"
-      @create-sub="(node) => emit('create-sub', node)"
-      @edit="(node) => emit('edit', node)"
-      @delete="(node) => emit('delete', node)"
-      @drop-on-folder="(payload) => emit('drop-on-folder', payload)"
-    />
+    <!-- Subfolders hang off a rail rather than being indented in silence: a vertical line down the
+         siblings with a tick into each row, cut short at the last one so the line ends on it. Same rail
+         the finance subcategories use, and the indentation now comes from its width, one level at a
+         time, instead of from a depth multiplier that compounded with every nesting. -->
+    <div v-for="(child, index) in children" :key="child.id" class="flex">
+      <FolderTreeRail :is-last="index === children.length - 1" />
+
+      <div class="min-w-0 flex-1 pt-1">
+        <FolderTreeNode
+          :folder="child"
+          :active-id="activeId"
+          @select="(id) => emit('select', id)"
+          @create-sub="(node) => emit('create-sub', node)"
+          @edit="(node) => emit('edit', node)"
+          @delete="(node) => emit('delete', node)"
+          @drop-on-folder="(payload) => emit('drop-on-folder', payload)"
+        />
+      </div>
+    </div>
 
     <ContextMenu ref="contextMenuRef" :model="contextMenuItems" />
   </div>
@@ -51,6 +59,7 @@ import ContextMenu from 'primevue/contextmenu'
 import { computed, ref } from 'vue'
 import { canDrop, collectFolderAndDescendants } from '../../../composables/useFolderDragDrop.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import FolderTreeRail from './FolderTreeRail.vue'
 
 const MAX_DEPTH = 6
 
@@ -65,6 +74,8 @@ const filesStore = useBandFilesStore()
 
 const isDropTarget = ref(false)
 const contextMenuRef = ref(null)
+
+const children = computed(() => props.folder.children ?? [])
 
 const contextMenuItems = computed(() => [
   { label: 'Ouvrir', icon: 'pi pi-folder-open', command: () => emit('select', props.folder.id) },

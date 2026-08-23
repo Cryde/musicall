@@ -4,15 +4,15 @@
       v-if="segments.length > 0"
       type="button"
       class="text-surface-500 hover:text-surface-800 dark:hover:text-surface-100 hover:underline"
-      @click="emit('select', null)"
+      @click="emit('select', ROOT_FOLDER_ID)"
     >
-      Tous les fichiers
+      Racine
     </button>
     <span
       v-else
       class="font-medium text-surface-800 dark:text-surface-100"
     >
-      Tous les fichiers
+      Racine
     </span>
 
     <template v-for="(seg, index) in segments" :key="seg.id">
@@ -37,6 +37,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { isVirtualFolderId, ROOT_FOLDER_ID } from '../../../constants/folderSelection.js'
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
@@ -45,8 +46,10 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
+// The path down from the root, so the root itself has none.
 const segments = computed(() => {
-  if (!props.activeFolderId || props.activeFolderId.startsWith('virtual:')) return []
+  if (!props.activeFolderId || props.activeFolderId === ROOT_FOLDER_ID) return []
+  if (isVirtualFolderId(props.activeFolderId)) return []
 
   const flat = flatten(props.folders)
   const byId = new Map(flat.map((f) => [f.id, f]))
