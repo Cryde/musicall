@@ -113,15 +113,11 @@
     </nav>
 </template>
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
-import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
-import { useUserSecurityStore } from '../../store/user/security.js'
 
 const router = useRouter()
-const userSecurityStore = useUserSecurityStore()
-const bandSpaceStore = useBandSpaceStore()
 
 const mobileMenu = ref(null)
 const searchDropdownWrapper = ref(null)
@@ -180,16 +176,6 @@ function handleClickOutside(event) {
   }
 }
 
-watch(
-  () => userSecurityStore.isAuthenticated,
-  (authenticated) => {
-    if (authenticated) {
-      bandSpaceStore.loadMyBandSpaces()
-    }
-  },
-  { immediate: true }
-)
-
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -198,18 +184,11 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-const navs = computed(() => {
-  const items = [
-    { label: 'Accueil', to: 'app_home' },
-    { label: 'Publications', to: 'app_publications' },
-    { label: 'Cours', to: 'app_course' },
-    { label: 'Forum', to: 'app_forum_index' }
-  ]
-
-  if (bandSpaceStore.hasSpaces) {
-    items.push({ label: 'Band Space', to: 'app_band_index' })
-  }
-
-  return items
-})
+const navs = computed(() => [
+  { label: 'Accueil', to: 'app_home' },
+  { label: 'Publications', to: 'app_publications' },
+  { label: 'Cours', to: 'app_course' },
+  { label: 'Forum', to: 'app_forum_index' },
+  { label: 'Band Space', to: 'app_band_index' }
+])
 </script>
