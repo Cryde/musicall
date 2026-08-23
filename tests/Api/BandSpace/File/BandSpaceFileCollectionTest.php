@@ -67,6 +67,58 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $this->assertSame('in-folder.pdf', $response['member'][0]['original_name']);
     }
 
+    /**
+     * The root of the tree is not the whole space: a file in a folder belongs to that folder, and an
+     * attachment belongs to its virtual folder, so neither shows here. Only a standalone file with no
+     * folder does. All three exist in this space, so the listing has to exclude two of them.
+     */
+    public function test_list_filtered_by_root_excludes_foldered_files_and_attachments(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Contrats'])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $folder, 'originalName' => 'in-folder.pdf'])->create();
+
+        // No folder, but attached to a note, so the Notes virtual folder already lists it.
+        $attached = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'attached.pdf'])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attached,
+            'sourceType' => 'note',
+            'sourceId' => \Ramsey\Uuid\Uuid::uuid4(),
+            'attachedBy' => $user,
+        ]);
+
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'in-root.pdf'])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files?folder_id=root', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertSame(1, $response['totalItems']);
+        $this->assertSame('in-root.pdf', $response['member'][0]['original_name']);
+    }
+
+    /** No folder_id at all still means the whole space, which is what the flat listing needs. */
+    public function test_list_without_folder_filter_still_returns_every_file(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'name' => 'Contrats'])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $folder, 'originalName' => 'in-folder.pdf'])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'originalName' => 'in-root.pdf'])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame(2, $this->getResponseAsArray()['totalItems']);
+    }
+
     public function test_list_filtered_by_tag(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

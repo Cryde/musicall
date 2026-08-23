@@ -24,6 +24,17 @@ final readonly class BandSpaceFileFilter
          * parameter of the file collection.
          */
         public bool $archivedOnly = false,
+        /**
+         * The root of the folder tree: files in no folder that are not an attachment either.
+         *
+         * Both halves are needed. An attachment is created with no folder unless one was passed, so
+         * "no folder" alone would put every note, task and finance attachment in the root, where they
+         * would sit alongside the virtual folder that already lists them.
+         *
+         * Distinct from a null `folderId`, which still means "every file in the space" and backs the
+         * flat listing. Root is a place in the tree, no filter is the whole space.
+         */
+        public bool $rootOnly = false,
     ) {
     }
 }

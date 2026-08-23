@@ -236,6 +236,22 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         return $path;
     }
 
+    /**
+     * A file nobody attached to anything: no row in band_space_file_attachment.
+     *
+     * Shared by the `source=manual` filter and by the root of the folder tree, so the two cannot drift
+     * apart. Takes an alias because the two callers can appear in the same query.
+     */
+    private static function standaloneExpression(string $alias): string
+    {
+        return sprintf(
+            'NOT EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment %s '
+            . 'WHERE %s.bandSpaceFile = bsf)',
+            $alias,
+            $alias,
+        );
+    }
+
     private function buildBandSpaceQuery(BandSpace $bandSpace, BandSpaceFileFilter $filter): QueryBuilder
     {
         $qb = $this->createQueryBuilder('bsf')
@@ -249,6 +265,11 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         if ($filter->folderId !== null) {
             $qb->andWhere('bsf.folder = :folderId')
                 ->setParameter('folderId', $filter->folderId);
+        } elseif ($filter->rootOnly) {
+            // The root of the tree, not the whole space: see BandSpaceFileFilter::$rootOnly for why an
+            // attachment with no folder belongs to its virtual folder rather than here.
+            $qb->andWhere('bsf.folder IS NULL')
+                ->andWhere(self::standaloneExpression('attRoot'));
         }
 
         if ($filter->tagId !== null) {
@@ -258,11 +279,7 @@ class BandSpaceFileRepository extends ServiceEntityRepository
 
         if ($filter->source !== null) {
             if ($filter->source === 'manual') {
-                // Standalone files have no attachment row.
-                $qb->andWhere(
-                    'NOT EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attMan '
-                    . 'WHERE attMan.bandSpaceFile = bsf)'
-                );
+                $qb->andWhere(self::standaloneExpression('attMan'));
             } else {
                 $qb->andWhere(
                     'EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attSrc '
