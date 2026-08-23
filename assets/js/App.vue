@@ -9,6 +9,7 @@ import ConfirmDialog from 'primevue/confirmdialog'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserSecurityStore } from './store/user/security.js'
+import { resolveUnauthenticatedRedirect } from './utils/unauthenticatedRedirect.js'
 
 const userSecurityStore = useUserSecurityStore()
 const router = useRouter()
@@ -18,10 +19,14 @@ onMounted(async () => {
   const { isAuthenticated, isSuperAdmin } = storeToRefs(userSecurityStore)
 
   router.beforeResolve((to) => {
-    // A route may name where a visitor without an account should land instead of the login form,
-    // so a shared link to a gated module explains itself rather than presenting a bare password box.
+    // Where an unauthenticated visitor lands, and whether the destination is told where they were
+    // going. Extracted so the two carve-outs it encodes are pinned by tests.
+    //
+    // Following a return_url is gated separately by whoever consumes it: the store checks
+    // isSafeReturnUrl before touching window.location, and the OAuth start route is validated
+    // server side. This guard only ever produces a same-origin path from the router itself.
     if (to.meta.isAuthRequired && !isAuthenticated.value) {
-      return { name: to.meta.unauthenticatedRedirect ?? 'app_login' }
+      return resolveUnauthenticatedRedirect(to)
     }
     if (to.meta.isGuestOnly && isAuthenticated.value) {
       return { name: 'app_home' }
