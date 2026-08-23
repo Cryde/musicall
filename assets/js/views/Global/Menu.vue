@@ -116,8 +116,10 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppNavbarUserCluster from '../../components/AppNavbarUserCluster.vue'
+import { useUserSecurityStore } from '../../store/user/security.js'
 
 const router = useRouter()
+const userSecurityStore = useUserSecurityStore()
 
 const mobileMenu = ref(null)
 const searchDropdownWrapper = ref(null)
@@ -189,6 +191,17 @@ const navs = computed(() => [
   { label: 'Publications', to: 'app_publications' },
   { label: 'Cours', to: 'app_course' },
   { label: 'Forum', to: 'app_forum_index' },
-  { label: 'Band Space', to: 'app_band_index' }
+  // Same entry either way, but a visitor without an account is sold the module rather than sent to
+  // a login form. A member goes straight in, and app_band_index handles having no space yet.
+  //
+  // While the auth check is still in flight isAuthenticated is false for everyone, including a
+  // returning member, so waiting on it keeps them from being sent to the pitch for their own module.
+  {
+    label: 'Band Space',
+    to:
+      userSecurityStore.isAuthenticatedLoading || userSecurityStore.isAuthenticated
+        ? 'app_band_index'
+        : 'app_band_space_presentation'
+  }
 ])
 </script>

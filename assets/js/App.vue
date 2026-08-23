@@ -18,8 +18,10 @@ onMounted(async () => {
   const { isAuthenticated, isSuperAdmin } = storeToRefs(userSecurityStore)
 
   router.beforeResolve((to) => {
+    // A route may name where a visitor without an account should land instead of the login form,
+    // so a shared link to a gated module explains itself rather than presenting a bare password box.
     if (to.meta.isAuthRequired && !isAuthenticated.value) {
-      return { name: 'app_login' }
+      return { name: to.meta.unauthenticatedRedirect ?? 'app_login' }
     }
     if (to.meta.isGuestOnly && isAuthenticated.value) {
       return { name: 'app_home' }

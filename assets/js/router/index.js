@@ -28,6 +28,13 @@ const routes = [
         path: 'shares/:token',
         component: () => import('../views/PublicShare.vue')
       },
+      // Public on purpose, and deliberately outside app_band_layout: that layout renders the band
+      // sidebar and loads the visitor's spaces, neither of which a visitor without an account has.
+      {
+        name: 'app_band_space_presentation',
+        path: 'band-space',
+        component: () => import('../views/BandSpace/Presentation.vue')
+      },
       ...publication,
       ...course,
       ...search,
@@ -45,7 +52,7 @@ const routes = [
     path: '/band',
     name: 'app_band_layout',
     component: () => import('../components/AppBandLayout.vue'),
-    meta: { isAuthRequired: true },
+    meta: { isAuthRequired: true, unauthenticatedRedirect: 'app_band_space_presentation' },
     children: [
       {
         path: '',
@@ -105,7 +112,10 @@ const routes = [
       {
         path: 'invitation/:token',
         name: 'app_band_invitation',
-        component: () => import('../views/BandSpace/InvitationResponse.vue')
+        component: () => import('../views/BandSpace/InvitationResponse.vue'),
+        // Overrides the layout: somebody following an invitation wants to sign in, not to be sold
+        // the module. Selling it to them would also drop the token from the URL.
+        meta: { unauthenticatedRedirect: 'app_login' }
       }
     ]
   },
