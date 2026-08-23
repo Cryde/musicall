@@ -397,4 +397,27 @@ class BotMetaDataGeneratorTest extends KernelTestCase
             'cover'       => 'http://localhost/media/cache/resolve/user_profile_picture_large/images/user/profile/photo-marie.jpg',
         ], $result);
     }
+
+    public function test_get_metadata_for_the_band_space_presentation(): void
+    {
+        $this->assertSame([
+            'title'       => 'Band Space, l\'espace de travail de votre groupe - MusicAll',
+            'description' => 'Réunissez l\'agenda, les tâches, les notes, les setlists, les fichiers et les finances de votre groupe dans un espace partagé. Gratuit avec votre compte MusicAll.',
+        ], $this->botMetaDataGenerator->getMetaData('/band-space'));
+    }
+
+    public function test_get_metadata_for_the_band_space_presentation_ignores_a_trailing_slash(): void
+    {
+        $this->assertSame(
+            $this->botMetaDataGenerator->getMetaData('/band-space'),
+            $this->botMetaDataGenerator->getMetaData('/band-space/'),
+        );
+    }
+
+    /** The static page must not answer for a band space URL that belongs to the authenticated app. */
+    public function test_get_metadata_does_not_match_other_band_uris(): void
+    {
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/band'));
+        $this->assertSame([], $this->botMetaDataGenerator->getMetaData('/band-space/extra'));
+    }
 }

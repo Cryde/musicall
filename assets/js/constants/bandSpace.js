@@ -27,6 +27,56 @@ export const LAST_TECH_RIDER_KEY = 'lastTechRiderId'
  */
 export const RIDER_SUPER_ADMIN_ONLY = true
 
+/**
+ * The modules a Band Space is described by, shared between the public presentation page and the
+ * empty state a member lands on with no space, so the pitch cannot drift between the two.
+ *
+ * Distinct from NAVIGATION_ITEMS, which is the in-app sidebar: this list sells the module, that one
+ * routes to it. Dashboard is absent because nobody joins for a dashboard, and tech riders are absent
+ * because RIDER_SUPER_ADMIN_ONLY still hides the module from members. Never advertise what a visitor
+ * would not find after signing up.
+ *
+ * Each description says what stops being scattered, which is the whole argument for the module.
+ */
+export const BAND_SPACE_MODULES = Object.freeze([
+  {
+    key: 'agenda',
+    icon: 'pi pi-calendar',
+    label: 'Agenda',
+    description: 'Chaque date réunit horaires, lieu, disponibilités et setlist associée.'
+  },
+  {
+    key: 'taches',
+    icon: 'pi pi-check-square',
+    label: 'Tâches',
+    description: 'Qui réserve la salle, qui relance le programmateur, et où ça en est.'
+  },
+  {
+    key: 'notes',
+    icon: 'pi pi-file-edit',
+    label: 'Notes',
+    description: 'Les paroles, les arrangements et les comptes rendus de répét, au même endroit.'
+  },
+  {
+    key: 'setlists',
+    icon: 'pi pi-list',
+    label: 'Setlists',
+    description: "L'ordre, les transitions et les durées, prêts à imprimer ou à suivre sur scène."
+  },
+  {
+    key: 'files',
+    icon: 'pi pi-folder-open',
+    label: 'Fichiers',
+    description: 'Maquettes, partitions, contrats et photos partagés avec tout le groupe.'
+  },
+  {
+    key: 'finances',
+    icon: 'pi pi-wallet',
+    label: 'Finances',
+    description: "Dépenses, cachets et part de chacun, calculés au lieu d'être discutés."
+  }
+])
+
 export const SECTION_NAMES = {
   [BAND_SPACE_ROUTES.DASHBOARD]: 'Dashboard',
   [BAND_SPACE_ROUTES.AGENDA]: 'Agenda',

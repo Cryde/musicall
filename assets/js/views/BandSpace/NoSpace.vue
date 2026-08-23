@@ -11,14 +11,14 @@
           et suivi financier au même endroit, accessible à tous les membres invités.
         </p>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full mb-12">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full mb-12">
           <div
-            v-for="feature in features"
-            :key="feature.label"
+            v-for="module in BAND_SPACE_MODULES"
+            :key="module.key"
             class="flex flex-col items-center gap-2 p-4 bg-surface-0 dark:bg-surface-900 rounded-xl"
           >
-            <i :class="['text-2xl text-primary', feature.icon]" aria-hidden="true" />
-            <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ feature.label }}</span>
+            <i :class="['text-2xl text-primary', module.icon]" aria-hidden="true" />
+            <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ module.label }}</span>
           </div>
         </div>
 
@@ -45,15 +45,8 @@
 
 <script setup>
 import Button from 'primevue/button'
+import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
 
 const bandSpaceStore = useBandSpaceStore()
-
-const features = [
-  { icon: 'pi pi-calendar', label: 'Agenda' },
-  { icon: 'pi pi-check-square', label: 'Tâches' },
-  { icon: 'pi pi-file-edit', label: 'Notes' },
-  { icon: 'pi pi-folder-open', label: 'Fichiers' },
-  { icon: 'pi pi-wallet', label: 'Finances' }
-]
 </script>
