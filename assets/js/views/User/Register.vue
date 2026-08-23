@@ -526,6 +526,11 @@ async function handleSubmit() {
 }
 
 function goToLogin() {
-  router.push({ name: 'app_login' })
+  // Carries the destination on, or an invited visitor who registered here still loses the
+  // invitation at the last hop. The link at the top of this page already does the same.
+  router.push({
+    name: 'app_login',
+    query: returnUrl.value ? { return_url: returnUrl.value } : {}
+  })
 }
 </script>
