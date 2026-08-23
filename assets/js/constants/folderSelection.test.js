@@ -5,7 +5,8 @@ import {
   listedFolderId,
   NO_FOLDER_LISTED,
   ROOT_FOLDER_ID,
-  TRASH_FOLDER_ID
+  TRASH_FOLDER_ID,
+  virtualFolderSource
 } from './folderSelection.js'
 
 /**
@@ -52,5 +53,23 @@ describe('isVirtualFolderId', () => {
     assert.equal(isVirtualFolderId(TRASH_FOLDER_ID), false)
     assert.equal(isVirtualFolderId('0198c0de-dead-beef-cafe-000000000001'), false)
     assert.equal(isVirtualFolderId(null), false)
+  })
+})
+
+describe('virtualFolderSource', () => {
+  /** The five the collection's `source` filter accepts, and the five the listener builds ids from. */
+  const SOURCES = ['task', 'finance', 'note', 'song', 'setlist']
+
+  it('returns the source a virtual folder groups', () => {
+    for (const source of SOURCES) {
+      assert.equal(virtualFolderSource(`virtual:${source}`), source)
+    }
+  })
+
+  it('returns null for anything that is not a virtual folder', () => {
+    assert.equal(virtualFolderSource(ROOT_FOLDER_ID), null)
+    assert.equal(virtualFolderSource(TRASH_FOLDER_ID), null)
+    assert.equal(virtualFolderSource('0198c0de-dead-beef-cafe-000000000001'), null)
+    assert.equal(virtualFolderSource(null), null)
   })
 })

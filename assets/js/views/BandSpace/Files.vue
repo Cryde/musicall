@@ -141,7 +141,7 @@
                page identically, and the trash needs it most, since a file it cannot reach is a file
                app:band-space:purge eventually destroys. -->
           <div
-            v-if="filesStore.totalFiles > 0"
+            v-if="filesStore.totalFiles > 0 || isSpaceWideSearch"
             class="flex items-center justify-between gap-3 pb-3 mb-1 border-b border-surface-100 dark:border-surface-800"
           >
             <p
@@ -150,13 +150,24 @@
             >
               {{ filesStore.filesCountLabel }}
             </p>
-            <span
-              v-if="filesStore.isRefreshingFiles"
-              class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300"
-            >
-              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-              Actualisation…
-            </span>
+            <div class="flex items-center gap-3">
+              <!-- Said out loud because the breadcrumb still names the folder the member came from, and
+                   the results deliberately come from outside it. -->
+              <span
+                v-if="isSpaceWideSearch"
+                class="flex items-center gap-2 text-xs text-surface-500 dark:text-surface-400"
+              >
+                <i class="pi pi-search" aria-hidden="true"></i>
+                Recherche dans tout l'espace
+              </span>
+              <span
+                v-if="filesStore.isRefreshingFiles"
+                class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300"
+              >
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                Actualisation…
+              </span>
+            </div>
           </div>
 
           <div
@@ -178,11 +189,13 @@
               :files="filesStore.files"
               :is-loading="filesStore.isLoadingFiles"
               :empty-message="emptyMessage"
+              :show-location="showFileLocation"
               @select="handleFileSelect"
               @open-rename="handleOpenRename"
               @open-share="handleOpenShare"
               @open-versions="handleOpenVersions"
               @open-move="handleOpenMove"
+              @open-location="handleOpenLocation"
             />
           </div>
 
@@ -276,9 +289,11 @@ import {
   isVirtualFolderId,
   listedFolderId,
   NO_FOLDER_LISTED,
+  ROOT_FOLDER_ID,
   TRASH_FOLDER_ID
 } from '../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
+import { listedFolderOfRows } from '../../utils/fileListing.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -319,6 +334,18 @@ const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_
 const isAllFilesActive = computed(() => filesStore.activeFolderId === null)
 
 /**
+ * The place the rows on screen belong to, which is the selected one until a search widens the listing
+ * past it. Kept apart from listedFolder: what the panel *is inside* still drives the breadcrumb and
+ * what a new folder or an upload targets, even while the results come from elsewhere.
+ */
+const rowsFolder = computed(() => listedFolderOfRows(filesStore.activeFolderId, filesStore.filters))
+
+/** A row can have come from any folder, so it has to say which one. */
+const showFileLocation = computed(() => rowsFolder.value === NO_FOLDER_LISTED)
+
+const isSpaceWideSearch = computed(() => filesStore.isSearching && isInTree.value)
+
+/**
  * The folder the panel is actually inside, or null at the root. Neither the root nor the selections that
  * are not folders at all can reach the API as a parent_id, so a folder created from any of them belongs
  * at the root.
@@ -327,11 +354,11 @@ const activeRealFolderId = computed(() => (isInTree.value ? listedFolder.value :
 
 /**
  * The subfolders shown inline above the files. Derived from the tree already in the store, so descending
- * costs no request. Only a place in the tree has any: the flat listing holds files from every folder, so
- * folder rows there would say nothing about where its files are.
+ * costs no request. Only a listing that is one place has any: a flat listing and a set of search results
+ * hold files from every folder, so folder rows there would say nothing about where those files are.
  */
 const inlineFolders = computed(() =>
-  isInTree.value ? directChildren(filesStore.folders, listedFolder.value) : []
+  rowsFolder.value === NO_FOLDER_LISTED ? [] : directChildren(filesStore.folders, rowsFolder.value)
 )
 
 const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
@@ -351,6 +378,14 @@ const emptyMessage = computed(() => {
   }
   if (filesStore.activeFolderId === 'virtual:setlist') {
     return 'Aucun fichier attaché à une setlist pour le moment.'
+  }
+  // A listing narrowed by the filter bar is empty because of what was asked for, not because the place
+  // is empty, and telling the member to import a file is no answer to a search that found nothing.
+  if (filesStore.isSearching) {
+    return 'Aucun fichier ne correspond à cette recherche.'
+  }
+  if (filesStore.filters.tagId || filesStore.filters.mime) {
+    return 'Aucun fichier ne correspond à ces filtres.'
   }
   if (listedFolder.value === null) {
     return 'Aucun fichier à la racine, commencez par en importer un.'
@@ -423,6 +458,17 @@ function handleOpenRename(file) {
   if (!file) return
   autoStartRename.value = true
   router.push({ query: { ...route.query, file: file.id } })
+}
+
+/**
+ * Go to the folder a search result lives in. The search is dropped on the way, since it is what widened
+ * the listing past any one folder: keeping it would answer the click with the same space-wide results.
+ */
+function handleOpenLocation(file) {
+  const path = file.folder_path ?? []
+  if (queryDebounce) clearTimeout(queryDebounce)
+  filesStore.setFilter('query', '')
+  handleFolderSelect(path.length > 0 ? path[path.length - 1].id : ROOT_FOLDER_ID)
 }
 
 function handleOpenMove(file) {

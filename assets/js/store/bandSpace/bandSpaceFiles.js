@@ -1,12 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceFilesApi from '../../api/bandSpace/band-space-files.js'
-import {
-  listedFolderId,
-  NO_FOLDER_LISTED,
-  ROOT_FOLDER_ID,
-  TRASH_FOLDER_ID
-} from '../../constants/folderSelection.js'
+import { NO_FOLDER_LISTED, ROOT_FOLDER_ID } from '../../constants/folderSelection.js'
+import { fileListingParams, isSearchActive, listedFolderOfRows } from '../../utils/fileListing.js'
 import {
   FILES_PAGE_SIZE,
   fileCountLabel,
@@ -86,6 +82,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // rounder guess, so a mismatch shows up as a refusal the server then disagrees with.
   const maxUploadSizeBytes = computed(() => quota.value?.max_upload_size_bytes ?? 500 * 1024 * 1024)
 
+  // Exposed because the panel dresses itself differently while searching: no subfolder rows, and every
+  // row says which folder it turned up in, since the results are no longer one place.
+  const isSearching = computed(() => isSearchActive(filters))
+
   const hasMoreFiles = computed(() => hasMoreToLoad(files.value.length, totalFiles.value))
   const filesCountLabel = computed(() => fileCountLabel(files.value.length, totalFiles.value))
 
@@ -104,7 +104,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     loadError.value = null
     loadMoreError.value = null
 
-    const params = buildFileParams(1)
+    const params = fileListingParams(activeFolderId.value, filters, 1)
 
     try {
       const result = await bandSpaceFilesApi.getFiles(bandSpaceId, params)
@@ -132,7 +132,11 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     if (isLoadingMoreFiles.value || isRefreshingFiles.value || !hasMoreFiles.value) return
 
     const requestId = ++filesRequestId
-    const params = buildFileParams(nextPageToLoad(files.value.length, FILES_PAGE_SIZE))
+    const params = fileListingParams(
+      activeFolderId.value,
+      filters,
+      nextPageToLoad(files.value.length, FILES_PAGE_SIZE)
+    )
     const requestedQueryKey = queryKeyOf(params)
     isLoadingMoreFiles.value = true
     loadMoreError.value = null
@@ -202,45 +206,6 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     } finally {
       isLoadingQuota.value = false
     }
-  }
-
-  function buildFileParams(page) {
-    // The trash ignores every filter, before they are even read. Its filter bar is hidden, so a search
-    // or tag left over from browsing a folder would silently narrow the trash with no visible control to
-    // clear it, and someone hunting for the file they just deleted would find it apparently missing.
-    // It pages exactly like the live listing does: without that, a trashed file past the fiftieth is
-    // unrestorable and app:band-space:purge eventually destroys it.
-    if (activeFolderId.value === TRASH_FOLDER_ID) {
-      return { archived: true, page, itemsPerPage: FILES_PAGE_SIZE }
-    }
-
-    const params = { page, itemsPerPage: FILES_PAGE_SIZE }
-    const trimmed = filters.query.trim()
-    if (trimmed) params.query = trimmed
-    if (filters.mime) params.mime = filters.mime
-    if (filters.tagId) params.tagId = filters.tagId
-    if (filters.sort) params.sort = filters.sort
-    if (filters.order) params.order = filters.order
-
-    if (activeFolderId.value === 'virtual:task') {
-      params.source = 'task'
-    } else if (activeFolderId.value === 'virtual:finance') {
-      params.source = 'finance'
-    } else if (activeFolderId.value === 'virtual:note') {
-      params.source = 'note'
-    } else if (activeFolderId.value === 'virtual:song') {
-      params.source = 'song'
-    } else if (activeFolderId.value === 'virtual:setlist') {
-      params.source = 'setlist'
-    } else if (activeFolderId.value) {
-      // ROOT_FOLDER_ID rides along as a folder id, since the collection reads that reserved value as
-      // the root of the tree. No folder_id at all is the flat listing of the whole space.
-      params.folderId = activeFolderId.value
-    } else if (filters.source) {
-      params.source = filters.source
-    }
-
-    return params
   }
 
   async function createFolder(bandSpaceId, data) {
@@ -327,7 +292,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
    * there the row only has its folder patched.
    */
   function applyFileMoved(fileId, targetFolderId) {
-    const listedFolder = listedFolderId(activeFolderId.value)
+    const listedFolder = listedFolderOfRows(activeFolderId.value, filters)
 
     if (listedFolder !== NO_FOLDER_LISTED && listedFolder !== targetFolderId) {
       files.value = files.value.filter((f) => f.id !== fileId)
@@ -479,7 +444,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
    */
   async function uploadFile(bandSpaceId, payload, onProgress, signal) {
     const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress, signal)
-    const listedFolder = listedFolderId(activeFolderId.value)
+    const listedFolder = listedFolderOfRows(activeFolderId.value, filters)
 
     if (listedFolder === NO_FOLDER_LISTED || listedFolder === (result.file.folder_id ?? null)) {
       files.value = [result.file, ...files.value]
@@ -552,6 +517,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     quota: readonly(quota),
     activeFolderId: readonly(activeFolderId),
     filters: readonly(filters),
+    isSearching,
     isLoadingFiles: readonly(isLoadingFiles),
     isRefreshingFiles: readonly(isRefreshingFiles),
     isLoadingMoreFiles: readonly(isLoadingMoreFiles),

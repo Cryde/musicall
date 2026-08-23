@@ -73,7 +73,21 @@
         <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
           <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
             <i :class="iconForMime(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
-            <span class="truncate font-medium">{{ file.original_name }}</span>
+            <div class="min-w-0">
+              <span class="block truncate font-medium">{{ file.original_name }}</span>
+              <!-- Where the file actually lives, for a listing that is not one place. A search result
+                   nobody can locate is half an answer, so the folder is a link back to it. -->
+              <button
+                v-if="showLocation"
+                type="button"
+                class="flex items-center gap-1 max-w-full text-xs text-surface-500 dark:text-surface-400 hover:underline"
+                :aria-label="`Ouvrir ${locationLabel(file)}`"
+                @click.stop="emit('open-location', file)"
+              >
+                <i class="pi pi-folder text-[10px] shrink-0" aria-hidden="true"></i>
+                <span class="truncate">{{ locationLabel(file) }}</span>
+              </button>
+            </div>
           </div>
 
           <div class="col-span-4 md:col-span-2 tabular-nums text-surface-600 dark:text-surface-300">
@@ -139,7 +153,9 @@ const props = defineProps({
     default: 'Aucun fichier dans ce dossier — commencez par en importer un.'
   },
   /** Direct subfolders of the folder being shown, rendered above the files. */
-  folders: { type: Array, default: () => [] }
+  folders: { type: Array, default: () => [] },
+  /** Show each file's folder, for a listing whose rows can come from anywhere. */
+  showLocation: { type: Boolean, default: false }
 })
 
 const emit = defineEmits([
@@ -148,7 +164,8 @@ const emit = defineEmits([
   'open-versions',
   'open-rename',
   'open-move',
-  'open-folder'
+  'open-folder',
+  'open-location'
 ])
 
 const filesStore = useBandFilesStore()
@@ -313,6 +330,13 @@ function formatDate(iso) {
   if (!iso) return '—'
   const date = new Date(iso)
   return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+/** The folder path as one line, root to leaf. Files at the root have no path of their own. */
+function locationLabel(file) {
+  const path = file.folder_path ?? []
+
+  return path.length === 0 ? 'Racine' : path.map((segment) => segment.name).join(' / ')
 }
 
 function tagStyle(colorHex) {

@@ -53,3 +53,16 @@ export function listedFolderId(activeFolderId) {
 export function isVirtualFolderId(folderId) {
   return typeof folderId === 'string' && folderId.startsWith(VIRTUAL_PREFIX)
 }
+
+/**
+ * The attachment source a virtual folder groups, or null for anything that is not one.
+ *
+ * BandSpaceFolderVirtualFoldersListener builds the ids as `virtual:{source}` from the same source names
+ * the collection's `source` filter accepts, which is what makes the suffix usable as the filter value.
+ *
+ * @param {string|null} folderId
+ * @returns {string|null}
+ */
+export function virtualFolderSource(folderId) {
+  return isVirtualFolderId(folderId) ? folderId.slice(VIRTUAL_PREFIX.length) : null
+}
