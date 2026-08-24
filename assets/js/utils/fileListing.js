@@ -82,3 +82,17 @@ export function fileListingParams(activeFolderId, filters, page) {
 
   return params
 }
+
+/**
+ * How many files a folder row holds, or null when it holds none: an empty folder says nothing rather
+ * than « 0 fichier », because the count leaves out its subfolders and a zero would read as « rien
+ * là-dedans » on a folder whose subfolders are full.
+ *
+ * @param {number|null|undefined} fileCount
+ * @returns {string|null}
+ */
+export function folderFileCountLabel(fileCount) {
+  if (!fileCount || fileCount < 1) return null
+
+  return fileCount > 1 ? `${fileCount} fichiers` : `${fileCount} fichier`
+}

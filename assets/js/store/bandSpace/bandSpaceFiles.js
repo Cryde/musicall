@@ -276,6 +276,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       if (activeFileFull.value && activeFileFull.value.id === fileId) {
         activeFileFull.value = updated
       }
+      // Only a folder change moves a file between two counts; a rename or a tag edit leaves them alone.
+      if ('folder_id' in data) {
+        fetchFolders(bandSpaceId)
+      }
       return updated
     } finally {
       isSavingFile.value = false
@@ -290,9 +294,14 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
    * A listing showing one place, the root included, has to drop the row when the file landed somewhere
    * else. The flat listing and the virtual source folders hold files whatever folder they sit in, so
    * there the row only has its folder patched.
+   *
+   * The tree is refetched because a move changes two folder counts, and a count that lags behind the
+   * row the member just dragged reads as a bug.
    */
-  function applyFileMoved(fileId, targetFolderId) {
+  function applyFileMoved(bandSpaceId, fileId, targetFolderId) {
     const listedFolder = listedFolderOfRows(activeFolderId.value, filters)
+
+    fetchFolders(bandSpaceId)
 
     if (listedFolder !== NO_FOLDER_LISTED && listedFolder !== targetFolderId) {
       files.value = files.value.filter((f) => f.id !== fileId)
@@ -316,8 +325,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   async function restoreFile(bandSpaceId, fileId) {
     await bandSpaceFilesApi.restoreFile(bandSpaceId, fileId)
     removeFromTrash(fileId)
-    // Restoring puts the file's bytes back into the quota, so the indicator has to catch up.
+    // Restoring puts the file's bytes back into the quota and the file back into its folder, so the
+    // indicator and the folder counts both have to catch up.
     fetchQuota(bandSpaceId)
+    fetchFolders(bandSpaceId)
   }
 
   async function permanentDeleteFile(bandSpaceId, fileId) {
@@ -348,6 +359,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
         activeFileFull.value = null
       }
       fetchQuota(bandSpaceId)
+      // Out of its folder, so that folder's count is one lower.
+      fetchFolders(bandSpaceId)
     } finally {
       isDeletingFile.value = false
     }

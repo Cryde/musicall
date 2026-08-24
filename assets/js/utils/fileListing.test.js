@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { NO_FOLDER_LISTED, ROOT_FOLDER_ID, TRASH_FOLDER_ID } from '../constants/folderSelection.js'
-import { fileListingParams, isSearchActive, listedFolderOfRows } from './fileListing.js'
+import {
+  fileListingParams,
+  folderFileCountLabel,
+  isSearchActive,
+  listedFolderOfRows
+} from './fileListing.js'
 
 /**
  * The panel opens on the root, so every listing is now scoped to one place unless something says
@@ -104,5 +109,18 @@ describe('fileListingParams', () => {
       3
     )
     assert.deepEqual(params, { archived: true, page: 3, itemsPerPage: 50 })
+  })
+})
+
+describe('folderFileCountLabel', () => {
+  it('counts in French, singular and plural', () => {
+    assert.equal(folderFileCountLabel(1), '1 fichier')
+    assert.equal(folderFileCountLabel(12), '12 fichiers')
+  })
+
+  it('says nothing for a folder with no file of its own', () => {
+    assert.equal(folderFileCountLabel(0), null)
+    assert.equal(folderFileCountLabel(undefined), null)
+    assert.equal(folderFileCountLabel(null), null)
   })
 })

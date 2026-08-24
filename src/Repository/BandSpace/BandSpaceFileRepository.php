@@ -188,6 +188,36 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
+     * Live files sitting directly in each folder of the space, so a folder row can say how many rows
+     * opening it shows. Subfolders are not rolled up: a recursive count would need the tree walked per
+     * folder, and a number that counts files the folder does not list is a number nobody can check.
+     *
+     * One grouped query for the whole space rather than one per folder, because the sidebar draws every
+     * folder at once. Folders with nothing in them are absent from the result rather than zero.
+     *
+     * @return array<string, int> folder id => active file count
+     */
+    public function countActiveByFolder(BandSpace $bandSpace): array
+    {
+        $rows = $this->createQueryBuilder('bsf')
+            ->select('IDENTITY(bsf.folder) AS folder_id', 'COUNT(bsf.id) AS file_count')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.folder IS NOT NULL')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->groupBy('bsf.folder')
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['folder_id']] = (int) $row['file_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
      * @param string[] $tagIds
      *
      * @return array<string, int> tag id => active file count

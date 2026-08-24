@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFolderActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\Role;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
@@ -32,6 +33,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
+        private BandSpaceFileRepository $fileRepository,
         private BandSpaceFolderBuilder $folderBuilder,
         private BandSpaceActivityRecorder $activityRecorder,
         private Security $security,
@@ -140,6 +142,10 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
-        return $this->folderBuilder->buildItem($folder, $this->folderRepository->computeDepth($folder));
+        return $this->folderBuilder->buildItem(
+            $folder,
+            $this->folderRepository->computeDepth($folder),
+            $this->fileRepository->countActiveByFolderIds([(string) $folder->id]),
+        );
     }
 }

@@ -7,7 +7,7 @@ use App\Entity\BandSpace\BandSpaceFolder;
 
 readonly class BandSpaceFolderBuilder
 {
-    public function buildItem(BandSpaceFolder $entity, int $depth = 0): BandSpaceFolderResource
+    public function buildItem(BandSpaceFolder $entity, int $depth, int $fileCount): BandSpaceFolderResource
     {
         $dto = new BandSpaceFolderResource();
         $dto->id = (string) $entity->id;
@@ -15,6 +15,7 @@ readonly class BandSpaceFolderBuilder
         $dto->name = $entity->name;
         $dto->parentId = $entity->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $entity->parent->id : null;
         $dto->depth = $depth;
+        $dto->fileCount = $fileCount;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
 
@@ -25,11 +26,13 @@ readonly class BandSpaceFolderBuilder
      * Assembles a flat list of folders into a tree of root-level resources,
      * each carrying its full nested subtree under `children` as inlined arrays.
      *
-     * @param BandSpaceFolder[] $entities
+     * @param BandSpaceFolder[]     $entities
+     * @param array<string, int>    $fileCounts folder id => live files directly in it, from
+     *                                          BandSpaceFileRepository::countActiveByFolder()
      *
      * @return BandSpaceFolderResource[]
      */
-    public function buildTree(array $entities): array
+    public function buildTree(array $entities, array $fileCounts): array
     {
         /** @var array<string, BandSpaceFolder[]> $childrenByParentId */
         $childrenByParentId = [];
@@ -45,8 +48,8 @@ readonly class BandSpaceFolderBuilder
 
         $resources = [];
         foreach ($roots as $root) {
-            $rootDto = $this->buildItem($root, 0);
-            $rootDto->children = $this->assembleChildren($root, $childrenByParentId, 1);
+            $rootDto = $this->buildItem($root, 0, $fileCounts[(string) $root->id] ?? 0);
+            $rootDto->children = $this->assembleChildren($root, $childrenByParentId, 1, $fileCounts);
             $resources[] = $rootDto;
         }
 
@@ -55,25 +58,27 @@ readonly class BandSpaceFolderBuilder
 
     /**
      * @param array<string, BandSpaceFolder[]> $childrenByParentId
+     * @param array<string, int>               $fileCounts
      *
      * @return array<int, array<string, mixed>>
      */
-    private function assembleChildren(BandSpaceFolder $node, array $childrenByParentId, int $depth): array
+    private function assembleChildren(BandSpaceFolder $node, array $childrenByParentId, int $depth, array $fileCounts): array
     {
         $children = $childrenByParentId[(string) $node->id] ?? [];
 
         return array_map(
-            fn (BandSpaceFolder $child): array => $this->toNestedArray($child, $childrenByParentId, $depth),
+            fn (BandSpaceFolder $child): array => $this->toNestedArray($child, $childrenByParentId, $depth, $fileCounts),
             $children,
         );
     }
 
     /**
      * @param array<string, BandSpaceFolder[]> $childrenByParentId
+     * @param array<string, int>               $fileCounts
      *
      * @return array<string, mixed>
      */
-    private function toNestedArray(BandSpaceFolder $node, array $childrenByParentId, int $depth): array
+    private function toNestedArray(BandSpaceFolder $node, array $childrenByParentId, int $depth, array $fileCounts): array
     {
         return [
             'id' => (string) $node->id,
@@ -81,7 +86,8 @@ readonly class BandSpaceFolderBuilder
             'name' => $node->name,
             'parent_id' => $node->parent instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $node->parent->id : null,
             'depth' => $depth,
-            'children' => $this->assembleChildren($node, $childrenByParentId, $depth + 1),
+            'file_count' => $fileCounts[(string) $node->id] ?? 0,
+            'children' => $this->assembleChildren($node, $childrenByParentId, $depth + 1, $fileCounts),
             'creation_datetime' => $node->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => $node->updateDatetime?->format(\DateTimeInterface::ATOM),
         ];

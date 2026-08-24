@@ -49,7 +49,9 @@
             <span class="truncate font-medium">{{ folder.name }}</span>
           </div>
 
-          <div class="col-span-4 md:col-span-2 text-surface-400">—</div>
+          <div class="col-span-4 md:col-span-2 text-surface-500 dark:text-surface-400">
+            {{ folderFileCountLabel(folder.file_count) ?? '—' }}
+          </div>
           <div class="col-span-4 md:col-span-2"></div>
 
           <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
@@ -143,6 +145,7 @@ import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
+import { folderFileCountLabel } from '../../../utils/fileListing.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

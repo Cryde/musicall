@@ -17,7 +17,16 @@
         @click="emit('select', folder.id)"
       >
         <i class="pi pi-folder text-surface-500 shrink-0"></i>
-        <span class="truncate">{{ folder.name }}</span>
+        <span class="flex-1 truncate">{{ folder.name }}</span>
+        <!-- Its own files, subfolders excluded, so a folder that only holds subfolders shows no number
+             rather than a zero that would read as « nothing in there ». -->
+        <span
+          v-if="fileCountLabel"
+          class="shrink-0 text-xs text-surface-500 dark:text-surface-400 tabular-nums"
+          v-tooltip.top="`${fileCountLabel} dans ce dossier, sous-dossiers exclus`"
+        >
+          {{ folder.file_count }}
+        </span>
       </button>
       <button
         type="button"
@@ -59,6 +68,7 @@ import ContextMenu from 'primevue/contextmenu'
 import { computed, ref } from 'vue'
 import { canDrop, collectFolderAndDescendants } from '../../../composables/useFolderDragDrop.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { folderFileCountLabel } from '../../../utils/fileListing.js'
 import FolderTreeRail from './FolderTreeRail.vue'
 
 const MAX_DEPTH = 6
@@ -76,6 +86,7 @@ const isDropTarget = ref(false)
 const contextMenuRef = ref(null)
 
 const children = computed(() => props.folder.children ?? [])
+const fileCountLabel = computed(() => folderFileCountLabel(props.folder.file_count))
 
 const contextMenuItems = computed(() => [
   { label: 'Ouvrir', icon: 'pi pi-folder-open', command: () => emit('select', props.folder.id) },

@@ -105,7 +105,7 @@ async function handleConfirm() {
     await bandSpaceFilesApi.updateFile(props.bandSpaceId, props.file.id, {
       folder_id: targetFolderId.value ?? null
     })
-    filesStore.applyFileMoved(props.file.id, targetFolderId.value ?? null)
+    filesStore.applyFileMoved(props.bandSpaceId, props.file.id, targetFolderId.value ?? null)
     emit('moved', { fileId: props.file.id, folderId: targetFolderId.value ?? null })
     visible.value = false
   } catch (e) {
