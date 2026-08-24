@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFolderResource;
 use App\Entity\User;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\File\BandSpaceFolderBuilder;
@@ -21,6 +22,7 @@ readonly class BandSpaceFolderItemProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
+        private BandSpaceFileRepository $fileRepository,
         private BandSpaceFolderBuilder $folderBuilder,
         private Security $security,
     ) {
@@ -40,6 +42,10 @@ readonly class BandSpaceFolderItemProvider implements ProviderInterface
             throw new NotFoundHttpException('Dossier introuvable');
         }
 
-        return $this->folderBuilder->buildItem($folder, $this->folderRepository->computeDepth($folder));
+        return $this->folderBuilder->buildItem(
+            $folder,
+            $this->folderRepository->computeDepth($folder),
+            $this->fileRepository->countActiveByFolderIds([(string) $folder->id]),
+        );
     }
 }

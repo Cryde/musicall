@@ -86,6 +86,7 @@ readonly class BandSpaceFolderCreateProcessor implements ProcessorInterface
         );
         $this->entityManager->flush();
 
-        return $this->folderBuilder->buildItem($folder, $depth);
+        // Nothing to count: a folder is created empty, and nothing can be put in it before it exists.
+        return $this->folderBuilder->buildItem($folder, $depth, 0);
     }
 }

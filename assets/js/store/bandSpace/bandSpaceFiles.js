@@ -2,6 +2,19 @@ import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceFilesApi from '../../api/bandSpace/band-space-files.js'
 import {
+  listedFolderId,
+  NO_FOLDER_LISTED,
+  ROOT_FOLDER_ID
+} from '../../constants/folderSelection.js'
+import {
+  fileListingParams,
+  folderPathOf,
+  isSearchActive,
+  listedFolderOfRows,
+  treeHoldsFolder,
+  uploadBelongsInListing
+} from '../../utils/fileListing.js'
+import {
   FILES_PAGE_SIZE,
   fileCountLabel,
   hasMoreToLoad,
@@ -10,8 +23,6 @@ import {
   queryKeyOf
 } from '../../utils/filePagination.js'
 
-export const TRASH_FOLDER_ID = 'trash'
-
 export const useBandFilesStore = defineStore('bandFiles', () => {
   const files = ref([])
   const totalFiles = ref(0)
@@ -19,7 +30,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   const virtualFolders = ref([])
   const tags = ref([])
   const quota = ref(null)
-  const activeFolderId = ref(null)
+  // The root of the tree, not the whole space: a file belongs to one place, so it is listed in one.
+  // « Tous les fichiers » is still a selection, it is just no longer where the panel opens.
+  const activeFolderId = ref(ROOT_FOLDER_ID)
   const activeFileId = ref(null)
   const activeFileFull = ref(null)
   const fileActivities = ref([])
@@ -49,6 +62,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // moved is recognised as continuing a list that is no longer on screen.
   const loadedQueryKey = ref(null)
   const isLoadingFolders = ref(false)
+  // The panel's skeleton belongs to the first tree only. Every later refresh flips isLoadingFolders too,
+  // and in a space with no folders yet that matched the skeleton's own condition, tearing the whole
+  // panel down and remounting it on every file delete, restore or move.
+  const hasLoadedFolders = ref(false)
   const isLoadingTags = ref(false)
   const isLoadingQuota = ref(false)
   const isLoadingActiveFile = ref(false)
@@ -80,6 +97,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // rounder guess, so a mismatch shows up as a refusal the server then disagrees with.
   const maxUploadSizeBytes = computed(() => quota.value?.max_upload_size_bytes ?? 500 * 1024 * 1024)
 
+  // Exposed because the panel dresses itself differently while searching: no subfolder rows, and every
+  // row says which folder it turned up in, since the results are no longer one place.
+  const isSearching = computed(() => isSearchActive(filters))
+
   const hasMoreFiles = computed(() => hasMoreToLoad(files.value.length, totalFiles.value))
   const filesCountLabel = computed(() => fileCountLabel(files.value.length, totalFiles.value))
 
@@ -98,7 +119,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     loadError.value = null
     loadMoreError.value = null
 
-    const params = buildFileParams(1)
+    const params = fileListingParams(activeFolderId.value, filters, 1)
 
     try {
       const result = await bandSpaceFilesApi.getFiles(bandSpaceId, params)
@@ -126,7 +147,11 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     if (isLoadingMoreFiles.value || isRefreshingFiles.value || !hasMoreFiles.value) return
 
     const requestId = ++filesRequestId
-    const params = buildFileParams(nextPageToLoad(files.value.length, FILES_PAGE_SIZE))
+    const params = fileListingParams(
+      activeFolderId.value,
+      filters,
+      nextPageToLoad(files.value.length, FILES_PAGE_SIZE)
+    )
     const requestedQueryKey = queryKeyOf(params)
     isLoadingMoreFiles.value = true
     loadMoreError.value = null
@@ -172,6 +197,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     } finally {
       if (requestId === foldersRequestId) {
         isLoadingFolders.value = false
+        // Set even when the request failed: a tree that could not be loaded is not a reason to leave the
+        // panel behind a skeleton for good.
+        hasLoadedFolders.value = true
       }
     }
   }
@@ -198,43 +226,6 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     }
   }
 
-  function buildFileParams(page) {
-    // The trash ignores every filter, before they are even read. Its filter bar is hidden, so a search
-    // or tag left over from browsing a folder would silently narrow the trash with no visible control to
-    // clear it, and someone hunting for the file they just deleted would find it apparently missing.
-    // It pages exactly like the live listing does: without that, a trashed file past the fiftieth is
-    // unrestorable and app:band-space:purge eventually destroys it.
-    if (activeFolderId.value === TRASH_FOLDER_ID) {
-      return { archived: true, page, itemsPerPage: FILES_PAGE_SIZE }
-    }
-
-    const params = { page, itemsPerPage: FILES_PAGE_SIZE }
-    const trimmed = filters.query.trim()
-    if (trimmed) params.query = trimmed
-    if (filters.mime) params.mime = filters.mime
-    if (filters.tagId) params.tagId = filters.tagId
-    if (filters.sort) params.sort = filters.sort
-    if (filters.order) params.order = filters.order
-
-    if (activeFolderId.value === 'virtual:task') {
-      params.source = 'task'
-    } else if (activeFolderId.value === 'virtual:finance') {
-      params.source = 'finance'
-    } else if (activeFolderId.value === 'virtual:note') {
-      params.source = 'note'
-    } else if (activeFolderId.value === 'virtual:song') {
-      params.source = 'song'
-    } else if (activeFolderId.value === 'virtual:setlist') {
-      params.source = 'setlist'
-    } else if (activeFolderId.value) {
-      params.folderId = activeFolderId.value
-    } else if (filters.source) {
-      params.source = filters.source
-    }
-
-    return params
-  }
-
   async function createFolder(bandSpaceId, data) {
     await bandSpaceFilesApi.createFolder(bandSpaceId, data)
     await fetchFolders(bandSpaceId)
@@ -248,8 +239,17 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   async function deleteFolder(bandSpaceId, folderId, options = {}) {
     await bandSpaceFilesApi.deleteFolder(bandSpaceId, folderId, options)
     await fetchFolders(bandSpaceId)
-    if (activeFolderId.value === folderId) {
-      activeFolderId.value = null
+    // The panel may have been inside the deleted folder, or inside one of its subfolders, which the
+    // delete_all strategy takes with it too. Asking the refreshed tree covers both, where comparing
+    // against the deleted id alone left the panel standing in a folder that no longer exists, listing
+    // nothing until something else was clicked. The fallback is the root rather than the flat listing of
+    // the whole space, which would answer a deletion with every file there is.
+    //
+    // Only a real folder can go missing: listedFolderId answers with a string for one, and with the root
+    // or NO_FOLDER_LISTED for every selection no folder deletion can invalidate.
+    const listedFolder = listedFolderId(activeFolderId.value)
+    if (typeof listedFolder === 'string' && !treeHoldsFolder(folders.value, listedFolder)) {
+      activeFolderId.value = ROOT_FOLDER_ID
       fetchFiles(bandSpaceId)
     }
     fetchQuota(bandSpaceId)
@@ -301,6 +301,13 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       if (activeFileFull.value && activeFileFull.value.id === fileId) {
         activeFileFull.value = updated
       }
+      // A folder change is a move, whoever asked for it: the file detail drawer patches the folder from
+      // the same place it patches a name. Only applyFileMoved knows the row may not belong to the
+      // listing any more, and it is the one that refreshes the tree's counts. A rename or a tag edit
+      // moves nothing and needs neither.
+      if ('folder_id' in data) {
+        applyFileMoved(bandSpaceId, fileId, data.folder_id ?? null)
+      }
       return updated
     } finally {
       isSavingFile.value = false
@@ -312,23 +319,35 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
    * rather than refetching keeps the pages the user already loaded: a move made after paging deep
    * into the list would otherwise snap it back to the first page.
    *
-   * The root and the virtual source folders list the whole space whatever folder a file sits in, so
-   * only a real folder view has to drop the row, and only when the file landed somewhere else.
+   * A listing showing one place, the root included, has to drop the row when the file landed somewhere
+   * else. The flat listing and the virtual source folders hold files whatever folder they sit in, so
+   * there the row only has its folder patched.
+   *
+   * The tree is refetched because a move changes two folder counts, and a count that lags behind the
+   * row the member just dragged reads as a bug.
    */
-  function applyFileMoved(fileId, targetFolderId) {
-    const isRealFolderView =
-      typeof activeFolderId.value === 'string' &&
-      activeFolderId.value !== TRASH_FOLDER_ID &&
-      !activeFolderId.value.startsWith('virtual:')
+  function applyFileMoved(bandSpaceId, fileId, targetFolderId) {
+    const listedFolder = listedFolderOfRows(activeFolderId.value, filters)
 
-    if (isRealFolderView && activeFolderId.value !== targetFolderId) {
+    fetchFolders(bandSpaceId)
+
+    if (listedFolder !== NO_FOLDER_LISTED && listedFolder !== targetFolderId) {
       files.value = files.value.filter((f) => f.id !== fileId)
       totalFiles.value = Math.max(0, totalFiles.value - 1)
       return
     }
 
+    // folder_path as well as folder_id: the row's location label and the link under it read the path, so
+    // patching only the id left the row naming the folder the file had just left. Read off the tree in
+    // hand, which a file move does not change.
     files.value = files.value.map((f) =>
-      f.id === fileId ? { ...f, folder_id: targetFolderId } : f
+      f.id === fileId
+        ? {
+            ...f,
+            folder_id: targetFolderId,
+            folder_path: folderPathOf(folders.value, targetFolderId)
+          }
+        : f
     )
   }
 
@@ -343,8 +362,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   async function restoreFile(bandSpaceId, fileId) {
     await bandSpaceFilesApi.restoreFile(bandSpaceId, fileId)
     removeFromTrash(fileId)
-    // Restoring puts the file's bytes back into the quota, so the indicator has to catch up.
+    // Restoring puts the file's bytes back into the quota and the file back into its folder, so the
+    // indicator and the folder counts both have to catch up.
     fetchQuota(bandSpaceId)
+    fetchFolders(bandSpaceId)
   }
 
   async function permanentDeleteFile(bandSpaceId, fileId) {
@@ -375,6 +396,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
         activeFileFull.value = null
       }
       fetchQuota(bandSpaceId)
+      // Out of its folder, so that folder's count is one lower.
+      fetchFolders(bandSpaceId)
     } finally {
       isDeletingFile.value = false
     }
@@ -464,11 +487,18 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   /**
    * One file. A batch calls this once per file, so each one lands in the list as it arrives and an
    * interrupted batch leaves behind exactly what the server actually took.
+   *
+   * The row only joins a listing that would hold it. The dialog lets the member change the destination,
+   * and a search or a filter can narrow the listing past any one place, so a row prepended anyway would
+   * survive exactly until the next fetch and count for one file too many meanwhile.
    */
   async function uploadFile(bandSpaceId, payload, onProgress, signal) {
     const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress, signal)
-    files.value = [result.file, ...files.value]
-    totalFiles.value = totalFiles.value + 1
+
+    if (uploadBelongsInListing(activeFolderId.value, filters, result.file.folder_id)) {
+      files.value = [result.file, ...files.value]
+      totalFiles.value = totalFiles.value + 1
+    }
     fetchQuota(bandSpaceId)
     return result
   }
@@ -499,13 +529,14 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     files.value = []
     totalFiles.value = 0
     loadedQueryKey.value = null
+    hasLoadedFolders.value = false
     isRefreshingFiles.value = false
     isLoadingMoreFiles.value = false
     folders.value = []
     virtualFolders.value = []
     tags.value = []
     quota.value = null
-    activeFolderId.value = null
+    activeFolderId.value = ROOT_FOLDER_ID
     activeFileId.value = null
     activeFileFull.value = null
     fileActivities.value = []
@@ -536,10 +567,12 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     quota: readonly(quota),
     activeFolderId: readonly(activeFolderId),
     filters: readonly(filters),
+    isSearching,
     isLoadingFiles: readonly(isLoadingFiles),
     isRefreshingFiles: readonly(isRefreshingFiles),
     isLoadingMoreFiles: readonly(isLoadingMoreFiles),
     isLoadingFolders: readonly(isLoadingFolders),
+    hasLoadedFolders: readonly(hasLoadedFolders),
     isLoadingTags: readonly(isLoadingTags),
     isLoadingQuota: readonly(isLoadingQuota),
     loadError: readonly(loadError),

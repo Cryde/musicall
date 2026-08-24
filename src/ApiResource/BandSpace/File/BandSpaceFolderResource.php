@@ -80,6 +80,12 @@ class BandSpaceFolderResource
     public int $depth = 0;
 
     /**
+     * Live files directly in this folder, which is exactly what opening it lists. Files in its
+     * subfolders belong to those subfolders and are counted there, not here.
+     */
+    public int $fileCount = 0;
+
+    /**
      * Inlined nested folder shapes. Same fields as the top-level resource —
      * typed as a generic array so API Platform serializes them as embedded
      * objects rather than IRI references.

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="filesStore.isLoadingFolders && filesStore.folders.length === 0" class="flex gap-4">
+    <div v-if="filesStore.isLoadingFolders && !filesStore.hasLoadedFolders" class="flex gap-4">
       <div class="w-64 flex flex-col gap-2">
         <Skeleton v-for="i in 5" :key="i" width="100%" height="2rem" borderRadius="0.375rem" />
       </div>
@@ -42,7 +42,27 @@
           Aucun dossier pour l'instant.
         </p>
 
-        <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
+        <!-- Under the tree rather than in it: neither is a folder. One is every file in the space
+             whatever folder it sits in, the other is what has been deleted. -->
+        <div
+          class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 flex flex-col gap-1"
+        >
+          <button
+            type="button"
+            class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
+            :class="
+              isAllFilesActive
+                ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 font-medium'
+                : 'text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800'
+            "
+            :aria-current="isAllFilesActive ? 'true' : null"
+            v-tooltip.top="'Tous les fichiers du space, quel que soit leur dossier'"
+            @click="handleFolderSelect(null)"
+          >
+            <i class="pi pi-list" aria-hidden="true"></i>
+            <span class="flex-1 truncate">Tous les fichiers</span>
+          </button>
+
           <button
             type="button"
             class="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors duration-150"
@@ -121,7 +141,7 @@
                page identically, and the trash needs it most, since a file it cannot reach is a file
                app:band-space:purge eventually destroys. -->
           <div
-            v-if="filesStore.totalFiles > 0"
+            v-if="filesStore.totalFiles > 0 || isSpaceWideSearch"
             class="flex items-center justify-between gap-3 pb-3 mb-1 border-b border-surface-100 dark:border-surface-800"
           >
             <p
@@ -130,13 +150,24 @@
             >
               {{ filesStore.filesCountLabel }}
             </p>
-            <span
-              v-if="filesStore.isRefreshingFiles"
-              class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300"
-            >
-              <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-              Actualisation…
-            </span>
+            <div class="flex items-center gap-3">
+              <!-- Said out loud because the breadcrumb still names the folder the member came from, and
+                   the results deliberately come from outside it. -->
+              <span
+                v-if="isSpaceWideSearch"
+                class="flex items-center gap-2 text-xs text-surface-500 dark:text-surface-400"
+              >
+                <i class="pi pi-search" aria-hidden="true"></i>
+                Recherche dans tout l'espace
+              </span>
+              <span
+                v-if="filesStore.isRefreshingFiles"
+                class="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300"
+              >
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                Actualisation…
+              </span>
+            </div>
           </div>
 
           <div
@@ -158,11 +189,13 @@
               :files="filesStore.files"
               :is-loading="filesStore.isLoadingFiles"
               :empty-message="emptyMessage"
+              :show-location="showFileLocation"
               @select="handleFileSelect"
               @open-rename="handleOpenRename"
               @open-share="handleOpenShare"
               @open-versions="handleOpenVersions"
               @open-move="handleOpenMove"
+              @open-location="handleOpenLocation"
             />
           </div>
 
@@ -252,7 +285,15 @@ import FolderEditDialog from '../../components/BandSpace/Files/FolderEditDialog.
 import FolderTree from '../../components/BandSpace/Files/FolderTree.vue'
 import { useBandSpaceNavigation } from '../../composables/useBandSpaceNavigation.js'
 import { directChildren } from '../../composables/useFolderDragDrop.js'
-import { TRASH_FOLDER_ID, useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
+import {
+  isVirtualFolderId,
+  listedFolderId,
+  NO_FOLDER_LISTED,
+  TRASH_FOLDER_ID,
+  virtualFolderSource
+} from '../../constants/folderSelection.js'
+import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
+import { listedFolderOfRows } from '../../utils/fileListing.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -280,66 +321,80 @@ const autoStartRename = ref(false)
 
 const bandSpaceId = computed(() => route.params.id)
 
-const showBreadcrumb = computed(() => {
-  const id = filesStore.activeFolderId
-  if (id === null) return true
-  if (id === TRASH_FOLDER_ID) return false
-  return typeof id === 'string' && !id.startsWith('virtual:')
-})
+/** null at the root, the folder id inside a folder, NO_FOLDER_LISTED anywhere that is not a place. */
+const listedFolder = computed(() => listedFolderId(filesStore.activeFolderId))
+
+/** A place in the tree, so there is a path to show and subfolders to descend into. */
+const isInTree = computed(() => listedFolder.value !== NO_FOLDER_LISTED)
+
+const showBreadcrumb = computed(() => isInTree.value)
 
 const isTrashActive = computed(() => filesStore.activeFolderId === TRASH_FOLDER_ID)
 
-/**
- * The folder the panel is actually inside, or null at the root. Virtual sources and the trash are not
- * folders, so a new folder created from there belongs at the root rather than inside them, and their id
- * must never reach the API as a parent_id.
- */
-const activeRealFolderId = computed(() => {
-  if (isTrashActive.value || isVirtualFolderActive.value) {
-    return null
-  }
+const isAllFilesActive = computed(() => filesStore.activeFolderId === null)
 
-  return filesStore.activeFolderId
-})
+/**
+ * The place the rows on screen belong to, which is the selected one until a search widens the listing
+ * past it. Kept apart from listedFolder: what the panel *is inside* still drives the breadcrumb and
+ * what a new folder or an upload targets, even while the results come from elsewhere.
+ */
+const rowsFolder = computed(() => listedFolderOfRows(filesStore.activeFolderId, filesStore.filters))
+
+/** A row can have come from any folder, so it has to say which one. */
+const showFileLocation = computed(() => rowsFolder.value === NO_FOLDER_LISTED)
+
+const isSpaceWideSearch = computed(() => filesStore.isSearching && isInTree.value)
+
+/**
+ * The folder the panel is actually inside, or null at the root. Neither the root nor the selections that
+ * are not folders at all can reach the API as a parent_id, so a folder created from any of them belongs
+ * at the root.
+ */
+const activeRealFolderId = computed(() => (isInTree.value ? listedFolder.value : null))
 
 /**
  * The subfolders shown inline above the files. Derived from the tree already in the store, so descending
- * costs no request. The guard cannot be folded into activeRealFolderId: that returns null for a virtual
- * source, and a null id means "the root" here, which would list every root folder inside it.
+ * costs no request. Only a listing that is one place has any: a flat listing and a set of search results
+ * hold files from every folder, so folder rows there would say nothing about where those files are.
  */
-const inlineFolders = computed(() => {
-  if (isTrashActive.value || isVirtualFolderActive.value) {
-    return []
-  }
+const inlineFolders = computed(() =>
+  rowsFolder.value === NO_FOLDER_LISTED ? [] : directChildren(filesStore.folders, rowsFolder.value)
+)
 
-  return directChildren(filesStore.folders, filesStore.activeFolderId)
-})
+const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
 
-const isVirtualFolderActive = computed(() => {
-  const id = filesStore.activeFolderId
-  return typeof id === 'string' && id.startsWith('virtual:')
-})
+/** A virtual folder is filled by attachments, so an empty one is phrased per source. */
+const VIRTUAL_EMPTY_MESSAGES = {
+  task: 'Aucun fichier attaché à une tâche pour le moment.',
+  finance: 'Aucun fichier attaché à une entrée financière pour le moment.',
+  note: 'Aucune image attachée à une note pour le moment.',
+  song: 'Aucun fichier attaché à une chanson pour le moment.',
+  setlist: 'Aucun fichier attaché à une setlist pour le moment.'
+}
 
 const emptyMessage = computed(() => {
-  if (filesStore.activeFolderId === 'virtual:task') {
-    return 'Aucun fichier attaché à une tâche pour le moment.'
+  // The filter bar answers first, wherever it was used. A listing narrowed by a search or a filter is
+  // empty because of what was asked for, and saying « rien pour le moment » about a virtual folder whose
+  // sidebar badge reads seven contradicts the badge. Telling the member to import a file is no answer to
+  // a search that found nothing either.
+  if (filesStore.isSearching) {
+    return 'Aucun fichier ne correspond à cette recherche.'
   }
-  if (filesStore.activeFolderId === 'virtual:finance') {
-    return 'Aucun fichier attaché à une entrée financière pour le moment.'
+  if (filesStore.filters.tagId || filesStore.filters.mime) {
+    return 'Aucun fichier ne correspond à ces filtres.'
   }
-  if (filesStore.activeFolderId === 'virtual:note') {
-    return 'Aucune image attachée à une note pour le moment.'
+
+  const virtualSource = virtualFolderSource(filesStore.activeFolderId)
+  if (virtualSource !== null) {
+    return VIRTUAL_EMPTY_MESSAGES[virtualSource] ?? 'Aucun fichier attaché pour le moment.'
   }
-  if (filesStore.activeFolderId === 'virtual:song') {
-    return 'Aucun fichier attaché à une chanson pour le moment.'
+  if (listedFolder.value === null) {
+    return 'Aucun fichier à la racine, commencez par en importer un.'
   }
-  if (filesStore.activeFolderId === 'virtual:setlist') {
-    return 'Aucun fichier attaché à une setlist pour le moment.'
+  if (isInTree.value) {
+    return 'Aucun fichier dans ce dossier, commencez par en importer un.'
   }
-  if (filesStore.activeFolderId !== null) {
-    return 'Aucun fichier dans ce dossier — commencez par en importer un.'
-  }
-  return 'Aucun fichier — commencez par en importer un.'
+  return 'Aucun fichier, commencez par en importer un.'
 })
 
 let queryDebounce = null
@@ -404,6 +459,19 @@ function handleOpenRename(file) {
   if (!file) return
   autoStartRename.value = true
   router.push({ query: { ...route.query, file: file.id } })
+}
+
+/**
+ * Go where a row said it lives. The row works that out, because for a file in no folder the answer is
+ * not always a folder of the tree: an attachment lives in its virtual folder, which the root excludes.
+ *
+ * The search is dropped on the way, since it is what widened the listing past any one place: keeping it
+ * would answer the click with the same space-wide results.
+ */
+function handleOpenLocation(folderId) {
+  if (queryDebounce) clearTimeout(queryDebounce)
+  filesStore.setFilter('query', '')
+  handleFolderSelect(folderId)
 }
 
 function handleOpenMove(file) {

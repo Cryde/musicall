@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFolderResource;
 use App\Entity\User;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\File\BandSpaceFolderBuilder;
@@ -20,6 +21,7 @@ readonly class BandSpaceFolderCollectionProvider implements ProviderInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceFolderRepository $folderRepository,
+        private BandSpaceFileRepository $fileRepository,
         private BandSpaceFolderBuilder $folderBuilder,
         private Security $security,
     ) {
@@ -39,6 +41,9 @@ readonly class BandSpaceFolderCollectionProvider implements ProviderInterface
 
         $folders = $this->folderRepository->findTree($bandSpace);
 
-        return $this->folderBuilder->buildTree($folders);
+        return $this->folderBuilder->buildTree(
+            $folders,
+            $this->fileRepository->countActiveByFolder($bandSpace),
+        );
     }
 }

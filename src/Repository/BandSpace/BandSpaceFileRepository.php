@@ -188,6 +188,36 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
+     * Live files sitting directly in each folder of the space, so a folder row can say how many rows
+     * opening it shows. Subfolders are not rolled up: a recursive count would need the tree walked per
+     * folder, and a number that counts files the folder does not list is a number nobody can check.
+     *
+     * One grouped query for the whole space rather than one per folder, because the sidebar draws every
+     * folder at once. Folders with nothing in them are absent from the result rather than zero.
+     *
+     * @return array<string, int> folder id => active file count
+     */
+    public function countActiveByFolder(BandSpace $bandSpace): array
+    {
+        $rows = $this->createQueryBuilder('bsf')
+            ->select('IDENTITY(bsf.folder) AS folder_id', 'COUNT(bsf.id) AS file_count')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.folder IS NOT NULL')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->groupBy('bsf.folder')
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['folder_id']] = (int) $row['file_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
      * @param string[] $tagIds
      *
      * @return array<string, int> tag id => active file count
@@ -236,6 +266,22 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         return $path;
     }
 
+    /**
+     * A file nobody attached to anything: no row in band_space_file_attachment.
+     *
+     * Shared by the `source=manual` filter and by the root of the folder tree, so the two cannot drift
+     * apart. Takes an alias because the two callers can appear in the same query.
+     */
+    private static function standaloneExpression(string $alias): string
+    {
+        return sprintf(
+            'NOT EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment %s '
+            . 'WHERE %s.bandSpaceFile = bsf)',
+            $alias,
+            $alias,
+        );
+    }
+
     private function buildBandSpaceQuery(BandSpace $bandSpace, BandSpaceFileFilter $filter): QueryBuilder
     {
         $qb = $this->createQueryBuilder('bsf')
@@ -249,6 +295,11 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         if ($filter->folderId !== null) {
             $qb->andWhere('bsf.folder = :folderId')
                 ->setParameter('folderId', $filter->folderId);
+        } elseif ($filter->rootOnly) {
+            // The root of the tree, not the whole space: see BandSpaceFileFilter::$rootOnly for why an
+            // attachment with no folder belongs to its virtual folder rather than here.
+            $qb->andWhere('bsf.folder IS NULL')
+                ->andWhere(self::standaloneExpression('attRoot'));
         }
 
         if ($filter->tagId !== null) {
@@ -258,11 +309,7 @@ class BandSpaceFileRepository extends ServiceEntityRepository
 
         if ($filter->source !== null) {
             if ($filter->source === 'manual') {
-                // Standalone files have no attachment row.
-                $qb->andWhere(
-                    'NOT EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attMan '
-                    . 'WHERE attMan.bandSpaceFile = bsf)'
-                );
+                $qb->andWhere(self::standaloneExpression('attMan'));
             } else {
                 $qb->andWhere(
                     'EXISTS (SELECT 1 FROM App\\Entity\\BandSpace\\BandSpaceFileAttachment attSrc '

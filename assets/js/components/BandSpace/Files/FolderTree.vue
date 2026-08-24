@@ -11,10 +11,10 @@
         type="button"
         class="flex items-center gap-2 flex-1 min-w-0 px-1 py-1.5 rounded-md text-sm text-left transition-colors duration-150"
         :class="rootButtonClasses"
-        @click="emit('select', null)"
+        @click="emit('select', ROOT_FOLDER_ID)"
       >
         <i class="pi pi-folder text-surface-500"></i>
-        <span class="flex-1 truncate">Tous les fichiers</span>
+        <span class="flex-1 truncate">Racine</span>
       </button>
       <Button
         icon="pi pi-plus"
@@ -27,17 +27,26 @@
       />
     </div>
 
-    <FolderTreeNode
-      v-for="folder in folders"
-      :key="folder.id"
-      :folder="folder"
-      :active-id="activeFolderId"
-      @select="(id) => emit('select', id)"
-      @create-sub="openCreateSub"
-      @edit="openEdit"
-      @delete="openDelete"
-      @drop-on-folder="handleDropOnFolder"
-    />
+    <!-- The folders at the root hang off the same rail as any other level, so the tree reads as one
+         hierarchy under « Racine » rather than as a list that happens to sit below it. Their own gap
+         lives on each row, not on this container, otherwise it would break the line between them. -->
+    <div class="flex flex-col">
+      <div v-for="(folder, index) in folders" :key="folder.id" class="flex">
+        <FolderTreeRail :is-last="index === folders.length - 1" />
+
+        <div class="min-w-0 flex-1 pt-1">
+          <FolderTreeNode
+            :folder="folder"
+            :active-id="activeFolderId"
+            @select="(id) => emit('select', id)"
+            @create-sub="openCreateSub"
+            @edit="openEdit"
+            @delete="openDelete"
+            @drop-on-folder="handleDropOnFolder"
+          />
+        </div>
+      </div>
+    </div>
 
     <div
       v-if="virtualFolders.length > 0"
@@ -84,10 +93,12 @@ import { computed, ref } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { applyMove, canDrop } from '../../../composables/useFolderDragDrop.js'
 import { fileSourceIcon } from '../../../constants/fileSources.js'
+import { ROOT_FOLDER_ID } from '../../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import FolderDeleteDialog from './FolderDeleteDialog.vue'
 import FolderEditDialog from './FolderEditDialog.vue'
 import FolderTreeNode from './FolderTreeNode.vue'
+import FolderTreeRail from './FolderTreeRail.vue'
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
@@ -176,7 +187,7 @@ function openDelete(folder) {
 }
 
 const rootButtonClasses = computed(() => {
-  return props.activeFolderId === null
+  return props.activeFolderId === ROOT_FOLDER_ID
     ? 'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-medium'
     : 'hover:bg-surface-50 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-300'
 })

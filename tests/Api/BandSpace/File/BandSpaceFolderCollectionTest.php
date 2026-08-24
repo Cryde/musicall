@@ -111,6 +111,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                     'name' => 'Live',
                     'parent_id' => null,
                     'depth' => 0,
+                    'file_count' => 0,
                     'children' => [
                         [
                             'id' => $live2026->id,
@@ -118,6 +119,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                             'name' => '2026',
                             'parent_id' => $live->id,
                             'depth' => 1,
+                            'file_count' => 0,
                             'children' => [
                                 [
                                     'id' => $paris->id,
@@ -125,6 +127,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                                     'name' => 'paris',
                                     'parent_id' => $live2026->id,
                                     'depth' => 2,
+                                    'file_count' => 0,
                                     'children' => [],
                                     'creation_datetime' => '2026-04-03T10:00:00+00:00',
                                     'update_datetime' => null,
@@ -145,6 +148,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                     'name' => 'Riders',
                     'parent_id' => null,
                     'depth' => 0,
+                    'file_count' => 0,
                     'children' => [],
                     'creation_datetime' => '2026-04-04T10:00:00+00:00',
                     'update_datetime' => null,
@@ -225,6 +229,110 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
                 ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 1],
                 ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 2],
+            ],
+        ]);
+    }
+
+    /**
+     * The count on a folder row is what opening that folder lists: its own live files, whether or not
+     * they are attached to something, and nothing from its subfolders. A recursive count would promise
+     * rows the folder does not have.
+     */
+    public function test_list_counts_the_live_files_directly_in_each_folder(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $live = BandSpaceFolderFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'name' => 'Live',
+            'creationDatetime' => new \DateTime('2026-04-01 10:00:00'),
+        ])->create();
+        $live2026 = BandSpaceFolderFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'name' => '2026',
+            'parent' => $live,
+            'creationDatetime' => new \DateTime('2026-04-02 10:00:00'),
+        ])->create();
+
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $live])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $live])->create();
+
+        // Attached to a note and filed in Live: the folder lists it, so the folder counts it.
+        $attached = BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $live])->create();
+        BandSpaceFileAttachmentFactory::createOne([
+            'bandSpaceFile' => $attached,
+            'sourceType' => 'note',
+            'sourceId' => Uuid::uuid4(),
+            'attachedBy' => $user,
+        ]);
+
+        // In the trash, so Live does not list it and must not count it.
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'folder' => $live,
+            'archiveDatetime' => new \DateTimeImmutable(),
+        ])->create();
+
+        // In the subfolder, counted there and not rolled up into Live.
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $live2026])->create();
+
+        // At the root, so it belongs to no folder row at all.
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user])->create();
+
+        $bandSpaceId = $bandSpace->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpaceId . '/folders',
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/BandSpaceFolder',
+            '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/band_spaces/' . $bandSpaceId . '/folders/' . $live->id,
+                    '@type' => 'BandSpaceFolder',
+                    'id' => $live->id,
+                    'band_space_id' => $bandSpaceId,
+                    'name' => 'Live',
+                    'parent_id' => null,
+                    'depth' => 0,
+                    'file_count' => 3,
+                    'children' => [
+                        [
+                            'id' => $live2026->id,
+                            'band_space_id' => $bandSpaceId,
+                            'name' => '2026',
+                            'parent_id' => $live->id,
+                            'depth' => 1,
+                            'file_count' => 1,
+                            'children' => [],
+                            'creation_datetime' => '2026-04-02T10:00:00+00:00',
+                            'update_datetime' => null,
+                        ],
+                    ],
+                    'creation_datetime' => '2026-04-01T10:00:00+00:00',
+                    'update_datetime' => null,
+                ],
+            ],
+            'virtualFolders' => [
+                ['id' => 'virtual:task', 'name' => 'Tâches', 'source' => 'task', 'file_count' => 0],
+                ['id' => 'virtual:finance', 'name' => 'Finances', 'source' => 'finance', 'file_count' => 0],
+                ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 1],
+                ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
+                ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
             ],
         ]);
     }
