@@ -46,12 +46,20 @@
         <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
           <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
             <i class="pi pi-folder text-lg text-primary-500 shrink-0" aria-hidden="true"></i>
-            <span class="truncate font-medium">{{ folder.name }}</span>
+            <div class="min-w-0">
+              <span class="block truncate font-medium">{{ folder.name }}</span>
+              <!-- Under the name rather than under the « Taille » header, where a count of files would
+                   sit in the column every other row fills with bytes. -->
+              <span
+                v-if="folderFileCountLabel(folder.file_count)"
+                class="block text-xs text-surface-500 dark:text-surface-400"
+              >
+                {{ folderFileCountLabel(folder.file_count) }}
+              </span>
+            </div>
           </div>
 
-          <div class="col-span-4 md:col-span-2 text-surface-500 dark:text-surface-400">
-            {{ folderFileCountLabel(folder.file_count) ?? '—' }}
-          </div>
+          <div class="col-span-4 md:col-span-2 text-surface-400">—</div>
           <div class="col-span-4 md:col-span-2"></div>
 
           <div class="col-span-4 md:col-span-2 text-surface-600 dark:text-surface-300">
@@ -153,7 +161,7 @@ const props = defineProps({
   isLoading: { type: Boolean, default: false },
   emptyMessage: {
     type: String,
-    default: 'Aucun fichier dans ce dossier — commencez par en importer un.'
+    default: 'Aucun fichier dans ce dossier, commencez par en importer un.'
   },
   /** Direct subfolders of the folder being shown, rendered above the files. */
   folders: { type: Array, default: () => [] },

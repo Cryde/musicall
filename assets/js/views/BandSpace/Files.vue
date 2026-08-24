@@ -391,9 +391,9 @@ const emptyMessage = computed(() => {
     return 'Aucun fichier à la racine, commencez par en importer un.'
   }
   if (isInTree.value) {
-    return 'Aucun fichier dans ce dossier — commencez par en importer un.'
+    return 'Aucun fichier dans ce dossier, commencez par en importer un.'
   }
-  return 'Aucun fichier — commencez par en importer un.'
+  return 'Aucun fichier, commencez par en importer un.'
 })
 
 let queryDebounce = null
