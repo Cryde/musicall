@@ -46,7 +46,7 @@ jobs:
         strategy:
             fail-fast: true
             matrix:
-                php-versions: ['8.4', '8.5']
+                php-versions: ['8.5']
         steps:
             # —— Setup ——————————————————————————————————————————————————————————————
             - name: Checkout
@@ -121,7 +121,7 @@ jobs:
         strategy:
             fail-fast: true
             matrix:
-                node-versions: ['22']
+                node-versions: ['24']
         steps:
             - name: Checkout
               uses: actions/checkout@v4
