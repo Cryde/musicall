@@ -96,3 +96,21 @@ export function folderFileCountLabel(fileCount) {
 
   return fileCount > 1 ? `${fileCount} fichiers` : `${fileCount} fichier`
 }
+
+/**
+ * Whether a folder is still somewhere in the tree.
+ *
+ * Asked after a folder was deleted, because a delete takes a whole subtree with it depending on the
+ * strategy: the panel can be standing inside a folder that no longer exists without being inside the
+ * one that was deleted. Reading it back off the refreshed tree answers that without the client having
+ * to reimplement which strategy removes what.
+ *
+ * @param {Array} tree nested folders, each with an optional `children`
+ * @param {string|null} folderId
+ * @returns {boolean}
+ */
+export function treeHoldsFolder(tree, folderId) {
+  if (!Array.isArray(tree) || folderId === null) return false
+
+  return tree.some((node) => node.id === folderId || treeHoldsFolder(node.children ?? [], folderId))
+}

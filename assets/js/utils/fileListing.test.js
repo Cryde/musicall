@@ -5,7 +5,8 @@ import {
   fileListingParams,
   folderFileCountLabel,
   isSearchActive,
-  listedFolderOfRows
+  listedFolderOfRows,
+  treeHoldsFolder
 } from './fileListing.js'
 
 /**
@@ -122,5 +123,29 @@ describe('folderFileCountLabel', () => {
     assert.equal(folderFileCountLabel(0), null)
     assert.equal(folderFileCountLabel(undefined), null)
     assert.equal(folderFileCountLabel(null), null)
+  })
+})
+
+describe('treeHoldsFolder', () => {
+  const tree = [
+    { id: 'live', children: [{ id: '2026', children: [{ id: 'paris', children: [] }] }] },
+    { id: 'riders', children: [] }
+  ]
+
+  it('finds a folder at any depth', () => {
+    assert.equal(treeHoldsFolder(tree, 'live'), true)
+    assert.equal(treeHoldsFolder(tree, '2026'), true)
+    assert.equal(treeHoldsFolder(tree, 'paris'), true)
+    assert.equal(treeHoldsFolder(tree, 'riders'), true)
+  })
+
+  it('does not find a folder the tree no longer holds', () => {
+    assert.equal(treeHoldsFolder(tree, 'deleted'), false)
+    assert.equal(treeHoldsFolder([], 'live'), false)
+  })
+
+  it('is false for the root and for anything that is not a folder id', () => {
+    assert.equal(treeHoldsFolder(tree, null), false)
+    assert.equal(treeHoldsFolder(undefined, 'live'), false)
   })
 })

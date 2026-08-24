@@ -1,8 +1,17 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, readonly, ref } from 'vue'
 import bandSpaceFilesApi from '../../api/bandSpace/band-space-files.js'
-import { NO_FOLDER_LISTED, ROOT_FOLDER_ID } from '../../constants/folderSelection.js'
-import { fileListingParams, isSearchActive, listedFolderOfRows } from '../../utils/fileListing.js'
+import {
+  listedFolderId,
+  NO_FOLDER_LISTED,
+  ROOT_FOLDER_ID
+} from '../../constants/folderSelection.js'
+import {
+  fileListingParams,
+  isSearchActive,
+  listedFolderOfRows,
+  treeHoldsFolder
+} from '../../utils/fileListing.js'
 import {
   FILES_PAGE_SIZE,
   fileCountLabel,
@@ -221,9 +230,16 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   async function deleteFolder(bandSpaceId, folderId, options = {}) {
     await bandSpaceFilesApi.deleteFolder(bandSpaceId, folderId, options)
     await fetchFolders(bandSpaceId)
-    // The folder the panel was inside is gone, so it falls back to the root rather than to the flat
-    // listing of the whole space, which would answer a deletion with every file in the space.
-    if (activeFolderId.value === folderId) {
+    // The panel may have been inside the deleted folder, or inside one of its subfolders, which the
+    // delete_all strategy takes with it too. Asking the refreshed tree covers both, where comparing
+    // against the deleted id alone left the panel standing in a folder that no longer exists, listing
+    // nothing until something else was clicked. The fallback is the root rather than the flat listing of
+    // the whole space, which would answer a deletion with every file there is.
+    //
+    // Only a real folder can go missing: listedFolderId answers with a string for one, and with the root
+    // or NO_FOLDER_LISTED for every selection no folder deletion can invalidate.
+    const listedFolder = listedFolderId(activeFolderId.value)
+    if (typeof listedFolder === 'string' && !treeHoldsFolder(folders.value, listedFolder)) {
       activeFolderId.value = ROOT_FOLDER_ID
       fetchFiles(bandSpaceId)
     }
@@ -276,9 +292,12 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       if (activeFileFull.value && activeFileFull.value.id === fileId) {
         activeFileFull.value = updated
       }
-      // Only a folder change moves a file between two counts; a rename or a tag edit leaves them alone.
+      // A folder change is a move, whoever asked for it: the file detail drawer patches the folder from
+      // the same place it patches a name. Only applyFileMoved knows the row may not belong to the
+      // listing any more, and it is the one that refreshes the tree's counts. A rename or a tag edit
+      // moves nothing and needs neither.
       if ('folder_id' in data) {
-        fetchFolders(bandSpaceId)
+        applyFileMoved(bandSpaceId, fileId, data.folder_id ?? null)
       }
       return updated
     } finally {
