@@ -1,7 +1,11 @@
+import { fileSourceLabel } from '../constants/fileSources.js'
 import {
+  isVirtualFolderId,
   listedFolderId,
   NO_FOLDER_LISTED,
+  ROOT_FOLDER_ID,
   TRASH_FOLDER_ID,
+  virtualFolderId,
   virtualFolderSource
 } from '../constants/folderSelection.js'
 import { FILES_PAGE_SIZE } from './filePagination.js'
@@ -113,4 +117,84 @@ export function treeHoldsFolder(tree, folderId) {
   if (!Array.isArray(tree) || folderId === null) return false
 
   return tree.some((node) => node.id === folderId || treeHoldsFolder(node.children ?? [], folderId))
+}
+
+/**
+ * The path down to a folder, root first, in the shape the API spells `folder_path`.
+ *
+ * Read off the tree already in the store, so a row's path can be corrected after a move without asking
+ * the server for it again. Empty for the root and for a folder the tree does not hold.
+ *
+ * @param {Array} tree
+ * @param {string|null} folderId
+ * @returns {Array<{id: string, name: string}>}
+ */
+export function folderPathOf(tree, folderId) {
+  if (!Array.isArray(tree) || folderId === null || folderId === undefined) return []
+
+  for (const node of tree) {
+    if (node.id === folderId) return [{ id: node.id, name: node.name }]
+
+    const below = folderPathOf(node.children ?? [], folderId)
+    if (below.length > 0) return [{ id: node.id, name: node.name }, ...below]
+  }
+
+  return []
+}
+
+/**
+ * Where a file row says it lives, and where clicking that says takes the member.
+ *
+ * A file in a folder names its path. A file in no folder is only at the root if nothing is attached to
+ * it: the root excludes attachments, so sending an attached file's reader there would land them in a
+ * listing the file is missing from. Its place is the virtual folder grouping its source, named the way
+ * the sidebar names it, falling back to the source's own label before the tree has loaded.
+ *
+ * @param {object} file
+ * @param {Array<{source: string, name: string}>} virtualFolders
+ * @returns {{label: string, folderId: string}}
+ */
+export function fileLocation(file, virtualFolders = []) {
+  const path = file.folder_path ?? []
+  if (path.length > 0) {
+    return {
+      label: path.map((segment) => segment.name).join(' / '),
+      folderId: path[path.length - 1].id
+    }
+  }
+
+  const sourceType = (file.attachments ?? [])[0]?.source_type ?? null
+  if (sourceType !== null) {
+    const virtual = virtualFolders.find((folder) => folder.source === sourceType)
+
+    return {
+      label: virtual?.name ?? fileSourceLabel(sourceType),
+      folderId: virtualFolderId(sourceType)
+    }
+  }
+
+  return { label: 'Racine', folderId: ROOT_FOLDER_ID }
+}
+
+/**
+ * Whether a file that has just been uploaded belongs in the listing on screen, so its row can be shown
+ * straight away instead of waiting for a refetch.
+ *
+ * It has to be the same place, and the listing has to be a place: a virtual folder holds attachments,
+ * which an upload is not. Anything narrowing the listing further, a search, a tag, a type, makes this
+ * undecidable here, because only the server knows what its own query matches, and a row that does not
+ * match is a row the next fetch takes away again.
+ *
+ * @param {string|null} activeFolderId
+ * @param {{query: string, tagId: ?string, mime: ?string}} filters
+ * @param {string|null} uploadedFolderId
+ * @returns {boolean}
+ */
+export function uploadBelongsInListing(activeFolderId, filters, uploadedFolderId) {
+  if (isSearchActive(filters) || filters.tagId || filters.mime) return false
+  // No selection at all is the flat listing of the whole space, which holds every file in it.
+  if (activeFolderId === null) return true
+  if (isVirtualFolderId(activeFolderId) || activeFolderId === TRASH_FOLDER_ID) return false
+
+  return listedFolderId(activeFolderId) === (uploadedFolderId ?? null)
 }

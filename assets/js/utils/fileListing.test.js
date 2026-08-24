@@ -3,10 +3,13 @@ import { describe, it } from 'node:test'
 import { NO_FOLDER_LISTED, ROOT_FOLDER_ID, TRASH_FOLDER_ID } from '../constants/folderSelection.js'
 import {
   fileListingParams,
+  fileLocation,
   folderFileCountLabel,
+  folderPathOf,
   isSearchActive,
   listedFolderOfRows,
-  treeHoldsFolder
+  treeHoldsFolder,
+  uploadBelongsInListing
 } from './fileListing.js'
 
 /**
@@ -147,5 +150,101 @@ describe('treeHoldsFolder', () => {
   it('is false for the root and for anything that is not a folder id', () => {
     assert.equal(treeHoldsFolder(tree, null), false)
     assert.equal(treeHoldsFolder(undefined, 'live'), false)
+  })
+})
+
+describe('folderPathOf', () => {
+  const tree = [
+    {
+      id: 'live',
+      name: 'Live',
+      children: [
+        { id: '2026', name: '2026', children: [{ id: 'paris', name: 'paris', children: [] }] }
+      ]
+    },
+    { id: 'riders', name: 'Riders', children: [] }
+  ]
+
+  it('names every folder down to the one asked for', () => {
+    assert.deepEqual(folderPathOf(tree, 'paris'), [
+      { id: 'live', name: 'Live' },
+      { id: '2026', name: '2026' },
+      { id: 'paris', name: 'paris' }
+    ])
+  })
+
+  it('is one segment for a folder at the top', () => {
+    assert.deepEqual(folderPathOf(tree, 'riders'), [{ id: 'riders', name: 'Riders' }])
+  })
+
+  it('is empty for the root and for a folder the tree does not hold', () => {
+    assert.deepEqual(folderPathOf(tree, null), [])
+    assert.deepEqual(folderPathOf(tree, 'deleted'), [])
+  })
+})
+
+describe('fileLocation', () => {
+  const virtualFolders = [
+    { id: 'virtual:note', source: 'note', name: 'Notes' },
+    { id: 'virtual:task', source: 'task', name: 'Tâches' }
+  ]
+
+  it('names the folder path and points at the folder holding the file', () => {
+    const file = {
+      folder_path: [
+        { id: 'live', name: 'Live' },
+        { id: '2026', name: '2026' }
+      ]
+    }
+    assert.deepEqual(fileLocation(file, virtualFolders), { label: 'Live / 2026', folderId: '2026' })
+  })
+
+  it('sends an unfiled attachment to its virtual folder, not to the root that excludes it', () => {
+    const file = { folder_path: [], attachments: [{ source_type: 'note', source_id: 'n1' }] }
+    assert.deepEqual(fileLocation(file, virtualFolders), {
+      label: 'Notes',
+      folderId: 'virtual:note'
+    })
+  })
+
+  it('falls back to the source label when the tree has not loaded yet', () => {
+    const file = { attachments: [{ source_type: 'note' }] }
+    assert.equal(fileLocation(file, []).label, 'Note')
+  })
+
+  it('is the root only for a file that is in no folder and attached to nothing', () => {
+    assert.deepEqual(fileLocation({ folder_path: [], attachments: [] }, virtualFolders), {
+      label: 'Racine',
+      folderId: 'root'
+    })
+  })
+})
+
+describe('uploadBelongsInListing', () => {
+  const FOLDER = '0198c0de-dead-beef-cafe-000000000001'
+
+  it('holds a file uploaded into the folder on screen', () => {
+    assert.equal(uploadBelongsInListing(FOLDER, filters(), FOLDER), true)
+    assert.equal(uploadBelongsInListing(ROOT_FOLDER_ID, filters(), null), true)
+  })
+
+  it('does not hold a file uploaded somewhere else', () => {
+    assert.equal(uploadBelongsInListing(ROOT_FOLDER_ID, filters(), FOLDER), false)
+    assert.equal(uploadBelongsInListing(FOLDER, filters(), null), false)
+  })
+
+  it('holds anything in the flat listing of the whole space', () => {
+    assert.equal(uploadBelongsInListing(null, filters(), FOLDER), true)
+  })
+
+  it('holds nothing while the listing is narrowed past a place', () => {
+    assert.equal(uploadBelongsInListing(FOLDER, filters({ query: 'contrat' }), FOLDER), false)
+    assert.equal(uploadBelongsInListing(FOLDER, filters({ tagId: 'tag-1' }), FOLDER), false)
+    assert.equal(uploadBelongsInListing(FOLDER, filters({ mime: 'audio/' }), FOLDER), false)
+  })
+
+  it('holds nothing in a virtual folder, which lists attachments rather than uploads', () => {
+    assert.equal(uploadBelongsInListing('virtual:note', filters(), null), false)
+    assert.equal(uploadBelongsInListing(TRASH_FOLDER_ID, filters(), null), false)
   })
 })

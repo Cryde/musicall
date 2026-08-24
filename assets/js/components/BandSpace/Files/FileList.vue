@@ -91,11 +91,11 @@
                 v-if="showLocation"
                 type="button"
                 class="flex items-center gap-1 max-w-full text-xs text-surface-500 dark:text-surface-400 hover:underline"
-                :aria-label="`Ouvrir ${locationLabel(file)}`"
-                @click.stop="emit('open-location', file)"
+                :aria-label="`Ouvrir ${locationOf(file).label}`"
+                @click.stop="emit('open-location', locationOf(file).folderId)"
               >
                 <i class="pi pi-folder text-[10px] shrink-0" aria-hidden="true"></i>
-                <span class="truncate">{{ locationLabel(file) }}</span>
+                <span class="truncate">{{ locationOf(file).label }}</span>
               </button>
             </div>
           </div>
@@ -153,7 +153,7 @@ import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
-import { folderFileCountLabel } from '../../../utils/fileListing.js'
+import { fileLocation, folderFileCountLabel } from '../../../utils/fileListing.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -343,11 +343,13 @@ function formatDate(iso) {
   return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-/** The folder path as one line, root to leaf. Files at the root have no path of their own. */
-function locationLabel(file) {
-  const path = file.folder_path ?? []
-
-  return path.length === 0 ? 'Racine' : path.map((segment) => segment.name).join(' / ')
+/**
+ * Where the row says the file lives, and where its link goes. The virtual folders come from the store so
+ * an unfiled attachment is named « Notes » the way the sidebar names it, rather than « Racine », which
+ * is a listing that excludes attachments.
+ */
+function locationOf(file) {
+  return fileLocation(file, filesStore.virtualFolders)
 }
 
 function tagStyle(colorHex) {

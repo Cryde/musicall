@@ -8,9 +8,11 @@ import {
 } from '../../constants/folderSelection.js'
 import {
   fileListingParams,
+  folderPathOf,
   isSearchActive,
   listedFolderOfRows,
-  treeHoldsFolder
+  treeHoldsFolder,
+  uploadBelongsInListing
 } from '../../utils/fileListing.js'
 import {
   FILES_PAGE_SIZE,
@@ -60,6 +62,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // moved is recognised as continuing a list that is no longer on screen.
   const loadedQueryKey = ref(null)
   const isLoadingFolders = ref(false)
+  // The panel's skeleton belongs to the first tree only. Every later refresh flips isLoadingFolders too,
+  // and in a space with no folders yet that matched the skeleton's own condition, tearing the whole
+  // panel down and remounting it on every file delete, restore or move.
+  const hasLoadedFolders = ref(false)
   const isLoadingTags = ref(false)
   const isLoadingQuota = ref(false)
   const isLoadingActiveFile = ref(false)
@@ -191,6 +197,9 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     } finally {
       if (requestId === foldersRequestId) {
         isLoadingFolders.value = false
+        // Set even when the request failed: a tree that could not be loaded is not a reason to leave the
+        // panel behind a skeleton for good.
+        hasLoadedFolders.value = true
       }
     }
   }
@@ -328,8 +337,17 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       return
     }
 
+    // folder_path as well as folder_id: the row's location label and the link under it read the path, so
+    // patching only the id left the row naming the folder the file had just left. Read off the tree in
+    // hand, which a file move does not change.
     files.value = files.value.map((f) =>
-      f.id === fileId ? { ...f, folder_id: targetFolderId } : f
+      f.id === fileId
+        ? {
+            ...f,
+            folder_id: targetFolderId,
+            folder_path: folderPathOf(folders.value, targetFolderId)
+          }
+        : f
     )
   }
 
@@ -470,15 +488,14 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
    * One file. A batch calls this once per file, so each one lands in the list as it arrives and an
    * interrupted batch leaves behind exactly what the server actually took.
    *
-   * A file sent to another folder than the one on screen is not added to it: the dialog lets the
-   * member change the destination, and a row for a file that lives elsewhere would only survive until
-   * the next fetch took it away again.
+   * The row only joins a listing that would hold it. The dialog lets the member change the destination,
+   * and a search or a filter can narrow the listing past any one place, so a row prepended anyway would
+   * survive exactly until the next fetch and count for one file too many meanwhile.
    */
   async function uploadFile(bandSpaceId, payload, onProgress, signal) {
     const result = await bandSpaceFilesApi.uploadFile(bandSpaceId, payload, onProgress, signal)
-    const listedFolder = listedFolderOfRows(activeFolderId.value, filters)
 
-    if (listedFolder === NO_FOLDER_LISTED || listedFolder === (result.file.folder_id ?? null)) {
+    if (uploadBelongsInListing(activeFolderId.value, filters, result.file.folder_id)) {
       files.value = [result.file, ...files.value]
       totalFiles.value = totalFiles.value + 1
     }
@@ -512,6 +529,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     files.value = []
     totalFiles.value = 0
     loadedQueryKey.value = null
+    hasLoadedFolders.value = false
     isRefreshingFiles.value = false
     isLoadingMoreFiles.value = false
     folders.value = []
@@ -554,6 +572,7 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     isRefreshingFiles: readonly(isRefreshingFiles),
     isLoadingMoreFiles: readonly(isLoadingMoreFiles),
     isLoadingFolders: readonly(isLoadingFolders),
+    hasLoadedFolders: readonly(hasLoadedFolders),
     isLoadingTags: readonly(isLoadingTags),
     isLoadingQuota: readonly(isLoadingQuota),
     loadError: readonly(loadError),

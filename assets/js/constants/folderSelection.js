@@ -66,3 +66,15 @@ export function isVirtualFolderId(folderId) {
 export function virtualFolderSource(folderId) {
   return isVirtualFolderId(folderId) ? folderId.slice(VIRTUAL_PREFIX.length) : null
 }
+
+/**
+ * The selection that opens a source's virtual folder. The inverse of virtualFolderSource(), here so the
+ * prefix is spelled in one file rather than interpolated wherever a source has to be turned into a
+ * place.
+ *
+ * @param {string} source
+ * @returns {string}
+ */
+export function virtualFolderId(source) {
+  return `${VIRTUAL_PREFIX}${source}`
+}

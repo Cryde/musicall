@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="filesStore.isLoadingFolders && filesStore.folders.length === 0" class="flex gap-4">
+    <div v-if="filesStore.isLoadingFolders && !filesStore.hasLoadedFolders" class="flex gap-4">
       <div class="w-64 flex flex-col gap-2">
         <Skeleton v-for="i in 5" :key="i" width="100%" height="2rem" borderRadius="0.375rem" />
       </div>
@@ -289,8 +289,8 @@ import {
   isVirtualFolderId,
   listedFolderId,
   NO_FOLDER_LISTED,
-  ROOT_FOLDER_ID,
-  TRASH_FOLDER_ID
+  TRASH_FOLDER_ID,
+  virtualFolderSource
 } from '../../constants/folderSelection.js'
 import { useBandFilesStore } from '../../store/bandSpace/bandSpaceFiles.js'
 import { listedFolderOfRows } from '../../utils/fileListing.js'
@@ -363,29 +363,30 @@ const inlineFolders = computed(() =>
 
 const isVirtualFolderActive = computed(() => isVirtualFolderId(filesStore.activeFolderId))
 
+/** A virtual folder is filled by attachments, so an empty one is phrased per source. */
+const VIRTUAL_EMPTY_MESSAGES = {
+  task: 'Aucun fichier attaché à une tâche pour le moment.',
+  finance: 'Aucun fichier attaché à une entrée financière pour le moment.',
+  note: 'Aucune image attachée à une note pour le moment.',
+  song: 'Aucun fichier attaché à une chanson pour le moment.',
+  setlist: 'Aucun fichier attaché à une setlist pour le moment.'
+}
+
 const emptyMessage = computed(() => {
-  if (filesStore.activeFolderId === 'virtual:task') {
-    return 'Aucun fichier attaché à une tâche pour le moment.'
-  }
-  if (filesStore.activeFolderId === 'virtual:finance') {
-    return 'Aucun fichier attaché à une entrée financière pour le moment.'
-  }
-  if (filesStore.activeFolderId === 'virtual:note') {
-    return 'Aucune image attachée à une note pour le moment.'
-  }
-  if (filesStore.activeFolderId === 'virtual:song') {
-    return 'Aucun fichier attaché à une chanson pour le moment.'
-  }
-  if (filesStore.activeFolderId === 'virtual:setlist') {
-    return 'Aucun fichier attaché à une setlist pour le moment.'
-  }
-  // A listing narrowed by the filter bar is empty because of what was asked for, not because the place
-  // is empty, and telling the member to import a file is no answer to a search that found nothing.
+  // The filter bar answers first, wherever it was used. A listing narrowed by a search or a filter is
+  // empty because of what was asked for, and saying « rien pour le moment » about a virtual folder whose
+  // sidebar badge reads seven contradicts the badge. Telling the member to import a file is no answer to
+  // a search that found nothing either.
   if (filesStore.isSearching) {
     return 'Aucun fichier ne correspond à cette recherche.'
   }
   if (filesStore.filters.tagId || filesStore.filters.mime) {
     return 'Aucun fichier ne correspond à ces filtres.'
+  }
+
+  const virtualSource = virtualFolderSource(filesStore.activeFolderId)
+  if (virtualSource !== null) {
+    return VIRTUAL_EMPTY_MESSAGES[virtualSource] ?? 'Aucun fichier attaché pour le moment.'
   }
   if (listedFolder.value === null) {
     return 'Aucun fichier à la racine, commencez par en importer un.'
@@ -461,14 +462,16 @@ function handleOpenRename(file) {
 }
 
 /**
- * Go to the folder a search result lives in. The search is dropped on the way, since it is what widened
- * the listing past any one folder: keeping it would answer the click with the same space-wide results.
+ * Go where a row said it lives. The row works that out, because for a file in no folder the answer is
+ * not always a folder of the tree: an attachment lives in its virtual folder, which the root excludes.
+ *
+ * The search is dropped on the way, since it is what widened the listing past any one place: keeping it
+ * would answer the click with the same space-wide results.
  */
-function handleOpenLocation(file) {
-  const path = file.folder_path ?? []
+function handleOpenLocation(folderId) {
   if (queryDebounce) clearTimeout(queryDebounce)
   filesStore.setFilter('query', '')
-  handleFolderSelect(path.length > 0 ? path[path.length - 1].id : ROOT_FOLDER_ID)
+  handleFolderSelect(folderId)
 }
 
 function handleOpenMove(file) {

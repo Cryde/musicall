@@ -38,6 +38,7 @@
 <script setup>
 import { computed } from 'vue'
 import { isVirtualFolderId, ROOT_FOLDER_ID } from '../../../constants/folderSelection.js'
+import { folderPathOf } from '../../../utils/fileListing.js'
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
@@ -46,34 +47,12 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
-// The path down from the root, so the root itself has none.
+// The path down from the root, so the root itself has none. Same walk the file rows use to name the
+// folder they live in, since a breadcrumb and a location label are the same question asked twice.
 const segments = computed(() => {
   if (!props.activeFolderId || props.activeFolderId === ROOT_FOLDER_ID) return []
   if (isVirtualFolderId(props.activeFolderId)) return []
 
-  const flat = flatten(props.folders)
-  const byId = new Map(flat.map((f) => [f.id, f]))
-
-  const chain = []
-  let current = byId.get(props.activeFolderId) ?? null
-  while (current) {
-    chain.unshift({ id: current.id, name: current.name })
-    current = current.parent_id ? byId.get(current.parent_id) : null
-  }
-  return chain
+  return folderPathOf(props.folders, props.activeFolderId)
 })
-
-function flatten(nodes) {
-  const out = []
-  const walk = (list) => {
-    for (const node of list) {
-      out.push(node)
-      if (Array.isArray(node.children) && node.children.length > 0) {
-        walk(node.children)
-      }
-    }
-  }
-  walk(nodes)
-  return out
-}
 </script>

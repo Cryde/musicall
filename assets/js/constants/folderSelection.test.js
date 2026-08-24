@@ -6,6 +6,7 @@ import {
   NO_FOLDER_LISTED,
   ROOT_FOLDER_ID,
   TRASH_FOLDER_ID,
+  virtualFolderId,
   virtualFolderSource
 } from './folderSelection.js'
 
@@ -71,5 +72,17 @@ describe('virtualFolderSource', () => {
     assert.equal(virtualFolderSource(TRASH_FOLDER_ID), null)
     assert.equal(virtualFolderSource('0198c0de-dead-beef-cafe-000000000001'), null)
     assert.equal(virtualFolderSource(null), null)
+  })
+})
+
+describe('virtualFolderId', () => {
+  it('round trips with virtualFolderSource', () => {
+    for (const source of ['task', 'finance', 'note', 'song', 'setlist']) {
+      assert.equal(virtualFolderSource(virtualFolderId(source)), source)
+    }
+  })
+
+  it('builds the id the folder collection publishes', () => {
+    assert.equal(virtualFolderId('note'), 'virtual:note')
   })
 })
