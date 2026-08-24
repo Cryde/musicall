@@ -8,6 +8,7 @@ use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFolderFactory;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,55 @@ class BandSpaceFolderUpdateTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $response = $this->getResponseAsArray();
         $this->assertSame('Setlist', $response['name']);
+    }
+
+    /**
+     * Renaming moves no file, so the response has to keep reporting what the folder holds. The count is
+     * its own live files: the one in the subfolder belongs to that subfolder and the trashed one is not
+     * listed anywhere but the bin.
+     */
+    public function test_rename_folder_reports_the_files_it_holds(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $folder = BandSpaceFolderFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'name' => 'Setlists',
+            'creationDatetime' => new \DateTime('2026-04-01 10:00:00'),
+        ])->create();
+        $child = BandSpaceFolderFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'name' => '2026',
+            'parent' => $folder,
+            'creationDatetime' => new \DateTime('2026-04-02 10:00:00'),
+        ])->create();
+
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $folder])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $folder])->create();
+        BandSpaceFileFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $user, 'folder' => $child])->create();
+        BandSpaceFileFactory::new([
+            'bandSpace' => $bandSpace,
+            'createdBy' => $user,
+            'folder' => $folder,
+            'archiveDatetime' => new \DateTimeImmutable(),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/folders/' . $folder->id,
+            ['name' => 'Setlist'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertSame('Setlist', $response['name']);
+        $this->assertSame(2, $response['file_count']);
     }
 
     public function test_move_folder_to_new_parent(): void
