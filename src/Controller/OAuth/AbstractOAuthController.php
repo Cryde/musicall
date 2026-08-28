@@ -7,6 +7,7 @@ namespace App\Controller\OAuth;
 use App\Entity\User;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
+use App\Http\ReturnUrl;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
@@ -68,15 +69,7 @@ abstract class AbstractOAuthController extends AbstractController
 
     private function isValidReturnUrl(string $url): bool
     {
-        // Only allow relative URLs or URLs from the same domain
-        if (str_starts_with($url, '/')) {
-            return true;
-        }
-
-        $parsedUrl = parse_url($url);
-        $frontendParsed = parse_url($this->frontendUrl);
-
-        return isset($parsedUrl['host'], $frontendParsed['host']) && $parsedUrl['host'] === $frontendParsed['host'];
+        return ReturnUrl::isSafe($url, $this->frontendUrl);
     }
 
     public function callback(Request $request): RedirectResponse
