@@ -1,9 +1,9 @@
 # [MusicAll](https://www.musicall.com)
 
 [![codecov](https://codecov.io/gh/Cryde/musicall/branch/master/graph/badge.svg?token=7RK8UIL2RH)](https://codecov.io/gh/Cryde/musicall)
-[![PHP Version](https://img.shields.io/badge/php-8.4-blue)](https://php.net)
-[![Symfony](https://img.shields.io/badge/symfony-7.4-black)](https://symfony.com)
-[![Node](https://img.shields.io/badge/node-20-green)](https://nodejs.org)
+[![PHP Version](https://img.shields.io/badge/php-8.5-blue)](https://php.net)
+[![Symfony](https://img.shields.io/badge/symfony-8.1-black)](https://symfony.com)
+[![Node](https://img.shields.io/badge/node-24-green)](https://nodejs.org)
 
 ## About
 
