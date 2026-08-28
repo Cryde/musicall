@@ -17,10 +17,10 @@ use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\AgendaEntryBuilder;
 use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -50,26 +50,28 @@ readonly class AgendaEntryCreateProcessor implements ProcessorInterface
 
         [$bandSpace] = $this->memberChecker->checkMemberForWrite((string) $uriVariables['bandSpaceId'], $user);
 
-        try {
-            $eventDatetime = new DateTimeImmutable($data->eventDatetime);
-        } catch (\Exception) {
-            throw new BadRequestHttpException('Date et heure invalides');
-        }
-
-        $endDatetime = null;
-        if ($data->endDatetime !== null) {
-            try {
-                $endDatetime = new DateTimeImmutable($data->endDatetime);
-            } catch (\Exception) {
-                throw new BadRequestHttpException('Date de fin invalide');
-            }
-        }
+        $eventDatetime = $data->eventDatetime;
+        $endDatetime = $data->endDatetime;
 
         if ($data->isAllDay) {
+            // A whole day is a date, not an instant, and the date is the caller's own: read off the
+            // wall clock they sent, before any conversion, then pinned to midnight UTC. Converting
+            // first would move 2026-08-25T00:00+02:00 to the 24th.
             $eventDatetime = new DateTimeImmutable($eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');
             $endDatetime = $endDatetime instanceof \DateTimeImmutable
                 ? new DateTimeImmutable($endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
                 : null;
+        } else {
+            // AgendaEntry::$eventDatetime is mapped DATETIME_IMMUTABLE, Doctrine's `datetime`, which
+            // persists the object's wall clock and drops its timezone. So the column can only hold UTC
+            // correctly, and an offset the caller sent has to be converted here or the instant moves:
+            // 20:00+02:00 would be stored as 20:00 and read back as 20:00Z, two hours late.
+            //
+            // The reading half of that rests on the runtime's own timezone, since Doctrine hydrates the
+            // column with date_default_timezone_get() and nothing in this repository pins it. The two
+            // tiers disagreed on it once already, which is what #888 was about.
+            $eventDatetime = $eventDatetime->setTimezone(new DateTimeZone('UTC'));
+            $endDatetime = $endDatetime?->setTimezone(new DateTimeZone('UTC'));
         }
 
         $entry = new AgendaEntry();

@@ -101,6 +101,12 @@ class ValidRecurrenceValidator extends ConstraintValidator
 
     private function parseEventDatetime(mixed $raw): ?DateTimeImmutable
     {
+        // The DTO carries a real datetime now; the serializer has already parsed and rejected anything
+        // malformed. The string branch stays for a caller passing the raw value.
+        if ($raw instanceof DateTimeImmutable) {
+            return $raw;
+        }
+
         if (!is_string($raw) || $raw === '') {
             return null;
         }

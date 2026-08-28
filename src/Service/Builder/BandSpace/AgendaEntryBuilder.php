@@ -27,8 +27,8 @@ readonly class AgendaEntryBuilder
         $dto->title = $entity->title;
         $dto->description = $entity->description;
         $dto->location = $entity->location;
-        $dto->eventDatetime = $entity->eventDatetime->format(\DateTimeInterface::ATOM);
-        $dto->endDatetime = $entity->endDatetime?->format(\DateTimeInterface::ATOM);
+        $dto->eventDatetime = $entity->eventDatetime;
+        $dto->endDatetime = $entity->endDatetime;
         $dto->isAllDay = $entity->isAllDay;
         $dto->recurrenceFrequency = $entity->recurrenceFrequency?->value;
         $dto->recurrenceUntilDate = $entity->recurrenceUntilDate?->format('Y-m-d');

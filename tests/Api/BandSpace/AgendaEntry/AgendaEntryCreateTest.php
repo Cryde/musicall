@@ -201,6 +201,53 @@ class AgendaEntryCreateTest extends ApiTestCase
         ]);
     }
 
+    /**
+     * Assert\GreaterThan only parses a value into a date when the value under validation already is
+     * one. While both fields were strings it fell through to PHP's `>` and sorted them character by
+     * character, which works only when both carry the same offset: 10:00Z sorts after 09:00-05:00 and
+     * is four hours before it, so this payload was accepted and the entry stored ending before it
+     * began. The fields are real datetimes now, so the constraint compares instants.
+     */
+    public function test_create_agenda_entry_rejects_an_end_before_the_start_across_two_offsets(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
+            [
+                'title' => 'Concert',
+                'eventDatetime' => '2026-08-25T09:00:00-05:00',
+                'endDatetime' => '2026-08-25T10:00:00+00:00',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@id' => '/api/validation_errors/778b7ae0-84d3-481a-9dec-35fdb64b1d78',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'end_datetime',
+                    'message' => 'La fin doit être postérieure au début',
+                    'code' => '778b7ae0-84d3-481a-9dec-35fdb64b1d78',
+                ],
+            ],
+            'detail' => 'end_datetime: La fin doit être postérieure au début',
+            'type' => '/validation_errors/778b7ae0-84d3-481a-9dec-35fdb64b1d78',
+            'title' => 'An error occurred',
+            '@context' => '/api/contexts/ConstraintViolation',
+            'description' => 'end_datetime: La fin doit être postérieure au début',
+        ]);
+
+        $this->assertCount(0, self::getContainer()->get(AgendaEntryRepository::class)->findByBandSpace($bandSpace));
+    }
+
     public function test_create_agenda_entry_all_day_single_day(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
@@ -282,6 +329,113 @@ class AgendaEntryCreateTest extends ApiTestCase
             'location' => null,
             'event_datetime' => '2026-06-19T00:00:00+00:00',
             'end_datetime' => '2026-06-21T00:00:00+00:00',
+            'is_all_day' => true,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /**
+     * The column is Doctrine's `datetime`, which keeps the wall clock and drops the timezone, so an
+     * offset the caller sends has to be converted on the way in. It used to be ignored: 20:00+02:00 was
+     * stored as 20:00 and read back as 20:00Z, two hours after the instant that was asked for.
+     *
+     * The SPA has always sent UTC (`Date.toISOString()`), which is why nothing noticed. Anything else
+     * talking to the API sends a local offset, which is the normal thing to do, and #779's iCal feed
+     * will carry timezone-qualified datetimes by definition.
+     */
+    public function test_create_agenda_entry_converts_a_non_utc_offset_to_the_same_instant(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
+            [
+                'title' => 'Répétition hebdo',
+                'eventDatetime' => '2026-08-25T20:00:00+02:00',
+                'endDatetime' => '2026-08-25T23:00:00+02:00',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $entries = $repo->findByBandSpace($bandSpace);
+        $this->assertCount(1, $entries);
+
+        $entry = $entries[0];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition hebdo',
+            'description' => null,
+            'location' => null,
+            // 20:00+02:00 is 18:00Z. Before the fix this read back as 20:00+00:00.
+            'event_datetime' => '2026-08-25T18:00:00+00:00',
+            'end_datetime' => '2026-08-25T21:00:00+00:00',
+            'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /**
+     * An all day entry is a date, not an instant, so the offset is dropped rather than applied: the day
+     * is the one the caller wrote. Converting first would move midnight on the 25th in Brussels to the
+     * 24th at 22:00 UTC and file the entry under the wrong day.
+     */
+    public function test_create_all_day_entry_keeps_the_day_the_caller_wrote(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
+            [
+                'title' => 'Festival',
+                'eventDatetime' => '2026-08-25T00:00:00+02:00',
+                'isAllDay' => true,
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $entries = $repo->findByBandSpace($bandSpace);
+        $this->assertCount(1, $entries);
+
+        $entry = $entries[0];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Festival',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-08-25T00:00:00+00:00',
+            'end_datetime' => null,
             'is_all_day' => true,
             'recurrence_frequency' => null,
             'recurrence_until_date' => null,
