@@ -28,7 +28,7 @@ readonly class BandSpaceFolderBuilder
      *
      * @param BandSpaceFolder[]     $entities
      * @param array<string, int>    $fileCounts folder id => live files directly in it, from
-     *                                          BandSpaceFileRepository::countActiveByFolder()
+     *                                          BandSpaceFileRepository::countActiveByFolderIds()
      *
      * @return BandSpaceFolderResource[]
      */

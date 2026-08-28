@@ -367,6 +367,11 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
      * The cascade archives file by file, so an unbounded subtree would run the whole thing inside one
      * HTTP request. Nothing caps how many files a space holds (the quota caps bytes), so the processor
      * counts first and refuses rather than letting the admin hit a 504 that explains nothing.
+     *
+     * The limit is on the subtree, so the files are spread over two folders of it: the count comes from
+     * one grouped query returning a row per folder, and it is the total across those rows the guard
+     * compares. A count that only looked at the folder being deleted would read 1000 here and let the
+     * whole thing through.
      */
     public function test_delete_cascade_refuses_a_subtree_above_the_file_limit(): void
     {
@@ -375,9 +380,10 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $admin, 'role' => Role::Admin])->create();
 
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'name' => 'Photos'])->create();
+        $child = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'name' => 'Live', 'parent' => $folder])->create();
 
-        $overTheLimit = 2001;
-        $this->seedFiles($bandSpace->id, (string) $folder->id, $overTheLimit);
+        $this->seedFiles($bandSpace->id, (string) $folder->id, 1000);
+        $this->seedFiles($bandSpace->id, (string) $child->id, 1001);
 
         $this->client->loginUser($admin);
         $this->client->jsonRequest(
@@ -426,7 +432,7 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
 
         /** @var BandSpaceFileRepository $fileRepo */
         $fileRepo = self::getContainer()->get(BandSpaceFileRepository::class);
-        $this->assertSame(0, $fileRepo->countActiveByFolderIds([$folderId]));
+        $this->assertSame(0, array_sum($fileRepo->countActiveByFolderIds([$folderId])));
     }
 
     public function test_delete_move_to_root_by_admin_non_creator_succeeds(): void

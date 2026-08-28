@@ -5,6 +5,7 @@ namespace App\State\Provider\BandSpace\File;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFolderResource;
+use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceFolderRepository;
@@ -43,7 +44,9 @@ readonly class BandSpaceFolderCollectionProvider implements ProviderInterface
 
         return $this->folderBuilder->buildTree(
             $folders,
-            $this->fileRepository->countActiveByFolder($bandSpace),
+            $this->fileRepository->countActiveByFolderIds(
+                array_map(static fn (BandSpaceFolder $folder): string => (string) $folder->id, $folders),
+            ),
         );
     }
 }

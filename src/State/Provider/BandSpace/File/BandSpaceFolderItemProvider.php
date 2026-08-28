@@ -42,10 +42,12 @@ readonly class BandSpaceFolderItemProvider implements ProviderInterface
             throw new NotFoundHttpException('Dossier introuvable');
         }
 
+        $folderId = (string) $folder->id;
+
         return $this->folderBuilder->buildItem(
             $folder,
             $this->folderRepository->computeDepth($folder),
-            $this->fileRepository->countActiveByFolderIds([(string) $folder->id]),
+            $this->fileRepository->countActiveByFolderIds([$folderId])[$folderId] ?? 0,
         );
     }
 }
