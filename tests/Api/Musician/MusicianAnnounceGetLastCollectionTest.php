@@ -163,6 +163,12 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
         ]);
 
         $this->client->enableProfiler();
+        // Not paired with an EntityManager::clear() the way the file listing budget is: this endpoint
+        // projects its authors rather than hydrating them, so there is nothing lazy for a warm identity
+        // map to hide, and clearing reorders the styles collection, which carries no ORDER BY.
+        // The debug holder lives as long as the connection, so the factory writes above are already in
+        // it. Emptied here, getQueryCount() answers for the request alone rather than for the test.
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
         $this->client->request('GET', '/api/musician_announces/last');
 
         $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
