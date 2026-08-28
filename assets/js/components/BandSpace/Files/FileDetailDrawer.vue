@@ -136,11 +136,14 @@
           :options="folderOptions"
           option-label="label"
           option-value="value"
+          option-disabled="disabled"
           placeholder="Racine"
-          :show-clear="true"
           :disabled="filesStore.isSavingFile"
           @update:model-value="commitFolder"
         />
+        <small v-if="rootRefusal" class="text-xs text-surface-500 dark:text-surface-400">
+          {{ rootRefusal }}
+        </small>
       </div>
 
       <div v-if="attachments.length > 0" class="flex flex-col gap-1">
@@ -234,6 +237,7 @@ import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
+import { rootDestinationRefusal } from '../../../utils/fileListing.js'
 import Avatar from '../../User/Avatar.vue'
 import FileActivityFeed from './FileActivityFeed.vue'
 
@@ -293,8 +297,11 @@ const deleteDisabledReason = computed(() => {
   return null
 })
 
+/** Why the root is not a destination for this file, or null when it is one. */
+const rootRefusal = computed(() => rootDestinationRefusal(file.value, filesStore.virtualFolders))
+
 const folderOptions = computed(() => {
-  const out = [{ label: 'Racine', value: null }]
+  const out = [{ label: 'Racine', value: null, disabled: rootRefusal.value !== null }]
   const walk = (nodes, depth) => {
     for (const node of nodes) {
       out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
@@ -390,6 +397,9 @@ async function commitTagsIfChanged() {
 async function commitFolder(value) {
   if (!file.value) return
   if (value === file.value.folder_id) return
+  // Same guard as the move dialog: the root is not a place an attached file can be in, whatever the
+  // field in front of it offers.
+  if (value === null && rootRefusal.value !== null) return
   await filesStore.updateFile(props.bandSpaceId, file.value.id, { folder_id: value })
   filesStore.fetchFileActivities(props.bandSpaceId, file.value.id)
 }

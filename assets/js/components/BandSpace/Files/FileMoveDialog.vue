@@ -20,10 +20,13 @@
           :options="folderOptions"
           option-label="label"
           option-value="value"
+          option-disabled="disabled"
           placeholder="Racine"
-          :show-clear="true"
           :disabled="isSubmitting"
         />
+        <small v-if="rootRefusal" class="text-xs text-surface-500 dark:text-surface-400">
+          {{ rootRefusal }}
+        </small>
       </div>
 
       <Message v-if="globalError" severity="error" :closable="false">{{ globalError }}</Message>
@@ -55,6 +58,7 @@ import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
+import { rootDestinationRefusal } from '../../../utils/fileListing.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -71,8 +75,15 @@ const targetFolderId = ref(null)
 const isSubmitting = ref(false)
 const globalError = ref(null)
 
+/**
+ * « Racine » is a destination like any other, and a refused one for a file with attachments: see
+ * canFileSitAtRoot(). It used to be reachable only by clearing the field, which is how the refusal
+ * came to be unsayable.
+ */
+const rootRefusal = computed(() => rootDestinationRefusal(props.file, filesStore.virtualFolders))
+
 const folderOptions = computed(() => {
-  const out = []
+  const out = [{ label: 'Racine', value: null, disabled: rootRefusal.value !== null }]
   const walk = (nodes, depth) => {
     for (const node of nodes) {
       out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
@@ -99,6 +110,13 @@ watch(visible, (open) => {
 
 async function handleConfirm() {
   if (!props.file) return
+  // The disabled option is what stops this in the UI; this is what stops it if the field is ever
+  // swapped for another control. The root taking an attached file out of the tree is the whole bug.
+  if (targetFolderId.value === null && rootRefusal.value !== null) {
+    globalError.value = rootRefusal.value
+
+    return
+  }
   isSubmitting.value = true
   globalError.value = null
   try {

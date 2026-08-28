@@ -15,6 +15,10 @@ import { FILES_PAGE_SIZE } from './filePagination.js'
  *
  * Extracted from the store because the scoping rules are the interesting part: which of the sidebar
  * selection and the filter bar wins, and when a listing stops being one place in the tree.
+ *
+ * The same rules answer where a row can be moved to, so what the root holds is written here once
+ * rather than once per surface offering it as a destination, which is how the move dialog came to
+ * offer a destination the root does not show.
  */
 
 /**
@@ -143,12 +147,64 @@ export function folderPathOf(tree, folderId) {
 }
 
 /**
+ * The virtual folders a file's attachments put it in, one per distinct source, named the way the
+ * sidebar names them and falling back to the source's own label before the tree has loaded. Empty for
+ * a file nothing is attached to.
+ *
+ * @param {object} file
+ * @param {Array<{source: string, name: string}>} virtualFolders
+ * @returns {Array<{label: string, folderId: string}>}
+ */
+export function fileVirtualFolders(file, virtualFolders = []) {
+  const sourceTypes = [...new Set((file?.attachments ?? []).map((att) => att.source_type))]
+
+  return sourceTypes.map((sourceType) => ({
+    label:
+      virtualFolders.find((folder) => folder.source === sourceType)?.name ??
+      fileSourceLabel(sourceType),
+    folderId: virtualFolderId(sourceType)
+  }))
+}
+
+/**
+ * Whether the root of the tree is a place this file can be in.
+ *
+ * The root is not every file without a folder: it is the files with no folder *and* no attachment,
+ * because an attachment with no folder is already listed in its virtual folder. So a file with
+ * attachments has no place at the root, and offering it as a destination hides the file from the tree.
+ *
+ * @param {object} file  anything carrying the API's `attachments`, a row or a drag source
+ * @returns {boolean}
+ */
+export function canFileSitAtRoot(file) {
+  return (file?.attachments ?? []).length === 0
+}
+
+/**
+ * Why the root is refused as a destination, naming where the file is listed instead, or null when it
+ * is not refused. Reads under the destination field rather than in a toast after the move, so the rule
+ * is visible before the member commits to it.
+ *
+ * @param {object} file
+ * @param {Array<{source: string, name: string}>} virtualFolders
+ * @returns {?string}
+ */
+export function rootDestinationRefusal(file, virtualFolders = []) {
+  if (canFileSitAtRoot(file)) return null
+
+  const names = fileVirtualFolders(file, virtualFolders).map((folder) => folder.label)
+  const listedIn =
+    names.length > 1 ? `${names.slice(0, -1).join(', ')} et ${names.at(-1)}` : names[0]
+
+  return `Ce fichier est listé dans ${listedIn} : la racine ne liste que les fichiers attachés à aucune ressource.`
+}
+
+/**
  * Where a file row says it lives, and where clicking that says takes the member.
  *
  * A file in a folder names its path. A file in no folder is only at the root if nothing is attached to
  * it: the root excludes attachments, so sending an attached file's reader there would land them in a
- * listing the file is missing from. Its place is the virtual folder grouping its source, named the way
- * the sidebar names it, falling back to the source's own label before the tree has loaded.
+ * listing the file is missing from. Its place is the virtual folder grouping its source.
  *
  * @param {object} file
  * @param {Array<{source: string, name: string}>} virtualFolders
@@ -163,17 +219,9 @@ export function fileLocation(file, virtualFolders = []) {
     }
   }
 
-  const sourceType = (file.attachments ?? [])[0]?.source_type ?? null
-  if (sourceType !== null) {
-    const virtual = virtualFolders.find((folder) => folder.source === sourceType)
-
-    return {
-      label: virtual?.name ?? fileSourceLabel(sourceType),
-      folderId: virtualFolderId(sourceType)
-    }
-  }
-
-  return { label: 'Racine', folderId: ROOT_FOLDER_ID }
+  return (
+    fileVirtualFolders(file, virtualFolders)[0] ?? { label: 'Racine', folderId: ROOT_FOLDER_ID }
+  )
 }
 
 /**
