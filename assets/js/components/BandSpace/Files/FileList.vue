@@ -309,7 +309,10 @@ function handleDragStart(event, file) {
   filesStore.startDrag({
     type: 'file',
     id: file.id,
-    folderId: file.folder_id ?? null
+    folderId: file.folder_id ?? null,
+    // Read by canDrop(), which refuses « Racine » for an attached file: the root lists no attachments,
+    // so dropping one there takes it out of the tree instead of moving it.
+    attachments: file.attachments ?? []
   })
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData('text/plain', file.id)

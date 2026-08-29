@@ -1,9 +1,11 @@
+import { canFileSitAtRoot } from '../utils/fileListing.js'
+
 /**
  * Drag-and-drop helpers for the folder tree + file list.
  *
  * Drag sources:
  *   - folder: { type: 'folder', id, parentId, descendantIds: string[] }
- *   - file:   { type: 'file', id, folderId }
+ *   - file:   { type: 'file', id, folderId, attachments: object[] }
  *
  * Drop targets:
  *   - any folder in the tree
@@ -13,6 +15,7 @@
  *   - folder cannot drop on itself or a descendant (cycle)
  *   - folder cannot drop on its current parent (no-op)
  *   - file cannot drop on its current folder (no-op)
+ *   - an attached file cannot drop on the root, which lists no attachments
  */
 
 /**
@@ -90,7 +93,16 @@ export function canDrop(source, targetFolderId) {
   }
 
   if (source.type === 'file') {
-    return (source.folderId ?? null) !== (targetFolderId ?? null)
+    if ((source.folderId ?? null) === (targetFolderId ?? null)) {
+      return false
+    }
+    // Dropping an attached file on « Racine » would take it out of the tree rather than move it there,
+    // since the root lists only the files nothing points at. The move dialog refuses it too.
+    if ((targetFolderId ?? null) === null) {
+      return canFileSitAtRoot(source)
+    }
+
+    return true
   }
 
   return false

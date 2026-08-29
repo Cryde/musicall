@@ -2,12 +2,15 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { NO_FOLDER_LISTED, ROOT_FOLDER_ID, TRASH_FOLDER_ID } from '../constants/folderSelection.js'
 import {
+  canFileSitAtRoot,
   fileListingParams,
   fileLocation,
+  fileVirtualFolders,
   folderFileCountLabel,
   folderPathOf,
   isSearchActive,
   listedFolderOfRows,
+  rootDestinationRefusal,
   treeHoldsFolder,
   uploadBelongsInListing
 } from './fileListing.js'
@@ -246,5 +249,80 @@ describe('uploadBelongsInListing', () => {
   it('holds nothing in a virtual folder, which lists attachments rather than uploads', () => {
     assert.equal(uploadBelongsInListing('virtual:note', filters(), null), false)
     assert.equal(uploadBelongsInListing(TRASH_FOLDER_ID, filters(), null), false)
+  })
+})
+
+describe('fileVirtualFolders', () => {
+  const virtualFolders = [
+    { id: 'virtual:note', source: 'note', name: 'Notes' },
+    { id: 'virtual:task', source: 'task', name: 'Tâches' }
+  ]
+
+  it('is empty for a file nothing is attached to', () => {
+    assert.deepEqual(fileVirtualFolders({ attachments: [] }, virtualFolders), [])
+    assert.deepEqual(fileVirtualFolders({}, virtualFolders), [])
+  })
+
+  it('names one folder per source, however many attachments share it', () => {
+    const file = {
+      attachments: [
+        { source_type: 'note', source_id: 'n1' },
+        { source_type: 'task', source_id: 't1' },
+        { source_type: 'note', source_id: 'n2' }
+      ]
+    }
+    assert.deepEqual(fileVirtualFolders(file, virtualFolders), [
+      { label: 'Notes', folderId: 'virtual:note' },
+      { label: 'Tâches', folderId: 'virtual:task' }
+    ])
+  })
+
+  it('falls back to the source label when the tree has not loaded yet', () => {
+    assert.deepEqual(fileVirtualFolders({ attachments: [{ source_type: 'setlist' }] }, []), [
+      { label: 'Setlist', folderId: 'virtual:setlist' }
+    ])
+  })
+})
+
+describe('canFileSitAtRoot', () => {
+  it('holds a file nothing is attached to', () => {
+    assert.equal(canFileSitAtRoot({ attachments: [] }), true)
+    assert.equal(canFileSitAtRoot({}), true)
+  })
+
+  it('refuses an attached file, which the root listing leaves out', () => {
+    assert.equal(canFileSitAtRoot({ attachments: [{ source_type: 'note' }] }), false)
+  })
+})
+
+describe('rootDestinationRefusal', () => {
+  const virtualFolders = [
+    { id: 'virtual:note', source: 'note', name: 'Notes' },
+    { id: 'virtual:task', source: 'task', name: 'Tâches' }
+  ]
+
+  it('says nothing for a file the root can hold', () => {
+    assert.equal(rootDestinationRefusal({ attachments: [] }, virtualFolders), null)
+  })
+
+  it('names the virtual folder listing the file instead of the root', () => {
+    const file = { attachments: [{ source_type: 'note', source_id: 'n1' }] }
+    assert.equal(
+      rootDestinationRefusal(file, virtualFolders),
+      'Ce fichier est listé dans Notes : la racine ne liste que les fichiers attachés à aucune ressource.'
+    )
+  })
+
+  it('names every virtual folder listing it, so the sentence is not half true', () => {
+    const file = {
+      attachments: [
+        { source_type: 'note', source_id: 'n1' },
+        { source_type: 'task', source_id: 't1' }
+      ]
+    }
+    assert.equal(
+      rootDestinationRefusal(file, virtualFolders),
+      'Ce fichier est listé dans Notes et Tâches : la racine ne liste que les fichiers attachés à aucune ressource.'
+    )
   })
 })
