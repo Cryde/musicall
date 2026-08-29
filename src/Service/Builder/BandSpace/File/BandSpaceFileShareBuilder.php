@@ -25,12 +25,10 @@ readonly class BandSpaceFileShareBuilder
             && (!$entity->expiryDatetime instanceof \DateTimeImmutable || $entity->expiryDatetime > $now);
         $dto->creationDatetime = $entity->creationDatetime;
 
-        if ($entity->createdBy instanceof \App\Entity\User) {
-            $dto->createdBy = [
-                'id' => (string) $entity->createdBy->id,
-                'username' => $entity->createdBy->username,
-            ];
-        }
+        $dto->createdBy = [
+            'id' => (string) $entity->createdBy->id,
+            'username' => $entity->createdBy->username,
+        ];
 
         return $dto;
     }

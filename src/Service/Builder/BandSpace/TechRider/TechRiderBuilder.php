@@ -66,7 +66,7 @@ readonly class TechRiderBuilder
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
         $dto->name = $entity->name;
-        $dto->createdByUsername = $entity->createdBy?->username;
+        $dto->createdByUsername = $entity->createdBy->username;
         $dto->archiveDatetime = $entity->archiveDatetime;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;

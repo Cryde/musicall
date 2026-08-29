@@ -65,6 +65,7 @@ class TechRiderGetItemTest extends ApiTestCase
         $rider = TechRiderFactory::new([
             'bandSpace' => $bandSpace,
             'name' => 'Technical rider 2025',
+            'createdBy' => $user,
             'creationDatetime' => new DateTime('2025-01-15T10:00:00+00:00'),
             'archiveDatetime' => new DateTimeImmutable('2026-01-05T09:00:00+00:00'),
         ])->create();
@@ -80,7 +81,7 @@ class TechRiderGetItemTest extends ApiTestCase
             'id' => $rider->id,
             'band_space_id' => $bandSpace->id,
             'name' => 'Technical rider 2025',
-            'created_by_username' => null,
+            'created_by_username' => $user->username,
             'archive_datetime' => $rider->archiveDatetime?->format(DateTimeInterface::ATOM),
             'creation_datetime' => $rider->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => null,

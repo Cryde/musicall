@@ -36,8 +36,8 @@ class AgendaEntry
     public BandSpace $bandSpace;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?User $creator = null;
+    #[ORM\JoinColumn(nullable: false)]
+    public User $creator;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $title;

@@ -115,7 +115,7 @@ class TechRiderResource
     public string $name;
 
     #[Groups([self::LIST, self::ITEM])]
-    public ?string $createdByUsername = null;
+    public string $createdByUsername;
 
     #[Groups([self::LIST, self::ITEM])]
     public ?\DateTimeInterface $archiveDatetime = null;

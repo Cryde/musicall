@@ -45,8 +45,8 @@ class BandSpaceFileAttachment
     public DateTimeInterface $attachedDatetime;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?User $attachedBy = null;
+    #[ORM\JoinColumn(nullable: false)]
+    public User $attachedBy;
 
     public function __construct()
     {

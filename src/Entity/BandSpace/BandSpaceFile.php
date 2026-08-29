@@ -34,8 +34,8 @@ class BandSpaceFile
     public BandSpace $bandSpace;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?User $createdBy = null;
+    #[ORM\JoinColumn(nullable: false)]
+    public User $createdBy;
 
     #[ORM\ManyToOne(targetEntity: BandSpaceFolder::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]

@@ -52,7 +52,7 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Fichier introuvable');
         }
 
-        $isOwner = $file->createdBy instanceof \App\Entity\User && $file->createdBy->id === $user->id;
+        $isOwner = $file->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce fichier');
         }

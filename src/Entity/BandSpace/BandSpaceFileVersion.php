@@ -37,8 +37,8 @@ class BandSpaceFileVersion
     public int $versionNumber = 1;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?User $createdBy = null;
+    #[ORM\JoinColumn(nullable: false)]
+    public User $createdBy;
 
     #[ORM\Column(type: Types::STRING, length: 191)]
     public string $mimeType;

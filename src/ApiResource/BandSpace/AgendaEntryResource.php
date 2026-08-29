@@ -138,7 +138,7 @@ class AgendaEntryResource
 
     public ?string $recurrenceMonthlyMode = null;
 
-    public ?string $creatorId = null;
-    public ?string $creatorUsername = null;
+    public string $creatorId;
+    public string $creatorUsername;
     public \DateTimeInterface $creationDatetime;
 }

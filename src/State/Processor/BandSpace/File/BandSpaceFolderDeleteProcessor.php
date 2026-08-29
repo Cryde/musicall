@@ -94,7 +94,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul un administrateur peut supprimer un dossier en cascade');
         }
 
-        $isOwner = $folder->createdBy instanceof User && $folder->createdBy->id === $user->id;
+        $isOwner = $folder->createdBy->id === $user->id;
         if ($strategy === self::STRATEGY_MOVE_TO_ROOT && !$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce dossier');
         }

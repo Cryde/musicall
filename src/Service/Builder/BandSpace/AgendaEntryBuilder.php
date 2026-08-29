@@ -33,8 +33,8 @@ readonly class AgendaEntryBuilder
         $dto->recurrenceFrequency = $entity->recurrenceFrequency?->value;
         $dto->recurrenceUntilDate = $entity->recurrenceUntilDate?->format('Y-m-d');
         $dto->recurrenceMonthlyMode = $entity->recurrenceMonthlyMode?->value;
-        $dto->creatorId = $entity->creator instanceof \App\Entity\User ? (string) $entity->creator->id : null;
-        $dto->creatorUsername = $entity->creator?->username;
+        $dto->creatorId = (string) $entity->creator->id;
+        $dto->creatorUsername = $entity->creator->username;
         $dto->creationDatetime = $entity->creationDatetime;
 
         return $dto;

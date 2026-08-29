@@ -44,8 +44,8 @@ class BandSpaceFileVersionResource
     public bool $isCurrent = false;
     public string $downloadUrl;
 
-    /** @var array{id: string, username: string, profile_picture_url: string|null}|null */
-    public ?array $createdBy = null;
+    /** @var array{id: string, username: string, profile_picture_url: string|null} */
+    public array $createdBy;
 
     public \DateTimeInterface $creationDatetime;
 }
