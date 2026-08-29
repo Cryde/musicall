@@ -91,11 +91,13 @@ class TechRiderGetCollectionTest extends ApiTestCase
         TechRiderFactory::new([
             'bandSpace' => $bandSpace,
             'name' => 'Live rider',
+            'createdBy' => $user,
             'creationDatetime' => new DateTime('2026-01-15T10:00:00+00:00'),
         ])->create();
         $archived = TechRiderFactory::new([
             'bandSpace' => $bandSpace,
             'name' => 'Archived rider',
+            'createdBy' => $user,
             'creationDatetime' => new DateTime('2025-01-15T10:00:00+00:00'),
             'archiveDatetime' => new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         ])->create();
@@ -115,7 +117,7 @@ class TechRiderGetCollectionTest extends ApiTestCase
                     'id' => $archived->id,
                     'band_space_id' => $bandSpace->id,
                     'name' => 'Archived rider',
-                    'created_by_username' => null,
+                    'created_by_username' => $user->username,
                     'archive_datetime' => $archived->archiveDatetime?->format(DateTimeInterface::ATOM),
                     'creation_datetime' => $archived->creationDatetime->format(DateTimeInterface::ATOM),
                     'update_datetime' => null,
@@ -141,6 +143,7 @@ class TechRiderGetCollectionTest extends ApiTestCase
         $mine = TechRiderFactory::new([
             'bandSpace' => $myBand,
             'name' => 'Mine',
+            'createdBy' => $user,
             'creationDatetime' => new DateTime('2026-01-15T10:00:00+00:00'),
         ])->create();
         TechRiderFactory::new(['bandSpace' => $otherBand, 'name' => 'Theirs'])->create();
@@ -160,7 +163,7 @@ class TechRiderGetCollectionTest extends ApiTestCase
                     'id' => $mine->id,
                     'band_space_id' => $myBand->id,
                     'name' => 'Mine',
-                    'created_by_username' => null,
+                    'created_by_username' => $user->username,
                     'archive_datetime' => null,
                     'creation_datetime' => $mine->creationDatetime->format(DateTimeInterface::ATOM),
                     'update_datetime' => null,

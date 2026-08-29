@@ -98,13 +98,11 @@ readonly class BandSpaceFileBuilder
 
         $dto->versionCount = $versionCount ?? $this->fileRepository->countVersionsByFileIds([(string) $entity->id])[(string) $entity->id] ?? 0;
 
-        if ($entity->createdBy instanceof \App\Entity\User) {
-            $dto->createdBy = [
-                'id' => (string) $entity->createdBy->id,
-                'username' => $entity->createdBy->username,
-                'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->createdBy),
-            ];
-        }
+        $dto->createdBy = [
+            'id' => (string) $entity->createdBy->id,
+            'username' => $entity->createdBy->username,
+            'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->createdBy),
+        ];
 
         $dto->downloadUrl = $this->urlGenerator->generate(
             'api_band_space_files_get_item',

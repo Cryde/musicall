@@ -44,8 +44,8 @@ class TechRider
      * needs the document. Same shape as BandSpaceFile::$createdBy.
      */
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?User $createdBy = null;
+    #[ORM\JoinColumn(nullable: false)]
+    public User $createdBy;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $name;

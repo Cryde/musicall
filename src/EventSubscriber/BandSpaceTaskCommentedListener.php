@@ -57,9 +57,6 @@ readonly class BandSpaceTaskCommentedListener
 
             $candidateIds = [];
             foreach ($candidates as $candidate) {
-                if (!$candidate instanceof User) {
-                    continue;
-                }
                 $candidateId = (string) $candidate->id;
                 if (!isset($excludedIds[$candidateId])) {
                     $candidateIds[$candidateId] = $candidateId;

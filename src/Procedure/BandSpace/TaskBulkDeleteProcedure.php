@@ -69,7 +69,7 @@ readonly class TaskBulkDeleteProcedure
         $userId = (string) $user->id;
         $foreign = array_filter(
             $tasks,
-            static fn(Task $task): bool => !$task->createdBy instanceof User || (string) $task->createdBy->id !== $userId,
+            static fn(Task $task): bool => (string) $task->createdBy->id !== $userId,
         );
 
         if ($foreign === []) {

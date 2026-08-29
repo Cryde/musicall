@@ -32,8 +32,8 @@ class BandSpaceFileShare
     public BandSpaceFile $bandSpaceFile;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    public ?User $createdBy = null;
+    #[ORM\JoinColumn(nullable: false)]
+    public User $createdBy;
 
     #[ORM\Column(type: Types::STRING, length: 64, unique: true)]
     public string $tokenHash;

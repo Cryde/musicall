@@ -55,7 +55,7 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Dossier introuvable');
         }
 
-        $isOwner = $folder->createdBy instanceof \App\Entity\User && $folder->createdBy->id === $user->id;
+        $isOwner = $folder->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut modifier ce dossier');
         }

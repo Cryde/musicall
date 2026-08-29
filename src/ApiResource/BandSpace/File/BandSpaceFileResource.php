@@ -269,8 +269,8 @@ class BandSpaceFileResource
     public ?int $currentVersionNumber = null;
     public int $versionCount = 0;
 
-    /** @var array{id: string, username: string, profile_picture_url: string|null}|null */
-    public ?array $createdBy = null;
+    /** @var array{id: string, username: string, profile_picture_url: string|null} */
+    public array $createdBy;
 
     public ?string $downloadUrl = null;
 

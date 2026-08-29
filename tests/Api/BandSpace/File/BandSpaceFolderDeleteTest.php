@@ -382,8 +382,8 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'name' => 'Photos'])->create();
         $child = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'name' => 'Live', 'parent' => $folder])->create();
 
-        $this->seedFiles($bandSpace->id, (string) $folder->id, 1000);
-        $this->seedFiles($bandSpace->id, (string) $child->id, 1001);
+        $this->seedFiles($bandSpace->id, (string) $folder->id, (string) $admin->id, 1000);
+        $this->seedFiles($bandSpace->id, (string) $child->id, (string) $admin->id, 1001);
 
         $this->client->loginUser($admin);
         $this->client->jsonRequest(
@@ -415,7 +415,7 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         $folder = BandSpaceFolderFactory::new(['bandSpace' => $bandSpace, 'createdBy' => $admin, 'name' => 'Photos'])->create();
 
         // Exactly on the limit: the guard rejects above it, never at it.
-        $this->seedFiles($bandSpace->id, (string) $folder->id, 2000);
+        $this->seedFiles($bandSpace->id, (string) $folder->id, (string) $admin->id, 2000);
 
         $bandSpaceId = $bandSpace->id;
         $folderId = (string) $folder->id;
@@ -457,9 +457,9 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
     /**
      * Rows straight through the connection: thousands of files is the whole point of the two limit
      * tests, and building them as Foundry objects would cost minutes for state no assertion reads.
-     * created_by_id is left null, which the uploader join tolerates and the count ignores.
+     * The author is passed in rather than left out, because created_by_id is NOT NULL since #909.
      */
-    private function seedFiles(string $bandSpaceId, string $folderId, int $count): void
+    private function seedFiles(string $bandSpaceId, string $folderId, string $createdById, int $count): void
     {
         $connection = self::getContainer()->get(EntityManagerInterface::class)->getConnection();
         $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
@@ -467,12 +467,12 @@ class BandSpaceFolderDeleteTest extends ApiTestCase
         $rows = [];
         $parameters = [];
         for ($i = 0; $i < $count; $i++) {
-            $rows[] = '(?, ?, ?, ?, ?)';
-            array_push($parameters, Uuid::uuid4()->toString(), $bandSpaceId, $folderId, 'photo-' . $i . '.jpg', $now);
+            $rows[] = '(?, ?, ?, ?, ?, ?)';
+            array_push($parameters, Uuid::uuid4()->toString(), $bandSpaceId, $folderId, $createdById, 'photo-' . $i . '.jpg', $now);
         }
 
         $connection->executeStatement(
-            'INSERT INTO band_space_file (id, band_space_id, folder_id, original_name, creation_datetime) VALUES '
+            'INSERT INTO band_space_file (id, band_space_id, folder_id, created_by_id, original_name, creation_datetime) VALUES '
             . implode(', ', $rows),
             $parameters,
         );

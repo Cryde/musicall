@@ -60,7 +60,7 @@ readonly class BandSpaceFileRestoreProcessor implements ProcessorInterface
         }
 
         // Same rule as archiving: whoever could delete it can bring it back.
-        $isOwner = $file->createdBy instanceof User && $file->createdBy->id === $user->id;
+        $isOwner = $file->createdBy->id === $user->id;
         if (!$isOwner && $membership->role !== Role::Admin) {
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut restaurer ce fichier');
         }

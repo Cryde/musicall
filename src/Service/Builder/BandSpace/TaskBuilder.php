@@ -42,8 +42,8 @@ readonly class TaskBuilder
         $dto->status = $entity->status->value;
         $dto->priority = $entity->priority->value;
         $dto->dueDate = $entity->dueDate?->format('Y-m-d');
-        $dto->createdById = $entity->createdBy instanceof \App\Entity\User ? (string) $entity->createdBy->id : null;
-        $dto->createdByUsername = $entity->createdBy?->username;
+        $dto->createdById = (string) $entity->createdBy->id;
+        $dto->createdByUsername = $entity->createdBy->username;
         $dto->categoryId = $entity->category instanceof \App\Entity\BandSpace\TaskCategory ? (string) $entity->category->id : null;
         $dto->categoryName = $entity->category?->name;
         $dto->assignees = $entity->assignees->map(
