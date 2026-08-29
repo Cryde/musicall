@@ -104,7 +104,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         $filesToArchive = [];
         if ($strategy === self::STRATEGY_CASCADE) {
             $descendantIds = $this->folderRepository->findDescendantIds($folder);
-            $this->assertSubtreeIsSmallEnough($this->fileRepository->countActiveByFolderIds($descendantIds));
+            $this->assertSubtreeIsSmallEnough(array_sum($this->fileRepository->countActiveByFolderIds($descendantIds)));
             $filesToArchive = $this->fileRepository->findActiveByFolderIds($descendantIds);
         }
 

@@ -76,29 +76,6 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * How many live files sit directly in any of the given folders.
-     *
-     * Asked before findActiveByFolderIds() hydrates anything, so a subtree too large to archive in one
-     * request is refused without ever being loaded into memory.
-     *
-     * @param string[] $folderIds
-     */
-    public function countActiveByFolderIds(array $folderIds): int
-    {
-        if (count($folderIds) === 0) {
-            return 0;
-        }
-
-        return (int) $this->createQueryBuilder('bsf')
-            ->select('COUNT(bsf.id)')
-            ->where('bsf.folder IN (:folderIds)')
-            ->andWhere('bsf.archiveDatetime IS NULL')
-            ->setParameter('folderIds', $folderIds)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    /**
      * Live files sitting directly in any of the given folders, uploader and folder included.
      *
      * Entities rather than a bulk UPDATE on purpose: archiving a folder subtree has to write one
@@ -188,24 +165,38 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Live files sitting directly in each folder of the space, so a folder row can say how many rows
-     * opening it shows. Subfolders are not rolled up: a recursive count would need the tree walked per
-     * folder, and a number that counts files the folder does not list is a number nobody can check.
+     * Live files sitting directly in each of the given folders, keyed by folder id.
      *
-     * One grouped query for the whole space rather than one per folder, because the sidebar draws every
-     * folder at once. Folders with nothing in them are absent from the result rather than zero.
+     * The one definition of a folder's own files, in the one shape that answers every caller: the
+     * sidebar wants a number per folder, the folder endpoints want the number for one of them, and the
+     * delete guard wants the total over a subtree, which is array_sum() over the same rows. It used to
+     * be two methods with near identical names and different return shapes, so reaching for the wrong
+     * one gave a plausible value nothing could flag, and the next change to what live means had to be
+     * made twice or the two answers started disagreeing.
+     *
+     * Subfolders are not rolled up: a recursive count would need the tree walked per folder, and a
+     * number that counts files the folder does not list is a number nobody can check. Folders holding
+     * nothing are absent rather than zero, so a caller reads `$counts[$id] ?? 0`.
+     *
+     * One grouped query however many folders are asked for, which is what lets the delete guard refuse
+     * a subtree too large to archive before findActiveByFolderIds() hydrates any of it.
+     *
+     * @param string[] $folderIds
      *
      * @return array<string, int> folder id => active file count
      */
-    public function countActiveByFolder(BandSpace $bandSpace): array
+    public function countActiveByFolderIds(array $folderIds): array
     {
+        if (count($folderIds) === 0) {
+            return [];
+        }
+
         $rows = $this->createQueryBuilder('bsf')
             ->select('IDENTITY(bsf.folder) AS folder_id', 'COUNT(bsf.id) AS file_count')
-            ->where('bsf.bandSpace = :bandSpace')
-            ->andWhere('bsf.folder IS NOT NULL')
+            ->where('bsf.folder IN (:folderIds)')
             ->andWhere('bsf.archiveDatetime IS NULL')
             ->groupBy('bsf.folder')
-            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('folderIds', $folderIds)
             ->getQuery()
             ->getArrayResult();
 

@@ -142,10 +142,12 @@ readonly class BandSpaceFolderUpdateProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
+        $folderId = (string) $folder->id;
+
         return $this->folderBuilder->buildItem(
             $folder,
             $this->folderRepository->computeDepth($folder),
-            $this->fileRepository->countActiveByFolderIds([(string) $folder->id]),
+            $this->fileRepository->countActiveByFolderIds([$folderId])[$folderId] ?? 0,
         );
     }
 }
