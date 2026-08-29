@@ -5,6 +5,9 @@ import { isSafeReturnUrl } from './returnUrl.js'
 // This is the app's open-redirect gate: security.js checks it before handing a value to
 // window.location.href. It had no tests, and the guard change in #915 makes it the safety net on the
 // most common unauthenticated path rather than a rarely reached manual-URL edge case.
+//
+// tests/Unit/Http/ReturnUrlTest.php is the other half: the same relative cases run against the backend
+// rule, so a policy that drifts on one side fails on the other. That drift is what #917 was.
 describe('isSafeReturnUrl', () => {
   it('accepts a same-origin relative path', () => {
     assert.equal(isSafeReturnUrl('/'), true)
@@ -26,6 +29,16 @@ describe('isSafeReturnUrl', () => {
   // exactly like "//evil.example" while still reading as an internal path.
   it('refuses a backslash standing in for the second slash', () => {
     assert.equal(isSafeReturnUrl('/\\evil.example'), false)
+  })
+
+  // The URL parser deletes every ASCII tab, CR and LF from the whole input before parsing it, so each
+  // of these reaches it as "//evil.example". This is the side that matters most: security.js assigns
+  // the value straight to location.href, with no origin in front of it to anchor the authority.
+  it('refuses a tab or a newline standing in for the second slash', () => {
+    assert.equal(isSafeReturnUrl('/\t/evil.example'), false)
+    assert.equal(isSafeReturnUrl('/\n/evil.example'), false)
+    assert.equal(isSafeReturnUrl('/\r/evil.example'), false)
+    assert.equal(isSafeReturnUrl('/messages\n//evil.example'), false)
   })
 
   it('refuses a scheme that is not http', () => {
