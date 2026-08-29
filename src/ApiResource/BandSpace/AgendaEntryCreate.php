@@ -33,11 +33,18 @@ class AgendaEntryCreate
     #[Assert\Length(max: 255, maxMessage: 'Le lieu ne peut pas dépasser {{ limit }} caractères')]
     public ?string $location = null;
 
+    /**
+     * ISO-8601. Any offset is converted to UTC before it is stored, so `2026-08-25T20:00:00+02:00` and
+     * `2026-08-25T18:00:00Z` name the same instant and both read back as `2026-08-25T18:00:00+00:00`.
+     *
+     * The exception is an all day entry, which is a date rather than an instant: there the offset is
+     * dropped rather than applied, so the day is the one the caller wrote.
+     */
     #[Assert\NotBlank(message: 'Veuillez spécifier une date et heure')]
-    public string $eventDatetime;
+    public \DateTimeImmutable $eventDatetime;
 
     #[Assert\GreaterThan(propertyPath: 'eventDatetime', message: 'La fin doit être postérieure au début')]
-    public ?string $endDatetime = null;
+    public ?\DateTimeImmutable $endDatetime = null;
 
     public bool $isAllDay = false;
 

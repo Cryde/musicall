@@ -17,12 +17,12 @@ use App\Service\BandSpace\AgendaSeriesReconciler;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\AgendaEntryBuilder;
 use DateTimeImmutable;
+use DateTimeZone;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -81,23 +81,11 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         }
 
         if (array_key_exists('event_datetime', $payload) || array_key_exists('eventDatetime', $payload)) {
-            try {
-                $entry->eventDatetime = new DateTimeImmutable($data->eventDatetime);
-            } catch (\Exception) {
-                throw new BadRequestHttpException('Date et heure invalides');
-            }
+            $entry->eventDatetime = $data->eventDatetime;
         }
 
         if (array_key_exists('end_datetime', $payload) || array_key_exists('endDatetime', $payload)) {
-            if ($data->endDatetime === null) {
-                $entry->endDatetime = null;
-            } else {
-                try {
-                    $entry->endDatetime = new DateTimeImmutable($data->endDatetime);
-                } catch (\Exception) {
-                    throw new BadRequestHttpException('Date de fin invalide');
-                }
-            }
+            $entry->endDatetime = $data->endDatetime;
         }
 
         if (array_key_exists('is_all_day', $payload) || array_key_exists('isAllDay', $payload)) {
@@ -105,10 +93,16 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         }
 
         if ($entry->isAllDay) {
+            // The caller's own date, read before any conversion: see AgendaEntryCreateProcessor.
             $entry->eventDatetime = new DateTimeImmutable($entry->eventDatetime->format('Y-m-d') . 'T00:00:00+00:00');
             $entry->endDatetime = $entry->endDatetime instanceof \DateTimeImmutable
                 ? new DateTimeImmutable($entry->endDatetime->format('Y-m-d') . 'T00:00:00+00:00')
                 : null;
+        } else {
+            // The column holds a wall clock with no timezone, so anything not already UTC has to be
+            // converted before it is written. A no-op for a value that came back from the database.
+            $entry->eventDatetime = $entry->eventDatetime->setTimezone(new DateTimeZone('UTC'));
+            $entry->endDatetime = $entry->endDatetime?->setTimezone(new DateTimeZone('UTC'));
         }
 
         // Each recurrence field accepts an independent PATCH. ValidRecurrence runs against

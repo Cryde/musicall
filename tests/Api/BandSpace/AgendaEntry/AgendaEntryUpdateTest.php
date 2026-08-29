@@ -81,6 +81,157 @@ class AgendaEntryUpdateTest extends ApiTestCase
         $this->assertEqualsCanonicalizing(['title_changed', 'event_datetime_changed'], $types);
     }
 
+    /**
+     * PATCH parsed the offset and then dropped it exactly the way POST did, so the same two hour shift
+     * happened on an edit. See AgendaEntryCreateTest for why the column can only hold UTC.
+     */
+    public function test_update_agenda_entry_converts_a_non_utc_offset_to_the_same_instant(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Répétition hebdo',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-08-25 18:00:00', new DateTimeZone('UTC')),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            [
+                'eventDatetime' => '2026-08-25T21:00:00+02:00',
+                'endDatetime' => '2026-08-25T23:30:00+02:00',
+            ],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Répétition hebdo',
+            'description' => null,
+            'location' => null,
+            // 21:00+02:00 is 19:00Z. Before the fix this read back as 21:00+00:00.
+            'event_datetime' => '2026-08-25T19:00:00+00:00',
+            'end_datetime' => '2026-08-25T21:30:00+00:00',
+            'is_all_day' => false,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /**
+     * Turning an entry into an all day one without resending a datetime reads the day off the stored
+     * instant, which is UTC. The request carries no timezone to read it in, so an entry that starts
+     * within the offset of midnight can land on the day before the one its author had in mind. That is
+     * inherent to storing instants and is pinned here rather than left to be discovered.
+     */
+    public function test_update_to_all_day_pins_the_day_of_the_stored_utc_instant(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Festival',
+            'description' => null,
+            'location' => null,
+            // 2026-08-26T00:30+02:00, the instant a Brussels caller means by half past midnight.
+            'eventDatetime' => new DateTimeImmutable('2026-08-25 22:30:00', new DateTimeZone('UTC')),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['isAllDay' => true],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Festival',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-08-25T00:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => true,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    /**
+     * The caller's own day when they do send one, offset included: converting before reading the date
+     * would file midnight on the 25th in Brussels under the 24th.
+     */
+    public function test_update_to_all_day_with_an_offset_keeps_the_day_the_caller_wrote(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'title' => 'Festival',
+            'description' => null,
+            'location' => null,
+            'eventDatetime' => new DateTimeImmutable('2026-07-01 12:00:00', new DateTimeZone('UTC')),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['eventDatetime' => '2026-08-25T00:00:00+02:00', 'isAllDay' => true],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaEntry',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            '@type' => 'AgendaEntry',
+            'id' => $entry->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => 'Festival',
+            'description' => null,
+            'location' => null,
+            'event_datetime' => '2026-08-25T00:00:00+00:00',
+            'end_datetime' => null,
+            'is_all_day' => true,
+            'recurrence_frequency' => null,
+            'recurrence_until_date' => null,
+            'recurrence_monthly_mode' => null,
+            'creator_id' => $user->id,
+            'creator_username' => $user->username,
+            'creation_datetime' => $entry->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
     public function test_update_agenda_entry_partial_keeps_other_fields(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
