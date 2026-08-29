@@ -3,10 +3,12 @@
 namespace App\Service\Builder\BandSpace\File;
 
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Enum\BandSpace\FinanceEntryScope;
 use App\Repository\BandSpace\FinanceEntryRepository;
@@ -22,6 +24,7 @@ readonly class BandSpaceFileBuilder
     public function __construct(
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
+        private BandSpaceFolderRepository $folderRepository,
         private TaskRepository $taskRepository,
         private FinanceEntryRepository $financeEntryRepository,
         private BandSpaceNoteRepository $noteRepository,
@@ -35,25 +38,38 @@ readonly class BandSpaceFileBuilder
     }
 
     /**
-     * @param BandSpaceFile[] $entities
+     * @param BandSpaceFile[] $entities all belonging to $bandSpace
      *
      * @return BandSpaceFileResource[]
      */
-    public function buildFromList(array $entities): array
+    public function buildFromList(array $entities, BandSpace $bandSpace): array
     {
+        if (count($entities) === 0) {
+            return [];
+        }
+
         $fileIds = array_map(fn (BandSpaceFile $file): string => (string) $file->id, $entities);
         $versionCounts = $this->fileRepository->countVersionsByFileIds($fileIds);
+        // One query for the whole tree, handed down the way BandSpaceFolderBuilder::buildTree() is
+        // handed its counts. Without it each row walks its own ancestors, one lazy SELECT per level.
+        $folderPaths = $this->folderRepository->findPathsByBandSpace($bandSpace);
 
         return array_map(
             fn (BandSpaceFile $entity): BandSpaceFileResource => $this->buildItem(
                 $entity,
                 $versionCounts[(string) $entity->id] ?? 0,
+                $folderPaths,
             ),
             $entities,
         );
     }
 
-    public function buildItem(BandSpaceFile $entity, ?int $versionCount = null): BandSpaceFileResource
+    /**
+     * @param array<string, array<int, array{id: string, name: string}>>|null $folderPaths paths of the
+     *        whole space, keyed by folder id, from BandSpaceFolderRepository::findPathsByBandSpace().
+     *        Null walks this file's own ancestors instead, which is what a single item wants.
+     */
+    public function buildItem(BandSpaceFile $entity, ?int $versionCount = null, ?array $folderPaths = null): BandSpaceFileResource
     {
         $dto = new BandSpaceFileResource();
         $dto->id = (string) $entity->id;
@@ -62,7 +78,7 @@ readonly class BandSpaceFileBuilder
         $dto->size = $entity->currentVersion?->size;
         $dto->mimeType = $entity->currentVersion?->mimeType;
         $dto->folderId = $entity->folder instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $entity->folder->id : null;
-        $dto->folderPath = $this->fileRepository->buildFolderPath($entity->folder);
+        $dto->folderPath = $this->resolveFolderPath($entity->folder, $folderPaths);
 
         $dto->tags = array_values(array_map(
             fn (BandSpaceFileTag $tag): array => [
@@ -106,6 +122,24 @@ readonly class BandSpaceFileBuilder
         $dto->purgeDatetime = $entity->archiveDatetime?->modify(sprintf('+%d days', $this->retentionDays));
 
         return $dto;
+    }
+
+    /**
+     * The path down to $folder, read off the per space map when the caller loaded one and walked from
+     * the entity when it did not. The map holds every folder of the space, so a miss means the folder
+     * is not one of its own and the walk is a truer answer than an empty path.
+     *
+     * @param array<string, array<int, array{id: string, name: string}>>|null $folderPaths
+     *
+     * @return array<int, array{id: string, name: string}>
+     */
+    private function resolveFolderPath(?\App\Entity\BandSpace\BandSpaceFolder $folder, ?array $folderPaths): array
+    {
+        if (!$folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
+            return [];
+        }
+
+        return $folderPaths[(string) $folder->id] ?? $this->folderRepository->buildPath($folder);
     }
 
     /**

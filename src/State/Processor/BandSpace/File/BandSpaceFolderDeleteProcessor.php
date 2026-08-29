@@ -214,7 +214,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
             $folderId = (string) $file->folder?->id;
             $pathByFolderId[$folderId] ??= implode(
                 ' / ',
-                array_column($this->fileRepository->buildFolderPath($file->folder), 'name'),
+                array_column($this->folderRepository->buildPath($file->folder), 'name'),
             );
 
             $this->activityRecorder->record(

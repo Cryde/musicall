@@ -34,6 +34,11 @@ when@test:
         dbal:
             # "TEST_TOKEN" is typically set by ParaTest
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            # phpunit.dist.xml runs with APP_DEBUG=0, and profiling defaults to %kernel.debug%, so the
+            # DBAL middleware feeding the profiler's db collector is not registered. Without this the
+            # collector answers 0 to getQueryCount() and any test asserting a query budget passes
+            # whatever the endpoint does.
+            profiling: true
 
 when@prod:
     doctrine:

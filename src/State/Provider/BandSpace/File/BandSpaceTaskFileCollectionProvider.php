@@ -60,7 +60,7 @@ readonly class BandSpaceTaskFileCollectionProvider implements ProviderInterface
         $entities = $this->fileRepository->findByBandSpace($bandSpace, $filter);
         $totalItems = $this->fileRepository->countByBandSpace($bandSpace, $filter);
 
-        $dtos = $this->fileBuilder->buildFromList($entities);
+        $dtos = $this->fileBuilder->buildFromList($entities, $bandSpace);
 
         return new TraversablePaginator(
             new \ArrayIterator($dtos),

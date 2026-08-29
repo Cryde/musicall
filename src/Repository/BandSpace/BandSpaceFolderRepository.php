@@ -32,6 +32,45 @@ class BandSpaceFolderRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Every folder of the space with the path down to it, keyed by folder id, root first.
+     *
+     * One query for the whole space, rather than the walk below run per file. BandSpaceFolder::$parent
+     * is a plain ManyToOne and so LAZY, and the file collection hydrates only bsf.folder, so walking up
+     * from a listing costs a SELECT per level per distinct folder. #918 put that walk on every row of
+     * the space wide listings, which made a page of 50 files across a depth 3 tree cost upwards of a
+     * hundred extra queries. findTree() already fetch joins the parents, and it loads every folder of
+     * the space, so each ancestor is in the identity map by the time buildPath() reaches it.
+     *
+     * @return array<string, array<int, array{id: string, name: string}>> folder id => path
+     */
+    public function findPathsByBandSpace(BandSpace $bandSpace): array
+    {
+        $paths = [];
+        foreach ($this->findTree($bandSpace) as $folder) {
+            $paths[(string) $folder->id] = $this->buildPath($folder);
+        }
+
+        return $paths;
+    }
+
+    /**
+     * The path down to one folder, root first. Costs a query per level unless the ancestors are already
+     * loaded, so a collection wants findPathsByBandSpace() instead.
+     *
+     * @return array<int, array{id: string, name: string}> root → leaf
+     */
+    public function buildPath(?BandSpaceFolder $folder): array
+    {
+        $path = [];
+        while ($folder instanceof BandSpaceFolder) {
+            array_unshift($path, ['id' => (string) $folder->id, 'name' => $folder->name]);
+            $folder = $folder->parent;
+        }
+
+        return $path;
+    }
+
     public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?BandSpaceFolder
     {
         return $this->createQueryBuilder('f')

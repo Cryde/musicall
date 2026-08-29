@@ -48,6 +48,87 @@ class BandSpaceFileCollectionTest extends ApiTestCase
         $this->assertSame('rider.pdf', $response['member'][0]['original_name']);
     }
 
+    /**
+     * folder_path is the most expensive field on the resource. BandSpaceFolder::$parent is a plain
+     * ManyToOne and so LAZY, and the collection hydrates only the file's own folder, so building the
+     * path per file costs a SELECT per level per folder. #918 put that field on every row of the space
+     * wide listings, which is what made it hot.
+     *
+     * Three files, each at the bottom of its own three deep chain, so nothing is shared and the walk
+     * has nine ancestors to fetch. The whole tree is read in one query now, and that is what is pinned
+     * here rather than a total: the total hides the trade, one query up front against N lazy loads.
+     */
+    public function test_list_reads_the_whole_folder_tree_in_one_query_however_deep_it_is(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'alice']);
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $files = [];
+        $paths = [];
+        // Pinned datetimes so the date desc default puts the rows in a known order, and a chain per
+        // file so no ancestor is already in the identity map when the next row is built.
+        foreach ([['Live', '2026', 'Paris'], ['Studio', 'Demos', 'Avril'], ['Admin', 'Contrats', 'Signés']] as $index => $names) {
+            $parent = null;
+            $path = [];
+            foreach ($names as $name) {
+                $parent = BandSpaceFolderFactory::new([
+                    'bandSpace' => $bandSpace,
+                    'createdBy' => $user,
+                    'name' => $name,
+                    'parent' => $parent,
+                ])->create();
+                $path[] = ['id' => $parent->id, 'name' => $name];
+            }
+
+            $files[] = BandSpaceFileFactory::new([
+                'bandSpace' => $bandSpace,
+                'createdBy' => $user,
+                'folder' => $parent,
+                'originalName' => 'chain-' . $index . '.pdf',
+                'creationDatetime' => new \DateTime(sprintf('2026-0%d-01T01:01:01+00:00', 3 - $index)),
+            ])->create();
+            $paths['chain-' . $index . '.pdf'] = $path;
+        }
+
+        $this->client->loginUser($user);
+        $this->client->enableProfiler();
+        // A real request starts with an empty identity map. The factories above left every folder
+        // managed, which would hide the very lazy loads this test exists to count.
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        // The debug holder lives as long as the connection, so everything the factories above just
+        // wrote is already in it. Emptied here, the collector answers for the request alone.
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->jsonRequest('GET', '/api/band_spaces/' . $bandSpace->id . '/files', [], ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->getResponseAsArray();
+        $this->assertSame(3, $response['totalItems']);
+        $this->assertSame(
+            [
+                ['chain-0.pdf', $paths['chain-0.pdf']],
+                ['chain-1.pdf', $paths['chain-1.pdf']],
+                ['chain-2.pdf', $paths['chain-2.pdf']],
+            ],
+            array_map(
+                static fn (array $member): array => [$member['original_name'], $member['folder_path']],
+                $response['member'],
+            ),
+        );
+
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile, 'The profiler must be enabled to assert the query count.');
+        $folderReads = array_filter(
+            $profile->getCollector('db')->getQueries()['default'] ?? [],
+            static fn (array $query): bool => str_contains((string) $query['sql'], 'FROM band_space_folder'),
+        );
+        $this->assertCount(
+            1,
+            $folderReads,
+            'The tree must be read once for the whole space, not one SELECT per ancestor per file.',
+        );
+    }
+
     public function test_list_filtered_by_folder(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

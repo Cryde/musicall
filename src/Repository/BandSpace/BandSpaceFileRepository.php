@@ -247,26 +247,6 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Active-file counts grouped by attached source type. Manual files
-     * (no attached source) are not returned. Order: source ASC.
-     *
-     * @return array<string, int> source => file count
-     */
-    /**
-     * @return array<int, array{id: string, name: string}> root → leaf
-     */
-    public function buildFolderPath(?BandSpaceFolder $folder): array
-    {
-        $path = [];
-        while ($folder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
-            array_unshift($path, ['id' => (string) $folder->id, 'name' => $folder->name]);
-            $folder = $folder->parent;
-        }
-
-        return $path;
-    }
-
-    /**
      * A file nobody attached to anything: no row in band_space_file_attachment.
      *
      * Shared by the `source=manual` filter and by the root of the folder tree, so the two cannot drift
