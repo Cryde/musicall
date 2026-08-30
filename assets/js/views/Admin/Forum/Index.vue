@@ -6,11 +6,12 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <AdminModuleCard
-        label="Modération du forum"
-        description="File de modération des sujets et posts signalés"
-        icon="pi-shield"
+        label="Messages signalés"
+        description="File de modération des messages signalés par les membres"
+        icon="pi-flag"
         color="#06b6d4"
-        coming-soon
+        route="admin_forum_reports"
+        :badge-count="adminForumReportStore.pendingReports.length"
       />
     </div>
 
@@ -152,8 +153,10 @@ import AdminModuleCard from '../../../components/Admin/AdminModuleCard.vue'
 import DateRangePicker from '../../../components/Admin/DateRangePicker.vue'
 import TimeSeriesChart from '../../../components/Admin/TimeSeriesChart.vue'
 import { useAdminDashboardStore } from '../../../store/admin/dashboard.js'
+import { useAdminForumReportStore } from '../../../store/admin/forumReport.js'
 
 const dashboardStore = useAdminDashboardStore()
+const adminForumReportStore = useAdminForumReportStore()
 
 const contentOverview = computed(() => dashboardStore.contentOverview)
 const forumRecentActivity = computed(() => dashboardStore.forumRecentActivity)
@@ -198,5 +201,6 @@ function handleDateRangeApply({ from, to }) {
 onMounted(() => {
   loadMetrics()
   loadRecentActivity()
+  adminForumReportStore.loadPendingReports()
 })
 </script>

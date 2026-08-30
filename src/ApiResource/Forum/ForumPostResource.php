@@ -26,7 +26,7 @@ use DateTimeInterface;
             ],
             openapi: new Operation(tags: ['Forum']),
             paginationEnabled: true,
-            paginationItemsPerPage: 10,
+            paginationItemsPerPage: ForumPostResource::POSTS_PER_PAGE,
             name: 'api_forum_topic_posts_list',
             provider: ForumPostCollectionProvider::class,
         ),
@@ -41,6 +41,12 @@ use DateTimeInterface;
 )]
 class ForumPostResource
 {
+    /**
+     * Page size of a topic. Admin screens deep-link to a single post, so they need the same value to
+     * work out which page it lands on.
+     */
+    final public const int POSTS_PER_PAGE = 10;
+
     #[ApiProperty(identifier: true)]
     public string $id;
     public DateTimeInterface $creationDatetime;

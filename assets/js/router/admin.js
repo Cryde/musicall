@@ -49,6 +49,11 @@ export default {
       component: () => import('../views/Admin/Forum/Index.vue')
     },
     {
+      name: 'admin_forum_reports',
+      path: 'forum/reports',
+      component: () => import('../views/Admin/Forum/Reports.vue')
+    },
+    {
       name: 'admin_band_space_coming_soon',
       path: 'band-spaces',
       component: () => import('../views/Admin/ComingSoonPage.vue'),
