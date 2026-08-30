@@ -223,6 +223,8 @@
       :parent-id="activeRealFolderId"
     />
 
+    <FileBulkActionBar :band-space-id="bandSpaceId" :is-trash="isTrashActive" />
+
     <FileUploadDialog
       v-if="bandSpaceId"
       v-model:visible="uploadDialogVisible"
@@ -272,6 +274,7 @@ import Skeleton from 'primevue/skeleton'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import FileBulkActionBar from '../../components/BandSpace/Files/FileBulkActionBar.vue'
 import FileDetailDrawer from '../../components/BandSpace/Files/FileDetailDrawer.vue'
 import FileFilterBar from '../../components/BandSpace/Files/FileFilterBar.vue'
 import FileList from '../../components/BandSpace/Files/FileList.vue'
@@ -401,10 +404,27 @@ let queryDebounce = null
 
 onMounted(() => {
   loadAll()
+  window.addEventListener('keydown', handleSelectionEscape)
 })
+
+/**
+ * Escape is the way out of a selection, alongside the action bar's own close button. Ignored while a
+ * dialog or drawer is open, because Escape belongs to whatever is on top.
+ */
+function handleSelectionEscape(event) {
+  if (event.key !== 'Escape' || filesStore.selectedFileIds.size === 0) {
+    return
+  }
+  if (document.querySelector('.p-dialog, .p-drawer')) {
+    return
+  }
+
+  filesStore.clearSelection()
+}
 
 onUnmounted(() => {
   if (queryDebounce) clearTimeout(queryDebounce)
+  window.removeEventListener('keydown', handleSelectionEscape)
   filesStore.clear()
 })
 

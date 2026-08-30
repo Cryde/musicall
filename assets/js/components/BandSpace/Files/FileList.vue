@@ -14,12 +14,23 @@
 
     <div v-else class="flex flex-col">
       <div
-        class="hidden md:grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wide text-surface-400 border-b border-surface-200 dark:border-surface-700"
+        class="hidden md:flex items-center gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wide text-surface-400 border-b border-surface-200 dark:border-surface-700"
       >
-        <div class="col-span-6">Nom</div>
-        <div class="col-span-2">Taille</div>
-        <div class="col-span-2">Tags</div>
-        <div class="col-span-2">Ajouté le</div>
+        <Checkbox
+          :model-value="allSelected"
+          binary
+          size="small"
+          class="shrink-0"
+          aria-label="Tout sélectionner"
+          @update:model-value="toggleAll"
+        />
+        <div class="grid grid-cols-12 gap-2 flex-1 min-w-0">
+          <div class="col-span-6">Nom</div>
+          <div class="col-span-2">Taille</div>
+          <div class="col-span-2">Tags</div>
+          <div class="col-span-2">Ajouté le</div>
+        </div>
+        <span class="shrink-0 w-7" aria-hidden="true"></span>
       </div>
 
       <!-- Folders first, in the same grid as the files, so the panel reads as one list. Focusable and
@@ -73,13 +84,29 @@
       <div
         v-for="file in files"
         :key="file.id"
-        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 hover:bg-surface-50 dark:hover:bg-surface-800/40 cursor-pointer"
-        :draggable="true"
-        @click="emit('select', file)"
+        class="flex items-center gap-2 px-3 py-2 text-sm border-b border-surface-100 dark:border-surface-800 cursor-pointer"
+        :class="
+          isSelected(file)
+            ? 'bg-primary-50 dark:bg-primary-900/30'
+            : 'hover:bg-surface-50 dark:hover:bg-surface-800/40'
+        "
+        :draggable="!hasSelection"
+        @click="(event) => handleRowClick(event, file)"
         @contextmenu="(event) => openContextMenu(event, file)"
         @dragstart="(event) => handleDragStart(event, file)"
         @dragend="handleDragEnd"
       >
+        <Checkbox
+          :model-value="isSelected(file)"
+          binary
+          size="small"
+          class="shrink-0"
+          :aria-label="`Sélectionner ${file.original_name}`"
+          @click.stop
+          @mousedown="rememberModifiers"
+          @keydown="rememberModifiers"
+          @update:model-value="() => toggleFromCheckbox(file)"
+        />
         <div class="grid grid-cols-12 gap-2 flex-1 min-w-0 items-center">
           <div class="col-span-12 md:col-span-6 flex items-center gap-2 min-w-0">
             <i :class="iconForMime(file.mime_type)" class="text-lg text-surface-500 shrink-0"></i>
@@ -136,6 +163,7 @@
 </template>
 
 <script setup>
+import Checkbox from 'primevue/checkbox'
 import ContextMenu from 'primevue/contextmenu'
 import Skeleton from 'primevue/skeleton'
 import Tag from 'primevue/tag'
@@ -154,6 +182,7 @@ import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { fileLocation, folderFileCountLabel } from '../../../utils/fileListing.js'
+import { areAllSelected, selectionAfterClick } from '../../../utils/fileSelection.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -188,6 +217,66 @@ const toast = useToast()
 const isAdmin = computed(() => bandSpaceStore.getById(props.bandSpaceId)?.role === 'admin')
 
 const dropTargetId = ref(null)
+
+const orderedIds = computed(() => props.files.map((file) => file.id))
+const hasSelection = computed(() => filesStore.selectedFileIds.size > 0)
+const allSelected = computed(() =>
+  areAllSelected(orderedIds.value, [...filesStore.selectedFileIds])
+)
+
+function isSelected(file) {
+  return filesStore.selectedFileIds.has(file.id)
+}
+
+/**
+ * A bare click opens the file, as it always has. Ctrl/Cmd and Shift are what turn a click into
+ * selection, so the default gesture on a file list keeps meaning "show me this one".
+ */
+function handleRowClick(event, file) {
+  if (event.ctrlKey || event.metaKey || event.shiftKey) {
+    applySelection(file, event.shiftKey)
+
+    return
+  }
+
+  emit('select', file)
+}
+
+function applySelection(file, shift) {
+  const { selected, anchorId } = selectionAfterClick({
+    id: file.id,
+    orderedIds: orderedIds.value,
+    selected: [...filesStore.selectedFileIds],
+    anchorId: filesStore.selectionAnchorId,
+    shift
+  })
+
+  filesStore.setSelection(selected, anchorId)
+}
+
+/**
+ * PrimeVue's Checkbox keeps its own internal state, so the toggle has to arrive through its model
+ * event rather than a raw click. Binding @click as well left the two one click out of phase: the row
+ * highlighted while the box stayed empty, then the box ticked on the click that deselected the row.
+ *
+ * Shift is read on mousedown and keydown, both of which run before the model event does.
+ */
+let shiftHeld = false
+
+function rememberModifiers(event) {
+  shiftHeld = event.shiftKey === true
+}
+
+function toggleFromCheckbox(file) {
+  applySelection(file, shiftHeld)
+  shiftHeld = false
+}
+
+function toggleAll(checked) {
+  // The list pages, so this is every row on screen and never the ones still unloaded. The bar says
+  // how many are selected rather than implying the rest.
+  filesStore.setSelection(checked ? orderedIds.value : [], null)
+}
 
 const contextMenuRef = ref(null)
 const contextMenuFile = ref(null)

@@ -22,6 +22,7 @@ import {
   nextPageToLoad,
   queryKeyOf
 } from '../../utils/filePagination.js'
+import { prunedSelection } from '../../utils/fileSelection.js'
 
 export const useBandFilesStore = defineStore('bandFiles', () => {
   const files = ref([])
@@ -43,6 +44,10 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
   // The trash is selected through activeFolderId, like the virtual source folders, so the whole existing
   // selection and fetch path is reused. This count feeds the sidebar badge even when the trash is closed.
   const archivedCount = ref(0)
+  // Bulk selection. Replaced wholesale rather than mutated, so computeds reading it re-evaluate.
+  const selectedFileIds = ref(new Set())
+  // The row the last toggle happened on, which a shift-click draws its run from.
+  const selectionAnchorId = ref(null)
 
   const filters = reactive({
     query: '',
@@ -127,6 +132,14 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
       files.value = result.member ?? []
       totalFiles.value = result.totalItems ?? 0
       loadedQueryKey.value = queryKeyOf(params)
+      // A filter change or a refresh after a bulk write changes which rows exist. Acting on an id
+      // the member can no longer see is the one outcome worth preventing.
+      selectedFileIds.value = new Set(
+        prunedSelection(
+          [...selectedFileIds.value],
+          files.value.map((file) => file.id)
+        )
+      )
     } catch (e) {
       if (requestId !== filesRequestId) return
       loadError.value = e.message
@@ -509,12 +522,86 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     return created
   }
 
+  function setSelection(ids, anchorId = null) {
+    selectedFileIds.value = new Set(ids)
+    selectionAnchorId.value = anchorId
+  }
+
+  function clearSelection() {
+    selectedFileIds.value = new Set()
+    selectionAnchorId.value = null
+  }
+
+  /**
+   * Bulk delete and bulk restore both answer 204, so the rows are pruned locally the way deleteFile
+   * and removeFromTrash already do, and the folder counts and quota are refetched.
+   */
+  /**
+   * The ticked ids that are still rows on screen.
+   *
+   * A single row action prunes files.value without touching the selection: trashing one card from
+   * its own kebab menu while three are ticked leaves a fourth id in the Set. Sending it would make
+   * the endpoint refuse the whole batch as "introuvable", so the two files the member can see
+   * selected would not be deleted either. The bar already displays the selection this way.
+   */
+  function selectedVisibleIds() {
+    return prunedSelection(
+      [...selectedFileIds.value],
+      files.value.map((file) => file.id)
+    )
+  }
+
+  async function bulkDeleteFiles(bandSpaceId) {
+    const ids = selectedVisibleIds()
+    await bandSpaceFilesApi.bulkDeleteFiles(bandSpaceId, ids)
+    dropRows(ids)
+    archivedCount.value += ids.length
+    clearSelection()
+    fetchQuota(bandSpaceId)
+    fetchFolders(bandSpaceId)
+  }
+
+  async function bulkRestoreFiles(bandSpaceId) {
+    const ids = selectedVisibleIds()
+    await bandSpaceFilesApi.bulkRestoreFiles(bandSpaceId, ids)
+    dropRows(ids)
+    archivedCount.value = Math.max(0, archivedCount.value - ids.length)
+    clearSelection()
+    fetchQuota(bandSpaceId)
+    fetchFolders(bandSpaceId)
+  }
+
+  /**
+   * Refetches rather than reconciling row by row: a move can take every file out of the listing at
+   * once, and the page window is derived from how many rows are loaded, so pruning a batch spread
+   * across pages is the bug filePagination.js exists for.
+   */
+  async function bulkMoveFiles(bandSpaceId, folderId) {
+    await bandSpaceFilesApi.bulkMoveFiles(bandSpaceId, selectedVisibleIds(), folderId)
+    clearSelection()
+    await fetchFiles(bandSpaceId)
+    fetchFolders(bandSpaceId)
+  }
+
+  function dropRows(ids) {
+    const removed = new Set(ids)
+    files.value = files.value.filter((file) => !removed.has(file.id))
+    totalFiles.value = Math.max(0, totalFiles.value - ids.length)
+    if (removed.has(activeFileId.value)) {
+      activeFileId.value = null
+      activeFileFull.value = null
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
   }
 
   function setActiveFolder(folderId) {
     activeFolderId.value = folderId
+    // The action bar always describes rows the member can see, so a selection never survives a move
+    // to another folder or into the trash.
+    clearSelection()
   }
 
   function startDrag(source) {
@@ -551,6 +638,8 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     loadError.value = null
     loadMoreError.value = null
     activeFileError.value = null
+    selectedFileIds.value = new Set()
+    selectionAnchorId.value = null
   }
 
   return {
@@ -590,6 +679,13 @@ export const useBandFilesStore = defineStore('bandFiles', () => {
     dragSource: readonly(dragSource),
     startDrag,
     endDrag,
+    selectedFileIds: readonly(selectedFileIds),
+    selectionAnchorId: readonly(selectionAnchorId),
+    setSelection,
+    clearSelection,
+    bulkDeleteFiles,
+    bulkRestoreFiles,
+    bulkMoveFiles,
     isLoadingActiveFile: readonly(isLoadingActiveFile),
     isLoadingActivities: readonly(isLoadingActivities),
     isSavingFile: readonly(isSavingFile),

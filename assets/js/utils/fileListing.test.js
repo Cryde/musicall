@@ -8,6 +8,7 @@ import {
   fileVirtualFolders,
   folderFileCountLabel,
   folderPathOf,
+  folderSelectOptions,
   isSearchActive,
   listedFolderOfRows,
   rootDestinationRefusal,
@@ -324,5 +325,29 @@ describe('rootDestinationRefusal', () => {
       rootDestinationRefusal(file, virtualFolders),
       'Ce fichier est listé dans Notes et Tâches : la racine ne liste que les fichiers attachés à aucune ressource.'
     )
+  })
+})
+
+describe('folderSelectOptions', () => {
+  const TREE = [
+    { id: 'a', name: 'Concerts', children: [{ id: 'a1', name: '2026', children: [] }] },
+    { id: 'b', name: 'Maquettes', children: [] }
+  ]
+
+  it('puts Racine first and indents by depth', () => {
+    assert.deepEqual(folderSelectOptions(TREE), [
+      { label: 'Racine', value: null, disabled: false },
+      { label: 'Concerts', value: 'a' },
+      { label: '— 2026', value: 'a1' },
+      { label: 'Maquettes', value: 'b' }
+    ])
+  })
+
+  it('can refuse Racine, which is what an attached file does to it', () => {
+    assert.equal(folderSelectOptions(TREE, true)[0].disabled, true)
+  })
+
+  it('offers Racine alone for an empty tree', () => {
+    assert.deepEqual(folderSelectOptions([]), [{ label: 'Racine', value: null, disabled: false }])
   })
 })

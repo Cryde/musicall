@@ -18,11 +18,37 @@
         définitivement effacés. Vous pouvez les restaurer avant cette date.
       </p>
 
+      <div class="flex items-center gap-2 px-1">
+        <Checkbox
+          :model-value="allSelected"
+          binary
+          size="small"
+          aria-label="Tout sélectionner"
+          @update:model-value="toggleAll"
+        />
+        <span class="text-xs text-surface-500 dark:text-surface-400">Tout sélectionner</span>
+      </div>
+
       <div
         v-for="file in files"
         :key="file.id"
-        class="flex items-center gap-3 p-3 rounded-lg bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700"
+        class="flex items-center gap-3 p-3 rounded-lg border"
+        :class="
+          isSelected(file)
+            ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-700/50'
+            : 'bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-700'
+        "
       >
+        <Checkbox
+          :model-value="isSelected(file)"
+          binary
+          size="small"
+          class="shrink-0"
+          :aria-label="`Sélectionner ${file.original_name}`"
+          @mousedown="rememberModifiers"
+          @keydown="rememberModifiers"
+          @update:model-value="() => toggleFromCheckbox(file)"
+        />
         <i class="pi pi-file text-lg text-surface-500 shrink-0" aria-hidden="true"></i>
 
         <div class="flex-1 min-w-0">
@@ -63,14 +89,16 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { isFileCreatorOrAdmin } from '../../../utils/bandSpaceFilePermissions.js'
 import { formatDateLong } from '../../../utils/date.js'
+import { areAllSelected, selectionAfterClick } from '../../../utils/fileSelection.js'
 import { formatBytes } from '../../../utils/formatBytes.js'
 
 const props = defineProps({
@@ -86,6 +114,49 @@ const confirm = useConfirm()
 const toast = useToast()
 
 const busyId = ref(null)
+
+const orderedIds = computed(() => props.files.map((file) => file.id))
+const allSelected = computed(() =>
+  areAllSelected(orderedIds.value, [...filesStore.selectedFileIds])
+)
+
+function isSelected(file) {
+  return filesStore.selectedFileIds.has(file.id)
+}
+
+function applySelection(file, shift) {
+  const { selected, anchorId } = selectionAfterClick({
+    id: file.id,
+    orderedIds: orderedIds.value,
+    selected: [...filesStore.selectedFileIds],
+    anchorId: filesStore.selectionAnchorId,
+    shift
+  })
+
+  filesStore.setSelection(selected, anchorId)
+}
+
+/**
+ * PrimeVue's Checkbox keeps its own internal state, so the toggle has to arrive through its model
+ * event rather than a raw click. Binding @click as well left the two one click out of phase: the row
+ * highlighted while the box stayed empty, then the box ticked on the click that deselected the row.
+ *
+ * Shift is read on mousedown and keydown, both of which run before the model event does.
+ */
+let shiftHeld = false
+
+function rememberModifiers(event) {
+  shiftHeld = event.shiftKey === true
+}
+
+function toggleFromCheckbox(file) {
+  applySelection(file, shiftHeld)
+  shiftHeld = false
+}
+
+function toggleAll(checked) {
+  filesStore.setSelection(checked ? orderedIds.value : [], null)
+}
 
 function canRestore(file) {
   return isFileCreatorOrAdmin(file, userSecurityStore.userProfile?.id, props.isAdmin)

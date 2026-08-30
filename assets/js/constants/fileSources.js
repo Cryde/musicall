@@ -124,6 +124,26 @@ export const QUOTA_BREAKDOWN_SOURCES = Object.freeze([
   )
 ])
 
+/**
+ * Enumerates source types as a French list, « une tâche et une note ».
+ *
+ * Mirrors BandSpaceFileAttachmentLabels::describe down to the deduplication and the « et » before
+ * the last one, because the bulk delete bar and the endpoint it calls have to say the same sentence:
+ * one greys the button out, the other refuses the request, and a member comparing the two must not
+ * read two different reasons.
+ *
+ * @param {string[]} sourceTypes
+ * @returns {string}
+ */
+export function describeFileSources(sourceTypes) {
+  const labels = [...new Set(sourceTypes.map((type) => sourceFor(type).indefiniteNoun))]
+
+  if (labels.length === 0) return UNKNOWN_SOURCE.indefiniteNoun
+  if (labels.length === 1) return labels[0]
+
+  return `${labels.slice(0, -1).join(', ')} et ${labels.at(-1)}`
+}
+
 function sourceFor(sourceType) {
   return FILE_SOURCE_BY_TYPE[sourceType] ?? UNKNOWN_SOURCE
 }
