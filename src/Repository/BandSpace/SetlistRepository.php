@@ -108,4 +108,23 @@ class SetlistRepository extends ServiceEntityRepository
             'missing' => (int) $row['missing'],
         ];
     }
+
+    /**
+     * Command palette search.
+     *
+     * @return Setlist[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, string $search, int $limit): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.bandSpace = :bandSpace')
+            ->andWhere('s.archiveDatetime IS NULL')
+            ->andWhere('LOWER(s.name) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('s.name', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

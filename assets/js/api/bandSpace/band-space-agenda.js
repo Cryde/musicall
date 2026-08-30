@@ -15,6 +15,17 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * One entry on its own, by id. The agenda itself is fetched as a date range, so this is what a
+   * link to a single entry uses to find out which period to show before asking for that range.
+   */
+  getEntry(bandSpaceId, entryId) {
+    return axios
+      .get(Routing.generate('api_band_space_agenda_entries_get_item', { bandSpaceId, id: entryId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   createEntry(bandSpaceId, data) {
     return axios
       .post(Routing.generate('api_band_space_agenda_entries_post', { bandSpaceId }), data, {

@@ -63,6 +63,7 @@
         <RepertoireView
           v-if="activeView === 'repertoire'"
           :band-space-id="bandSpaceId"
+          :focus-song-id="focusSongId"
         />
         <SetlistEditor
           v-else-if="activeView === 'setlist' && activeSetlistId"
@@ -118,6 +119,13 @@ const activeSetlist = computed(() =>
     ? (setlistsStore.setlists.find((s) => s.id === activeSetlistId.value) ?? null)
     : null
 )
+
+/**
+ * Set by the command palette, which links to a song rather than to the repertoire as a whole. No
+ * branch is needed in syncFromQuery(): a query carrying only ?song= already falls through to the
+ * repertoire, which is the view holding the songs.
+ */
+const focusSongId = computed(() => (typeof route.query.song === 'string' ? route.query.song : null))
 
 const trashCount = computed(
   () => setlistsStore.archivedSetlists.length + songsStore.archivedSongs.length

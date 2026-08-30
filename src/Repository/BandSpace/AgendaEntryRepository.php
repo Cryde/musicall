@@ -97,4 +97,24 @@ class AgendaEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette search. Matches the entry rows themselves, so a recurring entry is one hit
+     * rather than one per occurrence: occurrences are expanded at read time by AgendaAggregator,
+     * which needs a date window the palette has no reason to invent.
+     *
+     * @return AgendaEntry[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, string $search, int $limit): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.bandSpace = :bandSpace')
+            ->andWhere('LOWER(a.title) LIKE :search OR LOWER(a.description) LIKE :search OR LOWER(a.location) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('a.eventDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

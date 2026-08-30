@@ -235,6 +235,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
@@ -482,17 +483,96 @@ const calendarOptions = computed(() => ({
 }))
 
 onMounted(() => {
+  const linkedEntryId = linkedEntryIdFromRoute()
+  if (linkedEntryId) {
+    // openLinkedEntry does its own fetch, once, over whichever period turns out to hold the entry.
+    openLinkedEntry(linkedEntryId)
+    return
+  }
+
   fetchWithCurrentRange()
 })
+
+function linkedEntryIdFromRoute() {
+  return typeof route.query.entry === 'string' && route.query.entry ? route.query.entry : null
+}
+
+// Fired when the palette links to another entry while the agenda is already on screen: the route
+// name does not change, so the view is never remounted and onMounted never runs again.
+watch(
+  () => route.query.entry,
+  (entryId) => {
+    if (typeof entryId === 'string' && entryId) openLinkedEntry(entryId)
+  }
+)
+
+// Dropping the parameter once the drawer is closed keeps a reload from reopening it, and matches
+// what the files and finance modules do with their own item parameters.
+watch(dialogVisible, (isOpen) => {
+  if (!isOpen && route.query.entry) {
+    router.replace({ query: { ...route.query, entry: undefined } })
+  }
+})
+
+// Monotonic, because openLinkedEntry awaits twice: without it, following a second link before the
+// first has finished lets the slower first call open its entry last and override the newer one.
+// The store's own guard protects agendaStore.items, not the decision to open a drawer.
+let linkedEntryRequestId = 0
+
+/**
+ * Opens the entry a link points at. The agenda is fetched as a date range, so the entry's own date
+ * has to be known before the right range can be asked for, hence the single extra request.
+ *
+ * A recurring entry lands on the day the series starts, which is the one date the whole series
+ * agrees on. If that first occurrence has since been cancelled, no item matches and the agenda just
+ * stays on that period rather than opening something the member did not ask for.
+ */
+async function openLinkedEntry(entryId) {
+  linkedEntryRequestId += 1
+  const requestId = linkedEntryRequestId
+
+  let entry
+  try {
+    entry = await bandSpaceAgendaApi.getEntry(route.params.id, entryId)
+  } catch {
+    if (requestId !== linkedEntryRequestId) return
+
+    // A link to an entry somebody has since deleted: say so and drop the parameter, rather than
+    // leaving the member on an agenda that silently ignored what they clicked.
+    toast.add({ severity: 'error', summary: 'Événement introuvable', life: 4000 })
+    router.replace({ query: { ...route.query, entry: undefined } })
+    fetchWithCurrentRange()
+    return
+  }
+
+  if (requestId !== linkedEntryRequestId) return
+
+  const nextView = agendaViewForSavedEntry(entry, viewedRange.value.from, viewedRange.value.to)
+  if (nextView !== null) {
+    dateFrom.value = nextView.from
+    dateTo.value = nextView.to
+    focusDate.value = nextView.focusDate
+  }
+
+  await fetchWithCurrentRange()
+
+  if (requestId !== linkedEntryRequestId) return
+
+  const item = agendaStore.items.find(
+    (candidate) => candidate.source === 'manual' && candidate.source_id === entryId
+  )
+  if (item) handleItemClick(item)
+}
 
 function fetchRange(from, to) {
   const fromIso = format(from, "yyyy-MM-dd'T'00:00:00")
   const toIso = format(to, "yyyy-MM-dd'T'23:59:59")
-  agendaStore.fetchAgenda(route.params.id, { from: fromIso, to: toIso })
+
+  return agendaStore.fetchAgenda(route.params.id, { from: fromIso, to: toIso })
 }
 
 function fetchWithCurrentRange() {
-  fetchRange(dateFrom.value, dateTo.value)
+  return fetchRange(dateFrom.value, dateTo.value)
 }
 
 function handleDateRangeApply({ from, to }) {
