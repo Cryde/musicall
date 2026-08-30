@@ -246,3 +246,29 @@ export function uploadBelongsInListing(activeFolderId, filters, uploadedFolderId
 
   return listedFolderId(activeFolderId) === (uploadedFolderId ?? null)
 }
+
+/**
+ * The folder tree flattened into Select options, indented by depth, with « Racine » on top.
+ *
+ * Shared by the single file move dialog and the bulk action bar so the two destination lists cannot
+ * drift: a folder reachable in one and not the other is the kind of difference nobody reports.
+ *
+ * @param {object[]} tree nested folders, each node optionally carrying `children`
+ * @param {boolean} [rootDisabled] whether « Racine » is a refused destination
+ * @returns {{label: string, value: ?string, disabled?: boolean}[]}
+ */
+export function folderSelectOptions(tree, rootDisabled = false) {
+  const options = [{ label: 'Racine', value: null, disabled: rootDisabled }]
+
+  const walk = (nodes, depth) => {
+    for (const node of nodes ?? []) {
+      options.push({ label: '— '.repeat(depth) + node.name, value: node.id })
+      if (Array.isArray(node.children) && node.children.length > 0) {
+        walk(node.children, depth + 1)
+      }
+    }
+  }
+  walk(tree, 0)
+
+  return options
+}

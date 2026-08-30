@@ -357,4 +357,42 @@ class BandSpaceFileRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * The files of a bulk selection, scoped to the band space so an id from another space comes back
+     * as missing rather than acted on.
+     *
+     * Archived rows are deliberately not filtered, like findOneByIdAndBandSpace: bulk delete wants
+     * live files and bulk restore wants trashed ones, so each caller applies its own predicate.
+     *
+     * Results are re-sorted into the requested order, because the refusals name the files that
+     * blocked the batch and that list has to read in the order the member ticked them.
+     *
+     * @param string[] $ids
+     * @return BandSpaceFile[]
+     */
+    public function findByIdsAndBandSpace(array $ids, BandSpace $bandSpace): array
+    {
+        if (count($ids) === 0) {
+            return [];
+        }
+
+        /** @var BandSpaceFile[] $files */
+        $files = $this->createQueryBuilder('bsf')
+            ->addSelect('u', 'f')
+            ->leftJoin('bsf.createdBy', 'u')
+            ->leftJoin('bsf.folder', 'f')
+            ->where('bsf.id IN (:ids)')
+            ->andWhere('bsf.bandSpace = :bandSpace')
+            ->setParameter('ids', $ids)
+            ->setParameter('bandSpace', $bandSpace)
+            ->getQuery()
+            ->getResult();
+
+        $rank = array_flip(array_values($ids));
+        usort($files, static fn (BandSpaceFile $a, BandSpaceFile $b): int
+            => ($rank[(string) $a->id] ?? PHP_INT_MAX) <=> ($rank[(string) $b->id] ?? PHP_INT_MAX));
+
+        return $files;
+    }
 }

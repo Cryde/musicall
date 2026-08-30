@@ -58,7 +58,7 @@ import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
-import { rootDestinationRefusal } from '../../../utils/fileListing.js'
+import { folderSelectOptions, rootDestinationRefusal } from '../../../utils/fileListing.js'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -82,19 +82,9 @@ const globalError = ref(null)
  */
 const rootRefusal = computed(() => rootDestinationRefusal(props.file, filesStore.virtualFolders))
 
-const folderOptions = computed(() => {
-  const out = [{ label: 'Racine', value: null, disabled: rootRefusal.value !== null }]
-  const walk = (nodes, depth) => {
-    for (const node of nodes) {
-      out.push({ label: '— '.repeat(depth) + node.name, value: node.id })
-      if (Array.isArray(node.children) && node.children.length > 0) {
-        walk(node.children, depth + 1)
-      }
-    }
-  }
-  walk(filesStore.folders, 0)
-  return out
-})
+const folderOptions = computed(() =>
+  folderSelectOptions(filesStore.folders, rootRefusal.value !== null)
+)
 
 const hasChanged = computed(() => {
   const current = props.file?.folder_id ?? null

@@ -5,6 +5,7 @@ namespace App\Procedure\BandSpace;
 use App\ApiResource\BandSpace\File\BandSpaceFileResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\BandSpace\BandSpaceFolder;
 use App\Entity\BandSpace\BandSpaceFileTag;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceFileActivityType;
@@ -100,18 +101,40 @@ readonly class BandSpaceFileUpdateProcedure
         return true;
     }
 
-    private function applyMove(BandSpaceFile $file, ?string $folderId, BandSpace $bandSpace, User $user): bool
+    /**
+     * The destination a folder id names, or null for the root.
+     *
+     * Public because a bulk move resolves it once for the whole batch: the id is the same for every
+     * file, so leaving the lookup inside the per file path would repeat one identical query per row.
+     */
+    public function resolveFolder(?string $folderId, BandSpace $bandSpace): ?BandSpaceFolder
     {
-        $newFolder = null;
-        if ($folderId !== null && $folderId !== '') {
-            $newFolder = $this->folderRepository->findOneByIdAndBandSpace($folderId, $bandSpace);
-            if (!$newFolder instanceof \App\Entity\BandSpace\BandSpaceFolder) {
-                throw new UnprocessableEntityHttpException('Dossier introuvable dans ce Band Space');
-            }
+        if ($folderId === null || $folderId === '') {
+            return null;
         }
 
-        $oldFolderId = $file->folder instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $file->folder->id : null;
-        $newFolderId = $newFolder instanceof \App\Entity\BandSpace\BandSpaceFolder ? (string) $newFolder->id : null;
+        $folder = $this->folderRepository->findOneByIdAndBandSpace($folderId, $bandSpace);
+        if (!$folder instanceof BandSpaceFolder) {
+            throw new UnprocessableEntityHttpException('Dossier introuvable dans ce Band Space');
+        }
+
+        return $folder;
+    }
+
+    private function applyMove(BandSpaceFile $file, ?string $folderId, BandSpace $bandSpace, User $user): bool
+    {
+        return $this->moveToFolder($file, $this->resolveFolder($folderId, $bandSpace), $user);
+    }
+
+    /**
+     * Moves one file to an already resolved folder, recording the activity, and answers whether it
+     * actually moved. Public for the bulk path, which resolves the destination once and then flushes
+     * once for the whole batch rather than once per file.
+     */
+    public function moveToFolder(BandSpaceFile $file, ?BandSpaceFolder $newFolder, User $user): bool
+    {
+        $oldFolderId = $file->folder instanceof BandSpaceFolder ? (string) $file->folder->id : null;
+        $newFolderId = $newFolder instanceof BandSpaceFolder ? (string) $newFolder->id : null;
         if ($oldFolderId === $newFolderId) {
             return false;
         }

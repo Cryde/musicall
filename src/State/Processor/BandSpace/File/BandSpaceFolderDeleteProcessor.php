@@ -19,7 +19,7 @@ use App\Repository\BandSpace\BandSpaceFolderRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\BandSpace\File\BandSpaceFileAttachmentLabels;
-use App\Service\BandSpace\File\BandSpaceFileShareRevoker;
+use App\Service\BandSpace\File\BandSpaceFileArchiver;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -63,8 +63,8 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         private BandSpaceFolderRepository $folderRepository,
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
-        private BandSpaceFileShareRevoker $shareRevoker,
         private BandSpaceActivityRecorder $activityRecorder,
+        private BandSpaceFileArchiver $fileArchiver,
         private Security $security,
         private RequestStack $requestStack,
     ) {
@@ -123,7 +123,7 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
         $connection->beginTransaction();
         try {
             if ($strategy === self::STRATEGY_CASCADE) {
-                $this->archive($filesToArchive, $membership->bandSpace, $user);
+                $this->fileArchiver->archive($filesToArchive, $membership->bandSpace, $user);
             } else {
                 $this->folderRepository->detachChildrenFrom($folder);
                 $this->fileRepository->detachFromFolder($folder);
@@ -183,57 +183,5 @@ readonly class BandSpaceFolderDeleteProcessor implements ProcessorInterface
                 count($sourceTypesByFile),
                 $sources,
             ));
-    }
-
-    /**
-     * Trashes the subtree file by file, the way the single file endpoint does it.
-     *
-     * The folder rows are about to go and band_space_file.folder_id is ON DELETE SET NULL, so each
-     * file keeps the path it was archived from in its Archived activity: without it a restore drops
-     * the file at the root with nothing left saying where it used to live.
-     *
-     * Paths are memoised per folder. findActiveByFolderIds() fetch joins the file's own folder but not
-     * its ancestors, so walking the chain pulls each ancestor in once; the identity map then serves
-     * every later walk, which caps the extra queries at the number of distinct folders in the subtree
-     * plus the chain above it, never at the number of files. Six levels at most, MAX_DEPTH sees to it.
-     *
-     * @param BandSpaceFile[] $files
-     */
-    private function archive(array $files, BandSpace $bandSpace, User $actor): void
-    {
-        if (count($files) === 0) {
-            return;
-        }
-
-        $archivedAt = new DateTimeImmutable();
-        $pathByFolderId = [];
-
-        foreach ($files as $file) {
-            $file->archiveDatetime = $archivedAt;
-
-            $folderId = (string) $file->folder?->id;
-            $pathByFolderId[$folderId] ??= implode(
-                ' / ',
-                array_column($this->folderRepository->buildPath($file->folder), 'name'),
-            );
-
-            $this->activityRecorder->record(
-                $bandSpace,
-                BandSpaceModule::File,
-                BandSpaceFileActivityType::Archived,
-                resourceId: (string) $file->id,
-                actor: $actor,
-                payload: [
-                    'original_name' => $file->originalName,
-                    'folder_path' => $pathByFolderId[$folderId],
-                ],
-            );
-        }
-
-        $this->shareRevoker->revokeForArchivedFiles(
-            $bandSpace,
-            array_map(static fn (BandSpaceFile $file): string => (string) $file->id, $files),
-            $actor,
-        );
     }
 }

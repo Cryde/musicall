@@ -131,4 +131,27 @@ class BandSpaceFileVersionRepository extends ServiceEntityRepository
             $rows,
         );
     }
+
+    /**
+     * The bytes a whole bulk restore would put back into the band's usage, in one query.
+     *
+     * The per file sumBytesByFile() would be one query per row here, and worse, asserting the quota
+     * once per file admits each of them against a total the others have not been counted into yet, so
+     * a batch can walk a space past its limit one file at a time.
+     *
+     * @param string[] $fileIds
+     */
+    public function sumBytesByFileIds(array $fileIds): int
+    {
+        if (count($fileIds) === 0) {
+            return 0;
+        }
+
+        return (int) $this->createQueryBuilder('v')
+            ->select('COALESCE(SUM(v.size), 0)')
+            ->where('IDENTITY(v.bandSpaceFile) IN (:fileIds)')
+            ->setParameter('fileIds', $fileIds)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

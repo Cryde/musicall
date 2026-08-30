@@ -83,6 +83,40 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * The three bulk endpoints answer 204 with no body, so nothing is returned. A refusal names every
+   * file that blocked the batch in its detail, which handleApiError puts on error.message.
+   */
+  bulkDeleteFiles(bandSpaceId, fileIds) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_files_bulk_delete', { bandSpaceId }),
+        { file_ids: fileIds },
+        { headers: { 'Content-Type': 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
+  bulkMoveFiles(bandSpaceId, fileIds, folderId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_files_bulk_patch', { bandSpaceId }),
+        { file_ids: fileIds, folder_id: folderId },
+        { headers: { 'Content-Type': 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
+  bulkRestoreFiles(bandSpaceId, fileIds) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_files_bulk_restore', { bandSpaceId }),
+        { file_ids: fileIds },
+        { headers: { 'Content-Type': 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
   getFileActivities(bandSpaceId, fileId) {
     return axios
       .get(
