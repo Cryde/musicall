@@ -552,4 +552,29 @@ class FinanceEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette search. Scoped through the category because a finance entry carries no band
+     * space column of its own, and filtered by applyVisibleTo() like every other read path: a
+     * personal entry belongs to the member it names, and a search box is exactly the surface that
+     * would otherwise show one member's spending to the whole band.
+     *
+     * @return FinanceEntry[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, BandSpaceMembership $viewer, string $search, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->addSelect('c')
+            ->innerJoin('e.category', 'c')
+            ->where('c.bandSpace = :bandSpace')
+            ->andWhere('LOWER(e.label) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('e.date', 'DESC')
+            ->setMaxResults($limit);
+
+        $this->applyVisibleTo($qb, $viewer);
+
+        return $qb->getQuery()->getResult();
+    }
 }

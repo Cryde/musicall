@@ -103,4 +103,29 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
 
         return $maxPosition !== null ? ((int) $maxPosition) + 1 : 0;
     }
+
+    /**
+     * Command palette search, titles only. The body is TipTap JSON in a JSON column: LIKE would match
+     * structural keys as well as prose, and Doctrine encodes without JSON_UNESCAPED_UNICODE, so an
+     * accented word is stored as a backslash-u escape and would never match. Searching bodies needs a
+     * plain text shadow column first.
+     *
+     * The parent comes along because it is the hit's subtitle.
+     *
+     * @return BandSpaceNote[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, string $search, int $limit): array
+    {
+        return $this->createQueryBuilder('n')
+            ->addSelect('p')
+            ->leftJoin('n.parent', 'p')
+            ->where('n.bandSpace = :bandSpace')
+            ->andWhere('LOWER(n.title) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('n.title', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

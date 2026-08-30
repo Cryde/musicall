@@ -60,4 +60,24 @@ class SongRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette search. Notes are plain text on this entity, unlike a band space note's body,
+     * so they can be matched directly.
+     *
+     * @return Song[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, string $search, int $limit): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.bandSpace = :bandSpace')
+            ->andWhere('s.archiveDatetime IS NULL')
+            ->andWhere('LOWER(s.title) LIKE :search OR LOWER(s.notes) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('s.title', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

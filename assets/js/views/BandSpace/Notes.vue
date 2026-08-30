@@ -85,14 +85,15 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
+import { onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import CreateNoteDialog from '../../components/BandSpace/Notes/CreateNoteDialog.vue'
 import NoteEditor from '../../components/BandSpace/Notes/NoteEditor.vue'
 import NoteTree from '../../components/BandSpace/Notes/NoteTree.vue'
 import { useBandSpaceNotesStore } from '../../store/bandSpace/bandSpaceNotes.js'
 
 const route = useRoute()
+const router = useRouter()
 const confirm = useConfirm()
 const toast = useToast()
 const notesStore = useBandSpaceNotesStore()
@@ -174,6 +175,32 @@ function handleSelect(noteId) {
 function handleBack() {
   mobileView.value = 'tree'
 }
+
+/**
+ * The open note is URL state, so the command palette and the activity log can both link straight to
+ * one. selectNote() fetches the note by id on its own, so this does not have to wait for the tree.
+ *
+ * Deliberately routed through openNote(): arriving from a link unmounts the editor exactly like
+ * clicking another note in the tree does, so it has to ask the same question about unsaved text.
+ */
+watch(
+  () => route.query.note,
+  (noteId) => {
+    if (typeof noteId === 'string' && noteId && noteId !== notesStore.selectedNoteId) {
+      openNote(noteId)
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => notesStore.selectedNoteId,
+  (noteId) => {
+    if (noteId && noteId !== route.query.note) {
+      router.replace({ query: { ...route.query, note: noteId } })
+    }
+  }
+)
 
 function openCreateDialog(parentId = null) {
   createParentId.value = parentId

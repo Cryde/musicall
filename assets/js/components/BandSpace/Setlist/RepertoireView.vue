@@ -93,6 +93,7 @@ import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
@@ -100,9 +101,13 @@ import SongDetailDrawer from './SongDetailDrawer.vue'
 import SongFormDialog from './SongFormDialog.vue'
 
 const props = defineProps({
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  /** Song the command palette linked to, opened in the detail drawer once the repertoire is loaded. */
+  focusSongId: { type: String, default: null }
 })
 
+const route = useRoute()
+const router = useRouter()
 const songsStore = useBandSongsStore()
 const confirm = useConfirm()
 const toast = useToast()
@@ -150,7 +155,17 @@ onMounted(() => {
 })
 
 watch(drawerVisible, (open, wasOpen) => {
-  if (wasOpen && !open) loadSongsWithFiles()
+  if (!wasOpen || open) return
+
+  loadSongsWithFiles()
+
+  // Dropping the parameter on close is what the finance and files modules already do, and it is
+  // load bearing here rather than cosmetic: the deep link watcher below re-runs on every songs
+  // mutation, so a lingering ?song= would swap the drawer back to the linked song after the member
+  // had moved on to another one. It also stops a reload from reopening a drawer already dismissed.
+  if (route.query.song) {
+    router.replace({ query: { ...route.query, song: undefined } })
+  }
 })
 
 const filteredSongs = computed(() => {
@@ -186,6 +201,22 @@ function openDrawer(song) {
   drawerSong.value = song
   drawerVisible.value = true
 }
+
+/**
+ * Watches the song list too, because the linked id usually arrives before the repertoire has
+ * loaded. Re-opening is prevented by drawerSong keeping the id after a close, so dismissing the
+ * drawer does not bounce it straight back.
+ */
+watch(
+  [() => props.focusSongId, () => songsStore.songs],
+  ([songId]) => {
+    if (!songId || drawerSong.value?.id === songId) return
+
+    const song = songsStore.songs.find((candidate) => candidate.id === songId)
+    if (song) openDrawer(song)
+  },
+  { immediate: true }
+)
 
 function openMenu(event, song) {
   menuTargetSong.value = song

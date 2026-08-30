@@ -17,7 +17,8 @@
     </template>
     <template v-else>
       <SkipLink />
-      <MenuBand v-model:mobile-nav-open="mobileNavOpen" />
+      <MenuBand v-model:mobile-nav-open="mobileNavOpen" @open-search="paletteVisible = true" />
+      <CommandPalette v-model:visible="paletteVisible" />
       <div class="flex">
         <aside
           class="hidden lg:block w-[var(--band-sidebar-width)] shrink-0 sticky top-16 h-[calc(100dvh-4rem)] bg-surface-0 dark:bg-surface-900 border-r border-surface-200 dark:border-surface-700 self-start transition-[width] duration-150"
@@ -157,7 +158,7 @@ import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBandSpaceNavigation } from '../composables/useBandSpaceNavigation.js'
 import { BAND_SPACE_ROUTES, SECTION_NAMES } from '../constants/bandSpace.js'
@@ -168,6 +169,7 @@ import { formatDateLong } from '../utils/date.js'
 import MenuBand from '../views/Global/MenuBand.vue'
 import BandSidebar from './BandSpace/BandSidebar.vue'
 import BandSpaceSelector from './BandSpace/BandSpaceSelector.vue'
+import CommandPalette from './BandSpace/CommandPalette.vue'
 import SkipLink from './SkipLink.vue'
 
 const bandSpaceStore = useBandSpaceStore()
@@ -252,6 +254,24 @@ const deletionScheduledFor = computed(() => currentSpace.value?.deletion_schedul
 const isLoading = ref(true)
 const hasError = ref(false)
 const mobileNavOpen = ref(false)
+const paletteVisible = ref(false)
+
+/**
+ * Bound here rather than globally on purpose: outside a band space there is nothing for the palette
+ * to search, and swallowing the browser's own Ctrl+K on the rest of the site would be a regression.
+ */
+function handleSearchShortcut(event) {
+  if (event.key?.toLowerCase() !== 'k' || !(event.ctrlKey || event.metaKey)) {
+    return
+  }
+  // No space in the URL yet means no space to search, so leave the shortcut alone.
+  if (!route.params.id) {
+    return
+  }
+
+  event.preventDefault()
+  paletteVisible.value = true
+}
 
 // Desktop sidebar collapse state — persists across reloads and drives the
 // --band-sidebar-width CSS variable so the aside, the navbar logo zone,
@@ -301,7 +321,10 @@ useHead({
 
 onMounted(() => {
   loadSpaces()
+  window.addEventListener('keydown', handleSearchShortcut)
 })
+
+onUnmounted(() => window.removeEventListener('keydown', handleSearchShortcut))
 
 async function loadSpaces() {
   isLoading.value = true

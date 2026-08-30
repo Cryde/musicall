@@ -336,4 +336,25 @@ class BandSpaceFileRepository extends ServiceEntityRepository
         // paging would quietly drop files. The id settles every tie.
         $qb->addOrderBy('bsf.id', $direction);
     }
+
+    /**
+     * Command palette search. The folder comes along because it is the hit's subtitle.
+     *
+     * @return BandSpaceFile[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, string $search, int $limit): array
+    {
+        return $this->createQueryBuilder('bsf')
+            ->addSelect('f')
+            ->leftJoin('bsf.folder', 'f')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->andWhere('LOWER(bsf.originalName) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('bsf.originalName', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

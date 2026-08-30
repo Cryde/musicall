@@ -324,4 +324,25 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette search. The category comes along because it is the hit's subtitle.
+     *
+     * @return Task[]
+     */
+    public function searchByBandSpace(BandSpace $bandSpace, string $search, int $limit): array
+    {
+        return $this->createQueryBuilder('t')
+            ->addSelect('c')
+            ->leftJoin('t.category', 'c')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->andWhere('LOWER(t.title) LIKE :search OR LOWER(t.description) LIKE :search')
+            ->setParameter('bandSpace', $bandSpace)
+            ->setParameter('search', '%' . $search . '%')
+            ->orderBy('t.creationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
