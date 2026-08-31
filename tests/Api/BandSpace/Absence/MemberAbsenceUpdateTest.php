@@ -10,9 +10,9 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\MemberAbsenceFactory;
 use App\Tests\Factory\User\UserFactory;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]

@@ -21,12 +21,12 @@ class ValidAbsenceRangeValidator extends ConstraintValidator
             return;
         }
 
-        $start = $this->parseDate($value, 'startDate');
-        $end = $this->parseDate($value, 'endDate');
+        $start = $this->readDate($value, 'startDate');
+        $end = $this->readDate($value, 'endDate');
 
-        // Anything the property constraints already rejected - missing, not a date, out of order -
-        // has its own violation. Saying "too long" on top of it would be noise, and the span of a
-        // pair that does not parse is not a question worth answering.
+        // A missing date has its own NotNull violation, and an out of order pair its own
+        // GreaterThanOrEqual one. Adding "too long" on top would be noise, and the span of a pair
+        // that is not a pair is not a question worth answering.
         if (!$start instanceof DateTimeImmutable || !$end instanceof DateTimeImmutable || $end < $start) {
             return;
         }
@@ -42,22 +42,18 @@ class ValidAbsenceRangeValidator extends ConstraintValidator
     }
 
     /**
-     * The property as a real date, or null when it is absent or not a `Y-m-d` calendar day.
-     *
-     * isset() rather than a bare read: an omitted date leaves the typed property uninitialized on
-     * the create DTO, and touching it would fatal before NotBlank ever runs. The format is checked
-     * by round-trip so `2026-02-31`, which DateTimeImmutable would happily read as 3 March, is not
-     * mistaken for a span this constraint can measure.
+     * The serializer has already parsed and rejected anything malformed, so this only has to cope
+     * with the field being absent. isset() rather than a bare read, because a property the caller
+     * omitted may be uninitialized rather than null.
      */
-    private function parseDate(object $value, string $property): ?DateTimeImmutable
+    private function readDate(object $value, string $property): ?DateTimeImmutable
     {
-        $raw = property_exists($value, $property) && isset($value->{$property}) ? $value->{$property} : null;
-        if (!is_string($raw)) {
+        if (!property_exists($value, $property) || !isset($value->{$property})) {
             return null;
         }
 
-        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $raw);
+        $date = $value->{$property};
 
-        return $date !== false && $date->format('Y-m-d') === $raw ? $date : null;
+        return $date instanceof DateTimeImmutable ? $date : null;
     }
 }

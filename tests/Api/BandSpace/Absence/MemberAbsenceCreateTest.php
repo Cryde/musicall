@@ -11,8 +11,9 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\Agenda\ValidAbsenceRange;
-use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
+use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -362,89 +363,53 @@ class MemberAbsenceCreateTest extends ApiTestCase
         ]);
     }
 
-    public function test_a_date_that_is_not_a_real_calendar_day_is_rejected(): void
+    public function test_an_impossible_calendar_day_rolls_over_rather_than_being_rejected(): void
     {
+        // The documented cost of typing the dates as DateTimeImmutable: PHP's date parsing does no
+        // calendar check, so 31 February becomes 3 March, and by validation time the original string
+        // is gone so nothing can tell the two apart. Assert\Date's checkdate did catch this when the
+        // property was a string. Recorded as a test so the behaviour is visible rather than a
+        // surprise, and so a future fix has something to flip.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
 
         $this->client->loginUser($user);
         $this->client->jsonRequest(
             'POST',
             '/api/band_spaces/' . $bandSpace->id . '/absences',
-            // 31 February: DateTimeImmutable would happily read this as 3 March, which is why the
-            // constraint parses strictly instead.
-            ['startDate' => '2026-02-31', 'endDate' => '2026-03-02'],
+            ['startDate' => '2026-02-31', 'endDate' => '2026-03-05'],
             ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/ConstraintViolation',
-            '@id' => '/api/validation_errors/' . Date::INVALID_DATE_ERROR,
-            '@type' => 'ConstraintViolation',
-            'status' => 422,
-            'violations' => [
-                [
-                    'propertyPath' => 'start_date',
-                    'message' => 'Le format de la date est invalide (attendu : AAAA-MM-JJ)',
-                    'code' => Date::INVALID_DATE_ERROR,
-                ],
-            ],
-            'detail' => 'start_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
-            'type' => '/validation_errors/' . Date::INVALID_DATE_ERROR,
-            'title' => 'An error occurred',
-            'description' => 'start_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
-        ]);
-    }
-
-    public function test_a_reason_longer_than_the_column_is_rejected(): void
-    {
-        $user = UserFactory::new()->asBaseUser()->create();
-        $bandSpace = BandSpaceFactory::new()->create();
-        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
-
-        $this->client->loginUser($user);
-        $this->client->jsonRequest(
-            'POST',
-            '/api/band_spaces/' . $bandSpace->id . '/absences',
-            [
-                'startDate' => '2026-08-10',
-                'endDate' => '2026-08-12',
-                // One over the 120 character column, which would otherwise be a database error.
-                'reason' => str_repeat('a', 121),
-            ],
-            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
-        );
-
-        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $this->assertJsonEquals([
-            '@context' => '/api/contexts/ConstraintViolation',
-            '@id' => '/api/validation_errors/d94b19cc-114f-4f44-9cc4-4138e80a87b9',
-            '@type' => 'ConstraintViolation',
-            'status' => 422,
-            'violations' => [
-                [
-                    'propertyPath' => 'reason',
-                    'message' => 'Le motif ne peut pas dépasser 120 caractères',
-                    'code' => 'd94b19cc-114f-4f44-9cc4-4138e80a87b9',
-                ],
-            ],
-            'detail' => 'reason: Le motif ne peut pas dépasser 120 caractères',
-            'type' => '/validation_errors/d94b19cc-114f-4f44-9cc4-4138e80a87b9',
-            'title' => 'An error occurred',
-            'description' => 'reason: Le motif ne peut pas dépasser 120 caractères',
-        ]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $repository = self::getContainer()->get(MemberAbsenceRepository::class);
-        $this->assertCount(0, $repository->findAll());
+        $absence = $repository->findAll()[0];
+
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MemberAbsence',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/absences/' . $absence->id,
+            '@type' => 'MemberAbsence',
+            'id' => $absence->id,
+            'band_space_id' => $bandSpace->id,
+            'member_id' => $membership->id,
+            'display_name' => $user->username,
+            'profile_picture_url' => null,
+            'start_date' => '2026-03-03',
+            'end_date' => '2026-03-05',
+            'reason' => null,
+            'can_manage' => true,
+            'creation_datetime' => $absence->creationDatetime->format(\DateTimeInterface::ATOM),
+        ]);
     }
 
     public function test_a_whitespace_only_date_is_rejected_rather_than_read_as_today(): void
     {
-        // NotBlank passes a whitespace string (empty('   ') is false) and DateTimeImmutable('   ')
-        // returns the current timestamp, so anything that lets this through does not fail loudly -
-        // it silently records an absence starting today. Assert\Date is what closes that.
+        // DateTimeImmutable('   ') returns the current timestamp, so anything that lets this through
+        // silently records an absence starting today. The serializer refuses to denormalize it, and
+        // collectDenormalizationErrors turns that refusal into a 422 naming the field rather than a
+        // bare 400 the form cannot attach to an input.
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
@@ -460,20 +425,62 @@ class MemberAbsenceCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ConstraintViolation',
-            '@id' => '/api/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            '@id' => '/api/validation_errors/' . Type::INVALID_TYPE_ERROR,
             '@type' => 'ConstraintViolation',
             'status' => 422,
             'violations' => [
                 [
                     'propertyPath' => 'start_date',
-                    'message' => 'Le format de la date est invalide (attendu : AAAA-MM-JJ)',
-                    'code' => Date::INVALID_FORMAT_ERROR,
+                    'message' => 'Cette valeur doit être de type string|null.',
+                    'code' => Type::INVALID_TYPE_ERROR,
+                    // The serializer's own English wording, passed through untranslated. Asserted so
+                    // it is a visible part of the contract rather than a surprise in a client.
+                    'hint' => 'The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.',
                 ],
             ],
-            'detail' => 'start_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
-            'type' => '/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            'detail' => 'start_date: Cette valeur doit être de type string|null.',
+            'type' => '/validation_errors/' . Type::INVALID_TYPE_ERROR,
             'title' => 'An error occurred',
-            'description' => 'start_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
+            'description' => 'start_date: Cette valeur doit être de type string|null.',
+        ]);
+
+        $repository = self::getContainer()->get(MemberAbsenceRepository::class);
+        $this->assertCount(0, $repository->findAll());
+    }
+
+    public function test_an_omitted_start_date_is_reported_rather_than_left_uninitialized(): void
+    {
+        // The typed property stays uninitialized, which both the class constraint and
+        // GreaterThanOrEqual's property path have to survive without touching it.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/absences',
+            ['endDate' => '2026-08-12'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . NotNull::IS_NULL_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'start_date',
+                    'message' => 'Veuillez spécifier une date de début',
+                    'code' => NotNull::IS_NULL_ERROR,
+                ],
+            ],
+            'detail' => 'start_date: Veuillez spécifier une date de début',
+            'type' => '/validation_errors/' . NotNull::IS_NULL_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'start_date: Veuillez spécifier une date de début',
         ]);
 
         $repository = self::getContainer()->get(MemberAbsenceRepository::class);

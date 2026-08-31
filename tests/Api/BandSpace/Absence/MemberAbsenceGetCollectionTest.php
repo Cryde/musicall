@@ -265,6 +265,33 @@ class MemberAbsenceGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_an_unparseable_window_bound_is_a_bad_request(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/absences?from=not-a-date',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Date invalide',
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => 'Date invalide',
+        ]);
+    }
+
     public function test_a_non_member_cannot_read_the_absences(): void
     {
         $stranger = UserFactory::new()->asBaseUser()->create();

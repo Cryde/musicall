@@ -56,9 +56,10 @@ readonly class MemberAbsenceCollectionProvider implements ProviderInterface
     }
 
     /**
-     * Anything but a usable date string reads as absent, so the caller falls back to its default
-     * window. `?from[]=x` arrives as an array and would otherwise be a TypeError, so a 500 for what
-     * is really a malformed request.
+     * A string that is not a date is a 400. Anything that is not a string at all falls back to the
+     * default window instead: `?from[]=x` arrives as an array, and the point of the guard is that it
+     * no longer reaches a `?string` parameter and dies as a TypeError, so a 500 for a nonsensical
+     * filter nobody meant to send.
      */
     private function parseDate(mixed $value): ?DateTimeImmutable
     {

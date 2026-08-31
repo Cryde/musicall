@@ -414,7 +414,7 @@ function applyViolations(error) {
 
 function confirmDelete(absence) {
   confirm.require({
-    message: `Supprimer l'indisponibilité de ${absence.display_name} du ${formatAbsenceRange(absence.start_date, absence.end_date)} ?`,
+    message: `Supprimer l'indisponibilité de ${absence.display_name} (${formatAbsenceRange(absence.start_date, absence.end_date)}) ?`,
     header: 'Confirmer la suppression',
     icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',

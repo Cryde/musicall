@@ -9,9 +9,10 @@ use Symfony\Component\Validator\Constraint;
 /**
  * Class-level constraint capping how long an absence may run.
  *
- * The two dates are validated individually by `Assert\Date` and `Assert\GreaterThanOrEqual` on the
- * DTOs, the way FinanceRecurrenceCreate already validates the same `Y-m-d` string pair. Only the
- * span needs both values at once, which is the one thing a property constraint cannot express.
+ * The dates themselves are the serializer's business: they are typed `DateTimeImmutable` and carry a
+ * strict `!Y-m-d` denormalization format, so a malformed value or an instant never reaches here.
+ * `NotNull` covers absence and `GreaterThanOrEqual` covers the ordering. Only the span needs both
+ * values at once, which is the one thing a property constraint cannot express.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class ValidAbsenceRange extends Constraint

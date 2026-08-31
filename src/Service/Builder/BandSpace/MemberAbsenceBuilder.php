@@ -36,8 +36,8 @@ readonly class MemberAbsenceBuilder
         $dto->memberId = (string) $entity->member->id;
         $dto->displayName = $entity->member->displayName();
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($entity->member->user);
-        $dto->startDate = $entity->startDate->format('Y-m-d');
-        $dto->endDate = $entity->endDate->format('Y-m-d');
+        $dto->startDate = $entity->startDate;
+        $dto->endDate = $entity->endDate;
         $dto->reason = $entity->reason;
         $dto->canManage = $this->memberAbsenceChecker->canManage($entity->member, $viewer);
         $dto->creationDatetime = $entity->creationDatetime;
