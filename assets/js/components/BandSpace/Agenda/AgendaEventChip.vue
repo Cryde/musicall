@@ -5,8 +5,13 @@
       <span v-if="priorityIcon" :class="['pi shrink-0', priorityIcon.icon, priorityIcon.color]" :title="priorityIcon.label" />
       <span v-if="financeIcon" :class="['pi text-[10px] shrink-0', financeIcon.icon]" :title="financeIcon.label" />
       <span v-if="isRecurringOccurrence" class="pi pi-refresh text-[10px] shrink-0 opacity-90" title="Événement récurrent" />
-      <span class="truncate font-medium">{{ item.title }}</span>
+      <span v-if="isAbsence" class="pi pi-user-minus text-[10px] shrink-0 opacity-90" title="Indisponibilité" />
+      <span class="truncate font-medium" :class="{ 'font-normal italic': isAbsence }">
+        {{ item.title }}
+      </span>
     </div>
+
+    <div v-if="!isCompact && absenceReason" class="truncate opacity-90">{{ absenceReason }}</div>
 
     <div v-if="!isCompact && financeAmount" class="font-semibold tabular-nums">{{ financeAmount }}</div>
 
@@ -74,6 +79,13 @@ const location = computed(() =>
 const isRecurringOccurrence = computed(
   () => props.item.source === 'manual' && props.item.metadata?.is_recurring_occurrence === true
 )
+
+// An absence is context for the dates around it, not an appointment, so it is drawn a notch quieter
+// than the events it sits next to.
+const isAbsence = computed(() => props.item.source === 'absence')
+
+// The reason travels as the item's description, which is where the agenda list row reads it too.
+const absenceReason = computed(() => (isAbsence.value ? (props.item.description ?? null) : null))
 
 const assignees = computed(() => props.item.metadata?.assignees ?? [])
 const visibleAssignees = computed(() => assignees.value.slice(0, 3))
