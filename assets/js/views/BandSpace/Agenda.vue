@@ -12,14 +12,26 @@
           Mise à jour…
         </span>
       </div>
-      <Button
-        icon="pi pi-plus"
-        label="Nouvel événement"
-        size="small"
-        :pt="{ label: { class: 'hidden sm:inline' } }"
-        aria-label="Nouvel événement"
-        @click="openCreateDialog"
-      />
+      <div class="flex items-center gap-2">
+        <Button
+          icon="pi pi-user-minus"
+          label="Indisponibilités"
+          size="small"
+          severity="secondary"
+          outlined
+          :pt="{ label: { class: 'hidden sm:inline' } }"
+          aria-label="Indisponibilités"
+          @click="openAbsencesDrawer()"
+        />
+        <Button
+          icon="pi pi-plus"
+          label="Nouvel événement"
+          size="small"
+          :pt="{ label: { class: 'hidden sm:inline' } }"
+          aria-label="Nouvel événement"
+          @click="openCreateDialog"
+        />
+      </div>
     </div>
 
     <div class="flex flex-col gap-3 mb-4 sm:flex-row sm:flex-wrap sm:items-center">
@@ -31,14 +43,14 @@
       />
       <div class="flex items-center gap-1 -mx-3 px-3 overflow-x-auto sm:overflow-visible sm:mx-0 sm:px-0">
         <button
-          v-for="src in sourceOptions"
+          v-for="src in AGENDA_SOURCE_LIST"
           :key="src.key"
           type="button"
           class="text-xs font-medium px-2.5 py-1 rounded-full transition-all text-center tabular-nums whitespace-nowrap sm:min-w-20"
-          :class="selectedSources.has(src.key) ? src.activeClass : src.inactiveClass"
+          :class="selectedSources.has(src.key) ? src.badgeClass : INACTIVE_CHIP_CLASS"
           @click="toggleSource(src.key)"
         >
-          {{ src.label }} · {{ countsBySource[src.key] }}
+          {{ src.chipLabel }} · {{ countsBySource[src.key] }}
         </button>
       </div>
       <div class="flex items-center gap-1 sm:ml-auto">
@@ -186,7 +198,7 @@
                     v-for="(source, index) in dayEventSources(arg.date).slice(0, YEAR_DOT_LIMIT)"
                     :key="`${source}-${index}`"
                     class="agenda-year-dot"
-                    :style="{ backgroundColor: SOURCE_COLORS[source] }"
+                    :style="{ backgroundColor: agendaSourceFor(source).color }"
                   />
                 </span>
               </template>
@@ -203,6 +215,13 @@
       :agendaItem="dialogItem"
       :initialDatetime="dialogInitialDatetime"
       @saved="handleEntrySaved"
+    />
+
+    <AbsencesDrawer
+      v-model:visible="absencesDrawerVisible"
+      :bandSpaceId="route.params.id"
+      :initialMemberId="absencesDrawerMemberId"
+      @changed="fetchWithCurrentRange"
     />
   </div>
 </template>
@@ -237,9 +256,17 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import bandSpaceAgendaApi from '../../api/bandSpace/band-space-agenda.js'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
+import AbsencesDrawer from '../../components/BandSpace/Agenda/AbsencesDrawer.vue'
 import AgendaEntryDrawer from '../../components/BandSpace/Agenda/AgendaEntryDrawer.vue'
 import AgendaEventChip from '../../components/BandSpace/Agenda/AgendaEventChip.vue'
 import Avatar from '../../components/User/Avatar.vue'
+import {
+  AGENDA_SOURCE_KEYS,
+  AGENDA_SOURCE_LIST,
+  agendaSourceFor,
+  agendaSourceLabel
+} from '../../constants/agendaSources.js'
+import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import {
   agendaCalendarEventDates,
@@ -254,16 +281,22 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const agendaStore = useBandAgendaStore()
+const absenceStore = useBandAbsenceStore()
 // Wipe any previous space's items synchronously before the first render so
 // switching from /band/A/agenda to /band/B/agenda doesn't flash A's entries
 // while B's fetch is in flight. The :key on <router-view> remounts this view
 // on space switch but the Pinia store itself is an app-singleton and keeps
 // A's state until cleared.
 agendaStore.clear()
+// Same reason, same singleton problem: the drawer would otherwise render the previous space's
+// absences for a frame when it opens.
+absenceStore.clear()
 
 const dialogVisible = ref(false)
 const dialogItem = ref(null)
 const dialogInitialDatetime = ref(null)
+const absencesDrawerVisible = ref(false)
+const absencesDrawerMemberId = ref(null)
 
 const today = startOfDay(new Date())
 const dateFrom = ref(today)
@@ -324,44 +357,19 @@ const agendaPresets = [
   }
 ]
 
-const sourceOptions = [
-  {
-    key: 'manual',
-    label: 'Manuel',
-    activeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    inactiveClass:
-      'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
-  },
-  {
-    key: 'task',
-    label: 'Tâches',
-    activeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    inactiveClass:
-      'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
-  },
-  {
-    key: 'finance',
-    label: 'Finances',
-    activeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    inactiveClass:
-      'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
-  }
-]
-
-const SOURCE_COLORS = {
-  manual: '#3b82f6',
-  task: '#f59e0b',
-  finance: '#10b981'
-}
+// One shared descriptor per source; the chip's inactive styling is the same for all of them.
+const INACTIVE_CHIP_CLASS =
+  'bg-surface-100 text-surface-400 dark:bg-surface-800 dark:text-surface-500 line-through'
 
 // Max dots drawn per day in the year overview; any extra events are reflected in the
 // aria-label count only.
 const YEAR_DOT_LIMIT = 10
 
-const selectedSources = reactive(new Set(['manual', 'task', 'finance']))
+// Absences are on by default: shared visibility is the whole point of recording them.
+const selectedSources = reactive(new Set(AGENDA_SOURCE_KEYS))
 
 const countsBySource = computed(() => {
-  const counts = { manual: 0, task: 0, finance: 0 }
+  const counts = Object.fromEntries(AGENDA_SOURCE_KEYS.map((key) => [key, 0]))
   for (const item of agendaStore.items) {
     if (counts[item.source] !== undefined) {
       counts[item.source]++
@@ -431,7 +439,7 @@ function dayEventSources(date) {
 }
 
 function yearDotsLabel(sources) {
-  const distinct = Object.keys(SOURCE_COLORS).filter((source) => sources.includes(source))
+  const distinct = AGENDA_SOURCE_KEYS.filter((source) => sources.includes(source))
   return `${sources.length} événement${sources.length > 1 ? 's' : ''} : ${distinct.map(sourceLabel).join(', ')}`
 }
 
@@ -441,7 +449,7 @@ const calendarEvents = computed(() =>
     title: item.title,
     ...agendaCalendarEventDates(item),
     allDay: isAllDayItem(item),
-    color: SOURCE_COLORS[item.source] ?? '#94a3b8',
+    color: agendaSourceFor(item.source).color,
     contrastColor: '#fff',
     className: 'agenda-event-clickable',
     extendedProps: { item }
@@ -645,7 +653,18 @@ function handleItemClick(item) {
       params: { id: route.params.id },
       query: { entry: item.source_id }
     })
+    return
   }
+  if (item.source === 'absence') {
+    // Straight to the drawer, narrowed to that member: it is the one place absences are managed,
+    // and it is the only payload that knows whether the reader may edit the row.
+    openAbsencesDrawer(item.metadata?.member_id ?? null)
+  }
+}
+
+function openAbsencesDrawer(memberId = null) {
+  absencesDrawerMemberId.value = memberId
+  absencesDrawerVisible.value = true
 }
 
 function handleEventClick(info) {
@@ -709,42 +728,15 @@ function formatTime(datetimeString) {
 }
 
 function sourceLabel(source) {
-  switch (source) {
-    case 'manual':
-      return 'Manuel'
-    case 'task':
-      return 'Tâche'
-    case 'finance':
-      return 'Finance'
-    default:
-      return source
-  }
+  return agendaSourceLabel(source)
 }
 
 function sourceBorderClass(source) {
-  switch (source) {
-    case 'manual':
-      return 'border-l-blue-500'
-    case 'task':
-      return 'border-l-amber-500'
-    case 'finance':
-      return 'border-l-emerald-500'
-    default:
-      return 'border-l-surface-300'
-  }
+  return agendaSourceFor(source).borderClass
 }
 
 function sourceBadgeClass(source) {
-  switch (source) {
-    case 'manual':
-      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'task':
-      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-    case 'finance':
-      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-    default:
-      return 'bg-surface-100 text-surface-600'
-  }
+  return agendaSourceFor(source).badgeClass
 }
 
 function metadataLine(item) {

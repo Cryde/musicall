@@ -10,6 +10,7 @@ use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceNoteRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -109,6 +110,24 @@ class BandSpacePendingDeletionWriteBlockTest extends ApiTestCase
         $this->assertCount(0, self::getContainer()->get(BandSpaceNoteRepository::class)->findByBandSpace($bandSpace));
     }
 
+    public function test_a_member_cannot_record_an_absence(): void
+    {
+        [$admin, $bandSpace] = $this->pendingDeletionSpace();
+
+        $this->client->loginUser($admin);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/absences',
+            ['startDate' => '2026-08-10', 'endDate' => '2026-08-12'],
+            self::HEADERS,
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertJsonEquals(self::EXPECTED_CONFLICT);
+
+        $this->assertCount(0, self::getContainer()->get(MemberAbsenceRepository::class)->findAll());
+    }
+
     /**
      * Joining a condemned space is pointless, and this processor has no checker to hang the guard on, so it
      * gets its own message.
@@ -194,6 +213,7 @@ class BandSpacePendingDeletionWriteBlockTest extends ApiTestCase
         yield 'setlists' => ['setlists'];
         yield 'finance categories' => ['finance/categories'];
         yield 'tech riders' => ['tech_riders'];
+        yield 'absences' => ['absences'];
     }
 
     /**

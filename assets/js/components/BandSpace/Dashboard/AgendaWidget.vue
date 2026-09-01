@@ -35,6 +35,7 @@ import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
+import { agendaSourceFor } from '../../../constants/agendaSources.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
 import { isAllDayItem } from '../../../utils/agendaItem.js'
 import DashboardWidget from './DashboardWidget.vue'
@@ -76,13 +77,7 @@ function formatTime(datetimeStr) {
   return format(parseISO(datetimeStr), 'HH:mm')
 }
 
-const SOURCE_BORDER_CLASS = {
-  manual: 'border-blue-400',
-  task: 'border-amber-400',
-  finance: 'border-emerald-400'
-}
-
 function sourceBorderClass(source) {
-  return SOURCE_BORDER_CLASS[source] ?? 'border-surface-300'
+  return agendaSourceFor(source).widgetBorderClass
 }
 </script>

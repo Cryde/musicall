@@ -11,6 +11,7 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\FinanceCategoryFactory;
 use App\Tests\Factory\BandSpace\FinanceEntryFactory;
+use App\Tests\Factory\BandSpace\MemberAbsenceFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
 use Doctrine\Common\Collections\ArrayCollection;
 use App\Tests\Factory\User\UserFactory;
@@ -719,6 +720,66 @@ class AgendaGetCollectionTest extends ApiTestCase
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-01&to=2026-01-31',
+                '@type' => 'PartialCollectionView',
+            ],
+        ]);
+    }
+
+    public function test_absences_reach_the_calendar_as_all_day_items(): void
+    {
+        // The fourth aggregated source. It arrives as an ordinary AgendaItem, which is what lets the
+        // existing calendar, list and dashboard widget render it without knowing about absences.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $user,
+            'stageName' => 'Jo la Basse',
+        ])->create();
+
+        $absence = MemberAbsenceFactory::new([
+            'member' => $membership,
+            'startDate' => new DateTimeImmutable('2026-06-10'),
+            'endDate' => new DateTimeImmutable('2026-06-12'),
+            'reason' => 'Vacances',
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $itemId = 'absence-' . $absence->id;
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/AgendaItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                [
+                    '@id' => '/api/agenda_items/id=' . $itemId . ';bandSpaceId=' . $bandSpace->id,
+                    '@type' => 'AgendaItem',
+                    'id' => $itemId,
+                    'band_space_id' => $bandSpace->id,
+                    'source' => 'absence',
+                    'source_id' => $absence->id,
+                    // Both ends pinned to midnight UTC: a range of calendar dates, never an instant.
+                    'datetime' => '2026-06-10T00:00:00+00:00',
+                    'end_datetime' => '2026-06-12T00:00:00+00:00',
+                    'is_all_day' => true,
+                    'title' => 'Jo la Basse indisponible',
+                    'description' => 'Vacances',
+                    // Only the member: the name is already in the title and the reason is already
+                    // the description, so nothing is carried twice.
+                    'metadata' => ['member_id' => $membership->id],
+                ],
+            ],
+            'view' => [
+                '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-06-01&to=2026-06-30',
                 '@type' => 'PartialCollectionView',
             ],
         ]);

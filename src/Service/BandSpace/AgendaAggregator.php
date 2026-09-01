@@ -7,12 +7,14 @@ use App\Entity\BandSpace\AgendaEntry;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\BandSpace\FinanceEntry;
+use App\Entity\BandSpace\MemberAbsence;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
 use App\Repository\BandSpace\AgendaEntryRepository;
 use App\Repository\BandSpace\FinanceEntryRepository;
+use App\Repository\BandSpace\MemberAbsenceRepository;
 use App\Repository\BandSpace\TaskRepository;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use DateInterval;
@@ -32,6 +34,7 @@ readonly class AgendaAggregator
         private AgendaEntryRepository $agendaEntryRepository,
         private TaskRepository $taskRepository,
         private FinanceEntryRepository $financeEntryRepository,
+        private MemberAbsenceRepository $memberAbsenceRepository,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
     ) {
     }
@@ -63,6 +66,7 @@ readonly class AgendaAggregator
             ...$manualItems,
             ...array_map(fn(Task $t): AgendaItem => $this->buildTask($bandSpace, $t), $this->taskRepository->findUpcomingForBand($bandSpace, $from, $to)),
             ...array_map(fn(FinanceEntry $f): AgendaItem => $this->buildFinance($bandSpace, $f), $this->financeEntryRepository->findUpcomingForBand($bandSpace, $viewer, $from, $to)),
+            ...array_map(fn(MemberAbsence $a): AgendaItem => $this->buildAbsence($bandSpace, $a), $this->memberAbsenceRepository->findOverlappingForBand($bandSpace, $from, $to)),
         ];
 
         usort(
@@ -410,6 +414,49 @@ readonly class AgendaAggregator
         return $item;
     }
 
+    /**
+     * A member's unavailability, as an all day band rather than an appointment: it is context for
+     * the dates around it, not something anybody attends.
+     *
+     * The range is a pair of calendar dates and carries no instant, so both ends are pinned to
+     * midnight UTC the way an all day entry is - see AgendaEntryCreateProcessor for why that pin
+     * matters, and assets/js/utils/agendaDate.js for how the front end unpins it.
+     */
+    private function buildAbsence(BandSpace $bandSpace, MemberAbsence $absence): AgendaItem
+    {
+        $displayName = $absence->member->displayName();
+
+        $item = new AgendaItem();
+        $item->id = 'absence-' . $absence->id;
+        $item->bandSpaceId = (string) $bandSpace->id;
+        $item->source = 'absence';
+        $item->sourceId = (string) $absence->id;
+        $item->datetime = $this->pinToUtcMidnight($absence->startDate);
+        $item->endDatetime = $this->pinToUtcMidnight($absence->endDate);
+        $item->isAllDay = true;
+        $item->title = $displayName . ' indisponible';
+        $item->description = $absence->reason;
+        // Only what a consumer reads. The member's name is already in the title, and the reason is
+        // already the description, which is where both the list row and the calendar chip read it.
+        $item->metadata = ['member_id' => (string) $absence->member->id];
+
+        return $item;
+    }
+
+    /**
+     * A date-only column as an ATOM instant at midnight UTC, which is how every all day item on the
+     * agenda is carried - see AgendaEntryCreateProcessor for why the pin matters, and
+     * assets/js/utils/agendaDate.js for how the front end takes it back off.
+     *
+     * Built by concatenation rather than by parsing: ATOM on a +00:00 date is
+     * `Y-m-d\TH:i:s+00:00`, so constructing a DateTimeImmutable only to format it again would
+     * return the string it was handed.
+     */
+    private function pinToUtcMidnight(DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d') . 'T00:00:00+00:00';
+    }
+
     private function buildFinance(BandSpace $bandSpace, FinanceEntry $entry): AgendaItem
     {
         $item = new AgendaItem();
@@ -417,7 +464,7 @@ readonly class AgendaAggregator
         $item->bandSpaceId = (string) $bandSpace->id;
         $item->source = 'finance';
         $item->sourceId = (string) $entry->id;
-        $item->datetime = DateTimeImmutable::createFromInterface($entry->date)->setTime(0, 0)->format(DateTimeInterface::ATOM);
+        $item->datetime = $this->pinToUtcMidnight($entry->date);
         $item->endDatetime = null;
         $item->isAllDay = false;
         $item->title = $entry->label;
