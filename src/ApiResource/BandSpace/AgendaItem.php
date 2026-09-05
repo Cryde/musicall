@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\BandSpace\AgendaCollectionProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     shortName: 'AgendaItem',
@@ -24,8 +25,11 @@ use App\State\Provider\BandSpace\AgendaCollectionProvider;
             name: 'api_band_space_agenda_get_collection',
             provider: AgendaCollectionProvider::class,
             parameters: [
-                'from' => new QueryParameter(key: 'from'),
-                'to' => new QueryParameter(key: 'to'),
+                // A calendar day at each end, widened to the whole of that day by the provider. The
+                // agenda is day granular, so a bound carrying a time would only let a caller cut an
+                // evening rehearsal off the last day of the window it asked for.
+                'from' => new QueryParameter(key: 'from', constraints: [new Assert\Date()]),
+                'to' => new QueryParameter(key: 'to', constraints: [new Assert\Date()]),
             ],
         ),
     ],

@@ -222,16 +222,26 @@ function applyFiltersToStore() {
   })
 }
 
+// The picked day is turned into an instant here rather than sent as a date, because only the client
+// knows its own offset: "from the 5th" in Paris means 22:00 UTC on the 4th, and a server reading a
+// bare `2026-09-05` as a UTC day would clip the first two hours of the day the user asked for.
+// The milliseconds go because the API validates these two against ATOM, which has no place for them.
+function toAtom(date) {
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+}
+
 function toIsoStartOfDay(date) {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
-  return d.toISOString()
+  return toAtom(d)
 }
 
 function toIsoEndOfDay(date) {
   const d = new Date(date)
-  d.setHours(23, 59, 59, 999)
-  return d.toISOString()
+  // Seconds, not 999ms: ATOM has no place for milliseconds, so anything finer is dropped on the way
+  // out anyway and writing it here would only suggest a precision the filter does not have.
+  d.setHours(23, 59, 59, 0)
+  return toAtom(d)
 }
 
 function handleReset() {

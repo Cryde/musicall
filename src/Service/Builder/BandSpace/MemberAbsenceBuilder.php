@@ -36,8 +36,10 @@ readonly class MemberAbsenceBuilder
         $dto->memberId = (string) $entity->member->id;
         $dto->displayName = $entity->member->displayName();
         $dto->profilePictureUrl = $this->profilePictureUrlBuilder->build($entity->member->user);
-        $dto->startDate = $entity->startDate;
-        $dto->endDate = $entity->endDate;
+        // The column is a DATE and the DTO a `Y-m-d` string, so the day goes out as written with no
+        // offset for a reader to unpin. That bug class is what assets/js/utils/agendaDate.js documents.
+        $dto->startDate = $entity->startDate->format('Y-m-d');
+        $dto->endDate = $entity->endDate->format('Y-m-d');
         $dto->reason = $entity->reason;
         $dto->canManage = $this->memberAbsenceChecker->canManage($entity->member, $viewer);
         $dto->creationDatetime = $entity->creationDatetime;

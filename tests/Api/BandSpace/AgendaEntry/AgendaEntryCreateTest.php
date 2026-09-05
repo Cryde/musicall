@@ -12,6 +12,7 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\Agenda\ValidRecurrence;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\Type;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -856,6 +857,9 @@ class AgendaEntryCreateTest extends ApiTestCase
 
     public function test_create_recurrence_rejects_invalid_until_format(): void
     {
+        // Assert\Date on the property owns this now, not ValidRecurrence: one mistake, one violation,
+        // and the horizon gets the calendar check the rest of the date-only fields have.
+
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
@@ -876,21 +880,68 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ConstraintViolation',
-            '@id' => '/api/validation_errors/' . ValidRecurrence::INVALID_UNTIL_CODE,
+            '@id' => '/api/validation_errors/' . Date::INVALID_FORMAT_ERROR,
             '@type' => 'ConstraintViolation',
             'status' => 422,
             'violations' => [
                 [
                     'propertyPath' => 'recurrence_until_date',
-                    'message' => 'Date de fin de récurrence invalide.',
-                    'code' => ValidRecurrence::INVALID_UNTIL_CODE,
+                    'message' => 'Le format de la date est invalide (attendu : AAAA-MM-JJ)',
+                    'code' => Date::INVALID_FORMAT_ERROR,
                 ],
             ],
-            'detail' => 'recurrence_until_date: Date de fin de récurrence invalide.',
-            'type' => '/validation_errors/' . ValidRecurrence::INVALID_UNTIL_CODE,
+            'detail' => 'recurrence_until_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
+            'type' => '/validation_errors/' . Date::INVALID_FORMAT_ERROR,
             'title' => 'An error occurred',
-            'description' => 'recurrence_until_date: Date de fin de récurrence invalide.',
+            'description' => 'recurrence_until_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
         ]);
+    }
+
+    public function test_create_recurrence_rejects_an_impossible_calendar_day_as_the_horizon(): void
+    {
+        // The horizon used to be parsed by the same loose constructor that silently turned an
+        // absence's 31 February into 3 March, so a series could be given a day that does not exist
+        // and quietly get a different one. Assert\Date's checkdate is what refuses it, and
+        // CalendarDay::parse's round trip is what stops ValidRecurrence adding a second violation
+        // about the horizon it would otherwise have read as 3 March.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
+            [
+                'title' => 'Impossible horizon',
+                'eventDatetime' => '2026-01-04T18:00:00+00:00',
+                'recurrenceFrequency' => 'weekly',
+                'recurrenceUntilDate' => '2026-02-31',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Date::INVALID_DATE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'recurrence_until_date',
+                    'message' => 'Le format de la date est invalide (attendu : AAAA-MM-JJ)',
+                    'code' => Date::INVALID_DATE_ERROR,
+                ],
+            ],
+            'detail' => 'recurrence_until_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
+            'type' => '/validation_errors/' . Date::INVALID_DATE_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'recurrence_until_date: Le format de la date est invalide (attendu : AAAA-MM-JJ)',
+        ]);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(0, $repo->findByBandSpace($bandSpace));
     }
 
     public function test_create_recurrence_rejects_invalid_monthly_mode(): void

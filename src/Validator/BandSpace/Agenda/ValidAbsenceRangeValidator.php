@@ -24,10 +24,19 @@ class ValidAbsenceRangeValidator extends ConstraintValidator
         $start = $this->readDate($value, 'startDate');
         $end = $this->readDate($value, 'endDate');
 
-        // A missing date has its own NotNull violation, and an out of order pair its own
-        // GreaterThanOrEqual one. Adding "too long" on top would be noise, and the span of a pair
-        // that is not a pair is not a question worth answering.
-        if (!$start instanceof DateTimeImmutable || !$end instanceof DateTimeImmutable || $end < $start) {
+        // A date that is missing or malformed has its own NotBlank or Assert\Date violation. The
+        // order and the span of a pair that is not a pair are not questions worth answering, and a
+        // second violation on the same mistake only confuses the form.
+        if (!$start instanceof DateTimeImmutable || !$end instanceof DateTimeImmutable) {
+            return;
+        }
+
+        if ($end < $start) {
+            $this->context->buildViolation($constraint->endBeforeStartMessage)
+                ->atPath('endDate')
+                ->setCode(ValidAbsenceRange::END_BEFORE_START_CODE)
+                ->addViolation();
+
             return;
         }
 
@@ -42,9 +51,9 @@ class ValidAbsenceRangeValidator extends ConstraintValidator
     }
 
     /**
-     * The serializer has already parsed and rejected anything malformed, so this only has to cope
-     * with the field being absent. isset() rather than a bare read, because a property the caller
-     * omitted may be uninitialized rather than null.
+     * The day the property names, or null when it is absent or is not a bare `Y-m-d`.
+     *
+     * `isset()` rather than a bare read, because a property the caller omitted is uninitialized.
      */
     private function readDate(object $value, string $property): ?DateTimeImmutable
     {
@@ -52,8 +61,6 @@ class ValidAbsenceRangeValidator extends ConstraintValidator
             return null;
         }
 
-        $date = $value->{$property};
-
-        return $date instanceof DateTimeImmutable ? $date : null;
+        return CalendarDay::parse($value->{$property});
     }
 }

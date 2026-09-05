@@ -47,28 +47,22 @@ class ValidRecurrenceValidator extends ConstraintValidator
                 ->setCode(ValidRecurrence::MISSING_UNTIL_CODE)
                 ->addViolation();
         } else {
-            try {
-                $until = new DateTimeImmutable((string) $untilRaw);
-            } catch (\Exception) {
-                $this->context->buildViolation($constraint->invalidUntilMessage)
-                    ->atPath('recurrenceUntilDate')
-                    ->setCode(ValidRecurrence::INVALID_UNTIL_CODE)
-                    ->addViolation();
-                $until = null;
-            }
+            // Assert\Date on the property owns the format, so an unparseable horizon already has its
+            // own violation and only has to be left alone here: ordering and the horizon cap are
+            // questions about a date, and this is not one.
+            $until = CalendarDay::parse($untilRaw);
 
             if ($until instanceof DateTimeImmutable && $eventDatetime instanceof DateTimeImmutable) {
                 $eventDate = new DateTimeImmutable($eventDatetime->format('Y-m-d'));
-                $untilDate = new DateTimeImmutable($until->format('Y-m-d'));
 
-                if ($untilDate < $eventDate) {
+                if ($until < $eventDate) {
                     $this->context->buildViolation($constraint->untilBeforeEventMessage)
                         ->atPath('recurrenceUntilDate')
                         ->setCode(ValidRecurrence::UNTIL_BEFORE_EVENT_CODE)
                         ->addViolation();
                 } else {
                     $maxUntil = $eventDate->modify('+' . ValidRecurrence::MAX_YEARS_HORIZON . ' years');
-                    if ($untilDate > $maxUntil) {
+                    if ($until > $maxUntil) {
                         $this->context->buildViolation($constraint->untilTooFarMessage)
                             ->atPath('recurrenceUntilDate')
                             ->setCode(ValidRecurrence::UNTIL_TOO_FAR_CODE)

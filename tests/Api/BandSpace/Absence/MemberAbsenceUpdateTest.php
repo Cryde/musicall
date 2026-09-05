@@ -10,9 +10,9 @@ use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\BandSpace\MemberAbsenceFactory;
 use App\Tests\Factory\User\UserFactory;
+use App\Validator\BandSpace\Agenda\ValidAbsenceRange;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
@@ -195,18 +195,18 @@ class MemberAbsenceUpdateTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/ConstraintViolation',
-            '@id' => '/api/validation_errors/' . GreaterThanOrEqual::TOO_LOW_ERROR,
+            '@id' => '/api/validation_errors/' . ValidAbsenceRange::END_BEFORE_START_CODE,
             '@type' => 'ConstraintViolation',
             'status' => 422,
             'violations' => [
                 [
                     'propertyPath' => 'end_date',
                     'message' => 'La date de fin doit être postérieure ou égale à la date de début.',
-                    'code' => GreaterThanOrEqual::TOO_LOW_ERROR,
+                    'code' => ValidAbsenceRange::END_BEFORE_START_CODE,
                 ],
             ],
             'detail' => 'end_date: La date de fin doit être postérieure ou égale à la date de début.',
-            'type' => '/validation_errors/' . GreaterThanOrEqual::TOO_LOW_ERROR,
+            'type' => '/validation_errors/' . ValidAbsenceRange::END_BEFORE_START_CODE,
             'title' => 'An error occurred',
             'description' => 'end_date: La date de fin doit être postérieure ou égale à la date de début.',
         ]);

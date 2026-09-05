@@ -11,6 +11,7 @@ use App\Tests\Factory\BandSpace\MemberAbsenceFactory;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Date;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
@@ -265,8 +266,12 @@ class MemberAbsenceGetCollectionTest extends ApiTestCase
         ]);
     }
 
-    public function test_an_unparseable_window_bound_is_a_bad_request(): void
+    public function test_an_unparseable_window_bound_names_the_parameter(): void
     {
+        // A 422 with a propertyPath rather than the old 400 whose only content was "Date invalide":
+        // the parameter is declared with Assert\Date on the operation, so the framework refuses it
+        // before the provider is reached and says which one it was.
+
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
@@ -279,16 +284,23 @@ class MemberAbsenceGetCollectionTest extends ApiTestCase
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonEquals([
-            '@context' => '/api/contexts/Error',
-            '@id' => '/api/errors/400',
-            '@type' => 'Error',
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'from',
+                    'message' => 'Cette valeur n\'est pas une date valide.',
+                    'code' => Date::INVALID_FORMAT_ERROR,
+                ],
+            ],
+            'detail' => 'from: Cette valeur n\'est pas une date valide.',
+            'type' => '/validation_errors/' . Date::INVALID_FORMAT_ERROR,
             'title' => 'An error occurred',
-            'detail' => 'Date invalide',
-            'status' => 400,
-            'type' => '/errors/400',
-            'description' => 'Date invalide',
+            'description' => 'from: Cette valeur n\'est pas une date valide.',
         ]);
     }
 

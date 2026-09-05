@@ -56,8 +56,8 @@ readonly class TaskCollectionProvider implements ProviderInterface
             priority: $filters['priority'] ?? null,
             archived: $archived,
             query: $filters['query'] ?? null,
-            dueDateFrom: $this->parseDate($filters['due_date_from'] ?? null),
-            dueDateTo: $this->parseDate($filters['due_date_to'] ?? null)?->setTime(23, 59, 59),
+            dueDateFrom: $this->readDay($filters['due_date_from'] ?? null),
+            dueDateTo: $this->readDay($filters['due_date_to'] ?? null)?->setTime(23, 59, 59),
             overdueOnly: $overdueOnly,
         );
 
@@ -70,14 +70,13 @@ readonly class TaskCollectionProvider implements ProviderInterface
         return $this->taskBuilder->buildFromList($tasks, $commentCounts, $fileCounts);
     }
 
-    private function parseDate(?string $value): ?DateTimeImmutable
+    /**
+     * The day the bound names, or null when it was not sent. The operation's Assert\Date has already
+     * refused anything that is not a bare `Y-m-d`, so nothing is parsed defensively here: the
+     * truthiness check is only "was it sent at all", since validation skips a blank.
+     */
+    private function readDay(mixed $value): ?DateTimeImmutable
     {
-        if ($value === null || trim($value) === '') {
-            return null;
-        }
-
-        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-
-        return $date === false ? null : $date;
+        return $value ? new DateTimeImmutable($value) : null;
     }
 }
