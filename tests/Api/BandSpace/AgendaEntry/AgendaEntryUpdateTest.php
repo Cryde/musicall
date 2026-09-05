@@ -21,6 +21,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Type;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -527,6 +528,53 @@ class AgendaEntryUpdateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_a_malformed_event_datetime_names_the_field_on_a_patch_too(): void
+    {
+        // Same contract as the create endpoint: the drawer edits through PATCH, so a 400 with no
+        // violations array would be just as unattachable to an input here.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new DateTimeImmutable('2026-06-15T20:00:00+00:00'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id,
+            ['eventDatetime' => 'not-a-date'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'event_datetime',
+                    'message' => 'Cette valeur doit être de type string.',
+                    'code' => Type::INVALID_TYPE_ERROR,
+                ],
+            ],
+            'detail' => 'event_datetime: Cette valeur doit être de type string.',
+            'type' => '/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'event_datetime: Cette valeur doit être de type string.',
+        ]);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertSame(
+            '2026-06-15T20:00:00+00:00',
+            $repo->findByBandSpace($bandSpace)[0]->eventDatetime->format(\DateTimeInterface::ATOM)
+        );
     }
 
     public function test_update_without_event_datetime_leaves_the_series_anchor_alone(): void

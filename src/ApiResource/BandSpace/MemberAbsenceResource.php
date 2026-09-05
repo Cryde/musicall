@@ -59,7 +59,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                 'id' => new Link(fromClass: self::class, identifiers: ['id']),
             ],
             openapi: new Operation(tags: ['Band Space Agenda']),
-            collectDenormalizationErrors: true,
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_absences_patch',
             provider: MemberAbsenceItemProvider::class,

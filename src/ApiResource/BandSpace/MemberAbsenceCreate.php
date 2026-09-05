@@ -18,7 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     openapi: new Operation(tags: ['Band Space Agenda']),
     normalizationContext: ['skip_null_values' => false],
-    collectDenormalizationErrors: true,
     security: "is_granted('ROLE_USER')",
     output: MemberAbsenceResource::class,
     name: 'api_band_space_absences_post',

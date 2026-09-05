@@ -19,6 +19,11 @@ api_platform:
         html: ['text/html']
     defaults:
         stateless: true
+        # A type mismatch during denormalization becomes a 422 carrying a ConstraintViolationList
+        # instead of a bare 400 with the raw parser message. A form can then attach the error to the
+        # field that caused it, which is the whole point: without this a mistyped date on the agenda
+        # drawer shows "Failed to parse time string" with nothing highlighted.
+        collect_denormalization_errors: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
     use_symfony_listeners: false

@@ -12,6 +12,7 @@ use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\Agenda\ValidRecurrence;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Type;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -481,6 +482,50 @@ class AgendaEntryCreateTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_a_malformed_event_datetime_names_the_field_rather_than_returning_a_bare_400(): void
+    {
+        // The reason collect_denormalization_errors is on globally. Without it the serializer's
+        // refusal escapes as a 400 whose only content is "Failed to parse time string (not-a-date)
+        // at position 0 (n)", with no violations array: AgendaEntryDrawer falls through to `detail`
+        // and shows that sentence as a form level error with no input highlighted.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
+            [
+                'title' => 'Répétition',
+                'eventDatetime' => 'not-a-date',
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'event_datetime',
+                    'message' => 'Cette valeur doit être de type string.',
+                    'code' => Type::INVALID_TYPE_ERROR,
+                ],
+            ],
+            'detail' => 'event_datetime: Cette valeur doit être de type string.',
+            'type' => '/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'event_datetime: Cette valeur doit être de type string.',
+        ]);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(0, $repo->findByBandSpace($bandSpace));
     }
 
     public function test_create_weekly_recurrence(): void
