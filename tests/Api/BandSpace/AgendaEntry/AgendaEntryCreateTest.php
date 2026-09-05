@@ -529,6 +529,52 @@ class AgendaEntryCreateTest extends ApiTestCase
         $this->assertCount(0, $repo->findByBandSpace($bandSpace));
     }
 
+    public function test_a_null_byte_in_the_event_datetime_is_refused_rather_than_crashing(): void
+    {
+        // #934's repro. DateTimeNormalizer parses through createFromFormat, because its own default
+        // format is RFC3339 and that path is taken even though this property declares no format.
+        // createFromFormat raises a ValueError on a null byte instead of returning false, and the
+        // normalizer only guards itself with catch (\Exception), so it escaped as a 500 with a
+        // request.CRITICAL log line. NullByteSafeDateTimeNormalizer refuses the value first.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries',
+            [
+                'title' => 'Probe',
+                'eventDatetime' => "2026-06-15T20:00:00+00:00\0",
+            ],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'event_datetime',
+                    'message' => 'Cette valeur doit être de type string.',
+                    'code' => Type::INVALID_TYPE_ERROR,
+                    'hint' => 'The data contains a null byte.',
+                ],
+            ],
+            'detail' => 'event_datetime: Cette valeur doit être de type string.',
+            'type' => '/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'event_datetime: Cette valeur doit être de type string.',
+        ]);
+
+        $repo = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(0, $repo->findByBandSpace($bandSpace));
+    }
+
     public function test_create_weekly_recurrence(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();

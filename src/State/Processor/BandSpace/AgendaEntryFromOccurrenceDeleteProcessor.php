@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\AgendaEntryResource;
 use App\Entity\BandSpace\AgendaEntry;
+use App\Date\CalendarDay;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceAgendaActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
@@ -115,10 +116,16 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
         $this->entityManager->flush();
     }
 
+    /**
+     * `createFromFormat` used to do this, and raised a ValueError on a null byte rather than
+     * returning false (#934), so `.../occurrences/2026-01-01%00` was a 500. A path segment carries
+     * the byte through where a query string no longer can, so this one had to be fixed here rather
+     * than by the serializer decorator.
+     */
     private function parseDate(string $raw): DateTimeImmutable
     {
-        $parsed = DateTimeImmutable::createFromFormat('!Y-m-d', $raw);
-        if (!$parsed instanceof DateTimeImmutable || $parsed->format('Y-m-d') !== $raw) {
+        $parsed = CalendarDay::parse($raw);
+        if (!$parsed instanceof DateTimeImmutable) {
             throw new BadRequestHttpException('Date d\'occurrence invalide (format attendu: YYYY-MM-DD)');
         }
 

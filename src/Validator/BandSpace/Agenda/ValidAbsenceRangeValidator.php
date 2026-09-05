@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\BandSpace\Agenda;
 
+use App\Date\CalendarDay;
 use DateTimeImmutable;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;

@@ -6,6 +6,7 @@ namespace App\Validator\BandSpace\Agenda;
 
 use App\Enum\BandSpace\AgendaRecurrenceFrequency;
 use App\Enum\BandSpace\AgendaRecurrenceMonthlyMode;
+use App\Date\CalendarDay;
 use DateTimeImmutable;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
