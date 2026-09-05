@@ -19,6 +19,20 @@
           <i v-else class="pi pi-envelope text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
         </RouterLink>
         <NotificationBell @navigate="emit('navigate')" />
+        <!-- Admins only, and only while something is waiting: an always-on icon would be permanent
+             clutter for the one or two people who see it. Replaces the email notification the
+             feedback module would otherwise need. -->
+        <RouterLink
+          v-if="userSecurityStore.isAdmin && notificationStore.newFeedbacks > 0"
+          :to="{ name: 'admin_feedbacks_index' }"
+          class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+          :aria-label="`Retours utilisateurs (${notificationStore.newFeedbacks} à traiter)`"
+          @click="emit('navigate')"
+        >
+          <OverlayBadge :value="notificationStore.newFeedbacks" severity="warn" size="small">
+            <i class="pi pi-comment text-xl text-surface-600 dark:text-surface-300" aria-hidden="true" />
+          </OverlayBadge>
+        </RouterLink>
         <Avatar
           v-if="userSecurityStore.profilePictureUrl"
           :image="userSecurityStore.profilePictureUrl"

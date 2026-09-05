@@ -32,6 +32,11 @@
           :value="publicationsBadgeCount"
           severity="warn"
         />
+        <Badge
+          v-if="module.key === 'feedback' && notificationStore.newFeedbacks > 0"
+          :value="notificationStore.newFeedbacks"
+          severity="warn"
+        />
       </RouterLink>
     </div>
   </nav>

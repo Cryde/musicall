@@ -6,6 +6,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const unreadMessages = ref(0)
   const pendingPublications = ref(0)
   const pendingGalleries = ref(0)
+  const newFeedbacks = ref(0)
 
   async function loadNotifications() {
     try {
@@ -13,6 +14,7 @@ export const useNotificationStore = defineStore('notification', () => {
       unreadMessages.value = data.unread_messages || 0
       pendingPublications.value = data.pending_publications || 0
       pendingGalleries.value = data.pending_galleries || 0
+      newFeedbacks.value = data.new_feedbacks || 0
     } catch (e) {
       console.error('Failed to load notifications:', e)
     }
@@ -22,6 +24,7 @@ export const useNotificationStore = defineStore('notification', () => {
     unreadMessages: readonly(unreadMessages),
     pendingPublications: readonly(pendingPublications),
     pendingGalleries: readonly(pendingGalleries),
+    newFeedbacks: readonly(newFeedbacks),
     loadNotifications
   }
 })

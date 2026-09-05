@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Notification\Notification;
 use App\Entity\Gallery;
 use App\Entity\Publication;
+use App\Repository\Feedback\FeedbackRepository;
 use App\Repository\GalleryRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Repository\PublicationRepository;
@@ -22,7 +23,8 @@ readonly class NotificationProvider implements ProviderInterface
         private Security                    $security,
         private MessageThreadMetaRepository $messageThreadMetaRepository,
         private GalleryRepository           $galleryRepository,
-        private PublicationRepository       $publicationRepository
+        private PublicationRepository       $publicationRepository,
+        private FeedbackRepository          $feedbackRepository
     ) {
     }
 
@@ -38,6 +40,7 @@ readonly class NotificationProvider implements ProviderInterface
         if ($this->security->isGranted('ROLE_ADMIN')) {
             $notification->pendingGalleries = $this->galleryRepository->count(['status' => Gallery::STATUS_PENDING]);
             $notification->pendingPublications = $this->publicationRepository->count(['status' => Publication::STATUS_PENDING]);
+            $notification->newFeedbacks = $this->feedbackRepository->countNew();
 
             return $notification;
         }
