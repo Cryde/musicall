@@ -55,15 +55,11 @@ readonly class MemberAbsenceUpdateProcessor implements ProcessorInterface
         $this->memberAbsenceChecker->assertCanManage($absence->member, $actor);
 
         // $data is the stored resource with the patch body merged over it, so a field the caller left
-        // out already carries its stored value and assigning it back is a no-op Doctrine skips. The
-        // instanceof is the null guard the nullable DTO needs, not a "was it sent" check.
-        if ($data->startDate instanceof DateTimeImmutable) {
-            $absence->startDate = $this->pinToWrittenDay($data->startDate);
-        }
-
-        if ($data->endDate instanceof DateTimeImmutable) {
-            $absence->endDate = $this->pinToWrittenDay($data->endDate);
-        }
+        // out already carries its stored value and assigning it back is a no-op Doctrine skips.
+        // Assert\Date has already vouched for the shape, and a `Y-m-d` string carries no offset, so
+        // there is no longer a day to pin back: the caller's written day is the only one there is.
+        $absence->startDate = new DateTimeImmutable($data->startDate);
+        $absence->endDate = new DateTimeImmutable($data->endDate);
 
         // An identical string is ===, which Doctrine's change set computation skips on its own.
         $absence->reason = $data->reason;
@@ -71,18 +67,5 @@ readonly class MemberAbsenceUpdateProcessor implements ProcessorInterface
         $this->entityManager->flush();
 
         return $this->memberAbsenceBuilder->buildItem($absence, $actor);
-    }
-
-    /**
-     * The caller's own written day, pinned to midnight UTC.
-     *
-     * The DTO is denormalized by the loose parser, so an offset the caller sent is still attached and
-     * `2026-08-10T23:00:00-04:00` is the 11th in UTC while its wall clock says the 10th. The wall
-     * clock wins, because that is the day the member typed. Same rule and same reason as
-     * AgendaEntryCreateProcessor's all day branch.
-     */
-    private function pinToWrittenDay(DateTimeImmutable $date): DateTimeImmutable
-    {
-        return new DateTimeImmutable($date->format('Y-m-d') . 'T00:00:00+00:00');
     }
 }

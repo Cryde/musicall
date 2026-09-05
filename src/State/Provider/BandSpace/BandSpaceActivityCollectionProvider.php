@@ -17,7 +17,6 @@ use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * @implements ProviderInterface<BandSpaceActivityResource>
@@ -77,30 +76,19 @@ readonly class BandSpaceActivityCollectionProvider implements ProviderInterface
 
         $actorId = $query?->getString('actor_id') ?: null;
         $type = $query?->getString('type') ?: null;
-        $from = $this->parseDate($query?->getString('from') ?: null, 'from');
-        $to = $this->parseDate($query?->getString('to') ?: null, 'to');
+        // Assert\DateTime on the operation has already refused anything that is not ATOM, so an
+        // instant that reaches here parses. `?:` is only the "was it sent at all" check.
+        $rawFrom = $query?->getString('from') ?: null;
+        $rawTo = $query?->getString('to') ?: null;
 
         return new BandSpaceActivityFilter(
             modules: $modules,
             actorId: $actorId,
             type: $type,
-            from: $from,
-            to: $to,
+            from: $rawFrom !== null ? new DateTimeImmutable($rawFrom) : null,
+            to: $rawTo !== null ? new DateTimeImmutable($rawTo) : null,
             limit: $limit,
             offset: $offset,
         );
-    }
-
-    private function parseDate(?string $value, string $field): ?DateTimeImmutable
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        try {
-            return new DateTimeImmutable($value);
-        } catch (\Exception) {
-            throw new BadRequestHttpException(sprintf('Paramètre "%s" : date invalide', $field));
-        }
     }
 }

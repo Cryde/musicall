@@ -230,12 +230,14 @@ class AgendaRecurrenceDstTest extends ApiTestCase
             '@context' => '/api/contexts/AgendaItem',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
             '@type' => 'Collection',
-            'totalItems' => 3,
+            'totalItems' => 4,
             'member' => [
                 $member('20260328-1900', '2026-03-28T19:00:00+00:00'),
                 // The night of 28 to 29 March is the short one: still 20:00 in Paris.
                 $member('20260329-1800', '2026-03-29T18:00:00+00:00'),
                 $member('20260330-1800', '2026-03-30T18:00:00+00:00'),
+                // On the `to` day itself: the bound is inclusive and runs to the end of its day.
+                $member('20260331-1800', '2026-03-31T18:00:00+00:00'),
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-03-28&to=2026-03-31',
@@ -307,15 +309,17 @@ class AgendaRecurrenceDstTest extends ApiTestCase
             '@context' => '/api/contexts/AgendaItem',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
             '@type' => 'Collection',
-            'totalItems' => 4,
+            'totalItems' => 5,
             'member' => [
                 // 02:30 Paris, winter time.
                 $member('20260328-0130', '2026-03-28T01:30:00+00:00'),
                 // The one occurrence with no valid time: 03:30 Paris, the only hour available.
                 $member('20260329-0130', '2026-03-29T01:30:00+00:00'),
-                // Back to 02:30 Paris, now summer time, and it stays there.
+                // Back to 02:30 Paris, now summer time, and it stays there. The last one is on the
+                // `to` day itself, which an inclusive bound reaches to the end of.
                 $member('20260330-0030', '2026-03-30T00:30:00+00:00'),
                 $member('20260331-0030', '2026-03-31T00:30:00+00:00'),
+                $member('20260401-0030', '2026-04-01T00:30:00+00:00'),
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-03-28&to=2026-04-01',

@@ -12,7 +12,6 @@ use App\Service\Builder\BandSpace\MemberAbsenceBuilder;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * @implements ProviderInterface<object>
@@ -46,33 +45,20 @@ readonly class MemberAbsenceCollectionProvider implements ProviderInterface
         [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
         $filters = $context['filters'] ?? [];
-        $from = $this->parseDate($filters['from'] ?? null) ?? new DateTimeImmutable('today');
-        $to = $this->parseDate($filters['to'] ?? null) ?? $from->modify('+' . self::DEFAULT_WINDOW_DAYS . ' days');
+        // Assert\Date on the operation vouches for the format and refuses a `?from[]=x` array, so a
+        // value that reaches here parses to midnight on its own day. `?:` is the "was it sent at
+        // all" check that is left, since validation skips a blank.
+        $fromFilter = ($filters['from'] ?? null) ?: null;
+        $toFilter = ($filters['to'] ?? null) ?: null;
+
+        $from = $fromFilter !== null ? new DateTimeImmutable($fromFilter) : new DateTimeImmutable('today');
+        $to = $toFilter !== null
+            ? new DateTimeImmutable($toFilter)
+            : $from->modify('+' . self::DEFAULT_WINDOW_DAYS . ' days');
 
         return $this->memberAbsenceBuilder->buildFromList(
             $this->memberAbsenceRepository->findOverlappingForBand($bandSpace, $from, $to),
             $viewer,
         );
-    }
-
-    /**
-     * A string that is not a date is a 400. Anything that is not a string at all falls back to the
-     * default window instead: `?from[]=x` arrives as an array, and the point of the guard is that it
-     * no longer reaches a `?string` parameter and dies as a TypeError, so a 500 for a nonsensical
-     * filter nobody meant to send.
-     */
-    private function parseDate(mixed $value): ?DateTimeImmutable
-    {
-        if (!is_string($value) || trim($value) === '') {
-            return null;
-        }
-
-        try {
-            // The column is a DATE, so the window is compared day to day: any time on the value is
-            // dropped rather than letting an afternoon `to` exclude that same day's absences.
-            return (new DateTimeImmutable($value))->setTime(0, 0);
-        } catch (\Exception) {
-            throw new BadRequestHttpException('Date invalide');
-        }
     }
 }

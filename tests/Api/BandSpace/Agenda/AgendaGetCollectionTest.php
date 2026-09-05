@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Date;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -454,9 +455,11 @@ class AgendaGetCollectionTest extends ApiTestCase
         );
 
         $this->assertResponseIsSuccessful();
-        // `to=2026-02-15` parses to 00:00:00; the 18:00 occurrence on that day lies past it.
-        // Expansions inside [2026-01-15T00:00, 2026-02-15T00:00] from start 2026-01-04 weekly:
-        // 2026-01-18, 2026-01-25, 2026-02-01, 2026-02-08 (all at 18:00).
+        // `to` is inclusive: the bound is widened to the end of its day, so the 18:00 occurrence on
+        // 15 February counts. It did not before #935, when a bare `to` parsed to 00:00:00 and
+        // quietly dropped that day, which is why the front end used to hand-build a `T23:59:59`.
+        // Expansions inside [2026-01-15T00:00, 2026-02-15T23:59:59] from start 2026-01-04 weekly:
+        // 2026-01-18, 2026-01-25, 2026-02-01, 2026-02-08, 2026-02-15 (all at 18:00).
         $metadata = [
             'location' => 'Studio',
             'is_recurring_occurrence' => true,
@@ -489,12 +492,14 @@ class AgendaGetCollectionTest extends ApiTestCase
             '@context' => '/api/contexts/AgendaItem',
             '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda',
             '@type' => 'Collection',
-            'totalItems' => 4,
+            'totalItems' => 5,
             'member' => [
                 $member('20260118-1800', '2026-01-18T18:00:00+00:00'),
                 $member('20260125-1800', '2026-01-25T18:00:00+00:00'),
                 $member('20260201-1800', '2026-02-01T18:00:00+00:00'),
                 $member('20260208-1800', '2026-02-08T18:00:00+00:00'),
+                // On the `to` day itself, at 18:00: inside an inclusive bound.
+                $member('20260215-1800', '2026-02-15T18:00:00+00:00'),
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/agenda?from=2026-01-15&to=2026-02-15',
@@ -803,7 +808,7 @@ class AgendaGetCollectionTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
-    public function test_invalid_date_param_returns_400(): void
+    public function test_an_unparseable_window_bound_names_the_parameter(): void
     {
         $user = UserFactory::new()->asBaseUser()->create();
         $bandSpace = BandSpaceFactory::new()->create();
@@ -817,6 +822,23 @@ class AgendaGetCollectionTest extends ApiTestCase
             ['HTTP_ACCEPT' => 'application/ld+json']
         );
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'from',
+                    'message' => 'Cette valeur n\'est pas une date valide.',
+                    'code' => Date::INVALID_FORMAT_ERROR,
+                ],
+            ],
+            'detail' => 'from: Cette valeur n\'est pas une date valide.',
+            'type' => '/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'from: Cette valeur n\'est pas une date valide.',
+        ]);
     }
 }

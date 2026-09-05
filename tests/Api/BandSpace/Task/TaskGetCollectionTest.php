@@ -16,6 +16,7 @@ use App\Tests\Factory\BandSpace\TaskFactory;
 use App\Tests\Factory\User\UserFactory;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Date;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -521,6 +522,43 @@ class TaskGetCollectionTest extends ApiTestCase
                 '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks?due_date_from=2026-05-01&due_date_to=2026-05-31',
                 '@type' => 'PartialCollectionView',
             ],
+        ]);
+    }
+
+    public function test_an_unparseable_due_date_bound_names_the_parameter(): void
+    {
+        // It used to fall back to the whole range in silence: the provider's own parser returned null
+        // on anything it could not read, so a typo in the filter looked like a filter that matched
+        // everything. Assert\Date on the operation says which parameter was wrong instead.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks?due_date_from=not-a-date',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'due_date_from',
+                    'message' => 'Cette valeur n\'est pas une date valide.',
+                    'code' => Date::INVALID_FORMAT_ERROR,
+                ],
+            ],
+            'detail' => 'due_date_from: Cette valeur n\'est pas une date valide.',
+            'type' => '/validation_errors/' . Date::INVALID_FORMAT_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'due_date_from: Cette valeur n\'est pas une date valide.',
         ]);
     }
 

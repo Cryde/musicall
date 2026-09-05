@@ -50,6 +50,11 @@ class AgendaEntryCreate
 
     public ?string $recurrenceFrequency = null;
 
+    /**
+     * The last day the series may produce an occurrence, `Y-m-d`. No NotBlank: whether it is required
+     * at all depends on recurrenceFrequency, which is ValidRecurrence's call.
+     */
+    #[Assert\Date(message: 'Le format de la date est invalide (attendu : AAAA-MM-JJ)')]
     public ?string $recurrenceUntilDate = null;
 
     public ?string $recurrenceMonthlyMode = null;

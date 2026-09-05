@@ -573,10 +573,13 @@ async function openLinkedEntry(entryId) {
 }
 
 function fetchRange(from, to) {
-  const fromIso = format(from, "yyyy-MM-dd'T'00:00:00")
-  const toIso = format(to, "yyyy-MM-dd'T'23:59:59")
-
-  return agendaStore.fetchAgenda(route.params.id, { from: fromIso, to: toIso })
+  // Bare calendar days. The API widens `to` to the end of its day itself, so hand-building
+  // `T00:00:00` / `T23:59:59` here only duplicated that rule in a second place, and an offset-less
+  // wall clock was being read as UTC anyway: the two forms name the same instants.
+  return agendaStore.fetchAgenda(route.params.id, {
+    from: format(from, 'yyyy-MM-dd'),
+    to: format(to, 'yyyy-MM-dd')
+  })
 }
 
 function fetchWithCurrentRange() {
