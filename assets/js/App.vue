@@ -1,6 +1,9 @@
 <template>
     <router-view/>
     <ConfirmDialog />
+    <!-- Mounted here rather than in a layout so the trigger works from every route, the layout-less
+         live setlist view included. -->
+    <FeedbackDrawer />
 </template>
 
 <script setup>
@@ -8,6 +11,7 @@ import { storeToRefs } from 'pinia'
 import ConfirmDialog from 'primevue/confirmdialog'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import FeedbackDrawer from './components/Feedback/FeedbackDrawer.vue'
 import { useUserSecurityStore } from './store/user/security.js'
 import { resolveUnauthenticatedRedirect } from './utils/unauthenticatedRedirect.js'
 

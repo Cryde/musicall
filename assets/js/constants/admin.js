@@ -32,6 +32,14 @@ export const ADMIN_MODULES = [
     color: '#f59e0b'
   },
   {
+    key: 'feedback',
+    label: 'Retours',
+    icon: 'pi-comment',
+    route: 'admin_feedbacks_index',
+    description: 'Retours envoyés depuis le site et les Band Spaces',
+    color: '#f97316'
+  },
+  {
     key: 'users',
     label: 'Utilisateurs',
     icon: 'pi-users',
