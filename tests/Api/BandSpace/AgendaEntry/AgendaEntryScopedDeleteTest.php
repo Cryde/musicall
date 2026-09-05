@@ -278,6 +278,210 @@ class AgendaEntryScopedDeleteTest extends ApiTestCase
         ]);
     }
 
+    public function test_delete_single_occurrence_with_a_null_byte_is_a_bad_request(): void
+    {
+        // #934. A path segment carries a null byte all the way through, unlike a query string, so the
+        // serializer decorator cannot help here: this processor reads the raw segment itself. It used
+        // to parse with createFromFormat, which raises a ValueError rather than returning false, and
+        // a ValueError is not an Exception, so the request ended as a 500.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id . '/occurrences/2026-06-15%00',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+        ]);
+
+        $repository = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(1, $repository->findByBandSpace($bandSpace));
+    }
+
+    public function test_truncating_a_series_with_a_null_byte_is_a_bad_request(): void
+    {
+        // #934 again, on the sibling endpoint. Same processor shape, same raw path segment, so it
+        // needed the same fix rather than inheriting one.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id . '/from/2026-06-15%00',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+        ]);
+
+        $repository = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(1, $repository->findByBandSpace($bandSpace));
+    }
+
+    public function test_delete_single_occurrence_with_a_negative_year_is_a_bad_request(): void
+    {
+        // A negative year round trips through the loose parser byte for byte, so the round trip alone
+        // waves it through where createFromFormat refused it. It then reaches a DATE column that
+        // rejects it, and the request ends as the very 500 this branch exists to remove. The anchored
+        // shape check in CalendarDay is what keeps the accept set where it was.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id . '/occurrences/-0001-11-30',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+        ]);
+
+        $repository = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(1, $repository->findByBandSpace($bandSpace));
+    }
+
+    public function test_truncating_a_series_with_a_negative_year_does_not_delete_it(): void
+    {
+        // Same widening on the sibling endpoint, with a quieter symptom: a negative year sorts before
+        // the first occurrence, so instead of crashing this one silently deleted the whole series.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id . '/from/-0001-11-30',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+        ]);
+
+        $repository = self::getContainer()->get(AgendaEntryRepository::class);
+        $this->assertCount(1, $repository->findByBandSpace($bandSpace));
+    }
+
+    public function test_delete_single_occurrence_with_year_zero_is_a_bad_request(): void
+    {
+        // Narrower than the negative year but the same root cause: `0000-01-01` round trips through
+        // the loose parser untouched, so a round trip based guard accepted it while `Assert\Date`
+        // refused it, because checkdate() will not have year zero. There is no constraint behind a
+        // path segment to catch it either, so the request answered 204 and left an exception row
+        // matching no occurrence. CalendarDay calls checkdate() itself now.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $entry = AgendaEntryFactory::new([
+            'bandSpace' => $bandSpace,
+            'creator' => $user,
+            'eventDatetime' => new DateTimeImmutable('2026-06-01 18:00:00', new DateTimeZone('UTC')),
+            'recurrenceFrequency' => AgendaRecurrenceFrequency::Weekly,
+            'recurrenceUntilDate' => new DateTimeImmutable('2026-07-31'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'DELETE',
+            '/api/band_spaces/' . $bandSpace->id . '/agenda-entries/' . $entry->id . '/occurrences/0000-01-01',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/400',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+            'status' => 400,
+            'type' => '/errors/400',
+            'description' => "Date d'occurrence invalide (format attendu: YYYY-MM-DD)",
+        ]);
+
+        // The orphan row is the part that used to be invisible: a 204 and a cancellation matching no
+        // occurrence at all.
+        $exceptionRepository = self::getContainer()->get(AgendaEntryExceptionRepository::class);
+        $this->assertCount(0, $exceptionRepository->findAll());
+    }
+
     public function test_delete_single_occurrence_not_member_returns_403(): void
     {
         $owner = UserFactory::new()->asBaseUser()->create();

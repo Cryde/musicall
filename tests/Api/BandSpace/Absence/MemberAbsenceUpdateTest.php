@@ -13,6 +13,7 @@ use App\Tests\Factory\User\UserFactory;
 use App\Validator\BandSpace\Agenda\ValidAbsenceRange;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\Type;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
@@ -209,6 +210,51 @@ class MemberAbsenceUpdateTest extends ApiTestCase
             'type' => '/validation_errors/' . ValidAbsenceRange::END_BEFORE_START_CODE,
             'title' => 'An error occurred',
             'description' => 'end_date: La date de fin doit être postérieure ou égale à la date de début.',
+        ]);
+    }
+
+    public function test_a_null_byte_in_a_read_only_datetime_is_refused_rather_than_crashing(): void
+    {
+        // The half of #934 that no convention about writable fields would have caught. On a PATCH the
+        // input class is the resource itself, so every typed DateTimeInterface property is
+        // denormalized from the body, `creationDatetime` included, even though nothing is ever meant
+        // to write it. #935 moved this resource's own dates to strings and that did not protect it:
+        // the crash was still reachable through the field next to them.
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        $membership = BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $absence = MemberAbsenceFactory::new([
+            'member' => $membership,
+            'startDate' => new DateTimeImmutable('2026-06-10'),
+            'endDate' => new DateTimeImmutable('2026-06-12'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/absences/' . $absence->id,
+            ['creationDatetime' => "2026-06-15T20:00:00+00:00\0"],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'creation_datetime',
+                    'message' => 'Cette valeur doit être de type string.',
+                    'code' => Type::INVALID_TYPE_ERROR,
+                    'hint' => 'The data contains a null byte.',
+                ],
+            ],
+            'detail' => 'creation_datetime: Cette valeur doit être de type string.',
+            'type' => '/validation_errors/' . Type::INVALID_TYPE_ERROR,
+            'title' => 'An error occurred',
+            'description' => 'creation_datetime: Cette valeur doit être de type string.',
         ]);
     }
 
