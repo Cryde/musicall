@@ -18,4 +18,7 @@ class Notification
     public ?int $pendingGalleries = null;
 
     public ?int $pendingPublications = null;
+
+    /** Untriaged feedback. Null for anyone but an admin, like the two counts above. */
+    public ?int $newFeedbacks = null;
 }

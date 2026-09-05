@@ -6,6 +6,7 @@ use App\Entity\Gallery;
 use App\Entity\Publication;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\Feedback\FeedbackFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
@@ -67,6 +68,8 @@ class NotificationGetTest extends ApiTestCase
         GalleryFactory::new(['status' => Gallery::STATUS_PENDING])->create();
         GalleryFactory::new(['status' => Gallery::STATUS_DRAFT])->create();// not taken into count
         GalleryFactory::new(['status' => Gallery::STATUS_ONLINE])->create();// not taken into count
+        FeedbackFactory::new()->create();
+        FeedbackFactory::new()->asTriaged()->create(); // not taken into count
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/notifications');
@@ -78,6 +81,7 @@ class NotificationGetTest extends ApiTestCase
             'unread_messages'      => 1,
             'pending_galleries'    => 1,
             'pending_publications' => 1,
+            'new_feedbacks'        => 1,
         ]);
     }
 
@@ -98,6 +102,7 @@ class NotificationGetTest extends ApiTestCase
             'unread_messages'      => 1,
             'pending_galleries'    => 0,
             'pending_publications' => 0,
+            'new_feedbacks'        => 0,
         ]);
     }
 }

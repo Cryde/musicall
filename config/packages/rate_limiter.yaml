@@ -96,3 +96,11 @@ framework:
             limit: 2
             interval: '1 day'
             cache_pool: "rate_limiter.cache"
+        # Higher than contact_form (3/hour): feedback is meant to be sent the moment something
+        # is noticed, so a user filing three small reports while walking through a module is normal
+        # use rather than abuse.
+        feedback_submit:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
