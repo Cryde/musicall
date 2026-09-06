@@ -1,13 +1,17 @@
-import { endOfMonth, format, startOfMonth } from 'date-fns'
+import { addDays, endOfMonth, format, startOfMonth } from 'date-fns'
 import { toAgendaDate } from './agendaDate.js'
 
 /**
- * Which period the band space agenda has to show once an entry has been saved.
+ * Which period of the band space agenda is on screen, and which one has to be.
  *
  * This lives outside Agenda.vue because it is the rule that decides whether a save is visible:
  * get it wrong and the agenda refreshes into a period that does not contain the entry, which
  * reads as a failed save and gets the user to save again. It is pure date arithmetic, so it is
  * unit tested without a browser (npm test).
+ *
+ * It is also where a period gets turned into the pair of bounds the API takes, so that rule has one
+ * home rather than a copy in every caller. That is what #944 was: the dashboard widget kept its own
+ * copy, #935 changed the rule, and only the copy in Agenda.vue was updated.
  */
 
 /** Local calendar day: the period is day granular, its bounds are 00:00:00 and 23:59:59. */
@@ -63,4 +67,16 @@ export function agendaViewForSavedEntry(entry, from, to) {
   if (isEntryVisibleInRange(entry, from, to)) return null
 
   return { from: startOfMonth(span.start), to: endOfMonth(span.start), focusDate: span.start }
+}
+
+/**
+ * The bounds the dashboard's « Agenda à venir » widget asks for: today, and the next `days` days.
+ *
+ * Bare calendar days, never a wall clock. The API's `from` and `to` are `Assert\Date`, an anchored
+ * `^\d{4}-\d{2}-\d{2}$`, so a `2026-09-06T00:00:00` is a 422 rather than a narrower window. It
+ * also widens `to` to the end of its day itself, so appending `T23:59:59` here would put that rule
+ * in two places for no gain (#935).
+ */
+export function upcomingAgendaWindow(today, days) {
+  return { from: dayKey(today), to: dayKey(addDays(today, days)) }
 }
