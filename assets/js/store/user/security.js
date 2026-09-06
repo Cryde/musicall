@@ -6,6 +6,7 @@ import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import router from '../../router/index.js'
 import { isSafeReturnUrl } from '../../utils/returnUrl.js'
+import { grantsAdmin, grantsSuperAdmin } from '../../utils/roles.js'
 
 // Refresh token promise cache to prevent race conditions
 let refreshPromise = null
@@ -154,24 +155,23 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     return userProfile.value?.profile_picture?.small || null
   })
 
-  const isAdmin = computed(() => {
-    return userProfile.value?.roles?.includes('ROLE_ADMIN') || false
-  })
-
   /**
-   * Gates features that are merged but not yet announced. Presentation only: the API
-   * stays open, so this hides a module rather than protecting it.
+   * Both admin flags read the JWT claim rather than userProfile, because a route guard needs the
+   * answer immediately: checkAuthInfo() fills `user` from the token and then calls
+   * fetchUserProfile() WITHOUT awaiting it, so userProfile is still empty on the first navigation.
+   * Reading it in a guard bounces a legitimate admin whenever they load a gated URL directly or hit
+   * reload.
    *
-   * Reads the JWT claim rather than userProfile, unlike isAdmin above, because a route
-   * guard needs the answer immediately: checkAuthInfo() fills `user` from the token and
-   * then calls fetchUserProfile() WITHOUT awaiting it, so userProfile is still empty on
-   * the first navigation. Reading it there bounced legitimate super admins to the
-   * dashboard whenever they loaded a gated URL directly or hit reload. isAdmin gets away
-   * with the late source because it only drives UI that re-renders when the profile lands.
+   * They go through grantsAdmin/grantsSuperAdmin rather than includes() because roles arrive
+   * unexpanded from both sources: a super admin is stored as ["ROLE_SUPER_ADMIN"] and carries no
+   * ROLE_ADMIN, so an includes('ROLE_ADMIN') check answered false for the most privileged account
+   * on the site and hid the whole back office from it (#940).
    */
-  const isSuperAdmin = computed(() => {
-    return user.value?.roles?.includes('ROLE_SUPER_ADMIN') || false
-  })
+  const isAdmin = computed(() => grantsAdmin(user.value?.roles))
+
+  /** Also gates modules that are merged but not yet announced, which is presentation only: the API
+   * stays open, so that hides a module rather than protecting it. */
+  const isSuperAdmin = computed(() => grantsSuperAdmin(user.value?.roles))
 
   function isTokenExpired(decodedJwt) {
     // Refresh if token expires within buffer time
