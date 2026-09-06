@@ -10,9 +10,12 @@ security:
             entity:
                 class: App\Entity\User
 
+    # ROLE_TESTER is deliberately absent: it is a feature flag, not a rank. It reveals modules that
+    # are merged but not yet announced, grants no permission of its own, and is held by ordinary
+    # users, so putting it here would make every tester an admin (which is what ROLE_SUPER_ADMIN
+    # used to do, see #942).
     role_hierarchy:
-        ROLE_ADMIN:       ROLE_USER
-        ROLE_SUPER_ADMIN: ROLE_ADMIN
+        ROLE_ADMIN: ROLE_USER
 
     firewalls:
         dev:

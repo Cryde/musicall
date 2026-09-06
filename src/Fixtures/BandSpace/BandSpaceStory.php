@@ -21,6 +21,7 @@ class BandSpaceStory extends Story
     {
         $adminUser = UserStory::get(UserStory::ADMIN_USER);
         $baseUser = UserStory::get(UserStory::BASE_USER);
+        $testerUser = UserStory::get(UserStory::TESTER_USER);
 
         // Admin's band space (admin is creator)
         $adminBand = BandSpaceFactory::new()
@@ -67,6 +68,17 @@ class BandSpaceStory extends Story
             ->with([
                 'bandSpace' => $collaborativeBand,
                 'user' => $baseUser,
+                'role' => Role::User
+            ])
+            ->create();
+
+        // The tester is a plain member, not an admin: ROLE_TESTER reveals modules that are merged
+        // but not yet announced, and those live inside a band space, so an account holding the flag
+        // with nowhere to use it cannot actually reach them (#942).
+        BandSpaceMembershipFactory::new()
+            ->with([
+                'bandSpace' => $collaborativeBand,
+                'user' => $testerUser,
                 'role' => Role::User
             ])
             ->create();

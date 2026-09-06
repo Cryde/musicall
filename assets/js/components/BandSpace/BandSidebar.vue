@@ -111,12 +111,12 @@ function handleFeedbackClick() {
   feedbackStore.openDrawer()
 }
 
-// `superAdminOnly` marks a module that is merged but not yet announced and is dropped when it is
+// `testerOnly` marks a module that is merged but not yet announced and is dropped when it is
 // released. Membership role is deliberately not a gate: « Paramètres » is where a member quits the
 // space and sets their stage name and instruments, so every member gets the entry, and the page
 // itself hides whatever is admin only.
 const visibleItems = computed(() =>
-  NAVIGATION_ITEMS.filter((item) => !item.superAdminOnly || userSecurityStore.isSuperAdmin)
+  NAVIGATION_ITEMS.filter((item) => !item.testerOnly || userSecurityStore.isTester)
 )
 
 const workItems = computed(() =>
