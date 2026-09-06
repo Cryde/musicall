@@ -18,14 +18,18 @@ export const BAND_SPACE_ROUTES = {
 export const LAST_TECH_RIDER_KEY = 'lastTechRiderId'
 
 /**
- * Tech riders are merged but not yet announced, so the module is hidden from everyone
- * except super admins.
+ * Tech riders are merged but not yet announced, so the module is hidden from everyone except
+ * accounts carrying ROLE_TESTER.
  *
  * RELEASING THE MODULE IS THIS ONE FLIP: set it to false. Both the sidebar entry and the
  * route guard read it, so nothing else needs touching. It is presentation only, the API
  * has always been open, so this is a curtain rather than a permission.
+ *
+ * A tester is an ordinary user with a flag, not a rank, so the preview can go to a band member
+ * without also handing them the back office. An admin does not see the module unless they are also
+ * a tester (#942).
  */
-export const RIDER_SUPER_ADMIN_ONLY = true
+export const RIDER_TESTER_ONLY = true
 
 /**
  * The modules a Band Space is described by, shared between the public presentation page and the
@@ -33,7 +37,7 @@ export const RIDER_SUPER_ADMIN_ONLY = true
  *
  * Distinct from NAVIGATION_ITEMS, which is the in-app sidebar: this list sells the module, that one
  * routes to it. Dashboard is absent because nobody joins for a dashboard, and tech riders are absent
- * because RIDER_SUPER_ADMIN_ONLY still hides the module from members. Never advertise what a visitor
+ * because RIDER_TESTER_ONLY still hides the module from members. Never advertise what a visitor
  * would not find after signing up.
  *
  * Each description says what stops being scattered, which is the whole argument for the module.
@@ -140,7 +144,7 @@ export const NAVIGATION_ITEMS = Object.freeze([
     label: 'Tech riders',
     route: BAND_SPACE_ROUTES.RIDER,
     icon: 'pi-sliders-h',
-    superAdminOnly: RIDER_SUPER_ADMIN_ONLY
+    testerOnly: RIDER_TESTER_ONLY
   },
   { label: 'Tâches', route: BAND_SPACE_ROUTES.TASKS, icon: 'pi-check-square' },
   { label: 'Finances', route: BAND_SPACE_ROUTES.FINANCE, icon: 'pi-wallet' },

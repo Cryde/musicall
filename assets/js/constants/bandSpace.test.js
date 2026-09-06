@@ -5,6 +5,7 @@ import {
   BAND_SPACE_SETTINGS_SECTIONS,
   filterSectionsByRole,
   NAVIGATION_ITEMS,
+  RIDER_TESTER_ONLY,
   resolveSettingsSection,
   visibleSettingsSections
 } from './bandSpace.js'
@@ -24,7 +25,29 @@ describe('the Paramètres sidebar entry', () => {
     const parameters = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.PARAMETERS)
 
     assert.ok(parameters)
-    assert.equal(parameters.superAdminOnly, undefined)
+    assert.equal(parameters.testerOnly, undefined)
+  })
+})
+
+describe('the Tech Riders curtain', () => {
+  // The constant's comment promises releasing the module is one flip, because the sidebar entry and
+  // the route guard both read it. That only holds while the entry actually reads it: gating the
+  // route alone would leave a dead sidebar link, and gating the entry alone would leave the URL
+  // walkable, which is what the curtain exists to prevent.
+  it('gates the sidebar entry on the shared flag, so one flip releases the module', () => {
+    const rider = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.RIDER)
+
+    assert.ok(rider)
+    assert.equal(rider.testerOnly, RIDER_TESTER_ONLY)
+  })
+
+  it('gates nothing else, so the flip cannot take another module with it', () => {
+    const gated = NAVIGATION_ITEMS.filter((item) => item.testerOnly !== undefined)
+
+    assert.deepEqual(
+      gated.map((item) => item.route),
+      [BAND_SPACE_ROUTES.RIDER]
+    )
   })
 })
 

@@ -63,18 +63,21 @@ final class UserFactory extends PersistentObjectFactory
     }
 
     /**
-     * ROLE_SUPER_ADMIN was only a line in the role hierarchy until now, granted to nobody.
-     * It gates features that are merged but not yet announced, so there has to be an
-     * account that can actually reach them in dev.
+     * ROLE_TESTER reveals features that are merged but not yet announced, so dev needs an account
+     * that can actually reach them.
+     *
+     * Deliberately an ordinary user carrying nothing else. That is the whole point of the role
+     * (#942): it is a feature flag rather than a rank, so the fixtures have to prove a non admin
+     * reaches the module, and that user_admin does not reach it by virtue of being an admin.
      */
-    public function asSuperAdminUser(): static
+    public function asTesterUser(): static
     {
         return $this->with([
             'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '1990-01-02T02:03:04+00:00'),
-            'email' => 'user_super_admin@email.com',
+            'email' => 'user_tester@email.com',
             'password' => self::DEFAULT_PASSWORD,
-            'roles' => ['ROLE_SUPER_ADMIN'],
-            'username' => 'user_super_admin',
+            'roles' => ['ROLE_TESTER'],
+            'username' => 'user_tester',
         ]);
     }
 

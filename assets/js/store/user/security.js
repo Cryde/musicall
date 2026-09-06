@@ -6,7 +6,7 @@ import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import router from '../../router/index.js'
 import { isSafeReturnUrl } from '../../utils/returnUrl.js'
-import { grantsAdmin, grantsSuperAdmin } from '../../utils/roles.js'
+import { grantsAdmin, grantsTester } from '../../utils/roles.js'
 
 // Refresh token promise cache to prevent race conditions
 let refreshPromise = null
@@ -156,22 +156,25 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
   })
 
   /**
-   * Both admin flags read the JWT claim rather than userProfile, because a route guard needs the
-   * answer immediately: checkAuthInfo() fills `user` from the token and then calls
-   * fetchUserProfile() WITHOUT awaiting it, so userProfile is still empty on the first navigation.
-   * Reading it in a guard bounces a legitimate admin whenever they load a gated URL directly or hit
-   * reload.
+   * Both flags read the JWT claim rather than userProfile, because a route guard needs the answer
+   * immediately: checkAuthInfo() fills `user` from the token and then calls fetchUserProfile()
+   * WITHOUT awaiting it, so userProfile is still empty on the first navigation. Reading it in a
+   * guard bounces a legitimate admin whenever they load a gated URL directly or hit reload.
    *
-   * They go through grantsAdmin/grantsSuperAdmin rather than includes() because roles arrive
-   * unexpanded from both sources: a super admin is stored as ["ROLE_SUPER_ADMIN"] and carries no
-   * ROLE_ADMIN, so an includes('ROLE_ADMIN') check answered false for the most privileged account
-   * on the site and hid the whole back office from it (#940).
+   * isAdmin goes through grantsAdmin rather than includes() because roles arrive unexpanded from
+   * both sources, so anything the server hierarchy would have added has to be added client side
+   * (#940).
    */
   const isAdmin = computed(() => grantsAdmin(user.value?.roles))
 
-  /** Also gates modules that are merged but not yet announced, which is presentation only: the API
-   * stays open, so that hides a module rather than protecting it. */
-  const isSuperAdmin = computed(() => grantsSuperAdmin(user.value?.roles))
+  /**
+   * Sees modules that are merged but not yet announced. Presentation only: the APIs behind them
+   * stay open, so this draws a curtain rather than protecting anything.
+   *
+   * Independent of isAdmin, deliberately. A tester is an ordinary account with a flag, so a preview
+   * can go to a band member without also giving them the back office (#942).
+   */
+  const isTester = computed(() => grantsTester(user.value?.roles))
 
   function isTokenExpired(decodedJwt) {
     // Refresh if token expires within buffer time
@@ -272,7 +275,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     userProfile: readonly(userProfile),
     profilePictureUrl,
     isAdmin,
-    isSuperAdmin,
+    isTester,
     isAuthenticated: readonly(isAuthenticated),
     isAuthenticatedLoading: readonly(isAuthenticatedLoading),
     loginErrors: readonly(loginErrors),

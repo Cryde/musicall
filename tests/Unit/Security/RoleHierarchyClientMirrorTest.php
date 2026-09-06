@@ -12,8 +12,9 @@ use Symfony\Component\Yaml\Yaml;
  * carries its own copy of the hierarchy, and this is the contract between the two.
  *
  * The drift this catches already happened once: a super admin, stored as ["ROLE_SUPER_ADMIN"],
- * carries no ROLE_ADMIN, so the old `includes('ROLE_ADMIN')` check hid the entire back office from
- * the most privileged account on the site (#940).
+ * carried no ROLE_ADMIN, so the old `includes('ROLE_ADMIN')` check hid the entire back office from
+ * the most privileged account on the site (#940). That role is gone (#942), and the tests below
+ * keep its replacement from repeating the mistake.
  *
  * Same approach as TechRiderDuplicateNameLimitsTest and FeedbackClientMirrorTest.
  */
@@ -21,6 +22,8 @@ class RoleHierarchyClientMirrorTest extends TestCase
 {
     private const string ROLES_PATH = 'assets/js/utils/roles.js';
     private const string SECURITY_PATH = 'config/packages/security.yaml';
+    private const string FIXTURE_PATH = 'src/Fixtures/Factory/User/UserFactory.php';
+    private const string TESTER_ROLE = 'ROLE_TESTER';
 
     public function test_the_client_hierarchy_matches_security_yaml(): void
     {
@@ -102,6 +105,39 @@ class RoleHierarchyClientMirrorTest extends TestCase
         ksort($hierarchy);
 
         return $hierarchy;
+    }
+
+    /**
+     * The invariant #942 exists for. ROLE_TESTER is a feature flag: it reveals modules that are
+     * merged but not yet announced, and grants no permission of its own. Putting it in the
+     * hierarchy, in either direction, breaks that: above ROLE_ADMIN it turns every tester into an
+     * admin, which is what ROLE_SUPER_ADMIN did, and below it enrols every admin into previews they
+     * did not ask for.
+     */
+    public function test_the_tester_role_is_not_a_rank(): void
+    {
+        foreach ($this->hierarchyFromSecurityYaml() as $role => $granted) {
+            $this->assertNotSame(self::TESTER_ROLE, $role, 'ROLE_TESTER must grant nothing.');
+            $this->assertNotContains(self::TESTER_ROLE, $granted, sprintf('%s must not grant ROLE_TESTER.', $role));
+        }
+    }
+
+    /**
+     * ROLE_TESTER is outside the hierarchy, so the mirror above cannot vouch for it. The string
+     * still has to match on both sides, or the flag silently stops working.
+     */
+    public function test_the_client_tester_role_matches_the_one_the_fixtures_grant(): void
+    {
+        $this->assertMatchesRegularExpression(
+            sprintf("/export const ROLE_TESTER = '%s'/", self::TESTER_ROLE),
+            $this->read(self::ROLES_PATH),
+            sprintf('%s must export ROLE_TESTER as %s, or the curtain never lifts for a tester.', self::ROLES_PATH, self::TESTER_ROLE),
+        );
+        $this->assertStringContainsString(
+            sprintf("'roles' => ['%s']", self::TESTER_ROLE),
+            $this->read(self::FIXTURE_PATH),
+            sprintf('%s must grant exactly %s, or dev has no account that can reach an unannounced module.', self::FIXTURE_PATH, self::TESTER_ROLE),
+        );
     }
 
     private function read(string $relativePath): string

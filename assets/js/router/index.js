@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { RIDER_SUPER_ADMIN_ONLY } from '../constants/bandSpace.js'
+import { RIDER_TESTER_ONLY } from '../constants/bandSpace.js'
 import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
@@ -102,7 +102,7 @@ const routes = [
         path: ':id/tech-riders',
         name: 'app_band_rider',
         component: () => import('../views/BandSpace/TechRider.vue'),
-        meta: { superAdminOnly: RIDER_SUPER_ADMIN_ONLY }
+        meta: { testerOnly: RIDER_TESTER_ONLY }
       },
       {
         path: ':id/parametres',

@@ -3,9 +3,9 @@ import { describe, it } from 'node:test'
 import {
   grantsAdmin,
   grantsRole,
-  grantsSuperAdmin,
+  grantsTester,
   ROLE_ADMIN,
-  ROLE_SUPER_ADMIN,
+  ROLE_TESTER,
   ROLE_USER
 } from './roles.js'
 
@@ -14,30 +14,36 @@ describe('grantsAdmin', () => {
     assert.equal(grantsAdmin([ROLE_ADMIN, ROLE_USER]), true)
   })
 
-  // The whole point of #940. Roles arrive unexpanded from both the JWT and /api/users/self, so a
-  // super admin carries no ROLE_ADMIN and a plain includes() locked the most privileged account on
-  // the site out of the back office.
-  it('accepts a super admin, who never carries ROLE_ADMIN', () => {
-    assert.equal([ROLE_SUPER_ADMIN, ROLE_USER].includes(ROLE_ADMIN), false)
-    assert.equal(grantsAdmin([ROLE_SUPER_ADMIN, ROLE_USER]), true)
-  })
-
   it('refuses an ordinary user', () => {
     assert.equal(grantsAdmin([ROLE_USER]), false)
   })
+
+  // #942: the flag must not be a rank. A tester is an ordinary account, so handing someone a
+  // preview must not hand them the back office, which is exactly what its predecessor did.
+  it('refuses a tester, who is an ordinary user with a flag', () => {
+    assert.equal(grantsAdmin([ROLE_TESTER, ROLE_USER]), false)
+  })
 })
 
-describe('grantsSuperAdmin', () => {
-  it('accepts only a super admin', () => {
-    assert.equal(grantsSuperAdmin([ROLE_SUPER_ADMIN]), true)
-    assert.equal(grantsSuperAdmin([ROLE_ADMIN, ROLE_USER]), false)
-    assert.equal(grantsSuperAdmin([ROLE_USER]), false)
+describe('grantsTester', () => {
+  it('accepts a tester', () => {
+    assert.equal(grantsTester([ROLE_TESTER, ROLE_USER]), true)
+  })
+
+  it('refuses an ordinary user', () => {
+    assert.equal(grantsTester([ROLE_USER]), false)
+  })
+
+  // The other half of keeping the flag orthogonal: being an admin does not enrol you in previews.
+  // ROLE_SUPER_ADMIN used to grant both directions at once, which is why neither now does.
+  it('refuses an admin who is not also a tester', () => {
+    assert.equal(grantsTester([ROLE_ADMIN, ROLE_USER]), false)
   })
 })
 
 describe('grantsRole', () => {
-  it('walks the hierarchy transitively', () => {
-    assert.equal(grantsRole([ROLE_SUPER_ADMIN], ROLE_USER), true)
+  it('walks the hierarchy downwards', () => {
+    assert.equal(grantsRole([ROLE_ADMIN], ROLE_USER), true)
   })
 
   it('does not walk it upwards', () => {

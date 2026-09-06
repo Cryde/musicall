@@ -20,7 +20,7 @@ const router = useRouter()
 
 onMounted(async () => {
   await userSecurityStore.checkAuthInfo()
-  const { isAuthenticated, isAdmin, isSuperAdmin } = storeToRefs(userSecurityStore)
+  const { isAuthenticated, isAdmin, isTester } = storeToRefs(userSecurityStore)
 
   router.beforeResolve((to) => {
     // Where an unauthenticated visitor lands, and whether the destination is told where they were
@@ -44,7 +44,7 @@ onMounted(async () => {
     }
     // Hides modules that are merged but not yet announced. The API stays open, so this
     // keeps the URL from being walkable, it does not protect anything.
-    if (to.meta.superAdminOnly && !isSuperAdmin.value) {
+    if (to.meta.testerOnly && !isTester.value) {
       return to.params.id
         ? { name: 'app_band_dashboard', params: { id: to.params.id } }
         : { name: 'app_home' }
