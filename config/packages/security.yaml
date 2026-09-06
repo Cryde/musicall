@@ -53,6 +53,12 @@ security:
                 delete_cookies:
                     jwt_hp: null
                     jwt_s: null
+                    # Scoped to the hub's own path, so clearing it needs that path spelled out: a
+                    # path-less clearing cookie would leave a logged-out browser able to keep
+                    # reading its previous account's Mercure topic until the token expired, which
+                    # matters on a shared machine. clear_site_data below would also do it, but
+                    # Safari does not implement it.
+                    mercureAuthorization: { path: /.well-known/mercure }
                 clear_site_data:
                     - cookies
                     - storage

@@ -14,7 +14,24 @@ services:
             - ./.docker/frankenphp/local/99-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
         environment:
             # we need localhost for google oauth...
-            SERVER_NAME: 'musicall.local, localhost'
+            #
+            # http://php-web:8080 is the address PHP publishes Mercure updates to. The scheme is
+            # written out because that is what turns automatic HTTPS off for this address alone: an
+            # explicit port only does that when the port is 80. Plain HTTP is the point, since the
+            # image is built with skip_install_trust and so nothing inside the container trusts the
+            # certificate Caddy issues itself.
+            #
+            # 8080 rather than 80 because 80 is published to the host, and there a request carrying
+            # `Host: php-web` would be served the whole application in the clear instead of the
+            # redirect to HTTPS every other host gets. 8080 is published nowhere, so this address
+            # exists only on the docker network, which is also the only place the name resolves.
+            SERVER_NAME: 'musicall.local, localhost, http://php-web:8080'
+            # Read out of .env by compose and handed to Caddy, which reads it back in the Caddyfile's
+            # mercure block. PHP inherits the same real environment variable and Symfony's Dotenv
+            # never overrides one, so the hub and the application cannot end up signing with
+            # different keys. An empty value makes Caddy refuse to start rather than silently reject
+            # every subscription.
+            MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET}'
         tty: true
         networks:
             musicall:
@@ -35,6 +52,12 @@ services:
         container_name: php-cli
         working_dir: /var/www/musicall
         command: /bin/true
+        environment:
+            # Same value, same source as php-web above, so app:mercure:ping signs with the key the
+            # hub verifies with. Without it this container would fall back to .env plus .env.local,
+            # and a secret put in .env.local (the natural place for one) would be a key Caddy has
+            # never seen.
+            MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET}'
         networks:
             - musicall
         volumes:

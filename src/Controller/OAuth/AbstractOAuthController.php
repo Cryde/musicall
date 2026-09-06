@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Exception\OAuth\OAuthEmailExistsException;
 use App\Exception\OAuth\OAuthEmailNotVerifiedException;
 use App\Http\ReturnUrl;
+use App\Mercure\MercureSubscriberCookie;
 use App\Service\OAuth\OAuthUserData;
 use App\Service\OAuth\OAuthUserService;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
@@ -31,6 +32,7 @@ abstract class AbstractOAuthController extends AbstractController
         protected readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
         protected readonly RefreshTokenManagerInterface $refreshTokenManager,
         protected readonly LoggerInterface $logger,
+        protected readonly MercureSubscriberCookie $mercureSubscriberCookie,
         protected readonly string $frontendUrl,
         protected readonly int $refreshTokenTtl,
     ) {
@@ -154,6 +156,12 @@ abstract class AbstractOAuthController extends AbstractController
                 ->withHttpOnly(true)
                 ->withSameSite('lax')
         );
+
+        // This path mints its own cookies and never reaches Lexik's success handler, so the listener
+        // that renews the Mercure subscriber cookie on login and on refresh does not fire here.
+        // Without this call a Google sign-in would have no subscriber token until the first refresh,
+        // an hour later.
+        $this->mercureSubscriberCookie->attachTo($response, $user, $request);
 
         return $response;
     }

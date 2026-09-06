@@ -83,6 +83,7 @@
           <ul class="list-none text-surface-600 dark:text-surface-300 space-y-2">
             <li><strong>jwt_hp</strong> et <strong>jwt_s</strong> : maintien de votre session de connexion (1 heure)</li>
             <li><strong>refresh_token</strong> : renouvellement de votre session sans nouvelle saisie de mot de passe (30 jours)</li>
+            <li><strong>mercureAuthorization</strong> : réception des notifications en temps réel (1 heure)</li>
             <li><strong>PHPSESSID</strong> : session technique du serveur (durée de votre navigation)</li>
             <li><strong>is_dark_mode</strong> : mémorisation du thème clair ou sombre que vous avez choisi (1 an)</li>
           </ul>

@@ -34,6 +34,36 @@
 
 	{$CADDY_SERVER_EXTRA_DIRECTIVES}
 
+	# The Mercure hub is part of the FrankenPHP binary, so realtime needs no extra container, unit
+	# or deploy target. The directive orders itself (after `encode`) and hands every path that is
+	# not under /.well-known/mercure straight on to php_server, so nothing else is affected.
+	#
+	# Production runs the same binary but its Caddyfile lives on the server, outside this
+	# repository, so this block has to be reproduced there by hand.
+	mercure {
+		# Bolt is the default transport and its default path is Caddy's own data directory,
+		# /data/caddy/mercure.db here: writable by the container user, inside the caddy_data
+		# volume, and on the server outside the release directory, so a deploy does not lose it.
+		# History is a bonus rather than a contract - the design publishes a signal and lets the
+		# client refetch - but it means a reconnect after the deploy restart can replay what it
+		# missed, which is the one moment every subscriber reconnects at once.
+		#
+		# Bounded because that is the only thing standing between a per-notification signal and a
+		# file that grows for the lifetime of the server. Both settings are needed: the transport
+		# prunes nothing unless size and cleanup_frequency are both non-zero. A thousand updates is
+		# far more than a reconnect ever walks back through.
+		transport bolt {
+			size 1000
+			cleanup_frequency 0.3
+		}
+
+		# One key signs the publisher token the application uses, the subscriber token handed to
+		# the browser, and is what the hub verifies with. compose.yaml passes the value in from
+		# .env so there is a single source; an empty one is a startup error, not a silent 401.
+		publisher_jwt {$MERCURE_JWT_SECRET}
+		subscriber_jwt {$MERCURE_JWT_SECRET}
+	}
+
 	php_server {
 		worker  {
 		    file /var/www/musicall/public/index.php

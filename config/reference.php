@@ -1950,7 +1950,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *     },
  *     mercure?: bool|array{
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         hub_url?: scalar|Param|null, // The URL sent in the Link HTTP header. If not set, will default to the URL for MercureBundle's default hub. // Default: null
  *         include_type?: bool|Param, // Always include @type in updates (including delete ones). // Default: false
  *     },
@@ -3360,6 +3360,32 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *     },
  * }
+ * @psalm-type MercureConfig = array{
+ *     hubs?: array<string, array{ // Default: []
+ *         url?: scalar|Param|null, // URL of the hub's publish endpoint // Default: null
+ *         public_url?: scalar|Param|null, // URL of the hub's public endpoint
+ *         jwt?: Param|string|array{ // JSON Web Token configuration.
+ *             value?: scalar|Param|null, // JSON Web Token to use to publish to this hub.
+ *             provider?: scalar|Param|null, // The ID of a service to call to provide the JSON Web Token.
+ *             factory?: scalar|Param|null, // The ID of a service to call to create the JSON Web Token.
+ *             publish?: list<scalar|Param|null>,
+ *             subscribe?: list<scalar|Param|null>,
+ *             secret?: scalar|Param|null, // The JWT Secret to use.
+ *             passphrase?: scalar|Param|null, // The JWT secret passphrase. // Default: ""
+ *             algorithm?: scalar|Param|null, // The algorithm to use to sign the JWT. With "secret", one of LcobucciFactory::SIGN_ALGORITHMS ("hmac.sha256", the default). With "jwks_uri", a JWA name from WebTokenFactory::SIGN_ALGORITHMS ("HS256", the default).
+ *             jwks_uri?: scalar|Param|null, // URL of a JSON Web Key Set (JWKS) to fetch the signing key from, instead of "secret". Requires "protocol_version: 1.0" and "web-token/jwt-library".
+ *             key_id?: scalar|Param|null, // The "kid" of the key to select from "jwks_uri", required when the key set holds more than one matching key.
+ *             claims?: array<string, mixed>,
+ *         },
+ *         jwt_provider?: scalar|Param|null, // Deprecated: The child node "jwt_provider" at path "mercure.hubs..jwt_provider" is deprecated, use "jwt.provider" instead. // The ID of a service to call to generate the JSON Web Token.
+ *         bus?: scalar|Param|null, // Name of the Messenger bus where the handler for this hub must be registered. Default to the default bus if Messenger is enabled.
+ *         protocol_version?: "0.x"|"1.0"|Param, // The Mercure protocol version spoken by this hub: "0.x" (default) or "1.0". Affects the default cookie name, the JWT claim shape built by "jwt.secret", and how the mercure() Twig function interprets matcher-typed topics. // Default: "0.x"
+ *         cookie_name?: scalar|Param|null, // Name of the subscriber authorization cookie. Defaults to a value computed from "protocol_version" ("mercureAuthorization" for "0.x", "__Secure-mercure_access_token" for "1.0") when not set. // Default: null
+ *     }>,
+ *     default_hub?: scalar|Param|null,
+ *     default_cookie_lifetime?: int|Param, // Default lifetime of the cookie containing the JWT, in seconds. Defaults to the value of "framework.session.cookie_lifetime". // Default: null
+ *     enable_profiler?: bool|Param, // Deprecated: The child node "enable_profiler" at path "mercure.enable_profiler" is deprecated. // Enable Symfony Web Profiler integration.
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -3382,6 +3408,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     elastically?: ElasticallyConfig,
  *     knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *     sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
+ *     mercure?: MercureConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -3408,6 +3435,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         elastically?: ElasticallyConfig,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *         sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
+ *         mercure?: MercureConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -3432,6 +3460,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         elastically?: ElasticallyConfig,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *         sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
+ *         mercure?: MercureConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -3458,6 +3487,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         elastically?: ElasticallyConfig,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *         sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
+ *         mercure?: MercureConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

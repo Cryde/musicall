@@ -27,6 +27,14 @@ api_platform:
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
     use_symfony_listeners: false
+    # Installing MercureBundle flips this option from off-by-default to on-by-default, so it is
+    # written out rather than left to change underneath us. Broadcasting is per resource and nothing
+    # opts in, so switching it off changes no behaviour today; what it removes is the footgun. A
+    # `mercure: true` on a resource publishes the serialized entity on a topic derived from its IRI,
+    # and non-private, which the hub delivers to every subscriber that asks for that topic rather
+    # than only to those whose token names it. Realtime here carries a signal and the client refetches
+    # through the API it already calls, which keeps one serialization contract instead of two.
+    mercure: false
     exception_to_status:
         # Symfony
         Symfony\Component\RateLimiter\Exception\RateLimitExceededException: 429
