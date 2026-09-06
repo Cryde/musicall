@@ -13,7 +13,7 @@ use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Security\BandSpace\BandSpaceAdminChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\BandSpace\File\FileShareTokenService;
+use App\Service\BandSpace\ShareTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -33,7 +33,7 @@ readonly class BandSpaceFileShareCreateProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceAdminChecker $adminChecker,
         private BandSpaceFileRepository $fileRepository,
-        private FileShareTokenService $tokenService,
+        private ShareTokenService $tokenService,
         private PasswordHasherFactoryInterface $passwordHasherFactory,
         private BandSpaceActivityRecorder $activityRecorder,
         private RequestStack $requestStack,

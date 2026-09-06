@@ -14,6 +14,21 @@
       </div>
       <div class="flex items-center gap-2">
         <Button
+          as="router-link"
+          :to="{
+            name: BAND_SPACE_ROUTES.PARAMETERS,
+            params: { id: route.params.id },
+            query: { section: 'calendar' }
+          }"
+          icon="pi pi-calendar-plus"
+          label="Synchroniser"
+          size="small"
+          severity="secondary"
+          text
+          :pt="{ label: { class: 'hidden sm:inline' } }"
+          aria-label="Synchroniser l'agenda avec mon calendrier personnel"
+        />
+        <Button
           icon="pi pi-user-minus"
           label="Indisponibilités"
           size="small"
@@ -266,6 +281,7 @@ import {
   agendaSourceFor,
   agendaSourceLabel
 } from '../../constants/agendaSources.js'
+import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import { useBandAbsenceStore } from '../../store/bandSpace/bandSpaceAbsence.js'
 import { useBandAgendaStore } from '../../store/bandSpace/bandSpaceAgenda.js'
 import {

@@ -6,7 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\File\BandSpaceFilePublicShareMetadata;
 use App\Repository\BandSpace\BandSpaceFileShareRepository;
-use App\Service\BandSpace\File\FileShareTokenService;
+use App\Service\BandSpace\ShareTokenService;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\GoneHttpException;
@@ -20,7 +20,7 @@ readonly class BandSpaceFilePublicShareMetadataProvider implements ProviderInter
 {
     public function __construct(
         private BandSpaceFileShareRepository $shareRepository,
-        private FileShareTokenService $tokenService,
+        private ShareTokenService $tokenService,
         private RequestStack $requestStack,
         #[Target('band_space_file_share_access')]
         private RateLimiterFactoryInterface $shareAccessLimiter,

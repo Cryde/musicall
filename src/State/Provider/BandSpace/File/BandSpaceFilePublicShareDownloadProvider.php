@@ -9,7 +9,7 @@ use App\Enum\BandSpace\BandSpaceFileActivityType;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceFileShareRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
-use App\Service\BandSpace\File\FileShareTokenService;
+use App\Service\BandSpace\ShareTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -29,7 +29,7 @@ readonly class BandSpaceFilePublicShareDownloadProvider implements ProviderInter
     public function __construct(
         private EntityManagerInterface $entityManager,
         private BandSpaceFileShareRepository $shareRepository,
-        private FileShareTokenService $tokenService,
+        private ShareTokenService $tokenService,
         private PasswordHasherFactoryInterface $passwordHasherFactory,
         private BandSpaceActivityRecorder $activityRecorder,
         private StorageInterface $vichStorage,

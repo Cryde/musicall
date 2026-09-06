@@ -14,4 +14,6 @@ enum BandSpaceAgendaActivityType: string
     case IsAllDayChanged = 'is_all_day_changed';
     case OccurrenceCancelled = 'occurrence_cancelled';
     case SeriesTruncated = 'series_truncated';
+    case FeedGenerated = 'feed_generated';
+    case FeedRevoked = 'feed_revoked';
 }

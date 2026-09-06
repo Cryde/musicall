@@ -104,6 +104,7 @@ export const BAND_SPACE_SETTINGS_SECTIONS = Object.freeze([
   { key: 'members', label: 'Membres', adminOnly: false },
   { key: 'activity', label: "Journal d'activité", adminOnly: false },
   { key: 'shares', label: 'Partages actifs', adminOnly: false },
+  { key: 'calendar', label: 'Synchronisation agenda', adminOnly: false },
   { key: 'storage', label: 'Stockage', adminOnly: false },
   { key: 'general', label: 'Général', adminOnly: false },
   { key: 'danger', label: 'Zone de danger', adminOnly: false }
