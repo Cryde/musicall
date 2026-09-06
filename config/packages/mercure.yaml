@@ -1,0 +1,40 @@
+parameters:
+    # Publishing is a loopback: the hub lives inside the very process that serves the site, so the
+    # site's own URL is the right endpoint and MERCURE_URL does not have to be set at all. Dev is the
+    # exception and sets it, because the image is built with skip_install_trust and so does not trust
+    # the certificate Caddy issues itself, which is why it publishes over plain HTTP on the docker
+    # network instead.
+    #
+    # A default rather than a bare '%env(MERCURE_URL)%' because the bundle registers a Twig extension
+    # that holds the hub, and Twig builds its extensions eagerly. Twig renders the page the whole SPA
+    # is served from, so an unresolvable variable here is not a broken notification, it is a blank
+    # site. Deployer shares .env rather than deploying it, so "not set yet" is the normal state of a
+    # first release and must stay survivable.
+    mercure.default_hub_url: '%env(DEFAULT_URI)%/.well-known/mercure'
+
+mercure:
+    hubs:
+        default:
+            # Where PHP publishes, which is not the browser's URL. See the parameter above.
+            url: '%env(default:mercure.default_hub_url:MERCURE_URL)%'
+            # Where the browser connects, and a literal rather than an environment variable because
+            # it is the same everywhere. The hub is served by the very Caddy that serves the
+            # application, so it is always same-origin, and a path carries no host for Authorization
+            # to scope the subscriber cookie against: it compares the host here with the host the
+            # request came in on and throws when they differ. So this one value is right on
+            # localhost, on musicall.local, on the suite's musicall.test and in production, there is
+            # nothing to keep in step, and it is one fewer variable that a deploy can forget.
+            public_url: /.well-known/mercure
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                # The topics the token PHP publishes with is allowed to reach. Without it the
+                # publish grant is an empty selector list, and the hub matches requested topics
+                # against that list, so every publish comes back 401.
+                publish: '*'
+    # The subscriber cookie is renewed by the same POST /api/token/refresh that renews the JWT, so
+    # it gets the same life. Left unset it falls back to session.cookie_lifetime, which nothing
+    # here controls: every firewall is stateless and a session is rarely started at all. Reading
+    # Lexik's parameter means the two cannot drift; it resolves because MercureBundle is registered
+    # after LexikJWTAuthenticationBundle in config/bundles.php, and reordering them would fail loudly
+    # at compile time rather than quietly.
+    default_cookie_lifetime: '%lexik_jwt_authentication.token_ttl%'

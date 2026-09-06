@@ -29,4 +29,5 @@ return [
     // Renders the setlist PDF export (#741). Needed in test too, where the client is swapped for a
     // recording double rather than the bundle being switched off.
     Sensiolabs\GotenbergBundle\SensiolabsGotenbergBundle::class => ['all' => true],
+    Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
 ];
