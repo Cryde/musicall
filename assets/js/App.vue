@@ -20,7 +20,7 @@ const router = useRouter()
 
 onMounted(async () => {
   await userSecurityStore.checkAuthInfo()
-  const { isAuthenticated, isSuperAdmin } = storeToRefs(userSecurityStore)
+  const { isAuthenticated, isAdmin, isSuperAdmin } = storeToRefs(userSecurityStore)
 
   router.beforeResolve((to) => {
     // Where an unauthenticated visitor lands, and whether the destination is told where they were
@@ -33,6 +33,13 @@ onMounted(async () => {
       return resolveUnauthenticatedRedirect(to)
     }
     if (to.meta.isGuestOnly && isAuthenticated.value) {
+      return { name: 'app_home' }
+    }
+    // The admin SPA used to be gated by isAuthRequired alone, so any logged-in account rendered the
+    // whole back office. Nothing leaked, because every admin endpoint answers 403, but the views
+    // turned that 403 into their empty state: a non admin was shown a plausible, entirely fictional
+    // admin panel (#940).
+    if (to.meta.isAdminRequired && !isAdmin.value) {
       return { name: 'app_home' }
     }
     // Hides modules that are merged but not yet announced. The API stays open, so this
