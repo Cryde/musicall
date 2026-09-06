@@ -7,6 +7,8 @@ use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+use Ramsey\Uuid\Uuid;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
@@ -100,6 +102,53 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Looked up through a QueryBuilder rather than find(), which coerces the id through the uuid
+     * field type and throws on a malformed one. The id arrives as a URI path segment, so nothing has
+     * validated it, and a stray character has to be a 404 rather than a 500 (see #934).
+     */
+    public function findOneById(string $id): ?User
+    {
+        if (!Uuid::isValid($id)) {
+            return null;
+        }
+
+        return $this->createQueryBuilder('u')
+            ->where('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Admin lookup by username or email, for the back office user screen.
+     *
+     * Includes deleted accounts, unlike searchByUserName above: an admin looking into a report needs
+     * to find an account that has since been closed, and DeleteAccountProcedure anonymises rather
+     * than removing, so the row is still there to find.
+     *
+     * The search term has its LIKE wildcards escaped, or a lone `%` would list the whole user base
+     * through an endpoint that is meant to answer a question about one person.
+     *
+     * @return Paginator<User>
+     */
+    public function searchForAdmin(string $search, int $offset, int $limit): Paginator
+    {
+        $queryBuilder = $this->createQueryBuilder('u')
+            // profilePicture is the owning side of a nullable OneToOne, so it is genuinely lazy and
+            // every row would otherwise fetch its own when the builder reads the avatar. To-one, so
+            // the join multiplies nothing.
+            ->select('u, profilePicture')
+            ->leftJoin('u.profilePicture', 'profilePicture')
+            ->where('u.username LIKE :search OR u.email LIKE :search')
+            ->setParameter('search', '%' . addcslashes($search, '%_\\') . '%')
+            ->orderBy('u.username', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        return new Paginator($queryBuilder->getQuery(), fetchJoinCollection: false);
     }
 
     /**

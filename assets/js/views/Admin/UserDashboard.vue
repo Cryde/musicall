@@ -12,6 +12,8 @@
       />
     </div>
 
+    <UserSearchPanel />
+
     <!-- Loading State -->
     <div v-if="dashboardStore.isLoadingUsers" class="flex justify-center py-8">
       <ProgressSpinner style="width: 50px; height: 50px" />
@@ -500,6 +502,7 @@ import { computed, onMounted, ref } from 'vue'
 import ComingSoonBadge from '../../components/Admin/ComingSoonBadge.vue'
 import DateRangePicker from '../../components/Admin/DateRangePicker.vue'
 import TimeSeriesChart from '../../components/Admin/TimeSeriesChart.vue'
+import UserSearchPanel from '../../components/Admin/UserSearchPanel.vue'
 import { useAdminDashboardStore } from '../../store/admin/dashboard.js'
 
 const dashboardStore = useAdminDashboardStore()

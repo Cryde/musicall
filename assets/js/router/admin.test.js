@@ -17,33 +17,50 @@ const router = createRouter({
   routes: [{ path: '/', children: [adminRoute] }]
 })
 
-const adminRouteNames = adminRoute.children.map((child) => child.name)
+/**
+ * A child with a required param cannot be resolved by name alone, so each one gets a placeholder.
+ * Derived from the path rather than listed, so a future admin route with params needs no change
+ * here.
+ */
+function paramsFor(path) {
+  const names = [...String(path).matchAll(/:(\w+)/g)].map(([, name]) => name)
+
+  return Object.fromEntries(names.map((name) => [name, 'placeholder']))
+}
+
+const adminPages = adminRoute.children.map((child) => ({
+  name: child.name,
+  params: paramsFor(child.path)
+}))
 
 describe('the admin route tree', () => {
   it('has children to protect', () => {
-    assert.ok(adminRouteNames.length > 0)
+    assert.ok(adminPages.length > 0)
   })
 
   it('requires admin on every page, not just the index', () => {
-    for (const name of adminRouteNames) {
-      const resolved = router.resolve({ name })
+    for (const page of adminPages) {
       assert.equal(
-        resolved.meta.isAdminRequired,
+        router.resolve(page).meta.isAdminRequired,
         true,
-        `${name} does not inherit isAdminRequired, so the guard never fires for it`
+        `${page.name} does not inherit isAdminRequired, so the guard never fires for it`
       )
     }
   })
 
   it('still requires authentication on every page', () => {
-    for (const name of adminRouteNames) {
-      assert.equal(router.resolve({ name }).meta.isAuthRequired, true)
+    for (const page of adminPages) {
+      assert.equal(
+        router.resolve(page).meta.isAuthRequired,
+        true,
+        `${page.name} lost isAuthRequired`
+      )
     }
   })
 
   it('puts every admin page under /admin', () => {
-    for (const name of adminRouteNames) {
-      assert.match(router.resolve({ name }).path, /^\/admin(\/|$)/)
+    for (const page of adminPages) {
+      assert.match(router.resolve(page).path, /^\/admin(\/|$)/, `${page.name} escaped the prefix`)
     }
   })
 })
