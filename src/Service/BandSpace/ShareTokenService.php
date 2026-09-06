@@ -1,8 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace App\Service\BandSpace\File;
+namespace App\Service\BandSpace;
 
-final class FileShareTokenService
+/**
+ * Mints the secret half of a public Band Space URL, for the file share links and for the agenda
+ * iCal feed.
+ *
+ * Only the sha256 is ever stored, so a database dump does not hand over working links. The plaintext
+ * token exists once, in the response that created it, which is why both callers surface it to the
+ * user immediately and never read it back.
+ */
+final class ShareTokenService
 {
     private const int TOKEN_BYTES = 32;
 

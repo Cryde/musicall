@@ -57,6 +57,8 @@ const SENTENCES = {
     a.payload?.to ? "a basculé l'événement en journée entière" : 'a quitté la journée entière',
   'agenda.occurrence_cancelled': (a) =>
     `a annulé l'occurrence du ${a.payload?.occurrence_date ?? '?'} de « ${a.payload?.title ?? 'Sans titre'} »`,
+  'agenda.feed_generated': () => "a généré un lien d'abonnement à l'agenda",
+  'agenda.feed_revoked': () => "a révoqué son lien d'abonnement à l'agenda",
   'agenda.series_truncated': (a) =>
     `a tronqué la série « ${a.payload?.title ?? 'Sans titre'} » à partir du ${a.payload?.from_occurrence_date ?? '?'}`,
 

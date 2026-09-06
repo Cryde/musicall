@@ -32,6 +32,7 @@
             <MembersSection v-if="activeSection === 'members'" />
             <ActivitySection v-else-if="activeSection === 'activity'" />
             <ActiveSharesSection v-else-if="activeSection === 'shares'" />
+            <CalendarSyncSection v-else-if="activeSection === 'calendar'" />
             <QuotaIndicator v-else-if="activeSection === 'storage'" />
             <GeneralSection v-else-if="activeSection === 'general'" />
             <DangerZoneSection v-else-if="activeSection === 'danger'" />
@@ -49,6 +50,7 @@ import { useRoute } from 'vue-router'
 import QuotaIndicator from '../../components/BandSpace/Files/QuotaIndicator.vue'
 import ActiveSharesSection from '../../components/BandSpace/Settings/ActiveSharesSection.vue'
 import ActivitySection from '../../components/BandSpace/Settings/ActivitySection.vue'
+import CalendarSyncSection from '../../components/BandSpace/Settings/CalendarSyncSection.vue'
 import ComingSoonSection from '../../components/BandSpace/Settings/ComingSoonSection.vue'
 import DangerZoneSection from '../../components/BandSpace/Settings/DangerZoneSection.vue'
 import GeneralSection from '../../components/BandSpace/Settings/GeneralSection.vue'

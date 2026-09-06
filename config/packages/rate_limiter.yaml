@@ -91,6 +91,24 @@ framework:
             limit: 30
             interval: '1 minute'
             cache_pool: "rate_limiter.cache"
+        # Keyed on the token, not on the caller's address: a calendar client polls from its vendor's
+        # shared fetcher pool, so a per IP bucket would let one band's subscribers throttle another's.
+        # 60 an hour against the most aggressive legitimate configuration there is, Apple Calendar at
+        # its 5 minute minimum, which is 12. Google and Outlook are hours apart, so nobody real gets
+        # close. A 429 here is invisible to the user: the client shows nothing and quietly stops
+        # refreshing, which is why the ceiling sits this far above real use.
+        band_space_agenda_feed_access:
+            policy: sliding_window
+            limit: 60
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
+        # Charged only when the token is unknown, and keyed on the address, which is what stops
+        # someone minting a Valkey bucket per token they invent. A real subscriber never reaches it.
+        band_space_agenda_feed_miss:
+            policy: sliding_window
+            limit: 20
+            interval: '1 hour'
+            cache_pool: "rate_limiter.cache"
         band_space_creation:
             policy: fixed_window
             limit: 2
