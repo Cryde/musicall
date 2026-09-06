@@ -14,6 +14,11 @@ export default {
       component: () => import('../views/Admin/UserDashboard.vue')
     },
     {
+      name: 'admin_users_show',
+      path: 'users/:id',
+      component: () => import('../views/Admin/User/Show.vue')
+    },
+    {
       name: 'admin_publications_index',
       path: 'publications',
       component: () => import('../views/Admin/Publications/Index.vue')
