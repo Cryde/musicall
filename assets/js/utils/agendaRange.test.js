@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
-import { agendaViewForSavedEntry, isEntryVisibleInRange } from './agendaRange.js'
+import { after, before, describe, it } from 'node:test'
+import {
+  agendaViewForSavedEntry,
+  isEntryVisibleInRange,
+  upcomingAgendaWindow
+} from './agendaRange.js'
 
 /**
  * The rule that keeps a just saved event on screen. Datetimes are written without a UTC offset on
@@ -167,5 +171,55 @@ describe('all day entries, which the API pins to UTC midnight', () => {
       agendaViewForSavedEntry(ALL_DAY_FIRST_OF_SEPTEMBER, SEPTEMBER_FROM, SEPTEMBER_TO),
       null
     )
+  })
+})
+
+describe('upcomingAgendaWindow', () => {
+  // CI runs at TZ=UTC, so the local-versus-UTC assertion below is structurally blind there: a
+  // regression to `toISOString().slice(0, 10)` passes under UTC and only fails on a developer's
+  // machine. Pinning an offset timezone for this block is what makes the guarantee real where the
+  // suite actually runs. V8 re-reads process.env.TZ per call, so setting it here is enough.
+  const originalTz = process.env.TZ
+  before(() => {
+    process.env.TZ = 'Europe/Paris'
+  })
+  after(() => {
+    if (originalTz === undefined) {
+      delete process.env.TZ
+    } else {
+      process.env.TZ = originalTz
+    }
+  })
+
+  // #944. The API's from/to are Assert\Date, an anchored ^\d{4}-\d{2}-\d{2}$, so a wall clock is
+  // a 422 and the widget showed « Impossible de charger l'agenda. » on every dashboard. The shape
+  // is the whole bug, so it is what gets asserted.
+  it('asks for bare calendar days, never a wall clock', () => {
+    const { from, to } = upcomingAgendaWindow(new Date(2026, 8, 6), 7)
+
+    assert.equal(from, '2026-09-06')
+    assert.equal(to, '2026-09-13')
+    assert.match(from, /^\d{4}-\d{2}-\d{2}$/)
+    assert.match(to, /^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('spans the window inclusively, because the API widens `to` to the end of its day', () => {
+    const { from, to } = upcomingAgendaWindow(new Date(2026, 8, 6), 0)
+
+    assert.equal(from, '2026-09-06')
+    assert.equal(to, '2026-09-06')
+  })
+
+  it('crosses a month boundary', () => {
+    assert.deepEqual(upcomingAgendaWindow(new Date(2026, 8, 28), 7), {
+      from: '2026-09-28',
+      to: '2026-10-05'
+    })
+  })
+
+  // Formatted from local getters, so a band in Paris asking on the 6th gets the 6th rather than
+  // the 5th, which is what a UTC-based format would hand them before 02:00.
+  it('reads the local calendar day rather than the UTC one', () => {
+    assert.equal(upcomingAgendaWindow(new Date(2026, 8, 6, 0, 30), 1).from, '2026-09-06')
   })
 })

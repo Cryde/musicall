@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { addDays, format, isToday, isTomorrow, parseISO, startOfDay } from 'date-fns'
+import { format, isToday, isTomorrow, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
@@ -38,6 +38,7 @@ import bandSpaceAgendaApi from '../../../api/bandSpace/band-space-agenda.js'
 import { agendaSourceFor } from '../../../constants/agendaSources.js'
 import { toAgendaDate } from '../../../utils/agendaDate.js'
 import { isAllDayItem } from '../../../utils/agendaItem.js'
+import { upcomingAgendaWindow } from '../../../utils/agendaRange.js'
 import DashboardWidget from './DashboardWidget.vue'
 
 const WINDOW_DAYS = 7
@@ -53,9 +54,7 @@ const error = ref(null)
 
 onMounted(async () => {
   try {
-    const today = startOfDay(new Date())
-    const from = format(today, "yyyy-MM-dd'T'00:00:00")
-    const to = format(addDays(today, WINDOW_DAYS), "yyyy-MM-dd'T'23:59:59")
+    const { from, to } = upcomingAgendaWindow(new Date(), WINDOW_DAYS)
     const data = await bandSpaceAgendaApi.getAgenda(props.bandSpaceId, { from, to })
     items.value = [...data].sort((a, b) => a.datetime.localeCompare(b.datetime)).slice(0, MAX_ITEMS)
   } catch {
