@@ -12,7 +12,8 @@ namespace App\Mercure;
  * application is on the path of a subscription: what a subscriber may read is decided entirely by
  * the topic selectors inside the token they present. A publisher and a subscriber that disagree by
  * one character silently deliver nothing, and one that is accidentally broadened delivers somebody
- * else's mail, so the string is written once, here.
+ * else's mail, so the string is written once, here. Once per language, strictly: the browser builds
+ * the same topic in `assets/js/utils/notificationStream.js`, and the two have to be changed together.
  *
  * Two things have to be true for a per-user topic to actually be private, and only one of them lives
  * in this file. The token must name the topic (that is the cookie issued by MercureSubscriberCookie),

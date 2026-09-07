@@ -96,7 +96,10 @@ import { RouterLink } from 'vue-router'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
 import NotificationItem from './NotificationItem.vue'
 
-const POLL_INTERVAL_MS = 60_000
+// A fallback, not the mechanism: the count arrives over Mercure now (#950). This only has to cover
+// a hub that is down or a stream that has not reconnected yet, so it is minutes rather than the
+// minute it used to be. The focus listener below still gives an immediate refresh on tab switch.
+const POLL_INTERVAL_MS = 5 * 60_000
 
 const emit = defineEmits(['navigate'])
 
@@ -138,10 +141,20 @@ let intervalId = null
 
 function refreshCount() {
   store.loadCount()
+  // The self-heal. The store connects as soon as the profile lands, but if that fetch failed there is
+  // nothing else that would ever try again, and the poll would mask it perfectly: a live-looking bell
+  // that is only ever five minutes fresh. connect() is idempotent, so this costs nothing when the
+  // stream is already up.
+  store.connect()
 }
 
 onMounted(() => {
   store.loadCount()
+  // The store has already tried by the time this runs: creating it above ran its immediate watch.
+  // This is here for the case where the profile had not landed then, alongside refreshCount() below.
+  // Deliberately never closed on unmount, because a layout switch unmounts this component and the
+  // stream should outlive that.
+  store.connect()
   intervalId = setInterval(refreshCount, POLL_INTERVAL_MS)
   window.addEventListener('focus', refreshCount)
 })
