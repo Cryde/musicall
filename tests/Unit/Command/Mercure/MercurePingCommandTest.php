@@ -27,8 +27,8 @@ class MercurePingCommandTest extends TestCase
 
         $this->assertSame(Command::SUCCESS, $tester->execute(['username' => 'user_base']));
 
-        $update = $hub->published;
-        self::assertInstanceOf(Update::class, $update);
+        self::assertCount(1, $hub->updates);
+        $update = $hub->updates[0];
         $this->assertSame(['/users/d1be73fc-b0c4-4530-a30a-d41f43e6ebea/notifications'], $update->getTopics());
         // The flag is the isolation, not the token: the hub only checks a subscriber's selectors for
         // private updates, so a public one here would reach every signed-in browser that asked.
@@ -42,7 +42,7 @@ class MercurePingCommandTest extends TestCase
         $tester = new CommandTester($this->command($hub, null));
 
         $this->assertSame(Command::FAILURE, $tester->execute(['username' => 'nobody']));
-        $this->assertNull($hub->published);
+        $this->assertSame([], $hub->updates);
         $this->assertStringContainsString('No user named "nobody"', $tester->getDisplay());
     }
 

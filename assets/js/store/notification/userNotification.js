@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
-import { readonly, ref } from 'vue'
+import { readonly, ref, watch } from 'vue'
 import userNotificationApi from '../../api/notification/userNotification.js'
+import { createNotificationStream, notificationTopic } from '../../utils/notificationStream.js'
+import { useUserSecurityStore } from '../user/security.js'
 
 export const useUserNotificationStore = defineStore('userNotification', () => {
   // Bell dropdown feed (latest page only).
@@ -101,7 +103,44 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
     pageTotalItems.value = 0
   }
 
+  // The live stream. It lives in the store rather than in NotificationBell.vue because the bell
+  // unmounts whenever the layout changes (AppBaseLayout to AppBandLayout and back), which would drop
+  // and reopen the connection on every entry into a Band Space. A store is a singleton for the page,
+  // so whoever mounts first connects and the rest is a no-op.
+  const stream = createNotificationStream({
+    // A list of one. See notificationStream.js for why it is a list at all.
+    getTopics: () => {
+      const userId = useUserSecurityStore().userProfile?.id
+
+      return userId ? [notificationTopic(userId)] : []
+    },
+    onSignal: () => loadCount(),
+    onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()
+  })
+
+  // Authentication completes one HTTP round trip before the profile does: checkAuthInfo() sets
+  // isAuthenticated and then calls fetchUserProfile() without awaiting it. So a bell that mounts from
+  // a warm cache can call connect() while userProfile is still null, find no id, and never open the
+  // stream at all, leaving the user on the fallback poll for the whole session with nothing logged.
+  // Waiting for the id rather than for the mount is what makes that race unlosable.
+  watch(
+    () => useUserSecurityStore().userProfile?.id,
+    (userId, previousUserId) => {
+      // Reconnect rather than connect: connect() refuses to run while a stream is open, and the
+      // topics live in that stream's URL. Without the teardown, a session that changed user would
+      // keep listening on the old topic and a widened topic list would be silently ignored.
+      if (previousUserId) {
+        stream.disconnect()
+      }
+      if (userId) {
+        stream.connect()
+      }
+    },
+    { immediate: true }
+  )
+
   function clear() {
+    stream.disconnect()
     items.value = []
     unreadCount.value = 0
     clearPage()
@@ -120,6 +159,8 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
     markRead,
     markAllRead,
     recordInvitationAction,
+    connect: stream.connect,
+    disconnect: stream.disconnect,
     clearPage,
     clear
   }

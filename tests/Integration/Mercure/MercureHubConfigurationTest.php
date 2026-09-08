@@ -21,7 +21,9 @@ class MercureHubConfigurationTest extends KernelTestCase
     public function test_the_publisher_token_may_publish_on_any_topic(): void
     {
         self::bootKernel();
-        $hub = self::getContainer()->get(HubInterface::class);
+        // The configured hub by its own id, not through HubInterface: when@test points that alias at
+        // a recording double so no test reaches a real hub, and this test is about the real config.
+        $hub = self::getContainer()->get('mercure.hub.default');
         self::assertInstanceOf(RemoteHubInterface::class, $hub);
 
         // Drop "jwt.publish" from config/packages/mercure.yaml and this claim becomes an empty
@@ -33,7 +35,7 @@ class MercureHubConfigurationTest extends KernelTestCase
     public function test_the_public_url_carries_no_host(): void
     {
         self::bootKernel();
-        $hub = self::getContainer()->get(HubInterface::class);
+        $hub = self::getContainer()->get('mercure.hub.default');
         self::assertInstanceOf(HubInterface::class, $hub);
 
         // Authorization scopes the subscriber cookie's domain by comparing this host with the host

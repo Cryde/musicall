@@ -89,6 +89,28 @@ when@test:
     services:
         App\Contracts\Google\Youtube\YoutubeRepositoryInterface: '@App\Service\Google\DummyYoutubeRepository'
 
+        # NotificationCreator publishes a Mercure signal on every notification and fifteen source
+        # files call it, so without this a large part of the suite would attempt an HTTP POST to a
+        # host that deliberately does not resolve. Replaced rather than decorated: there is no real
+        # hub behind it to pass through to, and nothing in the suite should ever reach one.
+        #
+        # Public so a test can fetch it and assert on what was published.
+        App\Tests\Double\RecordingHub:
+            public: true
+
+        # Only the interface, which is what publishers inject. Not mercure.hub.default itself: that
+        # one is also what Authorization reads the token factory and public URL from, so replacing it
+        # would stop the subscriber cookie being minted and take the #949 tests with it.
+        #
+        # All three forms of HubInterface, because MercureBundle registers named-argument aliases and
+        # those win over the bare interface. A publisher written as `HubInterface $defaultHub` would
+        # otherwise get the real hub here and POST to a host that does not resolve. The deprecated
+        # PublisherInterface aliases and HubRegistry still point at the real hub; nothing uses them to
+        # publish, and .env.test's unresolvable MERCURE_URL is the backstop if something ever does.
+        Symfony\Component\Mercure\HubInterface: '@App\Tests\Double\RecordingHub'
+        Symfony\Component\Mercure\HubInterface $default: '@App\Tests\Double\RecordingHub'
+        Symfony\Component\Mercure\HubInterface $defaultHub: '@App\Tests\Double\RecordingHub'
+
         # The suite renders PDFs without a Gotenberg container. Substituting the client rather than
         # the renderer keeps the real builder, the real Twig render and the real fit arithmetic under
         # test, and lets a test assert on what was actually sent.

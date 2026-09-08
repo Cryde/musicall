@@ -44,9 +44,10 @@
 		# Bolt is the default transport and its default path is Caddy's own data directory,
 		# /data/caddy/mercure.db here: writable by the container user, inside the caddy_data
 		# volume, and on the server outside the release directory, so a deploy does not lose it.
-		# History is a bonus rather than a contract - the design publishes a signal and lets the
-		# client refetch - but it means a reconnect after the deploy restart can replay what it
-		# missed, which is the one moment every subscriber reconnects at once.
+		# History is a bonus rather than a contract, and as of #950 nothing claims it: the client
+		# builds a fresh EventSource on every retry, which sends no Last-Event-ID, so the hub
+		# replays nothing to it. The client refetches on reconnect instead. Kept because it costs
+		# almost nothing and a future consumer may want replay.
 		#
 		# Bounded because that is the only thing standing between a per-notification signal and a
 		# file that grows for the lifetime of the server. Both settings are needed: the transport
