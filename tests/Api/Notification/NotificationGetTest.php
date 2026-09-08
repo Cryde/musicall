@@ -7,6 +7,7 @@ use App\Entity\Publication;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Feedback\FeedbackFactory;
+use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
 use App\Tests\Factory\Publication\GalleryFactory;
@@ -37,13 +38,30 @@ class NotificationGetTest extends ApiTestCase
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
 
 
-        $thread = MessageThreadFactory::new()->create();
-        $thread2 = MessageThreadFactory::new()->create();
-        $thread3 = MessageThreadFactory::new()->create();
-        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'isRead' => 0])->create();
-        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread2, 'isRead' => 0])->create();
-        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread3, 'isRead' => 1])->create();
-        MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $thread, 'isRead' => 0])->create();
+        // Two unread messages in one thread, one in another, and a third thread read to the end.
+        // The answer is therefore 3 messages across 2 threads: under the boolean it was 2, because it
+        // counted threads and called them messages (#954).
+        $twoUnread = MessageThreadFactory::new()->create();
+        MessageFactory::new(['thread' => $twoUnread, 'author' => $user2, 'creationDatetime' => new \DateTime('2026-09-01 10:00:00')])->create();
+        MessageFactory::new(['thread' => $twoUnread, 'author' => $user2, 'creationDatetime' => new \DateTime('2026-09-01 10:01:00')])->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $twoUnread, 'lastReadDatetime' => null])->create();
+
+        $oneUnread = MessageThreadFactory::new()->create();
+        MessageFactory::new(['thread' => $oneUnread, 'author' => $user2, 'creationDatetime' => new \DateTime('2026-09-02 10:00:00')])->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $oneUnread, 'lastReadDatetime' => null])->create();
+
+        $caughtUp = MessageThreadFactory::new()->create();
+        MessageFactory::new(['thread' => $caughtUp, 'author' => $user2, 'creationDatetime' => new \DateTime('2026-09-03 10:00:00')])->create();
+        MessageThreadMetaFactory::new([
+            'user' => $user1,
+            'thread' => $caughtUp,
+            'lastReadDatetime' => new \DateTimeImmutable('2026-09-03 10:00:01'),
+        ])->create();
+
+        // Somebody else's unread message in a thread of their own, which must not leak into the count.
+        $otherPersons = MessageThreadFactory::new()->create();
+        MessageFactory::new(['thread' => $otherPersons, 'author' => $user1, 'creationDatetime' => new \DateTime('2026-09-04 10:00:00')])->create();
+        MessageThreadMetaFactory::new(['user' => $user2, 'thread' => $otherPersons, 'lastReadDatetime' => null])->create();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/notifications');
@@ -52,7 +70,7 @@ class NotificationGetTest extends ApiTestCase
             '@context' => '/api/contexts/Notification',
             '@id' => '/api/notifications',
             '@type' => 'Notification',
-            'unread_messages' => 2
+            'unread_messages' => 3
         ]);
     }
 
@@ -61,7 +79,8 @@ class NotificationGetTest extends ApiTestCase
         $user1 = UserFactory::new()->asAdminUser()->create();
 
         $thread = MessageThreadFactory::new()->create();
-        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'isRead' => 0])->create();
+        MessageFactory::new(['thread' => $thread, 'author' => UserFactory::new()->asBaseUser()])->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'lastReadDatetime' => null])->create();
         PublicationFactory::new(['status' => Publication::STATUS_PENDING,])->create();
         PublicationFactory::new(['status' => Publication::STATUS_ONLINE,])->create(); // not taken into count
         PublicationFactory::new(['status' => Publication::STATUS_DRAFT,])->create(); // not taken into count
@@ -90,7 +109,8 @@ class NotificationGetTest extends ApiTestCase
         $user1 = UserFactory::new()->asAdminUser()->create();
 
         $thread = MessageThreadFactory::new()->create();
-        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'isRead' => 0])->create();
+        MessageFactory::new(['thread' => $thread, 'author' => UserFactory::new()->asBaseUser()])->create();
+        MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread, 'lastReadDatetime' => null])->create();
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/notifications');

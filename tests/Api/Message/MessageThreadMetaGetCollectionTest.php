@@ -40,6 +40,15 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         ])->create();
         $thread->lastMessage = $message;
         \Zenstruck\Foundry\Persistence\save($thread);
+        // An earlier message from the other participant, so the count under test is non-zero. Without
+        // it the only message is $user1's own, and a zero would pass against an implementation that
+        // always returned zero.
+        MessageFactory::new([
+            'author' => $user2,
+            'thread' => $thread,
+            'content' => 'something to read',
+            'creationDatetime' => new \DateTime('2026-08-01 09:00:00'),
+        ])->create();
         $meta = MessageThreadMetaFactory::new(['user' => $user1, 'thread' => $thread])->create();
 
         // thread between user2 & user3 : shouldn't appear in the response
@@ -63,7 +72,7 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                     '@id' => '/api/message_thread_metas/' . $meta->id,
                     '@type' => 'MessageThreadMeta',
                     'id'      => $meta->id,
-                    'is_read' => false,
+                    'unread_count' => 1,
                     'thread'  => [
                         '@id' => '/api/message_threads/' . $thread->id,
                         '@type' => 'MessageThread',

@@ -31,7 +31,7 @@ class MessageEmailThrottleTest extends ApiTestCase
         $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
         $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
         $this->assertTrue($recipientMeta->pendingNotificationSent);
-        $this->assertFalse($recipientMeta->isRead);
+        $this->assertNull($recipientMeta->lastReadDatetime, 'An incoming message must not move the recipient\'s read position');
     }
 
     public function test_first_message_in_brand_new_thread_sends_email(): void
@@ -63,7 +63,7 @@ class MessageEmailThrottleTest extends ApiTestCase
         $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id]);
         $this->assertNotNull($recipientMeta);
         $this->assertTrue($recipientMeta->pendingNotificationSent);
-        $this->assertFalse($recipientMeta->isRead);
+        $this->assertNull($recipientMeta->lastReadDatetime, 'An incoming message must not move the recipient\'s read position');
     }
 
     public function test_second_message_in_same_unread_streak_does_not_send_email(): void
@@ -94,7 +94,7 @@ class MessageEmailThrottleTest extends ApiTestCase
         $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
         $recipientMetaId = $recipientMeta->id;
         $recipientMeta->pendingNotificationSent = true;
-        $recipientMeta->isRead = false;
+        $recipientMeta->lastReadDatetime = null;
         $em->flush();
 
         // Recipient reads the thread.
@@ -107,10 +107,40 @@ class MessageEmailThrottleTest extends ApiTestCase
 
         $em->clear();
         $reloaded = $metaRepo->find($recipientMetaId);
-        $this->assertTrue($reloaded->isRead);
+        $this->assertNotNull($reloaded->lastReadDatetime);
         $this->assertFalse(
             $reloaded->pendingNotificationSent,
-            'Flipping is_read true must reset pending_notification_sent so the next incoming message can email again',
+            'Marking the thread read must reset pending_notification_sent so the next incoming message can email again',
+        );
+    }
+
+    public function test_marking_an_already_read_thread_does_not_reset_the_streak(): void
+    {
+        // The other half of the guard, and the half that had no test. "None ever do again" is what
+        // happens if the reset fires too readily; this pins that it only fires on catching up. The
+        // old boolean expressed it as the unread-to-read transition.
+        [$sender, $recipient, $thread] = $this->createThreadWithMembers();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
+        $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
+        $recipientMetaId = $recipientMeta->id;
+        // An email is in flight, and they have already read to the end of the thread.
+        $recipientMeta->pendingNotificationSent = true;
+        $recipientMeta->lastReadDatetime = new \DateTimeImmutable('+1 hour');
+        $em->flush();
+
+        $this->client->loginUser($recipient);
+        $this->client->jsonRequest('PATCH', '/api/message_thread_metas/' . $recipientMetaId, [
+            'is_read' => true,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+
+        $em->clear();
+        $this->assertTrue(
+            $metaRepo->find($recipientMetaId)->pendingNotificationSent,
+            'Re-reading a thread with nothing new must leave the streak alone',
         );
     }
 
@@ -162,7 +192,7 @@ class MessageEmailThrottleTest extends ApiTestCase
         $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
         $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
         $recipientMeta->pendingNotificationSent = false;
-        $recipientMeta->isRead = true;
+        $recipientMeta->lastReadDatetime = new \DateTimeImmutable();
         $em->flush();
 
         $this->client->loginUser($sender);
@@ -191,12 +221,12 @@ class MessageEmailThrottleTest extends ApiTestCase
         MessageThreadMetaFactory::new([
             'thread' => $thread,
             'user' => $sender,
-            'isRead' => true,
+            'lastReadDatetime' => new \DateTimeImmutable(),
         ])->create();
         MessageThreadMetaFactory::new([
             'thread' => $thread,
             'user' => $recipient,
-            'isRead' => false,
+            'lastReadDatetime' => null,
         ])->create();
 
         return [$sender, $recipient, $thread];

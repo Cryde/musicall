@@ -7,7 +7,7 @@
           :key="threadMeta.thread.id"
           class="p-4 border-b border-surface-200 dark:border-surface-700 cursor-pointer transition-colors"
           :class="{
-            'bg-primary-50 dark:bg-primary-900/20': !threadMeta.is_read,
+            'bg-primary-50 dark:bg-primary-900/20': threadMeta.unread_count > 0,
             'bg-surface-100 dark:bg-surface-800': messageStore.currentThreadId === threadMeta.thread.id,
             'hover:bg-surface-50 dark:hover:bg-surface-800/50': messageStore.currentThreadId !== threadMeta.thread.id
           }"
@@ -44,7 +44,13 @@
                 <span v-else class="font-semibold text-surface-500 truncate">
                   {{ getParticipantName(threadMeta) }}
                 </span>
-                <Tag v-if="!threadMeta.is_read" severity="info" value="new" class="text-xs" />
+                <Tag
+                  v-if="threadMeta.unread_count > 0"
+                  severity="info"
+                  :value="unreadLabel(threadMeta.unread_count)"
+                  :aria-label="`${threadMeta.unread_count} message(s) non lu(s)`"
+                  class="text-xs"
+                />
               </div>
 
               <div class="text-xs text-surface-600 dark:text-surface-400 mb-1">
@@ -83,5 +89,10 @@ function getParticipant(threadMeta) {
 function getParticipantName(threadMeta) {
   const participant = getParticipant(threadMeta)
   return participant ? displayName(participant) : 'Utilisateur inconnu'
+}
+
+// Capped like NotificationBell's badge, so a long-abandoned thread cannot stretch the row.
+function unreadLabel(count) {
+  return count > 99 ? '99+' : String(count)
 }
 </script>

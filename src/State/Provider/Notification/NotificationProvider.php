@@ -7,9 +7,10 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Notification\Notification;
 use App\Entity\Gallery;
 use App\Entity\Publication;
+use App\Entity\User;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Repository\GalleryRepository;
-use App\Repository\Message\MessageThreadMetaRepository;
+use App\Repository\Message\MessageRepository;
 use App\Repository\PublicationRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -21,7 +22,7 @@ readonly class NotificationProvider implements ProviderInterface
 {
     public function __construct(
         private Security                    $security,
-        private MessageThreadMetaRepository $messageThreadMetaRepository,
+        private MessageRepository           $messageRepository,
         private GalleryRepository           $galleryRepository,
         private PublicationRepository       $publicationRepository,
         private FeedbackRepository          $feedbackRepository
@@ -33,8 +34,9 @@ readonly class NotificationProvider implements ProviderInterface
         if (!$this->security->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
             throw new AccessDeniedException('Vous n\'êtes pas connecté.');
         }
+        /** @var User $user */
         $user = $this->security->getUser();
-        $unreadMessagesCount = $this->messageThreadMetaRepository->count(['user' => $user, 'isRead' => 0]);
+        $unreadMessagesCount = $this->messageRepository->countUnreadForUser($user);
         $notification = new Notification();
         $notification->unreadMessages = $unreadMessagesCount;
         if ($this->security->isGranted('ROLE_ADMIN')) {

@@ -52,8 +52,9 @@ class MessageSenderProcedure
 
             if (!$thread = $this->messageThreadRepository->findByParticipants($recipient, $sender)) {
                 $thread = $this->messageThreadDirector->create();
-                $threadMetaSender = $this->messageThreadMetaDirector->create($thread, $sender, true);
-                $threadMetaRecipient = $this->messageThreadMetaDirector->create($thread, $recipient, false);
+                // The sender has read their own opening message; the recipient has read nothing.
+                $threadMetaSender = $this->messageThreadMetaDirector->create($thread, $sender, new \DateTimeImmutable());
+                $threadMetaRecipient = $this->messageThreadMetaDirector->create($thread, $recipient, null);
                 $participantSender = $this->messageParticipantDirector->create($thread, $sender);
                 $participantRecipient = $this->messageParticipantDirector->create($thread, $recipient);
 
@@ -138,7 +139,11 @@ class MessageSenderProcedure
             if ($recipient->id !== $sender->id) {
                 $threadMetaRecipient = $this->messageThreadMetaRepository->findOneBy(['user' => $recipient, 'thread' => $thread]);
                 assert($threadMetaRecipient !== null);
-                $threadMetaRecipient->isRead = false;
+                // The recipient's read position is deliberately left alone: the message about to be
+                // written is newer than it, so it already counts as unread. Rewinding the position to
+                // null, which is what the boolean's `false` amounted to, would resurrect every
+                // message they had already read in this thread. This is the same shape the forum
+                // already uses, see ForumTopicParticipationService::recordPost().
                 if ($this->shouldNotify($recipient, $threadMetaRecipient)) {
                     $threadMetaRecipient->pendingNotificationSent = true;
                     $events[] = new MessageSentEvent($recipient, $sender, $thread);
@@ -146,9 +151,12 @@ class MessageSenderProcedure
             }
         }
 
+        // Writing a message is reading the thread, so the sender's position moves to now. Stamped
+        // before the message exists, which leaves the position at or just behind their own message;
+        // that never shows as unread because the count ignores messages you wrote yourself.
         $threadMetaSender = $this->messageThreadMetaRepository->findOneBy(['user' => $sender, 'thread' => $thread]);
         assert($threadMetaSender !== null);
-        $threadMetaSender->isRead = true;
+        $threadMetaSender->lastReadDatetime = new \DateTimeImmutable();
 
         return $events;
     }

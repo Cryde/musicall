@@ -45,12 +45,15 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
 
         // When the recipient catches up on the thread, reset the
         // one-email-per-unread-streak flag so the next incoming message can
-        // trigger another notification (#533).
-        if (!$entity->isRead && $data->isRead) {
+        // trigger another notification (#533). The trigger is unchanged by #954,
+        // only how "was it unread" is asked: there is something unread when the
+        // count is not zero, which is what the boolean used to stand for.
+        if ($data->isRead === true && $entity->hasUnread()) {
             $entity->pendingNotificationSent = false;
         }
 
-        $entity->isRead = $data->isRead;
+        // A command, not a state: mark read as of now, or put the position back to nothing.
+        $entity->lastReadDatetime = $data->isRead === true ? new \DateTimeImmutable() : null;
         $this->entityManager->flush();
 
         return $this->messageThreadMetaBuilder->buildItem($entity);

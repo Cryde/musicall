@@ -26,10 +26,6 @@ export const useMessageStore = defineStore('message', () => {
     return threads.value.find((t) => t.thread.id === currentThreadId.value)
   })
 
-  const unreadCount = computed(() => {
-    return threads.value.filter((t) => !t.is_read).length
-  })
-
   async function loadThreads() {
     isLoading.value = true
     try {
@@ -49,8 +45,9 @@ export const useMessageStore = defineStore('message', () => {
 
     await loadMessages(threadMeta.thread.id)
 
-    // Mark as read if unread
-    if (!threadMeta.is_read) {
+    // Mark as read if anything is unread. Still driven by arriving on the thread rather than by
+    // scrolling to the new message, which is what it did before the count replaced the boolean (#954).
+    if (threadMeta.unread_count > 0) {
       await markAsRead(threadMeta.id)
     }
   }
@@ -74,7 +71,7 @@ export const useMessageStore = defineStore('message', () => {
       await messageApi.markThreadAsRead({ threadMetaId })
       const thread = threads.value.find((t) => t.id === threadMetaId)
       if (thread) {
-        thread.is_read = true
+        thread.unread_count = 0
         // Refresh navbar notification count
         const notificationStore = useNotificationStore()
         notificationStore.loadNotifications()
@@ -148,7 +145,6 @@ export const useMessageStore = defineStore('message', () => {
     isAddingMessage: readonly(isAddingMessage),
     orderedThreads,
     currentThread,
-    unreadCount,
     loadThreads,
     selectThread,
     postMessage,
