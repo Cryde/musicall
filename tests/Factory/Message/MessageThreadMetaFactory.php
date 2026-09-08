@@ -15,7 +15,7 @@ final class MessageThreadMetaFactory extends PersistentObjectFactory
         return [
             'creationDatetime' => new \DateTime(),
             'isDeleted' => false,
-            'isRead' => false,
+            'lastReadDatetime' => null,
             'thread' => MessageThreadFactory::new(),
             'user' => UserFactory::new(),
         ];

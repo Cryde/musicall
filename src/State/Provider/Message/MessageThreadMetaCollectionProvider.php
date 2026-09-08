@@ -36,6 +36,6 @@ readonly class MessageThreadMetaCollectionProvider implements ProviderInterface
 
         $entities = $this->messageThreadMetaRepository->findByUserAndNotDeleted($user);
 
-        return $this->messageThreadMetaBuilder->buildList($entities);
+        return $this->messageThreadMetaBuilder->buildList($entities, $user);
     }
 }

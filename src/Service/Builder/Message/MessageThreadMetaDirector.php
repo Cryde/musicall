@@ -8,12 +8,17 @@ use App\Entity\User;
 
 class MessageThreadMetaDirector
 {
-    public function create(MessageThread $thread, User $user, bool $isRead): MessageThreadMeta
+    /**
+     * @param \DateTimeImmutable|null $lastReadDatetime how far this user has already read, null when
+     *                                                 they have read nothing. The sender of the first
+     *                                                 message has read it; the recipient has not.
+     */
+    public function create(MessageThread $thread, User $user, ?\DateTimeImmutable $lastReadDatetime): MessageThreadMeta
     {
         $meta = new MessageThreadMeta();
         $meta->thread = $thread;
         $meta->isDeleted = false;
-        $meta->isRead = $isRead;
+        $meta->lastReadDatetime = $lastReadDatetime;
         $meta->user = $user;
 
         return $meta;

@@ -3,7 +3,10 @@
 namespace App\Repository\Message;
 
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageThreadMeta;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,6 +17,94 @@ class MessageRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Message::class);
+    }
+
+    /**
+     * How many messages in each of this user's threads they have not read yet, keyed by thread id.
+     *
+     * One grouped query for the whole inbox rather than one per thread: the message list is already
+     * hydrated with five joins by MessageThreadMetaRepository::findByUserAndNotDeleted(), and adding
+     * a count per row on top of that is how an inbox starts costing dozens of queries.
+     *
+     * A thread the user has read entirely is absent from the result, not present with a zero, so
+     * callers read it with `?? 0`.
+     *
+     * @return array<string, int>
+     */
+    public function countUnreadByThreadForUser(User $user): array
+    {
+        /** @var list<array{thread_id: string, unread_count: int|string}> $rows */
+        $rows = $this->createQueryBuilder('message')
+            ->select('IDENTITY(message.thread) AS thread_id, COUNT(message.id) AS unread_count')
+            ->join(
+                MessageThreadMeta::class,
+                'meta',
+                Join::WITH,
+                'meta.thread = message.thread AND meta.user = :user'
+            )
+            // Own messages never count: you have read what you wrote.
+            ->where('message.author != :user')
+            ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
+            ->groupBy('message.thread')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['thread_id']] = (int) $row['unread_count'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Every message this user has not read, across every thread they have not deleted.
+     *
+     * This is the navbar badge. It used to count *threads* with an unread flag and to ignore
+     * isDeleted, which made it disagree with the inbox it sits above on both counts (#954).
+     */
+    public function countUnreadForUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('message')
+            ->select('COUNT(message.id)')
+            ->join(
+                MessageThreadMeta::class,
+                'meta',
+                Join::WITH,
+                'meta.thread = message.thread AND meta.user = :user'
+            )
+            ->where('message.author != :user')
+            ->andWhere('meta.isDeleted = false')
+            ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * The same count as countUnreadByThreadForUser(), for one thread.
+     *
+     * Not that method with a filter: buildItem() is reached twice per "open a thread" click, once
+     * from the PATCH provider and once from its processor, and running a GROUP BY over every message
+     * the user has to learn a number that is about to be zero is the wrong shape for a click.
+     */
+    public function countUnreadForThread(MessageThreadMeta $meta): int
+    {
+        $queryBuilder = $this->createQueryBuilder('message')
+            ->select('COUNT(message.id)')
+            ->where('message.thread = :thread')
+            ->andWhere('message.author != :user')
+            ->setParameter('thread', $meta->thread)
+            ->setParameter('user', $meta->user);
+
+        // Nothing read means everything counts, so there is simply no bound to add.
+        if ($meta->lastReadDatetime !== null) {
+            $queryBuilder->andWhere('message.creationDatetime > :lastRead')
+                ->setParameter('lastRead', $meta->lastReadDatetime);
+        }
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
