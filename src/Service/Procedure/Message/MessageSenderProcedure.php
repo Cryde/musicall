@@ -244,6 +244,12 @@ class MessageSenderProcedure
         // find-or-create plus your own position to now.
         $senderMeta = $this->findOrCreateMetaFor($thread, $sender, $metas);
         $senderMeta->lastReadDatetime = new \DateTimeImmutable();
+        // And it clears their own throttle flag, which used to be the one way of catching up that
+        // did not (problem 4 of #957). Without this, somebody who was emailed and then replied kept
+        // the flag set, so the *next* message to them sent no email, and the direct message UI has no
+        // polling either: they were reachable by neither route until they navigated away and back.
+        // You cannot be more caught up on a thread than by writing in it.
+        $senderMeta->pendingNotificationSent = false;
 
         return $events;
     }

@@ -144,6 +144,33 @@ class MessageEmailThrottleTest extends ApiTestCase
         );
     }
 
+    public function test_replying_clears_your_own_streak_so_the_next_message_can_email_you(): void
+    {
+        // Problem 4 of #957. Before this, being emailed and then replying left the flag set, so the
+        // next message to you sent nothing, and with no polling in the message UI you were reachable
+        // by neither route until you navigated away and back.
+        [$sender, $recipient, $thread] = $this->createThreadWithMembers();
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $metaRepo = self::getContainer()->get(MessageThreadMetaRepository::class);
+        // The recipient has been emailed and has not marked the thread read.
+        $recipientMeta = $metaRepo->findOneBy(['user' => $recipient->id, 'thread' => $thread->id]);
+        $recipientMetaId = $recipientMeta->id;
+        $recipientMeta->pendingNotificationSent = true;
+        $em->flush();
+
+        // They reply instead of marking it read.
+        $this->client->loginUser($recipient);
+        $this->postMessage($thread, 'replying rather than opening the inbox');
+        $this->assertResponseIsSuccessful();
+
+        $em->clear();
+        $this->assertFalse(
+            $metaRepo->find($recipientMetaId)->pendingNotificationSent,
+            'Replying is the strongest evidence of catching up, so it must clear the streak',
+        );
+    }
+
     public function test_no_email_when_recipient_was_recently_active(): void
     {
         // #712: recipient was active <5 min ago -> skip the email entirely
