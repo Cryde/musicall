@@ -49,6 +49,14 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
         return $indexed;
     }
 
+    /**
+     * Scoped to the owner, so there is no way to load somebody else's row through this method.
+     */
+    public function findOneByIdAndUser(string $id, User $user): ?MessageThreadMeta
+    {
+        return $this->findOneBy(['id' => $id, 'user' => $user]);
+    }
+
     public function findByUserAndNotDeleted(User $user): mixed
     {
         return $this->createQueryBuilder('message_thread_meta')

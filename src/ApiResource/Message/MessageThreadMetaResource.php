@@ -12,11 +12,13 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\Message\MessageThreadMetaPatchProcessor;
 use App\State\Provider\Message\MessageThreadMetaCollectionProvider;
 use App\State\Provider\Message\MessageThreadMetaItemProvider;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     shortName: 'MessageThreadMeta',
+    requirements: ['id' => Requirement::UUID],
     operations: [
         new GetCollection(
             uriTemplate: '/message_thread_metas',
@@ -30,6 +32,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Operation(tags: ['Message']),
             normalizationContext: ['groups' => [MessageThreadMetaResource::ITEM]],
             denormalizationContext: ['groups' => [MessageThreadMetaResource::PATCH]],
+            security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_message_thread_meta_patch',
             provider: MessageThreadMetaItemProvider::class,
             processor: MessageThreadMetaPatchProcessor::class,

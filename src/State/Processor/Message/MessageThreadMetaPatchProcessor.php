@@ -39,6 +39,8 @@ readonly class MessageThreadMetaPatchProcessor implements ProcessorInterface
         if (!$entity instanceof MessageThreadMeta) {
             throw new NotFoundHttpException('Message thread meta introuvable');
         }
+        // Unreachable while MessageThreadMetaItemProvider guards the same operation, and kept anyway:
+        // this lookup is its own, so a future operation wired to a different provider still lands here.
         if ($entity->user->id !== $user->id) {
             throw new AccessDeniedException('Vous ne pouvez pas modifier ceci.');
         }
