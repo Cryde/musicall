@@ -2,6 +2,7 @@
 
 namespace App\Repository\Message;
 
+use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -15,6 +16,37 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MessageThreadMeta::class);
+    }
+
+    /**
+     * Every read-state row for one thread, keyed by the id of the user it belongs to.
+     *
+     * One query instead of the `findOneBy` per participant the send path used to run (#957). Invisible
+     * at two participants and linear in channel size, which is the point: a Band Space channel is the
+     * caller this exists for.
+     *
+     * Deliberately unfiltered on `isDeleted`, unlike findByUserAndNotDeleted() below. That flag is a
+     * user hiding the thread from their own inbox, not a row to be replaced: hiding it from the send
+     * path would mean finding no row, inserting a second one, and hitting `UNIQUE (thread_id, user_id)`.
+     * Reuse leaves the row hidden, which is the conservative answer rather than the obviously right
+     * one, and academic either way since nothing in the application sets the flag today.
+     *
+     * @return array<string, MessageThreadMeta>
+     */
+    public function findByThreadIndexedByUserId(MessageThread $thread): array
+    {
+        $metas = $this->createQueryBuilder('message_thread_meta')
+            ->where('message_thread_meta.thread = :thread')
+            ->setParameter('thread', $thread)
+            ->getQuery()
+            ->getResult();
+
+        $indexed = [];
+        foreach ($metas as $meta) {
+            $indexed[(string) $meta->user->id] = $meta;
+        }
+
+        return $indexed;
     }
 
     public function findByUserAndNotDeleted(User $user): mixed
