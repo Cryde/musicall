@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 import { readonly, ref, watch } from 'vue'
 import userNotificationApi from '../../api/notification/userNotification.js'
 import { createNotificationStream, notificationTopic } from '../../utils/notificationStream.js'
+import { useMessageStore } from '../message/message.js'
 import { useUserSecurityStore } from '../user/security.js'
+import { useNotificationStore } from './notification.js'
 
 export const useUserNotificationStore = defineStore('userNotification', () => {
   // Bell dropdown feed (latest page only).
@@ -114,7 +116,20 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
 
       return userId ? [notificationTopic(userId)] : []
     },
-    onSignal: () => loadCount(),
+    onSignal: (payload) => {
+      // One topic, two kinds of update, so the payload's own type says which. A null payload is a
+      // reconnect, where anything published while we were down is gone for good: refresh both.
+      const type = payload?.type ?? null
+      if (type === null || type === 'notification') {
+        loadCount()
+      }
+      if (type === null || type === 'message') {
+        // The navbar count, which is live even for somebody who never opens the inbox, and then the
+        // inbox itself, which no-ops when it was never opened.
+        useNotificationStore().loadNotifications()
+        useMessageStore().handleIncomingMessage(payload?.thread_id ?? null)
+      }
+    },
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()
   })
 

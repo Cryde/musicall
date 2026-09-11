@@ -49,7 +49,7 @@
       <template v-else>
         <div
           v-for="message in messageStore.messages"
-          :key="message.id"
+          :key="message['@id']"
           class="flex"
           :class="{ 'justify-end': isSender(message) }"
         >
@@ -190,11 +190,30 @@ function scrollToBottom() {
   })
 }
 
-// Scroll to bottom when messages change
+/** Within a screenful of the end, which is close enough to count as following the conversation. */
+const FOLLOWING_THRESHOLD_PX = 120
+
+function isFollowingTheConversation() {
+  const container = messagesContainer.value
+  if (!container) {
+    return true
+  }
+
+  return (
+    container.scrollHeight - container.scrollTop - container.clientHeight < FOLLOWING_THRESHOLD_PX
+  )
+}
+
+// Scroll to bottom when messages change, unless the reader has gone back up. Messages now arrive on
+// their own (#989), so yanking the view to the bottom would interrupt somebody rereading history
+// rather than follow along with them. Read before the DOM updates, which is what a pre-flush watcher
+// gives us, so this is where the reader was rather than where the new content puts them.
 watch(
   () => messageStore.messages,
   () => {
-    scrollToBottom()
+    if (isFollowingTheConversation()) {
+      scrollToBottom()
+    }
   },
   { deep: true }
 )

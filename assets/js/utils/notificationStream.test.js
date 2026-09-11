@@ -54,11 +54,12 @@ function fakeTimers() {
 
 function build(overrides = {}) {
   const timers = fakeTimers()
-  const calls = { signals: 0, authRefreshes: 0 }
+  const calls = { signals: 0, authRefreshes: 0, payloads: [] }
   const stream = createNotificationStream({
     getTopics: () => ['/users/a-user-id/notifications'],
-    onSignal: () => {
+    onSignal: (payload) => {
       calls.signals += 1
+      calls.payloads.push(payload)
     },
     onAuthRefreshNeeded: () => {
       calls.authRefreshes += 1
@@ -143,7 +144,7 @@ describe('createNotificationStream', () => {
     assert.equal(FakeEventSource.opened.length, 1)
   })
 
-  it('refetches on a message without reading the event', () => {
+  it('refetches on every message the hub sends', () => {
     const { stream, calls } = build()
     stream.connect()
 
@@ -324,5 +325,38 @@ describe('createNotificationStream', () => {
     await settle()
 
     assert.equal(FakeEventSource.opened.length, 3)
+  })
+})
+
+describe('the payload handed to onSignal', () => {
+  it('is the parsed body, because one topic now carries more than one kind of update', () => {
+    const { stream, calls } = build()
+    stream.connect()
+
+    FakeEventSource.opened[0].onmessage({ data: '{"type":"message","thread_id":"a-thread-id"}' })
+
+    assert.deepEqual(calls.payloads, [{ type: 'message', thread_id: 'a-thread-id' }])
+  })
+
+  it('is null when the body does not parse, so the caller refetches everything', () => {
+    // Refetching too much is the safe failure. Throwing out of onmessage would take the handler with
+    // it and the stream would look healthy while delivering nothing.
+    const { stream, calls } = build()
+    stream.connect()
+
+    FakeEventSource.opened[0].onmessage({ data: 'not json' })
+    FakeEventSource.opened[0].onmessage({ data: '"a string, not an object"' })
+
+    assert.deepEqual(calls.payloads, [null, null])
+  })
+
+  it('is null on a recovered connection, where we cannot know what was missed', () => {
+    const { stream, timers, calls } = build()
+    stream.connect()
+    FakeEventSource.opened[0].onerror()
+    timers.runAll()
+    FakeEventSource.opened.at(-1).onopen()
+
+    assert.deepEqual(calls.payloads, [null])
   })
 })

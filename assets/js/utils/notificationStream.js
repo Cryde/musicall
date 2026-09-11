@@ -7,8 +7,8 @@ import { reconnectDelay } from './realtimeBackoff.js'
  * failure modes, can be driven by a test with a fake `EventSource` and fake timers. The store keeps
  * the state; this keeps the connection.
  *
- * The server publishes a tag, not a notification, so nothing here reads the event body: a message
- * means "refetch", and the refetching is the store's job.
+ * The server publishes a tag, not the thing that changed, so the body is only ever a discriminator:
+ * this parses it and hands it over, and the refetching is the store's job.
  *
  * Topics are a list because Mercure multiplexes: one connection carries as many `topic=` parameters
  * as you give it, and opening a second EventSource per topic would cost a second hub subscriber and
@@ -30,6 +30,20 @@ export function notificationTopic(userId) {
   return `/users/${userId}/notifications`
 }
 
+/**
+ * A body we cannot read becomes null, which callers treat as "refetch everything". Refetching too
+ * much is the safe failure here, and throwing out of onmessage would take the handler with it.
+ */
+function parsePayload(data) {
+  try {
+    const parsed = JSON.parse(data)
+
+    return parsed !== null && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
 /** Path of the hub, fixed by the Mercure protocol and by `public_url` in config/packages/mercure.yaml. */
 const HUB_PATH = '/.well-known/mercure'
 
@@ -40,7 +54,9 @@ const FAILURES_PER_AUTH_REFRESH = 3
  * @param {object} deps
  * @param {() => string[]} deps.getTopics the topics to subscribe to, read at connect time rather
  *   than captured, because they depend on a profile that arrives after authentication does
- * @param {() => void} deps.onSignal something changed, go and refetch
+ * @param {(payload: object | null) => void} deps.onSignal something changed, go and refetch. The
+ *   payload is the update's own body, or null when we cannot know what changed: on reconnect, and on
+ *   a body that does not parse. Null means refetch everything.
  * @param {() => Promise<unknown>} deps.onAuthRefreshNeeded renew credentials, best effort
  * @param {(url: string) => EventSource} [deps.openStream] injected for tests
  * @param {{ set: Function, clear: Function }} [deps.timers] injected for tests
@@ -84,13 +100,13 @@ export function createNotificationStream({
       // much history the transport keeps. Refetching on recovery is what closes that gap, and a
       // deploy restart is exactly when it opens, for every subscriber at once.
       if (failures > 0) {
-        onSignal()
+        onSignal(null)
       }
       failures = 0
     }
 
-    stream.onmessage = () => {
-      onSignal()
+    stream.onmessage = (event) => {
+      onSignal(parsePayload(event.data))
     }
 
     stream.onerror = () => {

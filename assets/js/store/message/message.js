@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
+import { isMessageAlreadyListed, messageSignalPlan } from '../../utils/messageSignal.js'
 import { useNotificationStore } from '../notification/notification.js'
 import { useUserSecurityStore } from '../user/security.js'
 
@@ -11,6 +12,16 @@ export const useMessageStore = defineStore('message', () => {
   const currentThreadId = ref(null)
   const currentThreadMetaId = ref(null)
   const isLoading = ref(false)
+  // Distinct from `threads.length`, which cannot tell "never opened the inbox" from "opened it and
+  // has no conversations yet". The second one still has to light up on a first ever message.
+  const hasLoadedThreads = ref(false)
+
+  // Both lists are replaced wholesale by their loader, so an older response landing after a newer one
+  // would put the stale version on screen and drop the message that just arrived. Signals arrive in
+  // bursts during an ordinary fast exchange, which is exactly when that happens. Same guard the band
+  // space stores use.
+  let threadsRequestId = 0
+  let messagesRequestId = 0
   const isLoadingMessages = ref(false)
   const isAddingMessage = ref(false)
 
@@ -26,16 +37,33 @@ export const useMessageStore = defineStore('message', () => {
     return threads.value.find((t) => t.thread.id === currentThreadId.value)
   })
 
-  async function loadThreads() {
-    isLoading.value = true
+  /**
+   * `silent` is for a refresh the user did not ask for (#989).
+   *
+   * The spinner replaces the whole list rather than sitting beside it, so toggling it on a live
+   * update makes the inbox disappear and come back every time somebody types. A background refresh
+   * also leaves the old data alone when it fails: blanking a list that is on screen because one
+   * request timed out is worse than showing something a few seconds stale.
+   */
+  async function loadThreads({ silent = false } = {}) {
+    const currentRequestId = ++threadsRequestId
+    if (!silent) {
+      isLoading.value = true
+    }
     try {
       const response = await messageApi.getThreads()
+      if (currentRequestId !== threadsRequestId) return
       threads.value = response.member || []
+      hasLoadedThreads.value = true
     } catch (e) {
       console.error('Failed to load threads:', e)
-      threads.value = []
+      if (!silent && currentRequestId === threadsRequestId) {
+        threads.value = []
+      }
     } finally {
-      isLoading.value = false
+      if (!silent && currentRequestId === threadsRequestId) {
+        isLoading.value = false
+      }
     }
   }
 
@@ -52,17 +80,26 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  async function loadMessages(threadId) {
-    isLoadingMessages.value = true
+  /** Same rule as loadThreads(): a refresh nobody asked for neither blanks the pane nor wipes it. */
+  async function loadMessages(threadId, { silent = false } = {}) {
+    const currentRequestId = ++messagesRequestId
+    if (!silent) {
+      isLoadingMessages.value = true
+    }
     try {
       const response = await messageApi.getMessages({ threadId })
+      if (currentRequestId !== messagesRequestId) return
       // Reverse to show oldest first
       messages.value = (response.member || []).reverse()
     } catch (e) {
       console.error('Failed to load messages:', e)
-      messages.value = []
+      if (!silent && currentRequestId === messagesRequestId) {
+        messages.value = []
+      }
     } finally {
-      isLoadingMessages.value = false
+      if (!silent && currentRequestId === messagesRequestId) {
+        isLoadingMessages.value = false
+      }
     }
   }
 
@@ -100,7 +137,12 @@ export const useMessageStore = defineStore('message', () => {
     isAddingMessage.value = true
     try {
       const newMessage = await messageApi.postMessageInThread({ threadId, content })
-      messages.value.push(newMessage)
+      // The signal for this very message can arrive before this promise resolves, because the server
+      // publishes inside the send and answers afterwards. That refetch has already put the message in
+      // the list, so pushing it again would show it twice.
+      if (!isMessageAlreadyListed(messages.value, newMessage)) {
+        messages.value.push(newMessage)
+      }
 
       // Update last message in thread
       const thread = threads.value.find((t) => t.thread.id === threadId)
@@ -122,6 +164,40 @@ export const useMessageStore = defineStore('message', () => {
     return other?.participant || null
   }
 
+  /**
+   * A message landed somewhere in this user's threads (#989).
+   *
+   * The signal carries a thread id and nothing else, so what is on screen is refetched from the API
+   * rather than patched from the payload: no message content travels over the hub.
+   */
+  async function handleIncomingMessage(threadId) {
+    const openThreadId = currentThreadId.value
+    const plan = messageSignalPlan({
+      inboxLoaded: hasLoadedThreads.value,
+      signalThreadId: threadId,
+      openThreadId,
+      tabVisible: globalThis.document?.visibilityState === 'visible'
+    })
+
+    if (!plan.refreshInbox) {
+      return
+    }
+    // Silent: the user did not ask for this refresh and the panes should not blink.
+    await loadThreads({ silent: true })
+
+    if (!plan.refreshOpenThread) {
+      return
+    }
+    await loadMessages(openThreadId, { silent: true })
+
+    const threadMeta = plan.markRead
+      ? threads.value.find((t) => t.thread.id === openThreadId)
+      : null
+    if (threadMeta && threadMeta.unread_count > 0) {
+      await markAsRead(threadMeta.id)
+    }
+  }
+
   function clearCurrentThread() {
     currentThreadId.value = null
     currentThreadMetaId.value = null
@@ -141,6 +217,7 @@ export const useMessageStore = defineStore('message', () => {
     currentThreadId: readonly(currentThreadId),
     currentThreadMetaId: readonly(currentThreadMetaId),
     isLoading: readonly(isLoading),
+    hasLoadedThreads: readonly(hasLoadedThreads),
     isLoadingMessages: readonly(isLoadingMessages),
     isAddingMessage: readonly(isAddingMessage),
     orderedThreads,
@@ -149,6 +226,7 @@ export const useMessageStore = defineStore('message', () => {
     selectThread,
     postMessage,
     postMessageInThread,
+    handleIncomingMessage,
     getOtherParticipant,
     clearCurrentThread,
     reset
