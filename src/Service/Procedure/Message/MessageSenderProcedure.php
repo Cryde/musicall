@@ -6,6 +6,7 @@ use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\Event\MessagePostedEvent;
 use App\Event\MessageSentEvent;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Repository\Message\MessageThreadRepository;
@@ -93,9 +94,7 @@ class MessageSenderProcedure
         // for a message that failed to persist. The throttle decision +
         // pending-flag flip already happened inside the transaction above,
         // so the listener is now a pure email sender.
-        foreach ($eventsToDispatch as $event) {
-            $this->eventDispatcher->dispatch($event);
-        }
+        $this->signalAndNotify($message, $eventsToDispatch);
 
         return $message;
     }
@@ -122,11 +121,33 @@ class MessageSenderProcedure
 
         // Same rule as process(): only emit notifications once the message is
         // actually persisted, never before.
-        foreach ($eventsToDispatch as $event) {
-            $this->eventDispatcher->dispatch($event);
-        }
+        $this->signalAndNotify($message, $eventsToDispatch);
 
         return $message;
+    }
+
+    /**
+     * The live signal first, then the emails, and the order is not cosmetic.
+     *
+     * Everybody in the thread is signalled whatever the email throttle decided: it is unconditional
+     * where MessageSentEvent is not, and its "recently active in the last five minutes" rule excludes
+     * exactly the person sitting in the conversation.
+     *
+     * Going second would also make the signal hostage to the email. An email listener that throws
+     * propagates out of here, and dispatching the emails first meant one failing provider took the
+     * live update with it: measured against a provider that was genuinely refusing us, the send was a
+     * 500 and no subscriber received anything. The signal is local, cheap and swallows its own
+     * failures, so it goes first and the slow remote thing goes after.
+     *
+     * @param MessageSentEvent[] $emailEvents
+     */
+    private function signalAndNotify(Message $message, array $emailEvents): void
+    {
+        $this->eventDispatcher->dispatch(new MessagePostedEvent($message));
+
+        foreach ($emailEvents as $event) {
+            $this->eventDispatcher->dispatch($event);
+        }
     }
 
     /**
