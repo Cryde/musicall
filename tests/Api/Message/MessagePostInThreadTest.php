@@ -65,6 +65,7 @@ class MessagePostInThreadTest extends ApiTestCase
                 'id' => $thread->id,
             ],
             'content'           => 'new content from user1',
+            'content_preview'   => 'new content from user1',
         ]);
     }
 

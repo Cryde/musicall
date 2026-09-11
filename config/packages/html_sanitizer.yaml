@@ -9,6 +9,10 @@ framework:
                 allow_static_elements: false
                 allow_elements:
                     br: [ ]
+            app.plain_text_sanitizer:
+                allow_safe_elements: false
+                allow_static_elements: false
+                allow_elements: [ ]
             app.publication_sanitizer:
                 allow_elements:
                     div: ['class', 'data-youtube-video', 'data-type', 'data-cols']

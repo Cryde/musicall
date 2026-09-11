@@ -58,7 +58,7 @@
               </div>
 
               <p class="text-sm text-surface-600 dark:text-surface-300 truncate">
-                {{ threadMeta.thread.last_message?.content || 'Aucun message' }}
+                {{ threadMeta.thread.last_message?.content_preview || 'Aucun message' }}
               </p>
             </div>
           </div>
