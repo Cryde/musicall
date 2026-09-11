@@ -49,12 +49,15 @@ export default {
   },
 
   /**
-   * Get messages for a specific thread
+   * Get a page of messages for a thread, newest first. Page 1 is the newest, so paging up is paging
+   * backwards through the conversation.
    */
-  getMessages({ threadId }) {
+  getMessages({ threadId, page = 1 }) {
     return axios
       .get(Routing.generate('api_message_get_collection', { threadId }), {
-        params: { 'order[creation_datetime]': 'desc' }
+        // `order[id]` is the tiebreak, not a preference: the timestamp is second granular, and a tied
+        // row with no total order can land on both sides of a page boundary or on neither.
+        params: { 'order[creation_datetime]': 'desc', 'order[id]': 'desc', page }
       })
       .then((resp) => resp.data)
   },

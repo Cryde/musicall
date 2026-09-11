@@ -128,13 +128,19 @@ class MessageGetCollectionTest extends ApiTestCase
             ],
             'search'     => [
                 '@type'                        => 'IriTemplate',
-                'template'               => '/api/messages/' . $thread->id . '{?order[creation_datetime]}',
+                'template'               => '/api/messages/' . $thread->id . '{?order[creation_datetime],order[id]}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping'                => [
                     [
                         '@type'    => 'IriTemplateMapping',
                         'variable' => 'order[creation_datetime]',
                         'property' => 'creation_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[id]',
+                        'property' => 'id',
                         'required' => false,
                     ],
                 ],
@@ -182,13 +188,19 @@ class MessageGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'search' => [
                 '@type' => 'IriTemplate',
-                'template' => '/api/messages/' . $thread->id . '{?order[creation_datetime]}',
+                'template' => '/api/messages/' . $thread->id . '{?order[creation_datetime],order[id]}',
                 'variableRepresentation' => 'BasicRepresentation',
                 'mapping' => [
                     [
                         '@type' => 'IriTemplateMapping',
                         'variable' => 'order[creation_datetime]',
                         'property' => 'creation_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[id]',
+                        'property' => 'id',
                         'required' => false,
                     ],
                 ],
@@ -242,6 +254,90 @@ class MessageGetCollectionTest extends ApiTestCase
             'status' => 403,
             'type' => '/errors/403',
             '@context' => '/api/contexts/Error',
+        ]);
+    }
+
+    public function test_history_past_the_first_page_is_reachable(): void
+    {
+        // The defect #955 is about: the operation has always paginated, the client never asked for a
+        // page, so a conversation longer than 50 messages had simply lost its older half.
+        $reader = UserFactory::new()->asBaseUser()->create(['username' => 'reader', 'email' => 'reader@email.com']);
+        $writer = UserFactory::new()->asBaseUser()->create(['username' => 'writer', 'email' => 'writer@email.com']);
+
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $reader])->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $writer])->create();
+
+        // 52 messages a minute apart, so page 1 holds 50 and page 2 holds the two oldest.
+        $messages = [];
+        foreach (range(1, 52) as $minute) {
+            $messages[$minute] = MessageFactory::new([
+                'author' => $writer,
+                'thread' => $thread,
+                'content' => 'message ' . $minute,
+                'creationDatetime' => new \DateTime(sprintf('2026-09-11 10:%02d:00', $minute)),
+            ])->create();
+        }
+
+        $this->client->loginUser($reader);
+        $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]=desc&order[id]=desc&page=2');
+        $this->assertResponseIsSuccessful();
+
+        $writerJson = [
+            '@id' => '/api/users/' . $writer->id,
+            '@type' => 'User',
+            'id' => $writer->id,
+            'username' => 'writer',
+        ];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Message',
+            '@id' => '/api/messages/' . $thread->id,
+            '@type' => 'Collection',
+            // Newest first, so the second page is the two oldest.
+            'member' => [
+                [
+                    '@id' => '/api/messages/' . $messages[2]->id,
+                    '@type' => 'Message',
+                    'creation_datetime' => '2026-09-11T10:02:00+00:00',
+                    'author' => $writerJson,
+                    'content' => 'message 2',
+                ],
+                [
+                    '@id' => '/api/messages/' . $messages[1]->id,
+                    '@type' => 'Message',
+                    'creation_datetime' => '2026-09-11T10:01:00+00:00',
+                    'author' => $writerJson,
+                    'content' => 'message 1',
+                ],
+            ],
+            'totalItems' => 52,
+            // The links that say there is more behind this page, which is what the client now reads.
+            'view' => [
+                '@id' => '/api/messages/' . $thread->id . '?order%5Bcreation_datetime%5D=desc&order%5Bid%5D=desc&page=2',
+                '@type' => 'PartialCollectionView',
+                'first' => '/api/messages/' . $thread->id . '?order%5Bcreation_datetime%5D=desc&order%5Bid%5D=desc&page=1',
+                'last' => '/api/messages/' . $thread->id . '?order%5Bcreation_datetime%5D=desc&order%5Bid%5D=desc&page=2',
+                'previous' => '/api/messages/' . $thread->id . '?order%5Bcreation_datetime%5D=desc&order%5Bid%5D=desc&page=1',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/messages/' . $thread->id . '{?order[creation_datetime],order[id]}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[creation_datetime]',
+                        'property' => 'creation_datetime',
+                        'required' => false,
+                    ],
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'order[id]',
+                        'property' => 'id',
+                        'required' => false,
+                    ],
+                ],
+            ],
         ]);
     }
 }

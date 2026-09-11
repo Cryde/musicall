@@ -34,6 +34,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
             paginationEnabled: true,
             paginationItemsPerPage: 50,
             paginationClientItemsPerPage: true,
+            // The client may choose a page size, so it needs a ceiling: without one a thread can be
+            // asked for in a single unbounded page. Same cap as BandSpaceActivityResource.
+            paginationMaximumItemsPerPage: 200,
             normalizationContext: ['groups' => [MessageResource::LIST]],
             name: 'api_message_get_collection',
             provider: MessageCollectionProvider::class,
@@ -49,7 +52,20 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
 )]
-#[ApiFilter(OrderFilter::class, properties: ['creationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
+/**
+ * `id` is in the sort for a tiebreak, not because anybody wants to order by a uuid4.
+ *
+ * `creation_datetime` is second granular and same second pairs are ordinary rather than rare, and SQL
+ * promises nothing about the order of tied rows. Two page requests that happened to be planned
+ * differently could then put a tied row on both sides of a page boundary, or on neither, and the
+ * second of those loses a message. Naming `id` makes the total order explicit instead of borrowing it
+ * from whichever index the planner picked, which is what the composite index from #955 happens to
+ * give today. The client has to ask for it: OrderFilter only orders by what the request names.
+ */
+#[ApiFilter(OrderFilter::class, properties: [
+    'creationDatetime' => OrderFilterInterface::DIRECTION_DESC,
+    'id' => OrderFilterInterface::DIRECTION_DESC,
+])]
 class MessageResource
 {
     public const string LIST = 'message:list';
