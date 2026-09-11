@@ -69,5 +69,8 @@ class MessageResource
     public MessageThreadResource $thread;
 
     #[Groups([MessageResource::LIST, MessageResource::ITEM, MessageThreadMetaResource::LIST])]
-    public string $content;
+    public string $content; // HTML, render with v-html
+
+    #[Groups([MessageResource::ITEM, MessageThreadMetaResource::LIST])]
+    public string $contentPreview; // plain text, never v-html
 }

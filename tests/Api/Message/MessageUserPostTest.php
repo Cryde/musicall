@@ -71,6 +71,7 @@ class MessageUserPostTest extends ApiTestCase
                 'id' => $resultUser1[0]->thread->id,
             ],
             'content'           => 'new content from user1',
+            'content_preview'   => 'new content from user1',
         ]);
     }
 
@@ -124,6 +125,7 @@ class MessageUserPostTest extends ApiTestCase
                 'id' => $resultUser1[0]->thread->id
             ],
             'content'           => 'new content from user1',
+            'content_preview'   => 'new content from user1',
         ]);
     }
 
