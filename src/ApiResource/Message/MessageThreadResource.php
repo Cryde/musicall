@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Provider\Message\MessageThreadItemProvider;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
@@ -21,6 +22,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
  */
 #[ApiResource(
     shortName: 'MessageThread',
+    requirements: ['id' => Requirement::UUID],
     operations: [
         new Get(
             uriTemplate: '/message_threads/{id}',
