@@ -8,18 +8,15 @@ use App\ApiResource\Musician\Announce\Style;
 use App\ApiResource\Musician\MusicianAnnounce as MusicianAnnounceDTO;
 use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
-use App\Entity\Image\UserProfilePicture;
 use App\Entity\Musician\MusicianAnnounce as MusicianAnnounceEntity;
 use App\Entity\Musician\MusicianProfile;
 use App\Entity\User;
-use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
+use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 
 readonly class MusicianAnnounceBuilder
 {
     public function __construct(
-        private UploaderHelper $uploaderHelper,
-        private CacheManager $cacheManager,
+        private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
     ) {
     }
     /**
@@ -126,17 +123,7 @@ readonly class MusicianAnnounceBuilder
         $dto->deletionDatetime = $deletionDatetime;
         $dto->hasMusicianProfile = $hasMusicianProfile;
 
-        if ($profilePictureName !== null) {
-            // The picture's asset path depends only on its imageName (the mapping uses a
-            // static directory namer), so a transient instance is enough to resolve it
-            // without hydrating the owning UserProfilePicture entity per row.
-            $picture = new UserProfilePicture();
-            $picture->imageName = $profilePictureName;
-            $path = $this->uploaderHelper->asset($picture, 'imageFile');
-            if ($path !== null) {
-                $dto->profilePictureUrl = $this->cacheManager->getBrowserPath($path, 'user_profile_picture_small');
-            }
-        }
+        $dto->profilePictureUrl = $this->profilePictureUrlBuilder->buildFromImageName($profilePictureName);
 
         return $dto;
     }

@@ -5,6 +5,7 @@ namespace App\Repository\Message;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\NonUniqueResultException;
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -42,6 +43,16 @@ class MessageThreadRepository extends ServiceEntityRepository
             ->setParameter('number_participant', count($participants))
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * The space's chat. Looked up by scope, never through findByParticipants(): that resolves a thread
+     * by participant set equality, which is right for a direct message and meaningless for a channel,
+     * whose members are derived and who therefore has no participant rows at all.
+     */
+    public function findChannelForBandSpace(BandSpace $bandSpace): ?MessageThread
+    {
+        return $this->findOneBy(['bandSpace' => $bandSpace]);
     }
 
     /**
