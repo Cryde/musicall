@@ -26,6 +26,10 @@ final class MercureTopic
     /**
      * Everything addressed to one user: the notification bell first, and whatever else later wants
      * to reach a signed-in person rather than a page they happen to have open.
+     *
+     * A Band Space channel rides this too rather than having a topic of its own, and deliberately:
+     * a per-space topic would have to be named in the subscriber token, so the token would need
+     * reissuing every time a roster changed. See MessagePostedListener (#963).
      */
     public static function userNotifications(string $userId): string
     {

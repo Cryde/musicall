@@ -6,6 +6,7 @@ import {
   mergeMessages,
   nextOlderPageToLoad
 } from '../../utils/messagePagination.js'
+import { isForTheOpenConversation } from '../../utils/messageSignal.js'
 import { useNotificationStore } from '../notification/notification.js'
 
 /**
@@ -17,6 +18,10 @@ import { useNotificationStore } from '../notification/notification.js'
  * widening.
  */
 export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
+  // Which space's conversation is held, which is how a live signal knows whether any of this is on
+  // screen. Chat.vue clears the store when it unmounts and AppBandLayout keys <router-view> on the
+  // space id, so leaving the tab or switching band empties it.
+  const openBandSpaceId = ref(null)
   const messages = ref([])
   const totalMessages = ref(0)
   const isLoading = ref(false)
@@ -43,11 +48,24 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   // land on top of the space the member has already moved to.
   let loadToken = 0
 
-  async function loadMessages(bandSpaceId) {
-    const token = ++loadToken
-    isLoading.value = true
-    loadError.value = null
-    loadOlderError.value = null
+  /**
+   * Silent is a live signal refetching the newest page (#963): no spinner over a conversation that is
+   * already readable, and a failure leaves what is on screen alone rather than replacing a working
+   * pane with an error nobody asked for.
+   *
+   * It deliberately does **not** bump `loadToken`, it reads the current one the way
+   * loadOlderMessages() does. Bumping it would cancel a « charger les messages plus anciens » that is
+   * in flight, so a message arriving at the wrong moment would silently throw away the page of
+   * history the member just asked for.
+   */
+  async function loadMessages(bandSpaceId, { silent = false } = {}) {
+    const token = silent ? loadToken : ++loadToken
+    if (!silent) {
+      openBandSpaceId.value = bandSpaceId
+      isLoading.value = true
+      loadError.value = null
+      loadOlderError.value = null
+    }
 
     try {
       const response = await bandSpaceChatApi.getMessages(bandSpaceId)
@@ -61,13 +79,13 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
       totalMessages.value = knownTotal(response.totalItems)
     } catch (e) {
       console.error('Failed to load the chat:', e)
-      if (token === loadToken) {
+      if (!silent && token === loadToken) {
         messages.value = []
         totalMessages.value = 0
         loadError.value = 'Impossible de charger la discussion'
       }
     } finally {
-      if (token === loadToken) {
+      if (!silent && token === loadToken) {
         isLoading.value = false
       }
     }
@@ -104,8 +122,9 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   /**
-   * Appends through the merge rather than pushing, so the message is de-duplicated by `@id` the day
-   * #963 makes the same message arrive over Mercure as well.
+   * Appends through the merge rather than pushing, so the message is de-duplicated by `@id`: the
+   * sender's own signal can beat their own POST response back, because the server publishes inside the
+   * send and answers afterwards, and the refetch it triggers has then already added it (#963).
    */
   async function sendMessage(bandSpaceId, content) {
     isSending.value = true
@@ -134,7 +153,47 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     }
   }
 
+  /**
+   * A message landed in one of this member's channels (#963).
+   *
+   * The signal carries a band space id and nothing else, so what is on screen is refetched from the
+   * API rather than patched from the payload: no message content travels over the hub. A null id is a
+   * reconnect, which means the conversation on screen, whichever it is, is stale.
+   *
+   * Exactly one notification refresh per signal, whichever branch runs. markAsRead() refreshes the
+   * badge on its way out, so refreshing it here too would race the count back to the value it had
+   * before the read landed.
+   */
+  async function handleIncomingMessage(bandSpaceId) {
+    const openId = openBandSpaceId.value
+    if (!isForTheOpenConversation(bandSpaceId, openId)) {
+      // None of this conversation is on screen, so the sidebar badge is the whole of the update.
+      await useNotificationStore().loadNotifications()
+
+      return
+    }
+
+    await loadMessages(openId, { silent: true })
+
+    // Arriving while the tab is in front is reading it, the same rule the inbox uses. In a background
+    // tab nobody has seen it, and marking it read would make the badge lie.
+    //
+    // Still on the same channel, checked again after the refetch: the member can leave it while that
+    // is in flight, and `visibilityState` cannot tell "still reading this one" from "moved on in the
+    // same visible tab". Marking it read then would clear the badge for a message nobody saw.
+    if (openBandSpaceId.value === openId && globalThis.document?.visibilityState === 'visible') {
+      await markAsRead(openId)
+
+      return
+    }
+    await useNotificationStore().loadNotifications()
+  }
+
   function clear() {
+    // Bumped so nothing already in flight lands in a pane the member has left, a silent refresh
+    // included. Chat.vue clears on unmount, which is the one moment a response has nowhere to go.
+    loadToken += 1
+    openBandSpaceId.value = null
     messages.value = []
     totalMessages.value = 0
     isLoading.value = false
@@ -157,6 +216,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     loadOlderMessages,
     sendMessage,
     markAsRead,
+    handleIncomingMessage,
     clear
   }
 })

@@ -25,7 +25,7 @@ readonly class ThreadMemberResolver
     }
 
     /**
-     * Who the message is for: read-state rows, unread counts, and later the live signal.
+     * Who the message is for: read-state rows, unread counts, and the live signal (#963).
      *
      * @return User[]
      */

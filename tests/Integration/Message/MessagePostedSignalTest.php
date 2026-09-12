@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Message;
 
+use App\Entity\BandSpace\BandSpace;
+use App\Entity\Message\MessageThread;
+use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use App\Event\MessageSentEvent;
 use App\Mercure\MercureTopic;
+use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Message\MessageRepository;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use App\Tests\Double\RecordingHub;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
@@ -147,7 +155,125 @@ class MessagePostedSignalTest extends KernelTestCase
         );
     }
 
-    private function threadWith(\App\Entity\User ...$participants): \App\Entity\Message\MessageThread
+    public function test_a_channel_message_signals_every_active_member_and_nobody_else(): void
+    {
+        // A channel has no MessageParticipant rows at all: its members are derived from the space
+        // (#959). Before #963 that made this listener iterate an empty collection and publish nothing,
+        // so a band's conversation was the one that never went live.
+        self::bootKernel();
+        $hub = self::getContainer()->get(RecordingHub::class);
+
+        [$space, $channel, $sender, $others, $kicked, $stranger] = $this->band();
+
+        self::getContainer()->get(MessageSenderProcedure::class)->processByThread($channel, $sender, 'on répète mardi');
+
+        // The two absences by name first, so a leak is reported as "the kicked member" rather than as
+        // one uuid missing from a diff of three.
+        self::assertNotContains(MercureTopic::userNotifications((string) $kicked->id), $hub->publishedTopics());
+        self::assertNotContains(MercureTopic::userNotifications((string) $stranger->id), $hub->publishedTopics());
+        // Then the exact list, which is what catches somebody nobody thought to name.
+        self::assertSame(
+            [
+                MercureTopic::userNotifications((string) $sender->id),
+                MercureTopic::userNotifications((string) $others[0]->id),
+                MercureTopic::userNotifications((string) $others[1]->id),
+            ],
+            $hub->publishedTopics()
+        );
+
+        $update = $hub->updates[0];
+        // Without this the hub stops consulting subscriber topic selectors and hands the signal to
+        // every connected browser, whatever their token says.
+        self::assertTrue($update->isPrivate());
+        // Its own type, because the inbox does not list channels and must not refetch for one, and
+        // keyed by the space because that is what the chat API takes.
+        self::assertSame(
+            '{"type":"band_space_message","band_space_id":"' . $space->id . '"}',
+            $update->getData()
+        );
+    }
+
+    public function test_a_member_who_leaves_stops_receiving_at_once(): void
+    {
+        // The sharp edge of #963, and the reason the topic is per user rather than per space. The
+        // recipient list is computed from BandSpaceMembership at publish time, so leaving takes effect
+        // on the very next message. A shared channel topic would instead have kept delivering until
+        // the subscriber token was reissued, and "within the token lifetime" would then have been a
+        // stated security property rather than none at all.
+        self::bootKernel();
+        $hub = self::getContainer()->get(RecordingHub::class);
+
+        [, $channel, $sender, $others] = $this->band();
+        $leaver = $others[0];
+        $procedure = self::getContainer()->get(MessageSenderProcedure::class);
+
+        $procedure->processByThread($channel, $sender, 'on répète mardi');
+        self::assertContains(MercureTopic::userNotifications((string) $leaver->id), $hub->publishedTopics());
+
+        $membership = self::getContainer()->get(BandSpaceMembershipRepository::class)
+            ->findOneBy(['bandSpace' => $channel->bandSpace, 'user' => $leaver->id]);
+        self::assertNotNull($membership);
+        $membership->status = MembershipStatus::Left;
+        self::getContainer()->get(EntityManagerInterface::class)->flush();
+
+        $hub->updates = [];
+        $procedure->processByThread($channel, $sender, 'finalement jeudi');
+
+        self::assertNotContains(MercureTopic::userNotifications((string) $leaver->id), $hub->publishedTopics());
+        self::assertContains(MercureTopic::userNotifications((string) $others[1]->id), $hub->publishedTopics());
+    }
+
+    /**
+     * A band of three active members, one kicked, and one person with no membership at all.
+     *
+     * @return array{0: BandSpace, 1: MessageThread, 2: User, 3: User[], 4: User, 5: User}
+     */
+    private function band(): array
+    {
+        $space = BandSpaceFactory::new()->create(['name' => 'Les Trois Accords']);
+
+        // Pinned creation datetimes: findByBandSpace() orders by them, and the exact topic list above
+        // would otherwise flip on a faker tie.
+        $sender = $this->member($space, 'batteur', '2026-01-01 10:00:00');
+        $others = [
+            $this->member($space, 'bassiste', '2026-01-01 11:00:00'),
+            $this->member($space, 'chanteuse', '2026-01-01 12:00:00'),
+        ];
+        $kicked = $this->member($space, 'ancien', '2026-01-01 13:00:00', MembershipStatus::Kicked);
+        $stranger = UserFactory::new()->asBaseUser()->create(['username' => 'inconnu', 'email' => 'inconnu@test.com']);
+
+        return [
+            $space,
+            MessageThreadFactory::new()->forBandSpace($space)->create(),
+            $sender,
+            $others,
+            $kicked,
+            $stranger,
+        ];
+    }
+
+    private function member(
+        BandSpace $bandSpace,
+        string $username,
+        string $joinedAt,
+        MembershipStatus $status = MembershipStatus::Active,
+    ): User {
+        $user = UserFactory::new()->asBaseUser()->create([
+            'username' => $username,
+            'email' => $username . '@test.com',
+        ]);
+        BandSpaceMembershipFactory::new([
+            'bandSpace' => $bandSpace,
+            'user' => $user,
+            'status' => $status,
+            // Mutable, because that is how BandSpaceMembership maps the column.
+            'creationDatetime' => new \DateTime($joinedAt),
+        ])->create();
+
+        return $user;
+    }
+
+    private function threadWith(User ...$participants): MessageThread
     {
         $thread = MessageThreadFactory::new()->create();
         foreach ($participants as $participant) {
