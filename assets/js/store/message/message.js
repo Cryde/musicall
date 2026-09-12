@@ -2,6 +2,11 @@ import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
+import {
+  hasOlderToLoad,
+  mergeMessages,
+  nextOlderPageToLoad
+} from '../../utils/messagePagination.js'
 import { isMessageAlreadyListed, messageSignalPlan } from '../../utils/messageSignal.js'
 import { useNotificationStore } from '../notification/notification.js'
 import { useUserSecurityStore } from '../user/security.js'
@@ -23,6 +28,12 @@ export const useMessageStore = defineStore('message', () => {
   let threadsRequestId = 0
   let messagesRequestId = 0
   const isLoadingMessages = ref(false)
+  // Its own flag, not isLoadingMessages: that one drives a v-if that takes the whole conversation out
+  // of the DOM, which is the opposite of what loading older messages should look like.
+  const isLoadingOlderMessages = ref(false)
+  // And its own error, so a page that fails to load leaves the conversation on screen (#955).
+  const loadOlderError = ref(null)
+  const totalMessages = ref(0)
   const isAddingMessage = ref(false)
 
   const orderedThreads = computed(() => {
@@ -32,6 +43,10 @@ export const useMessageStore = defineStore('message', () => {
       return dateB - dateA
     })
   })
+
+  const hasOlderMessages = computed(() =>
+    hasOlderToLoad(messages.value.length, totalMessages.value)
+  )
 
   const currentThread = computed(() => {
     return threads.value.find((t) => t.thread.id === currentThreadId.value)
@@ -90,16 +105,57 @@ export const useMessageStore = defineStore('message', () => {
       const response = await messageApi.getMessages({ threadId })
       if (currentRequestId !== messagesRequestId) return
       // Reverse to show oldest first
-      messages.value = (response.member || []).reverse()
+      const newest = (response.member || []).reverse()
+      // A silent reload is a live signal refetching the newest page, and the reader may have loaded
+      // history behind it. Replacing would throw that away mid-read, so merge instead (#989).
+      messages.value = silent ? mergeMessages(messages.value, newest) : newest
+      totalMessages.value = response.totalItems ?? newest.length
+      loadOlderError.value = null
     } catch (e) {
       console.error('Failed to load messages:', e)
       if (!silent && currentRequestId === messagesRequestId) {
         messages.value = []
+        totalMessages.value = 0
       }
     } finally {
       if (!silent && currentRequestId === messagesRequestId) {
         isLoadingMessages.value = false
       }
+    }
+  }
+
+  /**
+   * One page further back through the conversation (#955).
+   *
+   * The page is derived from what is loaded rather than counted up, so live messages arriving at the
+   * head cannot make it drift, and the result is merged rather than appended, so the rows the window
+   * repeats are dropped instead of shown twice. See messagePagination.js.
+   */
+  async function loadOlderMessages() {
+    const threadId = currentThreadId.value
+    if (!threadId || isLoadingOlderMessages.value || !hasOlderMessages.value) {
+      return
+    }
+
+    // Joins the same generation the other loaders use. Checking the thread id alone is not enough:
+    // leave this thread and come back while the page is in flight and the id matches again, but
+    // `messages` now holds whatever the thread in between loaded, and this would merge into that.
+    const currentRequestId = ++messagesRequestId
+    isLoadingOlderMessages.value = true
+    loadOlderError.value = null
+    try {
+      const response = await messageApi.getMessages({
+        threadId,
+        page: nextOlderPageToLoad(messages.value.length)
+      })
+      if (currentRequestId !== messagesRequestId || threadId !== currentThreadId.value) return
+      messages.value = mergeMessages(messages.value, (response.member || []).reverse())
+      totalMessages.value = response.totalItems ?? totalMessages.value
+    } catch (e) {
+      console.error('Failed to load older messages:', e)
+      loadOlderError.value = 'Impossible de charger les messages plus anciens.'
+    } finally {
+      isLoadingOlderMessages.value = false
     }
   }
 
@@ -202,6 +258,8 @@ export const useMessageStore = defineStore('message', () => {
     currentThreadId.value = null
     currentThreadMetaId.value = null
     messages.value = []
+    totalMessages.value = 0
+    loadOlderError.value = null
   }
 
   function reset() {
@@ -219,6 +277,10 @@ export const useMessageStore = defineStore('message', () => {
     isLoading: readonly(isLoading),
     hasLoadedThreads: readonly(hasLoadedThreads),
     isLoadingMessages: readonly(isLoadingMessages),
+    isLoadingOlderMessages: readonly(isLoadingOlderMessages),
+    loadOlderError: readonly(loadOlderError),
+    totalMessages: readonly(totalMessages),
+    hasOlderMessages,
     isAddingMessage: readonly(isAddingMessage),
     orderedThreads,
     currentThread,
@@ -226,6 +288,7 @@ export const useMessageStore = defineStore('message', () => {
     selectThread,
     postMessage,
     postMessageInThread,
+    loadOlderMessages,
     handleIncomingMessage,
     getOtherParticipant,
     clearCurrentThread,

@@ -48,6 +48,27 @@
 
       <template v-else>
         <div
+          v-if="messageStore.hasOlderMessages"
+          class="flex justify-center"
+        >
+          <Button
+            label="Charger les messages plus anciens"
+            severity="secondary"
+            outlined
+            size="small"
+            :loading="messageStore.isLoadingOlderMessages"
+            @click="handleLoadOlder"
+          />
+        </div>
+        <Message
+          v-if="messageStore.loadOlderError"
+          severity="error"
+          :closable="false"
+        >
+          {{ messageStore.loadOlderError }}
+        </Message>
+
+        <div
           v-for="message in messageStore.messages"
           :key="message['@id']"
           class="flex"
@@ -204,14 +225,54 @@ function isFollowingTheConversation() {
   )
 }
 
+/**
+ * Loading history keeps the reader where they were.
+ *
+ * Prepending grows the list upwards, so without compensating, the message being read slides down by
+ * however tall the new page is. Measured either side of the DOM update and the difference added back
+ * to the offset, which is the whole trick.
+ */
+async function handleLoadOlder() {
+  const container = messagesContainer.value
+  const previousScrollHeight = container?.scrollHeight ?? 0
+  const previousScrollTop = container?.scrollTop ?? 0
+
+  await messageStore.loadOlderMessages()
+  await nextTick()
+
+  if (container) {
+    container.scrollTop = previousScrollTop + (container.scrollHeight - previousScrollHeight)
+  }
+}
+
 // Scroll to bottom when messages change, unless the reader has gone back up. Messages now arrive on
 // their own (#989), so yanking the view to the bottom would interrupt somebody rereading history
 // rather than follow along with them. Read before the DOM updates, which is what a pre-flush watcher
 // gives us, so this is where the reader was rather than where the new content puts them.
+//
+// Only when the list grew at its *end*. A conversation shorter than its pane has nothing to scroll,
+// so isFollowingTheConversation() is trivially true there, and loading history into it would jump to
+// the bottom having just been asked for the top. The last message's identity says which end moved.
+//
+// Reset per thread, because this component is not remounted when you switch conversation: the
+// messages route renders through AppBaseLayout's router-view, which carries no `:key`, unlike the
+// band space layout. Without this, arriving back at a thread whose last message has not changed since
+// you left would read as "nothing grew" and suppress the scroll to the bottom.
+let lastTailIri = null
+watch(
+  () => messageStore.currentThreadId,
+  () => {
+    lastTailIri = null
+  }
+)
 watch(
   () => messageStore.messages,
-  () => {
-    if (isFollowingTheConversation()) {
+  (currentMessages) => {
+    const tailIri = currentMessages.at(-1)?.['@id'] ?? null
+    const grewAtTheEnd = tailIri !== lastTailIri
+    lastTailIri = tailIri
+
+    if (grewAtTheEnd && isFollowingTheConversation()) {
       scrollToBottom()
     }
   },
