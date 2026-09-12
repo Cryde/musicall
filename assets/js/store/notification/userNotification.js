@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { readonly, ref, watch } from 'vue'
 import userNotificationApi from '../../api/notification/userNotification.js'
 import { createNotificationStream, notificationTopic } from '../../utils/notificationStream.js'
+import { useBandSpaceChatStore } from '../bandSpace/bandSpaceChat.js'
 import { useMessageStore } from '../message/message.js'
 import { useUserSecurityStore } from '../user/security.js'
 import { useNotificationStore } from './notification.js'
@@ -117,8 +118,8 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
       return userId ? [notificationTopic(userId)] : []
     },
     onSignal: (payload) => {
-      // One topic, two kinds of update, so the payload's own type says which. A null payload is a
-      // reconnect, where anything published while we were down is gone for good: refresh both.
+      // One topic, three kinds of update, so the payload's own type says which. A null payload is a
+      // reconnect, where anything published while we were down is gone for good: refresh all of them.
       const type = payload?.type ?? null
       if (type === null || type === 'notification') {
         loadCount()
@@ -128,6 +129,12 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
         // inbox itself, which no-ops when it was never opened.
         useNotificationStore().loadNotifications()
         useMessageStore().handleIncomingMessage(payload?.thread_id ?? null)
+      }
+      if (type === null || type === 'band_space_message') {
+        // A Band Space channel, which the inbox above deliberately does not list (#963). The chat
+        // store refreshes the sidebar badge itself, because whether the member is looking at the
+        // conversation is also what decides whether the signal marks it read.
+        useBandSpaceChatStore().handleIncomingMessage(payload?.band_space_id ?? null)
       }
     },
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()

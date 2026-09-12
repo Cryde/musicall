@@ -1,4 +1,19 @@
 /**
+ * Is this signal about the conversation that is on screen?
+ *
+ * A null signal id is a reconnect, or a body we could not read: we know something was missed but not
+ * what, so anything on screen is stale until proven otherwise. Naming a different conversation is the
+ * only case where the one on screen is known not to have changed.
+ *
+ * Shared by the inbox, where the id is a thread, and the Band Space chat, where it is a band space
+ * (#963): different keys, same rule, and getting the reconnect half of it wrong in one of them would
+ * leave a pane silently stale after every deploy.
+ */
+export function isForTheOpenConversation(signalId, openId) {
+  return Boolean(openId) && (!signalId || signalId === openId)
+}
+
+/**
  * What a live message signal should make the inbox do (#989).
  *
  * Separated from the store so the policy can be tested without a Pinia harness and an API double.
@@ -11,11 +26,7 @@ export function messageSignalPlan({ inboxLoaded, signalThreadId, openThreadId, t
     return { refreshInbox: false, refreshOpenThread: false, markRead: false }
   }
 
-  // A null id is a reconnect, or a body we could not read: we know something was missed but not
-  // what, so anything on screen is stale until proven otherwise. Naming a different thread is the
-  // only case where the open conversation is known not to have changed.
-  const isTheThreadOnScreen =
-    Boolean(openThreadId) && (!signalThreadId || signalThreadId === openThreadId)
+  const isTheThreadOnScreen = isForTheOpenConversation(signalThreadId, openThreadId)
 
   return {
     refreshInbox: true,

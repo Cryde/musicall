@@ -144,9 +144,9 @@ let intervalId = null
 function refreshCount() {
   store.loadCount()
   // The other header counters ride this timer rather than running one of their own: the direct
-  // message envelope, and the per Band Space chat badge the sidebar reads (#962). Both arrive over
-  // Mercure for direct messages, but a Band Space channel publishes nothing until #963, so without
-  // this the chat badge would only ever be as fresh as the last page load.
+  // message envelope, and the per Band Space chat badge the sidebar reads (#962). Both are live over
+  // Mercure now, direct messages since #989 and a Band Space channel since #963, so this is the same
+  // fallback as the count above: a hub that is down, or a stream that has not reconnected yet.
   notificationStore.loadNotifications()
   // The self-heal. The store connects as soon as the profile lands, but if that fetch failed there is
   // nothing else that would ever try again, and the poll would mask it perfectly: a live-looking bell

@@ -1,6 +1,33 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { isMessageAlreadyListed, messageSignalPlan } from './messageSignal.js'
+import {
+  isForTheOpenConversation,
+  isMessageAlreadyListed,
+  messageSignalPlan
+} from './messageSignal.js'
+
+describe('isForTheOpenConversation', () => {
+  it('is false when nothing is open', () => {
+    assert.equal(isForTheOpenConversation('a-conversation', null), false)
+  })
+
+  it('is true for the conversation on screen', () => {
+    assert.equal(isForTheOpenConversation('the-open-one', 'the-open-one'), true)
+  })
+
+  it('is false for another conversation', () => {
+    assert.equal(isForTheOpenConversation('another-one', 'the-open-one'), false)
+  })
+
+  it('is true on a reconnect, which names no conversation', () => {
+    // We know something was missed but not what, so what is on screen counts as stale.
+    assert.equal(isForTheOpenConversation(null, 'the-open-one'), true)
+  })
+
+  it('is false on a reconnect with nothing open', () => {
+    assert.equal(isForTheOpenConversation(null, null), false)
+  })
+})
 
 describe('messageSignalPlan', () => {
   it('does nothing when the inbox was never opened', () => {
