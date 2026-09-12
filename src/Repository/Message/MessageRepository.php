@@ -3,6 +3,7 @@
 namespace App\Repository\Message;
 
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -17,6 +18,59 @@ class MessageRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Message::class);
+    }
+
+    /**
+     * One page of a thread's messages, as scalars.
+     *
+     * Nothing is hydrated, and that is the point. `User` carries three inverse one-to-one profile
+     * associations that Doctrine cannot make lazy (#730), so hydrating one author costs four selects
+     * and a page of fifty distinct authors costs two hundred. The author is reduced to the fields the
+     * renderer needs, and the profile picture to its `imageName`, which is all
+     * UserProfilePictureUrlBuilder::buildFromImageName() needs to rebuild the URL. Same shape as
+     * MusicianAnnounceRepository::findAuthorsDataForAnnounces(), for the same reason.
+     *
+     * Newest first, with `id` as the tiebreak #955 made mandatory: `creation_datetime` is second
+     * granular, ties are ordinary, and SQL promises nothing about their order, so two page requests
+     * planned differently could put a tied row on both sides of a boundary. DESC on both columns lets
+     * the planner read `idx_message_thread_creation` backwards, which is physically `(thread_id,
+     * creation_datetime, id)`, instead of sorting: measured on a real thread, though the plan depends
+     * on the author join staying an eq_ref, so it is a good default rather than a guarantee.
+     *
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}>
+     */
+    public function findForThread(MessageThread $thread, int $limit, int $offset): array
+    {
+        return $this->createQueryBuilder('message')
+            ->select(
+                'message.id AS id',
+                'message.content AS content',
+                'message.creationDatetime AS creationDatetime',
+                'author.id AS authorId',
+                'author.username AS authorUsername',
+                'author.deletionDatetime AS authorDeletionDatetime',
+                'picture.imageName AS authorProfilePictureName',
+            )
+            ->join('message.author', 'author')
+            ->leftJoin('author.profilePicture', 'picture')
+            ->where('message.thread = :thread')
+            ->orderBy('message.creationDatetime', 'DESC')
+            ->addOrderBy('message.id', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->setParameter('thread', $thread)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countForThread(MessageThread $thread): int
+    {
+        return (int) $this->createQueryBuilder('message')
+            ->select('COUNT(message.id)')
+            ->where('message.thread = :thread')
+            ->setParameter('thread', $thread)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

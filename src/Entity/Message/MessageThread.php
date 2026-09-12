@@ -71,6 +71,11 @@ class MessageThread
         $this->messageParticipants = new ArrayCollection();
     }
 
+    public function isChannel(): bool
+    {
+        return $this->bandSpace instanceof BandSpace;
+    }
+
     public function addMessage(Message $message): self
     {
         if (!$this->messages->contains($message)) {

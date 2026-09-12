@@ -4,12 +4,10 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\BandSpaceNote as BandSpaceNoteDTO;
 use App\Entity\BandSpace\BandSpaceNote as BandSpaceNoteEntity;
+use App\Entity\User;
 
 readonly class BandSpaceNoteBuilder
 {
-    /** Stands in for a closed account, whose anonymised handle would name nobody. */
-    private const string DELETED_AUTHOR_USERNAME = 'Utilisateur supprimé';
-
     /**
      * The only values in a stored note a browser ever dereferences: an image node's `src` and a link
      * mark's `href`. A text node is not one of them, which is why text is handed back byte for byte.
@@ -64,7 +62,7 @@ readonly class BandSpaceNoteBuilder
         $dto->createdBy = [
             'id' => $entity->createdBy->id,
             'username' => $entity->createdBy->isDeleted()
-                ? self::DELETED_AUTHOR_USERNAME
+                ? User::DELETED_DISPLAY_NAME
                 : $entity->createdBy->username,
         ];
 

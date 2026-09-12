@@ -269,6 +269,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return false;
     }
 
+    /** What a renderer shows instead of the `deleted_<uuid>` handle DeleteAccountProcedure leaves behind. */
+    public const string DELETED_DISPLAY_NAME = 'Utilisateur supprimé';
+
     public function isDeleted(): bool
     {
         return $this->deletionDatetime instanceof \DateTimeImmutable;

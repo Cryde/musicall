@@ -14,6 +14,7 @@ use App\Service\Builder\Message\MessageDirector;
 use App\Service\Builder\Message\MessageParticipantDirector;
 use App\Service\Builder\Message\MessageThreadDirector;
 use App\Service\Builder\Message\MessageThreadMetaDirector;
+use App\Service\Message\ThreadMemberResolver;
 use App\Service\User\UserNotificationPreferenceChecker;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,7 @@ class MessageSenderProcedure
         private readonly MessageDirector                  $messageDirector,
         private readonly EventDispatcherInterface         $eventDispatcher,
         private readonly UserNotificationPreferenceChecker $preferenceChecker,
+        private readonly ThreadMemberResolver             $threadMemberResolver,
     ) {
     }
 
@@ -106,7 +108,7 @@ class MessageSenderProcedure
 
         $message = $this->entityManager->wrapInTransaction(function () use ($thread, $sender, $content, &$eventsToDispatch): Message {
             // Users first, then the thread, in the same order process() uses. See lockThread().
-            $this->lockUsers($this->participantsOf($thread));
+            $this->lockUsers($this->threadMemberResolver->usersToLockFor($thread));
             $this->lockThread($thread);
 
             $eventsToDispatch = $this->handleReadMessage($thread, $sender);
@@ -222,19 +224,6 @@ class MessageSenderProcedure
     }
 
     /**
-     * @return User[]
-     */
-    private function participantsOf(MessageThread $thread): array
-    {
-        $users = [];
-        foreach ($thread->messageParticipants as $participant) {
-            $users[] = $participant->participant;
-        }
-
-        return $users;
-    }
-
-    /**
      * @return MessageSentEvent[]
      */
     private function handleReadMessage(MessageThread $thread, User $sender): array
@@ -243,15 +232,19 @@ class MessageSenderProcedure
         $metas = $this->messageThreadMetaRepository->findByThreadIndexedByUserId($thread);
 
         $events = [];
-        foreach ($thread->messageParticipants as $participant) {
-            $recipient = $participant->participant;
+        foreach ($this->threadMemberResolver->activeMembersOf($thread) as $recipient) {
             if ($recipient->id !== $sender->id) {
                 $threadMetaRecipient = $this->findOrCreateMetaFor($thread, $recipient, $metas);
                 // The recipient's read position is deliberately left alone: the message about to be
                 // written is newer than it, so it already counts as unread. Rewinding the position to
                 // null, which is what the boolean's `false` amounted to, would resurrect every
                 // message they had already read in this thread.
-                if ($this->shouldNotify($recipient, $threadMetaRecipient)) {
+
+                // A channel emails nobody. MessageSentListener links to `messages/{threadId}`, the
+                // direct message route, which cannot render a channel; and one email per member per
+                // message is the notification volume #948 concern 10 exists to prevent. The read
+                // state above is still written, because that is what the unread count reads.
+                if (!$thread->isChannel() && $this->shouldNotify($recipient, $threadMetaRecipient)) {
                     $threadMetaRecipient->pendingNotificationSent = true;
                     $events[] = new MessageSentEvent($recipient, $sender, $thread);
                 }
@@ -293,12 +286,10 @@ class MessageSenderProcedure
      * see the note there about `UNIQUE (thread_id, user_id)`. A future writer that inserts a meta row
      * without taking that lock, a member joining a channel that already has history for instance,
      * brings the duplicate key back and would need catching. Who *deserves* a row is not decided here:
-     * this trusts `thread->messageParticipants`, so filtering out members who have left stays with
-     * whatever populates that list.
+     * this trusts ThreadMemberResolver, so filtering out members who have left stays with it.
      *
-     * Each participant appears once in `messageParticipants` (`UNIQUE (thread_id, participant_id)`)
-     * and the sender is handled separately, so nothing is looked up twice and the map needs no
-     * updating.
+     * ThreadMemberResolver returns each user once and the sender is handled separately, so nothing is
+     * looked up twice and the map needs no updating.
      *
      * @param array<string, MessageThreadMeta> $metas
      */
