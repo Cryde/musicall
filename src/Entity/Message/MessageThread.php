@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Message;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Repository\Message\MessageThreadRepository;
 use DateTime;
 use DateTimeInterface;
@@ -15,8 +16,12 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: MessageThreadRepository::class)]
+#[ORM\Table(name: 'message_thread')]
+#[ORM\UniqueConstraint(name: 'message_thread_band_space_name_unique', columns: ['band_space_id', 'name'])]
 class MessageThread
 {
+    public const string DEFAULT_CHANNEL_NAME = 'Général';
+
     #[ORM\Id]
     #[ORM\Column(type: "uuid", unique: true)]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
@@ -45,6 +50,19 @@ class MessageThread
     #[ORM\ManyToOne(targetEntity: Message::class)]
     #[ORM\JoinColumn(nullable: true)]
     public ?Message $lastMessage = null;
+
+    /**
+     * Null is a direct message, whose participants are the rows above. Set is a Band Space channel,
+     * whose members are derived from BandSpaceMembership so that nothing has to be synchronised on
+     * join, leave, kick or role change.
+     */
+    #[ORM\ManyToOne(targetEntity: BandSpace::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    public ?BandSpace $bandSpace = null;
+
+    /** Channels only, and never null for one: two nulls read as distinct, so the unique index cannot say it. */
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    public ?string $name = null;
 
     public function __construct()
     {

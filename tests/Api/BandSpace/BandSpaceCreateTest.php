@@ -7,6 +7,7 @@ namespace App\Tests\Api\BandSpace;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Repository\Message\MessageThreadRepository;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
@@ -66,6 +67,30 @@ class BandSpaceCreateTest extends ApiTestCase
         $this->assertSame('band_created', $activities[0]->type);
         $this->assertSame(['name' => 'The Rockers'], $activities[0]->payload);
         $this->assertSame($user->id, $activities[0]->actor?->id);
+    }
+
+    public function test_creating_a_band_space_creates_its_channel(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces',
+            ['name' => 'The Rockers'],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $bandSpace = self::getContainer()->get(BandSpaceRepository::class)->findByUser($user)[0];
+        $channels = self::getContainer()->get(MessageThreadRepository::class)->findBy(['bandSpace' => $bandSpace]);
+
+        $this->assertCount(1, $channels);
+        $this->assertSame('Général', $channels[0]->name);
+        // A channel's members are derived from the space's memberships, so it writes no participant
+        // rows. Writing them is the escape hatch a private channel would use, and nothing does.
+        $this->assertCount(0, $channels[0]->messageParticipants);
     }
 
     public function test_a_padded_name_is_stored_trimmed(): void

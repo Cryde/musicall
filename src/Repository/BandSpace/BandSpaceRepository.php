@@ -57,7 +57,12 @@ class BandSpaceRepository extends ServiceEntityRepository
     /**
      * Hard-deletes a space in one statement, for app:band-space:purge. Deliberately a bulk DQL delete
      * rather than an ORM remove(): hydrating a whole space and its children just to delete them would be
-     * pointless work, and every child table cascades from band_space at database level anyway.
+     * pointless work, and almost every child table cascades from band_space at database level anyway.
+     *
+     * Almost: message_thread is the exception. Its cascade cannot walk the cycle the message tables
+     * form, so a space's channels have to be deleted first, through
+     * MessageThreadRepository::deleteByBandSpace(). app:band-space:purge does that in the same
+     * transaction as this call.
      *
      * Two consequences the caller has to know about. A bulk delete never fires lifecycle events, so
      * VichUploader does not run and the stored objects must be removed separately - which is exactly why

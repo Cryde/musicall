@@ -15,6 +15,7 @@ use App\Enum\BandSpace\Role;
 use App\Repository\BandSpace\BandSpaceRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use App\Service\Builder\BandSpace\BandSpaceBuilder;
+use App\Service\Builder\Message\MessageThreadDirector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -33,6 +34,7 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
         private BandSpaceBuilder $bandSpaceBuilder,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private BandSpaceRepository $bandSpaceRepository,
+        private MessageThreadDirector $messageThreadDirector,
         private Security $security,
         #[Target('band_space_creation')]
         private RateLimiterFactoryInterface $creationLimiter,
@@ -67,8 +69,13 @@ readonly class BandSpaceCreateProcessor implements ProcessorInterface
         // Add membership to band space (bidirectional relationship)
         $bandSpace->memberships->add($creatorMembership);
 
+        // The band's chat. Created here rather than on first use so that every space has one, including
+        // the ones nobody opens the chat on, which is what lets #960 read a channel without a fallback.
+        $channel = $this->messageThreadDirector->createForBandSpace($bandSpace);
+
         $this->entityManager->persist($bandSpace);
         $this->entityManager->persist($creatorMembership);
+        $this->entityManager->persist($channel);
 
         // BandSpace::id is assigned at persist time (CUSTOM UUID generator),
         // so we can safely read it before flush. record() only persists the

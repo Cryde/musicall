@@ -4,6 +4,7 @@ namespace App\Tests\Api\Message;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
@@ -115,6 +116,34 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 1,
+        ]);
+    }
+
+    public function test_a_band_space_channel_is_not_a_direct_message(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $bandSpace = BandSpaceFactory::new()->create();
+
+        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+        // A real channel has no participant row, since its members are derived from the space. This one
+        // gets one so that the listing's join on participants cannot be what excludes it, leaving the
+        // scope filter as the only thing that can. #994 is where showing channels here becomes a choice.
+        MessageParticipantFactory::new(['thread' => $channel, 'participant' => $user])->create();
+        $message = MessageFactory::new(['author' => $user, 'thread' => $channel, 'content' => 'dans le groupe'])->create();
+        $channel->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($channel);
+        MessageThreadMetaFactory::new(['user' => $user, 'thread' => $channel])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/message_thread_metas');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'   => '/api/contexts/MessageThreadMeta',
+            '@id'        => '/api/message_thread_metas',
+            '@type'      => 'Collection',
+            'member'     => [],
+            'totalItems' => 0,
         ]);
     }
 
