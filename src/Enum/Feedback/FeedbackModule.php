@@ -19,6 +19,7 @@ enum FeedbackModule: string
 {
     // Band Space, mirroring BandSpaceModule's values.
     case Agenda = 'agenda';
+    case Chat = 'chat';
     case Notes = 'notes';
     case File = 'file';
     case Task = 'task';
@@ -49,6 +50,7 @@ enum FeedbackModule: string
     {
         return match ($this) {
             self::Agenda => 'Agenda',
+            self::Chat => 'Discussion',
             self::Notes => 'Notes',
             self::File => 'Fichiers',
             self::Task => 'Tâches',

@@ -3,10 +3,12 @@ import { describe, it } from 'node:test'
 import {
   BAND_SPACE_ROUTES,
   BAND_SPACE_SETTINGS_SECTIONS,
+  CHAT_TESTER_ONLY,
   filterSectionsByRole,
   NAVIGATION_ITEMS,
   RIDER_TESTER_ONLY,
   resolveSettingsSection,
+  SECTION_NAMES,
   visibleSettingsSections
 } from './bandSpace.js'
 
@@ -41,13 +43,33 @@ describe('the Tech Riders curtain', () => {
     assert.equal(rider.testerOnly, RIDER_TESTER_ONLY)
   })
 
-  it('gates nothing else, so the flip cannot take another module with it', () => {
+  it('gates nothing beyond the two curtained modules, so a flip takes only its own', () => {
     const gated = NAVIGATION_ITEMS.filter((item) => item.testerOnly !== undefined)
 
     assert.deepEqual(
       gated.map((item) => item.route),
-      [BAND_SPACE_ROUTES.RIDER]
+      [BAND_SPACE_ROUTES.CHAT, BAND_SPACE_ROUTES.RIDER]
     )
+  })
+})
+
+describe('the Discussion curtain', () => {
+  // Same promise as the tech riders above, and the same trap: the sidebar entry and the route guard
+  // have to read one flag or releasing the chat stops being a single flip.
+  it('gates the sidebar entry on the shared flag', () => {
+    const chat = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.CHAT)
+
+    assert.ok(chat)
+    assert.equal(chat.testerOnly, CHAT_TESTER_ONLY)
+  })
+
+  it('is named for the members rather than for the API it calls', () => {
+    // « Messages » in the main navigation is direct messages. Two different things under one word,
+    // one click apart, is the confusion this label exists to avoid.
+    const chat = NAVIGATION_ITEMS.find((item) => item.route === BAND_SPACE_ROUTES.CHAT)
+
+    assert.equal(chat.label, 'Discussion')
+    assert.equal(SECTION_NAMES[BAND_SPACE_ROUTES.CHAT], 'Discussion')
   })
 })
 

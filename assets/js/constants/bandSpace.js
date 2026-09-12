@@ -5,6 +5,7 @@ export const BAND_SPACE_ROUTES = {
   INDEX: 'app_band_index',
   DASHBOARD: 'app_band_dashboard',
   AGENDA: 'app_band_agenda',
+  CHAT: 'app_band_chat',
   NOTES: 'app_band_notes',
   FILES: 'app_band_files',
   TASKS: 'app_band_tasks',
@@ -30,6 +31,16 @@ export const LAST_TECH_RIDER_KEY = 'lastTechRiderId'
  * a tester (#942).
  */
 export const RIDER_TESTER_ONLY = true
+
+/**
+ * Same curtain as the tech riders above, for the same reason and with the same single flip. The chat
+ * is piloted with one real band first: the epic's risk is half a band switching and the other half
+ * staying on their old group conversation, and the only way to find that out is to ask one band.
+ *
+ * The route name says chat, matching the API it calls, while the tab reads « Discussion » because the
+ * main navigation already spends the word « Messages » on direct messages.
+ */
+export const CHAT_TESTER_ONLY = true
 
 /**
  * The modules a Band Space is described by, shared between the public presentation page and the
@@ -84,6 +95,7 @@ export const BAND_SPACE_MODULES = Object.freeze([
 export const SECTION_NAMES = {
   [BAND_SPACE_ROUTES.DASHBOARD]: 'Dashboard',
   [BAND_SPACE_ROUTES.AGENDA]: 'Agenda',
+  [BAND_SPACE_ROUTES.CHAT]: 'Discussion',
   [BAND_SPACE_ROUTES.NOTES]: 'Notes',
   [BAND_SPACE_ROUTES.FILES]: 'Fichiers',
   [BAND_SPACE_ROUTES.TASKS]: 'Tâches',
@@ -138,6 +150,12 @@ export function resolveSettingsSection(requestedKey, isAdmin) {
 export const NAVIGATION_ITEMS = Object.freeze([
   { label: 'Dashboard', route: BAND_SPACE_ROUTES.DASHBOARD, icon: 'pi-th-large' },
   { label: 'Agenda', route: BAND_SPACE_ROUTES.AGENDA, icon: 'pi-calendar' },
+  {
+    label: 'Discussion',
+    route: BAND_SPACE_ROUTES.CHAT,
+    icon: 'pi-comments',
+    testerOnly: CHAT_TESTER_ONLY
+  },
   { label: 'Notes', route: BAND_SPACE_ROUTES.NOTES, icon: 'pi-file-edit' },
   { label: 'Fichiers', route: BAND_SPACE_ROUTES.FILES, icon: 'pi-folder' },
   { label: 'Setlists', route: BAND_SPACE_ROUTES.SETLIST, icon: 'pi-list' },

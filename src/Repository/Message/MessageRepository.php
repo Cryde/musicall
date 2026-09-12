@@ -113,15 +113,21 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * Every message this user has not read, across every thread they have not deleted.
+     * Every message this user has not read, across every direct message thread they have not deleted.
      *
      * This is the navbar badge. It used to count *threads* with an unread flag and to ignore
      * isDeleted, which made it disagree with the inbox it sits above on both counts (#954).
+     *
+     * Band Space channels are excluded for the same reason: their members get read-state rows like
+     * anybody else (#960), but the inbox this badge sits above filters channels out, so counting them
+     * here would show a number that clicking through can neither explain nor clear. A channel's
+     * unread belongs on its own sidebar entry, which is #962.
      */
     public function countUnreadForUser(User $user): int
     {
         return (int) $this->createQueryBuilder('message')
             ->select('COUNT(message.id)')
+            ->join('message.thread', 'thread')
             ->join(
                 MessageThreadMeta::class,
                 'meta',
@@ -130,6 +136,7 @@ class MessageRepository extends ServiceEntityRepository
             )
             ->where('message.author != :user')
             ->andWhere('meta.isDeleted = false')
+            ->andWhere('thread.bandSpace IS NULL')
             ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
             ->setParameter('user', $user)
             ->getQuery()

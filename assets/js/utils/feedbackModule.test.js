@@ -6,6 +6,7 @@ import { FEEDBACK_MODULES, resolveFeedbackModule } from './feedbackModule.js'
 describe('resolveFeedbackModule', () => {
   it('maps every Band Space route to its own module', () => {
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.AGENDA), FEEDBACK_MODULES.AGENDA)
+    assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.CHAT), FEEDBACK_MODULES.CHAT)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.NOTES), FEEDBACK_MODULES.NOTES)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.FILES), FEEDBACK_MODULES.FILE)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.TASKS), FEEDBACK_MODULES.TASK)
@@ -14,6 +15,19 @@ describe('resolveFeedbackModule', () => {
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.RIDER), FEEDBACK_MODULES.RIDER)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.PARAMETERS), FEEDBACK_MODULES.SETTINGS)
     assert.equal(resolveFeedbackModule(BAND_SPACE_ROUTES.DASHBOARD), FEEDBACK_MODULES.DASHBOARD)
+  })
+
+  // The list above names what each route maps to; this one catches a route that was never mapped at
+  // all. A new tab that skips feedbackModule.js files its feedback as OTHER and nothing else notices,
+  // which is how the chat tab nearly shipped (#961).
+  it('leaves no Band Space route falling through to OTHER', () => {
+    for (const routeName of Object.values(BAND_SPACE_ROUTES)) {
+      assert.notEqual(
+        resolveFeedbackModule(routeName),
+        FEEDBACK_MODULES.OTHER,
+        `Route ${routeName} has no entry in ROUTE_TO_MODULE, so its feedback files as « Autre »`
+      )
+    }
   })
 
   // The live view sits outside both layouts, so it is the one Band Space route that cannot be

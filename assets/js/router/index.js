@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { RIDER_TESTER_ONLY } from '../constants/bandSpace.js'
+import { CHAT_TESTER_ONLY, RIDER_TESTER_ONLY } from '../constants/bandSpace.js'
 import admin from './admin.js'
 import course from './course.js'
 import forum from './forum.js'
@@ -68,6 +68,14 @@ const routes = [
         path: ':id/agenda',
         name: 'app_band_agenda',
         component: () => import('../views/BandSpace/Agenda.vue')
+      },
+      {
+        // The URL is French because that is what a member reads; the route name says chat, matching
+        // the API it calls. Gated like the rider module, so releasing is one flip in constants.
+        path: ':id/discussion',
+        name: 'app_band_chat',
+        component: () => import('../views/BandSpace/Chat.vue'),
+        meta: { testerOnly: CHAT_TESTER_ONLY }
       },
       {
         path: ':id/notes',
