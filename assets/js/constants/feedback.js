@@ -28,6 +28,7 @@ export const FEEDBACK_MODULE_GROUPS = Object.freeze([
     items: [
       { value: FEEDBACK_MODULES.DASHBOARD, label: 'Dashboard du Band Space' },
       { value: FEEDBACK_MODULES.AGENDA, label: 'Agenda' },
+      { value: FEEDBACK_MODULES.CHAT, label: 'Discussion' },
       { value: FEEDBACK_MODULES.NOTES, label: 'Notes' },
       { value: FEEDBACK_MODULES.FILE, label: 'Fichiers' },
       { value: FEEDBACK_MODULES.SETLIST, label: 'Setlists' },

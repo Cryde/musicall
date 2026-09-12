@@ -147,6 +147,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { displayName } from '../../helper/user/displayName.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { autoLink } from '../../utils/autoLink.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 
 const emit = defineEmits(['back'])
@@ -172,13 +173,6 @@ const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_dat
 
 function isSender(message) {
   return message.author?.username === securityStore.user?.username
-}
-
-function autoLink(str) {
-  if (!str) return ''
-  // Simple URL linkification
-  const urlPattern = /(https?:\/\/[^\s<]+)/g
-  return str.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener">$1</a>')
 }
 
 async function send() {

@@ -6,6 +6,7 @@ import { BAND_SPACE_ROUTES } from '../constants/bandSpace.js'
  */
 export const FEEDBACK_MODULES = Object.freeze({
   AGENDA: 'agenda',
+  CHAT: 'chat',
   NOTES: 'notes',
   FILE: 'file',
   TASK: 'task',
@@ -34,6 +35,7 @@ export const FEEDBACK_MODULES = Object.freeze({
  */
 const ROUTE_TO_MODULE = Object.freeze({
   [BAND_SPACE_ROUTES.AGENDA]: FEEDBACK_MODULES.AGENDA,
+  [BAND_SPACE_ROUTES.CHAT]: FEEDBACK_MODULES.CHAT,
   [BAND_SPACE_ROUTES.NOTES]: FEEDBACK_MODULES.NOTES,
   [BAND_SPACE_ROUTES.FILES]: FEEDBACK_MODULES.FILE,
   [BAND_SPACE_ROUTES.TASKS]: FEEDBACK_MODULES.TASK,

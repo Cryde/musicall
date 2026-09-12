@@ -8,6 +8,7 @@ use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
@@ -124,6 +125,35 @@ class UnreadMessageCountTest extends KernelTestCase
         ])->create();
 
         self::assertSame(1, $this->messageRepository->countUnreadForUser($reader));
+    }
+
+    public function test_a_band_space_channel_stays_out_of_the_navbar_badge(): void
+    {
+        // A channel gives its members read-state rows exactly like a direct message does (#960), so
+        // without an explicit filter its unread lands on the envelope in the main navigation. The
+        // inbox under that envelope excludes channels, so the number would be one a member cannot
+        // explain, reach or clear. Their sidebar entry is where it belongs, which is #962.
+        [$reader, $writer] = $this->twoUsers();
+
+        $directThread = MessageThreadFactory::new()->create();
+        $this->messageAt($directThread, $writer, '2026-09-01 10:00:00');
+        $this->metaFor($reader, $directThread, null);
+
+        $bandSpace = BandSpaceFactory::new()->create();
+        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+        $this->messageAt($channel, $writer, '2026-09-02 10:00:00');
+        $this->messageAt($channel, $writer, '2026-09-02 10:05:00');
+        $this->metaFor($reader, $channel, null);
+
+        self::assertSame(1, $this->messageRepository->countUnreadForUser($reader));
+
+        // The per-thread map is keyed by thread and only ever read for threads the inbox already
+        // listed, so it counts the channel and that is harmless. Asserted key by key because the
+        // order of a GROUP BY result is not something to depend on.
+        $byThread = $this->messageRepository->countUnreadByThreadForUser($reader);
+        self::assertCount(2, $byThread);
+        self::assertSame(1, $byThread[(string) $directThread->id]);
+        self::assertSame(2, $byThread[(string) $channel->id]);
     }
 
     public function test_another_persons_unread_never_leaks_into_yours(): void
