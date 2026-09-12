@@ -15,6 +15,15 @@ class Notification
 {
     public int $unreadMessages = 0;
 
+    /**
+     * Unread in each Band Space chat, keyed by band space id, for the sidebar badge (#962). Separate
+     * from unreadMessages on purpose: that one is direct messages, and its inbox cannot show or clear
+     * a band's conversation. A space with nothing unread is absent, so the client reads it with `?? 0`.
+     *
+     * @var array<string, int>
+     */
+    public array $bandSpaceChatUnread = [];
+
     public ?int $pendingGalleries = null;
 
     public ?int $pendingPublications = null;

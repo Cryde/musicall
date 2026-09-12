@@ -17,6 +17,13 @@ export default {
       .catch(handleApiError)
   },
 
+  markAsRead(bandSpaceId) {
+    return axios
+      .post(Routing.generate('api_band_space_chat_read', { bandSpaceId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   postMessage(bandSpaceId, content) {
     return axios
       .post(

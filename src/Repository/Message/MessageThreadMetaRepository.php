@@ -2,6 +2,7 @@
 
 namespace App\Repository\Message;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
@@ -47,6 +48,43 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
         }
 
         return $indexed;
+    }
+
+    /**
+     * Moves this member's read position in the space's channels to now, creating the row if they have
+     * none.
+     *
+     * Two callers, one rule: your read position starts when you join, and starts again when you
+     * rejoin. Opening the tab uses it to clear the badge, and the invitation paths use it because a
+     * rejoining member reuses their old membership row, and its creation date is their *first* join,
+     * which the unread count floors at.
+     *
+     * It has to insert, not just update, and that is the whole reason this is raw SQL: DQL has no
+     * INSERT, and a member whose first stint saw no messages at all never got a row, so an update
+     * would silently do nothing for exactly the person who needs it most. `ON DUPLICATE KEY UPDATE`
+     * against `UNIQUE (thread_id, user_id)` also makes this safe against a send creating the same row
+     * concurrently, which a bare insert outside the thread lock would not be.
+     *
+     * UUID() is MariaDB's version 1 where the application mints version 4. Nothing reads the version,
+     * and the same trade was already made for the channel backfill in #959.
+     */
+    public function markChannelsReadForUser(BandSpace $bandSpace, User $user): void
+    {
+        $this->getEntityManager()->getConnection()->executeStatement(
+            <<<'SQL'
+                INSERT INTO message_thread_meta
+                    (id, thread_id, user_id, creation_datetime, is_deleted, pending_notification_sent, last_read_datetime)
+                SELECT UUID(), thread.id, :user, :now, 0, 0, :now
+                FROM message_thread thread
+                WHERE thread.band_space_id = :band_space
+                ON DUPLICATE KEY UPDATE last_read_datetime = :now
+                SQL,
+            [
+                'user' => (string) $user->id,
+                'band_space' => (string) $bandSpace->id,
+                'now' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            ],
+        );
     }
 
     /**

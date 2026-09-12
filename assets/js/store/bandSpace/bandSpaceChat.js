@@ -6,6 +6,7 @@ import {
   mergeMessages,
   nextOlderPageToLoad
 } from '../../utils/messagePagination.js'
+import { useNotificationStore } from '../notification/notification.js'
 
 /**
  * The band's conversation. Held oldest first, which is reading order, while the API answers newest
@@ -119,6 +120,20 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     }
   }
 
+  /**
+   * Opening the tab is reading it. The badge lives on the notification payload rather than in this
+   * store, because the sidebar shows it from every other module too, so clearing it means refreshing
+   * that payload, the same shape the direct message store uses after marking a thread read.
+   */
+  async function markAsRead(bandSpaceId) {
+    try {
+      await bandSpaceChatApi.markAsRead(bandSpaceId)
+      await useNotificationStore().loadNotifications()
+    } catch (e) {
+      console.error('Failed to mark the chat as read:', e)
+    }
+  }
+
   function clear() {
     messages.value = []
     totalMessages.value = 0
@@ -141,6 +156,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     loadMessages,
     loadOlderMessages,
     sendMessage,
+    markAsRead,
     clear
   }
 })

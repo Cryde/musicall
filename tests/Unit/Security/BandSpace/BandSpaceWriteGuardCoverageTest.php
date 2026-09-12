@@ -42,6 +42,7 @@ class BandSpaceWriteGuardCoverageTest extends TestCase
         'BandSpaceInvitationDeleteProcessor.php' => 'Revoking only ever takes an invitation away, and accepting one '
             . 'is refused for the whole grace period anyway, so blocking it bought nothing and left an admin unable '
             . 'to tidy up the pending invitations of a condemned space.',
+        'ChatReadProcessor.php' => 'Moves the member\'s own read position, not the space\'s content. Reads stay open for the whole grace period, so being unable to clear your own badge would be the odd behaviour.',
         'BandSpaceMemberUpdateRoleProcessor.php' => 'Leaving requires promoting a successor first, so guarding '
             . 'this would trap the sole admin of a condemned space. Letting them leave without a successor is '
             . 'not the alternative: it would strand the space with nobody able to restore it.',
