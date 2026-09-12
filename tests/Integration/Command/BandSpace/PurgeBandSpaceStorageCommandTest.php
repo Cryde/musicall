@@ -7,9 +7,15 @@ namespace App\Tests\Integration\Command\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Repository\BandSpace\BandSpaceFileRepository;
+use App\Repository\BandSpace\BandSpaceRepository;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
+use App\Tests\Factory\Message\MessageFactory;
+use App\Tests\Factory\Message\MessageParticipantFactory;
+use App\Tests\Factory\Message\MessageThreadFactory;
+use App\Tests\Factory\Message\MessageThreadMetaFactory;
+use App\Tests\Factory\User\UserFactory;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -131,6 +137,79 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
 
         $this->assertSame(1, $this->countBandSpaceRows($keptSpaceId));
         $this->assertTrue($this->filesystem()->fileExists($keptPath));
+    }
+
+    public function test_it_deletes_a_band_space_channel_and_everything_in_it(): void
+    {
+        // The one child table the band_space cascade cannot reach on its own. Every foreign key in the
+        // message domain is RESTRICT and message_thread.last_message_id points back into message, so a
+        // channel holding a single message used to make the whole purge fail.
+        $dueSpace = BandSpaceFactory::new()->create([
+            'deletionScheduledDatetime' => new DateTimeImmutable('-1 day'),
+        ]);
+        $member = UserFactory::new()->asBaseUser()->create();
+
+        $channel = MessageThreadFactory::new()->forBandSpace($dueSpace)->create();
+        $message = MessageFactory::new(['thread' => $channel, 'author' => $member])->create();
+        MessageThreadMetaFactory::new(['thread' => $channel, 'user' => $member])->create();
+        // Not what a channel looks like, but what the private channel escape hatch would write, so the
+        // purge is proven to sweep participant rows too.
+        MessageParticipantFactory::new(['thread' => $channel, 'participant' => $member])->create();
+
+        $channel->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($channel);
+
+        // A direct message that has nothing to do with the space, to prove the sweep is scoped.
+        $directThread = MessageThreadFactory::new()->create();
+        $directMessage = MessageFactory::new(['thread' => $directThread, 'author' => $member])->create();
+
+        $dueSpaceId = (string) $dueSpace->id;
+        $channelId = (string) $channel->id;
+        $directThreadId = (string) $directThread->id;
+        $directMessageId = (string) $directMessage->id;
+
+        $this->commandTester()->execute([]);
+        $this->commandTester()->assertCommandIsSuccessful();
+
+        $this->assertSame(0, $this->countBandSpaceRows($dueSpaceId));
+        $this->assertSame(0, $this->countRows('message_thread', 'band_space_id', $dueSpaceId));
+        $this->assertSame(0, $this->countRows('message', 'thread_id', $channelId));
+        $this->assertSame(0, $this->countRows('message_thread_meta', 'thread_id', $channelId));
+        $this->assertSame(0, $this->countRows('message_participant', 'thread_id', $channelId));
+
+        $this->assertSame(1, $this->countRows('message_thread', 'id', $directThreadId));
+        $this->assertSame(1, $this->countRows('message', 'id', $directMessageId));
+    }
+
+    public function test_a_failure_after_the_chat_is_deleted_puts_the_chat_back(): void
+    {
+        // The chat is deleted before the space row, in two statements the database cannot merge, so the
+        // pair is wrapped in a transaction. Without it, a failure here would leave a live space whose
+        // conversation had already been destroyed, and the next run would retry against the wreckage.
+        $dueSpace = BandSpaceFactory::new()->create([
+            'deletionScheduledDatetime' => new DateTimeImmutable('-1 day'),
+        ]);
+        $member = UserFactory::new()->asBaseUser()->create();
+
+        $channel = MessageThreadFactory::new()->forBandSpace($dueSpace)->create();
+        $message = MessageFactory::new(['thread' => $channel, 'author' => $member])->create();
+        $channel->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($channel);
+
+        $dueSpaceId = (string) $dueSpace->id;
+        $channelId = (string) $channel->id;
+
+        // Swapped in before the command resolves it, like the storage failure test above. The space is
+        // handed back unchanged so the purge reaches the point where the chat is already gone.
+        $failingRepository = $this->createStub(BandSpaceRepository::class);
+        $failingRepository->method('findScheduledForDeletion')->willReturn([$dueSpace]);
+        $failingRepository->method('deleteById')->willThrowException(new \RuntimeException('row deletion failed'));
+        self::getContainer()->set(BandSpaceRepository::class, $failingRepository);
+
+        $this->assertSame(1, $this->commandTester()->execute([]));
+
+        $this->assertSame(1, $this->countRows('message_thread', 'band_space_id', $dueSpaceId));
+        $this->assertSame(1, $this->countRows('message', 'thread_id', $channelId));
     }
 
     public function test_dry_run_changes_nothing(): void

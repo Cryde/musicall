@@ -68,6 +68,10 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
             ->join('last_message.author', 'author')
             ->where('message_thread_meta.user = :user')
             ->andWhere('message_thread_meta.isDeleted = 0')
+            // Direct messages only. A channel is kept out today by the inner join on participants,
+            // which it has none of, but #960 gives its members read-state rows and #994 is where
+            // showing them in this inbox becomes a decision rather than an accident.
+            ->andWhere('thread.bandSpace IS NULL')
             ->orderBy('last_message.creationDatetime', 'DESC')
             ->addOrderBy('participant.username', 'ASC')
             ->setParameter('user', $user)

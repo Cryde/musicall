@@ -8,8 +8,10 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Repository\Message\MessageThreadRepository;
 use App\Service\BandSpace\File\BandSpaceFilePurger;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -53,6 +55,8 @@ class PurgeBandSpaceStorageCommand extends Command
         private readonly BandSpaceRepository $bandSpaceRepository,
         private readonly BandSpaceFileRepository $bandSpaceFileRepository,
         private readonly BandSpaceFilePurger $filePurger,
+        private readonly MessageThreadRepository $messageThreadRepository,
+        private readonly EntityManagerInterface $entityManager,
         private readonly FilesystemOperator $musicallFilesystem,
         private readonly LoggerInterface $logger,
         #[Autowire('%band_space.file_retention_days%')]
@@ -197,8 +201,12 @@ class PurgeBandSpaceStorageCommand extends Command
     }
 
     /**
-     * Objects first, then the rows: deleteById() drops every child row by FK cascade, and a cascade at
+     * Objects first, then the rows: deleteById() drops most child rows by FK cascade, and a cascade at
      * database level never reaches VichUploader, so the storage prefix has to go on its own.
+     *
+     * The chat is the exception to that cascade and has to be deleted first, because the message tables
+     * reference each other in a cycle that ON DELETE CASCADE cannot walk. The two row deletions share a
+     * transaction so a failure between them cannot leave a space standing with its chat already gone.
      */
     private function purgeBandSpace(BandSpace $bandSpace): void
     {
@@ -206,6 +214,9 @@ class PurgeBandSpaceStorageCommand extends Command
 
         $this->musicallFilesystem->deleteDirectory(self::STORAGE_PREFIX . '/' . $bandSpaceId);
 
-        $this->bandSpaceRepository->deleteById($bandSpaceId);
+        $this->entityManager->wrapInTransaction(function () use ($bandSpaceId): void {
+            $this->messageThreadRepository->deleteByBandSpace($bandSpaceId);
+            $this->bandSpaceRepository->deleteById($bandSpaceId);
+        });
     }
 }
