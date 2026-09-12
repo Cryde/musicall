@@ -2,10 +2,12 @@
 
 namespace App\Repository\Message;
 
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
@@ -141,6 +143,63 @@ class MessageRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Unread in each Band Space chat the user is an active member of, keyed by band space id.
+     *
+     * This is the sidebar badge. It is a separate number from the envelope on purpose: the envelope
+     * sits above an inbox that lists direct messages only, and a member clicking it would find
+     * nothing to explain a band's conversation (#961).
+     *
+     * The membership join is doing two jobs. It filters to **active** members, which is what keeps a
+     * former member's surviving read-state row out of the count without deleting anything (#948
+     * concern 3). And its creationDatetime is the floor: a member's row is created lazily by the first
+     * message sent after they join, with no read position, so without the floor somebody who joined
+     * this morning would be told the whole history is unread. Flooring at the moment they joined needs
+     * no write at join time, which is what keeps this clear of the duplicate-key hazard
+     * MessageSenderProcedure::findOrCreateMetaFor() warns about.
+     *
+     * A space with nothing unread is absent rather than present with a zero, like the sibling method,
+     * so callers read it with `?? 0`.
+     *
+     * @return array<string, int>
+     */
+    public function countUnreadChannelsForUser(User $user): array
+    {
+        /** @var list<array{band_space_id: string, unread_count: int|string}> $rows */
+        $rows = $this->createQueryBuilder('message')
+            ->select('IDENTITY(thread.bandSpace) AS band_space_id, COUNT(message.id) AS unread_count')
+            ->join('message.thread', 'thread')
+            ->join(
+                MessageThreadMeta::class,
+                'meta',
+                Join::WITH,
+                'meta.thread = message.thread AND meta.user = :user'
+            )
+            ->join(
+                BandSpaceMembership::class,
+                'membership',
+                Join::WITH,
+                'membership.bandSpace = thread.bandSpace AND membership.user = :user AND membership.status = :active'
+            )
+            ->where('thread.bandSpace IS NOT NULL')
+            // Own messages never count: you have read what you wrote.
+            ->andWhere('message.author != :user')
+            ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
+            ->andWhere('message.creationDatetime > membership.creationDatetime')
+            ->groupBy('thread.bandSpace')
+            ->setParameter('user', $user)
+            ->setParameter('active', MembershipStatus::Active)
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['band_space_id']] = (int) $row['unread_count'];
+        }
+
+        return $counts;
     }
 
     /**

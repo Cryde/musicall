@@ -2,10 +2,14 @@
 
 namespace App\Tests\Api\Notification;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\Gallery;
 use App\Entity\Publication;
+use App\Entity\User;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\Feedback\FeedbackFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
@@ -70,8 +74,71 @@ class NotificationGetTest extends ApiTestCase
             '@context' => '/api/contexts/Notification',
             '@id' => '/api/notifications',
             '@type' => 'Notification',
-            'unread_messages' => 3
+            'unread_messages' => 3,
+            'band_space_chat_unread' => []
         ]);
+    }
+
+    public function test_the_chat_unread_is_keyed_by_band_space(): void
+    {
+        // The sidebar badge (#962). Keyed by space so a member of several bands sees each band's own
+        // number rather than a sum, and a space with nothing unread is absent rather than zero.
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $writer = UserFactory::new()->asBaseUser()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+
+        $loud = $this->bandWithChannel($member, $writer, 2);
+        $quiet = $this->bandWithChannel($member, $writer, 0);
+        $chatty = $this->bandWithChannel($member, $writer, 1);
+
+        $this->client->loginUser($member);
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->request('GET', '/api/notifications');
+
+        $this->assertResponseIsSuccessful();
+
+        // One grouped query for every space the member belongs to, not one per space. This endpoint is
+        // on a five minute timer for every signed-in user, so a per-space query here would be the
+        // expensive kind of mistake.
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile, 'The profiler must be enabled to inspect the queries.');
+        $channelQueries = array_filter(
+            $profile->getCollector('db')->getQueries()['default'] ?? [],
+            static fn (array $query): bool => str_contains((string) $query['sql'], 'band_space_membership'),
+        );
+        $this->assertCount(1, $channelQueries);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Notification',
+            '@id' => '/api/notifications',
+            '@type' => 'Notification',
+            'unread_messages' => 0,
+            'band_space_chat_unread' => [(string) $loud->id => 2, (string) $chatty->id => 1],
+        ]);
+        $this->assertNotNull($quiet->id);
+    }
+
+    private function bandWithChannel(User $member, User $writer, int $unreadMessages): BandSpace
+    {
+        $space = BandSpaceFactory::new()->create();
+        foreach ([$member, $writer] as $user) {
+            BandSpaceMembershipFactory::new([
+                'bandSpace' => $space,
+                'user' => $user,
+                'creationDatetime' => new \DateTime('2026-09-01 09:00:00'),
+            ])->create();
+        }
+
+        $channel = MessageThreadFactory::new()->forBandSpace($space)->create();
+        for ($index = 1; $index <= $unreadMessages; ++$index) {
+            MessageFactory::new([
+                'thread' => $channel,
+                'author' => $writer,
+                'creationDatetime' => new \DateTime(sprintf('2026-09-02 10:%02d:00', $index)),
+            ])->create();
+        }
+        MessageThreadMetaFactory::new(['thread' => $channel, 'user' => $member, 'lastReadDatetime' => null])->create();
+
+        return $space;
     }
 
     public function test_get_notification_with_role_admin(): void
@@ -101,6 +168,7 @@ class NotificationGetTest extends ApiTestCase
             'pending_galleries'    => 1,
             'pending_publications' => 1,
             'new_feedbacks'        => 1,
+            'band_space_chat_unread' => [],
         ]);
     }
 
@@ -123,6 +191,7 @@ class NotificationGetTest extends ApiTestCase
             'pending_galleries'    => 0,
             'pending_publications' => 0,
             'new_feedbacks'        => 0,
+            'band_space_chat_unread' => [],
         ]);
     }
 }

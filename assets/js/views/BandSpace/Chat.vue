@@ -52,8 +52,13 @@ const messageList = useTemplateRef('messageList')
 // Synchronously, before the first render, so another band's conversation never flashes here.
 chatStore.clear()
 
-function load() {
-  chatStore.loadMessages(bandSpaceId)
+async function load() {
+  await chatStore.loadMessages(bandSpaceId)
+  // Arriving on the tab is reading it, like the direct message inbox does on selecting a thread.
+  // After the load rather than before, so a failed load does not claim the member read anything.
+  if (!chatStore.loadError) {
+    await chatStore.markAsRead(bandSpaceId)
+  }
 }
 
 onMounted(load)

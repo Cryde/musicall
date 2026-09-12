@@ -15,6 +15,7 @@ use App\Enum\BandSpace\Role;
 use App\Event\BandSpaceInvitationRespondedEvent;
 use App\Repository\BandSpace\BandSpaceInvitationRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
+use App\Repository\Message\MessageThreadMetaRepository;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,7 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private BandSpaceInvitationRepository $bandSpaceInvitationRepository,
         private BandSpaceMembershipRepository $bandSpaceMembershipRepository,
+        private MessageThreadMetaRepository $messageThreadMetaRepository,
         private BandSpaceActivityRecorder $bandSpaceActivityRecorder,
         private Security $security,
         private EventDispatcherInterface $eventDispatcher,
@@ -69,7 +71,9 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
 
         $existingMembership = $this->bandSpaceMembershipRepository->findMembershipIncludingInactive($invitation->bandSpace, $user);
 
-        if ($existingMembership instanceof \App\Entity\BandSpace\BandSpaceMembership) {
+        $isRejoining = $existingMembership instanceof \App\Entity\BandSpace\BandSpaceMembership;
+
+        if ($isRejoining) {
             $existingMembership->status = MembershipStatus::Active;
             $existingMembership->leftDatetime = null;
             $existingMembership->role = Role::User;
@@ -88,6 +92,14 @@ readonly class BandSpaceInvitationAcceptProcessor implements ProcessorInterface
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException) {
             throw new ConflictHttpException('Vous êtes déjà membre de ce Band Space');
+        }
+
+        // After the flush, like the event dispatch below: rejoining reuses the same membership row and
+        // its old read position, which would present everything said while they were gone as unread
+        // (#962). This commits on its own, so doing it before would leave the reset standing even if
+        // the reactivation never persisted.
+        if ($isRejoining) {
+            $this->messageThreadMetaRepository->markChannelsReadForUser($invitation->bandSpace, $user);
         }
 
         $this->bandSpaceActivityRecorder->record(

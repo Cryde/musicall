@@ -39,6 +39,7 @@ readonly class NotificationProvider implements ProviderInterface
         $unreadMessagesCount = $this->messageRepository->countUnreadForUser($user);
         $notification = new Notification();
         $notification->unreadMessages = $unreadMessagesCount;
+        $notification->bandSpaceChatUnread = $this->messageRepository->countUnreadChannelsForUser($user);
         if ($this->security->isGranted('ROLE_ADMIN')) {
             $notification->pendingGalleries = $this->galleryRepository->count(['status' => Gallery::STATUS_PENDING]);
             $notification->pendingPublications = $this->publicationRepository->count(['status' => Publication::STATUS_PENDING]);

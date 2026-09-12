@@ -93,6 +93,7 @@ import OverlayBadge from 'primevue/overlaybadge'
 import Popover from 'primevue/popover'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useNotificationStore } from '../../store/notification/notification.js'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
 import NotificationItem from './NotificationItem.vue'
 
@@ -104,6 +105,7 @@ const POLL_INTERVAL_MS = 5 * 60_000
 const emit = defineEmits(['navigate'])
 
 const store = useUserNotificationStore()
+const notificationStore = useNotificationStore()
 
 const popover = ref(null)
 const isPopoverOpen = ref(false)
@@ -141,6 +143,11 @@ let intervalId = null
 
 function refreshCount() {
   store.loadCount()
+  // The other header counters ride this timer rather than running one of their own: the direct
+  // message envelope, and the per Band Space chat badge the sidebar reads (#962). Both arrive over
+  // Mercure for direct messages, but a Band Space channel publishes nothing until #963, so without
+  // this the chat badge would only ever be as fresh as the last page load.
+  notificationStore.loadNotifications()
   // The self-heal. The store connects as soon as the profile lands, but if that fetch failed there is
   // nothing else that would ever try again, and the poll would mask it perfectly: a live-looking bell
   // that is only ever five minutes fresh. connect() is idempotent, so this costs nothing when the
