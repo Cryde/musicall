@@ -44,11 +44,10 @@ axios.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Already renewed once for this request, so whatever is being refused is not a stale token.
-    // Notably it need not be an authentication problem at all: `AccessDeniedException` is mapped to
-    // 401 in api_platform.yaml, and parts of the message domain throw it for somebody who is signed
-    // in but not allowed, so ending the session here would log a member out over a stale bookmark.
-    // A session that really is dead fails at the renewal above, which is where it is handled.
+    // Already renewed once for this request, so the token is demonstrably not what is being refused:
+    // the renewal above succeeded, or we would not be here. Ending the session on a refusal that is
+    // not about the session would log somebody out over whatever the server actually objected to,
+    // and a session that really is over fails at the renewal, which is handled below.
     if (config.__sessionRetried) {
       return Promise.reject(error)
     }
