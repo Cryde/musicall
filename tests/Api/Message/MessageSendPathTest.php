@@ -123,6 +123,92 @@ class MessageSendPathTest extends ApiTestCase
         $this->assertEmailCount(1, message: 'A missing read-state row must not swallow the notification');
     }
 
+    public function test_the_participants_are_loaded_with_the_thread_rather_than_one_row_at_a_time(): void
+    {
+        // #986. The thread arrives as a plain find(), its participants as a lazy collection and the
+        // user behind each one as a proxy, so NotDeletedThreadRecipientValidator reading isDeleted()
+        // on every participant cost one SELECT each. Four participants, so a per-row load shows up as
+        // three, the sender being already managed.
+        [$sender, $thread] = $this->fourParticipantThread();
+
+        $this->coldRequestAs($sender);
+        $this->postMessage($thread, 'hello everyone');
+        $this->assertResponseIsSuccessful();
+
+        // One, and it is the lock: MessageSenderProcedure::lockUsers() has to go to the database by
+        // definition. The load-side reads are all folded into the thread query, so this number does
+        // not move when the thread gains a participant.
+        $this->assertCount(
+            1,
+            $this->queriesMatching('FROM fos_user'),
+            'The participants must be loaded with the thread, not one SELECT per participant',
+        );
+    }
+
+    public function test_the_eager_profile_associations_are_loaded_with_the_thread_too(): void
+    {
+        // The trap that made the first attempt at #986 slower than what it replaced, measured: 22
+        // queries became 28. User has three inverse OneToOne associations it cannot lazy load (#730).
+        // Doctrine appends them as LEFT JOINs when it initialises a proxy, so the per-participant load
+        // above got them for free, but it cannot do that inside a join fetch and issues one query per
+        // association per user instead, which is three times worse. They have to be joined explicitly.
+        [$sender, $thread] = $this->fourParticipantThread();
+
+        $this->coldRequestAs($sender);
+        $this->postMessage($thread, 'hello everyone');
+        $this->assertResponseIsSuccessful();
+
+        foreach (['user_musician_profile', 'user_notification_preference', 'user_teacher_profile'] as $table) {
+            $this->assertSame(
+                [],
+                $this->queriesMatching('FROM ' . $table),
+                sprintf('%s must come from the thread query, not one query per user', $table),
+            );
+        }
+    }
+
+    /**
+     * A thread of four, which is where a per-participant load stops hiding behind a pair.
+     *
+     * @return array{0: User, 1: MessageThread}
+     */
+    private function fourParticipantThread(): array
+    {
+        $sender = UserFactory::new()->asBaseUser()->create(['username' => 'sender', 'email' => 'sender@test.com']);
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $sender])->create();
+        MessageThreadMetaFactory::new(['thread' => $thread, 'user' => $sender, 'lastReadDatetime' => null])->create();
+
+        foreach (range(1, 3) as $index) {
+            $other = UserFactory::new()->asBaseUser()->create([
+                'username' => 'other_' . $index,
+                'email' => 'other' . $index . '@test.com',
+            ]);
+            MessageParticipantFactory::new(['thread' => $thread, 'participant' => $other])->create();
+            MessageThreadMetaFactory::new(['thread' => $thread, 'user' => $other, 'lastReadDatetime' => null])->create();
+        }
+
+        return [$sender, $thread];
+    }
+
+    /**
+     * Logs in and starts profiling with an empty identity map, which is the whole point of a query
+     * count here: the factories above leave every entity they made managed, so a warm map answers the
+     * participant loads from memory and hides the very thing under test (13 queries rather than 22,
+     * measured). The sender has to be re-read after the clear, because loginUser() with a detached
+     * user makes the flush treat it as new and the request 500s.
+     */
+    private function coldRequestAs(User $sender): void
+    {
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $senderId = (string) $sender->id;
+        $entityManager->clear();
+
+        $this->client->loginUser($entityManager->find(User::class, $senderId));
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+    }
+
     /**
      * @return array{0: User, 1: User}
      */

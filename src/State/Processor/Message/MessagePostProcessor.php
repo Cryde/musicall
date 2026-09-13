@@ -43,6 +43,8 @@ class MessagePostProcessor implements ProcessorInterface
         $user = $this->security->getUser();
         $this->messageSendLimiter->create($user->getUserIdentifier())->consume()->ensureAccepted();
 
+        // find(), not the joined lookup: MessageThreadItemProvider has already loaded this very thread
+        // to denormalize the IRI, so this is an identity map hit and costs no query at all (#986).
         $thread = $this->messageThreadRepository->find($data->thread->id);
         if (!$thread instanceof MessageThread) {
             throw new NotFoundHttpException('Thread not found.');

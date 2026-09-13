@@ -46,6 +46,42 @@ class MessageThreadRepository extends ServiceEntityRepository
     }
 
     /**
+     * One thread with its participants and the users behind them, in a single query.
+     *
+     * The participants are a collection and the user behind each one is a proxy, so reading anything
+     * but an id off one costs a `SELECT FROM fos_user`, and `User` drags three `LEFT JOIN`s of its own
+     * with it (#730). `NotDeletedThreadRecipientValidator` reads `isDeleted()` on every participant,
+     * so a plain `find()` turned one send into one query per participant (#986).
+     *
+     * **`leftJoin`, not `innerJoin`**: a Band Space channel has no participant rows at all, its
+     * members being derived from BandSpaceMembership (#959), so an inner join would report a channel
+     * as not existing. No caller can tell today, since both paths end at the same 404 in
+     * MessageThreadItemProvider, but this answers "which thread is this" and must not quietly answer
+     * "no such thread" for the one kind of thread that has no participants by design.
+     */
+    public function findOneByIdWithParticipants(string $id): ?MessageThread
+    {
+        return $this->createQueryBuilder('thread')
+            ->leftJoin('thread.messageParticipants', 'participant')
+            ->addSelect('participant')
+            ->leftJoin('participant.participant', 'participant_user')
+            ->addSelect('participant_user')
+            // The three that User cannot lazy load. Joining them here is not premature: without them
+            // Doctrine issues one query per association per user, which is strictly worse than the
+            // per-participant load this method exists to remove. Delete these three when #730 does.
+            ->leftJoin('participant_user.musicianProfile', 'musician_profile')
+            ->addSelect('musician_profile')
+            ->leftJoin('participant_user.notificationPreference', 'notification_preference')
+            ->addSelect('notification_preference')
+            ->leftJoin('participant_user.teacherProfile', 'teacher_profile')
+            ->addSelect('teacher_profile')
+            ->where('thread.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * The space's chat. Looked up by scope, never through findByParticipants(): that resolves a thread
      * by participant set equality, which is right for a direct message and meaningless for a channel,
      * whose members are derived and who therefore has no participant rows at all.
