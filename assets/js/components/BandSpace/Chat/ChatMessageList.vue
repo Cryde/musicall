@@ -48,8 +48,8 @@
           class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
           :class="
             isMine(message)
-              ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline'
-              : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline'
+              ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
+              : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'
           "
           v-html="autoLink(message.content)"
         />

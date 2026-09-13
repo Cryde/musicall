@@ -5,6 +5,8 @@ namespace App\Service\Builder\BandSpace;
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\Message\Message;
 use App\Entity\User;
+use App\Repository\Message\MessageMentionRepository;
+use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -13,6 +15,8 @@ readonly class ChatMessageBuilder
     public function __construct(
         private HtmlSanitizerInterface $appOnlybrSanitizer,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
+        private MessageMentionRepository $messageMentionRepository,
+        private ChatMentionRenderer $chatMentionRenderer,
     ) {
     }
 
@@ -29,6 +33,13 @@ readonly class ChatMessageBuilder
      */
     public function buildFromProjection(array $rows, string $bandSpaceId): array
     {
+        // One query for the whole page, never one per message. The lookup lives here rather than in
+        // the caller so that no entry point can forget it and quietly render every name as
+        // `@inconnu` (#964).
+        $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds(
+            array_map(static fn (array $row): string => (string) $row['id'], $rows),
+        );
+
         return array_map(
             fn (array $row): ChatMessageResource => $this->build(
                 (string) $row['id'],
@@ -39,6 +50,7 @@ readonly class ChatMessageBuilder
                 $this->profilePictureUrlBuilder->buildFromImageName($row['authorProfilePictureName']),
                 (string) $row['content'],
                 $row['creationDatetime'],
+                $mentionsByMessage[(string) $row['id']] ?? [],
             ),
             $rows,
         );
@@ -49,8 +61,10 @@ readonly class ChatMessageBuilder
      */
     public function buildItem(Message $entity, string $bandSpaceId): ChatMessageResource
     {
+        $messageId = (string) $entity->id;
+
         return $this->build(
-            (string) $entity->id,
+            $messageId,
             $bandSpaceId,
             (string) $entity->author->id,
             $entity->author->username,
@@ -58,9 +72,13 @@ readonly class ChatMessageBuilder
             $this->profilePictureUrlBuilder->build($entity->author),
             $entity->content,
             $entity->creationDatetime,
+            $this->messageMentionRepository->findUsernamesByMessageIds([$messageId])[$messageId] ?? [],
         );
     }
 
+    /**
+     * @param array<string, string> $usernamesById user id => username, for the mentions this message carries
+     */
     private function build(
         string $id,
         string $bandSpaceId,
@@ -70,6 +88,7 @@ readonly class ChatMessageBuilder
         ?string $authorProfilePictureUrl,
         string $content,
         \DateTimeInterface $creationDatetime,
+        array $usernamesById,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -79,7 +98,13 @@ readonly class ChatMessageBuilder
         $dto->authorProfilePictureUrl = $authorProfilePictureUrl;
         // Sanitized at read time, exactly like the direct message thread: what the sender typed stays
         // stored, so changing how a message renders stays possible (#956 was closed on that point).
-        $dto->content = $this->appOnlybrSanitizer->sanitize(nl2br($content));
+        // Mentions go in after the sanitizer, never before: by then everything the sender typed is
+        // escaped, so the span the renderer adds is the only markup in there and the username inside
+        // it is the only thing that still needs escaping. See ChatMentionRenderer.
+        $dto->content = $this->chatMentionRenderer->render(
+            $this->appOnlybrSanitizer->sanitize(nl2br($content)),
+            $usernamesById,
+        );
         $dto->creationDatetime = $creationDatetime;
 
         return $dto;

@@ -13,6 +13,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
+use App\Tests\Factory\Message\MessageMentionFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -155,6 +156,9 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         // Not what a channel looks like, but what the private channel escape hatch would write, so the
         // purge is proven to sweep participant rows too.
         MessageParticipantFactory::new(['thread' => $channel, 'participant' => $member])->create();
+        // Same RESTRICT trap one level deeper (#964): a mention points at the message, so the whole
+        // purge fails with error 1451 unless these go before it.
+        MessageMentionFactory::new(['message' => $message, 'mentionedUser' => $member])->create();
 
         $channel->lastMessage = $message;
         \Zenstruck\Foundry\Persistence\save($channel);
@@ -165,6 +169,7 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
 
         $dueSpaceId = (string) $dueSpace->id;
         $channelId = (string) $channel->id;
+        $messageId = (string) $message->id;
         $directThreadId = (string) $directThread->id;
         $directMessageId = (string) $directMessage->id;
 
@@ -176,6 +181,7 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         $this->assertSame(0, $this->countRows('message', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_thread_meta', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_participant', 'thread_id', $channelId));
+        $this->assertSame(0, $this->countRows('message_mention', 'message_id', $messageId));
 
         $this->assertSame(1, $this->countRows('message_thread', 'id', $directThreadId));
         $this->assertSame(1, $this->countRows('message', 'id', $directMessageId));
