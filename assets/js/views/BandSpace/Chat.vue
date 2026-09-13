@@ -27,7 +27,11 @@
 
     <ChatMessageList v-else ref="messageList" :band-space-id="bandSpaceId" />
 
-    <ChatComposer :band-space-id="bandSpaceId" @sent="messageList?.scrollToBottom()" />
+    <ChatComposer
+      :band-space-id="bandSpaceId"
+      :members="settingsStore.members"
+      @sent="messageList?.scrollToBottom()"
+    />
   </div>
 </template>
 
@@ -40,6 +44,7 @@ import { useRoute } from 'vue-router'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
 import { useBandSpaceChatStore } from '../../store/bandSpace/bandSpaceChat.js'
+import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 
 const route = useRoute()
 // Read once: AppBandLayout keys <router-view> on the space id, so this view is remounted rather than
@@ -47,12 +52,19 @@ const route = useRoute()
 const bandSpaceId = route.params.id
 
 const chatStore = useBandSpaceChatStore()
+// The roster the `@` dropdown filters. Reused from the settings store, which already carries it with a
+// staleness token, rather than kept a third time: bandSpaceTasks holds the second copy, and a third
+// would be the point to extract a shared one instead.
+const settingsStore = useBandSpaceSettingsStore()
 const messageList = useTemplateRef('messageList')
 
 // Synchronously, before the first render, so another band's conversation never flashes here.
 chatStore.clear()
 
 async function load() {
+  // Not awaited: the conversation is what the member came for, and a dropdown that is not usable for
+  // another moment costs them nothing.
+  settingsStore.loadMembers(bandSpaceId).catch(() => {})
   await chatStore.loadMessages(bandSpaceId)
   // Arriving on the tab is reading it, like the direct message inbox does on selecting a thread.
   // After the load rather than before, so a failed load does not claim the member read anything.

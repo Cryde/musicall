@@ -13,6 +13,7 @@ enum NotificationType: string
     case PublicationComment = 'publication_comment';
     case CommentReply = 'comment_reply';
     case TaskMention = 'task_mention';
+    case BandSpaceChatMention = 'band_space_chat_mention';
     case TaskComment = 'task_comment';
     case BandSpaceTaskAssignment = 'band_space_task_assignment';
     case PublicationApproved = 'publication_approved';

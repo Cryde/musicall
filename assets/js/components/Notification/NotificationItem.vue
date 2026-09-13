@@ -237,6 +237,17 @@ const TYPE_CONFIG = {
     actions: null,
     target: { name: BAND_SPACE_ROUTES.TASKS, params: { id: payload.band_space_id } }
   }),
+  // The only thing in a Band Space chat that writes a notification: an ordinary message moves an
+  // unread badge and nothing else (#948, concern 10). Amber and `pi pi-at` to match task_mention,
+  // because being named is the same event wherever it happens.
+  band_space_chat_mention: (payload) => ({
+    icon: 'pi pi-at',
+    avatarClass: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300',
+    title: payload.actor_username,
+    preview: `vous a mentionné dans la discussion de « ${payload.band_space_name} »`,
+    actions: null,
+    target: { name: BAND_SPACE_ROUTES.CHAT, params: { id: payload.band_space_id } }
+  }),
   task_comment: (payload) => ({
     icon: 'pi pi-comment',
     avatarClass: 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300',
