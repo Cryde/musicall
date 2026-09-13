@@ -18,6 +18,19 @@
         {{ oauthErrorMessage }}
       </Message>
 
+      <!-- Why they are looking at this form rather than the page they were on. The store has set
+           this since long before #1008 and nothing ever rendered it, so an expired session sent
+           people here with no explanation at all. -->
+      <Message
+        v-if="userSecurity.authError"
+        severity="warn"
+        :closable="false"
+        class="w-full"
+        role="status"
+      >
+        {{ userSecurity.authError }}
+      </Message>
+
       <!-- Social Login Buttons -->
       <div class="flex flex-col gap-3 w-full">
         <a

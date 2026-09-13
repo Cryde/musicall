@@ -1,20 +1,27 @@
 import { identifyUmamiSession } from '@jaseeey/vue-umami-plugin'
-import * as Cookies from 'es-cookie'
-import { jwtDecode } from 'jwt-decode'
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import securityApi from '../../api/user/security.js'
 import router from '../../router/index.js'
 import { isSafeReturnUrl } from '../../utils/returnUrl.js'
 import { grantsAdmin, grantsTester } from '../../utils/roles.js'
+import {
+  needsProactiveRefresh,
+  readJwtPayload,
+  refreshSession,
+  secondsUntilExpiry
+} from '../../utils/sessionRefresh.js'
 
-// Refresh token promise cache to prevent race conditions
-let refreshPromise = null
-
-// Proactive refresh interval (check every 5 minutes)
-const REFRESH_CHECK_INTERVAL = 5 * 60 * 1000
-// Refresh buffer - refresh when token expires in less than this
-const REFRESH_BUFFER_SECONDS = 300 // 5 minutes
+/**
+ * How often the proactive timer looks at the token.
+ *
+ * **Strictly shorter than REFRESH_BUFFER_SECONDS, and that is the whole point.** Both used to be 300,
+ * and since the timer starts at login and the token expires 3600 seconds later, the checks landed on
+ * remaining values of 600, then exactly 300, then 0. The old test was `< 300`, so the buffer never
+ * fired once: the only branch that ever recovered was expiry itself, which is after every other
+ * request has already been refused (#1008).
+ */
+const REFRESH_CHECK_INTERVAL = 60 * 1000
 
 export const useUserSecurityStore = defineStore('userSecurity', () => {
   const loginErrors = ref([])
@@ -57,20 +64,22 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
   }
 
   /**
-   * Refresh token with promise caching to prevent race conditions
-   * Multiple simultaneous calls will share the same promise
+   * Shared with the 401 interceptor rather than kept here, so the two cannot renew at the same time
+   * and have the second consume a token the first already spent.
    */
-  async function refreshToken() {
-    if (!refreshPromise) {
-      refreshPromise = securityApi.refreshToken().finally(() => {
-        refreshPromise = null
-      })
-    }
-    return refreshPromise
+  function refreshToken() {
+    return refreshSession()
   }
 
   /**
-   * Check authentication info with retry limit to prevent infinite recursion
+   * Works out who is signed in, renewing the token when it is missing or nearly out.
+   *
+   * A missing token is the ordinary state of a tab that has been open an hour, not an error: the
+   * browser deletes the cookie the moment the token expires. `was_logged_in` is what says a renewal
+   * is worth attempting, and it is cleared only when one genuinely fails, so somebody still holding a
+   * valid refresh token is never asked for their password again (#1008).
+   *
+   * The retry count is what stops a refresh that keeps returning an unusable token from recursing.
    */
   async function checkAuthInfo(retryCount = 0) {
     const MAX_RETRIES = 2
@@ -78,13 +87,17 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
     isAuthenticatedLoading.value = true
     authError.value = null
 
-    const jwt = Cookies.get('jwt_hp')
+    const payload = readJwtPayload()
 
-    if (!jwt) {
-      // No JWT cookie - try to refresh if user was previously logged in
-      if (localStorage.getItem('was_logged_in') === 'true' && retryCount < MAX_RETRIES) {
+    if (payload === null || needsRenewing(payload)) {
+      // A token that is merely old is renewed whatever localStorage says; only the case where there
+      // is nothing at all to read needs telling whether this browser was ever signed in.
+      const worthTrying = payload !== null || localStorage.getItem('was_logged_in') === 'true'
+
+      if (worthTrying && retryCount < MAX_RETRIES) {
         try {
           await refreshToken()
+
           return checkAuthInfo(retryCount + 1)
         } catch (e) {
           console.warn('Token refresh failed:', e.message)
@@ -93,40 +106,21 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
       }
 
       setUnauthenticated()
+
       return false
     }
 
-    try {
-      const decodedJwt = jwtDecode(jwt)
+    user.value = { roles: payload.roles, username: payload.username }
+    isAuthenticated.value = true
+    isAuthenticatedLoading.value = false
 
-      if (isTokenExpired(decodedJwt)) {
-        if (retryCount < MAX_RETRIES) {
-          await refreshToken()
-          return checkAuthInfo(retryCount + 1)
-        }
-        handleAuthFailure('Impossible de rafraîchir votre session.')
-        setUnauthenticated()
-        return false
-      }
+    // Fetch full user profile for additional data like profile picture
+    fetchUserProfile()
 
-      // Token is valid
-      user.value = { roles: decodedJwt.roles, username: decodedJwt.username }
-      isAuthenticated.value = true
-      isAuthenticatedLoading.value = false
+    // Start proactive refresh if not already running
+    startProactiveRefresh()
 
-      // Fetch full user profile for additional data like profile picture
-      fetchUserProfile()
-
-      // Start proactive refresh if not already running
-      startProactiveRefresh()
-
-      return true
-    } catch (e) {
-      console.error('Failed to decode JWT:', e)
-      handleAuthFailure("Erreur d'authentification.")
-      setUnauthenticated()
-      return false
-    }
+    return true
   }
 
   function setUnauthenticated() {
@@ -140,6 +134,19 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
   function handleAuthFailure(message) {
     authError.value = message
     localStorage.removeItem('was_logged_in')
+  }
+
+  /**
+   * The session is over and cannot be renewed, which after #1008 means the refresh token itself was
+   * refused rather than merely that the JWT aged out.
+   *
+   * Marking the store unauthenticated is not cosmetic: `app_login` is `isGuestOnly`, so a redirect
+   * sent while this still reads as signed in is bounced straight back to the home page by the router
+   * guard and the member never reaches the login form.
+   */
+  function expireSession() {
+    handleAuthFailure('Votre session a expiré. Veuillez vous reconnecter.')
+    setUnauthenticated()
   }
 
   async function fetchUserProfile() {
@@ -176,26 +183,23 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
    */
   const isTester = computed(() => grantsTester(user.value?.roles))
 
-  function isTokenExpired(decodedJwt) {
-    // Refresh if token expires within buffer time
-    const currentTime = Math.floor(Date.now() / 1000)
-    return decodedJwt.exp - REFRESH_BUFFER_SECONDS <= currentTime
+  /**
+   * Whether this token is too near its end to start a page on. Not expiry alone: one with two
+   * minutes left is renewed here rather than left to be refused halfway through a navigation.
+   */
+  function needsRenewing(payload) {
+    const remaining = secondsUntilExpiry(payload, nowInSeconds())
+
+    return remaining === 0 || needsProactiveRefresh(remaining)
   }
 
-  /**
-   * Get remaining time until token expiration in seconds
-   */
-  function getTokenRemainingTime() {
-    const jwt = Cookies.get('jwt_hp')
-    if (!jwt) return 0
+  function nowInSeconds() {
+    return Math.floor(Date.now() / 1000)
+  }
 
-    try {
-      const decodedJwt = jwtDecode(jwt)
-      const currentTime = Math.floor(Date.now() / 1000)
-      return Math.max(0, decodedJwt.exp - currentTime)
-    } catch {
-      return 0
-    }
+  /** Seconds left on the token the browser is holding, 0 when there is none or it cannot be read. */
+  function getTokenRemainingTime() {
+    return secondsUntilExpiry(readJwtPayload(), nowInSeconds())
   }
 
   /**
@@ -212,17 +216,20 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
 
       const remainingTime = getTokenRemainingTime()
 
-      // Refresh if less than buffer time remaining
-      if (remainingTime > 0 && remainingTime < REFRESH_BUFFER_SECONDS) {
+      if (needsProactiveRefresh(remainingTime)) {
         try {
           await refreshToken()
           // Re-check auth to update user data
           await checkAuthInfo()
         } catch (e) {
+          // Nothing is cleared here: the token is still valid for a few minutes, and if it does run
+          // out the 401 path will renew it. Giving up on the session over one failed attempt is the
+          // bug this whole change exists to remove.
           console.warn('Proactive token refresh failed:', e.message)
         }
       } else if (remainingTime === 0) {
-        // Token already expired
+        // Already expired, so there is nothing to renew proactively; checkAuthInfo goes through the
+        // refresh token instead.
         await checkAuthInfo()
       }
     }, REFRESH_CHECK_INTERVAL)
@@ -268,6 +275,7 @@ export const useUserSecurityStore = defineStore('userSecurity', () => {
   return {
     login,
     checkAuthInfo,
+    expireSession,
     logout,
     refreshUserProfile,
     clearAuthError,
