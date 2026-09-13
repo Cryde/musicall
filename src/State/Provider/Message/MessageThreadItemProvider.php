@@ -30,7 +30,10 @@ readonly class MessageThreadItemProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): MessageThreadResource
     {
-        $entity = $this->messageThreadRepository->find($uriVariables['id']);
+        // With participants and their users, because both this provider's own participation check and
+        // the builder below walk that collection, and on the POST path the DTO it builds is what
+        // NotDeletedThreadRecipientValidator reads (#986).
+        $entity = $this->messageThreadRepository->findOneByIdWithParticipants((string) $uriVariables['id']);
         if (!$entity instanceof MessageThread) {
             throw new NotFoundHttpException('Thread not found.');
         }
