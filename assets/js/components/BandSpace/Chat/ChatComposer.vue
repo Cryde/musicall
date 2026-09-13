@@ -73,7 +73,7 @@ const props = defineProps({
 const emit = defineEmits(['sent'])
 
 const chatStore = useBandSpaceChatStore()
-const { getSuggestions, insertMention } = useMentionParser()
+const { findMentionQuery, getSuggestions, insertMention } = useMentionParser()
 const content = ref('')
 const sendError = ref('')
 const messageInput = ref(null)
@@ -95,29 +95,23 @@ const EVERYONE_MEMBER = { user_id: EVERYONE_ID, username: 'tous' }
 // First, so it is what an arrow-less Enter picks when the query matches it.
 const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
 
-/**
- * Mirrors TaskCommentForm's trigger. The `'['` test is the non-obvious one: without it the caret
- * sitting just after an inserted `@[uuid]` would reopen the dropdown on the uuid itself.
- */
 function handleInput() {
   const textarea = messageInput.value?.$el
   if (!textarea) {
     return
   }
 
-  const textBefore = content.value.slice(0, textarea.selectionStart)
-  const atIndex = textBefore.lastIndexOf('@')
-  const trigger = textBefore.slice(atIndex)
-
-  if (atIndex !== -1 && !trigger.includes(' ') && !trigger.includes('[')) {
-    suggestions.value = getSuggestions(trigger.slice(1), suggestionSource.value)
-    showSuggestions.value = suggestions.value.length > 0
-    selectedIndex.value = 0
+  const query = findMentionQuery(content.value.slice(0, textarea.selectionStart))
+  if (query === null) {
+    showSuggestions.value = false
 
     return
   }
 
-  showSuggestions.value = false
+  // An empty query is a bare `@`, which lists everybody: that is how `@tous` is discovered at all.
+  suggestions.value = getSuggestions(query, suggestionSource.value)
+  showSuggestions.value = suggestions.value.length > 0
+  selectedIndex.value = 0
 }
 
 /**

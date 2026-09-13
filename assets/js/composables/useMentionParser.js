@@ -26,8 +26,43 @@ export function useMentionParser() {
     return parts
   }
 
+  /**
+   * The mention being typed just before the cursor, or null when there is not one.
+   *
+   * Shared by both composers rather than copied into each, because it is one rule about one gesture:
+   * a rule that lives in two places is a rule that gets fixed in one of them.
+   *
+   * An `@` only opens a mention at the start of the text or after whitespace. Without that, every
+   * email address anybody typed would open the roster, which matters now that a bare `@` is enough to
+   * open it at all. The two closing rules are the pre-existing ones: a space ends the mention, and a
+   * `[` means the caret is sitting inside an `@[uuid]` that has already been inserted.
+   *
+   * @param {string} textBeforeCursor
+   * @returns {string|null} the query typed after the `@`, possibly empty
+   */
+  function findMentionQuery(textBeforeCursor) {
+    const atIndex = textBeforeCursor.lastIndexOf('@')
+    if (atIndex === -1) {
+      return null
+    }
+
+    const isAtWordStart = atIndex === 0 || /\s/.test(textBeforeCursor[atIndex - 1])
+    const trigger = textBeforeCursor.slice(atIndex)
+    if (!isAtWordStart || trigger.includes(' ') || trigger.includes('[')) {
+      return null
+    }
+
+    return trigger.slice(1)
+  }
+
+  /**
+   * A plain filter: an empty query matches everybody, so a bare `@` opens the whole roster the way
+   * every other chat does. Whether that is wanted is the caller's business, not this function's, and
+   * returning nothing for an empty query used to hide `@tous` behind guessing that you had to type
+   * `@t` to find it.
+   */
   function getSuggestions(query, members) {
-    if (!query) return []
+    if (!query) return members
     const lower = query.toLowerCase()
     return members.filter((m) => m.username.toLowerCase().startsWith(lower))
   }
@@ -45,5 +80,5 @@ export function useMentionParser() {
     }
   }
 
-  return { parseToParts, getSuggestions, insertMention }
+  return { parseToParts, findMentionQuery, getSuggestions, insertMention }
 }

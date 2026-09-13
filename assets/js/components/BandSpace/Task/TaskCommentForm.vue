@@ -59,7 +59,7 @@ const props = defineProps({
 
 const emit = defineEmits(['submit'])
 
-const { getSuggestions, insertMention } = useMentionParser()
+const { findMentionQuery, getSuggestions, insertMention } = useMentionParser()
 
 const content = ref('')
 const textareaRef = ref(null)
@@ -71,22 +71,18 @@ function handleInput() {
   const textarea = textareaRef.value
   if (!textarea) return
 
-  const cursorPos = textarea.selectionStart
-  const textBefore = content.value.slice(0, cursorPos)
-  const atIndex = textBefore.lastIndexOf('@')
-
-  if (
-    atIndex !== -1 &&
-    !textBefore.slice(atIndex).includes(' ') &&
-    !textBefore.slice(atIndex).includes('[')
-  ) {
-    const query = textBefore.slice(atIndex + 1)
-    suggestions.value = getSuggestions(query, props.members)
-    showSuggestions.value = suggestions.value.length > 0
-    selectedIndex.value = 0
-  } else {
+  // The trigger rule lives in the composable now, so the chat composer and this one cannot drift.
+  // A bare `@` lists everybody, and an `@` mid-word, in an email address say, opens nothing.
+  const query = findMentionQuery(content.value.slice(0, textarea.selectionStart))
+  if (query === null) {
     showSuggestions.value = false
+
+    return
   }
+
+  suggestions.value = getSuggestions(query, props.members)
+  showSuggestions.value = suggestions.value.length > 0
+  selectedIndex.value = 0
 }
 
 function handleKeydown(event) {
