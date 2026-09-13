@@ -39,7 +39,7 @@
            serializer's way: no <br> bookkeeping, Shift+Enter just inserts a character. -->
       <div
         ref="editor"
-        :contenteditable="!chatStore.isSending"
+        :contenteditable="!isSending"
         role="textbox"
         aria-multiline="true"
         aria-label="Votre message"
@@ -57,8 +57,8 @@
       <Button
         icon="pi pi-send"
         aria-label="Envoyer le message"
-        :loading="chatStore.isSending"
-        :disabled="isEmpty || chatStore.isSending"
+        :loading="isSending"
+        :disabled="isEmpty || isSending"
         @click="send"
       />
     </div>
@@ -70,17 +70,21 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, ref } from 'vue'
 import { useMentionParser } from '../../../composables/useMentionParser.js'
-import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { MENTION_ID_ATTRIBUTE, serializeEditor } from '../../../utils/mentionEditor.js'
 
 const props = defineProps({
-  bandSpaceId: { type: String, required: true },
-  members: { type: Array, default: () => [] }
+  members: { type: Array, default: () => [] },
+  /**
+   * Where the message goes, supplied by the parent rather than reached for here (#994): the band
+   * space tab sends through its own store, the inbox through the one holding the open conversation.
+   * Both end at the same endpoint, and the editor below does not need to know which.
+   */
+  sendMessage: { type: Function, required: true },
+  isSending: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['sent'])
 
-const chatStore = useBandSpaceChatStore()
 const { findMentionQuery, getSuggestions } = useMentionParser()
 
 const editor = ref(null)
@@ -378,14 +382,14 @@ function insertText(value) {
 
 async function send() {
   const content = wireContent.value
-  if (content.trim() === '' || chatStore.isSending) {
+  if (content.trim() === '' || props.isSending) {
     return
   }
 
   sendError.value = ''
 
   try {
-    await chatStore.sendMessage(props.bandSpaceId, content)
+    await props.sendMessage(content)
     clearEditor()
     emit('sent')
     nextTick(() => editor.value?.focus())

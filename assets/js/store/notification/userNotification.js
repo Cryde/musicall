@@ -131,10 +131,14 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
         useMessageStore().handleIncomingMessage(payload?.thread_id ?? null)
       }
       if (type === null || type === 'band_space_message') {
-        // A Band Space channel, which the inbox above deliberately does not list (#963). The chat
-        // store refreshes the sidebar badge itself, because whether the member is looking at the
-        // conversation is also what decides whether the signal marks it read.
+        // A Band Space channel, which both panes can be showing: the band space tab, keyed by space,
+        // and since #994 the inbox, keyed by thread. Each no-ops when its own pane is not on screen,
+        // and they never are at once, since they are different routes.
+        //
+        // The chat store refreshes the sidebar badge itself, because whether the member is looking at
+        // the conversation is also what decides whether the signal marks it read.
         useBandSpaceChatStore().handleIncomingMessage(payload?.band_space_id ?? null)
+        useMessageStore().handleIncomingMessage(payload?.thread_id ?? null)
       }
     },
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()

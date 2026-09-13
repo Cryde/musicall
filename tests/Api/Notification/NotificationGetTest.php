@@ -97,21 +97,26 @@ class NotificationGetTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        // One grouped query for every space the member belongs to, not one per space. This endpoint is
-        // on a five minute timer for every signed-in user, so a per-space query here would be the
-        // expensive kind of mistake.
+        // Two fixed queries against that table for three spaces, and the number is what matters rather
+        // than the two: it does not grow with the bands a member belongs to. This endpoint is on a
+        // five minute timer for every signed-in user, so a per-space query here would be the expensive
+        // kind of mistake. The second one is the envelope count, which has had to carry the same
+        // active-membership rule since it started counting channels (#994).
         $profile = $this->client->getProfile();
         $this->assertNotFalse($profile, 'The profiler must be enabled to inspect the queries.');
         $channelQueries = array_filter(
             $profile->getCollector('db')->getQueries()['default'] ?? [],
             static fn (array $query): bool => str_contains((string) $query['sql'], 'band_space_membership'),
         );
-        $this->assertCount(1, $channelQueries);
+        $this->assertCount(2, $channelQueries);
         $this->assertJsonEquals([
             '@context' => '/api/contexts/Notification',
             '@id' => '/api/notifications',
             '@type' => 'Notification',
-            'unread_messages' => 0,
+            // The same three messages the per-space map below splits up. The envelope counts channels
+            // since #994 put them in the inbox underneath it, so these two numbers are two views of
+            // one lastReadDatetime rather than two separate things.
+            'unread_messages' => 3,
             'band_space_chat_unread' => [(string) $loud->id => 2, (string) $chatty->id => 1],
         ]);
         $this->assertNotNull($quiet->id);

@@ -185,10 +185,11 @@ class MessagePostedSignalTest extends KernelTestCase
         // Without this the hub stops consulting subscriber topic selectors and hands the signal to
         // every connected browser, whatever their token says.
         self::assertTrue($update->isPrivate());
-        // Its own type, because the inbox does not list channels and must not refetch for one, and
-        // keyed by the space because that is what the chat API takes.
+        // Its own type, because only a channel reaches the band space tab. Both ids travel since the
+        // inbox started listing channels too (#994): the space is what the chat API takes, the thread
+        // is how the inbox knows whether the conversation on screen is this one.
         self::assertSame(
-            '{"type":"band_space_message","band_space_id":"' . $space->id . '"}',
+            '{"type":"band_space_message","band_space_id":"' . $space->id . '","thread_id":"' . $channel->id . '"}',
             $update->getData()
         );
     }
