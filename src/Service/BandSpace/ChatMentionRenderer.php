@@ -35,15 +35,46 @@ readonly class ChatMentionRenderer
      */
     public function render(string $sanitizedContent, array $usernamesById): string
     {
+        return $this->replaceTokens(
+            $sanitizedContent,
+            fn (string $label): string => $this->span($label),
+            $usernamesById,
+        );
+    }
+
+    /**
+     * The same tokens as plain text, for a preview that is never rendered as HTML (#994).
+     *
+     * The inbox lists a channel beside direct messages and builds its one-line preview from the
+     * stored content, so without this a message naming somebody reads there as `@[3f2a...]`. Sharing
+     * the pattern with render() is the whole point: a second copy of it would drift.
+     *
+     * @param array<string, string> $usernamesById
+     */
+    public function renderPlain(string $content, array $usernamesById): string
+    {
+        return $this->replaceTokens(
+            $content,
+            static fn (string $label): string => '@' . $label,
+            $usernamesById,
+        );
+    }
+
+    /**
+     * @param callable(string): string $format  what one resolved label prints as
+     * @param array<string, string>    $usernamesById
+     */
+    private function replaceTokens(string $content, callable $format, array $usernamesById): string
+    {
         $rendered = preg_replace_callback(
             self::TOKEN_PATTERN,
-            fn (array $matches): string => $this->span($this->labelFor($matches[1], $usernamesById)),
-            $sanitizedContent,
+            fn (array $matches): string => $format($this->labelFor($matches[1], $usernamesById)),
+            $content,
         );
 
         // preg_replace_callback returns null only on a backtrack limit or bad UTF-8. Showing the
         // message with its raw tokens beats showing nothing at all.
-        return $rendered ?? $sanitizedContent;
+        return $rendered ?? $content;
     }
 
     /**

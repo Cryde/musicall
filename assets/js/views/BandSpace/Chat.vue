@@ -28,8 +28,9 @@
     <ChatMessageList v-else ref="messageList" :band-space-id="bandSpaceId" />
 
     <ChatComposer
-      :band-space-id="bandSpaceId"
       :members="settingsStore.members"
+      :send-message="(content) => chatStore.sendMessage(bandSpaceId, content)"
+      :is-sending="chatStore.isSending"
       @sent="messageList?.scrollToBottom()"
     />
   </div>

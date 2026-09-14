@@ -72,16 +72,21 @@ readonly class MessagePostedListener
     /**
      * Which conversation moved, so a browser can skip refetching one it is not showing.
      *
-     * Two types rather than one with an extra field, because the client routes on the type and the
-     * inbox must not refetch for a channel, which it does not list. A channel is keyed by its band
-     * space and not by its thread: that is what the chat API takes, and one channel per space is a
-     * decision, not an accident (#948 parks multi-channel). A second channel is what adds an id here.
+     * Two types rather than one with an extra field, because the client routes on the type: only a
+     * channel reaches the band space tab, and only a channel needs the space id, which is what the
+     * chat API takes. A channel carries **both** ids since #994, because the inbox now lists it too
+     * and keys what it is showing by thread. #1013 is what makes the thread id load bearing rather
+     * than merely convenient, once one space has several channels.
      */
     private static function tagFor(Message $message): string
     {
         $thread = $message->thread;
         $tag = $thread->bandSpace instanceof BandSpace
-            ? ['type' => 'band_space_message', 'band_space_id' => (string) $thread->bandSpace->id]
+            ? [
+                'type' => 'band_space_message',
+                'band_space_id' => (string) $thread->bandSpace->id,
+                'thread_id' => (string) $thread->id,
+            ]
             : ['type' => 'message', 'thread_id' => (string) $thread->id];
 
         return json_encode($tag, JSON_THROW_ON_ERROR);

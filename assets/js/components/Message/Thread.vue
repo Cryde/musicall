@@ -11,28 +11,46 @@
         />
       </div>
       <Avatar
-        v-if="otherParticipant?.profile_picture?.small && !otherParticipant?.deletion_datetime"
-        :image="otherParticipant.profile_picture.small"
-        :pt="{ image: { alt: `Photo de ${otherParticipantName}` } }"
+        v-if="isCurrentChannel"
+        icon="pi pi-users"
+        :style="getAvatarStyle(title)"
         shape="circle"
         role="img"
-        :aria-label="`Photo de ${otherParticipantName}`"
+        :aria-label="`Discussion du groupe ${title}`"
+      />
+      <Avatar
+        v-else-if="otherParticipant?.profile_picture?.small && !otherParticipant?.deletion_datetime"
+        :image="otherParticipant.profile_picture.small"
+        :pt="{ image: { alt: `Photo de ${title}` } }"
+        shape="circle"
+        role="img"
+        :aria-label="`Photo de ${title}`"
       />
       <Avatar
         v-else
-        :label="otherParticipantName.charAt(0).toUpperCase()"
-        :style="getAvatarStyle(otherParticipantName)"
+        :label="title.charAt(0).toUpperCase()"
+        :style="getAvatarStyle(title)"
         shape="circle"
         role="img"
-        :aria-label="`Avatar de ${otherParticipantName}`"
+        :aria-label="`Avatar de ${title}`"
       />
+      <!-- A channel points at the band's own discussion tab, the way a direct message points at the
+           other party's profile: the header's name is a way back to where the conversation lives. -->
       <router-link
-        v-if="otherParticipant?.username && !otherParticipant?.deletion_datetime"
+        v-if="isCurrentChannel"
+        :to="{ name: BAND_SPACE_ROUTES.CHAT, params: { id: currentThread.thread.band_space_id } }"
+        class="font-semibold text-surface-900 dark:text-surface-0 hover:text-primary transition-colors truncate"
+      >{{ title }}</router-link>
+      <router-link
+        v-else-if="otherParticipant?.username && !otherParticipant?.deletion_datetime"
         :to="{ name: 'app_user_public_profile', params: { username: otherParticipant.username } }"
         class="font-semibold text-surface-900 dark:text-surface-0 hover:text-primary transition-colors"
-      >{{ otherParticipantName }}</router-link>
+      >{{ title }}</router-link>
       <span v-else class="font-semibold text-surface-500">
-        {{ otherParticipantName }}
+        {{ title }}
+      </span>
+      <span v-if="isCurrentChannel" class="text-sm text-surface-600 dark:text-surface-400 shrink-0">
+        #{{ currentThread.thread.channel_name }}
       </span>
     </div>
 
@@ -80,9 +98,19 @@
               ? 'bg-primary-700 text-white'
               : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0'"
           >
+            <!-- A channel has many authors, so a bubble that is not yours has to say whose it is.
+                 A direct message has exactly one other author and the header already names them. -->
+            <div
+              v-if="isCurrentChannel && !isSender(message)"
+              class="text-xs font-semibold mb-1 opacity-80"
+            >
+              {{ message.author?.username }}
+            </div>
             <div
               class="text-sm break-words"
-              :class="{ '[&_a]:text-white [&_a]:underline': isSender(message), '[&_a]:text-primary-500 [&_a]:underline': !isSender(message) }"
+              :class="isSender(message)
+                ? '[&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
+                : '[&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'"
               v-html="autoLink(message.content)"
             />
             <div
@@ -96,8 +124,18 @@
       </template>
     </div>
 
+    <!-- The band space tab's composer, so a mention is chipped and sent in the same `@[uuid]` format
+         from either place. It carries its own border and padding, hence sitting outside the block. -->
+    <ChatComposer
+      v-if="isCurrentChannel"
+      :members="settingsStore.members"
+      :send-message="sendToChannel"
+      :is-sending="messageStore.isAddingMessage"
+      @sent="scrollToBottom"
+    />
+
     <!-- Message input -->
-    <div class="border-t border-surface-200 dark:border-surface-700 p-4">
+    <div v-else class="border-t border-surface-200 dark:border-surface-700 p-4">
       <p v-if="isRecipientDeleted" class="text-sm text-surface-500 dark:text-surface-400 text-center">
         Vous ne pouvez plus envoyer de message à cet utilisateur.
       </p>
@@ -143,36 +181,50 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, watch } from 'vue'
+import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
+import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
 import relativeDate from '../../helper/date/relative-date.js'
-import { displayName } from '../../helper/user/displayName.js'
+import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { autoLink } from '../../utils/autoLink.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
+import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 
 const emit = defineEmits(['back'])
 
 const messageStore = useMessageStore()
 const securityStore = useUserSecurityStore()
+// The roster the `@` dropdown filters, from the store the band space tab already fills. It is loaded
+// per conversation below rather than once, because switching channel here means switching band.
+const settingsStore = useBandSpaceSettingsStore()
 
 const content = ref('')
 const messagesContainer = ref(null)
 const messageInput = ref(null)
 const sendError = ref('')
 
+const currentThread = computed(() => messageStore.currentThread)
+const isCurrentChannel = computed(() => isChannel(currentThread.value))
+
 const otherParticipant = computed(() => {
-  if (!messageStore.currentThread) return null
-  return messageStore.getOtherParticipant(messageStore.currentThread)
+  if (!currentThread.value) return null
+  return messageStore.getOtherParticipant(currentThread.value)
 })
 
-const otherParticipantName = computed(() => {
-  return otherParticipant.value ? displayName(otherParticipant.value) : 'Conversation'
-})
+// Shared with the list rather than computed here, which is how the two stopped disagreeing on a
+// thread with no participant: this read it as « Conversation » and the list as « Utilisateur
+// inconnu » (#994).
+const title = computed(() => conversationTitle(currentThread.value, otherParticipant.value))
 
 const isRecipientDeleted = computed(() => !!otherParticipant.value?.deletion_datetime)
 
 function isSender(message) {
   return message.author?.username === securityStore.user?.username
+}
+
+function sendToChannel(content) {
+  return messageStore.postMessageInThread({ threadId: messageStore.currentThreadId, content })
 }
 
 async function send() {
@@ -257,6 +309,13 @@ watch(
   () => messageStore.currentThreadId,
   () => {
     lastTailIri = null
+    // The roster belongs to the band this conversation is in, so it follows the conversation. Not
+    // awaited: a dropdown that is not usable for another moment costs nobody the message they came
+    // to read, the same call the band space tab makes on mount.
+    const bandSpaceId = currentThread.value?.thread?.band_space_id
+    if (bandSpaceId) {
+      settingsStore.loadMembers(bandSpaceId).catch(() => {})
+    }
   }
 )
 watch(

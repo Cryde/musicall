@@ -46,4 +46,19 @@ class MessageThreadResource
 
     #[Groups([MessageThreadMetaResource::LIST])]
     public ?MessageResource $lastMessage = null;
+
+    /**
+     * Set for a Band Space channel, null for a direct message, and the three travel together (#994).
+     *
+     * The inbox needs all three: the id to call the chat API, which is addressed by space rather than
+     * by thread, and the two names to label a row that has no other participant to name it after.
+     */
+    #[Groups([MessageThreadMetaResource::LIST])]
+    public ?string $bandSpaceId = null;
+
+    #[Groups([MessageThreadMetaResource::LIST])]
+    public ?string $bandSpaceName = null;
+
+    #[Groups([MessageThreadMetaResource::LIST])]
+    public ?string $channelName = null;
 }

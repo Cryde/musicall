@@ -2,6 +2,7 @@
 
 namespace App\Repository\Message;
 
+use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
@@ -85,6 +86,11 @@ class MessageRepository extends ServiceEntityRepository
      * A thread the user has read entirely is absent from the result, not present with a zero, so
      * callers read it with `?? 0`.
      *
+     * Since #994 this covers Band Space channels too, and it has to carry their rule to do it. See
+     * channelMembershipRule(): counting a channel the way a direct message is counted tells somebody
+     * who joined this morning that the whole history is unread, keeps counting for somebody who has
+     * left, and disagrees with the sidebar badge for the same band.
+     *
      * @return array<string, int>
      */
     public function countUnreadByThreadForUser(User $user): array
@@ -92,17 +98,26 @@ class MessageRepository extends ServiceEntityRepository
         /** @var list<array{thread_id: string, unread_count: int|string}> $rows */
         $rows = $this->createQueryBuilder('message')
             ->select('IDENTITY(message.thread) AS thread_id, COUNT(message.id) AS unread_count')
+            ->join('message.thread', 'thread')
             ->join(
                 MessageThreadMeta::class,
                 'meta',
                 Join::WITH,
                 'meta.thread = message.thread AND meta.user = :user'
             )
+            ->leftJoin(
+                BandSpaceMembership::class,
+                'membership',
+                Join::WITH,
+                $this->channelMembershipJoin()
+            )
             // Own messages never count: you have read what you wrote.
             ->where('message.author != :user')
             ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
+            ->andWhere($this->channelMembershipRule())
             ->groupBy('message.thread')
             ->setParameter('user', $user)
+            ->setParameter('active', MembershipStatus::Active)
             ->getQuery()
             ->getResult();
 
@@ -120,10 +135,12 @@ class MessageRepository extends ServiceEntityRepository
      * This is the navbar badge. It used to count *threads* with an unread flag and to ignore
      * isDeleted, which made it disagree with the inbox it sits above on both counts (#954).
      *
-     * Band Space channels are excluded for the same reason: their members get read-state rows like
-     * anybody else (#960), but the inbox this badge sits above filters channels out, so counting them
-     * here would show a number that clicking through can neither explain nor clear. A channel's
-     * unread belongs on its own sidebar entry, which is #962.
+     * Band Space channels used to be excluded, because the inbox this badge sits above listed only
+     * direct messages, so counting them showed a number clicking through could neither explain nor
+     * clear (#961). #994 lists channels in that inbox and lets them be opened from it, which removes
+     * the whole of that reason, so they are counted again and carry the same rule as everywhere else,
+     * see channelMembershipRule(). A band's messages therefore show here and on its sidebar entry,
+     * which are two views of one `lastReadDatetime` rather than two separate things.
      */
     public function countUnreadForUser(User $user): int
     {
@@ -136,21 +153,60 @@ class MessageRepository extends ServiceEntityRepository
                 Join::WITH,
                 'meta.thread = message.thread AND meta.user = :user'
             )
+            ->leftJoin(
+                BandSpaceMembership::class,
+                'membership',
+                Join::WITH,
+                $this->channelMembershipJoin()
+            )
             ->where('message.author != :user')
             ->andWhere('meta.isDeleted = false')
-            ->andWhere('thread.bandSpace IS NULL')
             ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
+            ->andWhere($this->channelMembershipRule())
             ->setParameter('user', $user)
+            ->setParameter('active', MembershipStatus::Active)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
     /**
+     * What a Band Space channel has to satisfy to be counted, for a query that also counts direct
+     * messages. Expects a `thread` alias and a **left** joined `membership` one.
+     *
+     * A direct message has no band space, so no membership row matches and the first branch lets it
+     * through untouched. A channel must have an active membership, which is what keeps a former
+     * member's surviving read-state row out without deleting anything (#948 concern 3), and its
+     * messages must postdate that membership, because a member's row is created lazily by the first
+     * message after they join, with no read position: without the floor, somebody who joined this
+     * morning is told the entire history is unread. Flooring at the moment they joined needs no write
+     * at join time, which keeps it clear of the duplicate-key hazard
+     * MessageSenderProcedure::findOrCreateMetaFor() warns about.
+     *
+     * Inner joining instead would be simpler and wrong: it would drop every direct message.
+     */
+    private function channelMembershipRule(): string
+    {
+        return 'thread.bandSpace IS NULL'
+            . ' OR (membership.id IS NOT NULL AND message.creationDatetime > membership.creationDatetime)';
+    }
+
+    /**
+     * Which membership row the rule above is talking about. Shared with it rather than written at
+     * each join, because the two have to say the same thing: widen one and the other silently stops
+     * meaning what its name says.
+     */
+    private function channelMembershipJoin(): string
+    {
+        return 'membership.bandSpace = thread.bandSpace AND membership.user = :user'
+            . ' AND membership.status = :active';
+    }
+
+    /**
      * Unread in each Band Space chat the user is an active member of, keyed by band space id.
      *
-     * This is the sidebar badge. It is a separate number from the envelope on purpose: the envelope
-     * sits above an inbox that lists direct messages only, and a member clicking it would find
-     * nothing to explain a band's conversation (#961).
+     * This is the sidebar badge. Still its own number after #994 put channels in the inbox and back
+     * into the envelope: this one is per band, which is what the sidebar shows, while the envelope is
+     * a single total. Both read the same `lastReadDatetime`, so they cannot disagree.
      *
      * The membership join is doing two jobs. It filters to **active** members, which is what keeps a
      * former member's surviving read-state row out of the count without deleting anything (#948
@@ -181,7 +237,7 @@ class MessageRepository extends ServiceEntityRepository
                 BandSpaceMembership::class,
                 'membership',
                 Join::WITH,
-                'membership.bandSpace = thread.bandSpace AND membership.user = :user AND membership.status = :active'
+                $this->channelMembershipJoin()
             )
             ->where('thread.bandSpace IS NOT NULL')
             // Own messages never count: you have read what you wrote.
@@ -222,6 +278,18 @@ class MessageRepository extends ServiceEntityRepository
         if ($meta->lastReadDatetime !== null) {
             $queryBuilder->andWhere('message.creationDatetime > :lastRead')
                 ->setParameter('lastRead', $meta->lastReadDatetime);
+        }
+
+        // A channel carries the same rule as the two list counts, so one row cannot report a
+        // different number depending on which of the three was asked. Inner joined here rather than
+        // left, because this method is only ever called about one known thread: a former member gets
+        // no row, and therefore zero, instead of the history of a band they have left.
+        if ($meta->thread->bandSpace instanceof BandSpace) {
+            $queryBuilder
+                ->join('message.thread', 'thread')
+                ->join(BandSpaceMembership::class, 'membership', Join::WITH, $this->channelMembershipJoin())
+                ->andWhere('message.creationDatetime > membership.creationDatetime')
+                ->setParameter('active', MembershipStatus::Active);
         }
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();

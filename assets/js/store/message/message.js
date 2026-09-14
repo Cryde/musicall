@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
+import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
 import messageApi from '../../api/message/message.js'
 import { handleApiError } from '../../api/utils/handleApiError.js'
+import { CHAT_TESTER_ONLY } from '../../constants/bandSpace.js'
+import { isChannel } from '../../utils/conversationIdentity.js'
 import {
   hasOlderToLoad,
   mergeMessages,
@@ -36,12 +39,24 @@ export const useMessageStore = defineStore('message', () => {
   const totalMessages = ref(0)
   const isAddingMessage = ref(false)
 
+  /**
+   * Newest conversation first, and a Band Space channel only for a tester while CHAT_TESTER_ONLY
+   * stands (#994).
+   *
+   * The curtain is drawn here rather than in PHP, like the chat tab's route guard and the band
+   * sidebar's filter: ROLE_TESTER is a feature flag and not a rank, and nothing on the server has
+   * ever consulted it. The chat API is open either way, which is what makes this a curtain.
+   */
   const orderedThreads = computed(() => {
-    return [...threads.value].sort((a, b) => {
-      const dateA = new Date(a.thread.last_message?.creation_datetime || 0)
-      const dateB = new Date(b.thread.last_message?.creation_datetime || 0)
-      return dateB - dateA
-    })
+    const hidesChannels = CHAT_TESTER_ONLY && !useUserSecurityStore().isTester
+
+    return [...threads.value]
+      .filter((threadMeta) => !hidesChannels || !isChannel(threadMeta))
+      .sort((a, b) => {
+        const dateA = new Date(a.thread.last_message?.creation_datetime || 0)
+        const dateB = new Date(b.thread.last_message?.creation_datetime || 0)
+        return dateB - dateA
+      })
   })
 
   const hasOlderMessages = computed(() =>
@@ -95,6 +110,52 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
+  /**
+   * One page of a conversation, from whichever API owns it (#994).
+   *
+   * A channel is read and written through the Band Space chat endpoints, never through
+   * `/api/messages`. That route's access check knows about participant rows only, which a channel
+   * has none of, and widening it would also put the write outside the directory
+   * BandSpaceWriteGuardCoverageTest globs, so a space in its deletion grace period would start
+   * accepting messages with no test noticing.
+   */
+  async function fetchConversationPage(threadId, page) {
+    const bandSpaceId = bandSpaceIdFor(threadId)
+    if (!bandSpaceId) {
+      return messageApi.getMessages({ threadId, page })
+    }
+
+    const response = await bandSpaceChatApi.getMessages(bandSpaceId, { page })
+
+    return { ...response, member: (response.member || []).map(asThreadMessage) }
+  }
+
+  /** The space a conversation belongs to, or null when it is a direct message. */
+  function bandSpaceIdFor(threadId) {
+    return threads.value.find((t) => t.thread.id === threadId)?.thread?.band_space_id ?? null
+  }
+
+  /**
+   * A chat message in the shape this pane reads.
+   *
+   * The two DTOs describe the same `Message` row and differ only in how they carry the author: the
+   * chat flattens it because its own list draws an avatar per bubble, the inbox nests it like every
+   * other message. Adapting once here is what keeps `author_username ?? author.username` out of the
+   * component, the merge helper and the unread logic.
+   *
+   * `author_username` already reads « Utilisateur supprimé » when the account is gone, substituted by
+   * ChatMessageBuilder, so there is no deletion date left to carry.
+   */
+  function asThreadMessage(chatMessage) {
+    return {
+      '@id': chatMessage['@id'],
+      id: chatMessage.id,
+      content: chatMessage.content,
+      creation_datetime: chatMessage.creation_datetime,
+      author: { username: chatMessage.author_username }
+    }
+  }
+
   /** Same rule as loadThreads(): a refresh nobody asked for neither blanks the pane nor wipes it. */
   async function loadMessages(threadId, { silent = false } = {}) {
     const currentRequestId = ++messagesRequestId
@@ -102,7 +163,7 @@ export const useMessageStore = defineStore('message', () => {
       isLoadingMessages.value = true
     }
     try {
-      const response = await messageApi.getMessages({ threadId })
+      const response = await fetchConversationPage(threadId)
       if (currentRequestId !== messagesRequestId) return
       // Reverse to show oldest first
       const newest = (response.member || []).reverse()
@@ -144,10 +205,10 @@ export const useMessageStore = defineStore('message', () => {
     isLoadingOlderMessages.value = true
     loadOlderError.value = null
     try {
-      const response = await messageApi.getMessages({
+      const response = await fetchConversationPage(
         threadId,
-        page: nextOlderPageToLoad(messages.value.length)
-      })
+        nextOlderPageToLoad(messages.value.length)
+      )
       if (currentRequestId !== messagesRequestId || threadId !== currentThreadId.value) return
       messages.value = mergeMessages(messages.value, (response.member || []).reverse())
       totalMessages.value = response.totalItems ?? totalMessages.value
@@ -159,6 +220,12 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
+  /**
+   * One PATCH per conversation, a channel included: the processor behind it only checks that the meta
+   * row belongs to the caller, and the sidebar's per-band badge reads that same `lastReadDatetime`,
+   * so it follows with no second call. `POST /chat/read` would also work today and marks every
+   * channel in the space at once, which is where the two stop agreeing at #1013.
+   */
   async function markAsRead(threadMetaId) {
     try {
       await messageApi.markThreadAsRead({ threadMetaId })
@@ -190,9 +257,12 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   async function postMessageInThread({ threadId, content }) {
+    const bandSpaceId = bandSpaceIdFor(threadId)
     isAddingMessage.value = true
     try {
-      const newMessage = await messageApi.postMessageInThread({ threadId, content })
+      const newMessage = bandSpaceId
+        ? asThreadMessage(await bandSpaceChatApi.postMessage(bandSpaceId, content))
+        : await messageApi.postMessageInThread({ threadId, content })
       // The signal for this very message can arrive before this promise resolves, because the server
       // publishes inside the send and answers afterwards. That refetch has already put the message in
       // the list, so pushing it again would show it twice.
@@ -200,11 +270,20 @@ export const useMessageStore = defineStore('message', () => {
         messages.value.push(newMessage)
       }
 
-      // Update last message in thread
       const thread = threads.value.find((t) => t.thread.id === threadId)
-      if (thread) {
-        thread.thread.last_message = newMessage
+      if (!thread) {
+        return
       }
+
+      // A chat message carries no preview, so pinning it on the row would blank that row's last line
+      // until the next load. One silent refresh of the list is cheaper and more honest than teaching
+      // the client to render a preview out of the HTML it was handed.
+      if (bandSpaceId) {
+        loadThreads({ silent: true })
+
+        return
+      }
+      thread.thread.last_message = newMessage
     } finally {
       isAddingMessage.value = false
     }

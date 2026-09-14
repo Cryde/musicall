@@ -133,33 +133,109 @@ class UnreadMessageCountTest extends KernelTestCase
         self::assertSame(1, $this->messageRepository->countUnreadForUser($reader));
     }
 
-    public function test_a_band_space_channel_stays_out_of_the_navbar_badge(): void
+    public function test_a_channel_counts_towards_the_navbar_badge_now_the_inbox_lists_it(): void
     {
-        // A channel gives its members read-state rows exactly like a direct message does (#960), so
-        // without an explicit filter its unread lands on the envelope in the main navigation. The
-        // inbox under that envelope excludes channels, so the number would be one a member cannot
-        // explain, reach or clear. Their sidebar entry is where it belongs, which is #962.
+        // #961 kept channels off the envelope because the inbox below it listed only direct messages,
+        // so the number was one a member could neither explain nor clear. #994 lists them and lets
+        // them be opened from there, which removes the whole of that reason.
         [$reader, $writer] = $this->twoUsers();
 
         $directThread = MessageThreadFactory::new()->create();
         $this->messageAt($directThread, $writer, '2026-09-01 10:00:00');
         $this->metaFor($reader, $directThread, null);
 
-        $bandSpace = BandSpaceFactory::new()->create();
-        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+        [, $channel] = $this->bandWith($reader, $writer, '2026-09-01 09:00:00');
         $this->messageAt($channel, $writer, '2026-09-02 10:00:00');
         $this->messageAt($channel, $writer, '2026-09-02 10:05:00');
         $this->metaFor($reader, $channel, null);
 
-        self::assertSame(1, $this->messageRepository->countUnreadForUser($reader));
+        self::assertSame(3, $this->messageRepository->countUnreadForUser($reader));
 
-        // The per-thread map is keyed by thread and only ever read for threads the inbox already
-        // listed, so it counts the channel and that is harmless. Asserted key by key because the
-        // order of a GROUP BY result is not something to depend on.
+        // And the per-thread map, which the inbox reads row by row, agrees with it. Asserted key by
+        // key because the order of a GROUP BY result is not something to depend on.
         $byThread = $this->messageRepository->countUnreadByThreadForUser($reader);
         self::assertCount(2, $byThread);
         self::assertSame(1, $byThread[(string) $directThread->id]);
         self::assertSame(2, $byThread[(string) $channel->id]);
+    }
+
+    public function test_a_channel_stops_counting_for_somebody_who_has_left_the_band(): void
+    {
+        // The read-state row survives a leave or a kick (#948 concerns 1 and 3), so without the
+        // membership join the count would keep running for somebody who is no longer in the band, in
+        // the envelope and on every inbox row alike.
+        [$reader, $writer] = $this->twoUsers();
+        [, $channel, $membership] = $this->bandWith($reader, $writer, '2026-09-01 09:00:00');
+        $this->messageAt($channel, $writer, '2026-09-02 10:00:00');
+        $this->metaFor($reader, $channel, null);
+
+        self::assertSame(1, $this->messageRepository->countUnreadForUser($reader));
+
+        $membership->status = MembershipStatus::Kicked;
+        \Zenstruck\Foundry\Persistence\save($membership);
+
+        self::assertSame(0, $this->messageRepository->countUnreadForUser($reader));
+        self::assertSame([], $this->messageRepository->countUnreadByThreadForUser($reader));
+    }
+
+    public function test_a_new_member_is_not_told_the_whole_history_is_unread(): void
+    {
+        // A member's read-state row is created lazily by the first message after they join, with no
+        // read position, so without a floor at the moment they joined everything said before they
+        // arrived reads as unread. The sidebar badge has always known this; the inbox count and the
+        // envelope learned it in #994.
+        [$reader, $writer] = $this->twoUsers();
+        [, $channel] = $this->bandWith($reader, $writer, '2026-09-10 12:00:00');
+        $this->messageAt($channel, $writer, '2026-09-01 10:00:00');
+        $this->messageAt($channel, $writer, '2026-09-05 10:00:00');
+        $this->messageAt($channel, $writer, '2026-09-11 10:00:00');
+        $this->metaFor($reader, $channel, null);
+
+        self::assertSame(1, $this->messageRepository->countUnreadForUser($reader));
+        self::assertSame(
+            1,
+            $this->messageRepository->countUnreadByThreadForUser($reader)[(string) $channel->id],
+            'The inbox row must say what the sidebar badge says, or the two disagree for one band',
+        );
+        self::assertSame(
+            1,
+            $this->messageRepository->countUnreadChannelsForUser($reader)[(string) $channel->bandSpace->id],
+        );
+    }
+
+    public function test_the_single_thread_count_agrees_with_the_list_for_a_new_member(): void
+    {
+        // Three methods answer "how much is unread here" and a row is served by two of them: the list
+        // builds the inbox, this one answers the PATCH that opens a conversation. A floor in one and
+        // not the other would make the same row report two numbers.
+        [$reader, $writer] = $this->twoUsers();
+        [, $channel] = $this->bandWith($reader, $writer, '2026-09-10 12:00:00');
+        $this->messageAt($channel, $writer, '2026-09-01 10:00:00');
+        $this->messageAt($channel, $writer, '2026-09-11 10:00:00');
+        $meta = $this->metaFor($reader, $channel, null);
+
+        self::assertSame(1, $this->messageRepository->countUnreadForThread($meta));
+        self::assertSame(
+            $this->messageRepository->countUnreadByThreadForUser($reader)[(string) $channel->id],
+            $this->messageRepository->countUnreadForThread($meta),
+        );
+    }
+
+    public function test_the_single_thread_count_tells_a_former_member_nothing(): void
+    {
+        // Their read-state row survives the kick, and its id is all this endpoint takes. Without the
+        // membership join they could still learn how much the band has said since, which is a smaller
+        // leak than the messages themselves and the same one.
+        [$reader, $writer] = $this->twoUsers();
+        [, $channel, $membership] = $this->bandWith($reader, $writer, '2026-09-01 09:00:00');
+        $this->messageAt($channel, $writer, '2026-09-02 10:00:00');
+        $this->messageAt($channel, $writer, '2026-09-03 10:00:00');
+        $meta = $this->metaFor($reader, $channel, null);
+
+        $membership->status = MembershipStatus::Kicked;
+        \Zenstruck\Foundry\Persistence\save($membership);
+
+        self::assertSame(0, $this->messageRepository->countUnreadForThread($meta));
     }
 
     public function test_another_persons_unread_never_leaks_into_yours(): void

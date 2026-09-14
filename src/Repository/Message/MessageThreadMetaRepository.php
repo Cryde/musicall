@@ -3,10 +3,13 @@
 namespace App\Repository\Message;
 
 use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\MessageThread;
 use App\Entity\Message\MessageThreadMeta;
 use App\Entity\User;
+use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -98,21 +101,38 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
     public function findByUserAndNotDeleted(User $user): mixed
     {
         return $this->createQueryBuilder('message_thread_meta')
-            ->select('message_thread_meta, thread, last_message, author, message_participants, participant')
+            ->select('message_thread_meta, thread, band_space, last_message, author, message_participants, participant')
             ->join('message_thread_meta.thread', 'thread')
-            ->join('thread.messageParticipants', 'message_participants')
-            ->join('message_participants.participant', 'participant')
+            // Left, because a Band Space channel has no participant rows at all: its members are
+            // derived from the space (#959). These two joins being inner is what kept channels out of
+            // this listing even before the filter below existed.
+            ->leftJoin('thread.messageParticipants', 'message_participants')
+            ->leftJoin('message_participants.participant', 'participant')
+            ->leftJoin('thread.bandSpace', 'band_space')
+            // Still inner, deliberately: a conversation with nothing said in it has nothing to show
+            // and nothing to sort by, so an empty channel stays out until somebody writes in it.
             ->join('thread.lastMessage', 'last_message')
             ->join('last_message.author', 'author')
+            // A channel only belongs to somebody still in the band. The read-state row survives a
+            // leave or a kick (#948 concerns 1 and 3), so without this a former member keeps the
+            // channel in their inbox, unread count and last message preview included.
+            ->leftJoin(
+                BandSpaceMembership::class,
+                'membership',
+                Join::WITH,
+                'membership.bandSpace = thread.bandSpace AND membership.user = :user AND membership.status = :active'
+            )
             ->where('message_thread_meta.user = :user')
             ->andWhere('message_thread_meta.isDeleted = 0')
-            // Direct messages only. A channel is kept out today by the inner join on participants,
-            // which it has none of, but #960 gives its members read-state rows and #994 is where
-            // showing them in this inbox becomes a decision rather than an accident.
-            ->andWhere('thread.bandSpace IS NULL')
+            ->andWhere('thread.bandSpace IS NULL OR membership.id IS NOT NULL')
             ->orderBy('last_message.creationDatetime', 'DESC')
+            // The tiebreak, and it has to be something every conversation has: `participant.username`
+            // alone is null for a channel, which leaves the database to order those rows however it
+            // likes and makes the listing unstable between requests.
+            ->addOrderBy('thread.id', 'ASC')
             ->addOrderBy('participant.username', 'ASC')
             ->setParameter('user', $user)
+            ->setParameter('active', MembershipStatus::Active)
             ->getQuery()
             ->getResult();
     }
