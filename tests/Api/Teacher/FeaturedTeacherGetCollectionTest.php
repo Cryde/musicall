@@ -54,7 +54,7 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
         ]);
 
         $this->client->request('GET', '/api/teachers/featured');
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context'   => '/api/contexts/FeaturedTeacher',

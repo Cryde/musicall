@@ -25,7 +25,7 @@ class CourseCategoryTest extends ApiTestCase
 
         $this->client->request('GET', '/api/course-categories');
         $this->assertResponseIsSuccessful();
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertJsonEquals([
             '@context'   => '/api/contexts/CourseCategory',
             '@id'        => '/api/course-categories',

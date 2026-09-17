@@ -95,7 +95,7 @@ class PublicationGetCollectionTest extends ApiTestCase
             'order' => ['publication_datetime' => 'asc'],
             'sub_category.slug' => 'chroniques'
         ]);
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Publication',

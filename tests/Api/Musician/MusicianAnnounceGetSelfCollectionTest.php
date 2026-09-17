@@ -53,7 +53,7 @@ class MusicianAnnounceGetSelfCollectionTest extends ApiTestCase
 
         $this->client->loginUser($user1);
         $this->client->request('GET', '/api/musician_announces/self');
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianAnnounce',

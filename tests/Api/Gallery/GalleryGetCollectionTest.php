@@ -51,7 +51,7 @@ class GalleryGetCollectionTest extends ApiTestCase
         $this->client->request('GET', '/api/galleries', [
             'order' => ['publication_datetime' => 'asc'],
         ]);
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context'         => '/api/contexts/Gallery',

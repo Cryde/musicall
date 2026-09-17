@@ -49,7 +49,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
         ]);
 
         $this->client->request('GET', '/api/musician_announces/last');
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianAnnounce',
@@ -171,7 +171,7 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
         self::getContainer()->get('doctrine.debug_data_holder')->reset();
         $this->client->request('GET', '/api/musician_announces/last');
 
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertResponseIsSuccessful();
         $this->assertJsonEquals([
             '@context' => '/api/contexts/MusicianAnnounce',

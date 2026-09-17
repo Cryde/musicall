@@ -687,10 +687,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         signing_algorithm?: scalar|Param|null, // Default: "sha256"
  *         routing?: array<string, array{ // Default: []
  *             service?: scalar|Param|null,
- *             secret?: scalar|Param|null, // Default: ""
+ *             secret?: scalar|Param|null, // The secret used to verify incoming request signatures. It must be set in production: with an empty value, requests from any sender are accepted. // Default: ""
  *         }>,
  *     },
- *     remote-event?: bool|array{ // RemoteEvent configuration
+ *     remote_event?: bool|array{ // RemoteEvent configuration
  *         enabled?: bool|Param, // Default: false
  *     },
  *     json_streamer?: bool|array{ // JSON streamer configuration
@@ -1846,7 +1846,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         query_parameter_validation?: bool|Param, // Deprecated: Will be removed in API Platform 5.0. // Default: true
  *     },
  *     jsonapi?: array{
- *         use_iri_as_id?: bool|Param, // Set to false to use entity identifiers instead of IRIs as the "id" field in JSON:API responses. // Default: true
+ *         use_iri_as_id?: bool|Param|null, // Set to false to use entity identifiers instead of IRIs as the "id" field in JSON:API responses. Defaults to true; this default will change to false in API Platform 5.0. // Default: null
  *         allow_client_generated_id?: bool|Param, // Allow client-generated IDs on JSON:API POST per https://jsonapi.org/format/#crud-creating-client-ids. Off by default to prevent id spoofing on public endpoints. // Default: false
  *     },
  *     eager_loading?: bool|array{
@@ -1863,6 +1863,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     enable_scalar?: bool|Param, // Enable Scalar API Reference // Default: true
  *     enable_entrypoint?: bool|Param, // Enable the entrypoint // Default: true
  *     enable_docs?: bool|Param, // Enable the docs // Default: true
+ *     enable_head_request_optimization?: bool|Param, // Skip response body construction on HEAD requests so collections are not iterated. Disable to process HEAD identically to GET. // Default: true
  *     enable_profiler?: bool|Param, // Enable the data collector and the WebProfilerBundle integration. // Default: true
  *     enable_phpdoc_parser?: bool|Param, // Enable resource metadata collector using PHPStan PhpDocParser. // Default: true
  *     enable_link_security?: bool|Param, // Deprecated: This option is always enabled and will be removed in API Platform 5.0. // Enable security for Links (sub resources). // Default: true
@@ -1928,6 +1929,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     },
  *     swagger?: array{
  *         persist_authorization?: bool|Param, // Persist the SwaggerUI Authorization in the localStorage. // Default: false
+ *         with_credentials?: bool|Param, // Send credentials (cookies, authorization headers) on Swagger UI cross-origin requests (e.g. when running behind Cloudflare Access). // Default: false
  *         versions?: list<scalar|Param|null>,
  *         api_keys?: array<string, array{ // Default: []
  *             name?: scalar|Param|null, // The name of the header or query parameter containing the api key.
@@ -2044,6 +2046,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         denormalization_context?: mixed,
  *         collect_denormalization_errors?: mixed,
  *         hydra_context?: mixed,
+ *         jsonld_context?: mixed,
  *         openapi?: mixed,
  *         validation_context?: mixed,
  *         filters?: mixed,
@@ -2111,6 +2114,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         strict_query_parameter_validation?: mixed,
  *         hide_hydra_operation?: mixed,
  *         json_stream?: mixed,
+ *         throw_on_not_found?: mixed,
  *         extra_properties?: mixed,
  *         map?: mixed,
  *         mcp?: mixed,
@@ -2154,7 +2158,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         reset?: array{
  *             connections?: list<scalar|Param|null>,
  *             entity_managers?: list<scalar|Param|null>,
- *             mode?: \Zenstruck\Foundry\ORM\ResetDatabase\ResetDatabaseMode::SCHEMA|\Zenstruck\Foundry\ORM\ResetDatabase\ResetDatabaseMode::MIGRATE|Param, // Reset mode to use with ResetDatabase trait // Default: "schema"
+ *             mode?: \Zenstruck\Foundry\ORM\ResetDatabase\ResetDatabaseMode::SCHEMA|\Zenstruck\Foundry\ORM\ResetDatabase\ResetDatabaseMode::MIGRATE|"schema"|"migrate"|Param, // Reset mode to use with ResetDatabase trait // Default: "schema"
  *             migrations?: array{
  *                 configurations?: list<scalar|Param|null>,
  *             },

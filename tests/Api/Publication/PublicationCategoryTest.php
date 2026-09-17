@@ -26,7 +26,7 @@ class PublicationCategoryTest extends ApiTestCase
 
         $this->client->request('GET', '/api/publication-categories');
         $this->assertResponseIsSuccessful();
-        $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
+        $this->assertResponseHeaderSame('content-type', 'application/ld+json');
         $this->assertJsonEquals([
             '@context'   => '/api/contexts/PublicationCategory',
             '@id'        => '/api/publication-categories',
