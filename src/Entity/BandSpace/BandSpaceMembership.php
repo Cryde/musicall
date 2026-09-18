@@ -15,6 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 #[ORM\Entity(repositoryClass: BandSpaceMembershipRepository::class)]
 #[ORM\Table(name: 'band_space_membership')]
@@ -68,7 +69,7 @@ class BandSpaceMembership
     #[ORM\JoinTable(name: 'band_space_membership_instrument')]
     #[ORM\JoinColumn(name: 'membership_id', onDelete: 'CASCADE')]
     #[ORM\InverseJoinColumn(name: 'instrument_id', onDelete: 'CASCADE')]
-    #[ORM\OrderBy(['name' => 'ASC'])]
+    #[ORM\OrderBy(['name' => SortDirection::Ascending])]
     public Collection $instruments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

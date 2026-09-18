@@ -13,6 +13,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 /**
  * A technical rider: the document a band sends to a venue before a show.
@@ -61,7 +62,7 @@ class TechRider
 
     /** @var Collection<int, TechRiderItem> */
     #[ORM\OneToMany(targetEntity: TechRiderItem::class, mappedBy: 'techRider', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $items;
 
     public function __construct()

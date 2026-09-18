@@ -16,6 +16,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 #[ORM\Entity(repositoryClass: TeacherProfileRepository::class)]
 #[ORM\Table(name: 'user_teacher_profile')]
@@ -80,7 +81,7 @@ class TeacherProfile implements ViewableInterface
      * @var Collection<int, TeacherProfileMedia>
      */
     #[ORM\OneToMany(targetEntity: TeacherProfileMedia::class, mappedBy: 'teacherProfile', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $media;
 
     /**

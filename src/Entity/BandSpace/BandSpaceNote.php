@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 #[ORM\Entity(repositoryClass: BandSpaceNoteRepository::class)]
 #[ORM\Table(name: 'band_space_note')]
@@ -43,7 +44,7 @@ class BandSpaceNote
      * @var Collection<int, BandSpaceNote>
      */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $children;
 
     #[ORM\Column(type: Types::STRING, length: 255)]

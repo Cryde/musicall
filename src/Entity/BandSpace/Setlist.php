@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 #[ORM\Entity(repositoryClass: SetlistRepository::class)]
 #[ORM\Table(name: 'band_space_setlist')]
@@ -46,7 +47,7 @@ class Setlist
 
     /** @var Collection<int, SetlistItem> */
     #[ORM\OneToMany(targetEntity: SetlistItem::class, mappedBy: 'setlist', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $items;
 
     public function __construct()

@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use SortDirection;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CommentThreadRepository::class)]
@@ -44,7 +45,7 @@ class CommentThread
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "thread")]
-    #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
+    #[ORM\OrderBy(['creationDatetime' => SortDirection::Descending])]
     public Collection $comments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]

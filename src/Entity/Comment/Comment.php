@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use SortDirection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
@@ -59,7 +60,7 @@ class Comment implements VotableInterface
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'parent')]
-    #[ORM\OrderBy(['creationDatetime' => 'ASC'])]
+    #[ORM\OrderBy(['creationDatetime' => SortDirection::Ascending])]
     public Collection $replies;
 
     public function __construct()

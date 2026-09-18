@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 /**
  * One titled block of a rider's written body.
@@ -87,7 +88,7 @@ class TechRiderItem
      * @var Collection<int, TechRiderPatchRow>
      */
     #[ORM\OneToMany(targetEntity: TechRiderPatchRow::class, mappedBy: 'item')]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $patchRows;
 
     #[ORM\Column(type: Types::INTEGER)]

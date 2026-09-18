@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Metric\ViewCache;
+use SortDirection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: GalleryRepository::class)]
@@ -58,7 +59,7 @@ class Gallery implements ViewableInterface
      * @var Collection<int, GalleryImage>
      */
     #[ORM\OneToMany(targetEntity: GalleryImage::class, mappedBy: 'gallery', cascade: ['remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['creationDatetime' => 'DESC'])]
+    #[ORM\OrderBy(['creationDatetime' => SortDirection::Descending])]
     public Collection $images;
 
     #[Assert\NotNull(message: 'Vous devez spécifier une image de couverture', groups: ['publish'])]

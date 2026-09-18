@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
+use SortDirection;
 
 #[ORM\Entity(repositoryClass: FinanceCategoryRepository::class)]
 #[ORM\Table(name: 'finance_category')]
@@ -41,7 +42,7 @@ class FinanceCategory
      * @var Collection<int, FinanceCategory>
      */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => SortDirection::Ascending])]
     public Collection $children;
 
     #[ORM\Column(type: Types::INTEGER)]
