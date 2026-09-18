@@ -340,4 +340,37 @@ class MessageGetCollectionTest extends ApiTestCase
             ],
         ]);
     }
+
+    /**
+     * `order[creation_datetime]` used to carry a default direction, so a bare one meant "desc". The
+     * parameter validates its value against the filter's enum instead, and an empty one is not in it.
+     */
+    public function test_a_bare_order_parameter_is_rejected(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $thread = MessageThreadFactory::new()->create();
+        MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/messages/' . $thread->id . '?order[creation_datetime]');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'order[creation_datetime]',
+                    'message' => 'Cette valeur doit être l\'un des choix proposés.',
+                    'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+                ],
+            ],
+            'detail' => 'order[creation_datetime]: Cette valeur doit être l\'un des choix proposés.',
+            'description' => 'order[creation_datetime]: Cette valeur doit être l\'un des choix proposés.',
+            'type' => '/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            'title' => 'An error occurred',
+        ]);
+    }
 }

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\ApiResource\Publication;
 
-use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Doctrine\Orm\State\Options;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Gallery;
 use App\Entity\User;
@@ -29,10 +28,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
             name: 'api_gallery_get_collection',
             provider: GalleryCollectionProvider::class,
             stateOptions: new Options(entityClass: Gallery::class),
+            parameters: [
+                'order[publication_datetime]' => new QueryParameter(
+                    filter: new SortFilter(),
+                    property: 'publicationDatetime',
+                    castToArray: false,
+                ),
+            ],
         ),
     ],
 )]
-#[ApiFilter(OrderFilter::class, properties: ['publicationDatetime' => OrderFilterInterface::DIRECTION_DESC])]
 class GalleryResource
 {
     public const string LIST = 'gallery:list';

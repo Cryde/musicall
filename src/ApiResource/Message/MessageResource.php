@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\ApiResource\Message;
 
-use ApiPlatform\Doctrine\Common\Filter\OrderFilterInterface;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SortFilter;
 use ApiPlatform\Doctrine\Orm\State\Options;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
@@ -41,6 +40,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
             name: 'api_message_get_collection',
             provider: MessageCollectionProvider::class,
             stateOptions: new Options(entityClass: Message::class),
+            parameters: [
+                'order[creation_datetime]' => new QueryParameter(filter: new SortFilter(), property: 'creationDatetime', castToArray: false),
+                'order[id]' => new QueryParameter(filter: new SortFilter(), property: 'id', castToArray: false),
+            ],
         ),
         new Post(
             uriTemplate: '/messages',
@@ -60,12 +63,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * differently could then put a tied row on both sides of a page boundary, or on neither, and the
  * second of those loses a message. Naming `id` makes the total order explicit instead of borrowing it
  * from whichever index the planner picked, which is what the composite index from #955 happens to
- * give today. The client has to ask for it: OrderFilter only orders by what the request names.
+ * give today. The client has to ask for it: SortFilter only orders by what the request names, and
+ * the two parameters are applied in the order they are declared.
  */
-#[ApiFilter(OrderFilter::class, properties: [
-    'creationDatetime' => OrderFilterInterface::DIRECTION_DESC,
-    'id' => OrderFilterInterface::DIRECTION_DESC,
-])]
 class MessageResource
 {
     public const string LIST = 'message:list';
