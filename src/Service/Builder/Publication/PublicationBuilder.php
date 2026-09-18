@@ -16,6 +16,7 @@ use App\Entity\PublicationSubCategory;
 use App\Entity\User;
 use App\Enum\Publication\PublicationType;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -24,7 +25,8 @@ readonly class PublicationBuilder
     public function __construct(
         private UploaderHelper         $uploaderHelper,
         private CacheManager           $cacheManager,
-        private HtmlSanitizerInterface $appPublicationSanitizer,
+        #[Target('app.publication_sanitizer')]
+        private HtmlSanitizerInterface $sanitizer,
     ) {
     }
 
@@ -63,7 +65,7 @@ readonly class PublicationBuilder
         $publication = new Publication();
         $publication->id = (int) $publicationEntity->id;
         $publication->slug = $publicationEntity->slug;
-        $publication->content = $this->appPublicationSanitizer->sanitize((string) $publicationEntity->content);
+        $publication->content = $this->sanitizer->sanitize((string) $publicationEntity->content);
         $publication->title = $publicationEntity->title;
         $publication->description = $publicationEntity->getDescription() ?? '';
         $publicationDatetime = $publicationEntity->publicationDatetime;

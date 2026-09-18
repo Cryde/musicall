@@ -2,6 +2,7 @@
 
 namespace App\Service\Mail\Brevo\Contact;
 
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -14,7 +15,8 @@ class ContactUsEmail
     public function __construct(
         private readonly string                 $email,
         private readonly MailerInterface        $mailer,
-        private readonly HtmlSanitizerInterface $appOnlybrSanitizer
+        #[Target('app.onlybr_sanitizer')]
+        private readonly HtmlSanitizerInterface $sanitizer
     ) {
     }
 
@@ -29,7 +31,7 @@ class ContactUsEmail
             ->addParameterizedHeader('params', 'params', [
                 'name'    => $name,
                 'email'   => $emailAddress,
-                'message' => $this->appOnlybrSanitizer->sanitize(nl2br($message)),
+                'message' => $this->sanitizer->sanitize(nl2br($message)),
             ]);
         $this->mailer->send($email);
     }

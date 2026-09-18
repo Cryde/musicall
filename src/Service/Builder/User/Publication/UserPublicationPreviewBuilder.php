@@ -7,6 +7,7 @@ use App\ApiResource\User\Publication\UserPublicationPreview;
 use App\ApiResource\User\Publication\UserPublicationPreviewAuthor;
 use App\Entity\Publication;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Vich\UploaderBundle\Templating\Helper\UploaderHelper;
 
@@ -15,7 +16,8 @@ readonly class UserPublicationPreviewBuilder
     public function __construct(
         private UploaderHelper $uploaderHelper,
         private CacheManager $cacheManager,
-        private HtmlSanitizerInterface $appPublicationSanitizer,
+        #[Target('app.publication_sanitizer')]
+        private HtmlSanitizerInterface $sanitizer,
     ) {
     }
 
@@ -26,7 +28,7 @@ readonly class UserPublicationPreviewBuilder
         $dto->title = $publication->title;
         $dto->slug = $publication->slug;
         $dto->shortDescription = $publication->shortDescription;
-        $dto->content = $this->appPublicationSanitizer->sanitize($publication->content ?? '');
+        $dto->content = $this->sanitizer->sanitize($publication->content ?? '');
         $dto->statusId = $publication->status;
         $dto->statusLabel = Publication::STATUS_LABEL[$publication->status] ?? 'Inconnu';
         $dto->coverUrl = $this->buildCoverUrl($publication);

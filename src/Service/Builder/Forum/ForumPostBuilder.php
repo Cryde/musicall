@@ -4,13 +4,15 @@ namespace App\Service\Builder\Forum;
 
 use App\ApiResource\Forum\ForumPostResource;
 use App\Entity\Forum\ForumPost;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 readonly class ForumPostBuilder
 {
     public function __construct(
         private UserDtoBuilder         $userDtoBuilder,
-        private HtmlSanitizerInterface $appForumSanitizer,
+        #[Target('app.forum_sanitizer')]
+        private HtmlSanitizerInterface $sanitizer,
     ) {
     }
 
@@ -44,7 +46,7 @@ readonly class ForumPostBuilder
         $dto->id = (string) $entity->id;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;
-        $dto->content = $this->appForumSanitizer->sanitize(nl2br($entity->content));
+        $dto->content = $this->sanitizer->sanitize(nl2br($entity->content));
         $dto->creator = $this->userDtoBuilder->buildFromEntity($entity->creator);
 
         $voteCache = $entity->voteCache;

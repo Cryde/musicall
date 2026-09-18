@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 
 /**
  * Makes deletions in Band Space actually reach the object storage (#748).
@@ -57,6 +58,7 @@ class PurgeBandSpaceStorageCommand extends Command
         private readonly BandSpaceFilePurger $filePurger,
         private readonly MessageThreadRepository $messageThreadRepository,
         private readonly EntityManagerInterface $entityManager,
+        #[Target('musicallFilesystem')]
         private readonly FilesystemOperator $musicallFilesystem,
         private readonly LoggerInterface $logger,
         #[Autowire('%band_space.file_retention_days%')]

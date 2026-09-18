@@ -6,6 +6,7 @@ use League\Flysystem\FilesystemException;
 use App\Service\File\Exception\CorruptedFileException;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
 
@@ -14,6 +15,7 @@ class RemoteFileDownloader
     private const array ALLOWED_SCHEMES = ['http', 'https'];
 
     public function __construct(
+        #[Target('musicallFilesystem')]
         private readonly FilesystemOperator $musicallFilesystem,
         private readonly Filesystem         $filesystem,
         private readonly LoggerInterface    $logger

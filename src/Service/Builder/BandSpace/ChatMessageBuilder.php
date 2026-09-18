@@ -8,12 +8,14 @@ use App\Entity\User;
 use App\Repository\Message\MessageMentionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 readonly class ChatMessageBuilder
 {
     public function __construct(
-        private HtmlSanitizerInterface $appOnlybrSanitizer,
+        #[Target('app.onlybr_sanitizer')]
+        private HtmlSanitizerInterface $sanitizer,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
         private MessageMentionRepository $messageMentionRepository,
         private ChatMentionRenderer $chatMentionRenderer,
@@ -102,7 +104,7 @@ readonly class ChatMessageBuilder
         // escaped, so the span the renderer adds is the only markup in there and the username inside
         // it is the only thing that still needs escaping. See ChatMentionRenderer.
         $dto->content = $this->chatMentionRenderer->render(
-            $this->appOnlybrSanitizer->sanitize(nl2br($content)),
+            $this->sanitizer->sanitize(nl2br($content)),
             $usernamesById,
         );
         $dto->creationDatetime = $creationDatetime;

@@ -3,6 +3,7 @@
 namespace App\Fixtures\Publication;
 
 use League\Flysystem\FilesystemOperator;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Zenstruck\Foundry\Story;
 
@@ -13,6 +14,7 @@ class FakeImageGeneratorStory extends Story
 
     public function __construct(
         private readonly ParameterBagInterface $containerBag,
+        #[Target('musicallFilesystem')]
         private readonly FilesystemOperator $musicallFilesystem,
     ) {
     }

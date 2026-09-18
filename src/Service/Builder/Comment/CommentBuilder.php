@@ -5,12 +5,14 @@ namespace App\Service\Builder\Comment;
 use App\ApiResource\Comment\CommentResource;
 use App\Entity\Comment\Comment;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 readonly class CommentBuilder
 {
     public function __construct(
-        private HtmlSanitizerInterface $appOnlybrSanitizer,
+        #[Target('app.onlybr_sanitizer')]
+        private HtmlSanitizerInterface $sanitizer,
         private UserProfilePictureUrlBuilder $profilePictureUrlBuilder,
     ) {
     }
@@ -50,7 +52,7 @@ readonly class CommentBuilder
             'profile_picture_url' => $this->profilePictureUrlBuilder->build($entity->author),
             'deletion_datetime' => $entity->author->deletionDatetime?->format(\DateTimeInterface::ATOM),
         ];
-        $dto->content = $this->appOnlybrSanitizer->sanitize(nl2br($entity->content));
+        $dto->content = $this->sanitizer->sanitize(nl2br($entity->content));
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->upvotes = $entity->voteCache->upvoteCount ?? 0;
         $dto->downvotes = $entity->voteCache->downvoteCount ?? 0;

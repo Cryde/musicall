@@ -10,13 +10,16 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\Message;
 use App\Service\BandSpace\ChatMentionRenderer;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 readonly class MessageBuilder
 {
     public function __construct(
-        private HtmlSanitizerInterface $appOnlybrSanitizer,
-        private HtmlSanitizerInterface $appPlainTextSanitizer,
+        #[Target('app.onlybr_sanitizer')]
+        private HtmlSanitizerInterface $contentSanitizer,
+        #[Target('app.plain_text_sanitizer')]
+        private HtmlSanitizerInterface $previewSanitizer,
         private ChatMentionRenderer $chatMentionRenderer,
     ) {
     }
@@ -49,7 +52,7 @@ readonly class MessageBuilder
         $dto->thread = $this->buildShallowThread($entity->thread->id);
         $dto->content = $this->renderMentions(
             $entity,
-            $this->appOnlybrSanitizer->sanitize(nl2br($entity->content)),
+            $this->contentSanitizer->sanitize(nl2br($entity->content)),
             $mentionUsernamesById,
         );
         $dto->contentPreview = $this->toPreview($entity, $mentionUsernamesById);
@@ -86,7 +89,7 @@ readonly class MessageBuilder
             : $entity->content;
 
         $text = html_entity_decode(
-            $this->appPlainTextSanitizer->sanitize($content),
+            $this->previewSanitizer->sanitize($content),
             ENT_QUOTES | ENT_HTML5,
             'UTF-8',
         );
