@@ -1020,11 +1020,20 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             storage_service?: string|Param, // The service ID of a custom storage implementation, this precedes any configured "cache_pool" // Default: null
  *         },
  *         refresh_jwt?: array{
- *             check_path?: scalar|Param|null, // The path the refresh endpoint answers on, as a path or a route name. It has to be the route you defined for refreshing: the authenticator only takes over requests matching it, and one left at this default never sees them, which surfaces as the router reporting that the route has no controller. // Default: "/login_check"
+ *             check_path?: scalar|Param|null, // The path the refresh endpoint answers on, as a path or a route name. The authenticator only takes over requests matching it, so it has to be the route you defined for refreshing.
  *             provider?: scalar|Param|null,
  *             success_handler?: scalar|Param|null,
  *             failure_handler?: scalar|Param|null,
  *             invalidate_token_on_logout?: bool|Param, // When enabled, the refresh token will be invalided on logout. // Default: true
+ *             ttl?: int|Param, // How long a refresh token issued on this firewall lasts, in seconds. Falls back to the bundle's "ttl". // Default: null
+ *             ttl_update?: bool|Param|null, // Whether using a refresh token on this firewall starts its ttl over. Falls back to the bundle's "ttl_update". // Default: null
+ *             token_parameter_name?: scalar|Param|null, // The request parameter carrying the refresh token on this firewall. Falls back to the bundle's "token_parameter_name". // Default: null
+ *             single_use?: bool|Param|null, // Whether a refresh on this firewall replaces the token it used. Falls back to the bundle's "single_use". // Default: null
+ *             single_use_ttl_update?: bool|Param|null, // Whether a token issued in place of a single use one on this firewall starts its ttl over. Falls back to the bundle's "single_use_ttl_update". // Default: null
+ *             max_session_lifetime?: int|Param, // How long a chain of refreshes on this firewall may go on for, in seconds. Falls back to the bundle's "max_session_lifetime". // Default: null
+ *             max_tokens_per_user?: int|Param, // How many refresh tokens a user may hold at once on this firewall. Falls back to the bundle's "max_tokens_per_user". // Default: null
+ *             return_expiration?: bool|Param|null, // Whether the response on this firewall carries the token expiry. Falls back to the bundle's "return_expiration". // Default: null
+ *             return_expiration_parameter_name?: scalar|Param|null, // The response field carrying the expiry on this firewall. Falls back to the bundle's "return_expiration_parameter_name". // Default: null
  *         },
  *         x509?: array{
  *             provider?: scalar|Param|null,
@@ -1687,9 +1696,27 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     single_use_ttl_update?: bool|Param, // Whether a token issued in place of a single use one starts its ttl over. Turn it off to have it expire when the one it replaced would have, so that refreshing cannot be chained indefinitely. // Default: true
  *     manager_type?: scalar|Param|null, // Set the type of object manager to use (default: orm) // Default: "orm"
  *     refresh_token_class?: scalar|Param|null, // Set the refresh token class to use
+ *     block_previous_jwt?: bool|Param, // Blocks the JWT a refresh replaces, when the request carried one that still parses. Needs LexikJWTAuthenticationBundle's blocklist_token turned on. A JWT that has already expired is left alone, since it is refused everywhere already. // Default: false
  *     hash_tokens?: bool|array{ // Stores the hash of a refresh token instead of the token, so a copy of the database cannot be used to refresh. Off by default.
  *         enabled?: bool|Param, // Default: false
  *         accept_stored_in_the_clear?: bool|Param, // Whether a token stored before this was turned on is still accepted, and rewritten hashed the first time it is used. Turn it off once they have all expired, so that a token read from an old backup cannot be used. // Default: true
+ *     },
+ *     max_session_lifetime?: int|Param, // How long a chain of refreshes may go on for, in seconds, whatever "ttl" says. A ttl that starts over on every rotation means a session can be kept alive indefinitely by using it; this is the ceiling on that. Null, the default, leaves chains unbounded. Needs a token class with families. // Default: null
+ *     block_jwts_on_revocation?: bool|array{ // Refuses the JWTs already issued to a user when their refresh tokens are revoked with revokeAllForUser(). Off by default. Without it a password reset takes the refresh tokens away and leaves every JWT working until it expires.
+ *         enabled?: bool|Param, // Default: false
+ *         cache?: scalar|Param|null, // The PSR-6 pool the revocation marks are kept in. Read on every authenticated request, so a fast one, and shared between your processes: a local pool leaves a revoked user signed in wherever the mark did not reach. // Default: "cache.app"
+ *         ttl?: int|Param, // How long a revocation mark is kept, in seconds. It only has to outlive the JWTs issued before it, so this must be at least your lexik_jwt_authentication.token_ttl. Shorter and the oldest of those tokens start being accepted again. // Default: 3600
+ *         user_claim?: scalar|Param|null, // The payload claim carrying the user, which is Lexik's "user_id_claim". A payload without it is left to the rest of the verification rather than refused. // Default: "username"
+ *     },
+ *     rate_limiter?: bool|array{ // Bounds how often the refresh endpoint will answer. Off by default. Needs symfony/rate-limiter and a limiter configured under framework.rate_limiter.
+ *         enabled?: bool|Param, // Default: false
+ *         limiter?: scalar|Param|null, // The limiter service to consume from, as a service id: a limiter named "refresh" under framework.rate_limiter is the service "limiter.refresh".
+ *         key?: "ip"|"token"|Param, // What the requests are counted against. "ip" protects the endpoint but makes everyone behind one address share an allowance; "token" gives each session its own, which bounds how fast a session may refresh and does nothing about a caller arriving with a different token every time. // Default: "ip"
+ *     },
+ *     reuse_detection?: bool|array{ // Recognises a single-use refresh token being presented after it was spent, and revokes the whole chain it belonged to. Off by default. Needs "single_use" and a token class with families.
+ *         enabled?: bool|Param, // Default: false
+ *         cache?: scalar|Param|null, // The PSR-6 pool the spent tokens are remembered in. Has to be shared between your processes: a local pool only catches a replay that reaches the machine which issued the token. // Default: "cache.app"
+ *         ttl?: int|Param, // How long a spent token stays recognisable, in seconds. Shorter than the refresh token ttl leaves a window in which a replay looks like an ordinary wrong token, so it defaults to the same 30 days. // Default: 2592000
  *     },
  *     api_platform?: bool|array{ // Documents the refresh token in the OpenAPI specification API Platform generates. Off by default, since an application that already documents it by hand would end up with it twice.
  *         enabled?: bool|Param, // Default: false
@@ -1697,6 +1724,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     refresh_token_manager?: scalar|Param|null, // Set your own service implementing RefreshTokenManagerInterface, storing the tokens however you like. Nothing Doctrine is wired when this is set, so the bundle works without it. Mutually exclusive with object_manager and dbal_connection. // Default: null
  *     object_manager?: scalar|Param|null, // The object manager service to store the tokens through, as a service id rather than the name an entity manager is configured under: an entity manager named "foo" is the service "doctrine.orm.foo_entity_manager". Defaults to doctrine.orm.entity_manager. Mutually exclusive with dbal_connection. // Default: null
  *     dbal_connection?: scalar|Param|null, // Set the DBAL connection to use for direct database access. Mutually exclusive with object_manager. // Default: null
+ *     cache_pool?: scalar|Param|null, // Store the tokens in a PSR-6 pool instead of a database, as a service id. Expiry is then the pool's job, so nothing has to be scheduled to clear them. It cannot list or revoke a user's sessions, which rules out max_tokens_per_user, reuse detection and gesdinet:jwt:revoke. Mutually exclusive with object_manager and dbal_connection. // Default: null
  *     dbal_table_name?: scalar|Param|null, // The table name for refresh tokens when using DBAL // Default: "refresh_tokens"
  *     dbal_auto_create_table?: bool|Param, // Create the refresh tokens table on the first request when it does not exist. Off by default: it runs DDL while serving traffic, so the connection needs rights to alter the schema. Prefer a migration. // Default: false
  *     dbal_columns?: array<string, array{ // Default: []
