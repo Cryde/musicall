@@ -70,7 +70,7 @@
         "symfony/validator": "8.1.*",
         "symfony/web-link": "8.1.*",
         "symfony/yaml": "8.1.*",
-        "vich/uploader-bundle": "^2.8.1"
+        "vich/uploader-bundle": "^3"
     },
     "require-dev": {
         "dama/doctrine-test-bundle": "^8.4",

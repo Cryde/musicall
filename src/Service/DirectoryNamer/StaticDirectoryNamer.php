@@ -6,7 +6,7 @@ use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Vich\UploaderBundle\Exception\NameGenerationException;
-use Vich\UploaderBundle\Mapping\PropertyMapping;
+use Vich\UploaderBundle\Mapping\PropertyMappingInterface;
 use Vich\UploaderBundle\Naming\ConfigurableInterface;
 use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
 
@@ -24,7 +24,8 @@ class StaticDirectoryNamer implements DirectoryNamerInterface, ConfigurableInter
         $this->propertyAccessor = $propertyAccessor ?: PropertyAccess::createPropertyAccessor();
     }
 
-    public function directoryName($object, PropertyMapping $mapping): string
+    /** @param object|array<mixed> $object */
+    public function directoryName(object|array $object, PropertyMappingInterface $mapping): string
     {
         // When we specify a propertyPath we act like "Vich\UploaderBundle\Naming\PropertyDirectoryNamer"
         if ($this->propertyPath !== '' && $this->propertyPath !== '0') {
