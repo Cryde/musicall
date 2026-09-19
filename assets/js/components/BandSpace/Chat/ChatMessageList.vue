@@ -20,52 +20,84 @@
       {{ chatStore.loadOlderError }}
     </Message>
 
-    <div
-      v-for="message in chatStore.messages"
-      :key="message['@id']"
-      class="flex gap-3"
-      :class="{ 'flex-row-reverse': isMine(message) }"
-    >
+    <!-- One block per burst (#1031): the avatar, the name and the time belong to the block, and only
+         the bubbles repeat inside it. -->
+    <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
+      <!-- Dated only when the conversation resumes after a silence, so a busy exchange is marked
+           once at its start rather than every time the speaker changes. -->
+      <p
+        v-if="needsTimeSeparator(messageBlocks[blockIndex - 1], block)"
+        class="-mb-2 text-center text-xs text-surface-500 dark:text-surface-400"
+      >
+        <time :datetime="block.messages[0].creation_datetime">
+          {{ absoluteDate(block.messages[0].creation_datetime) }}
+        </time>
+      </p>
+
+      <div
+        class="flex gap-3"
+        :class="{ 'flex-row-reverse': isMine(block.messages[0]) }"
+      >
       <Avatar
-        :username="message.author_username"
-        :picture-url="message.author_profile_picture_url"
+        :username="block.messages[0].author_username"
+        :picture-url="block.messages[0].author_profile_picture_url"
         size="md"
         class="mt-1 shrink-0"
       />
 
-      <div class="min-w-0 max-w-[75%]" :class="{ 'text-right': isMine(message) }">
+      <div class="min-w-0 max-w-[75%]" :class="{ 'text-right': isMine(block.messages[0]) }">
         <div
           class="flex items-baseline gap-2 mb-1 text-xs text-surface-500 dark:text-surface-400"
-          :class="{ 'flex-row-reverse': isMine(message) }"
+          :class="{ 'flex-row-reverse': isMine(block.messages[0]) }"
         >
           <span class="font-semibold text-surface-700 dark:text-surface-200 truncate">
-            {{ message.author_username }}
+            {{ block.messages[0].author_username }}
           </span>
-          <span>{{ relativeDate(message.creation_datetime) }}</span>
         </div>
 
-        <div
-          class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
-          :class="
-            isMine(message)
-              ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
-              : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'
-          "
-          v-html="autoLink(message.content)"
-        />
+        <div class="space-y-1">
+          <div
+            v-for="(message, index) in block.messages"
+            :key="message['@id']"
+            class="group/message flex items-center gap-2"
+            :class="isMine(message) ? 'flex-row-reverse' : 'flex-row'"
+          >
+            <div
+              class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
+              :class="[
+                isMine(message)
+                  ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
+                  : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
+                bubbleCornerClasses(index, block.messages.length, isMine(message)),
+              ]"
+              v-html="autoLink(message.content)"
+            />
+            <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
+                 or not there is a pointer to hover with. -->
+            <time
+              :datetime="message.creation_datetime"
+              class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
+            >
+              {{ absoluteDate(message.creation_datetime) }}
+            </time>
+          </div>
+        </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
 import Message from 'primevue/message'
-import { nextTick, onMounted, ref, watch } from 'vue'
-import relativeDate from '../../../helper/date/relative-date.js'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { autoLink } from '../../../utils/autoLink.js'
+import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
+import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
@@ -75,6 +107,10 @@ const props = defineProps({
 const chatStore = useBandSpaceChatStore()
 const userSecurityStore = useUserSecurityStore()
 const messagesContainer = ref(null)
+
+const messageBlocks = computed(() =>
+  groupMessages(chatStore.messages, (message) => message.author_id)
+)
 
 function isMine(message) {
   return message.author_username === userSecurityStore.user?.username
