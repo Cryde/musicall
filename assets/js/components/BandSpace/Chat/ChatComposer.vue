@@ -32,6 +32,7 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, ref } from 'vue'
+import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 
 const props = defineProps({
@@ -52,13 +53,6 @@ const composer = ref(null)
 const content = ref('')
 const sendError = ref('')
 const isEmpty = computed(() => content.value.trim() === '')
-
-/**
- * `@tous` rides the roster as a pretend member, so it is picked and chipped like anybody else. The
- * hint travels with it rather than as a prop, which keeps the editor ignorant of what "tous" means.
- * Must match ChatMentionResolver::EVERYONE_TOKEN on the server.
- */
-const EVERYONE_MEMBER = { user_id: 'tous', username: 'tous', hint: 'tout le groupe' }
 
 const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
 

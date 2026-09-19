@@ -83,4 +83,19 @@ class ChatMessageResource
      * @var list<array{type: string, target_id: string, label: string, is_available: bool}>
      */
     public array $attachments = [];
+
+    /** Null until the author edits it, which is what the « modifié » marker reads (#966). */
+    public ?DateTimeInterface $updateDatetime = null;
+
+    /**
+     * The message as it is **stored**, with its `@[uuid]` tokens intact, and only for the member who
+     * wrote it (#966).
+     *
+     * `content` above is rendered: sanitized, and with its mentions already turned into spans by
+     * ChatMentionRenderer. MentionEditor round trips the stored format, so an edit box seeded from
+     * `content` would offer somebody their own message with the markup in it. Nothing is leaked by
+     * shipping it, since it is the viewer's own text, and gating it on authorship keeps the payload
+     * honest about who the PATCH will accept.
+     */
+    public ?string $editableContent = null;
 }

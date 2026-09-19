@@ -65,31 +65,97 @@
               class="flex items-center gap-2"
               :class="isMine(message) ? 'flex-row-reverse' : 'flex-row'"
             >
-              <div
-                class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
-                :class="[
-                  isMine(message)
-                    ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
-                    : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
-                  bubbleCornerClasses(index, block.messages.length, isMine(message)),
-                ]"
-              >
-                <div v-html="autoLink(message.content)" />
-                <ChatMessageAttachments
-                  v-if="message.attachments?.length"
-                  :attachments="message.attachments"
-                  :band-space-id="bandSpaceId"
-                  :is-mine="isMine(message)"
+              <!-- Editing happens where the bubble is, so the conversation keeps its shape around it
+                   and there is no dialog to lose your place in (#966). -->
+              <div v-if="editingId === message.id" class="min-w-0 flex-1 text-left">
+                <MentionEditor
+                  ref="editor"
+                  v-model="editContent"
+                  :members="suggestionSource"
+                  aria-label="Modifier le message"
+                  editor-class="min-h-[3rem] max-h-40 rounded-2xl px-3 py-2"
+                  submit-on="enter"
+                  :disabled="isSaving"
+                  @submit="saveEdit(message)"
+                  @keydown.esc="cancelEdit"
                 />
+                <Message v-if="saveError" severity="error" :closable="false" class="mt-1">
+                  {{ saveError }}
+                </Message>
+                <div class="mt-1 flex justify-end gap-2">
+                  <Button
+                    label="Annuler"
+                    size="small"
+                    severity="secondary"
+                    text
+                    :disabled="isSaving"
+                    @click="cancelEdit"
+                  />
+                  <Button
+                    label="Enregistrer"
+                    size="small"
+                    icon="pi pi-check"
+                    :loading="isSaving"
+                    :disabled="!hasEditChanges || isSaving"
+                    @click="saveEdit(message)"
+                  />
+                </div>
               </div>
-              <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
-                   or not there is a pointer to hover with. -->
-              <time
-                :datetime="message.creation_datetime"
-                class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
-              >
-                {{ absoluteDate(message.creation_datetime) }}
-              </time>
+
+              <template v-else>
+                <div
+                  class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
+                  :class="[
+                    isMine(message)
+                      ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
+                      : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
+                    bubbleCornerClasses(index, block.messages.length, isMine(message)),
+                  ]"
+                >
+                  <div v-html="autoLink(message.content)" />
+                  <ChatMessageAttachments
+                    v-if="message.attachments?.length"
+                    :attachments="message.attachments"
+                    :band-space-id="bandSpaceId"
+                    :is-mine="isMine(message)"
+                  />
+                </div>
+                <div
+                  class="flex shrink-0 items-center gap-1"
+                  :class="{ 'flex-row-reverse': isMine(message) }"
+                >
+                  <!-- Shown without hovering, unlike the time beside it: that an edit happened is part
+                       of what the message says, not a detail you go looking for. -->
+                  <span
+                    v-if="message.update_datetime"
+                    class="whitespace-nowrap text-[11px] italic text-surface-500 dark:text-surface-400"
+                  >
+                    (modifié)
+                  </span>
+                  <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
+                       or not there is a pointer to hover with. -->
+                  <time
+                    :datetime="message.creation_datetime"
+                    class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
+                  >
+                    {{ absoluteDate(message.creation_datetime) }}
+                  </time>
+                  <!-- Hidden until hover only from `lg` up, the treatment the task thread already uses
+                       for its own row controls: a touch screen has no hover, so a pencil that only
+                       appears on one would be unreachable. Opacity rather than display, so revealing it
+                       shifts nothing, and on focus too, or a keyboard lands on a control nothing on
+                       screen explains. -->
+                  <button
+                    v-if="canEdit(message)"
+                    type="button"
+                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
+                    aria-label="Modifier le message"
+                    @click="startEdit(message)"
+                  >
+                    <i class="pi pi-pencil text-xs" aria-hidden="true" />
+                  </button>
+                </div>
+              </template>
             </div>
 
             <ChatMessageReactions
@@ -110,18 +176,22 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { autoLink } from '../../../utils/autoLink.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
+import MentionEditor from '../../Global/MentionEditor.vue'
 import Avatar from '../../User/Avatar.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'
 
 const props = defineProps({
-  bandSpaceId: { type: String, required: true }
+  bandSpaceId: { type: String, required: true },
+  /** The roster the `@` dropdown of an open edit box filters, supplied by the view that holds it. */
+  members: { type: Array, default: () => [] }
 })
 
 const chatStore = useBandSpaceChatStore()
@@ -132,8 +202,89 @@ const messageBlocks = computed(() =>
   groupMessages(chatStore.messages, (message) => message.author_id)
 )
 
+/** `@tous` is offered here too, or reopening a message that names everybody could not keep it. */
+const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
+
 function isMine(message) {
   return message.author_username === userSecurityStore.user?.username
+}
+
+const editor = ref(null)
+const editingId = ref(null)
+/** The stored `@[uuid]` format, which is what the editor reads and writes and what gets sent. */
+const editContent = ref('')
+const isSaving = ref(false)
+const saveError = ref('')
+
+/**
+ * The server sends `editable_content` only on the messages it will accept a PATCH for, so asking it
+ * is asking the one authority there is. isMine() above is a different question: it decides which side
+ * of the pane a bubble sits on, and it compares usernames.
+ */
+function canEdit(message) {
+  return typeof message.editable_content === 'string'
+}
+
+/**
+ * Both sides trimmed, not just the typed one: a contenteditable settles on whatever trailing
+ * whitespace the browser wants, so comparing it against an untrimmed stored string would light up
+ * « Enregistrer » on a message nobody touched and paint « modifié » for nothing.
+ */
+const hasEditChanges = computed(() => {
+  if (editingId.value === null) {
+    return false
+  }
+
+  const trimmed = editContent.value.trim()
+  if (trimmed === '') {
+    return false
+  }
+
+  const held = chatStore.messages.find((message) => message.id === editingId.value)
+
+  return trimmed !== (held?.editable_content ?? '').trim()
+})
+
+function startEdit(message) {
+  editingId.value = message.id
+  editContent.value = message.editable_content
+  saveError.value = ''
+  // At the end, because you reopen a message to add to it rather than to overwrite it.
+  nextTick(() => editorRef()?.focusAtEnd())
+}
+
+/** The editor sits behind a `v-if` in a `v-for`, so Vue hands the ref back as a single element list. */
+function editorRef() {
+  return Array.isArray(editor.value) ? editor.value[0] : editor.value
+}
+
+function cancelEdit() {
+  editingId.value = null
+  editContent.value = ''
+  saveError.value = ''
+}
+
+/**
+ * The box stays open when the save fails, which is the whole reason this awaits rather than closing
+ * on the click: with mentions in it, losing the edit means picking every member again.
+ */
+async function saveEdit(message) {
+  if (!hasEditChanges.value || isSaving.value) {
+    return
+  }
+
+  isSaving.value = true
+  saveError.value = ''
+
+  try {
+    await chatStore.editMessage(props.bandSpaceId, message.id, editContent.value.trim())
+    cancelEdit()
+  } catch (e) {
+    console.error('Failed to edit the message:', e)
+    saveError.value = e.message || "Le message n'a pas pu être modifié."
+  } finally {
+    isSaving.value = false
+  }
 }
 
 function scrollToBottom() {

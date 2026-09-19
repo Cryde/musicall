@@ -210,6 +210,22 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   /**
+   * Rewrites one message the member already sent (#966).
+   *
+   * Merged rather than spliced: the helper matches on `@id` and keeps the position, so the copy the
+   * server answers with lands exactly where the conversation already holds it, with its re-rendered
+   * content and its edit date. The count is untouched, because an edit adds nothing.
+   *
+   * No shared saving flag: an edit is per message and the row that opened it owns its own, the way
+   * the task comment thread does. Errors are left to it too, since the box stays open on a failure
+   * rather than losing what was typed.
+   */
+  async function editMessage(bandSpaceId, messageId, content) {
+    const message = await bandSpaceChatApi.updateMessage(bandSpaceId, messageId, content)
+    messages.value = mergeMessages(messages.value, [message])
+  }
+
+  /**
    * Opening the tab is reading it. The badge lives on the notification payload rather than in this
    * store, because the sidebar shows it from every other module too, so clearing it means refreshing
    * that payload, the same shape the direct message store uses after marking a thread read.
@@ -289,6 +305,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     loadOlderMessages,
     sendMessage,
     toggleReaction,
+    editMessage,
     markAsRead,
     handleIncomingMessage,
     clear

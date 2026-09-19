@@ -67,8 +67,8 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'member' => [
                 // The apostrophe comes back escaped: the content is sanitizer output, exactly like
                 // the direct message thread, and the thread view renders it with v-html.
-                $this->expectedMessage($newer->id, $space, $member, 'batteur', 'j&#039;apporte la basse', '2026-09-10T20:05:00+00:00'),
-                $this->expectedMessage($older->id, $space, $member, 'batteur', 'on répète mardi', '2026-09-10T20:00:00+00:00'),
+                $this->expectedMessage($newer->id, $space, $member, 'batteur', 'j&#039;apporte la basse', '2026-09-10T20:05:00+00:00', "j'apporte la basse"),
+                $this->expectedMessage($older->id, $space, $member, 'batteur', 'on répète mardi', '2026-09-10T20:00:00+00:00', 'on répète mardi'),
             ],
         ]);
     }
@@ -101,8 +101,8 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             '@type' => 'Collection',
             'totalItems' => 52,
             'member' => [
-                $this->expectedMessage($messages[2]->id, $space, $member, 'batteur', 'message 2', '2026-09-10T20:02:00+00:00'),
-                $this->expectedMessage($messages[1]->id, $space, $member, 'batteur', 'message 1', '2026-09-10T20:01:00+00:00'),
+                $this->expectedMessage($messages[2]->id, $space, $member, 'batteur', 'message 2', '2026-09-10T20:02:00+00:00', 'message 2'),
+                $this->expectedMessage($messages[1]->id, $space, $member, 'batteur', 'message 1', '2026-09-10T20:01:00+00:00', 'message 1'),
             ],
             'view' => [
                 '@id' => '/api/band_spaces/' . $space->id . '/chat/messages?page=2',
@@ -190,6 +190,58 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 $this->expectedMessage($message->id, $space, $gone, 'Utilisateur supprimé', 'salut', '2026-09-10T20:00:00+00:00'),
+            ],
+        ]);
+    }
+
+    public function test_an_edited_message_is_dated_and_only_its_author_is_given_the_raw_text(): void
+    {
+        // The two fields #966 adds to the list, and they answer different questions. `update_datetime`
+        // is what paints the « modifié » marker for everybody; `editable_content` is the stored text,
+        // tokens and all, and only the member who wrote the message is given it, because only they can
+        // PATCH it.
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $other = UserFactory::new()->asBaseUser()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $other])->create();
+        $channel = $this->channelOf($space);
+
+        $mine = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $member,
+            'content' => 'on répète mardi',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+            'updateDatetime' => new \DateTimeImmutable('2026-09-10 20:30:00'),
+        ])->create();
+        $theirs = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $other,
+            'content' => 'ok pour moi',
+            'creationDatetime' => new \DateTime('2026-09-10 20:35:00'),
+        ])->create();
+
+        $this->client->loginUser($member);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/chat/messages');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/band_spaces/' . $space->id . '/chat/messages',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                $this->expectedMessage($theirs->id, $space, $other, 'bassiste', 'ok pour moi', '2026-09-10T20:35:00+00:00'),
+                $this->expectedMessage(
+                    $mine->id,
+                    $space,
+                    $member,
+                    'batteur',
+                    'on répète mardi',
+                    '2026-09-10T20:00:00+00:00',
+                    'on répète mardi',
+                    '2026-09-10T20:30:00+00:00',
+                ),
             ],
         ]);
     }
@@ -294,6 +346,8 @@ class ChatMessageGetCollectionTest extends ApiTestCase
         string $expectedUsername,
         string $content,
         string $creationDatetime,
+        ?string $editableContent = null,
+        ?string $updateDatetime = null,
     ): array {
         return [
             // Composite, because the resource declares two identifiers and has no item operation of
@@ -310,6 +364,10 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'creation_datetime' => $creationDatetime,
             'reactions' => [],
             'attachments' => [],
+            'update_datetime' => $updateDatetime,
+            // The stored text, tokens and all, and only for the member who wrote it: it is what
+            // seeds the edit box, and only its author may PATCH it (#966).
+            'editable_content' => $editableContent,
         ];
     }
 

@@ -58,6 +58,10 @@ class ChatMessagePostTest extends ApiTestCase
             'creation_datetime' => $message->creationDatetime->format('c'),
             'reactions' => [],
             'attachments' => [],
+            'update_datetime' => null,
+            // The stored text, which the sender's own edit box is seeded from (#966). Unescaped,
+            // unlike `content` above, because nothing renders it as HTML.
+            'editable_content' => "on répète mardi, j'apporte la basse",
         ]);
     }
 

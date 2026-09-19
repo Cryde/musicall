@@ -127,6 +127,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => 'bonjour',
             'creation_datetime' => $message->creationDatetime->format('c'),
+            'update_datetime' => null,
+            'editable_content' => 'bonjour',
             'reactions' => [],
             'attachments' => [],
         ]);
@@ -170,6 +172,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => 'tout est là',
             'creation_datetime' => $message->creationDatetime->format('c'),
+            'update_datetime' => null,
+            'editable_content' => 'tout est là',
             'reactions' => [],
             // Ordered by kind then target id, which is what makes the payload predictable: the rows
             // are written in one flush, so their second-granular datetime cannot separate them.
@@ -254,7 +258,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
                     $this->expectedCard('setlist', (string) $setlist->id, 'Set du 14 juillet'),
                     $this->expectedCard('song', (string) $song->id, 'Ma dernière chanson'),
                     $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli'),
-                ]),
+                ],
+                    'tout est là'),
             ],
         ]);
     }
@@ -548,14 +553,17 @@ class ChatMessageAttachmentTest extends ApiTestCase
             '@type' => 'Collection',
             'totalItems' => 3,
             'member' => [
-                $this->expectedMessage($bare, $space, $member, 'rien ici', '2026-09-10T20:10:00+00:00', []),
+                $this->expectedMessage($bare, $space, $member, 'rien ici', '2026-09-10T20:10:00+00:00', [],
+                    'rien ici'),
                 $this->expectedMessage($newer, $space, $member, 'et la setlist', '2026-09-10T20:05:00+00:00', [
                     $this->expectedCard('setlist', (string) $setlist->id, 'Set du 14 juillet'),
-                ]),
+                ],
+                    'et la setlist'),
                 $this->expectedMessage($older, $space, $member, 'la tâche et le morceau', '2026-09-10T20:00:00+00:00', [
                     $this->expectedCard('song', (string) $song->id, 'Ma dernière chanson'),
                     $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli'),
-                ]),
+                ],
+                    'la tâche et le morceau'),
             ],
         ]);
     }
@@ -599,7 +607,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
                         'label' => 'Réparer l\'ampli',
                         'is_available' => false,
                     ],
-                ]),
+                ],
+                    'regarde ça'),
             ],
         ]);
     }
@@ -640,7 +649,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'member' => [
                 $this->expectedMessage($message, $space, $member, 'regarde ça', '2026-09-10T20:00:00+00:00', [
                     $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli'),
-                ]),
+                ],
+                    'regarde ça'),
             ],
         ]);
     }
@@ -693,7 +703,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
                     // The snapshot, and still available: the entry is there, it is simply not renamed
                     // under the reader's nose.
                     $this->expectedCard('finance', (string) $personal->id, 'Cordes'),
-                ]),
+                ],
+                    null),
             ],
         ]);
     }
@@ -771,6 +782,7 @@ class ChatMessageAttachmentTest extends ApiTestCase
         string $content,
         string $creationDatetime,
         array $attachments,
+        ?string $editableContent,
     ): array {
         return [
             '@id' => '/api/chat_messages/id=' . $message->id . ';bandSpaceId=' . $space->id,
@@ -782,6 +794,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => $creationDatetime,
+            'update_datetime' => null,
+            'editable_content' => $editableContent,
             'reactions' => [],
             'attachments' => $attachments,
         ];

@@ -7,6 +7,7 @@ namespace App\Entity\Message;
 use App\Entity\User;
 use App\Repository\Message\MessageRepository;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -40,6 +41,15 @@ class Message
 
     #[ORM\Column(type: Types::TEXT)]
     public string $content;
+
+    /**
+     * Null until the author edits the message (#966), which is what the « modifié » marker reads.
+     *
+     * Immutable where creationDatetime above is mutable: that one predates the convention and is
+     * written by MessageSenderProcedure, so it stays as it is rather than being migrated here.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $updateDatetime = null;
 
     public function __construct()
     {
