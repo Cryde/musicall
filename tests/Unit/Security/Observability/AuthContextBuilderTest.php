@@ -108,7 +108,7 @@ class AuthContextBuilderTest extends TestCase
         $this->assertSame($builder->build()['request_id'], $builder->build()['request_id']);
     }
 
-    private function builderFor(Request $request, ?string $release = 'v1.2.3'): AuthContextBuilder
+    private function builderFor(Request $request): AuthContextBuilder
     {
         $extractor = new ChainExtractor();
         $extractor->addExtractor(new RequestCookieExtractor());
@@ -117,6 +117,6 @@ class AuthContextBuilderTest extends TestCase
         $stack = new RequestStack();
         $stack->push($request);
 
-        return new AuthContextBuilder($stack, $extractor, 'refresh_token', $release);
+        return new AuthContextBuilder($stack, $extractor, 'refresh_token');
     }
 }

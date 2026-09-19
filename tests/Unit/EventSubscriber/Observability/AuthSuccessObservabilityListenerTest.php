@@ -163,7 +163,7 @@ class AuthSuccessObservabilityListenerTest extends TestCase
             }
         );
 
-        $builder = new AuthContextBuilder($stack, $extractor, 'refresh_token', 'v1');
+        $builder = new AuthContextBuilder($stack, $extractor, 'refresh_token');
         $registry = new ConsumedRefreshTokenRegistry($this->pool, $this->createStub(LoggerInterface::class));
 
         return [

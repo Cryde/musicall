@@ -172,7 +172,7 @@ class AuthFailureObservabilityListenerTest extends TestCase
             }
         );
 
-        $builder = new AuthContextBuilder($stack, $extractor, 'refresh_token', 'v1');
+        $builder = new AuthContextBuilder($stack, $extractor, 'refresh_token');
 
         return new AuthFailureObservabilityListener(
             new AuthLogger($logger, $builder, $enabled),
