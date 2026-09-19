@@ -58,7 +58,9 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
         [$bandSpace] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
-        if (!$message instanceof Message) {
+        // A tombstone takes no edit, the same 404 the delete endpoint answers with: its content is
+        // already gone, so a PATCH would not be a correction but a way to write over a deletion.
+        if (!$message instanceof Message || $message->isDeleted()) {
             throw new NotFoundHttpException('Message introuvable');
         }
 

@@ -4,9 +4,11 @@ namespace App\ApiResource\BandSpace\Chat;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\State\Processor\BandSpace\Chat\ChatMessageDeleteProcessor;
 use App\State\Provider\BandSpace\Chat\ChatMessageCollectionProvider;
 use DateTimeInterface;
 
@@ -34,6 +36,20 @@ use DateTimeInterface;
             security: "is_granted('ROLE_USER')",
             name: 'api_band_space_chat_messages_get_collection',
             provider: ChatMessageCollectionProvider::class,
+        ),
+        // read: false because there is no item provider to read with, and writing one would repeat the
+        // membership check and the lookup the processor has to do anyway.
+        new Delete(
+            uriTemplate: '/band_spaces/{bandSpaceId}/chat/messages/{id}',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+                'id' => new Link(fromClass: self::class, identifiers: ['id']),
+            ],
+            openapi: new Operation(tags: ['Band Space Chat']),
+            security: "is_granted('ROLE_USER')",
+            read: false,
+            name: 'api_band_space_chat_messages_delete',
+            processor: ChatMessageDeleteProcessor::class,
         ),
     ],
     normalizationContext: ['skip_null_values' => false],
@@ -98,4 +114,10 @@ class ChatMessageResource
      * honest about who the PATCH will accept.
      */
     public ?string $editableContent = null;
+
+    /**
+     * Deleted, which the client paints as « Message supprimé » (#967). The author, the avatar and the
+     * time stay, because that is what keeps the thread readable; `content` comes back empty.
+     */
+    public bool $isDeleted = false;
 }

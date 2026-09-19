@@ -15,6 +15,8 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 readonly class MessageBuilder
 {
+    private const string DELETED_PREVIEW = 'Message supprimé';
+
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $contentSanitizer,
@@ -84,6 +86,13 @@ readonly class MessageBuilder
      */
     private function toPreview(Message $entity, array $mentionUsernamesById): string
     {
+        // A deleted message is still the thread's last one, so the inbox row keeps showing it (#967).
+        // Its content is empty, and an empty preview makes ThreadList.vue fall back to « Aucun
+        // message », which is a lie about a conversation that has one.
+        if ($entity->isDeleted()) {
+            return self::DELETED_PREVIEW;
+        }
+
         $content = $entity->thread->bandSpace instanceof BandSpace
             ? $this->chatMentionRenderer->renderPlain($entity->content, $mentionUsernamesById)
             : $entity->content;

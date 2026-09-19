@@ -34,7 +34,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}> $rows
      * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
      *                     which rows carry their editable content.
      *
@@ -70,7 +70,8 @@ readonly class ChatMessageBuilder
                 $reactionsByMessage[(string) $row['id']] ?? [],
                 $attachmentsByMessage[(string) $row['id']] ?? [],
                 $row['updateDatetime'],
-                $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content']),
+                $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content'], $row['deletionDatetime'] !== null),
+                $row['deletionDatetime'] !== null,
             ),
             $rows,
         );
@@ -96,7 +97,8 @@ readonly class ChatMessageBuilder
             $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer)[$messageId] ?? [],
             $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId)[$messageId] ?? [],
             $entity->updateDatetime,
-            $this->editableContentFor((string) $entity->author->id, (string) $viewer->id, $entity->content),
+            $this->editableContentFor((string) $entity->author->id, (string) $viewer->id, $entity->content, $entity->isDeleted()),
+            $entity->isDeleted(),
         );
     }
 
@@ -105,9 +107,9 @@ readonly class ChatMessageBuilder
      * with, and only its author may PATCH it (#966). A deleted account never reads anything, so the
      * `Utilisateur supprimé` substitution above cannot be undone through here.
      */
-    private function editableContentFor(string $authorId, string $viewerId, string $content): ?string
+    private function editableContentFor(string $authorId, string $viewerId, string $content, bool $isDeleted): ?string
     {
-        return $authorId === $viewerId ? $content : null;
+        return !$isDeleted && $authorId === $viewerId ? $content : null;
     }
 
     /**
@@ -129,6 +131,7 @@ readonly class ChatMessageBuilder
         array $attachments = [],
         ?\DateTimeInterface $updateDatetime = null,
         ?string $editableContent = null,
+        bool $isDeleted = false,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -152,6 +155,7 @@ readonly class ChatMessageBuilder
         // Raw on purpose, where `content` above is rendered: MentionEditor round trips the stored
         // `@[uuid]` format, so this is the only shape an edit box can be seeded from.
         $dto->editableContent = $editableContent;
+        $dto->isDeleted = $isDeleted;
 
         return $dto;
     }

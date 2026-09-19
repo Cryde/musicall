@@ -44,10 +44,12 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   )
 
   /**
-   * The total can only go up, because nothing deletes a message yet. A response that was issued
-   * before a send lands with a total that predates it, and taking it at face value would hide the
-   * « charger les messages plus anciens » button while history is still unread. Revisit at #967,
-   * which is when a message can start disappearing.
+   * The total can only go up. A response that was issued before a send lands with a total that
+   * predates it, and taking it at face value would hide the « charger les messages plus anciens »
+   * button while history is still unread.
+   *
+   * #967 does not change that: deleting a message leaves a tombstone in the list and in the count,
+   * so the total still never falls.
    */
   function knownTotal(reported) {
     return Math.max(reported ?? 0, totalMessages.value, messages.value.length)
@@ -226,6 +228,20 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   /**
+   * Turns the message into a tombstone in place rather than refetching the page (#967).
+   *
+   * The server answers 204 and keeps the row, so the only thing that changes is these two fields.
+   * Dropping it from the list instead would take the message out from under everyone else's scroll
+   * position until their next refetch put it back.
+   */
+  async function deleteMessage(bandSpaceId, messageId) {
+    await bandSpaceChatApi.deleteMessage(bandSpaceId, messageId)
+    messages.value = messages.value.map((message) =>
+      message.id === messageId ? { ...message, content: '', is_deleted: true } : message
+    )
+  }
+
+  /**
    * Opening the tab is reading it. The badge lives on the notification payload rather than in this
    * store, because the sidebar shows it from every other module too, so clearing it means refreshing
    * that payload, the same shape the direct message store uses after marking a thread read.
@@ -306,6 +322,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     sendMessage,
     toggleReaction,
     editMessage,
+    deleteMessage,
     markAsRead,
     handleIncomingMessage,
     clear

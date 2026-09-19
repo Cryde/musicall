@@ -75,5 +75,14 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  /** 204 with no body: the message stays in the list as a tombstone. */
+  deleteMessage(bandSpaceId, messageId) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_chat_messages_delete', { bandSpaceId, id: messageId })
+      )
+      .catch(handleApiError)
   }
 }

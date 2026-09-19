@@ -82,4 +82,19 @@ class MessageMentionRepository extends ServiceEntityRepository
 
         return $byMessage;
     }
+
+    /**
+     * Drops the mention rows of one message, for the delete that empties it (#967).
+     *
+     * A DQL delete rather than loading the rows to remove them: nothing cascades off a mention and
+     * no lifecycle event hangs on one, while a `@[tous]` in a large band is a row per member. Any
+     * instance already in the identity map survives the statement, which no caller reads after this.
+     */
+    public function deleteByMessage(Message $message): void
+    {
+        $this->getEntityManager()
+            ->createQuery('DELETE FROM App\Entity\Message\MessageMention mention WHERE mention.message = :message')
+            ->setParameter('message', $message->id)
+            ->execute();
+    }
 }

@@ -103,7 +103,17 @@
               </div>
 
               <template v-else>
+                <!-- A tombstone keeps its place in the block, muted and never coloured by side: what
+                     is left is the fact that somebody wrote here, not the message (#967). -->
                 <div
+                  v-if="message.is_deleted"
+                  class="inline-block rounded-2xl bg-surface-100 px-4 py-2 text-sm italic text-surface-600 dark:bg-surface-800 dark:text-surface-300"
+                  :class="bubbleCornerClasses(index, block.messages.length, isMine(message))"
+                >
+                  Message supprimé
+                </div>
+                <div
+                  v-else
                   class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
                   :class="[
                     isMine(message)
@@ -127,7 +137,7 @@
                   <!-- Shown without hovering, unlike the time beside it: that an edit happened is part
                        of what the message says, not a detail you go looking for. -->
                   <span
-                    v-if="message.update_datetime"
+                    v-if="message.update_datetime && !message.is_deleted"
                     class="whitespace-nowrap text-[11px] italic text-surface-500 dark:text-surface-400"
                   >
                     (modifié)
@@ -154,6 +164,17 @@
                   >
                     <i class="pi pi-pencil text-xs" aria-hidden="true" />
                   </button>
+                  <!-- Shown outright below `lg`, where there is no pointer to hover with, and only on
+                       hover or focus above it, the same rule TaskCommentList uses. -->
+                  <button
+                    v-if="canDelete(message)"
+                    type="button"
+                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-red-600 focus-visible:opacity-100 lg:opacity-0 lg:group-hover/message:opacity-100 dark:text-surface-300 dark:hover:text-red-400"
+                    aria-label="Supprimer le message"
+                    @click="confirmDelete(message)"
+                  >
+                    <i class="pi pi-trash text-xs" aria-hidden="true" />
+                  </button>
                 </div>
               </template>
             </div>
@@ -175,12 +196,16 @@
 <script setup>
 import Button from 'primevue/button'
 import Message from 'primevue/message'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { autoLink } from '../../../utils/autoLink.js'
+import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
@@ -196,6 +221,9 @@ const props = defineProps({
 
 const chatStore = useBandSpaceChatStore()
 const userSecurityStore = useUserSecurityStore()
+const confirm = useConfirm()
+const toast = useToast()
+const { isAdmin } = useBandSpaceNavigation()
 const messagesContainer = ref(null)
 
 const messageBlocks = computed(() =>
@@ -215,6 +243,39 @@ const editingId = ref(null)
 const editContent = ref('')
 const isSaving = ref(false)
 const saveError = ref('')
+
+function canDelete(message) {
+  return canDeleteChatMessage(message, isMine(message), isAdmin.value)
+}
+
+function confirmDelete(message) {
+  confirm.require({
+    message: 'Supprimer ce message ? Son contenu sera effacé pour tout le monde.',
+    header: 'Confirmer la suppression',
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Annuler',
+    acceptLabel: 'Supprimer',
+    acceptClass: 'p-button-danger',
+    accept: () => handleDelete(message)
+  })
+}
+
+/**
+ * The failure is shown rather than swallowed: the bubble stays exactly as it was, so without a toast
+ * a refused delete looks like a click that did nothing.
+ */
+async function handleDelete(message) {
+  try {
+    await chatStore.deleteMessage(props.bandSpaceId, message.id)
+  } catch (e) {
+    console.error('Failed to delete the chat message:', e)
+    toast.add({
+      severity: 'error',
+      summary: e.message || "Le message n'a pas pu être supprimé.",
+      life: 5000
+    })
+  }
+}
 
 /**
  * The server sends `editable_content` only on the messages it will accept a PATCH for, so asking it
