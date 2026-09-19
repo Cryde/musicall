@@ -11,6 +11,10 @@ when@prod:
             # see https://docs.sentry.io/platforms/php/data-management/data-collected/ for more info
             # send_default_pii: true
             environment: '%kernel.environment%'
+            # Auth lifecycle events go to Sentry Logs, not Sentry Errors (#1021). A failed refresh
+            # is an expected business event with a rate, not an exception: routing these through
+            # captureMessage would burn the 5k errors/month quota and bury the issue stream.
+            enable_logs: true
             ignore_exceptions:
                 - 'Symfony\Component\ErrorHandler\Error\FatalError'
                 - 'Symfony\Component\Debug\Exception\FatalErrorException'
@@ -46,3 +50,23 @@ when@prod:
 #        Sentry\SentryBundle\Monolog\LogsHandler:
 #            arguments:
 #                - !php/const Monolog\Logger::INFO
+
+    monolog:
+        handlers:
+            # Only the `auth` channel. The floor is info rather than the warning the Sentry docs
+            # use, deliberately: refresh successes are logged at info and they are the denominator,
+            # so a warning floor would leave a failure count with nothing to divide it by.
+            #
+            # Nothing here is auth specific, so another channel is one more entry in the list below.
+            # One trap if you add one: LogsHandler drops any record whose context carries an
+            # `exception` key holding a Throwable, on the grounds that those belong in Sentry Errors
+            # rather than Sentry Logs. Such a record would vanish rather than arrive.
+            sentry_logs:
+                type: service
+                id: Sentry\SentryBundle\Monolog\LogsHandler
+                channels: [auth]
+
+    services:
+        Sentry\SentryBundle\Monolog\LogsHandler:
+            arguments:
+                $level: !php/const Monolog\Level::Info
