@@ -24,6 +24,13 @@ lexik_jwt_authentication:
             partitioned: false
             split:
                 - signature
+    # Both are on, and that is safe because accepting a credential is not issuing one.
+    # ChainTokenExtractor::extract() returns the first extractor that yields a token, and
+    # LexikJWTAuthenticationExtension::createTokenExtractors() builds the map header-first, so a
+    # browser request still authenticates from its cookies and only a caller that already holds a
+    # complete JWT can use the header. The web can never be that caller: the split exists so script
+    # never holds more than header.payload, and jwt_s stays out of its reach. Issuing is the half
+    # that cannot be shared, which is what the native firewalls in security.yaml are for.
     token_extractors:
         split_cookie:
             enabled: true
@@ -31,7 +38,7 @@ lexik_jwt_authentication:
                 - jwt_hp
                 - jwt_s
         authorization_header:
-            enabled: false
+            enabled: true
     blocklist_token:
         enabled: true
         cache: cache.app

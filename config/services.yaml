@@ -80,6 +80,36 @@ services:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onAuthenticationFailure }
 
+    # The native half of #1016: a session issued into the response body instead of into cookies.
+    #
+    # With no cookie providers, JWTAuthenticationSuccessResponse takes its `!$jwtCookies` branch and
+    # seeds the body with the token, and the strip in handleAuthenticationSuccess() never fires. So
+    # the JWT is not split for a native client and the body is never empty, which is also why this
+    # cannot come back 204. The flag is redundant for that reason and passed anyway, because it
+    # states what this service is for. The refresh token and the Mercure subscriber token are still
+    # attached as cookies at this point; NativeCredentialsInBodyListener moves them.
+    app.security.native.authentication_success_handler:
+        class: Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Authentication\AuthenticationSuccessHandler
+        arguments:
+            $jwtManager: '@lexik_jwt_authentication.jwt_manager'
+            $dispatcher: '@event_dispatcher'
+            $cookieProviders: []
+            $removeTokenFromBodyWhenCookiesUsed: false
+
+    # gesdinet's wrapper around that one, and it is not optional.
+    # RefreshTokenAuthenticatorFactory::createAuthenticationSuccessHandler() only builds it when the
+    # firewall names no success_handler of its own, so pointing native_api_token_refresh straight at
+    # the handler above would stop RefreshEvent / gesdinet.refresh_token being dispatched. Nothing
+    # listens to it today, which is precisely why the omission would stay silent until
+    # block_previous_jwt or reuse_detection is turned on.
+    app.security.native.refresh_success_handler:
+        class: Gesdinet\JWTRefreshTokenBundle\Security\Http\Authentication\AuthenticationSuccessHandler
+        arguments:
+            $lexikAuthenticationSuccessHandler: '@app.security.native.authentication_success_handler'
+            $eventDispatcher: '@event_dispatcher'
+        calls:
+            - setFirewallName: ['native_api_token_refresh']
+
     App\Controller\OAuth\GoogleController:
         arguments:
             $frontendUrl: '%env(DEFAULT_URI)%'

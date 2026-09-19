@@ -39,6 +39,42 @@ security:
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
             login_throttling:
                 cache_pool: 'rate_limiter.cache'
+
+        # The native pair (#1016). Same credentials, same user checker, same failure handler as the
+        # web above; all that differs is that the session comes back in the response body and no
+        # cookie is set, which is the only thing a native client cannot emulate without a cookie jar.
+        #
+        # Everything under App\Security\Native\NativeSurface::PREFIX is blinded to cookies before the
+        # firewall runs. That is what makes a second issuing surface safe rather than a second way
+        # for an injected script to turn the browser's httpOnly refresh token into a complete JWT.
+        # Read BlindNativeSurfaceToCookiesListener before adding anything here.
+        native_login:
+            pattern: ^/api/native/login
+            stateless: true
+            user_checker: App\Security\UserChecker
+            json_login:
+                check_path: /api/native/login_check
+                success_handler: app.security.native.authentication_success_handler
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            # The web firewall's own bucket, deliberately shared. LoginThrottlingFactory puts the
+            # firewall name in the limiter id, so throttling configured here would be a second,
+            # independent password-guessing budget against the same account and double the rate an
+            # attacker gets by alternating the two endpoints.
+            login_throttling:
+                limiter: security.login_throttling.login.limiter
+
+        # Separate from native_login rather than one firewall over ^/api/native/, for the reason
+        # api_token_refresh is separate from login: LoginThrottlingListener charges any passport
+        # carrying a UserBadge, and gesdinet's authenticator produces one, so a combined firewall
+        # would spend the login allowance on every token refresh.
+        native_api_token_refresh:
+            pattern: ^/api/native/token/refresh
+            stateless: true
+            user_checker: App\Security\UserChecker
+            refresh_jwt:
+                check_path: /api/native/token/refresh
+                success_handler: app.security.native.refresh_success_handler
+
         api:
             pattern: ^/api/
             lazy: true
@@ -73,6 +109,8 @@ security:
         - { path: ^/api/users/request-reset-password, role: PUBLIC_ACCESS }
         - { path: ^/api/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/native/login_check, roles: PUBLIC_ACCESS }
+        - { path: ^/api/native/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/shares/, role: PUBLIC_ACCESS }
 
 when@test:

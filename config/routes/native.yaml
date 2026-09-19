@@ -1,0 +1,23 @@
+# The credential-issuing endpoints for native clients (#1016). Both are answered by a firewall
+# authenticator, so these carry no controller and exist for one reason: RouterListener runs at
+# priority 32 and Firewall at 8, so without a route the request would 404 before the firewall got a
+# look. api_login_check in config/routes.yaml is there for the same reason.
+#
+# Deliberately not exposed to FOSJsRouting. These answer with a complete JWT in the response body,
+# and the Vue client must never be able to name one.
+#
+# `methods` is defence in depth rather than decoration: gesdinet's RefreshTokenAuthenticator matches
+# on the path alone with no method check, and SameSite=Lax does send cookies on a cross-site
+# top-level navigation, so a bare `window.location` would otherwise reach the refresh endpoint. The
+# blinding listener already makes that harmless; this refuses it one layer earlier, at the router.
+api_native_login_check:
+    path: /api/native/login_check
+    methods: [POST]
+    defaults:
+        _format: json
+
+api_native_token_refresh:
+    path: /api/native/token/refresh
+    methods: [POST]
+    defaults:
+        _format: json
