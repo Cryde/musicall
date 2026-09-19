@@ -16,6 +16,16 @@ parameters:
     file_user_profile_picture_destination: 'images/user/profile'
     file_musician_media_thumbnail_destination: 'images/musician/media'
 
+    # Kill switch for the auth instrumentation (#1021), so it can be stopped without a deploy.
+    #
+    # Defaults ON, and that is the load-bearing part: Deployer shares `.env` *and* `.env.local`, so a
+    # variable added to the committed `.env` never reaches production. A default-off flag would ship
+    # dead and nobody would notice, because the symptom is an absence of logs. Set
+    # AUTH_OBSERVABILITY_ENABLED=0 in the server's shared `.env` to turn it off. Note the `default`
+    # processor treats an empty value as unset, so `=0` is the way to disable it, not `=`.
+    app.auth_observability.default: true
+    app.auth_observability.enabled: '%env(bool:default:app.auth_observability.default:AUTH_OBSERVABILITY_ENABLED)%'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -48,6 +58,12 @@ services:
     App\Service\Identifier\RequestIdentifier:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'
+
+    App\Security\Observability\AuthContextBuilder:
+        arguments:
+            $tokenParameterName: '%gesdinet_jwt_refresh_token.token_parameter_name%'
+            # Whatever Sentry is tagging this deploy with, so a fix shows up as a break in the curve.
+            $release: '%env(default::SENTRY_RELEASE)%'
 
     App\Service\Mail\Brevo\Contact\ContactUsEmail:
         arguments:

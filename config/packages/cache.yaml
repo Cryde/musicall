@@ -1,7 +1,14 @@
 framework:
     cache:
-        # Unique name of your app: used to compute stable namespaces for cache keys.
-        #prefix_seed: your_vendor_name/app_name
+        # Pinned, and load-bearing (#1021). Left unset, Symfony derives the namespace seed from
+        # kernel.project_dir, which under Deployer is a per-release path: every pool would land on a
+        # fresh namespace at each deploy. That would silently reset the consumed-token trail exactly
+        # when a deploy-induced logout is most interesting, and it leaves the JWT blocklist failing
+        # open, since a revoked token becomes valid again for the rest of its hour.
+        #
+        # Changing this once moves every pool to a new namespace, so the next deploy starts on a cold
+        # cache. Nothing here is authoritative, so that costs a recompute and no correctness.
+        prefix_seed: musicall
 
         # The "app" cache stores to the filesystem by default.
         # The data in this cache should persist between deploys.
@@ -18,6 +25,11 @@ framework:
         pools:
             rate_limiter.cache:
                 adapter: cache.app
+            # The recently-consumed refresh token trail (#1021). Diagnostics only: losing it costs
+            # the ability to tell a race from an unknown token, and nothing else.
+            auth.consumed_tokens:
+                adapter: cache.app
+                default_lifetime: 600
 
 when@test:
     framework:
@@ -25,4 +37,6 @@ when@test:
             app: cache.adapter.array
             pools:
                 rate_limiter.cache:
+                    adapter: cache.adapter.array
+                auth.consumed_tokens:
                     adapter: cache.adapter.array
