@@ -5,7 +5,8 @@ import {
   groupResultsByType,
   moveActiveIndex,
   routeForResult,
-  SEARCH_TYPES
+  SEARCH_TYPES,
+  searchTypeFor
 } from './bandSpaceSearch.js'
 
 function result(type, resourceId) {
@@ -114,5 +115,23 @@ describe('routeForResult', () => {
   it('returns null for a type the palette does not know', () => {
     assert.equal(routeForResult(result('rider', 'abc'), 'space-1'), null)
     assert.equal(routeForResult(undefined, 'space-1'), null)
+  })
+})
+
+describe('searchTypeFor', () => {
+  it('answers with the label and icon the palette renders', () => {
+    assert.equal(searchTypeFor('song').label, 'Morceaux')
+    assert.equal(searchTypeFor('song').icon, 'pi-play')
+  })
+
+  it('covers every declared type', () => {
+    for (const { type } of SEARCH_TYPES) {
+      assert.equal(searchTypeFor(type)?.type, type)
+    }
+  })
+
+  it('returns null for a kind it does not know', () => {
+    assert.equal(searchTypeFor('rider'), null)
+    assert.equal(searchTypeFor(undefined), null)
   })
 })

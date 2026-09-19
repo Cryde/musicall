@@ -61,6 +61,7 @@ class ChatMessageReactionTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => 'on répète mardi',
             'creation_datetime' => '2026-09-10T20:00:00+00:00',
+            'attachments' => [],
             'reactions' => [
                 ['key' => 'thumbs_up', 'emoji' => '👍', 'count' => 1, 'has_reacted' => true],
             ],
@@ -93,6 +94,7 @@ class ChatMessageReactionTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => 'on répète mardi',
             'creation_datetime' => '2026-09-10T20:00:00+00:00',
+            'attachments' => [],
             'reactions' => [
                 ['key' => 'thumbs_up', 'emoji' => '👍', 'count' => 1, 'has_reacted' => true],
             ],
@@ -385,6 +387,7 @@ class ChatMessageReactionTest extends ApiTestCase
                     'author_profile_picture_url' => null,
                     'content' => 'on répète mardi',
                     'creation_datetime' => '2026-09-10T20:00:00+00:00',
+                    'attachments' => [],
                     // Two members on the thumb, one on the heart, and every other emoji absent rather
                     // than present with a zero.
                     'reactions' => [
@@ -429,6 +432,7 @@ class ChatMessageReactionTest extends ApiTestCase
                     'author_profile_picture_url' => null,
                     'content' => 'on répète mardi',
                     'creation_datetime' => '2026-09-10T20:00:00+00:00',
+                    'attachments' => [],
                     'reactions' => [
                         ['key' => 'thumbs_down', 'emoji' => '👎', 'count' => 1, 'has_reacted' => true],
                         ['key' => 'guitar', 'emoji' => '🎸', 'count' => 1, 'has_reacted' => true],
@@ -476,6 +480,7 @@ class ChatMessageReactionTest extends ApiTestCase
                     'author_profile_picture_url' => null,
                     'content' => 'on répète mardi',
                     'creation_datetime' => '2026-09-10T20:00:00+00:00',
+                    'attachments' => [],
                     'reactions' => [
                         ['key' => 'party', 'emoji' => '🎉', 'count' => 1, 'has_reacted' => false],
                     ],

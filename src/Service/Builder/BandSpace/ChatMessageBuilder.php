@@ -10,6 +10,7 @@ use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageReactionRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
+use App\Service\Message\MessageAttachmentResolver;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
@@ -22,6 +23,7 @@ readonly class ChatMessageBuilder
         private MessageMentionRepository $messageMentionRepository,
         private ChatMentionRenderer $chatMentionRenderer,
         private MessageReactionRepository $messageReactionRepository,
+        private MessageAttachmentResolver $messageAttachmentResolver,
     ) {
     }
 
@@ -38,14 +40,18 @@ readonly class ChatMessageBuilder
      */
     public function buildFromProjection(array $rows, string $bandSpaceId, User $viewer): array
     {
+        $messageIds = array_map(static fn (array $row): string => (string) $row['id'], $rows);
+
         // One query for the whole page, never one per message. The lookup lives here rather than in
         // the caller so that no entry point can forget it and quietly render every name as
         // `@inconnu` (#964).
-        $messageIds = array_map(static fn (array $row): string => (string) $row['id'], $rows);
         $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds($messageIds);
         // Same rule, same reason (#968): one grouped query for the page, here rather than in the
         // caller so no entry point can forget it and silently drop every reaction.
         $reactionsByMessage = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer);
+        // Same rule, and the same reason it lives here: one query for the page's rows plus one per
+        // kind of target present, never one per message (#970).
+        $attachmentsByMessage = $this->messageAttachmentResolver->resolveForMessages($messageIds, $bandSpaceId);
 
         return array_map(
             fn (array $row): ChatMessageResource => $this->build(
@@ -59,6 +65,7 @@ readonly class ChatMessageBuilder
                 $row['creationDatetime'],
                 $mentionsByMessage[(string) $row['id']] ?? [],
                 $reactionsByMessage[(string) $row['id']] ?? [],
+                $attachmentsByMessage[(string) $row['id']] ?? [],
             ),
             $rows,
         );
@@ -82,12 +89,14 @@ readonly class ChatMessageBuilder
             $entity->creationDatetime,
             $this->messageMentionRepository->findUsernamesByMessageIds([$messageId])[$messageId] ?? [],
             $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer)[$messageId] ?? [],
+            $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId)[$messageId] ?? [],
         );
     }
 
     /**
      * @param array<string, string> $usernamesById user id => username, for the mentions this message carries
      * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
+     * @param list<array{type: string, target_id: string, label: string, is_available: bool}> $attachments
      */
     private function build(
         string $id,
@@ -100,6 +109,7 @@ readonly class ChatMessageBuilder
         \DateTimeInterface $creationDatetime,
         array $usernamesById,
         array $reactionTallies,
+        array $attachments = [],
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -118,6 +128,7 @@ readonly class ChatMessageBuilder
         );
         $dto->creationDatetime = $creationDatetime;
         $dto->reactions = $this->buildReactions($reactionTallies);
+        $dto->attachments = $attachments;
 
         return $dto;
     }

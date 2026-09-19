@@ -109,6 +109,18 @@ export function moveActiveIndex(length, current, step) {
 }
 
 /**
+ * The palette's own metadata for a record kind, label and icon included, or null for a kind it does
+ * not know. Shared with the chat attachment card (#970), so a card and a palette hit cannot end up
+ * naming or picturing the same kind of record differently.
+ *
+ * @param {string} type
+ * @returns {{type: string, label: string, icon: string, route: string, param: string}|null}
+ */
+export function searchTypeFor(type) {
+  return TYPE_BY_KEY.get(type) ?? null
+}
+
+/**
  * The vue-router location a result opens, or null for a type the palette does not know.
  *
  * @param {{type: string, resource_id: string}} result
