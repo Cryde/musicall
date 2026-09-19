@@ -16,6 +16,7 @@ use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Index(name: 'idx_message_thread_creation', columns: ['thread_id', 'creation_datetime'])]
+#[ORM\Index(name: 'idx_message_thread_pinned', columns: ['thread_id', 'pinned_datetime'])]
 class Message
 {
     #[ORM\Id]
@@ -58,6 +59,19 @@ class Message
      */
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $deletionDatetime = null;
+
+    /**
+     * When this message was pinned to the top of its channel, null when it is not (#969).
+     *
+     * Two columns on the message rather than a pin table: a message is pinned at most once, so a
+     * table would be a join for nothing, and the pinned list stays a plain index read.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $pinnedDatetime = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    public ?User $pinnedBy = null;
 
     public function __construct()
     {

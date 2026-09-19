@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\State\Processor\BandSpace\Chat\ChatMessageDeleteProcessor;
 use App\State\Provider\BandSpace\Chat\ChatMessageCollectionProvider;
+use App\State\Provider\BandSpace\Chat\ChatPinnedMessageCollectionProvider;
 use DateTimeInterface;
 
 /**
@@ -50,6 +51,20 @@ use DateTimeInterface;
             read: false,
             name: 'api_band_space_chat_messages_delete',
             processor: ChatMessageDeleteProcessor::class,
+        ),
+        // Its own collection rather than a filter on the list above: a pinned message is nearly
+        // always far up the history, so the pane has not loaded it (#969). Capped at ten by
+        // ChatMessagePinProcessor, so there is nothing to paginate.
+        new GetCollection(
+            uriTemplate: '/band_spaces/{bandSpaceId}/chat/pinned_messages',
+            uriVariables: [
+                'bandSpaceId' => new Link(fromClass: self::class, identifiers: ['bandSpaceId']),
+            ],
+            openapi: new Operation(tags: ['Band Space Chat']),
+            paginationEnabled: false,
+            security: "is_granted('ROLE_USER')",
+            name: 'api_band_space_chat_pinned_messages_get_collection',
+            provider: ChatPinnedMessageCollectionProvider::class,
         ),
     ],
     normalizationContext: ['skip_null_values' => false],
@@ -120,4 +135,11 @@ class ChatMessageResource
      * time stay, because that is what keeps the thread readable; `content` comes back empty.
      */
     public bool $isDeleted = false;
+
+    public bool $isPinned = false;
+
+    public ?DateTimeInterface $pinnedDatetime = null;
+
+    /** `Utilisateur supprimé` once the account is gone, exactly like the author field above. */
+    public ?string $pinnedByUsername = null;
 }

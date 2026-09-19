@@ -150,6 +150,25 @@
                   >
                     {{ absoluteDate(message.creation_datetime) }}
                   </time>
+                  <!-- Reserves its space like the time above, so the row never moves, but reveals at
+                       once rather than after a second: this one is there to be clicked. A pinned
+                       message keeps its marker visible, because the bar says what is pinned and this
+                       says which one. -->
+                  <button
+                    v-if="!message.is_deleted"
+                    type="button"
+                    class="shrink-0 rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 transition-opacity duration-150 hover:text-primary-700 focus-visible:opacity-100 disabled:opacity-50 group-hover/message:opacity-100 dark:bg-surface-700 dark:text-surface-300 dark:hover:text-primary-300"
+                    :class="message.is_pinned ? 'opacity-100' : 'opacity-0'"
+                    :disabled="chatPin.isPending(message)"
+                    :aria-label="chatPin.actionLabel(message)"
+                    @click="chatPin.togglePin(message)"
+                  >
+                    <i
+                      class="pi"
+                      :class="message.is_pinned ? 'pi-bookmark-fill' : 'pi-bookmark'"
+                      aria-hidden="true"
+                    />
+                  </button>
                   <!-- Hidden until hover only from `lg` up, the treatment the task thread already uses
                        for its own row controls: a touch screen has no hover, so a pencil that only
                        appears on one would be unreachable. Opacity rather than display, so revealing it
@@ -200,6 +219,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { useChatPin } from '../../../composables/useChatPin.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import absoluteDate from '../../../helper/date/absolute-date.js'
 import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js'
@@ -220,6 +240,7 @@ const props = defineProps({
 })
 
 const chatStore = useBandSpaceChatStore()
+const chatPin = useChatPin(props.bandSpaceId)
 const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
 const toast = useToast()

@@ -34,7 +34,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
      *                     which rows carry their editable content.
      *
@@ -72,6 +72,9 @@ readonly class ChatMessageBuilder
                 $row['updateDatetime'],
                 $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content'], $row['deletionDatetime'] !== null),
                 $row['deletionDatetime'] !== null,
+                $row['pinnedDatetime'],
+                $row['pinnedByUsername'],
+                $row['pinnedByDeletionDatetime'] !== null,
             ),
             $rows,
         );
@@ -99,6 +102,9 @@ readonly class ChatMessageBuilder
             $entity->updateDatetime,
             $this->editableContentFor((string) $entity->author->id, (string) $viewer->id, $entity->content, $entity->isDeleted()),
             $entity->isDeleted(),
+            $entity->pinnedDatetime,
+            $entity->pinnedBy?->username,
+            $entity->pinnedBy?->isDeleted() ?? false,
         );
     }
 
@@ -132,6 +138,9 @@ readonly class ChatMessageBuilder
         ?\DateTimeInterface $updateDatetime = null,
         ?string $editableContent = null,
         bool $isDeleted = false,
+        ?\DateTimeInterface $pinnedDatetime = null,
+        ?string $pinnedByUsername = null,
+        bool $pinnedByIsDeleted = false,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -156,6 +165,13 @@ readonly class ChatMessageBuilder
         // `@[uuid]` format, so this is the only shape an edit box can be seeded from.
         $dto->editableContent = $editableContent;
         $dto->isDeleted = $isDeleted;
+        // The timestamp is the single source of truth for both: a pin can only be described by the
+        // row that carries it, so the flag cannot disagree with the date.
+        $dto->isPinned = $pinnedDatetime !== null;
+        $dto->pinnedDatetime = $pinnedDatetime;
+        $dto->pinnedByUsername = $pinnedByUsername === null
+            ? null
+            : ($pinnedByIsDeleted ? User::DELETED_DISPLAY_NAME : $pinnedByUsername);
 
         return $dto;
     }

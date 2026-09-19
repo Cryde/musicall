@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Enum\BandSpace\MembershipStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -44,9 +45,43 @@ class MessageRepository extends ServiceEntityRepository
      * tombstones out would leave holes in a conversation and put the page size out of step with the
      * count below (#967).
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findForThread(MessageThread $thread, int $limit, int $offset): array
+    {
+        return $this->projectionForThread($thread)
+            ->orderBy('message.creationDatetime', 'DESC')
+            ->addOrderBy('message.id', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The channel's pinned messages, newest pin first, in the same shape as a page of the list.
+     *
+     * Its own collection rather than a filter on the list, because the point of a pin is that the
+     * message is far up the history and therefore almost never on the page the pane has loaded (#969).
+     * Unbounded on purpose: ChatMessagePinProcessor caps a channel at ten, so there is no page to turn.
+     *
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     */
+    public function findPinnedForThread(MessageThread $thread): array
+    {
+        return $this->projectionForThread($thread)
+            ->andWhere('message.pinnedDatetime IS NOT NULL')
+            ->orderBy('message.pinnedDatetime', 'DESC')
+            ->addOrderBy('message.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The select and the joins both projections share, so a column added for the list cannot go
+     * missing from the pinned bar, which renders the same resource.
+     */
+    private function projectionForThread(MessageThread $thread): QueryBuilder
     {
         return $this->createQueryBuilder('message')
             ->select(
@@ -59,17 +94,18 @@ class MessageRepository extends ServiceEntityRepository
                 'author.username AS authorUsername',
                 'author.deletionDatetime AS authorDeletionDatetime',
                 'picture.imageName AS authorProfilePictureName',
+                'message.pinnedDatetime AS pinnedDatetime',
+                // Joined here rather than looked up per message: hydrating the pinner would drag the
+                // three profile tables along (#730) once per row, which is the very cost this
+                // projection exists to avoid.
+                'pinner.username AS pinnedByUsername',
+                'pinner.deletionDatetime AS pinnedByDeletionDatetime',
             )
             ->join('message.author', 'author')
             ->leftJoin('author.profilePicture', 'picture')
+            ->leftJoin('message.pinnedBy', 'pinner')
             ->where('message.thread = :thread')
-            ->orderBy('message.creationDatetime', 'DESC')
-            ->addOrderBy('message.id', 'DESC')
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
-            ->setParameter('thread', $thread)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('thread', $thread);
     }
 
     /**
@@ -97,6 +133,18 @@ class MessageRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function countPinnedForThread(MessageThread $thread): int
+    {
+        return (int) $this->createQueryBuilder('message')
+            ->select('COUNT(message.id)')
+            ->where('message.thread = :thread')
+            ->andWhere('message.pinnedDatetime IS NOT NULL')
+            ->setParameter('thread', $thread)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
 
     /**
      * How many messages in each of this user's threads they have not read yet, keyed by thread id.

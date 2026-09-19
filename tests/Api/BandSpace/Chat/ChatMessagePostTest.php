@@ -63,6 +63,9 @@ class ChatMessagePostTest extends ApiTestCase
             // unlike `content` above, because nothing renders it as HTML.
             'editable_content' => "on répète mardi, j'apporte la basse",
             'is_deleted' => false,
+            'is_pinned' => false,
+            'pinned_datetime' => null,
+            'pinned_by_username' => null,
         ]);
     }
 

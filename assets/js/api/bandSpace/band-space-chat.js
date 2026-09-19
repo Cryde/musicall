@@ -17,6 +17,34 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * The channel's pinned messages, newest pin first. Its own collection because a pinned message is
+   * nearly always far up the history, so the pane has not loaded the page it lives on (#969).
+   */
+  getPinnedMessages(bandSpaceId) {
+    return axios
+      .get(Routing.generate('api_band_space_chat_pinned_messages_get_collection', { bandSpaceId }))
+      .then((resp) => resp.data.member)
+      .catch(handleApiError)
+  },
+
+  /** Both answer with the message as it now stands, so the pane never has to guess what changed. */
+  pinMessage(bandSpaceId, messageId) {
+    return axios
+      .post(Routing.generate('api_band_space_chat_messages_pin', { bandSpaceId, id: messageId }))
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  unpinMessage(bandSpaceId, messageId) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_chat_messages_unpin', { bandSpaceId, id: messageId })
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   markAsRead(bandSpaceId) {
     return axios
       .post(Routing.generate('api_band_space_chat_read', { bandSpaceId }))

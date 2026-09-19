@@ -2,6 +2,8 @@
   <div
     class="bg-surface-0 dark:bg-surface-900 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-16rem)] min-h-[400px]"
   >
+    <ChatPinnedBar v-if="!chatStore.loadError" :band-space-id="bandSpaceId" />
+
     <div
       v-if="chatStore.loadError"
       class="flex flex-col items-center justify-center flex-1 p-8 gap-4"
@@ -49,6 +51,7 @@ import { onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
+import ChatPinnedBar from '../../components/BandSpace/Chat/ChatPinnedBar.vue'
 import { useBandSpaceChatStore } from '../../store/bandSpace/bandSpaceChat.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 
@@ -71,6 +74,8 @@ async function load() {
   // Not awaited: the conversation is what the member came for, and a dropdown that is not usable for
   // another moment costs them nothing.
   settingsStore.loadMembers(bandSpaceId).catch(() => {})
+  // Not awaited either: the bar hides itself until it has something, so nothing on screen waits on it.
+  chatStore.loadPinnedMessages(bandSpaceId)
   await chatStore.loadMessages(bandSpaceId)
   // Arriving on the tab is reading it, like the direct message inbox does on selecting a thread.
   // After the load rather than before, so a failed load does not claim the member read anything.

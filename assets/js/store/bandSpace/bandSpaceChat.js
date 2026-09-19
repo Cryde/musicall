@@ -38,6 +38,12 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   // Keyed `messageId:emoji`, so tapping the same pill twice before the first call answers is ignored
   // while tapping a different one is not.
   const pendingReactions = ref(new Set())
+  // The « infos importantes » bar (#969). Its own list rather than a filter over `messages`, because
+  // a pinned message is usually far up the history and therefore not on the page the pane holds.
+  const pinnedMessages = ref([])
+  // Which message has a pin call in flight, so its button can be disabled: a second click on
+  // « Détacher » would otherwise come back 404 and toast something the member cannot act on.
+  const pendingPinMessageId = ref(null)
 
   const hasOlderMessages = computed(() =>
     hasOlderToLoad(messages.value.length, totalMessages.value)
@@ -148,6 +154,65 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     } finally {
       isSending.value = false
     }
+  }
+
+  async function loadPinnedMessages(bandSpaceId) {
+    // Same token as the message list: switching band while this is in flight must not hang another
+    // band's pins over the conversation that is now on screen.
+    const token = loadToken
+    try {
+      const pinned = await bandSpaceChatApi.getPinnedMessages(bandSpaceId)
+      if (token === loadToken) {
+        pinnedMessages.value = pinned
+      }
+    } catch (e) {
+      // The conversation itself is what the member came for, so a bar that cannot load stays hidden
+      // rather than turning the pane into an error.
+      console.error('Failed to load the pinned messages:', e)
+    }
+  }
+
+  /**
+   * Pin, then unpin. Both re-read the bar rather than splicing the answer into it: the server orders
+   * by pin time and settles what a second member pinning the same message meant, so re-reading is the
+   * only version that cannot disagree with it.
+   *
+   * Errors are rethrown, unlike the load above: the cap and the deletion grace period both answer 409
+   * with a sentence the member needs to see.
+   */
+  async function pinMessage(bandSpaceId, messageId) {
+    await runPinCall(bandSpaceId, messageId, () =>
+      bandSpaceChatApi.pinMessage(bandSpaceId, messageId)
+    )
+  }
+
+  async function unpinMessage(bandSpaceId, messageId) {
+    await runPinCall(bandSpaceId, messageId, () =>
+      bandSpaceChatApi.unpinMessage(bandSpaceId, messageId)
+    )
+  }
+
+  async function runPinCall(bandSpaceId, messageId, call) {
+    pendingPinMessageId.value = messageId
+    try {
+      replaceHeldMessage(await call())
+      await loadPinnedMessages(bandSpaceId)
+    } finally {
+      pendingPinMessageId.value = null
+    }
+  }
+
+  /**
+   * Refreshes a message already on screen, and only that: merging would *insert* one that is not,
+   * which after unpinning something old would drop a message from last month into the pane as though
+   * history had been loaded.
+   */
+  function replaceHeldMessage(updated) {
+    const iri = updated?.['@id']
+    if (!iri) {
+      return
+    }
+    messages.value = messages.value.map((message) => (message['@id'] === iri ? updated : message))
   }
 
   /**
@@ -305,6 +370,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     isSending.value = false
     reactionError.value = null
     pendingReactions.value = new Set()
+    pinnedMessages.value = []
+    pendingPinMessageId.value = null
   }
 
   return {
@@ -316,9 +383,14 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     loadOlderError: readonly(loadOlderError),
     isSending: readonly(isSending),
     reactionError: readonly(reactionError),
+    pinnedMessages: readonly(pinnedMessages),
+    pendingPinMessageId: readonly(pendingPinMessageId),
     hasOlderMessages,
     loadMessages,
     loadOlderMessages,
+    loadPinnedMessages,
+    pinMessage,
+    unpinMessage,
     sendMessage,
     toggleReaction,
     editMessage,
