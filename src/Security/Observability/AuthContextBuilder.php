@@ -27,7 +27,6 @@ readonly class AuthContextBuilder
         private RequestStack $requestStack,
         private ExtractorInterface $refreshTokenExtractor,
         private string $tokenParameterName,
-        private ?string $release,
     ) {
     }
 
@@ -39,7 +38,7 @@ readonly class AuthContextBuilder
         $request = $this->requestStack->getCurrentRequest();
 
         if (!$request instanceof Request) {
-            return ['release' => $this->release ?: null];
+            return [];
         }
 
         $presentedToken = $this->presentedRefreshToken($request);
@@ -57,7 +56,6 @@ readonly class AuthContextBuilder
             'user_ref' => $user instanceof User && isset($user->id) ? $user->id : null,
             'request_id' => $this->requestId($request),
             'user_agent' => $request->headers->get('User-Agent'),
-            'release' => $this->release ?: null,
         ];
     }
 

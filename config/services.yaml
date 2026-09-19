@@ -59,11 +59,11 @@ services:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'
 
+    # No $release argument: the SDK already stamps `sentry.release` on every log from the same env
+    # var, so a second one here would be one value under two names (#1029).
     App\Security\Observability\AuthContextBuilder:
         arguments:
             $tokenParameterName: '%gesdinet_jwt_refresh_token.token_parameter_name%'
-            # Whatever Sentry is tagging this deploy with, so a fix shows up as a break in the curve.
-            $release: '%env(default::SENTRY_RELEASE)%'
 
     App\Service\Mail\Brevo\Contact\ContactUsEmail:
         arguments:
