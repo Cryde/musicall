@@ -1,11 +1,13 @@
 /**
- * Reading a chip based composer back into the stored mention format (#1005).
+ * The seam between a chip based composer and the stored mention format (#1005, #1006).
  *
  * The composer shows a name; what gets sent is still `@[<uuid>]`, so nothing on the server changes.
- * This is the seam between the two, and it is deliberately the only thing that knows about both: the
- * walk below is written against `nodeType` / `nodeValue` / `childNodes` rather than against anything
- * browser specific, so it can be tested with plain objects and, the day a real editor takes over the
- * editing surface, only `readMentionParts` is replaced while `toWireFormat` stays put.
+ * This module is deliberately the only thing that knows about both, and it goes both ways: reading an
+ * editor back into the wire format, and building the nodes an editor starts from when it is seeded
+ * with something already stored. Everything here is written against `nodeType` / `nodeValue` /
+ * `childNodes` rather than against anything browser specific, so it can be tested with plain objects
+ * and, the day a real editor takes over the editing surface, only the node handling is replaced while
+ * `toWireFormat` stays put.
  */
 
 /** Rather than `Node.TEXT_NODE`, which does not exist outside a browser and so cannot be tested. */
@@ -97,4 +99,31 @@ export function toWireFormat(parts) {
  */
 export function serializeEditor(root) {
   return toWireFormat(readMentionParts(root))
+}
+
+/**
+ * The nodes an editor starts from when it is seeded with something already stored (#1006), which is
+ * what the task comment edit box needs: it opens on a comment that may already carry a mention, and
+ * showing that mention as `@[<uuid>]` is the whole bug.
+ *
+ * The factories are injected rather than reached for, for the same reason the walk above reads five
+ * node properties and no more: it keeps the round trip testable without a DOM.
+ *
+ * @param {Array<{type: string, value?: string, userId?: string, username?: string}>} parts
+ * @param {{text: (value: string) => any, chip: (part: any) => any}} factories
+ * @returns {any[]}
+ */
+export function buildEditorNodes(parts, factories) {
+  const nodes = parts.map((part) =>
+    part.type === 'mention' ? factories.chip(part) : factories.text(part.value ?? '')
+  )
+
+  // A chip is atomic, so a mention in last place leaves the caret nowhere to go. The empty text node
+  // is that somewhere. Empty and not a space: a space serializes back as a change, which would light
+  // up "Enregistrer" on a comment nobody has touched yet.
+  if (parts[parts.length - 1]?.type === 'mention') {
+    nodes.push(factories.text(''))
+  }
+
+  return nodes
 }

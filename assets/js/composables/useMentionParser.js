@@ -1,6 +1,19 @@
 const MENTION_REGEX = /@\[([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/gi
 
 export function useMentionParser() {
+  /**
+   * The stored content as text and mentions, for anything that has to show it: the read only view
+   * renders the username, the editor builds a chip from the pair (#1006).
+   *
+   * Carries the `userId` as well as the name because those are two different things. The name is what
+   * a reader sees and it can be missing; the id is the content, and it survives an edit whether or not
+   * the roster could name it.
+   *
+   * Note this reads a uuid and nothing else, so the chat's `@[tous]` sentinel comes back as plain
+   * text. That is deliberate rather than an oversight: the sentinel is write only today, nothing
+   * seeds the chat, and widening the pattern would turn a literal `@[tous]` typed into a task comment
+   * into a mention the server never agreed to. Chat editing (#966) is where it has to be faced.
+   */
   function parseToParts(rawContent, members) {
     if (!rawContent) return []
 
@@ -14,8 +27,16 @@ export function useMentionParser() {
       if (match.index > lastIndex) {
         parts.push({ type: 'text', value: rawContent.slice(lastIndex, match.index) })
       }
-      const member = members.find((m) => m.user_id === match[1])
-      parts.push({ type: 'mention', username: member ? member.username : 'inconnu' })
+      // Case insensitively, because the pattern above accepts a uuid in either case and the server
+      // lowercases before comparing (TaskCommentMentionRecorder). A member it would notify has to be
+      // one this can name, or the mention renders as `@inconnu` to everybody reading it.
+      const mentionedId = match[1].toLowerCase()
+      const member = members.find((m) => m.user_id.toLowerCase() === mentionedId)
+      parts.push({
+        type: 'mention',
+        userId: match[1],
+        username: member ? member.username : 'inconnu'
+      })
       lastIndex = match.index + match[0].length
     }
 
@@ -67,18 +88,5 @@ export function useMentionParser() {
     return members.filter((m) => m.username.toLowerCase().startsWith(lower))
   }
 
-  function insertMention(text, cursorPos, member) {
-    const before = text.slice(0, cursorPos)
-    const after = text.slice(cursorPos)
-    const atIndex = before.lastIndexOf('@')
-    if (atIndex === -1) return { text, cursor: cursorPos }
-
-    const newBefore = `${before.slice(0, atIndex)}@[${member.user_id}] `
-    return {
-      text: newBefore + after,
-      cursor: newBefore.length
-    }
-  }
-
-  return { parseToParts, findMentionQuery, getSuggestions, insertMention }
+  return { parseToParts, findMentionQuery, getSuggestions }
 }

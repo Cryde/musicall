@@ -16,7 +16,10 @@
       </div>
 
       <div v-else class="max-h-96 overflow-y-auto p-4">
-        <TaskCommentList :comments="comments" :members="tasksStore.members" />
+        <!-- A preview, which is what the "Ouvrir la tâche" button below already implies. Without
+             `read-only` the pencil and the bin show here and emit into nothing, since this popover
+             listens for neither, so an edit made from a task card was silently dropped. -->
+        <TaskCommentList :comments="comments" :members="tasksStore.members" read-only />
       </div>
 
       <div class="border-t border-surface-200 dark:border-surface-700 p-2">
