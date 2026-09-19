@@ -198,6 +198,10 @@
               </template>
             </div>
 
+            <!-- A sibling of the bubble, never markup injected into its `v-html`: the preview is
+                 built by the client from the link, not sent by the server (#975). -->
+            <MusicLinkPreview :content="message.content" :align-end="isMine(message)" />
+
             <ChatMessageReactions
               :band-space-id="bandSpaceId"
               :message-id="message.id"
@@ -229,6 +233,7 @@ import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
+import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
 import Avatar from '../../User/Avatar.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'

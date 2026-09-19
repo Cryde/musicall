@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { autoLink } from './autoLink.js'
+import { autoLink, extractUrls } from './autoLink.js'
 
 describe('autoLink', () => {
   it('wraps a bare URL in an anchor that opens safely', () => {
@@ -38,5 +38,33 @@ describe('autoLink', () => {
   it('does not touch a scheme it cannot vouch for', () => {
     assert.equal(autoLink('javascript:alert(1)'), 'javascript:alert(1)')
     assert.equal(autoLink('ftp://files.test/x'), 'ftp://files.test/x')
+  })
+})
+
+describe('extractUrls', () => {
+  it('returns every URL of a message body, in the order they appear', () => {
+    assert.deepEqual(extractUrls('voir https://a.test/x puis https://b.test/y'), [
+      'https://a.test/x',
+      'https://b.test/y'
+    ])
+  })
+
+  it('ends a URL where the anchor ends it, at the tag boundary', () => {
+    assert.deepEqual(extractUrls('https://a.test<br />suite'), ['https://a.test'])
+  })
+
+  it('finds nothing where there is no scheme it can vouch for', () => {
+    assert.deepEqual(extractUrls('on répète mardi'), [])
+    assert.deepEqual(extractUrls('javascript:alert(1)'), [])
+    assert.deepEqual(extractUrls('//a.test/x'), [])
+  })
+
+  it('comes back empty rather than throwing for anything that is not a string', () => {
+    // It runs on every message render, so a surprising payload must not blank the whole list.
+    assert.deepEqual(extractUrls(''), [])
+    assert.deepEqual(extractUrls(null), [])
+    assert.deepEqual(extractUrls(undefined), [])
+    assert.deepEqual(extractUrls(42), [])
+    assert.deepEqual(extractUrls({}), [])
   })
 })

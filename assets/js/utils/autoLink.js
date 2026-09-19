@@ -19,3 +19,19 @@ export function autoLink(text) {
 
   return text.replace(URL_PATTERN, '<a href="$1" target="_blank" rel="noopener">$1</a>')
 }
+
+/**
+ * The URLs of a message body, as `autoLink` sees them, for anything that needs to look at one.
+ *
+ * Sharing the pattern is the point: a second idea of where a URL ends would mean the anchor and
+ * whatever reads this disagreeing about which link a message carries.
+ */
+export function extractUrls(text) {
+  // Typed rather than falsy: this runs on every message render, and a payload that is not a string
+  // must come back empty rather than throw and blank the whole list.
+  if (typeof text !== 'string') {
+    return []
+  }
+
+  return text.match(URL_PATTERN) ?? []
+}
