@@ -33,5 +33,33 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  /** Answers with the whole message, reactions included, so the pill row can be re-read from it. */
+  addReaction(bandSpaceId, messageId, emoji) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_chat_message_reactions_post', {
+          bandSpaceId,
+          id: messageId
+        }),
+        { emoji },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  removeReaction(bandSpaceId, messageId, emoji) {
+    return axios
+      .delete(
+        Routing.generate('api_band_space_chat_message_reactions_delete', {
+          bandSpaceId,
+          id: messageId,
+          emoji
+        })
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }

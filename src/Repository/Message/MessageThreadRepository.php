@@ -116,6 +116,9 @@ class MessageThreadRepository extends ServiceEntityRepository
             // reference them with a RESTRICT foreign key, so a channel carrying one @-mention would
             // fail the whole purge with error 1451 (#964).
             'DELETE FROM App\Entity\Message\MessageMention mention WHERE mention.message IN (SELECT owned_message.id FROM App\Entity\Message\Message owned_message WHERE owned_message.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space))',
+            // The same trap one table further along (#968): a reaction references a message with a
+            // RESTRICT foreign key too, so a channel holding a single thumbs up would fail the purge.
+            'DELETE FROM App\Entity\Message\MessageReaction reaction WHERE reaction.message IN (SELECT owned_message.id FROM App\Entity\Message\Message owned_message WHERE owned_message.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space))',
             'DELETE FROM App\Entity\Message\Message message WHERE message.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space)',
             'DELETE FROM App\Entity\Message\MessageParticipant participant WHERE participant.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space)',
             // The threads themselves go last, and by bandSpace rather than by a subquery over their own

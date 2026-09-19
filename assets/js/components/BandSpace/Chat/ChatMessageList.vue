@@ -20,6 +20,10 @@
       {{ chatStore.loadOlderError }}
     </Message>
 
+    <Message v-if="chatStore.reactionError" severity="error" :closable="false">
+      {{ chatStore.reactionError }}
+    </Message>
+
     <!-- One block per burst (#1031): the avatar, the name and the time belong to the block, and only
          the bubbles repeat inside it. -->
     <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
@@ -56,30 +60,37 @@
         </div>
 
         <div class="space-y-1">
-          <div
-            v-for="(message, index) in block.messages"
-            :key="message['@id']"
-            class="group/message flex items-center gap-2"
-            :class="isMine(message) ? 'flex-row-reverse' : 'flex-row'"
-          >
+          <div v-for="(message, index) in block.messages" :key="message['@id']" class="group/message">
             <div
-              class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
-              :class="[
-                isMine(message)
-                  ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
-                  : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
-                bubbleCornerClasses(index, block.messages.length, isMine(message)),
-              ]"
-              v-html="autoLink(message.content)"
-            />
-            <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
-                 or not there is a pointer to hover with. -->
-            <time
-              :datetime="message.creation_datetime"
-              class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
+              class="flex items-center gap-2"
+              :class="isMine(message) ? 'flex-row-reverse' : 'flex-row'"
             >
-              {{ absoluteDate(message.creation_datetime) }}
-            </time>
+              <div
+                class="inline-block rounded-2xl px-4 py-2 text-sm break-words text-left"
+                :class="[
+                  isMine(message)
+                    ? 'bg-primary-700 text-white [&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
+                    : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
+                  bubbleCornerClasses(index, block.messages.length, isMine(message)),
+                ]"
+                v-html="autoLink(message.content)"
+              />
+              <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
+                   or not there is a pointer to hover with. -->
+              <time
+                :datetime="message.creation_datetime"
+                class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
+              >
+                {{ absoluteDate(message.creation_datetime) }}
+              </time>
+            </div>
+
+            <ChatMessageReactions
+              :band-space-id="bandSpaceId"
+              :message-id="message.id"
+              :reactions="message.reactions"
+              :align-end="isMine(message)"
+            />
           </div>
         </div>
       </div>
@@ -99,6 +110,7 @@ import { autoLink } from '../../../utils/autoLink.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import Avatar from '../../User/Avatar.vue'
+import ChatMessageReactions from './ChatMessageReactions.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true }

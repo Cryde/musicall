@@ -66,6 +66,22 @@ class MessageRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * One message of a band's channel, scoped to the space so an id from another band's conversation
+     * is simply not found rather than acted on.
+     */
+    public function findOneByIdAndBandSpace(string $id, BandSpace $bandSpace): ?Message
+    {
+        return $this->createQueryBuilder('message')
+            ->join('message.thread', 'thread')
+            ->where('message.id = :id')
+            ->andWhere('thread.bandSpace = :band_space')
+            ->setParameter('id', $id)
+            ->setParameter('band_space', $bandSpace)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function countForThread(MessageThread $thread): int
     {
         return (int) $this->createQueryBuilder('message')

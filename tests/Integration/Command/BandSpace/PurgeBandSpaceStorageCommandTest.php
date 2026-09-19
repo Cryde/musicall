@@ -14,6 +14,7 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageMentionFactory;
+use App\Tests\Factory\Message\MessageReactionFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\Message\MessageThreadMetaFactory;
 use App\Tests\Factory\User\UserFactory;
@@ -159,6 +160,8 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         // Same RESTRICT trap one level deeper (#964): a mention points at the message, so the whole
         // purge fails with error 1451 unless these go before it.
         MessageMentionFactory::new(['message' => $message, 'mentionedUser' => $member])->create();
+        // And once more for the reaction rows (#968), which reference the message the same way.
+        MessageReactionFactory::new(['message' => $message, 'user' => $member])->create();
 
         $channel->lastMessage = $message;
         \Zenstruck\Foundry\Persistence\save($channel);
@@ -182,6 +185,7 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         $this->assertSame(0, $this->countRows('message_thread_meta', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_participant', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_mention', 'message_id', $messageId));
+        $this->assertSame(0, $this->countRows('message_reaction', 'message_id', $messageId));
 
         $this->assertSame(1, $this->countRows('message_thread', 'id', $directThreadId));
         $this->assertSame(1, $this->countRows('message', 'id', $directMessageId));
