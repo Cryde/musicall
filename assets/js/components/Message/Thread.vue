@@ -86,22 +86,43 @@
           {{ messageStore.loadOlderError }}
         </Message>
 
+        <!-- One block per burst (#1031). The bubbles keep their shape; what stops repeating is the
+             name, which only the first of a block carries, and the time, which only the last does. -->
+        <template v-for="(block, blockIndex) in messageBlocks" :key="block.messages[0]['@id']">
+        <!-- Dated only when the conversation resumes after a silence, so a busy exchange is marked
+             once at its start rather than every time the speaker changes. -->
+        <p
+          v-if="needsTimeSeparator(messageBlocks[blockIndex - 1], block)"
+          class="-mb-2 text-center text-xs text-surface-500 dark:text-surface-400"
+        >
+          <time :datetime="block.messages[0].creation_datetime">
+            {{ absoluteDate(block.messages[0].creation_datetime) }}
+          </time>
+        </p>
+
         <div
-          v-for="message in messageStore.messages"
-          :key="message['@id']"
-          class="flex"
-          :class="{ 'justify-end': isSender(message) }"
+          class="flex flex-col gap-1"
+          :class="{ 'items-end': isSender(block.messages[0]) }"
         >
           <div
-            class="max-w-[70%] rounded-lg px-4 py-2"
-            :class="isSender(message)
-              ? 'bg-primary-700 text-white'
-              : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0'"
+            v-for="(message, index) in block.messages"
+            :key="message['@id']"
+            class="group/message flex max-w-[85%] items-center gap-2"
+            :class="isSender(message) ? 'flex-row-reverse' : 'flex-row'"
+          >
+          <div
+            class="rounded-2xl px-4 py-2"
+            :class="[
+              isSender(message)
+                ? 'bg-primary-700 text-white'
+                : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0',
+              bubbleCornerClasses(index, block.messages.length, isSender(message)),
+            ]"
           >
             <!-- A channel has many authors, so a bubble that is not yours has to say whose it is.
                  A direct message has exactly one other author and the header already names them. -->
             <div
-              v-if="isCurrentChannel && !isSender(message)"
+              v-if="isCurrentChannel && !isSender(message) && index === 0"
               class="text-xs font-semibold mb-1 opacity-80"
             >
               {{ message.author?.username }}
@@ -113,14 +134,18 @@
                 : '[&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'"
               v-html="autoLink(message.content)"
             />
-            <div
-              class="text-xs mt-1"
-              :class="isSender(message) ? 'text-right text-surface-200' : 'opacity-70'"
+          </div>
+            <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
+                 or not there is a pointer to hover with. -->
+            <time
+              :datetime="message.creation_datetime"
+              class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
             >
-              {{ relativeDate(message.creation_datetime) }}
-            </div>
+              {{ absoluteDate(message.creation_datetime) }}
+            </time>
           </div>
         </div>
+        </template>
       </template>
     </div>
 
@@ -183,13 +208,15 @@ import Textarea from 'primevue/textarea'
 import { computed, nextTick, ref, watch } from 'vue'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import { BAND_SPACE_ROUTES } from '../../constants/bandSpace.js'
-import relativeDate from '../../helper/date/relative-date.js'
+import absoluteDate from '../../helper/date/absolute-date.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 import { useMessageStore } from '../../store/message/message.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
 import { autoLink } from '../../utils/autoLink.js'
 import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
+import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
+import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
 
 const emit = defineEmits(['back'])
 
@@ -206,6 +233,10 @@ const sendError = ref('')
 
 const currentThread = computed(() => messageStore.currentThread)
 const isCurrentChannel = computed(() => isChannel(currentThread.value))
+
+const messageBlocks = computed(() =>
+  groupMessages(messageStore.messages, (message) => message.author?.id)
+)
 
 const otherParticipant = computed(() => {
   if (!currentThread.value) return null

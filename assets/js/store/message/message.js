@@ -145,6 +145,9 @@ export const useMessageStore = defineStore('message', () => {
    *
    * `author_username` already reads « Utilisateur supprimé » when the account is gone, substituted by
    * ChatMessageBuilder, so there is no deletion date left to carry.
+   *
+   * The id has to come across too: grouping keys on it (#1031), and leaving it out made every
+   * consecutive message in a channel look like one author.
    */
   function asThreadMessage(chatMessage) {
     return {
@@ -152,7 +155,7 @@ export const useMessageStore = defineStore('message', () => {
       id: chatMessage.id,
       content: chatMessage.content,
       creation_datetime: chatMessage.creation_datetime,
-      author: { username: chatMessage.author_username }
+      author: { id: chatMessage.author_id, username: chatMessage.author_username }
     }
   }
 
