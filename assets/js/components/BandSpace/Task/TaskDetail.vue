@@ -176,8 +176,8 @@
       <TaskCommentForm
         v-if="!isArchived"
         :members="members"
+        :submit-comment="handleCommentSubmit"
         :is-submitting="isSubmittingComment"
-        @submit="handleCommentSubmit"
       />
       <h4
         v-else
@@ -189,7 +189,7 @@
         :comments="comments"
         :members="members"
         :read-only="isArchived"
-        @edit="handleCommentEdit"
+        :save-comment="handleCommentEdit"
         @delete="handleCommentDelete"
       />
 
@@ -477,25 +477,23 @@ async function saveAssignees() {
   }
 }
 
+/**
+ * These two let the failure through rather than swallowing it into a toast: the box that holds the
+ * text is the one that has to decide whether to keep it, and it shows the message where the text is.
+ */
 async function handleCommentSubmit(content) {
   isSubmittingComment.value = true
   try {
     await tasksStore.createComment(props.bandSpaceId, props.taskId, { content })
     await loadDetails()
-  } catch (e) {
-    toast.add({ severity: 'error', summary: e.message, life: 5000 })
   } finally {
     isSubmittingComment.value = false
   }
 }
 
 async function handleCommentEdit(commentId, content) {
-  try {
-    await tasksStore.updateComment(props.bandSpaceId, props.taskId, commentId, { content })
-    await loadDetails()
-  } catch (e) {
-    toast.add({ severity: 'error', summary: e.message, life: 5000 })
-  }
+  await tasksStore.updateComment(props.bandSpaceId, props.taskId, commentId, { content })
+  await loadDetails()
 }
 
 async function handleCommentDelete(commentId) {

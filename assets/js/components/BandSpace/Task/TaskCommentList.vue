@@ -50,19 +50,34 @@
         </div>
 
         <div v-if="editingId === comment.id" class="mt-1">
-          <Textarea
+          <MentionEditor
+            ref="editor"
             v-model="editContent"
-            rows="3"
-            autoResize
-            class="w-full text-sm"
+            :members="members"
+            aria-label="Modifier le commentaire"
+            editor-class="min-h-[4.5rem] max-h-60 rounded-lg p-3"
+            submit-on="ctrl-enter"
+            :disabled="isSaving"
+            @submit="saveEdit(comment)"
           />
+          <Message v-if="saveError" severity="error" :closable="false" class="mt-1">
+            {{ saveError }}
+          </Message>
           <div class="flex justify-end gap-2 mt-1">
-            <Button label="Annuler" size="small" severity="secondary" text @click="cancelEdit" />
+            <Button
+              label="Annuler"
+              size="small"
+              severity="secondary"
+              text
+              :disabled="isSaving"
+              @click="cancelEdit"
+            />
             <Button
               label="Enregistrer"
               size="small"
               icon="pi pi-check"
-              :disabled="!hasEditChanges"
+              :loading="isSaving"
+              :disabled="!hasEditChanges || isSaving"
               @click="saveEdit(comment)"
             />
           </div>
@@ -83,28 +98,38 @@
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Button from 'primevue/button'
-import Textarea from 'primevue/textarea'
+import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useMentionParser } from '../../../composables/useMentionParser.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
+import MentionEditor from '../../Global/MentionEditor.vue'
 import Avatar from '../../User/Avatar.vue'
 
 const props = defineProps({
   comments: { type: Array, default: () => [] },
   members: { type: Array, default: () => [] },
   // The thread of an archived task is history: it is still read, never written.
-  readOnly: { type: Boolean, default: false }
+  readOnly: { type: Boolean, default: false },
+  /**
+   * Awaitable, like the write box above it, so the row stays open until the save lands. It used to
+   * close on the click, which cost you the edit whenever the request failed; with mentions in the box
+   * that means re-picking every member you named.
+   */
+  saveComment: { type: Function, default: null }
 })
 
-const emit = defineEmits(['edit', 'delete'])
+const emit = defineEmits(['delete'])
 
 const { parseToParts } = useMentionParser()
 const userSecurityStore = useUserSecurityStore()
 const confirm = useConfirm()
 
+const editor = ref(null)
 const editingId = ref(null)
 const editContent = ref('')
+const isSaving = ref(false)
+const saveError = ref('')
 
 const currentUserId = computed(() => userSecurityStore.userProfile?.id ?? null)
 
@@ -125,12 +150,18 @@ function canDelete(comment) {
   return canEdit(comment) || isBandSpaceAdmin.value
 }
 
+/**
+ * Both sides trimmed, not just the typed one. A contenteditable settles on whatever trailing
+ * whitespace the browser wants, so comparing a trimmed box against an untrimmed stored string reports
+ * "unsaved changes" on a comment nobody touched, and saving it would bump the date and paint
+ * "(modifié)" for nothing.
+ */
 const hasEditChanges = computed(() => {
   if (!editingId.value) return false
   const trimmed = editContent.value.trim()
   if (trimmed === '') return false
   const original = props.comments.find((c) => c.id === editingId.value)?.content ?? ''
-  return trimmed !== original
+  return trimmed !== original.trim()
 })
 
 function parts(content) {
@@ -144,17 +175,39 @@ function formatRelative(dateStr) {
 function startEdit(comment) {
   editingId.value = comment.id
   editContent.value = comment.content
+  saveError.value = ''
+  // At the end, because you reopen a comment to add to it rather than to overwrite it.
+  nextTick(() => editorRef()?.focusAtEnd())
+}
+
+/** The editor sits behind a `v-if` in a `v-for`, so Vue hands the ref back as a single element list. */
+function editorRef() {
+  return Array.isArray(editor.value) ? editor.value[0] : editor.value
 }
 
 function cancelEdit() {
   editingId.value = null
   editContent.value = ''
+  saveError.value = ''
 }
 
-function saveEdit(comment) {
-  emit('edit', comment.id, editContent.value.trim())
-  editingId.value = null
-  editContent.value = ''
+async function saveEdit(comment) {
+  if (!hasEditChanges.value || isSaving.value) {
+    return
+  }
+
+  isSaving.value = true
+  saveError.value = ''
+
+  try {
+    await props.saveComment(comment.id, editContent.value.trim())
+    cancelEdit()
+  } catch (e) {
+    console.error('Failed to save the comment:', e)
+    saveError.value = e.message || "Le commentaire n'a pas pu être modifié."
+  } finally {
+    isSaving.value = false
+  }
 }
 
 function confirmDelete(comment) {
