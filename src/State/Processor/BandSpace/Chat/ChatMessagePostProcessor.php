@@ -76,7 +76,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         $this->recordMentions($message, $mentionedUsers);
 
         // Built before the dispatch, so a listener cannot change what the sender is answered with.
-        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId);
+        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
 
         if ($mentionedUsers !== []) {
             $this->eventDispatcher->dispatch(new BandSpaceChatMentionedEvent($message, $bandSpace, $mentionedUsers));

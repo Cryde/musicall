@@ -2,6 +2,11 @@ import { defineStore } from 'pinia'
 import { computed, readonly, ref } from 'vue'
 import bandSpaceChatApi from '../../api/bandSpace/band-space-chat.js'
 import {
+  hasReacted,
+  rolledBackReactions,
+  toggledReactions
+} from '../../utils/chatReactionToggle.js'
+import {
   hasOlderToLoad,
   mergeMessages,
   nextOlderPageToLoad
@@ -29,6 +34,10 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   const isLoadingOlder = ref(false)
   const loadOlderError = ref(null)
   const isSending = ref(false)
+  const reactionError = ref(null)
+  // Keyed `messageId:emoji`, so tapping the same pill twice before the first call answers is ignored
+  // while tapping a different one is not.
+  const pendingReactions = ref(new Set())
 
   const hasOlderMessages = computed(() =>
     hasOlderToLoad(messages.value.length, totalMessages.value)
@@ -140,6 +149,67 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   /**
+   * Adds or takes back the viewer's reaction, whichever way the pill is currently pointing (#968).
+   *
+   * Optimistic, because a reaction is a tap and a tap has to answer instantly. Everything is looked
+   * up by message id rather than by index, including the rollback: a live signal can replace the
+   * whole list while the request is in flight, and patching position 4 of a list that has since
+   * grown at the top would rewrite the wrong message. For the same reason a failure is undone
+   * against the row on screen rather than against a copy taken before the tap, see
+   * rolledBackReactions().
+   */
+  async function toggleReaction(bandSpaceId, messageId, emojiKey) {
+    const pendingKey = `${messageId}:${emojiKey}`
+    const held = messages.value.find((message) => message.id === messageId)
+    if (!held || pendingReactions.value.has(pendingKey)) {
+      return
+    }
+
+    const wasReacted = hasReacted(held.reactions, emojiKey)
+
+    pendingReactions.value = new Set(pendingReactions.value).add(pendingKey)
+    reactionError.value = null
+    patchReactions(messageId, toggledReactions(held.reactions, emojiKey))
+
+    try {
+      if (wasReacted) {
+        await bandSpaceChatApi.removeReaction(bandSpaceId, messageId, emojiKey)
+
+        return
+      }
+      // The add answers with the whole message, so the counts other members left meanwhile land here
+      // too rather than waiting for the next refetch.
+      const updated = await bandSpaceChatApi.addReaction(bandSpaceId, messageId, emojiKey)
+      patchReactions(messageId, updated.reactions ?? [])
+    } catch (e) {
+      console.error('Failed to toggle a chat reaction:', e)
+      // Both halves are gated on the message still being held: the member can move to another band
+      // while the request is in flight, and an error banner about a tap made somewhere else would
+      // then sit over a conversation it has nothing to do with.
+      const live = messages.value.find((message) => message.id === messageId)
+      if (live) {
+        patchReactions(messageId, rolledBackReactions(live.reactions, emojiKey, wasReacted))
+        // The server's own wording when the server answered, since every refusal on this endpoint
+        // is already French. A transport failure has no status and would otherwise surface axios'
+        // English one.
+        reactionError.value = e.status
+          ? e.message
+          : 'Impossible de mettre à jour la réaction, veuillez réessayer.'
+      }
+    } finally {
+      const stillPending = new Set(pendingReactions.value)
+      stillPending.delete(pendingKey)
+      pendingReactions.value = stillPending
+    }
+  }
+
+  function patchReactions(messageId, reactions) {
+    messages.value = messages.value.map((message) =>
+      message.id === messageId ? { ...message, reactions } : message
+    )
+  }
+
+  /**
    * Opening the tab is reading it. The badge lives on the notification payload rather than in this
    * store, because the sidebar shows it from every other module too, so clearing it means refreshing
    * that payload, the same shape the direct message store uses after marking a thread read.
@@ -201,6 +271,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     isLoadingOlder.value = false
     loadOlderError.value = null
     isSending.value = false
+    reactionError.value = null
+    pendingReactions.value = new Set()
   }
 
   return {
@@ -211,10 +283,12 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     isLoadingOlder: readonly(isLoadingOlder),
     loadOlderError: readonly(loadOlderError),
     isSending: readonly(isSending),
+    reactionError: readonly(reactionError),
     hasOlderMessages,
     loadMessages,
     loadOlderMessages,
     sendMessage,
+    toggleReaction,
     markAsRead,
     handleIncomingMessage,
     clear

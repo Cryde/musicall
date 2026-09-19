@@ -57,4 +57,15 @@ class ChatMessageResource
     public string $content;
 
     public DateTimeInterface $creationDatetime;
+
+    /**
+     * One entry per emoji somebody used, in MessageReactionEmoji declaration order, an emoji nobody
+     * used being absent rather than present with a zero (#968).
+     *
+     * Snake_case inside the array on purpose: the name converter renames properties, not the keys of
+     * an array a property holds, so these are written the way they go out.
+     *
+     * @var list<array{key: string, emoji: string, count: int, has_reacted: bool}>
+     */
+    public array $reactions = [];
 }

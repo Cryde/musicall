@@ -304,6 +304,7 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => $creationDatetime,
+            'reactions' => [],
         ];
     }
 
