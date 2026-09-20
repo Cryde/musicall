@@ -65,6 +65,7 @@ class TaskCreateTest extends ApiTestCase
             'update_datetime' => null,
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ]);
     }
 
@@ -127,6 +128,7 @@ class TaskCreateTest extends ApiTestCase
             'update_datetime' => null,
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ]);
     }
 

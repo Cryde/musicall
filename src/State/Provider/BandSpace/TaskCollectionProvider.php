@@ -7,10 +7,12 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\BandSpace\Task;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\Filter\TaskFilter;
 use App\Repository\BandSpace\TaskCommentRepository;
 use App\Repository\BandSpace\TaskRepository;
+use App\Repository\Message\MessageAttachmentRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use DateTimeImmutable;
@@ -27,6 +29,7 @@ readonly class TaskCollectionProvider implements ProviderInterface
         private TaskRepository $taskRepository,
         private TaskCommentRepository $taskCommentRepository,
         private BandSpaceFileAttachmentRepository $fileAttachmentRepository,
+        private MessageAttachmentRepository $messageAttachmentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -66,8 +69,15 @@ readonly class TaskCollectionProvider implements ProviderInterface
         $taskIds = array_map(fn(Task $task): string => (string) $task->id, $tasks);
         $commentCounts = $this->taskCommentRepository->countByTaskIds($taskIds);
         $fileCounts = $this->fileAttachmentRepository->countActiveBySourceIds('task', $taskIds);
+        // One query for the whole board, like the two above: the conversation a card came from is
+        // part of the card, and looking it up per task is how a board gets expensive.
+        $linkedMessageIds = $this->messageAttachmentRepository->findOldestLinkedMessageIds(
+            BandSpaceSearchResultType::Task,
+            $taskIds,
+            (string) $bandSpace->id,
+        );
 
-        return $this->taskBuilder->buildFromList($tasks, $commentCounts, $fileCounts);
+        return $this->taskBuilder->buildFromList($tasks, $commentCounts, $fileCounts, $linkedMessageIds);
     }
 
     /**

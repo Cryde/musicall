@@ -60,7 +60,13 @@
         </div>
 
         <div class="space-y-1">
-          <div v-for="(message, index) in block.messages" :key="message['@id']" class="group/message">
+          <div
+            v-for="(message, index) in block.messages"
+            :id="`chat-message-${message.id}`"
+            :key="message['@id']"
+            class="group/message rounded-2xl transition-shadow duration-300"
+            :class="{ 'ring-2 ring-primary-500': highlightedMessageId === message.id }"
+          >
             <div
               class="flex items-center gap-2"
               :class="isMine(message) ? 'flex-row-reverse' : 'flex-row'"
@@ -171,6 +177,19 @@
                       aria-hidden="true"
                     />
                   </button>
+                  <!-- « Ça, c'est une tâche » (#979). Same treatment as the pencil and the bin beside
+                       it, and open to every member rather than to the author: the one who knows the
+                       XLR cable will be forgotten is rarely the one who mentioned it. -->
+                  <button
+                    v-if="!message.is_deleted"
+                    type="button"
+                    class="shrink-0 rounded-full p-1 text-surface-500 transition-opacity duration-150 hover:text-primary disabled:opacity-50 dark:text-surface-400 lg:opacity-0 lg:focus-visible:opacity-100 lg:group-hover/message:opacity-100"
+                    :disabled="chatStore.pendingTaskMessageId === message.id"
+                    aria-label="Créer une tâche depuis ce message"
+                    @click="handleCreateTask(message)"
+                  >
+                    <i class="pi pi-check-square text-xs" aria-hidden="true" />
+                  </button>
                   <!-- Hidden until hover only from `lg` up, the treatment the task thread already uses
                        for its own row controls: a touch screen has no hover, so a pencil that only
                        appears on one would be unreachable. Opacity rather than display, so revealing it
@@ -233,7 +252,7 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
 import { useChatPin } from '../../../composables/useChatPin.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
@@ -254,7 +273,9 @@ import ChatMessageReactions from './ChatMessageReactions.vue'
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   /** The roster the `@` dropdown of an open edit box filters, supplied by the view that holds it. */
-  members: { type: Array, default: () => [] }
+  members: { type: Array, default: () => [] },
+  /** The message a task's « Voir la discussion » link asks to land on (#979), if it is on this page. */
+  focusMessageId: { type: String, default: null }
 })
 
 const chatStore = useBandSpaceChatStore()
@@ -316,6 +337,31 @@ async function handleDelete(message) {
     toast.add({
       severity: 'error',
       summary: e.message || "Le message n'a pas pu être supprimé.",
+      life: 5000
+    })
+  }
+}
+
+/**
+ * The message keeps its card whatever happens next: the store adds it from the answer, so the bubble
+ * points at the task straight away and the card is the way to it (#979).
+ */
+async function handleCreateTask(message) {
+  try {
+    const task = await chatStore.createTaskFromMessage(props.bandSpaceId, message.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Tâche créée',
+      // Names the card, because the card is the way back: it opens the task, where the assignee and
+      // the date are set. A toast that only congratulates leaves the member hunting the board.
+      detail: `« ${task.title} ». Sa fiche est sous le message, ouvrez-la pour l'assigner.`,
+      life: 6000
+    })
+  } catch (e) {
+    console.error('Failed to create a task from the chat message:', e)
+    toast.add({
+      severity: 'error',
+      summary: e.message || "La tâche n'a pas pu être créée.",
       life: 5000
     })
   }
@@ -455,7 +501,43 @@ watch(
   { deep: true }
 )
 
-onMounted(scrollToBottom)
+/** Long enough to find the message with your eyes, short enough not to become part of the page. */
+const HIGHLIGHT_DURATION_MS = 2500
+
+const highlightedMessageId = ref(null)
+let highlightTimer = null
+
+/**
+ * Best effort, and deliberately so: the pane holds the newest page, so a task created from a message
+ * far up the history lands on the conversation with nothing lit up rather than paging backwards
+ * looking for it. Being in the right conversation is most of what the link is for.
+ */
+function focusRequestedMessage() {
+  if (!props.focusMessageId) {
+    return
+  }
+
+  nextTick(() => {
+    const element = document.getElementById(`chat-message-${props.focusMessageId}`)
+    if (!element) {
+      return
+    }
+
+    element.scrollIntoView({ block: 'center' })
+    highlightedMessageId.value = props.focusMessageId
+    clearTimeout(highlightTimer)
+    highlightTimer = setTimeout(() => {
+      highlightedMessageId.value = null
+    }, HIGHLIGHT_DURATION_MS)
+  })
+}
+
+onMounted(() => {
+  scrollToBottom()
+  focusRequestedMessage()
+})
+
+onUnmounted(() => clearTimeout(highlightTimer))
 
 // Sending is the one case where the reader is moved without being asked: they wrote it, so they mean
 // to see it, even if they were up in the history a moment ago.

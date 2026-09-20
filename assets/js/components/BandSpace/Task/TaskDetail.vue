@@ -28,6 +28,17 @@
         Cette tâche est archivée, elle est en lecture seule. Désarchivez-la pour la modifier.
       </Message>
 
+      <!-- Where this task was said out loud (#979). The attachment row that puts a card under the
+           message is read the other way round to get here, so no task carries a column for it. -->
+      <RouterLink
+        v-if="chatLink"
+        :to="chatLink"
+        class="inline-flex w-fit items-center gap-2 text-sm text-primary-700 hover:underline dark:text-primary-300"
+      >
+        <i class="pi pi-comments text-xs" aria-hidden="true" />
+        Voir dans la discussion
+      </RouterLink>
+
       <!-- Title (inline edit, save on Enter or via Save button) -->
       <div>
         <input
@@ -247,8 +258,10 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 import bandSpaceTasksApi from '../../../api/bandSpace/band-space-tasks.js'
 import { useBandSpaceNavigation } from '../../../composables/useBandSpaceNavigation.js'
+import { BAND_SPACE_ROUTES, CHAT_TESTER_ONLY } from '../../../constants/bandSpace.js'
 import { useBandTasksStore } from '../../../store/bandSpace/bandSpaceTasks.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { attachedFilesNotice } from '../../../utils/attachedFilesNotice.js'
@@ -294,6 +307,25 @@ const canArchive = computed(() => task.value?.status === 'done' && !isArchived.v
 const canDelete = computed(() =>
   canDeleteTask(task.value, userSecurityStore.userProfile?.id ?? null, isAdmin.value)
 )
+
+/**
+ * Behind the same curtain as the tab itself: the route guard bounces a member without ROLE_TESTER
+ * while the chat is piloted with one band, so offering them the link would offer a dead end.
+ */
+const chatLink = computed(() => {
+  if (!task.value?.linked_message_id) {
+    return null
+  }
+  if (CHAT_TESTER_ONLY && !userSecurityStore.isTester) {
+    return null
+  }
+
+  return {
+    name: BAND_SPACE_ROUTES.CHAT,
+    params: { id: props.bandSpaceId },
+    query: { message: task.value.linked_message_id }
+  }
+})
 
 const comments = ref([])
 const activities = ref([])
