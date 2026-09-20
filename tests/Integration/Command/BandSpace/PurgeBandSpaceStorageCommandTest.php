@@ -11,6 +11,7 @@ use App\Repository\BandSpace\BandSpaceRepository;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\File\BandSpaceFileVersionFactory;
+use App\Tests\Factory\Message\MessageAttachmentFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageMentionFactory;
@@ -162,6 +163,8 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         MessageMentionFactory::new(['message' => $message, 'mentionedUser' => $member])->create();
         // And once more for the reaction rows (#968), which reference the message the same way.
         MessageReactionFactory::new(['message' => $message, 'user' => $member])->create();
+        // And the same again for an attachment (#970).
+        MessageAttachmentFactory::new(['message' => $message])->create();
 
         $channel->lastMessage = $message;
         \Zenstruck\Foundry\Persistence\save($channel);
@@ -186,6 +189,7 @@ class PurgeBandSpaceStorageCommandTest extends KernelTestCase
         $this->assertSame(0, $this->countRows('message_participant', 'thread_id', $channelId));
         $this->assertSame(0, $this->countRows('message_mention', 'message_id', $messageId));
         $this->assertSame(0, $this->countRows('message_reaction', 'message_id', $messageId));
+        $this->assertSame(0, $this->countRows('message_attachment', 'message_id', $messageId));
 
         $this->assertSame(1, $this->countRows('message_thread', 'id', $directThreadId));
         $this->assertSame(1, $this->countRows('message', 'id', $directMessageId));

@@ -119,6 +119,8 @@ class MessageThreadRepository extends ServiceEntityRepository
             // The same trap one table further along (#968): a reaction references a message with a
             // RESTRICT foreign key too, so a channel holding a single thumbs up would fail the purge.
             'DELETE FROM App\Entity\Message\MessageReaction reaction WHERE reaction.message IN (SELECT owned_message.id FROM App\Entity\Message\Message owned_message WHERE owned_message.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space))',
+            // And the attachment rows, for exactly the same reason (#970).
+            'DELETE FROM App\Entity\Message\MessageAttachment attachment WHERE attachment.message IN (SELECT owned_message.id FROM App\Entity\Message\Message owned_message WHERE owned_message.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space))',
             'DELETE FROM App\Entity\Message\Message message WHERE message.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space)',
             'DELETE FROM App\Entity\Message\MessageParticipant participant WHERE participant.thread IN (SELECT owned.id FROM App\Entity\Message\MessageThread owned WHERE owned.bandSpace = :band_space)',
             // The threads themselves go last, and by bandSpace rather than by a subquery over their own

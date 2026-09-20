@@ -6,7 +6,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Chat\ChatMessageCreate;
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageAttachment;
 use App\Entity\Message\MessageMention;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
@@ -15,6 +17,7 @@ use App\Repository\Message\MessageThreadRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\ChatMentionResolver;
 use App\Service\Builder\BandSpace\ChatMessageBuilder;
+use App\Service\Message\MessageAttachmentResolver;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -36,6 +39,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         private MessageSenderProcedure $messageSenderProcedure,
         private ChatMessageBuilder $chatMessageBuilder,
         private ChatMentionResolver $chatMentionResolver,
+        private MessageAttachmentResolver $messageAttachmentResolver,
         private EntityManagerInterface $entityManager,
         private EventDispatcherInterface $eventDispatcher,
         private LoggerInterface $logger,
@@ -63,7 +67,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         $this->messageSendLimiter->create($user->getUserIdentifier())->consume()->ensureAccepted();
 
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
 
         $channel = $this->messageThreadRepository->findChannelForBandSpace($bandSpace);
         if (!$channel instanceof MessageThread) {
@@ -74,6 +78,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
 
         $mentionedUsers = $this->chatMentionResolver->resolve($bandSpace, $data->content);
         $this->recordMentions($message, $mentionedUsers);
+        $this->recordAttachments($message, $data->attachments, $bandSpaceId, $membership);
 
         // Built before the dispatch, so a listener cannot change what the sender is answered with.
         $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
@@ -83,6 +88,54 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         }
 
         return $result;
+    }
+
+    /**
+     * The Band Space objects this message points at (#970).
+     *
+     * Best-effort for the same reason the mentions above are, and it matters more here: the message
+     * is already committed, so a failure would report a message everybody can see as having failed
+     * and invite the sender to post it twice. A lost row costs a card; a duplicate message cannot be
+     * taken back.
+     *
+     * Re-resolved rather than carried over from the validator, which is a handful of reads on a write
+     * path, and which is what snapshots the label: the title stored here is what the message still
+     * reads once the target is deleted.
+     *
+     * @param mixed[] $identifiers the synthetic `<type>-<uuid>` identifiers the client sent
+     */
+    private function recordAttachments(
+        Message $message,
+        array $identifiers,
+        string $bandSpaceId,
+        BandSpaceMembership $viewer,
+    ): void {
+        if ($identifiers === []) {
+            return;
+        }
+
+        try {
+            $targets = [];
+            foreach ($this->messageAttachmentResolver->resolveIdentifiers($identifiers, $bandSpaceId, $viewer) as $target) {
+                if ($target !== null) {
+                    // Keyed, so a duplicate the validator somehow let through is dropped rather than
+                    // hitting the unique index, which would close the entity manager mid-request.
+                    $targets[$target['type']->value . '-' . $target['targetId']] = $target;
+                }
+            }
+
+            foreach ($targets as $target) {
+                $this->entityManager->persist(
+                    new MessageAttachment($message, $target['type'], $target['targetId'], $target['label']),
+                );
+            }
+            $this->entityManager->flush();
+        } catch (\Throwable $e) {
+            $this->logger->error('Could not record the attachments of a chat message, it will render without them', [
+                'message_id' => (string) $message->id,
+                'exception' => $e,
+            ]);
+        }
     }
 
     /**

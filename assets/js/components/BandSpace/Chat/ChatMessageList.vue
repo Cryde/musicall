@@ -73,8 +73,15 @@
                     : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0 [&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300',
                   bubbleCornerClasses(index, block.messages.length, isMine(message)),
                 ]"
-                v-html="autoLink(message.content)"
-              />
+              >
+                <div v-html="autoLink(message.content)" />
+                <ChatMessageAttachments
+                  v-if="message.attachments?.length"
+                  :attachments="message.attachments"
+                  :band-space-id="bandSpaceId"
+                  :is-mine="isMine(message)"
+                />
+              </div>
               <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
                    or not there is a pointer to hover with. -->
               <time
@@ -110,6 +117,7 @@ import { autoLink } from '../../../utils/autoLink.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import Avatar from '../../User/Avatar.vue'
+import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'
 
 const props = defineProps({

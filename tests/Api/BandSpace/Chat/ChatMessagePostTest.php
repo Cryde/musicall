@@ -57,6 +57,7 @@ class ChatMessagePostTest extends ApiTestCase
             'content' => 'on répète mardi, j&#039;apporte la basse',
             'creation_datetime' => $message->creationDatetime->format('c'),
             'reactions' => [],
+            'attachments' => [],
         ]);
     }
 

@@ -33,6 +33,28 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * The same membership, found from the id in a URI rather than from an already loaded BandSpace.
+     *
+     * For a validator, which runs before any provider or processor has resolved the space and has no
+     * uriVariables of its own. The space is joined and selected so reading it back costs nothing, and
+     * an id that is not a uuid comes back as no membership instead of as a type conversion error.
+     */
+    public function findMembershipByBandSpaceId(string $bandSpaceId, User $user): ?BandSpaceMembership
+    {
+        return $this->createQueryBuilder('m')
+            ->addSelect('band_space')
+            ->join('m.bandSpace', 'band_space')
+            ->where('band_space.id = :bandSpaceId')
+            ->andWhere('m.user = :user')
+            ->andWhere('m.status = :status')
+            ->setParameter('bandSpaceId', $bandSpaceId)
+            ->setParameter('user', $user)
+            ->setParameter('status', MembershipStatus::Active)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function isMember(BandSpace $bandSpace, User $user): bool
     {
         $result = $this->createQueryBuilder('m')
