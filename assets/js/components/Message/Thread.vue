@@ -107,49 +107,56 @@
           <div
             v-for="(message, index) in block.messages"
             :key="message['@id']"
-            class="group/message flex max-w-[85%] items-center gap-2"
-            :class="isSender(message) ? 'flex-row-reverse' : 'flex-row'"
+            class="flex max-w-[85%] flex-col"
           >
-          <div
-            class="rounded-2xl px-4 py-2"
-            :class="[
-              message.is_deleted
-                ? 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300'
-                : isSender(message)
-                  ? 'bg-primary-700 text-white'
-                  : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0',
-              bubbleCornerClasses(index, block.messages.length, isSender(message)),
-            ]"
-          >
-            <!-- A channel has many authors, so a bubble that is not yours has to say whose it is.
-                 A direct message has exactly one other author and the header already names them. -->
             <div
-              v-if="isCurrentChannel && !isSender(message) && index === 0"
-              class="text-xs font-semibold mb-1 opacity-80"
+              class="group/message flex items-center gap-2"
+              :class="isSender(message) ? 'flex-row-reverse' : 'flex-row'"
             >
-              {{ message.author?.username }}
+              <div
+                class="rounded-2xl px-4 py-2"
+                :class="[
+                  message.is_deleted
+                    ? 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300'
+                    : isSender(message)
+                      ? 'bg-primary-700 text-white'
+                      : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0',
+                  bubbleCornerClasses(index, block.messages.length, isSender(message)),
+                ]"
+              >
+                <!-- A channel has many authors, so a bubble that is not yours has to say whose it is.
+                     A direct message has exactly one other author and the header already names them. -->
+                <div
+                  v-if="isCurrentChannel && !isSender(message) && index === 0"
+                  class="text-xs font-semibold mb-1 opacity-80"
+                >
+                  {{ message.author?.username }}
+                </div>
+                <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
+                     inbox has to say so too rather than draw an empty bubble. A direct message carries no
+                     such flag: there is no endpoint that deletes one. -->
+                <p v-if="message.is_deleted" class="text-sm italic">Message supprimé</p>
+                <div
+                  v-else
+                  class="text-sm break-words"
+                  :class="isSender(message)
+                    ? '[&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
+                    : '[&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'"
+                  v-html="autoLink(message.content)"
+                />
+              </div>
+              <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
+                   or not there is a pointer to hover with. -->
+              <time
+                :datetime="message.creation_datetime"
+                class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
+              >
+                {{ absoluteDate(message.creation_datetime) }}
+              </time>
             </div>
-            <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
-                 inbox has to say so too rather than draw an empty bubble. A direct message carries no
-                 such flag: there is no endpoint that deletes one. -->
-            <p v-if="message.is_deleted" class="text-sm italic">Message supprimé</p>
-            <div
-              v-else
-              class="text-sm break-words"
-              :class="isSender(message)
-                ? '[&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'
-                : '[&_a]:text-primary-500 [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-primary-700 dark:[&_.chat-mention]:text-primary-300'"
-              v-html="autoLink(message.content)"
-            />
-          </div>
-            <!-- Always rendered so hovering shifts nothing, and readable to a screen reader whether
-                 or not there is a pointer to hover with. -->
-            <time
-              :datetime="message.creation_datetime"
-              class="shrink-0 whitespace-nowrap rounded-full bg-surface-200 px-2 py-0.5 text-[11px] text-surface-600 opacity-0 transition-opacity delay-0 duration-150 group-hover/message:opacity-100 group-hover/message:delay-1000 dark:bg-surface-700 dark:text-surface-300"
-            >
-              {{ absoluteDate(message.creation_datetime) }}
-            </time>
+            <!-- A sibling of the bubble, never markup injected into its `v-html`: the preview is
+                 built by the client from the link, not sent by the server (#975). -->
+            <MusicLinkPreview :content="message.content" :align-end="isSender(message)" />
           </div>
         </div>
         </template>
@@ -224,6 +231,7 @@ import { getAvatarStyle } from '../../utils/avatar.js'
 import { conversationTitle, isChannel } from '../../utils/conversationIdentity.js'
 import { bubbleCornerClasses } from '../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../utils/messageGrouping.js'
+import MusicLinkPreview from './MusicLinkPreview.vue'
 
 const emit = defineEmits(['back'])
 
