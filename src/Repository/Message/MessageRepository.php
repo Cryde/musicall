@@ -40,7 +40,7 @@ class MessageRepository extends ServiceEntityRepository
      * creation_datetime, id)`, instead of sorting: measured on a real thread, though the plan depends
      * on the author join staying an eq_ref, so it is a good default rather than a guarantee.
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}>
      */
     public function findForThread(MessageThread $thread, int $limit, int $offset): array
     {
@@ -49,6 +49,7 @@ class MessageRepository extends ServiceEntityRepository
                 'message.id AS id',
                 'message.content AS content',
                 'message.creationDatetime AS creationDatetime',
+                'message.updateDatetime AS updateDatetime',
                 'author.id AS authorId',
                 'author.username AS authorUsername',
                 'author.deletionDatetime AS authorDeletionDatetime',

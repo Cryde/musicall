@@ -25,7 +25,12 @@
       </p>
     </div>
 
-    <ChatMessageList v-else ref="messageList" :band-space-id="bandSpaceId" />
+    <ChatMessageList
+      v-else
+      ref="messageList"
+      :band-space-id="bandSpaceId"
+      :members="settingsStore.members"
+    />
 
     <ChatComposer
       :members="settingsStore.members"

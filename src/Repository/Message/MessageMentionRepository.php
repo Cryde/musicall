@@ -2,6 +2,7 @@
 
 namespace App\Repository\Message;
 
+use App\Entity\Message\Message;
 use App\Entity\Message\MessageMention;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -15,6 +16,25 @@ class MessageMentionRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MessageMention::class);
+    }
+
+    /**
+     * The rows one message carries, hydrated, because an edit has to remove some of them (#966).
+     *
+     * The sibling below projects instead, for a page of fifty; here there is one message and the
+     * rows are about to be compared and deleted, which is ORM work.
+     *
+     * @return MessageMention[]
+     */
+    public function findByMessage(Message $message): array
+    {
+        return $this->createQueryBuilder('mention')
+            ->innerJoin('mention.mentionedUser', 'user')
+            ->addSelect('user')
+            ->where('mention.message = :message')
+            ->setParameter('message', $message)
+            ->getQuery()
+            ->getResult();
     }
 
     /**

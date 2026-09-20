@@ -1,4 +1,6 @@
-const MENTION_REGEX = /@\[([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/gi
+import { EVERYONE_MENTION_ID } from '../constants/chatMention.js'
+
+const MENTION_REGEX = /@\[([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|tous)\]/gi
 
 export function useMentionParser() {
   /**
@@ -9,10 +11,11 @@ export function useMentionParser() {
    * a reader sees and it can be missing; the id is the content, and it survives an edit whether or not
    * the roster could name it.
    *
-   * Note this reads a uuid and nothing else, so the chat's `@[tous]` sentinel comes back as plain
-   * text. That is deliberate rather than an oversight: the sentinel is write only today, nothing
-   * seeds the chat, and widening the pattern would turn a literal `@[tous]` typed into a task comment
-   * into a mention the server never agreed to. Chat editing (#966) is where it has to be faced.
+   * The chat's `@[tous]` sentinel reads back as a mention only on a surface that offers it, which
+   * means one whose roster carries it (#966). The chat's edit box does, so an existing `@tous` comes
+   * back as the chip it was picked from instead of as its raw token; a task comment does not, so a
+   * literal `@[tous]` typed there stays the text somebody wrote rather than becoming a mention the
+   * server never agreed to.
    */
   function parseToParts(rawContent, members) {
     if (!rawContent) return []
@@ -24,14 +27,22 @@ export function useMentionParser() {
     MENTION_REGEX.lastIndex = 0
     // biome-ignore lint/suspicious/noAssignInExpressions: canonical regex iteration pattern
     while ((match = MENTION_REGEX.exec(rawContent)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({ type: 'text', value: rawContent.slice(lastIndex, match.index) })
-      }
       // Case insensitively, because the pattern above accepts a uuid in either case and the server
       // lowercases before comparing (TaskCommentMentionRecorder). A member it would notify has to be
       // one this can name, or the mention renders as `@inconnu` to everybody reading it.
       const mentionedId = match[1].toLowerCase()
       const member = members.find((m) => m.user_id.toLowerCase() === mentionedId)
+
+      // An unnamed uuid is still a mention, because a member who has left is exactly that. An
+      // unnamed sentinel is not one at all: it only means "everybody" where the caller says so, and
+      // leaving it in the surrounding text is what keeps it out of the surfaces that do not.
+      if (mentionedId === EVERYONE_MENTION_ID && !member) {
+        continue
+      }
+
+      if (match.index > lastIndex) {
+        parts.push({ type: 'text', value: rawContent.slice(lastIndex, match.index) })
+      }
       parts.push({
         type: 'mention',
         userId: match[1],

@@ -61,5 +61,19 @@ export default {
       )
       .then((resp) => resp.data)
       .catch(handleApiError)
+  },
+
+  /** The stored `@[uuid]` format, the same thing postMessage sends, never what is on screen. */
+  updateMessage(bandSpaceId, messageId, content) {
+    return axios
+      .patch(
+        Routing.generate('api_band_space_chat_messages_patch', { bandSpaceId, id: messageId }),
+        { content },
+        {
+          headers: { 'Content-Type': 'application/merge-patch+json', Accept: 'application/ld+json' }
+        }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   }
 }

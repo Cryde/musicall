@@ -110,12 +110,30 @@ describe('parseToParts', () => {
     ])
   })
 
-  it('leaves the everyone sentinel as plain text', () => {
-    // Pinned on purpose. The chat composer can write `@[tous]` but nothing reads it back yet, and
-    // widening the pattern would turn a literal `@[tous]` in a task comment into a mention the
-    // server never agreed to. Chat editing (#966) is where this has to be decided.
+  it('reads the everyone sentinel as a mention on a surface that offers it', () => {
+    // The chat does, so reopening a message that names the whole band gives back the chip it was
+    // picked from rather than its raw token (#966).
     assert.deepEqual(parseToParts('@[tous] répète annulée', MEMBERS), [
+      { type: 'mention', userId: 'tous', username: 'tous' },
+      { type: 'text', value: ' répète annulée' }
+    ])
+  })
+
+  it('leaves the everyone sentinel as plain text when the roster does not offer it', () => {
+    // A task comment never offers it, and the server extracts nothing but uuids from one, so a
+    // literal `@[tous]` typed there is the text somebody wrote and not a mention.
+    const roster = MEMBERS.filter((member) => member.user_id !== 'tous')
+
+    assert.deepEqual(parseToParts('@[tous] répète annulée', roster), [
       { type: 'text', value: '@[tous] répète annulée' }
+    ])
+  })
+
+  it('keeps the sentinel inside the text it sits in when it is not a mention', () => {
+    // The skipped token must not cut the run it belongs to in two, or an edit box would lose the
+    // words around it.
+    assert.deepEqual(parseToParts('avant @[tous] après', []), [
+      { type: 'text', value: 'avant @[tous] après' }
     ])
   })
 

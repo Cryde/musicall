@@ -34,12 +34,15 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}> $rows
+     * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
+     *                     which rows carry their editable content.
      *
      * @return ChatMessageResource[]
      */
     public function buildFromProjection(array $rows, string $bandSpaceId, User $viewer): array
     {
+        $viewerId = (string) $viewer->id;
         $messageIds = array_map(static fn (array $row): string => (string) $row['id'], $rows);
 
         // One query for the whole page, never one per message. The lookup lives here rather than in
@@ -66,6 +69,8 @@ readonly class ChatMessageBuilder
                 $mentionsByMessage[(string) $row['id']] ?? [],
                 $reactionsByMessage[(string) $row['id']] ?? [],
                 $attachmentsByMessage[(string) $row['id']] ?? [],
+                $row['updateDatetime'],
+                $this->editableContentFor((string) $row['authorId'], $viewerId, (string) $row['content']),
             ),
             $rows,
         );
@@ -90,7 +95,19 @@ readonly class ChatMessageBuilder
             $this->messageMentionRepository->findUsernamesByMessageIds([$messageId])[$messageId] ?? [],
             $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer)[$messageId] ?? [],
             $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId)[$messageId] ?? [],
+            $entity->updateDatetime,
+            $this->editableContentFor((string) $entity->author->id, (string) $viewer->id, $entity->content),
         );
+    }
+
+    /**
+     * The stored text, but only back to the member who wrote it: it is what the edit box is seeded
+     * with, and only its author may PATCH it (#966). A deleted account never reads anything, so the
+     * `Utilisateur supprimé` substitution above cannot be undone through here.
+     */
+    private function editableContentFor(string $authorId, string $viewerId, string $content): ?string
+    {
+        return $authorId === $viewerId ? $content : null;
     }
 
     /**
@@ -110,6 +127,8 @@ readonly class ChatMessageBuilder
         array $usernamesById,
         array $reactionTallies,
         array $attachments = [],
+        ?\DateTimeInterface $updateDatetime = null,
+        ?string $editableContent = null,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -129,6 +148,10 @@ readonly class ChatMessageBuilder
         $dto->creationDatetime = $creationDatetime;
         $dto->reactions = $this->buildReactions($reactionTallies);
         $dto->attachments = $attachments;
+        $dto->updateDatetime = $updateDatetime;
+        // Raw on purpose, where `content` above is rendered: MentionEditor round trips the stored
+        // `@[uuid]` format, so this is the only shape an edit box can be seeded from.
+        $dto->editableContent = $editableContent;
 
         return $dto;
     }
