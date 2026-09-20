@@ -113,9 +113,11 @@
           <div
             class="rounded-2xl px-4 py-2"
             :class="[
-              isSender(message)
-                ? 'bg-primary-700 text-white'
-                : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0',
+              message.is_deleted
+                ? 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300'
+                : isSender(message)
+                  ? 'bg-primary-700 text-white'
+                  : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-surface-0',
               bubbleCornerClasses(index, block.messages.length, isSender(message)),
             ]"
           >
@@ -127,7 +129,12 @@
             >
               {{ message.author?.username }}
             </div>
+            <!-- A channel message can be deleted (#967) and comes back with an empty content, so the
+                 inbox has to say so too rather than draw an empty bubble. A direct message carries no
+                 such flag: there is no endpoint that deletes one. -->
+            <p v-if="message.is_deleted" class="text-sm italic">Message supprimé</p>
             <div
+              v-else
               class="text-sm break-words"
               :class="isSender(message)
                 ? '[&_a]:text-white [&_a]:underline [&_.chat-mention]:font-semibold [&_.chat-mention]:text-white [&_.chat-mention]:underline [&_.chat-mention]:decoration-white/40'

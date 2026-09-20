@@ -148,6 +148,9 @@ export const useMessageStore = defineStore('message', () => {
    *
    * The id has to come across too: grouping keys on it (#1031), and leaving it out made every
    * consecutive message in a channel look like one author.
+   *
+   * `is_deleted` likewise, because a deleted message arrives with an empty content (#967) and this
+   * pane would otherwise draw an empty bubble where the chat tab draws a tombstone.
    */
   function asThreadMessage(chatMessage) {
     return {
@@ -155,6 +158,7 @@ export const useMessageStore = defineStore('message', () => {
       id: chatMessage.id,
       content: chatMessage.content,
       creation_datetime: chatMessage.creation_datetime,
+      is_deleted: chatMessage.is_deleted ?? false,
       author: { id: chatMessage.author_id, username: chatMessage.author_username }
     }
   }

@@ -51,8 +51,21 @@ class Message
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $updateDatetime = null;
 
+    /**
+     * A tombstone rather than a hard delete (#967): the row is what holds the conversation together,
+     * and message_thread.last_message_id still points at it. Stamping this empties the content and
+     * removes the mention rows, so nothing of what was written survives.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?DateTimeImmutable $deletionDatetime = null;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletionDatetime instanceof DateTimeImmutable;
     }
 }

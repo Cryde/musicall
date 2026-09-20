@@ -85,6 +85,7 @@ class ChatMessagePatchTest extends ApiTestCase
             // Sanitizer output, like every other read of a message: the apostrophe comes back escaped.
             'content' => 'on répète mercredi, j&#039;apporte la basse',
             'creation_datetime' => '2026-09-10T20:00:00+00:00',
+            'is_deleted' => false,
             'update_datetime' => $edited->updateDatetime->format('c'),
             'editable_content' => "on répète mercredi, j'apporte la basse",
             'reactions' => [],
@@ -137,6 +138,38 @@ class ChatMessagePatchTest extends ApiTestCase
             'description' => 'Vous n\'êtes pas membre de ce Band Space',
             'status' => 403,
             'type' => '/errors/403',
+        ]);
+    }
+
+    public function test_a_deleted_message_cannot_be_edited(): void
+    {
+        // A tombstone takes no edit, the same 404 the delete endpoint answers with (#967). Its content
+        // is already gone, so a PATCH would not be a correction but a way to write over a deletion.
+        $space = BandSpaceFactory::new()->create();
+        $author = $this->member($space, 'batteur');
+        $channel = $this->channelOf($space);
+
+        $message = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $author,
+            'content' => '',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+            'deletionDatetime' => new \DateTimeImmutable('2026-09-11 09:00:00'),
+        ])->create();
+
+        $this->client->loginUser($author);
+        $this->patch($space, (string) $message->id, 'je me ravise');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Message introuvable',
+            'description' => 'Message introuvable',
+            'status' => 404,
+            'type' => '/errors/404',
         ]);
     }
 
@@ -509,6 +542,7 @@ class ChatMessagePatchTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => 'on répète mardi',
             'creation_datetime' => '2026-09-10T20:00:00+00:00',
+            'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => 'on répète mardi',
             'reactions' => [],

@@ -40,7 +40,11 @@ class MessageRepository extends ServiceEntityRepository
      * creation_datetime, id)`, instead of sorting: measured on a real thread, though the plan depends
      * on the author join staying an eq_ref, so it is a good default rather than a guarantee.
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}>
+     * A deleted message stays in the page, content emptied and `deletionDatetime` set. Filtering the
+     * tombstones out would leave holes in a conversation and put the page size out of step with the
+     * count below (#967).
+     *
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string}>
      */
     public function findForThread(MessageThread $thread, int $limit, int $offset): array
     {
@@ -50,6 +54,7 @@ class MessageRepository extends ServiceEntityRepository
                 'message.content AS content',
                 'message.creationDatetime AS creationDatetime',
                 'message.updateDatetime AS updateDatetime',
+                'message.deletionDatetime AS deletionDatetime',
                 'author.id AS authorId',
                 'author.username AS authorUsername',
                 'author.deletionDatetime AS authorDeletionDatetime',

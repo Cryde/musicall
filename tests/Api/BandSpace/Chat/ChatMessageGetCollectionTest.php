@@ -368,6 +368,7 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             // The stored text, tokens and all, and only for the member who wrote it: it is what
             // seeds the edit box, and only its author may PATCH it (#966).
             'editable_content' => $editableContent,
+            'is_deleted' => false,
         ];
     }
 

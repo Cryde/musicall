@@ -186,6 +186,71 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_channel_preview_reads_deleted_when_its_last_message_was_deleted(): void
+    {
+        // A soft delete leaves message_thread.last_message_id valid, which is most of the reason to
+        // prefer it, but the preview is computed live from a content that is now empty. Without this
+        // the row would fall back to « Aucun message » and deny a conversation that has one (#967).
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'Les Trois Accords'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+
+        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+        $message = MessageFactory::new([
+            'author' => $user,
+            'thread' => $channel,
+            'content' => '',
+            'creationDatetime' => new \DateTime('2026-09-01 10:00:00'),
+            'deletionDatetime' => new \DateTimeImmutable('2026-09-01 11:00:00'),
+        ])->create();
+        $channel->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($channel);
+        $meta = MessageThreadMetaFactory::new(['user' => $user, 'thread' => $channel])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/message_thread_metas');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'   => '/api/contexts/MessageThreadMeta',
+            '@id'        => '/api/message_thread_metas',
+            '@type'      => 'Collection',
+            'member'     => [
+                [
+                    '@id'   => '/api/message_thread_metas/' . $meta->id,
+                    '@type' => 'MessageThreadMeta',
+                    'id'    => (string) $meta->id,
+                    'unread_count' => 0,
+                    'thread' => [
+                        '@id'   => '/api/message_threads/' . $channel->id,
+                        '@type' => 'MessageThread',
+                        'id'    => (string) $channel->id,
+                        'message_participants' => [],
+                        'last_message' => [
+                            '@id'   => '/api/messages/' . $message->id,
+                            '@type' => 'Message',
+                            'creation_datetime' => '2026-09-01T10:00:00+00:00',
+                            'author' => [
+                                '@id'   => '/api/users/' . $user->id,
+                                '@type' => 'User',
+                                'id'    => (string) $user->id,
+                                'username' => 'base_user_1',
+                            ],
+                            // Empty, because the delete really emptied it. Only the preview carries
+                            // the label, which is the one place the inbox reads.
+                            'content' => '',
+                            'content_preview' => 'Message supprimé',
+                        ],
+                        'band_space_id'   => (string) $bandSpace->id,
+                        'band_space_name' => 'Les Trois Accords',
+                        'channel_name'    => 'Général',
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
     public function test_a_channel_preview_names_who_was_mentioned(): void
     {
         // A mention is stored as `@[uuid]` and rendered only when the chat API reads it, so the inbox

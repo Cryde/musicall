@@ -3,6 +3,7 @@
 namespace App\Repository\Message;
 
 use App\Entity\BandSpace\BandSpaceMembership;
+use App\Entity\Message\Message;
 use App\Entity\Message\MessageAttachment;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Enum\BandSpace\FinanceEntryScope;
@@ -168,5 +169,19 @@ class MessageAttachmentRepository extends ServiceEntityRepository
             $isFinance ? 'JOIN target.category category' : '',
             $isFinance ? 'category.bandSpace = :bandSpace' : 'target.bandSpace = :bandSpace',
         );
+    }
+
+    /**
+     * Drops what a message pointed at, when that message is tombstoned (#967).
+     *
+     * A bulk delete, so no lifecycle event fires and nothing cascades: these rows reference no file
+     * and carry only a snapshotted label, so there is nothing outside the database to clean up.
+     */
+    public function deleteByMessage(Message $message): void
+    {
+        $this->getEntityManager()
+            ->createQuery('DELETE FROM App\Entity\Message\MessageAttachment attachment WHERE attachment.message = :message')
+            ->setParameter('message', $message->id)
+            ->execute();
     }
 }

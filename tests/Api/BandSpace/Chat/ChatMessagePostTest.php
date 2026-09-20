@@ -62,6 +62,7 @@ class ChatMessagePostTest extends ApiTestCase
             // The stored text, which the sender's own edit box is seeded from (#966). Unescaped,
             // unlike `content` above, because nothing renders it as HTML.
             'editable_content' => "on répète mardi, j'apporte la basse",
+            'is_deleted' => false,
         ]);
     }
 
