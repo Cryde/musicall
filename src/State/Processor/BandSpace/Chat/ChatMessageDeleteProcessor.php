@@ -66,6 +66,10 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
         // statement leaves rows pointing into a content that is already empty and renders nothing.
         $message->deletionDatetime = new \DateTimeImmutable();
         $message->content = '';
+        // And out of the « infos importantes » bar, in the same flush: what was worth keeping at the
+        // top is exactly what has just gone (#969).
+        $message->pinnedDatetime = null;
+        $message->pinnedBy = null;
         $this->entityManager->flush();
 
         $this->messageMentionRepository->deleteByMessage($message);

@@ -111,6 +111,35 @@ class ChatMessageDeleteTest extends ApiTestCase
         );
     }
 
+    public function test_a_delete_takes_the_message_out_of_the_pinned_bar(): void
+    {
+        // A pin says « keep this at the top », and what it pointed at has just gone (#969). Leaving it
+        // would put « Message supprimé » in the « infos importantes » bar.
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+
+        $message = MessageFactory::new([
+            'thread' => $this->channelOf($space),
+            'author' => $member,
+            'content' => 'code de la porte 4512',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+            'pinnedDatetime' => new \DateTimeImmutable('2026-09-11 09:00:00'),
+            'pinnedBy' => $member,
+        ])->create();
+        $messageId = (string) $message->id;
+
+        $this->client->loginUser($member);
+        $this->delete($space, $messageId);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $tombstone = self::getContainer()->get(MessageRepository::class)->find($messageId);
+        $this->assertInstanceOf(Message::class, $tombstone);
+        $this->assertNull($tombstone->pinnedDatetime, 'A tombstone is no longer pinned');
+        $this->assertNull($tombstone->pinnedBy);
+    }
+
     public function test_an_admin_deletes_another_members_message(): void
     {
         $author = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
@@ -502,6 +531,9 @@ class ChatMessageDeleteTest extends ApiTestCase
             'author_profile_picture_url' => null,
             'content' => $content,
             'creation_datetime' => $creationDatetime,
+            'is_pinned' => false,
+            'pinned_datetime' => null,
+            'pinned_by_username' => null,
             'is_deleted' => $isDeleted,
             'update_datetime' => null,
             // Null on the tombstone, and that is the point: a deleted message offers its own author no

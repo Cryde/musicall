@@ -246,6 +246,46 @@ class ChatMessageGetCollectionTest extends ApiTestCase
         ]);
     }
 
+    public function test_the_list_says_which_messages_are_pinned(): void
+    {
+        // The pinned bar is a separate collection, but the list still has to carry the flag: that is
+        // what turns the message's action into « Détacher » rather than « Épingler » (#969).
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $channel = $this->channelOf($space);
+
+        $pinned = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $member,
+            'content' => 'code de la porte 4512',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+            'pinnedDatetime' => new \DateTimeImmutable('2026-09-11 09:00:00'),
+            'pinnedBy' => $member,
+        ])->create();
+        $plain = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $member,
+            'content' => 'on répète mardi',
+            'creationDatetime' => new \DateTime('2026-09-10 20:05:00'),
+        ])->create();
+
+        $this->client->loginUser($member);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/chat/messages');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/band_spaces/' . $space->id . '/chat/messages',
+            '@type' => 'Collection',
+            'totalItems' => 2,
+            'member' => [
+                $this->expectedMessage($plain->id, $space, $member, 'batteur', 'on répète mardi', '2026-09-10T20:05:00+00:00', 'on répète mardi'),
+                $this->expectedMessage($pinned->id, $space, $member, 'batteur', 'code de la porte 4512', '2026-09-10T20:00:00+00:00', 'code de la porte 4512', null, '2026-09-11T09:00:00+00:00', 'batteur'),
+            ],
+        ]);
+    }
+
     public function test_an_author_avatar_survives_the_projection(): void
     {
         // The projection reduces the picture to its imageName, and the URL is rebuilt from that alone
@@ -348,6 +388,8 @@ class ChatMessageGetCollectionTest extends ApiTestCase
         string $creationDatetime,
         ?string $editableContent = null,
         ?string $updateDatetime = null,
+        ?string $pinnedDatetime = null,
+        ?string $pinnedByUsername = null,
     ): array {
         return [
             // Composite, because the resource declares two identifiers and has no item operation of
@@ -369,6 +411,9 @@ class ChatMessageGetCollectionTest extends ApiTestCase
             // seeds the edit box, and only its author may PATCH it (#966).
             'editable_content' => $editableContent,
             'is_deleted' => false,
+            'is_pinned' => $pinnedDatetime !== null,
+            'pinned_datetime' => $pinnedDatetime,
+            'pinned_by_username' => $pinnedByUsername,
         ];
     }
 
