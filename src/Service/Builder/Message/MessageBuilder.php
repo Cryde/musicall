@@ -16,6 +16,7 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 readonly class MessageBuilder
 {
     private const string DELETED_PREVIEW = 'Message supprimé';
+    private const string ATTACHMENT_ONLY_PREVIEW = 'Pièce jointe';
 
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
@@ -93,7 +94,15 @@ readonly class MessageBuilder
             return self::DELETED_PREVIEW;
         }
 
-        $content = $entity->thread->bandSpace instanceof BandSpace
+        $isChannel = $entity->thread->bandSpace instanceof BandSpace;
+
+        // Empty content no longer means deleted (#971): a live channel message with no text is one that
+        // was sent for its attachments alone, so the preview says so without loading them.
+        if ($isChannel && $entity->content === '') {
+            return self::ATTACHMENT_ONLY_PREVIEW;
+        }
+
+        $content = $isChannel
             ? $this->chatMentionRenderer->renderPlain($entity->content, $mentionUsernamesById)
             : $entity->content;
 

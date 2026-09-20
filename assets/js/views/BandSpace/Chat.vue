@@ -36,7 +36,10 @@
 
     <ChatComposer
       :members="settingsStore.members"
-      :send-message="(content) => chatStore.sendMessage(bandSpaceId, content)"
+      :band-space-id="bandSpaceId"
+      :send-message="
+        (content, attachments) => chatStore.sendMessage(bandSpaceId, content, attachments)
+      "
       :is-sending="chatStore.isSending"
       @sent="messageList?.scrollToBottom()"
     />

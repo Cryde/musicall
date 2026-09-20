@@ -6,6 +6,7 @@ import {
   moveActiveIndex,
   routeForResult,
   SEARCH_TYPES,
+  searchOptionId,
   searchTypeFor
 } from './bandSpaceSearch.js'
 
@@ -133,5 +134,12 @@ describe('searchTypeFor', () => {
   it('returns null for a kind it does not know', () => {
     assert.equal(searchTypeFor('rider'), null)
     assert.equal(searchTypeFor(undefined), null)
+  })
+})
+
+describe('searchOptionId', () => {
+  it('scopes the row id to its own listbox, so two open lists cannot collide', () => {
+    assert.equal(searchOptionId('palette', { id: 'task-42' }), 'palette-option-task-42')
+    assert.equal(searchOptionId('picker', { id: 'task-42' }), 'picker-option-task-42')
   })
 })

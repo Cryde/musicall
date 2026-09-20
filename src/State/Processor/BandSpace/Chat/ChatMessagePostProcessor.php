@@ -74,9 +74,10 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Ce Band Space n\'a pas de conversation');
         }
 
-        $message = $this->messageSenderProcedure->processByThread($channel, $user, $data->content);
+        $content = $this->contentOf($data);
+        $message = $this->messageSenderProcedure->processByThread($channel, $user, $content);
 
-        $mentionedUsers = $this->chatMentionResolver->resolve($bandSpace, $data->content);
+        $mentionedUsers = $this->chatMentionResolver->resolve($bandSpace, $content);
         $this->recordMentions($message, $mentionedUsers);
         $this->recordAttachments($message, $data->attachments, $bandSpaceId, $membership);
 
@@ -88,6 +89,19 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Whitespace beside an attachment is stored as nothing, so an attachment-only message has one
+     * shape. Without attachments the text is kept as sent: NotBlank does not trim, and it never did.
+     */
+    private function contentOf(ChatMessageCreate $data): string
+    {
+        if ($data->attachments !== [] && trim($data->content) === '') {
+            return '';
+        }
+
+        return $data->content;
     }
 
     /**

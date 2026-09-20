@@ -52,11 +52,15 @@ export default {
       .catch(handleApiError)
   },
 
-  postMessage(bandSpaceId, content) {
+  /**
+   * `attachments` are the synthetic `<type>-<uuid>` identifiers the search endpoint handed out, which
+   * is exactly what ChatMessageCreate accepts (#970): nothing is translated on the way.
+   */
+  postMessage(bandSpaceId, content, attachments = []) {
     return axios
       .post(
         Routing.generate('api_band_space_chat_messages_post', { bandSpaceId }),
-        { content },
+        { content, attachments },
         { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
       )
       .then((resp) => resp.data)

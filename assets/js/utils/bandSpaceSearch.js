@@ -109,6 +109,18 @@ export function moveActiveIndex(length, current, step) {
 }
 
 /**
+ * The DOM id of one result row. Shared by the listbox that renders the row and by the input that
+ * points `aria-activedescendant` at it, so the two cannot spell it differently.
+ *
+ * @param {string} listboxId
+ * @param {{id: string}} result
+ * @returns {string}
+ */
+export function searchOptionId(listboxId, result) {
+  return `${listboxId}-option-${result.id}`
+}
+
+/**
  * The palette's own metadata for a record kind, label and icon included, or null for a kind it does
  * not know. Shared with the chat attachment card (#970), so a card and a palette hit cannot end up
  * naming or picturing the same kind of record differently.
