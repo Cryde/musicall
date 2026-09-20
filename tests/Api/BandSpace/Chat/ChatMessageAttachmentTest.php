@@ -130,6 +130,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => 'bonjour',
@@ -179,6 +181,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => 'tout est là',
@@ -514,6 +518,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             // Empty content is no longer a tombstone: this flag is the only thing that says deleted.
             'is_deleted' => false,
             'update_datetime' => null,
@@ -554,6 +560,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => '',
@@ -950,12 +958,12 @@ class ChatMessageAttachmentTest extends ApiTestCase
 
         $profile = $this->client->getProfile();
         $this->assertNotFalse($profile, 'The profiler must be enabled to count the queries.');
-        // Measured at 12: the ten a page of ten messages costs once the attachment rows are fetched,
-        // which happens on every read, plus one query for the tasks and one for the notes. The margin
-        // is for a change to the firewall, not for a per-attachment query, which would put this past
-        // sixty.
+        // Measured at 14 for this page of ten, the attachment rows, the read positions (#977) and one
+        // query per kind of target included. A measurement rather than a sum: the breakdown this
+        // comment used to carry had drifted. The margin is for a change to the firewall, not for a
+        // per-attachment query, which would put this past sixty.
         $this->assertLessThanOrEqual(
-            13,
+            15,
             $profile->getCollector('db')->getQueryCount(),
             'Resolving attachments must cost one query per kind of target, whatever the number of messages',
         );
@@ -988,6 +996,8 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => $editableContent,

@@ -142,4 +142,19 @@ class ChatMessageResource
 
     /** `Utilisateur supprimé` once the account is gone, exactly like the author field above. */
     public ?string $pinnedByUsername = null;
+
+    /**
+     * Who has read this message: every active member whose read position has reached it, by username
+     * and never the author, since writing something is not reading it (#977).
+     *
+     * A member who has never opened the channel has no read-state row at all, membership being
+     * derived from the band space, so they are simply absent, which is unread and not missing. A
+     * former member is absent too, although their row survives. A tombstone reports nobody.
+     *
+     * @var list<string>
+     */
+    public array $readByUsernames = [];
+
+    /** How many the list above holds, so the client can say « et 3 autres » without counting. */
+    public int $readCount = 0;
 }

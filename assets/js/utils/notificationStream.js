@@ -1,3 +1,4 @@
+import { browserTimers } from './browserTimers.js'
 import { reconnectDelay } from './realtimeBackoff.js'
 
 /**
@@ -67,7 +68,7 @@ export function createNotificationStream({
   onSignal,
   onAuthRefreshNeeded,
   openStream = (url) => new EventSource(url),
-  timers = { set: setTimeout, clear: clearTimeout },
+  timers = browserTimers(),
   delayFor = reconnectDelay
 }) {
   let stream = null

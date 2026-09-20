@@ -14,6 +14,7 @@ use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\Message\MessageRepository;
 use App\Service\Procedure\Message\MessageSenderProcedure;
 use App\Tests\Double\RecordingHub;
+use App\Tests\Double\ThrowingHub;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
@@ -287,33 +288,5 @@ class MessagePostedSignalTest extends KernelTestCase
         }
 
         return $thread;
-    }
-}
-
-final class ThrowingHub implements \Symfony\Component\Mercure\HubInterface
-{
-    public function publish(\Symfony\Component\Mercure\Update $update): string
-    {
-        throw new \RuntimeException('the hub is down');
-    }
-
-    public function getPublicUrl(): string
-    {
-        return '/.well-known/mercure';
-    }
-
-    public function getFactory(): ?\Symfony\Component\Mercure\Jwt\TokenFactoryInterface
-    {
-        return null;
-    }
-
-    public function getProtocolVersion(): \Symfony\Component\Mercure\ProtocolVersion
-    {
-        return \Symfony\Component\Mercure\ProtocolVersion::Legacy;
-    }
-
-    public function getCookieName(): string
-    {
-        return 'mercureAuthorization';
     }
 }

@@ -215,6 +215,16 @@
       </div>
     </div>
     </template>
+
+    <!-- Under the last message only, whoever wrote it: « Vu par » repeated under fifty bubbles is
+         noise, and the question a band asks is always about the newest one (#977). -->
+    <p
+      v-if="readReceipt"
+      class="text-xs text-surface-500 dark:text-surface-400"
+      :class="{ 'text-right': lastMessageIsMine }"
+    >
+      {{ readReceipt }}
+    </p>
   </div>
 </template>
 
@@ -232,6 +242,7 @@ import { useBandSpaceChatStore } from '../../../store/bandSpace/bandSpaceChat.js
 import { useUserSecurityStore } from '../../../store/user/security.js'
 import { autoLink } from '../../../utils/autoLink.js'
 import { canDeleteChatMessage } from '../../../utils/chatMessageActions.js'
+import { readReceiptLabel } from '../../../utils/chatReadReceipt.js'
 import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
@@ -264,6 +275,11 @@ const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
 function isMine(message) {
   return message.author_username === userSecurityStore.user?.username
 }
+
+// Held oldest first, so the last message of the list is the newest one of the conversation.
+const lastMessage = computed(() => chatStore.messages.at(-1) ?? null)
+const readReceipt = computed(() => readReceiptLabel(lastMessage.value?.read_by_usernames))
+const lastMessageIsMine = computed(() => lastMessage.value !== null && isMine(lastMessage.value))
 
 const editor = ref(null)
 const editingId = ref(null)

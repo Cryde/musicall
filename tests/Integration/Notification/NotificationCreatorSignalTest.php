@@ -9,12 +9,11 @@ use App\Mercure\MercureTopic;
 use App\Repository\Notification\NotificationRepository;
 use App\Service\Notification\NotificationCreator;
 use App\Tests\Double\RecordingHub;
+use App\Tests\Double\ThrowingHub;
 use App\Tests\Factory\User\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 #[ResetDatabase]
@@ -95,33 +94,5 @@ class NotificationCreatorSignalTest extends KernelTestCase
             1,
             self::getContainer()->get(NotificationRepository::class)->findBy(['recipient' => $recipient])
         );
-    }
-}
-
-final class ThrowingHub implements HubInterface
-{
-    public function publish(Update $update): string
-    {
-        throw new \RuntimeException('the hub is down');
-    }
-
-    public function getPublicUrl(): string
-    {
-        return '/.well-known/mercure';
-    }
-
-    public function getFactory(): ?\Symfony\Component\Mercure\Jwt\TokenFactoryInterface
-    {
-        return null;
-    }
-
-    public function getProtocolVersion(): \Symfony\Component\Mercure\ProtocolVersion
-    {
-        return \Symfony\Component\Mercure\ProtocolVersion::Legacy;
-    }
-
-    public function getCookieName(): string
-    {
-        return 'mercureAuthorization';
     }
 }

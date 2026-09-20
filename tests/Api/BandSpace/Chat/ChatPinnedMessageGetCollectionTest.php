@@ -239,11 +239,12 @@ class ChatPinnedMessageGetCollectionTest extends ApiTestCase
             );
         }
 
-        // And the request does not grow with the number of distinct pinners: the viewer, the space with
-        // its memberships, the channel, the pinned projection and the mention lookup. The margin is for
-        // a change to the firewall, not for a per-pinner query, which would put this past twenty.
+        // And the request does not grow with the number of distinct pinners: measured at 11, the
+        // pinned projection, the mention lookup and the read positions (#977) included. A measurement
+        // rather than a sum, since what a request costs drifts as features land. The margin is for a
+        // change to the firewall, not for a per-pinner query, which would put this past twenty.
         $this->assertLessThanOrEqual(
-            10,
+            12,
             $this->client->getProfile()->getCollector('db')->getQueryCount(),
             'The pinned list must cost a fixed number of queries whatever the pinner count',
         );
@@ -348,6 +349,8 @@ class ChatPinnedMessageGetCollectionTest extends ApiTestCase
             'is_pinned' => true,
             'pinned_datetime' => $pinnedDatetime,
             'pinned_by_username' => $pinnedByUsername,
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ];
     }
 
