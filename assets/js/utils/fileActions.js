@@ -13,7 +13,7 @@
  * Run with `npm test`.
  */
 
-import { describeFileSources } from '../constants/fileSources.js'
+import { deleteBlockingAttachments, describeFileSources } from '../constants/fileSources.js'
 import { isFileCreatorOrAdmin } from './bandSpaceFilePermissions.js'
 
 /**
@@ -37,7 +37,7 @@ export function filesNotOwnedBy(files, currentUserId, isAdmin) {
  * @returns {string[]}
  */
 export function attachedFiles(files) {
-  return files.filter((file) => (file.attachments?.length ?? 0) > 0)
+  return files.filter((file) => deleteBlockingAttachments(file.attachments).length > 0)
 }
 
 /**
@@ -82,7 +82,11 @@ export function attachmentReason(files) {
   }
 
   const sources = describeFileSources(
-    blocking.flatMap((file) => file.attachments.map((attachment) => attachment.source_type)).sort()
+    blocking
+      .flatMap((file) =>
+        deleteBlockingAttachments(file.attachments).map((attachment) => attachment.source_type)
+      )
+      .sort()
   )
 
   return blocking.length === 1

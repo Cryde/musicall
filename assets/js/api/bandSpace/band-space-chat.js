@@ -69,16 +69,27 @@ export default {
   /**
    * `attachments` are the synthetic `<type>-<uuid>` identifiers the search endpoint handed out, which
    * is exactly what ChatMessageCreate accepts (#970): nothing is translated on the way.
+   *
+   * A message carrying an image goes as multipart instead (#973), to the same endpoint.
    */
-  postMessage(bandSpaceId, content, attachments = []) {
-    return axios
-      .post(
-        Routing.generate('api_band_space_chat_messages_post', { bandSpaceId }),
-        { content, attachments },
-        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
-      )
-      .then((resp) => resp.data)
-      .catch(handleApiError)
+  postMessage(bandSpaceId, content, attachments = [], image = null) {
+    const url = Routing.generate('api_band_space_chat_messages_post', { bandSpaceId })
+    const request = image
+      ? axios.post(url, imageMessageForm(content, attachments, image), {
+          headers: { Accept: 'application/ld+json' }
+        })
+      : axios.post(
+          url,
+          { content, attachments },
+          { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+        )
+
+    return request.then((resp) => resp.data).catch(handleApiError)
+  },
+
+  /** Streamed inline by the backend, for the members of the space only. */
+  imageUrl(bandSpaceId, fileId) {
+    return Routing.generate('api_band_space_chat_images_get', { bandSpaceId, id: fileId })
   },
 
   /** Answers with the whole message, reactions included, so the pill row can be re-read from it. */
@@ -131,4 +142,19 @@ export default {
       )
       .catch(handleApiError)
   }
+}
+
+/**
+ * `attachments[]` rather than one JSON encoded field, so the array reaches the server as an array
+ * whatever the multipart decoder does with a string. The browser sets the multipart boundary itself.
+ */
+function imageMessageForm(content, attachments, image) {
+  const form = new FormData()
+  form.append('content', content)
+  for (const attachment of attachments) {
+    form.append('attachments[]', attachment)
+  }
+  form.append('image', image)
+
+  return form
 }

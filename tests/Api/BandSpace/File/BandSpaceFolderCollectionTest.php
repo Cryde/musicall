@@ -49,6 +49,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
                 ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
                 ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
+                ['id' => 'virtual:message', 'name' => 'Chat', 'source' => 'message', 'file_count' => 0],
             ],
         ]);
     }
@@ -160,6 +161,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
                 ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
                 ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
+                ['id' => 'virtual:message', 'name' => 'Chat', 'source' => 'message', 'file_count' => 0],
             ],
         ]);
     }
@@ -229,6 +231,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 0],
                 ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 1],
                 ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 2],
+                ['id' => 'virtual:message', 'name' => 'Chat', 'source' => 'message', 'file_count' => 0],
             ],
         ]);
     }
@@ -333,6 +336,7 @@ class BandSpaceFolderCollectionTest extends ApiTestCase
                 ['id' => 'virtual:note', 'name' => 'Notes', 'source' => 'note', 'file_count' => 1],
                 ['id' => 'virtual:song', 'name' => 'Chansons', 'source' => 'song', 'file_count' => 0],
                 ['id' => 'virtual:setlist', 'name' => 'Setlists', 'source' => 'setlist', 'file_count' => 0],
+                ['id' => 'virtual:message', 'name' => 'Chat', 'source' => 'message', 'file_count' => 0],
             ],
         ]);
     }

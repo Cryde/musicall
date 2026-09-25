@@ -5,8 +5,11 @@ namespace App\ApiResource\BandSpace\Chat;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Serializer\Encoder\MultipartDecoder;
+use App\Service\BandSpace\Chat\ChatImageConverter;
 use App\State\Processor\BandSpace\Chat\ChatMessagePostProcessor;
 use App\Validator\Message\ValidChatAttachments;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Post(
@@ -14,8 +17,16 @@ use Symfony\Component\Validator\Constraints as Assert;
     uriVariables: [
         'bandSpaceId' => new Link(fromClass: ChatMessageResource::class, identifiers: ['bandSpaceId']),
     ],
+    // Multipart for a message carrying an image (#973), JSON otherwise. One operation rather than a
+    // second endpoint, so mentions, attachments, the rate limit and the mention event stay on one path.
+    inputFormats: [
+        'jsonld' => ['application/ld+json'],
+        'json' => ['application/json'],
+        'multipart' => ['multipart/form-data'],
+    ],
     openapi: new Operation(tags: ['Band Space Chat']),
     security: "is_granted('ROLE_USER')",
+    denormalizationContext: [MultipartDecoder::RAW_FIELDS => ['content']],
     normalizationContext: ['skip_null_values' => false],
     output: ChatMessageResource::class,
     name: 'api_band_space_chat_messages_post',
@@ -33,12 +44,13 @@ class ChatMessageCreate
     public const int MAX_ATTACHMENTS = 5;
 
     /**
-     * Optional once the message names an attachment: an attachment is a message on its own. Wrapped
-     * rather than replaced, so an empty attachment list is refused with exactly the violation it always
-     * was. Defaults to empty so a body carrying only attachments reaches the processor.
+     * Optional once the message names an attachment or carries an image: either is a message on its
+     * own. Wrapped rather than replaced, so an empty attachment list is refused with exactly the
+     * violation it always was. Defaults to empty so a body carrying only attachments reaches the
+     * processor.
      */
     #[Assert\When(
-        expression: 'this.attachments == []',
+        expression: 'this.attachments == [] and this.image === null',
         constraints: [new Assert\NotBlank(message: 'Veuillez saisir un message')],
     )]
     #[Assert\Length(max: 5000, maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères')]
@@ -58,4 +70,18 @@ class ChatMessageCreate
         new ValidChatAttachments(),
     ])]
     public array $attachments = [];
+
+    /**
+     * A pasted or dropped image (#973), stored as a band space file and converted to WebP by
+     * ChatImageConverter. Only on a multipart body.
+     */
+    #[Assert\Image(
+        maxSize: ChatImageConverter::MAX_UPLOAD_SIZE,
+        mimeTypes: ChatImageConverter::ACCEPTED_MIME_TYPES,
+        maxPixels: ChatImageConverter::MAX_PIXELS,
+        maxSizeMessage: 'L\'image est trop volumineuse ({{ size }} {{ suffix }}), la limite est de {{ limit }} {{ suffix }}',
+        mimeTypesMessage: 'Format d\'image non pris en charge (formats acceptés : JPEG, PNG, WebP, GIF)',
+        maxPixelsMessage: 'L\'image est trop grande ({{ pixels }} pixels), la limite est de {{ max_pixels }} pixels',
+    )]
+    public ?File $image = null;
 }

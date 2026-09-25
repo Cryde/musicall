@@ -115,6 +115,16 @@ class ChatMessageResource
      */
     public array $attachments = [];
 
+    /**
+     * The image this message carries (#973), null when it carries none:
+     * `{"file_id": "<uuid>", "is_available": true}`. The client builds the inline URL from `file_id`.
+     * `is_available` false means the file was deleted from Files, and the bubble says « Image
+     * supprimée ».
+     *
+     * @var array{file_id: string, is_available: bool}|null
+     */
+    public ?array $image = null;
+
     /** Null until the author edits it, which is what the « modifié » marker reads (#966). */
     public ?DateTimeInterface $updateDatetime = null;
 

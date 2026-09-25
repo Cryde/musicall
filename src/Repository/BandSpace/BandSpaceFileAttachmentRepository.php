@@ -5,6 +5,7 @@ namespace App\Repository\BandSpace;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFileAttachment;
+use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -57,8 +58,11 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * The distinct source types each of the given files is attached to. Files with no attachment are
-     * absent from the result, so an empty array means "none of them is attached".
+     * The distinct source types keeping each of the given files from being deleted. Files with no such
+     * attachment are absent from the result, so an empty array means "none of them is pinned".
+     *
+     * A chat image does not count (#973): the message owns the file rather than pointing at it, and
+     * deleting it from Files is allowed, the bubble then saying « Image supprimée ».
      *
      * A projection rather than the rows themselves: the folder cascade only needs to know which files
      * are pinned and by what kind of source, and a subtree can hold far more attachments than the
@@ -68,7 +72,7 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
      *
      * @return array<string, string[]> file id => distinct source types
      */
-    public function findSourceTypesByFileIds(array $fileIds): array
+    public function findDeleteBlockingSourceTypesByFileIds(array $fileIds): array
     {
         if (count($fileIds) === 0) {
             return [];
@@ -77,8 +81,10 @@ class BandSpaceFileAttachmentRepository extends ServiceEntityRepository
         $rows = $this->createQueryBuilder('a')
             ->select('IDENTITY(a.bandSpaceFile) AS file_id', 'a.sourceType AS source_type')
             ->where('a.bandSpaceFile IN (:ids)')
+            ->andWhere('a.sourceType != :chatMessage')
             ->groupBy('a.bandSpaceFile', 'a.sourceType')
             ->setParameter('ids', $fileIds)
+            ->setParameter('chatMessage', BandSpaceFileSourceTypes::CHAT_MESSAGE)
             ->getQuery()
             ->getArrayResult();
 

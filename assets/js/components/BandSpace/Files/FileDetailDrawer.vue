@@ -228,6 +228,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
+  deleteBlockingAttachments,
   fileSourceAttachedMessage,
   fileSourceIcon,
   fileSourceLabel,
@@ -279,10 +280,11 @@ const attachmentLinks = computed(() =>
   }))
 )
 
-const isAttachedToSource = computed(() => attachments.value.length > 0)
+const blockingAttachments = computed(() => deleteBlockingAttachments(attachments.value))
+const isAttachedToSource = computed(() => blockingAttachments.value.length > 0)
 
 const attachedSourceMessage = computed(() => {
-  const list = attachments.value
+  const list = blockingAttachments.value
   if (list.length === 0) return null
   if (list.length > 1) {
     return `Ce fichier est attaché à ${list.length} ressources. Détachez-le d'abord depuis chacune.`

@@ -57,9 +57,8 @@ readonly class BandSpaceFileDeleteProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Seul le créateur ou un administrateur peut supprimer ce fichier');
         }
 
-        $attachments = $this->attachmentRepository->findByFile($file);
-        if (count($attachments) > 0) {
-            $sourceTypes = array_map(static fn ($attachment): string => $attachment->sourceType, $attachments);
+        $sourceTypes = $this->attachmentRepository->findDeleteBlockingSourceTypesByFileIds([(string) $file->id])[(string) $file->id] ?? [];
+        if ($sourceTypes !== []) {
             throw new UnprocessableEntityHttpException(sprintf(
                 "Ce fichier est attaché à %s. Détachez-le d'abord depuis la ressource concernée.",
                 BandSpaceFileAttachmentLabels::describe($sourceTypes),

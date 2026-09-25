@@ -2,6 +2,7 @@ FROM dunglas/frankenphp:1.12-php8.5-alpine
 
 RUN install-php-extensions \
     bcmath \
+    exif \
     gd \
     intl \
     pdo_mysql \

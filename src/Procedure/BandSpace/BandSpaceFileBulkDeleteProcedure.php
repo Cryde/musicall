@@ -105,7 +105,7 @@ readonly class BandSpaceFileBulkDeleteProcedure
      */
     private function assertNoAttachedFile(array $files): void
     {
-        $sourceTypesByFile = $this->attachmentRepository->findSourceTypesByFileIds(
+        $sourceTypesByFile = $this->attachmentRepository->findDeleteBlockingSourceTypesByFileIds(
             array_map(static fn (BandSpaceFile $file): string => (string) $file->id, $files),
         );
 

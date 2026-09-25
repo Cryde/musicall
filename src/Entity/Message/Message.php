@@ -73,6 +73,19 @@ class Message
     #[ORM\JoinColumn(nullable: true)]
     public ?User $pinnedBy = null;
 
+    /**
+     * The band space file holding the image this message carries (#973).
+     *
+     * No foreign key on purpose: the file can be purged from the Files trash while the message stays,
+     * and the id surviving it is what lets the bubble say « Image supprimée » instead of going blank.
+     */
+    #[ORM\Column(type: 'uuid', nullable: true)]
+    public UuidInterface|string|null $imageFileId = null {
+        get {
+            return is_string($this->imageFileId) ? $this->imageFileId : $this->imageFileId?->toString();
+        }
+    }
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();

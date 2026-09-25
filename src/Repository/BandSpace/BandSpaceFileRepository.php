@@ -359,6 +359,33 @@ class BandSpaceFileRepository extends ServiceEntityRepository
     }
 
     /**
+     * Which of the given files still exist in this band space and are not in the trash, as ids only:
+     * the chat asks it for a whole page of images and needs nothing but the answer (#973).
+     *
+     * @param list<string> $ids
+     *
+     * @return list<string>
+     */
+    public function findLiveIdsAmong(array $ids, string $bandSpaceId): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('bsf')
+            ->select('bsf.id AS id')
+            ->where('bsf.id IN (:ids)')
+            ->andWhere('IDENTITY(bsf.bandSpace) = :bandSpaceId')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->setParameter('ids', $ids)
+            ->setParameter('bandSpaceId', $bandSpaceId)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_values(array_map(static fn (array $row): string => (string) $row['id'], $rows));
+    }
+
+    /**
      * The files of a bulk selection, scoped to the band space so an id from another space comes back
      * as missing rather than acted on.
      *

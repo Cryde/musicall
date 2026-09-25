@@ -9,6 +9,12 @@ final class MultipartDecoder implements DecoderInterface
 {
     public const FORMAT = 'multipart';
 
+    /**
+     * Fields an operation wants as sent, never JSON decoded: free text such as a chat caption, where
+     * `["intro","verse"]` is something a member typed, not an array (#973).
+     */
+    public const RAW_FIELDS = 'multipart_raw_fields';
+
     public function __construct(private readonly RequestStack $requestStack)
     {
     }
@@ -23,15 +29,32 @@ final class MultipartDecoder implements DecoderInterface
             return null;
         }
 
-        return array_map(static function (mixed $element): string|array {
-                if (!is_string($element)) {
-                    return is_array($element) ? $element : (string) $element;
-                }
-                // Multipart form values will be encoded in JSON.
-                $decoded = json_decode($element, true);
+        /** @var list<string> $rawFields */
+        $rawFields = $context[self::RAW_FIELDS] ?? [];
 
-                return \is_array($decoded) ? $decoded : $element;
-            }, $request->request->all()) + $request->files->all();
+        $fields = [];
+        foreach ($request->request->all() as $name => $element) {
+            $fields[$name] = match (true) {
+                is_array($element) => $element,
+                !is_string($element) => (string) $element,
+                in_array($name, $rawFields, true) => $element,
+                default => self::decodeJson($element),
+            };
+        }
+
+        return $fields + $request->files->all();
+    }
+
+    /**
+     * Multipart form values will be encoded in JSON.
+     *
+     * @return string|array<mixed>
+     */
+    private static function decodeJson(string $element): string|array
+    {
+        $decoded = json_decode($element, true);
+
+        return \is_array($decoded) ? $decoded : $element;
     }
 
     public function supportsDecoding(string $format): bool

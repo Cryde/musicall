@@ -102,6 +102,14 @@ describe('attachedFiles', () => {
   it('treats a missing attachments array as unattached', () => {
     assert.deepEqual(attachedFiles([{ original_name: 'x.wav' }]), [])
   })
+
+  it('leaves a chat image out, since its message does not block the delete (#973)', () => {
+    const selection = [
+      file({ original_name: 'photo.webp', attachments: [{ source_type: 'message' }] })
+    ]
+
+    assert.deepEqual(attachedFiles(selection), [])
+  })
 })
 
 describe('attachmentReason', () => {

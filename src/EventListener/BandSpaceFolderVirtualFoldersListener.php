@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\BandSpaceMembershipRepository;
 use App\Repository\BandSpace\BandSpaceRepository;
+use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,6 +28,7 @@ final readonly class BandSpaceFolderVirtualFoldersListener
         'note' => 'Notes',
         'song' => 'Chansons',
         'setlist' => 'Setlists',
+        BandSpaceFileSourceTypes::CHAT_MESSAGE => 'Chat',
     ];
 
     public function __construct(
