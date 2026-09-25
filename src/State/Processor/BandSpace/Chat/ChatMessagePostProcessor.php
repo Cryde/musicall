@@ -103,7 +103,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         $this->recordAttachments($message, $data->attachments, $bandSpaceId, $membership);
 
         // Built before the dispatch, so a listener cannot change what the sender is answered with.
-        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
+        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
 
         if ($mentionedUsers !== []) {
             $this->eventDispatcher->dispatch(new BandSpaceChatMentionedEvent($message, $bandSpace, $mentionedUsers));

@@ -105,11 +105,13 @@ class ChatMessageResource
      * attachment row, ordered by kind then target id:
      * `{"type": "task", "target_id": "<uuid>", "label": "Réparer l'ampli", "is_available": true}`.
      *
-     * `label` is always the snapshot taken when the target was attached, never its title read back
-     * now, so every reader of the channel sees the same card. `is_available` false means the target
-     * has been deleted, and the client then renders the label with a « (supprimé) » suffix and no
-     * link. The deep link is built client side from `type` and `target_id`, by the same mapping the
-     * command palette uses, because those paths belong to the Vue router.
+     * `label` is the target's current title when this reader can see the target (#1048), and the
+     * snapshot taken when it was attached otherwise: once the target is deleted, and for a target
+     * hidden from this reader, such as another member's personal finance entry, whose renames must not
+     * reach them. `is_available` false means the target has been deleted, whoever reads it, and the
+     * client then renders the label with a « (supprimé) » suffix and no link. The deep link is built
+     * client side from `type` and `target_id`, by the same mapping the command palette uses, because
+     * those paths belong to the Vue router.
      *
      * @var list<array{type: string, target_id: string, label: string, is_available: bool}>
      */

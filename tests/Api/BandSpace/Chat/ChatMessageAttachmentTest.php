@@ -820,11 +820,10 @@ class ChatMessageAttachmentTest extends ApiTestCase
         ]);
     }
 
-    public function test_a_renamed_target_keeps_the_label_it_was_attached_with(): void
+    public function test_a_renamed_target_shows_its_current_title(): void
     {
-        // The card is named by the snapshot, never by the title read back now. A rename therefore
-        // does not show through, which is the price of every reader seeing the same card and of no
-        // reader being shown a value its owner disclosed only once. The link still opens the target.
+        // A card follows its target for a reader who can see it (#1048): it is a link to the item, not
+        // a quote from it, and a title frozen at the moment of attaching reads as a bug.
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
         $space = BandSpaceFactory::new()->create();
         BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
@@ -855,9 +854,98 @@ class ChatMessageAttachmentTest extends ApiTestCase
             'totalItems' => 1,
             'member' => [
                 $this->expectedMessage($message, $space, $member, 'regarde ça', '2026-09-10T20:00:00+00:00', [
-                    $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli'),
+                    $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli du local'),
                 ],
                     'regarde ça'),
+            ],
+        ]);
+    }
+
+    /** The message a pin answers with is built on its own, and must agree with the list. */
+    public function test_a_single_message_response_shows_the_current_title_too(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $channel = $this->channelOf($space);
+        $task = TaskFactory::new()->create(['bandSpace' => $space, 'title' => 'Réparer l\'ampli du local']);
+
+        $message = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $member,
+            'content' => 'regarde ça',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+        ])->create();
+        MessageAttachmentFactory::new([
+            'message' => $message,
+            'targetType' => BandSpaceSearchResultType::Task,
+            'targetId' => $task->id,
+            'label' => 'Réparer l\'ampli',
+        ])->create();
+
+        $this->client->loginUser($member);
+        $this->client->request('POST', '/api/band_spaces/' . $space->id . '/chat/messages/' . $message->id . '/pin');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $pinned = self::getContainer()->get(MessageRepository::class)->find($message->id);
+        $this->assertNotNull($pinned->pinnedDatetime);
+        $this->assertJsonEquals(['@context' => '/api/contexts/ChatMessage'] + array_merge(
+            $this->expectedMessage($message, $space, $member, 'regarde ça', '2026-09-10T20:00:00+00:00', [
+                $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli du local'),
+            ], 'regarde ça'),
+            [
+                'is_pinned' => true,
+                'pinned_datetime' => $pinned->pinnedDatetime->format('c'),
+                'pinned_by_username' => 'batteur',
+            ],
+        ));
+    }
+
+    /**
+     * The owner of a personal entry can see it everywhere, so their card follows its renames; the
+     * test below is the rest of the band, who keep the snapshot.
+     */
+    public function test_the_owner_of_a_personal_finance_entry_sees_its_current_label(): void
+    {
+        $owner = UserFactory::new()->asBaseUser()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $owner])->create();
+        $channel = $this->channelOf($space);
+
+        $personal = FinanceEntryFactory::new()->create([
+            'category' => FinanceCategoryFactory::new()->create(['bandSpace' => $space]),
+            'label' => 'Facture du psychologue',
+            'scope' => FinanceEntryScope::Personal,
+            'member' => $ownerMembership,
+        ]);
+
+        $message = MessageFactory::new([
+            'thread' => $channel,
+            'author' => $owner,
+            'content' => 'ma dépense',
+            'creationDatetime' => new \DateTime('2026-09-10 20:00:00'),
+        ])->create();
+        MessageAttachmentFactory::new([
+            'message' => $message,
+            'targetType' => BandSpaceSearchResultType::Finance,
+            'targetId' => $personal->id,
+            'label' => 'Cordes',
+        ])->create();
+
+        $this->client->loginUser($owner);
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/chat/messages');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/band_spaces/' . $space->id . '/chat/messages',
+            '@type' => 'Collection',
+            'totalItems' => 1,
+            'member' => [
+                $this->expectedMessage($message, $space, $owner, 'ma dépense', '2026-09-10T20:00:00+00:00', [
+                    $this->expectedCard('finance', (string) $personal->id, 'Facture du psychologue'),
+                ],
+                    'ma dépense'),
             ],
         ]);
     }
@@ -974,6 +1062,72 @@ class ChatMessageAttachmentTest extends ApiTestCase
             15,
             $profile->getCollector('db')->getQueryCount(),
             'Resolving attachments must cost one query per kind of target, whatever the number of messages',
+        );
+    }
+
+    public function test_hidden_targets_cost_one_more_query_for_their_kind_not_one_per_message(): void
+    {
+        // The fallback that tells a hidden target from a deleted one (#1048) runs only for the kinds
+        // with an untitled target, and once for the whole page: ten messages each carrying three of
+        // another member's personal entries must add one query, not thirty.
+        $owner = UserFactory::new()->asBaseUser()->create(['username' => 'bassiste', 'email' => 'bassiste@test.com']);
+        $reader = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        $ownerMembership = BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $owner])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $reader])->create();
+        $channel = $this->channelOf($space);
+
+        $category = FinanceCategoryFactory::new()->create(['bandSpace' => $space]);
+        $personalEntries = [];
+        foreach (range(1, 3) as $index) {
+            $personalEntries[] = FinanceEntryFactory::new()->create([
+                'category' => $category,
+                'label' => 'Dépense ' . $index,
+                'scope' => FinanceEntryScope::Personal,
+                'member' => $ownerMembership,
+            ]);
+        }
+
+        foreach (range(1, 10) as $index) {
+            $message = MessageFactory::new([
+                'thread' => $channel,
+                'author' => $owner,
+                'content' => 'message ' . $index,
+                'creationDatetime' => new \DateTime(sprintf('2026-09-10 20:%02d:00', $index)),
+            ])->create();
+
+            foreach ($personalEntries as $entry) {
+                MessageAttachmentFactory::new(['message' => $message, 'targetType' => BandSpaceSearchResultType::Finance, 'targetId' => $entry->id, 'label' => 'Snapshot'])->create();
+            }
+        }
+
+        $this->client->loginUser($reader);
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->request('GET', '/api/band_spaces/' . $space->id . '/chat/messages');
+
+        $this->assertResponseIsSuccessful();
+        $cards = array_merge(...array_map(
+            static fn (array $message): array => $message['attachments'],
+            $this->getResponseAsArray()['member'],
+        ));
+        $this->assertCount(30, $cards);
+        // Hidden, so the snapshot, and still there, so available.
+        foreach ($cards as $card) {
+            $this->assertSame('Snapshot', $card['label']);
+            $this->assertTrue($card['is_available']);
+        }
+
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile, 'The profiler must be enabled to count the queries.');
+        // Measured at 17, and at 17 again with five messages instead of ten: the one kind present costs
+        // its title query plus the existence query for the targets that came back without a title,
+        // whatever the page holds. A per-message query would put this past forty.
+        $this->assertLessThanOrEqual(
+            18,
+            $profile->getCollector('db')->getQueryCount(),
+            'Telling hidden targets from deleted ones must cost one query per kind, whatever the number of messages',
         );
     }
 

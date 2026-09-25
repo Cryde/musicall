@@ -44,7 +44,7 @@ readonly class ChatPinnedMessageCollectionProvider implements ProviderInterface
         // checkMember(), like the message list: reading stays open for the whole 30 day deletion
         // grace period, and the pinned bar is where the useful addresses and codes are.
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
-        [$bandSpace] = $this->memberChecker->checkMember($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMember($bandSpaceId, $user);
 
         $channel = $this->messageThreadRepository->findChannelForBandSpace($bandSpace);
         if (!$channel instanceof MessageThread) {
@@ -54,7 +54,7 @@ readonly class ChatPinnedMessageCollectionProvider implements ProviderInterface
         return $this->chatMessageBuilder->buildFromProjection(
             $this->messageRepository->findPinnedForThread($channel),
             $bandSpaceId,
-            $user,
+            $membership,
             $channel,
         );
     }

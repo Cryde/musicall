@@ -25,22 +25,27 @@ readonly class MessageAttachmentResolver
     }
 
     /**
-     * The cards of a page of messages, keyed by message id.
+     * The cards of a page of messages, keyed by message id, as `$viewer` may see them.
      *
-     * A card is always named by the label snapshotted when it was attached, never by the target's
-     * title read back now. That is what lets a message stay readable after the task it named is
-     * deleted, and it is also what keeps a reader from being shown a value the target's owner
-     * disclosed once: a personal finance entry is walled to the member it names everywhere else, and
-     * #785 would put a wall around more of them. Every reader therefore sees the same card.
+     * A card follows its target (#1048): it reads the target's current title whenever this reader can
+     * see the target, since the card is a link to the item rather than a quote from it. The label
+     * snapshotted when it was attached is the fallback, and it does two jobs: it keeps a card readable
+     * once the target is deleted, and it is all a reader is shown of a target they cannot see, such as
+     * another member's personal finance entry. That entry's later renames therefore never reach them,
+     * which is the leak #970 closed. Which reader may see what is decided in one place,
+     * MessageAttachmentRepository::findTargetTitles(), where #785 would add its own walls.
      *
-     * `is_available` is the only thing read live, and it answers one question: is the row still
-     * there. False means the client renders the label with a « (supprimé) » suffix and no link.
+     * `is_available` stays reader independent: it answers whether the target still exists, not whether
+     * this reader can open it. False means the client renders the label with « (supprimé) » and no link.
+     *
+     * One query per kind of target present for the titles, plus one more only for the kinds where some
+     * target came back without one, to tell a deleted target from a hidden one. Never one per message.
      *
      * @param string[] $messageIds
      *
      * @return array<string, list<array{type: string, target_id: string, label: string, is_available: bool}>>
      */
-    public function resolveForMessages(array $messageIds, string $bandSpaceId): array
+    public function resolveForMessages(array $messageIds, string $bandSpaceId, BandSpaceMembership $viewer): array
     {
         $rowsByMessage = $this->messageAttachmentRepository->findByMessageIds($messageIds);
         if ($rowsByMessage === []) {
@@ -50,33 +55,62 @@ readonly class MessageAttachmentResolver
         $idsByType = [];
         foreach ($rowsByMessage as $rows) {
             foreach ($rows as $row) {
-                $idsByType[$row['type']->value][] = $row['targetId'];
+                $idsByType[$row['type']->value][] = mb_strtolower($row['targetId']);
             }
         }
 
-        // One query per kind of target present, and none at all when there is nothing to resolve.
-        $existingByType = [];
-        foreach ($idsByType as $typeValue => $targetIds) {
-            $existingByType[$typeValue] = $this->messageAttachmentRepository->findExistingTargetIds(
-                BandSpaceSearchResultType::from($typeValue),
-                array_values(array_unique($targetIds)),
-                $bandSpaceId,
-            );
-        }
+        $titlesByType = $this->titlesByType($idsByType, $bandSpaceId, $viewer);
+        $existingByType = $this->untitledTargetsThatExist($idsByType, $titlesByType, $bandSpaceId);
 
         $cardsByMessage = [];
         foreach ($rowsByMessage as $messageId => $rows) {
             foreach ($rows as $row) {
+                $type = $row['type']->value;
+                $targetId = mb_strtolower($row['targetId']);
+                $title = $titlesByType[$type][$targetId] ?? null;
+
                 $cardsByMessage[$messageId][] = [
-                    'type' => $row['type']->value,
+                    'type' => $type,
                     'target_id' => $row['targetId'],
-                    'label' => $row['label'],
-                    'is_available' => isset($existingByType[$row['type']->value][mb_strtolower($row['targetId'])]),
+                    'label' => $title ?? $row['label'],
+                    'is_available' => $title !== null || isset($existingByType[$type][$targetId]),
                 ];
             }
         }
 
         return $cardsByMessage;
+    }
+
+    /**
+     * Of the targets the title lookup did not return, the ones that still exist: hidden from this
+     * reader rather than deleted. Asked only for the kinds that have such targets, which on a normal
+     * page is none.
+     *
+     * @param array<string, string[]> $idsByType
+     * @param array<string, array<string, string>> $titlesByType
+     *
+     * @return array<string, array<string, true>> type value => (lower-cased target id => true)
+     */
+    private function untitledTargetsThatExist(array $idsByType, array $titlesByType, string $bandSpaceId): array
+    {
+        $existingByType = [];
+        foreach ($idsByType as $typeValue => $targetIds) {
+            $untitled = array_values(array_unique(array_filter(
+                $targetIds,
+                static fn (string $targetId): bool => !isset($titlesByType[$typeValue][$targetId]),
+            )));
+            if ($untitled === []) {
+                continue;
+            }
+
+            $existingByType[$typeValue] = $this->messageAttachmentRepository->findExistingTargetIds(
+                BandSpaceSearchResultType::from($typeValue),
+                $untitled,
+                $bandSpaceId,
+            );
+        }
+
+        return $existingByType;
     }
 
     /**

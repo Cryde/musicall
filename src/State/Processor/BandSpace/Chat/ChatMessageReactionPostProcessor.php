@@ -52,7 +52,7 @@ readonly class ChatMessageReactionPostProcessor implements ProcessorInterface
         }
 
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$message instanceof Message) {
@@ -63,6 +63,6 @@ readonly class ChatMessageReactionPostProcessor implements ProcessorInterface
         // 422 naming the field.
         $this->messageReactionRepository->add($message, $user, MessageReactionEmoji::from($data->emoji));
 
-        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
+        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
     }
 }

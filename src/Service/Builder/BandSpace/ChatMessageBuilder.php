@@ -3,6 +3,7 @@
 namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
+use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
@@ -40,16 +41,17 @@ readonly class ChatMessageBuilder
      * reason this builder does not simply take Message entities.
      *
      * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
-     * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
-     *                     which rows carry their editable content.
+     * @param BandSpaceMembership $viewer who is reading: it decides the reaction tallies marked as theirs,
+     *                                   the attachment titles they may see (#1048), and which rows
+     *                                   carry their editable content.
      * @param MessageThread $channel the thread these rows come from, which is what the read positions
      *                               behind « Vu par » are asked for.
      *
      * @return ChatMessageResource[]
      */
-    public function buildFromProjection(array $rows, string $bandSpaceId, User $viewer, MessageThread $channel): array
+    public function buildFromProjection(array $rows, string $bandSpaceId, BandSpaceMembership $viewer, MessageThread $channel): array
     {
-        $viewerId = (string) $viewer->id;
+        $viewerId = (string) $viewer->user->id;
         $messageIds = array_map(static fn (array $row): string => (string) $row['id'], $rows);
 
         // One query for the whole page, never one per message. The lookup lives here rather than in
@@ -58,10 +60,10 @@ readonly class ChatMessageBuilder
         $mentionsByMessage = $this->messageMentionRepository->findUsernamesByMessageIds($messageIds);
         // Same rule, same reason (#968): one grouped query for the page, here rather than in the
         // caller so no entry point can forget it and silently drop every reaction.
-        $reactionsByMessage = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer);
+        $reactionsByMessage = $this->messageReactionRepository->findAggregatedByMessageIds($messageIds, $viewer->user);
         // Same rule, and the same reason it lives here: one query for the page's rows plus one per
         // kind of target present, never one per message (#970).
-        $attachmentsByMessage = $this->messageAttachmentResolver->resolveForMessages($messageIds, $bandSpaceId);
+        $attachmentsByMessage = $this->messageAttachmentResolver->resolveForMessages($messageIds, $bandSpaceId, $viewer);
         // And again, for the same reason (#977). One query for the page whatever it holds: a read
         // position is per member, so the rows are compared against each message here rather than
         // asked for again.
@@ -112,7 +114,7 @@ readonly class ChatMessageBuilder
     /**
      * The single message a POST returns. Hydrating one author is not the trap the list is.
      */
-    public function buildItem(Message $entity, string $bandSpaceId, User $viewer): ChatMessageResource
+    public function buildItem(Message $entity, string $bandSpaceId, BandSpaceMembership $viewer): ChatMessageResource
     {
         $messageId = (string) $entity->id;
         $imageFileId = $entity->imageFileId !== null ? (string) $entity->imageFileId : null;
@@ -132,10 +134,10 @@ readonly class ChatMessageBuilder
             $entity->content,
             $entity->creationDatetime,
             $this->messageMentionRepository->findUsernamesByMessageIds([$messageId])[$messageId] ?? [],
-            $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer)[$messageId] ?? [],
-            $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId)[$messageId] ?? [],
+            $this->messageReactionRepository->findAggregatedByMessageIds([$messageId], $viewer->user)[$messageId] ?? [],
+            $this->messageAttachmentResolver->resolveForMessages([$messageId], $bandSpaceId, $viewer)[$messageId] ?? [],
             $entity->updateDatetime,
-            $this->editableContentFor((string) $entity->author->id, (string) $viewer->id, $entity->content, $entity->isDeleted()),
+            $this->editableContentFor((string) $entity->author->id, (string) $viewer->user->id, $entity->content, $entity->isDeleted()),
             $entity->isDeleted(),
             $entity->pinnedDatetime,
             $entity->pinnedBy?->username,

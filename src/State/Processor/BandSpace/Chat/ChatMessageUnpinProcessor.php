@@ -39,7 +39,7 @@ readonly class ChatMessageUnpinProcessor implements ProcessorInterface
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
         // Whoever can pin can unpin, including somebody else's pin: the bar is the band's, and a
         // door code that has changed has to be removable by whoever notices.
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         if (!$message instanceof Message) {
@@ -57,6 +57,6 @@ readonly class ChatMessageUnpinProcessor implements ProcessorInterface
         $message->pinnedBy = null;
         $this->entityManager->flush();
 
-        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
+        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
     }
 }
