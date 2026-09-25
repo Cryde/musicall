@@ -417,7 +417,7 @@ function handleDrop(event) {
 function insertText(value) {
   const selection = window.getSelection()
   if (!selection || selection.rangeCount === 0) {
-    return
+    return false
   }
 
   // Both ends, not just the anchor: a selection dragged out of the editor and over the messages
@@ -427,7 +427,7 @@ function insertText(value) {
     !editor.value?.contains(selected.startContainer) ||
     !editor.value.contains(selected.endContainer)
   ) {
-    return
+    return false
   }
 
   if (!document.execCommand('insertText', false, value)) {
@@ -443,6 +443,8 @@ function insertText(value) {
 
   syncContent()
   updateSuggestions()
+
+  return true
 }
 
 function focus() {
@@ -521,7 +523,9 @@ function restoreRange(range) {
 }
 
 // Imperative because focus is: the chat puts it back after a send, an edit box takes it on open.
-defineExpose({ focus, focusAtEnd })
+// insertText too, for a paste the chat composer took over and then has to give back (#972): it
+// answers false when the caret is no longer in the editor.
+defineExpose({ focus, focusAtEnd, insertText })
 </script>
 
 <style>

@@ -112,7 +112,7 @@
       />
       <!-- Offered on an empty draft only, as on every messaging app: a voice note goes alone. -->
       <Button
-        v-if="canRecord && !canSend"
+        v-if="canRecord && !canSend && !isResolvingLink"
         icon="pi pi-microphone"
         aria-label="Enregistrer une note vocale"
         :disabled="isSending"
@@ -122,8 +122,8 @@
         v-else
         icon="pi pi-send"
         aria-label="Envoyer le message"
-        :loading="isSending"
-        :disabled="!canSend || isSending"
+        :loading="isSending || isResolvingLink"
+        :disabled="!canSend || isSending || isResolvingLink"
         @click="send"
       />
     </div>
@@ -142,6 +142,8 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { useVoiceRecorder } from '../../../composables/useVoiceRecorder.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import {
@@ -156,6 +158,7 @@ import {
   firstImageAmong,
   imageRefusalFor
 } from '../../../utils/chatImageDraft.js'
+import { attachmentIdentifierForUrl } from '../../../utils/chatPastedUrl.js'
 import {
   formatVoiceNoteDuration,
   MAX_VOICE_NOTE_SECONDS,
@@ -184,6 +187,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['sent'])
+
+const router = useRouter()
+
+/**
+ * Pasted links still being resolved (#972). Sending, or starting a voice note, waits for them: the URL
+ * has already been taken out of the text, so a message sent meanwhile would lose it, and the chip
+ * would then land in the next draft instead.
+ */
+const pendingLinks = ref(0)
+const isResolvingLink = computed(() => pendingLinks.value > 0)
 
 const composer = ref(null)
 /** What gets sent: the composer's content in the stored `@[uuid]` format, never what is on screen. */
@@ -243,16 +256,51 @@ function removeImage() {
   attachmentError.value = ''
 }
 
-/** Text pastes as it always did; only a clipboard holding an image is taken over. */
+/**
+ * Text pastes as it always did. Two pastes are taken over: an image (#973), and a link to an object
+ * of this Band Space (#972), which becomes an attachment instead of a raw URL in the text.
+ */
 function handlePaste(event) {
-  const file = canAttach.value ? firstImageAmong(event.clipboardData?.files ?? []) : null
-  if (!file) {
+  if (!canAttach.value) {
     return
   }
 
-  event.preventDefault()
-  event.stopPropagation()
-  setImage(file)
+  const file = firstImageAmong(event.clipboardData?.files ?? [])
+  if (file) {
+    event.preventDefault()
+    event.stopPropagation()
+    setImage(file)
+    return
+  }
+
+  const pasted = event.clipboardData?.getData('text/plain') ?? ''
+  const identifier = attachmentIdentifierForUrl(pasted, {
+    origin: window.location.origin,
+    bandSpaceId: props.bandSpaceId,
+    resolve: (path) => router.resolve(path)
+  })
+  if (identifier) {
+    event.preventDefault()
+    event.stopPropagation()
+    attachPastedLink(identifier, pasted.trim())
+  }
+}
+
+/**
+ * The server decides, since the link may name something this member cannot point at. When it says no,
+ * the link goes back into the text where it was pasted, or at the end if the caret has moved away.
+ */
+async function attachPastedLink(identifier, url) {
+  pendingLinks.value++
+  try {
+    addAttachment(await bandSpaceChatApi.getAttachmentPreview(props.bandSpaceId, identifier))
+  } catch {
+    if (!composer.value?.insertText(url)) {
+      content.value = content.value === '' ? url : `${content.value} ${url}`
+    }
+  } finally {
+    pendingLinks.value--
+  }
 }
 
 function handleDrop(event) {
@@ -274,7 +322,7 @@ function handleImagePicked(event) {
 onBeforeUnmount(removeImage)
 
 async function send() {
-  if (!canSend.value || props.isSending) {
+  if (!canSend.value || props.isSending || isResolvingLink.value) {
     return
   }
 
