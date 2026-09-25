@@ -42,7 +42,7 @@ readonly class ChatMessageCollectionProvider implements ProviderInterface
         // checkMember(), not checkMemberForWrite(): reading stays open for the whole 30 day deletion
         // grace period, like every other module.
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
-        [$bandSpace] = $this->memberChecker->checkMember($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMember($bandSpaceId, $user);
 
         $channel = $this->messageThreadRepository->findChannelForBandSpace($bandSpace);
         if (!$channel instanceof MessageThread) {
@@ -56,7 +56,7 @@ readonly class ChatMessageCollectionProvider implements ProviderInterface
         $rows = $this->messageRepository->findForThread($channel, $itemsPerPage, $offset);
 
         return new TraversablePaginator(
-            new \ArrayIterator($this->chatMessageBuilder->buildFromProjection($rows, $bandSpaceId, $user, $channel)),
+            new \ArrayIterator($this->chatMessageBuilder->buildFromProjection($rows, $bandSpaceId, $membership, $channel)),
             $page,
             $itemsPerPage,
             $this->messageRepository->countForThread($channel),

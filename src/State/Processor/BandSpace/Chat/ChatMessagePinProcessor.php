@@ -46,7 +46,7 @@ readonly class ChatMessagePinProcessor implements ProcessorInterface
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
         // Any active member, not just an admin: the member who knows the rehearsal room door code is
         // rarely the one holding the admin role, and they are the one who needs it findable.
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         // A tombstone takes no pin, the same 404 the delete and edit endpoints answer with: there is
@@ -62,7 +62,7 @@ readonly class ChatMessagePinProcessor implements ProcessorInterface
             $this->pin($message, $user);
         }
 
-        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
+        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
     }
 
     private function pin(Message $message, User $user): void

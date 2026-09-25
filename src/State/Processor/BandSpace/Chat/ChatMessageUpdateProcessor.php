@@ -55,7 +55,7 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
         }
 
         $bandSpaceId = (string) $uriVariables['bandSpaceId'];
-        [$bandSpace] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
+        [$bandSpace, $membership] = $this->memberChecker->checkMemberForWrite($bandSpaceId, $user);
 
         $message = $this->messageRepository->findOneByIdAndBandSpace((string) $uriVariables['id'], $bandSpace);
         // A tombstone takes no edit, the same 404 the delete endpoint answers with: its content is
@@ -71,7 +71,7 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
         // An identical body is not an edit. Stamping it would paint « modifié » on a message nobody
         // changed, and that marker is a claim about the message rather than a detail of it.
         if ($data->content === $message->content) {
-            return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
+            return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
         }
 
         $message->content = $data->content;
@@ -94,7 +94,7 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
 
         // Built after the flush, so the names come from the rows this edit just wrote, and before the
         // dispatch, so a listener cannot change what the author is answered with.
-        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $user);
+        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
 
         if ($newlyMentionedUsers !== []) {
             $this->eventDispatcher->dispatch(new BandSpaceChatMentionedEvent($message, $bandSpace, $newlyMentionedUsers));
