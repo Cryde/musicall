@@ -90,6 +90,22 @@ export default {
     return request.then((resp) => resp.data).catch(handleApiError)
   },
 
+  /**
+   * One pasted Band Space object resolved for the sender (#972), in the shape the attachment picker
+   * hands the composer. A 404 means the message would refuse it.
+   */
+  getAttachmentPreview(bandSpaceId, identifier) {
+    return axios
+      .get(
+        Routing.generate('api_band_space_chat_attachment_previews_get', {
+          bandSpaceId,
+          id: identifier
+        })
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   /** Streamed inline by the backend, for the members of the space only. */
   imageUrl(bandSpaceId, fileId) {
     return Routing.generate('api_band_space_chat_images_get', { bandSpaceId, id: fileId })
