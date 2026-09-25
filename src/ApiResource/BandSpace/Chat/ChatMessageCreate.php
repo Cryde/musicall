@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Serializer\Encoder\MultipartDecoder;
 use App\Service\BandSpace\Chat\ChatImageConverter;
+use App\Service\BandSpace\Chat\ChatVoiceNoteConverter;
 use App\State\Processor\BandSpace\Chat\ChatMessagePostProcessor;
 use App\Validator\Message\ValidChatAttachments;
 use Symfony\Component\HttpFoundation\File\File;
@@ -44,13 +45,13 @@ class ChatMessageCreate
     public const int MAX_ATTACHMENTS = 5;
 
     /**
-     * Optional once the message names an attachment or carries an image: either is a message on its
-     * own. Wrapped rather than replaced, so an empty attachment list is refused with exactly the
+     * Optional once the message names an attachment or carries an image or a voice note: each is a
+     * message on its own. Wrapped rather than replaced, so an empty attachment list is refused with exactly the
      * violation it always was. Defaults to empty so a body carrying only attachments reaches the
      * processor.
      */
     #[Assert\When(
-        expression: 'this.attachments == [] and this.image === null',
+        expression: 'this.attachments == [] and this.image === null and this.voiceNote === null',
         constraints: [new Assert\NotBlank(message: 'Veuillez saisir un message')],
     )]
     #[Assert\Length(max: 5000, maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères')]
@@ -84,4 +85,23 @@ class ChatMessageCreate
         maxPixelsMessage: 'L\'image est trop grande ({{ pixels }} pixels), la limite est de {{ max_pixels }} pixels',
     )]
     public ?File $image = null;
+
+    /**
+     * A recorded voice note (#974), converted to AAC by ChatVoiceNoteConverter. Sent alone, like on
+     * every messaging app: no text, no image, no attachment beside it.
+     */
+    #[Assert\File(
+        maxSize: ChatVoiceNoteConverter::MAX_UPLOAD_SIZE,
+        mimeTypes: ChatVoiceNoteConverter::ACCEPTED_MIME_TYPES,
+        maxSizeMessage: 'La note vocale est trop volumineuse ({{ size }} {{ suffix }}), la limite est de {{ limit }} {{ suffix }}',
+        mimeTypesMessage: 'Format de note vocale non pris en charge',
+    )]
+    #[Assert\When(
+        expression: 'value !== null',
+        constraints: [new Assert\Expression(
+            expression: 'this.content == "" and this.image === null and this.attachments == []',
+            message: 'Une note vocale s\'envoie seule, sans texte, image ni pièce jointe',
+        )],
+    )]
+    public ?File $voiceNote = null;
 }

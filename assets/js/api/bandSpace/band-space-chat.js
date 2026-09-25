@@ -70,12 +70,15 @@ export default {
    * `attachments` are the synthetic `<type>-<uuid>` identifiers the search endpoint handed out, which
    * is exactly what ChatMessageCreate accepts (#970): nothing is translated on the way.
    *
-   * A message carrying an image goes as multipart instead (#973), to the same endpoint.
+   * A message carrying an image (#973) or a voice note (#974) goes as multipart instead, to the
+   * same endpoint.
+   *
+   * @param {{image?: File, voiceNote?: File}|null} media
    */
-  postMessage(bandSpaceId, content, attachments = [], image = null) {
+  postMessage(bandSpaceId, content, attachments = [], media = null) {
     const url = Routing.generate('api_band_space_chat_messages_post', { bandSpaceId })
-    const request = image
-      ? axios.post(url, imageMessageForm(content, attachments, image), {
+    const request = media
+      ? axios.post(url, mediaMessageForm(content, attachments, media), {
           headers: { Accept: 'application/ld+json' }
         })
       : axios.post(
@@ -90,6 +93,19 @@ export default {
   /** Streamed inline by the backend, for the members of the space only. */
   imageUrl(bandSpaceId, fileId) {
     return Routing.generate('api_band_space_chat_images_get', { bandSpaceId, id: fileId })
+  },
+
+  /**
+   * The whole note as a blob, rather than a URL handed to `<audio>`: the stream serves no byte
+   * ranges, which Safari insists on before it plays a URL. A note is a couple of megabytes at most.
+   */
+  getVoiceNote(bandSpaceId, fileId) {
+    return axios
+      .get(Routing.generate('api_band_space_chat_voice_notes_get', { bandSpaceId, id: fileId }), {
+        responseType: 'blob'
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
   },
 
   /** Answers with the whole message, reactions included, so the pill row can be re-read from it. */
@@ -148,13 +164,14 @@ export default {
  * `attachments[]` rather than one JSON encoded field, so the array reaches the server as an array
  * whatever the multipart decoder does with a string. The browser sets the multipart boundary itself.
  */
-function imageMessageForm(content, attachments, image) {
+function mediaMessageForm(content, attachments, { image, voiceNote }) {
   const form = new FormData()
   form.append('content', content)
   for (const attachment of attachments) {
     form.append('attachments[]', attachment)
   }
-  form.append('image', image)
+  if (image) form.append('image', image)
+  if (voiceNote) form.append('voice_note', voiceNote)
 
   return form
 }

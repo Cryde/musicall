@@ -133,6 +133,11 @@
                     :image="message.image"
                     :band-space-id="bandSpaceId"
                   />
+                  <ChatMessageVoiceNote
+                    v-if="message.voice_note"
+                    :voice-note="message.voice_note"
+                    :band-space-id="bandSpaceId"
+                  />
                   <!-- An attachment-only message has no text (#971), and an empty line here would pad the
                        bubble above its cards. -->
                   <div v-if="message.content" v-html="autoLink(message.content)" />
@@ -275,6 +280,7 @@ import Avatar from '../../User/Avatar.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageImage from './ChatMessageImage.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'
+import ChatMessageVoiceNote from './ChatMessageVoiceNote.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },

@@ -69,6 +69,7 @@ class ChatMessagePostTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
         ]);
     }
 

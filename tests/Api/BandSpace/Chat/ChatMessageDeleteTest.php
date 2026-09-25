@@ -537,6 +537,7 @@ class ChatMessageDeleteTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
             'is_deleted' => $isDeleted,
             'update_datetime' => null,
             // Null on the tombstone, and that is the point: a deleted message offers its own author no

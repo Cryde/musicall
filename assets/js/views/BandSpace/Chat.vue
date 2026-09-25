@@ -39,8 +39,8 @@
       :members="settingsStore.members"
       :band-space-id="bandSpaceId"
       :send-message="
-        (content, attachments, image) =>
-          chatStore.sendMessage(bandSpaceId, content, attachments, image)
+        (content, attachments, media) =>
+          chatStore.sendMessage(bandSpaceId, content, attachments, media)
       "
       :is-sending="chatStore.isSending"
       @sent="messageList?.scrollToBottom()"

@@ -13,7 +13,7 @@ use App\Repository\Message\MessageAttachmentRepository;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\BandSpace\Chat\ChatImageStore;
+use App\Service\BandSpace\Chat\ChatMediaStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -38,7 +38,7 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
         private MessageMentionRepository $messageMentionRepository,
         private MessageAttachmentRepository $messageAttachmentRepository,
         private BandSpaceFileRepository $bandSpaceFileRepository,
-        private ChatImageStore $chatImageStore,
+        private ChatMediaStore $chatMediaStore,
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
         private Security $security,
@@ -77,28 +77,39 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
         // top is exactly what has just gone (#969).
         $message->pinnedDatetime = null;
         $message->pinnedBy = null;
-        $imageFileId = $message->imageFileId;
+        $mediaFileIds = array_filter([$message->imageFileId, $message->voiceNoteFileId], static fn ($id): bool => $id !== null);
         $message->imageFileId = null;
+        $message->voiceNoteFileId = null;
+        $message->voiceNoteDurationSeconds = null;
+        $message->voiceNotePeaks = null;
         $this->entityManager->flush();
 
         $this->messageMentionRepository->deleteByMessage($message);
         // And what it pointed at (#970). An attachment names a task or a file, so leaving the rows
         // would keep serving that in the payload of a message whose content is supposed to be gone.
         $this->messageAttachmentRepository->deleteByMessage($message);
-        // And its image, for good (#973): the message is what it was posted in, so it goes with it.
-        // Already purged from the Files trash is fine, there is simply nothing left to remove.
-        $image = $imageFileId !== null ? $this->bandSpaceFileRepository->findOneByIdAndBandSpace((string) $imageFileId, $bandSpace) : null;
-        if (!$image instanceof BandSpaceFile) {
-            return;
+        // And its media, for good (#973, #974): the message is what it was posted in, so it goes with
+        // it. Already purged from the Files trash is fine, there is simply nothing left to remove.
+        foreach ($mediaFileIds as $mediaFileId) {
+            $media = $this->bandSpaceFileRepository->findOneByIdAndBandSpace((string) $mediaFileId, $bandSpace);
+            if ($media instanceof BandSpaceFile) {
+                $this->discardQuietly($media, $message);
+            }
         }
-        // Best-effort: the tombstone is committed, so the delete has happened as far as anybody can
-        // see, and a failure here must not report it as failed.
+    }
+
+    /**
+     * Best-effort: the tombstone is committed, so the delete has happened as far as anybody can see,
+     * and a failure here must not report it as failed.
+     */
+    private function discardQuietly(BandSpaceFile $media, Message $message): void
+    {
         try {
-            $this->chatImageStore->discard($image);
+            $this->chatMediaStore->discard($media);
         } catch (\Throwable $e) {
-            $this->logger->error('Could not purge the image of a deleted chat message', [
+            $this->logger->error('Could not purge the media of a deleted chat message', [
                 'message_id' => (string) $message->id,
-                'file_id' => (string) $image->id,
+                'file_id' => (string) $media->id,
                 'exception' => $e,
             ]);
         }

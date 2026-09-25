@@ -86,6 +86,27 @@ class Message
         }
     }
 
+    /** The band space file holding the voice note this message carries (#974), no foreign key either. */
+    #[ORM\Column(type: 'uuid', nullable: true)]
+    public UuidInterface|string|null $voiceNoteFileId = null {
+        get {
+            return is_string($this->voiceNoteFileId) ? $this->voiceNoteFileId : $this->voiceNoteFileId?->toString();
+        }
+    }
+
+    /** Measured by ffprobe on the stored file: a MediaRecorder WebM carries no duration of its own. */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    public ?int $voiceNoteDurationSeconds = null;
+
+    /**
+     * The waveform the player draws: ChatVoiceNoteConverter::PEAK_COUNT loudness values, 0 to 255,
+     * measured once at upload so no reader has to download the audio to see its shape.
+     *
+     * @var list<int>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    public ?array $voiceNotePeaks = null;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();
