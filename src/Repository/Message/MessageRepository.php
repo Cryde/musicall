@@ -45,7 +45,7 @@ class MessageRepository extends ServiceEntityRepository
      * tombstones out would leave holes in a conversation and put the page size out of step with the
      * count below (#967).
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findForThread(MessageThread $thread, int $limit, int $offset): array
     {
@@ -65,7 +65,7 @@ class MessageRepository extends ServiceEntityRepository
      * message is far up the history and therefore almost never on the page the pane has loaded (#969).
      * Unbounded on purpose: ChatMessagePinProcessor caps a channel at ten, so there is no page to turn.
      *
-     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
      */
     public function findPinnedForThread(MessageThread $thread): array
     {
@@ -93,6 +93,7 @@ class MessageRepository extends ServiceEntityRepository
                 'message.imageFileId AS imageFileId',
                 'message.voiceNoteFileId AS voiceNoteFileId',
                 'message.voiceNoteDurationSeconds AS voiceNoteDurationSeconds',
+                'message.voiceNotePeaks AS voiceNotePeaks',
                 'author.id AS authorId',
                 'author.username AS authorUsername',
                 'author.deletionDatetime AS authorDeletionDatetime',

@@ -56,3 +56,34 @@ export function recordingErrorMessage(error) {
 
   return RECORDING_FAILED_MESSAGE
 }
+
+/** Mirrors ChatVoiceNoteConverter::PEAK_MAX. */
+export const PEAK_MAX = 255
+
+/** A pause still shows as a thin line, so the envelope never breaks into separate islands. */
+const MIN_PEAK_RATIO = 0.08
+
+/**
+ * The closed SVG path of a waveform envelope, mirrored around the middle line, one point per peak.
+ * With no peaks (a note older than the measurement) it is a flat line at the minimum height.
+ *
+ * @param {number[]} peaks 0 to PEAK_MAX, straight from the API
+ */
+export function voiceNoteEnvelopePath(peaks, width, height) {
+  const values = peaks.length > 1 ? peaks : [0, 0]
+  const middle = height / 2
+  const step = width / (values.length - 1)
+  const offsets = values.map(
+    (peak) => Math.max(MIN_PEAK_RATIO, Math.min(1, peak / PEAK_MAX)) * middle
+  )
+  const point = (i, dy) => `${round(i * step)},${round(middle + dy)}`
+
+  const top = offsets.map((offset, i) => point(i, -offset))
+  const bottom = offsets.map((offset, i) => point(i, offset)).reverse()
+
+  return `M${[...top, ...bottom].join(' L')} Z`
+}
+
+function round(value) {
+  return Math.round(value * 10) / 10
+}

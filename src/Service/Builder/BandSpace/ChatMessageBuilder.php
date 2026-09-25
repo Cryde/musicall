@@ -39,7 +39,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
      *                     which rows carry their editable content.
      * @param MessageThread $channel the thread these rows come from, which is what the read positions
@@ -101,6 +101,7 @@ readonly class ChatMessageBuilder
                 $this->voiceNoteOf(
                     $row['voiceNoteFileId'] !== null ? (string) $row['voiceNoteFileId'] : null,
                     $row['voiceNoteDurationSeconds'],
+                    $row['voiceNotePeaks'],
                     $liveMediaFileIds,
                 ),
             ),
@@ -146,7 +147,7 @@ readonly class ChatMessageBuilder
                 $entity->isDeleted(),
             ),
             $this->imageOf($imageFileId, $liveMediaFileIds),
-            $this->voiceNoteOf($voiceNoteFileId, $entity->voiceNoteDurationSeconds, $liveMediaFileIds),
+            $this->voiceNoteOf($voiceNoteFileId, $entity->voiceNoteDurationSeconds, $entity->voiceNotePeaks, $liveMediaFileIds),
         );
     }
 
@@ -164,15 +165,17 @@ readonly class ChatMessageBuilder
     }
 
     /**
+     * @param list<int>|null $peaks
      * @param list<string> $availableFileIds the files still live, out of those the page asked about
      *
-     * @return array{file_id: string, duration_seconds: int, is_available: bool}|null
+     * @return array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool}|null
      */
-    private function voiceNoteOf(?string $fileId, ?int $durationSeconds, array $availableFileIds): ?array
+    private function voiceNoteOf(?string $fileId, ?int $durationSeconds, ?array $peaks, array $availableFileIds): ?array
     {
         return $fileId === null ? null : [
             'file_id' => $fileId,
             'duration_seconds' => $durationSeconds ?? 0,
+            'peaks' => $peaks ?? [],
             'is_available' => in_array($fileId, $availableFileIds, true),
         ];
     }
@@ -238,7 +241,7 @@ readonly class ChatMessageBuilder
      * @param list<array{type: string, target_id: string, label: string, is_available: bool}> $attachments
      * @param list<string> $readByUsernames
      * @param array{file_id: string, is_available: bool}|null $image
-     * @param array{file_id: string, duration_seconds: int, is_available: bool}|null $voiceNote
+     * @param array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool}|null $voiceNote
      */
     private function build(
         string $id,

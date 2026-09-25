@@ -10,6 +10,8 @@ final readonly class ConvertedVoiceNote
         // A temporary file, which the caller removes once it is stored.
         public File $file,
         public int $durationSeconds,
+        /** @var list<int> */
+        public array $peaks,
     ) {
     }
 }

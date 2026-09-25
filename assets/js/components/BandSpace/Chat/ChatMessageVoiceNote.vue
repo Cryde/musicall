@@ -7,7 +7,7 @@
     <i class="pi pi-microphone text-xs" aria-hidden="true" />
     Note vocale supprimée
   </span>
-  <div v-else class="mb-2 last:mb-0 flex w-60 max-w-full items-center gap-3">
+  <div v-else class="mb-2 last:mb-0 flex w-64 max-w-full items-center gap-3">
     <button
       type="button"
       class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-current/15 transition-colors hover:bg-current/25 disabled:opacity-60"
@@ -17,29 +17,48 @@
     >
       <i class="pi" :class="isLoading ? 'pi-spin pi-spinner' : isPlaying ? 'pi-pause' : 'pi-play'" aria-hidden="true" />
     </button>
-    <div class="flex min-w-0 flex-1 flex-col gap-1">
-      <!-- A plain range input: keyboard and screen reader seeking come with it. -->
+    <!-- The envelope is what is seen, filling as the note plays (#974). The range input lies on top of
+         it, invisible, so pointer and keyboard seeking and the screen reader all come with it. -->
+    <div class="relative h-9 min-w-0 flex-1 rounded has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-current">
+      <svg
+        class="block h-full w-full"
+        :viewBox="`0 0 ${ENVELOPE_WIDTH} ${ENVELOPE_HEIGHT}`"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <clipPath :id="clipId">
+            <rect :width="ENVELOPE_WIDTH * progress" :height="ENVELOPE_HEIGHT" />
+          </clipPath>
+        </defs>
+        <path :d="envelope" fill="currentColor" opacity="0.35" />
+        <path :d="envelope" fill="currentColor" :clip-path="`url(#${clipId})`" />
+      </svg>
       <input
         type="range"
-        class="w-full cursor-pointer accent-current"
+        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         min="0"
         :max="voiceNote.duration_seconds"
         step="0.1"
         :value="currentSeconds"
         aria-label="Position dans la note vocale"
+        :aria-valuetext="formatVoiceNoteDuration(currentSeconds)"
         @input="seek(Number($event.target.value))"
       />
-      <span class="text-[11px] tabular-nums opacity-80">
-        {{ formatVoiceNoteDuration(isPlaying || currentSeconds > 0 ? currentSeconds : voiceNote.duration_seconds) }}
-      </span>
     </div>
+    <span class="shrink-0 text-xs tabular-nums opacity-80">
+      {{ formatVoiceNoteDuration(isPlaying || currentSeconds > 0 ? currentSeconds : voiceNote.duration_seconds) }}
+    </span>
   </div>
 </template>
 
 <script setup>
-import { onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, useId } from 'vue'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
-import { formatVoiceNoteDuration } from '../../../utils/chatVoiceNote.js'
+import { formatVoiceNoteDuration, voiceNoteEnvelopePath } from '../../../utils/chatVoiceNote.js'
+
+const ENVELOPE_WIDTH = 170
+const ENVELOPE_HEIGHT = 34
 
 const props = defineProps({
   /** The `voice_note` of one ChatMessage, straight from the API. */
@@ -51,6 +70,17 @@ const isPlaying = ref(false)
 const isLoading = ref(false)
 const hasFailed = ref(false)
 const currentSeconds = ref(0)
+
+/** One per player: two notes on a page must not share the clip that shows how far each has played. */
+const clipId = `voice-note-clip-${useId()}`
+const envelope = computed(() =>
+  voiceNoteEnvelopePath(props.voiceNote.peaks ?? [], ENVELOPE_WIDTH, ENVELOPE_HEIGHT)
+)
+const progress = computed(() =>
+  props.voiceNote.duration_seconds > 0
+    ? Math.min(1, currentSeconds.value / props.voiceNote.duration_seconds)
+    : 0
+)
 
 /** Created on the first play only, so a page of notes loads no audio until one is listened to. */
 let audio = null

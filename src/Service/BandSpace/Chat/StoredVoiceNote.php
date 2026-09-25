@@ -9,6 +9,8 @@ final readonly class StoredVoiceNote
     public function __construct(
         public BandSpaceFile $file,
         public int $durationSeconds,
+        /** @var list<int> */
+        public array $peaks,
     ) {
     }
 }

@@ -81,6 +81,7 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
         $message->imageFileId = null;
         $message->voiceNoteFileId = null;
         $message->voiceNoteDurationSeconds = null;
+        $message->voiceNotePeaks = null;
         $this->entityManager->flush();
 
         $this->messageMentionRepository->deleteByMessage($message);

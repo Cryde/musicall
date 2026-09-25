@@ -127,10 +127,11 @@ class ChatMessageResource
 
     /**
      * The voice note this message carries (#974), null when it carries none:
-     * `{"file_id": "<uuid>", "duration_seconds": 42, "is_available": true}`. The duration is the
-     * server's measurement, so the player can show it before a byte of audio has loaded.
+     * `{"file_id": "<uuid>", "duration_seconds": 42, "peaks": [12, 180, ...], "is_available": true}`.
+     * Duration and peaks are the server's measurements, so the player can show the length and draw
+     * the waveform before a byte of audio has loaded. `peaks` holds 48 values from 0 to 255.
      *
-     * @var array{file_id: string, duration_seconds: int, is_available: bool}|null
+     * @var array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool}|null
      */
     public ?array $voiceNote = null;
 

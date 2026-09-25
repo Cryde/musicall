@@ -98,6 +98,15 @@ class Message
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     public ?int $voiceNoteDurationSeconds = null;
 
+    /**
+     * The waveform the player draws: ChatVoiceNoteConverter::PEAK_COUNT loudness values, 0 to 255,
+     * measured once at upload so no reader has to download the audio to see its shape.
+     *
+     * @var list<int>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    public ?array $voiceNotePeaks = null;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();

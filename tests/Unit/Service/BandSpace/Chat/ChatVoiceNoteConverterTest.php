@@ -51,16 +51,38 @@ class ChatVoiceNoteConverterTest extends TestCase
 
         $this->assertSame(2, $converted->durationSeconds);
         $this->assertSame(['codec_name=aac', 'channels=1'], $this->probeAudio($converted->file->getPathname()));
+        $this->assertCount(ChatVoiceNoteConverter::PEAK_COUNT, $converted->peaks);
+    }
+
+    /** Loud for its first half, silent for its second: the waveform has to say so. */
+    public function test_the_peaks_follow_the_loudness_of_the_note(): void
+    {
+        $path = $this->generate('sine=frequency=440:duration=2,apad=pad_dur=2');
+
+        $converted = (new ChatVoiceNoteConverter())->convert(new File($path), 'video/webm');
+        $this->temporaryFiles[] = $converted->file->getPathname();
+
+        $this->assertCount(ChatVoiceNoteConverter::PEAK_COUNT, $converted->peaks);
+        $this->assertSame(ChatVoiceNoteConverter::PEAK_MAX, max($converted->peaks), 'The loudest slice is the top of the scale');
+        [$firstHalf, $secondHalf] = array_chunk($converted->peaks, intdiv(ChatVoiceNoteConverter::PEAK_COUNT, 2));
+        // The edges of the tone are softened by the encoder, so the middle of each half is compared.
+        $this->assertGreaterThan(200, min(array_slice($firstHalf, 2, -2)));
+        $this->assertLessThan(5, max(array_slice($secondHalf, 2, -2)));
+    }
+
+    public function test_a_silent_note_has_a_flat_waveform_rather_than_an_error(): void
+    {
+        $path = $this->generate('anullsrc=r=48000:cl=mono', seconds: 2);
+
+        $converted = (new ChatVoiceNoteConverter())->convert(new File($path), 'video/webm');
+        $this->temporaryFiles[] = $converted->file->getPathname();
+
+        $this->assertSame(array_fill(0, ChatVoiceNoteConverter::PEAK_COUNT, 0), $converted->peaks);
     }
 
     public function test_a_recording_longer_than_the_limit_is_cut_at_it(): void
     {
-        $path = $this->temporaryPath() . '.webm';
-        $this->temporaryFiles[] = $path;
-        (new Process([
-            'ffmpeg', '-nostdin', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=mono',
-            '-t', (string) (ChatVoiceNoteConverter::MAX_DURATION_SECONDS + 20), '-c:a', 'libopus', '-y', $path,
-        ]))->mustRun();
+        $path = $this->generate('anullsrc=r=48000:cl=mono', seconds: ChatVoiceNoteConverter::MAX_DURATION_SECONDS + 20);
 
         $converted = (new ChatVoiceNoteConverter())->convert(new File($path), 'video/webm');
         $this->temporaryFiles[] = $converted->file->getPathname();
@@ -99,6 +121,21 @@ class ChatVoiceNoteConverterTest extends TestCase
         $process->mustRun();
 
         return array_values(array_filter(explode("\n", trim($process->getOutput()))));
+    }
+
+    /** A WebM Opus file from an ffmpeg test source, standing in for a recording. */
+    private function generate(string $source, ?int $seconds = null): string
+    {
+        $path = $this->temporaryPath() . '.webm';
+        $this->temporaryFiles[] = $path;
+        $command = ['ffmpeg', '-nostdin', '-loglevel', 'error', '-f', 'lavfi', '-i', $source];
+        if ($seconds !== null) {
+            array_push($command, '-t', (string) $seconds);
+        }
+        array_push($command, '-c:a', 'libopus', '-y', $path);
+        (new Process($command))->mustRun();
+
+        return $path;
     }
 
     private function temporaryPath(): string

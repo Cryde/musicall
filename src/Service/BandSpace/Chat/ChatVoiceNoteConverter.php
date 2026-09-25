@@ -13,7 +13,8 @@ use Vich\UploaderBundle\FileAbstraction\ReplacingFile;
  * Turns a recorded voice note into what is stored (#974): AAC in an MP4 container, which every
  * browser plays, whatever the recording browser produced (WebM or Ogg Opus from Chrome and Firefox,
  * MP4 from Safari). Metadata goes, and ffprobe measures the result, since a WebM straight out of
- * MediaRecorder carries no duration at all.
+ * MediaRecorder carries no duration at all. The loudness is measured too, for the waveform the player
+ * draws before any audio has loaded.
  */
 readonly class ChatVoiceNoteConverter
 {
@@ -45,6 +46,17 @@ readonly class ChatVoiceNoteConverter
 
     private const int TIMEOUT_SECONDS = 60;
 
+    /** How many points the waveform has, whatever the note's length. */
+    public const int PEAK_COUNT = 48;
+
+    /** Scale of a peak: the loudest slice of every note reads 255, so a quiet voice still has a shape. */
+    public const int PEAK_MAX = 255;
+
+    /** Plenty to follow loudness over time, and a five minute note decodes to 2.4 MB of samples. */
+    private const int PEAK_SAMPLE_RATE = 4000;
+
+    private const int BYTES_PER_SAMPLE = 2;
+
     public function convert(File $recording, string $mimeType): ConvertedVoiceNote
     {
         $demuxer = self::DEMUXER_BY_MIME_TYPE[$mimeType] ?? throw new UnreadableVoiceNoteException();
@@ -63,10 +75,11 @@ readonly class ChatVoiceNoteConverter
                 '-ac', '1', '-c:a', 'aac', '-b:a', self::AUDIO_BITRATE,
                 '-movflags', '+faststart', '-f', 'mp4', '-y', $path,
             ]);
-            $duration = (float) $this->run([
+            $duration = (float) trim($this->run([
                 'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
                 '-of', 'default=noprint_wrappers=1:nokey=1', $path,
-            ]);
+            ]));
+            $peaks = $this->measurePeaks($path);
         } catch (UnreadableVoiceNoteException $e) {
             unlink($path);
             throw $e;
@@ -78,7 +91,57 @@ readonly class ChatVoiceNoteConverter
         }
 
         // ReplacingFile, not File: VichUploader silently skips anything that is not an upload or one.
-        return new ConvertedVoiceNote(new ReplacingFile($path), max(1, (int) round($duration)));
+        return new ConvertedVoiceNote(new ReplacingFile($path), max(1, (int) round($duration)), $peaks);
+    }
+
+    /**
+     * The loudness of PEAK_COUNT equal slices of the stored note, as RMS scaled to 0..PEAK_MAX.
+     *
+     * Read from our own output rather than the upload, so it describes exactly what is played, and
+     * one slice at a time, so a long note never becomes one huge array of samples.
+     *
+     * @return list<int>
+     */
+    private function measurePeaks(string $path): array
+    {
+        $pcm = $this->run([
+            'ffmpeg', '-nostdin', '-hide_banner', '-loglevel', 'error', '-f', 'mp4', '-i', $path,
+            '-ac', '1', '-ar', (string) self::PEAK_SAMPLE_RATE, '-f', 's16le', '-',
+        ]);
+
+        $sampleCount = intdiv(strlen($pcm), self::BYTES_PER_SAMPLE);
+        $levels = [];
+        for ($slice = 0; $slice < self::PEAK_COUNT; $slice++) {
+            $from = intdiv($slice * $sampleCount, self::PEAK_COUNT);
+            $to = max($from + 1, intdiv(($slice + 1) * $sampleCount, self::PEAK_COUNT));
+            $levels[] = $this->rms($pcm, $from, min($to, $sampleCount));
+        }
+
+        $loudest = max($levels);
+
+        return array_map(
+            static fn (float $level): int => $loudest > 0 ? (int) round($level / $loudest * self::PEAK_MAX) : 0,
+            $levels,
+        );
+    }
+
+    private function rms(string $pcm, int $fromSample, int $toSample): float
+    {
+        if ($toSample <= $fromSample) {
+            return 0.0;
+        }
+
+        // `v` is little endian, like ffmpeg's s16le, whatever the host is, but unsigned: the square of
+        // a sign-shifted sample is off, so the sign is restored first.
+        /** @var array<int, int> $samples */
+        $samples = unpack('v*', substr($pcm, $fromSample * self::BYTES_PER_SAMPLE, ($toSample - $fromSample) * self::BYTES_PER_SAMPLE));
+        $sumOfSquares = 0.0;
+        foreach ($samples as $sample) {
+            $sample = $sample >= 0x8000 ? $sample - 0x10000 : $sample;
+            $sumOfSquares += $sample * $sample;
+        }
+
+        return sqrt($sumOfSquares / count($samples));
     }
 
     /**
@@ -94,6 +157,6 @@ readonly class ChatVoiceNoteConverter
             throw new UnreadableVoiceNoteException($e);
         }
 
-        return trim($process->getOutput());
+        return $process->getOutput();
     }
 }

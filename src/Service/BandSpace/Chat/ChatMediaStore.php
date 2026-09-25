@@ -60,6 +60,7 @@ readonly class ChatMediaStore
             return new StoredVoiceNote(
                 $this->persist($converted->file, ChatVoiceNoteConverter::OUTPUT_MIME_TYPE, $name, $bandSpace, $uploader),
                 $converted->durationSeconds,
+                $converted->peaks,
             );
         } finally {
             $this->removeTemporary($converted->file);

@@ -92,6 +92,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         if ($voiceNote instanceof StoredVoiceNote) {
             $message->voiceNoteFileId = (string) $voiceNote->file->id;
             $message->voiceNoteDurationSeconds = $voiceNote->durationSeconds;
+            $message->voiceNotePeaks = $voiceNote->peaks;
         }
         if ($media instanceof BandSpaceFile) {
             $this->attachMedia($media, $message, $user);

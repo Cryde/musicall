@@ -42,6 +42,8 @@ class ChatVoiceNoteTest extends ApiTestCase
 
     private const string STORED_BYTES = 'aac-bytes';
 
+    private const array SEEDED_PEAKS = [0, 64, 255, 128];
+
     /** @var string[] */
     private array $temporaryFiles = [];
 
@@ -72,9 +74,16 @@ class ChatVoiceNoteTest extends ApiTestCase
         $file = self::getContainer()->get(BandSpaceFileRepository::class)->findOneBy(['bandSpace' => $space->id]);
         $this->assertInstanceOf(BandSpaceFile::class, $file);
 
+        // The exact values depend on the ffmpeg build's AAC encoder, so they are read back and checked
+        // for shape rather than pinned: ChatVoiceNoteConverterTest pins what they mean.
+        $peaks = $message->voiceNotePeaks;
+        $this->assertIsArray($peaks);
+        $this->assertCount(48, $peaks);
+        $this->assertSame(255, max($peaks));
         $this->assertJsonEquals($this->expectedMessage($message, $space, $member, [
             'file_id' => (string) $file->id,
             'duration_seconds' => 2,
+            'peaks' => $peaks,
             'is_available' => true,
         ]));
 
@@ -333,6 +342,7 @@ class ChatVoiceNoteTest extends ApiTestCase
         $this->assertInstanceOf(Message::class, $tombstone);
         $this->assertNull($tombstone->voiceNoteFileId);
         $this->assertNull($tombstone->voiceNoteDurationSeconds);
+        $this->assertNull($tombstone->voiceNotePeaks);
     }
 
     public function test_a_voice_note_deleted_from_files_reads_as_unavailable(): void
@@ -355,6 +365,7 @@ class ChatVoiceNoteTest extends ApiTestCase
                 $this->expectedMessage($message, $space, $member, [
                     'file_id' => (string) $file->id,
                     'duration_seconds' => 42,
+                    'peaks' => self::SEEDED_PEAKS,
                     'is_available' => false,
                 ], withContext: false),
             ],
@@ -400,6 +411,7 @@ class ChatVoiceNoteTest extends ApiTestCase
         ])->create();
         $message->voiceNoteFileId = (string) $file->id;
         $message->voiceNoteDurationSeconds = 42;
+        $message->voiceNotePeaks = self::SEEDED_PEAKS;
         BandSpaceFileAttachmentFactory::new([
             'bandSpaceFile' => $file,
             'sourceType' => 'message',
@@ -416,7 +428,7 @@ class ChatVoiceNoteTest extends ApiTestCase
     }
 
     /**
-     * @param array{file_id: string, duration_seconds: int, is_available: bool} $voiceNote
+     * @param array{file_id: string, duration_seconds: int, peaks: list<int>, is_available: bool} $voiceNote
      *
      * @return array<string, mixed>
      */

@@ -7,7 +7,8 @@ import {
   pickRecordingMimeType,
   RECORDING_FAILED_MESSAGE,
   recordingErrorMessage,
-  recordingExtension
+  recordingExtension,
+  voiceNoteEnvelopePath
 } from './chatVoiceNote.js'
 
 /**
@@ -70,5 +71,22 @@ describe('recordingErrorMessage', () => {
   it('falls back to a generic sentence', () => {
     assert.equal(recordingErrorMessage(new Error('boom')), RECORDING_FAILED_MESSAGE)
     assert.equal(recordingErrorMessage(undefined), RECORDING_FAILED_MESSAGE)
+  })
+})
+
+describe('voiceNoteEnvelopePath', () => {
+  it('mirrors each peak around the middle line, from left to right and back', () => {
+    assert.equal(
+      voiceNoteEnvelopePath([255, 0, 255], 100, 20),
+      'M0,0 L50,9.2 L100,0 L100,20 L50,10.8 L0,20 Z'
+    )
+  })
+
+  it('draws a flat line when a note has no peaks', () => {
+    assert.equal(voiceNoteEnvelopePath([], 100, 20), 'M0,9.2 L100,9.2 L100,10.8 L0,10.8 Z')
+  })
+
+  it('never goes past the edges, whatever the API sends', () => {
+    assert.equal(voiceNoteEnvelopePath([999, -5], 10, 20), 'M0,0 L10,9.2 L10,10.8 L0,20 Z')
   })
 })
