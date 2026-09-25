@@ -25,7 +25,15 @@
         <div class="min-w-0 flex-1">
           <!-- `truncate` keeps the excerpt to one line, and the sanitizer's `<br>` is neutralised so a
                multi line message cannot push the bar open. -->
+          <!-- An attachment-only message has no text to excerpt (#971). -->
           <p
+            v-if="message.content === ''"
+            class="text-sm italic text-surface-600 dark:text-surface-300"
+          >
+            Pièce jointe
+          </p>
+          <p
+            v-else
             class="truncate text-sm text-surface-900 [&_.chat-mention]:font-semibold [&_a]:text-primary-700 [&_a]:underline dark:text-surface-0 dark:[&_a]:text-primary-300 [&_br]:hidden"
             v-html="autoLink(message.content)"
           />

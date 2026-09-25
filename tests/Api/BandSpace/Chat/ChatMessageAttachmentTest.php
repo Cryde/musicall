@@ -479,6 +479,189 @@ class ChatMessageAttachmentTest extends ApiTestCase
         ]);
     }
 
+    public function test_a_message_can_carry_an_attachment_and_no_text(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $channel = $this->channelOf($space);
+        $task = TaskFactory::new()->create(['bandSpace' => $space, 'title' => 'Réparer l\'ampli']);
+
+        $this->client->loginUser($member);
+        // No `content` key at all: a body carrying only attachments is a complete message (#971).
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $space->id . '/chat/messages',
+            ['attachments' => ['task-' . $task->id]],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = self::getContainer()->get(MessageRepository::class)->findOneBy(['thread' => $channel->id]);
+        $this->assertNotNull($message);
+        $this->assertSame('', $message->content);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/chat_messages/id=' . $message->id . ';bandSpaceId=' . $space->id,
+            '@type' => 'ChatMessage',
+            'id' => (string) $message->id,
+            'band_space_id' => (string) $space->id,
+            'author_id' => (string) $member->id,
+            'author_username' => 'batteur',
+            'author_profile_picture_url' => null,
+            'content' => '',
+            'creation_datetime' => $message->creationDatetime->format('c'),
+            'is_pinned' => false,
+            'pinned_datetime' => null,
+            'pinned_by_username' => null,
+            // Empty content is no longer a tombstone: this flag is the only thing that says deleted.
+            'is_deleted' => false,
+            'update_datetime' => null,
+            'editable_content' => '',
+            'reactions' => [],
+            'attachments' => [
+                $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli'),
+            ],
+        ]);
+    }
+
+    public function test_whitespace_beside_an_attachment_is_stored_as_no_text(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $channel = $this->channelOf($space);
+        $task = TaskFactory::new()->create(['bandSpace' => $space, 'title' => 'Réparer l\'ampli']);
+
+        $this->client->loginUser($member);
+        $this->post($space, "  \n ", ['task-' . $task->id]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $message = self::getContainer()->get(MessageRepository::class)->findOneBy(['thread' => $channel->id]);
+        $this->assertNotNull($message);
+        $this->assertSame('', $message->content);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ChatMessage',
+            '@id' => '/api/chat_messages/id=' . $message->id . ';bandSpaceId=' . $space->id,
+            '@type' => 'ChatMessage',
+            'id' => (string) $message->id,
+            'band_space_id' => (string) $space->id,
+            'author_id' => (string) $member->id,
+            'author_username' => 'batteur',
+            'author_profile_picture_url' => null,
+            'content' => '',
+            'creation_datetime' => $message->creationDatetime->format('c'),
+            'is_pinned' => false,
+            'pinned_datetime' => null,
+            'pinned_by_username' => null,
+            'is_deleted' => false,
+            'update_datetime' => null,
+            'editable_content' => '',
+            'reactions' => [],
+            'attachments' => [
+                $this->expectedCard('task', (string) $task->id, 'Réparer l\'ampli'),
+            ],
+        ]);
+    }
+
+    public function test_a_message_with_neither_text_nor_attachment_is_still_refused(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $this->channelOf($space);
+
+        $this->client->loginUser($member);
+        $this->post($space, '', []);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        // Byte for byte the refusal a blank message always had, so the composer's field mapping holds.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'content',
+                    'message' => 'Veuillez saisir un message',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                ],
+            ],
+            'detail' => 'content: Veuillez saisir un message',
+            'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            'title' => 'An error occurred',
+            'description' => 'content: Veuillez saisir un message',
+        ]);
+    }
+
+    public function test_no_text_beside_an_unusable_attachment_is_refused_on_the_attachment(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $this->channelOf($space);
+
+        $this->client->loginUser($member);
+        $this->post($space, '', ['task-pas-un-uuid']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        // The text is optional as soon as an attachment is named, so the one thing wrong is that
+        // attachment, and only it is reported.
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/' . ValidChatAttachmentsValidator::ERROR_CODE,
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'attachments[0]',
+                    'message' => 'Cet élément est introuvable dans ce Band Space',
+                    'code' => ValidChatAttachmentsValidator::ERROR_CODE,
+                ],
+            ],
+            'detail' => 'attachments[0]: Cet élément est introuvable dans ce Band Space',
+            'type' => '/validation_errors/' . ValidChatAttachmentsValidator::ERROR_CODE,
+            'title' => 'An error occurred',
+            'description' => 'attachments[0]: Cet élément est introuvable dans ce Band Space',
+        ]);
+    }
+
+    public function test_an_empty_body_is_refused_on_its_content(): void
+    {
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);
+        $space = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $this->channelOf($space);
+
+        $this->client->loginUser($member);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $space->id . '/chat/messages',
+            [],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json'],
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'content',
+                    'message' => 'Veuillez saisir un message',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                ],
+            ],
+            'detail' => 'content: Veuillez saisir un message',
+            'type' => '/validation_errors/c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+            'title' => 'An error occurred',
+            'description' => 'content: Veuillez saisir un message',
+        ]);
+    }
+
     public function test_more_than_five_attachments_are_refused(): void
     {
         $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@test.com']);

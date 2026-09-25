@@ -1,5 +1,5 @@
 <template>
-  <ul class="mt-2 flex list-none flex-col gap-1 p-0 m-0">
+  <ul class="mt-2 first:mt-0 flex list-none flex-col gap-1 p-0 m-0">
     <li v-for="card in cards" :key="card.key">
       <RouterLink
         v-if="card.route"

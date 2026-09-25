@@ -29,9 +29,17 @@ class ChatMessageCreate
      */
     private const int MAX_ATTACHMENTS = 5;
 
-    #[Assert\NotBlank(message: 'Veuillez saisir un message')]
+    /**
+     * Optional once the message names an attachment: an attachment is a message on its own. Wrapped
+     * rather than replaced, so an empty attachment list is refused with exactly the violation it always
+     * was. Defaults to empty so a body carrying only attachments reaches the processor.
+     */
+    #[Assert\When(
+        expression: 'this.attachments == []',
+        constraints: [new Assert\NotBlank(message: 'Veuillez saisir un message')],
+    )]
     #[Assert\Length(max: 5000, maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères')]
-    public string $content;
+    public string $content = '';
 
     /**
      * The Band Space objects this message points at, as the synthetic `<type>-<uuid>` identifiers

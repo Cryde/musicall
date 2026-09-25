@@ -122,7 +122,9 @@
                     bubbleCornerClasses(index, block.messages.length, isMine(message)),
                   ]"
                 >
-                  <div v-html="autoLink(message.content)" />
+                  <!-- An attachment-only message has no text (#971), and an empty line here would pad the
+                       bubble above its cards. -->
+                  <div v-if="message.content" v-html="autoLink(message.content)" />
                   <ChatMessageAttachments
                     v-if="message.attachments?.length"
                     :attachments="message.attachments"

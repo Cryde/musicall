@@ -4,7 +4,27 @@
       {{ sendError }}
     </Message>
 
+    <Message v-if="attachmentError" severity="warn" :closable="false" class="mb-2">
+      {{ attachmentError }}
+    </Message>
+
+    <ChatComposerAttachments
+      v-if="attachments.length > 0"
+      :attachments="attachments"
+      :disabled="isSending"
+      @remove="removeAttachment"
+    />
+
     <div class="flex gap-2 items-end">
+      <Button
+        v-if="canAttach"
+        icon="pi pi-paperclip"
+        severity="secondary"
+        outlined
+        aria-label="Joindre un élément du Band Space"
+        :disabled="isSending"
+        @click="isPickerVisible = true"
+      />
       <MentionEditor
         ref="composer"
         v-model="content"
@@ -21,10 +41,18 @@
         icon="pi pi-send"
         aria-label="Envoyer le message"
         :loading="isSending"
-        :disabled="isEmpty || isSending"
+        :disabled="!canSend || isSending"
         @click="send"
       />
     </div>
+
+    <ChatAttachmentPicker
+      v-if="canAttach"
+      v-model:visible="isPickerVisible"
+      :band-space-id="bandSpaceId"
+      :picked-ids="pickedIds"
+      @pick="addAttachment"
+    />
   </div>
 </template>
 
@@ -33,7 +61,16 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, ref } from 'vue'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
+import {
+  addToDraft,
+  canSendDraft,
+  draftAfterSend,
+  draftIdentifiers,
+  removeFromDraft
+} from '../../../utils/chatAttachmentDraft.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
+import ChatAttachmentPicker from './ChatAttachmentPicker.vue'
+import ChatComposerAttachments from './ChatComposerAttachments.vue'
 
 const props = defineProps({
   members: { type: Array, default: () => [] },
@@ -43,7 +80,14 @@ const props = defineProps({
    * Both end at the same endpoint, and the editor below does not need to know which.
    */
   sendMessage: { type: Function, required: true },
-  isSending: { type: Boolean, default: false }
+  isSending: { type: Boolean, default: false },
+  /**
+   * Which space the picker searches, and by its presence whether there is a picker at all (#971).
+   * The inbox renders a channel through this same composer and even reaches the same endpoint, but
+   * `Thread.vue` draws no attachment card, so a member picking one there would see nothing come of
+   * it. It leaves this out until that half exists.
+   */
+  bandSpaceId: { type: String, default: null }
 })
 
 const emit = defineEmits(['sent'])
@@ -52,26 +96,60 @@ const composer = ref(null)
 /** What gets sent: the composer's content in the stored `@[uuid]` format, never what is on screen. */
 const content = ref('')
 const sendError = ref('')
-const isEmpty = computed(() => content.value.trim() === '')
+
+/** The Band Space objects this message will point at, see chatAttachmentDraft. */
+const attachments = ref([])
+const canSend = computed(() => canSendDraft(content.value, attachments.value))
+const attachmentError = ref('')
+const isPickerVisible = ref(false)
+
+const canAttach = computed(() => !!props.bandSpaceId)
+const pickedIds = computed(() => draftIdentifiers(attachments.value))
 
 const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
 
+/**
+ * The single way into the draft, whatever found the object. The picker refuses a duplicate and a
+ * full list on its own, so the message below is what the next producer gets for free (#972).
+ */
+function addAttachment(result) {
+  const { attachments: next, error } = addToDraft(attachments.value, result)
+  attachments.value = next
+  attachmentError.value = error ?? ''
+}
+
+function removeAttachment(id) {
+  attachments.value = removeFromDraft(attachments.value, id)
+  attachmentError.value = ''
+}
+
 async function send() {
   const message = content.value
-  if (message.trim() === '' || props.isSending) {
+  if (!canSend.value || props.isSending) {
     return
   }
 
   sendError.value = ''
+  attachmentError.value = ''
+  let wasSent = false
 
   try {
-    await props.sendMessage(message)
-    content.value = ''
-    emit('sent')
-    nextTick(() => composer.value?.focus())
+    await props.sendMessage(message, pickedIds.value)
+    wasSent = true
   } catch (e) {
     sendError.value = errorMessageFor(e)
   }
+
+  // The text and the references leave together and stay together: a failure keeps both, so the retry
+  // is one click rather than a search for each object again.
+  attachments.value = draftAfterSend(attachments.value, wasSent)
+  if (!wasSent) {
+    return
+  }
+
+  content.value = ''
+  emit('sent')
+  nextTick(() => composer.value?.focus())
 }
 
 /**

@@ -4,9 +4,12 @@ namespace App\Tests\Api\Message;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Enum\BandSpace\MembershipStatus;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
+use App\Tests\Factory\BandSpace\TaskFactory;
+use App\Tests\Factory\Message\MessageAttachmentFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageMentionFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
@@ -240,6 +243,74 @@ class MessageThreadMetaGetCollectionTest extends ApiTestCase
                             // the label, which is the one place the inbox reads.
                             'content' => '',
                             'content_preview' => 'Message supprimé',
+                        ],
+                        'band_space_id'   => (string) $bandSpace->id,
+                        'band_space_name' => 'Les Trois Accords',
+                        'channel_name'    => 'Général',
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
+
+    public function test_a_channel_preview_names_an_attachment_sent_without_text(): void
+    {
+        // Empty content stopped meaning deleted at #971: a message may carry attachments alone. The
+        // deleted case above still reads « Message supprimé », because the flag decides, not the text.
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $bandSpace = BandSpaceFactory::new(['name' => 'Les Trois Accords'])->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $task = TaskFactory::new()->create(['bandSpace' => $bandSpace, 'title' => 'Réparer l\'ampli']);
+
+        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+        $message = MessageFactory::new([
+            'author' => $user,
+            'thread' => $channel,
+            'content' => '',
+            'creationDatetime' => new \DateTime('2026-09-01 10:00:00'),
+        ])->create();
+        MessageAttachmentFactory::new([
+            'message' => $message,
+            'targetType' => BandSpaceSearchResultType::Task,
+            'targetId' => $task->id,
+            'label' => 'Réparer l\'ampli',
+        ])->create();
+        $channel->lastMessage = $message;
+        \Zenstruck\Foundry\Persistence\save($channel);
+        $meta = MessageThreadMetaFactory::new(['user' => $user, 'thread' => $channel])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/message_thread_metas');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context'   => '/api/contexts/MessageThreadMeta',
+            '@id'        => '/api/message_thread_metas',
+            '@type'      => 'Collection',
+            'member'     => [
+                [
+                    '@id'   => '/api/message_thread_metas/' . $meta->id,
+                    '@type' => 'MessageThreadMeta',
+                    'id'    => (string) $meta->id,
+                    'unread_count' => 0,
+                    'thread' => [
+                        '@id'   => '/api/message_threads/' . $channel->id,
+                        '@type' => 'MessageThread',
+                        'id'    => (string) $channel->id,
+                        'message_participants' => [],
+                        'last_message' => [
+                            '@id'   => '/api/messages/' . $message->id,
+                            '@type' => 'Message',
+                            'creation_datetime' => '2026-09-01T10:00:00+00:00',
+                            'author' => [
+                                '@id'   => '/api/users/' . $user->id,
+                                '@type' => 'User',
+                                'id'    => (string) $user->id,
+                                'username' => 'base_user_1',
+                            ],
+                            'content' => '',
+                            'content_preview' => 'Pièce jointe',
                         ],
                         'band_space_id'   => (string) $bandSpace->id,
                         'band_space_name' => 'Les Trois Accords',

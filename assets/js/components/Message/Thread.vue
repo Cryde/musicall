@@ -136,6 +136,9 @@
                      inbox has to say so too rather than draw an empty bubble. A direct message carries no
                      such flag: there is no endpoint that deletes one. -->
                 <p v-if="message.is_deleted" class="text-sm italic">Message supprimé</p>
+                <!-- Sent for its attachments alone (#971). This pane draws no attachment card, so it
+                     names what is there rather than drawing an empty bubble. -->
+                <p v-else-if="message.content === ''" class="text-sm italic opacity-80">Pièce jointe</p>
                 <div
                   v-else
                   class="text-sm break-words"
