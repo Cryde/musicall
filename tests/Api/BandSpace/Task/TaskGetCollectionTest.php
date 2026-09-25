@@ -2,6 +2,7 @@
 
 namespace App\Tests\Api\BandSpace\Task;
 
+use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Enum\BandSpace\TaskPriority;
 use App\Enum\BandSpace\TaskStatus;
 use App\Tests\ApiTestAssertionsTrait;
@@ -13,6 +14,9 @@ use App\Tests\Factory\BandSpace\File\BandSpaceFileFactory;
 use App\Tests\Factory\BandSpace\TaskCategoryFactory;
 use App\Tests\Factory\BandSpace\TaskCommentFactory;
 use App\Tests\Factory\BandSpace\TaskFactory;
+use App\Tests\Factory\Message\MessageAttachmentFactory;
+use App\Tests\Factory\Message\MessageFactory;
+use App\Tests\Factory\Message\MessageThreadFactory;
 use App\Tests\Factory\User\UserFactory;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Response;
@@ -263,6 +267,86 @@ class TaskGetCollectionTest extends ApiTestCase
             ],
             'search' => $this->buildTaskSearchShape($bandSpace),
         ]);
+    }
+
+    /**
+     * The conversation a card came from, on the board (#979).
+     *
+     * Read for the whole board in one query, beside the comment and file counts it already batches:
+     * a lookup per task is the thing that makes a board expensive, and the query count below is what
+     * would notice one appearing.
+     */
+    public function test_get_tasks_names_the_conversation_each_task_came_from(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $channel = MessageThreadFactory::new()->forBandSpace($bandSpace)->create();
+
+        $titles = ['Ramener le câble', 'Réserver la salle', 'Relancer le programmateur'];
+        $tasks = [];
+        foreach ($titles as $position => $title) {
+            $tasks[] = TaskFactory::new([
+                'bandSpace' => $bandSpace,
+                'createdBy' => $user,
+                'title' => $title,
+                'position' => $position,
+                'creationDatetime' => new \DateTime(sprintf('2026-01-0%d 10:00:00', $position + 1)),
+            ])->create();
+        }
+
+        $messages = [];
+        foreach ([0, 1] as $index) {
+            $messages[$index] = MessageFactory::new([
+                'thread' => $channel,
+                'author' => $user,
+                'content' => 'faut penser à ' . $titles[$index],
+                'creationDatetime' => new \DateTime(sprintf('2026-01-0%d 09:00:00', $index + 1)),
+            ])->create();
+            MessageAttachmentFactory::new([
+                'message' => $messages[$index],
+                'targetType' => BandSpaceSearchResultType::Task,
+                'targetId' => (string) $tasks[$index]->id,
+                'label' => $titles[$index],
+            ])->create();
+        }
+
+        $this->client->loginUser($user);
+        $this->client->enableProfiler();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::getContainer()->get('doctrine.debug_data_holder')->reset();
+        $this->client->jsonRequest(
+            'GET',
+            '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            [],
+            ['HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Task',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/tasks',
+            '@type' => 'Collection',
+            'totalItems' => 3,
+            'member' => [
+                $this->buildTaskShape($bandSpace, $user, $tasks[0], ['linked_message_id' => (string) $messages[0]->id]),
+                $this->buildTaskShape($bandSpace, $user, $tasks[1], ['linked_message_id' => (string) $messages[1]->id]),
+                // Created on the board and never mentioned, so there is nothing to go back to.
+                $this->buildTaskShape($bandSpace, $user, $tasks[2]),
+            ],
+            'search' => $this->buildTaskSearchShape($bandSpace),
+        ]);
+
+        $profile = $this->client->getProfile();
+        $this->assertNotFalse($profile, 'The profiler must be enabled to count the queries.');
+        // Measured at 9: what the board already costs, plus the one query that reads the links for
+        // every task at once. The margin is for a change to the firewall, not for a lookup per task,
+        // which would put a real board in the hundreds.
+        $this->assertLessThanOrEqual(
+            10,
+            $profile->getCollector('db')->getQueryCount(),
+            'The conversation behind a card must be read once for the whole board, never once per task',
+        );
     }
 
     public function test_get_tasks_search_matches_title(): void
@@ -608,6 +692,7 @@ class TaskGetCollectionTest extends ApiTestCase
             'update_datetime' => $task->updateDatetime?->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ], $overrides);
     }
 

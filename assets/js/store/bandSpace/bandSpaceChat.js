@@ -53,6 +53,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   // Which message has a pin call in flight, so its button can be disabled: a second click on
   // « Détacher » would otherwise come back 404 and toast something the member cannot act on.
   const pendingPinMessageId = ref(null)
+  // Same idea for « créer une tâche » (#979), where a double click would create two tasks.
+  const pendingTaskMessageId = ref(null)
 
   const hasOlderMessages = computed(() =>
     hasOlderToLoad(messages.value.length, totalMessages.value)
@@ -316,6 +318,31 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   /**
+   * Turns a message into a task (#979).
+   *
+   * The card is added to the message here rather than by refetching the page: the server wrote
+   * exactly this row, label included, because an attachment snapshots its target's title and the
+   * title is the one the task was just given. Errors are rethrown, like the pin ones: the cap and
+   * the deletion grace period both answer 409 with a sentence the member needs to read.
+   */
+  async function createTaskFromMessage(bandSpaceId, messageId) {
+    pendingTaskMessageId.value = messageId
+    try {
+      const task = await bandSpaceChatApi.createTaskFromMessage(bandSpaceId, messageId)
+      const card = { type: 'task', target_id: task.id, label: task.title, is_available: true }
+      messages.value = messages.value.map((message) =>
+        message.id === messageId
+          ? { ...message, attachments: [...(message.attachments ?? []), card] }
+          : message
+      )
+
+      return task
+    } finally {
+      pendingTaskMessageId.value = null
+    }
+  }
+
+  /**
    * Opening the tab is reading it. The badge lives on the notification payload rather than in this
    * store, because the sidebar shows it from every other module too, so clearing it means refreshing
    * that payload, the same shape the direct message store uses after marking a thread read.
@@ -407,6 +434,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     pendingReactions.value = new Set()
     pinnedMessages.value = []
     pendingPinMessageId.value = null
+    pendingTaskMessageId.value = null
   }
 
   return {
@@ -420,6 +448,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     reactionError: readonly(reactionError),
     pinnedMessages: readonly(pinnedMessages),
     pendingPinMessageId: readonly(pendingPinMessageId),
+    pendingTaskMessageId: readonly(pendingTaskMessageId),
     hasOlderMessages,
     loadMessages,
     loadOlderMessages,
@@ -430,6 +459,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     toggleReaction,
     editMessage,
     deleteMessage,
+    createTaskFromMessage,
     markAsRead,
     handleIncomingMessage,
     handleChatRead,

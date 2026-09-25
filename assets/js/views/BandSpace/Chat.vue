@@ -32,6 +32,7 @@
       ref="messageList"
       :band-space-id="bandSpaceId"
       :members="settingsStore.members"
+      :focus-message-id="focusMessageId"
     />
 
     <ChatComposer
@@ -62,6 +63,10 @@ const route = useRoute()
 // Read once: AppBandLayout keys <router-view> on the space id, so this view is remounted rather than
 // reused when the member switches band.
 const bandSpaceId = route.params.id
+
+// Where a task's « Voir la discussion » link points (#979). Read once, like the space id above:
+// the view is remounted rather than reused, so there is nothing to react to.
+const focusMessageId = typeof route.query.message === 'string' ? route.query.message : null
 
 const chatStore = useBandSpaceChatStore()
 // The roster the `@` dropdown filters. Reused from the settings store, which already carries it with a

@@ -120,4 +120,15 @@ class TaskResource
     public ?\DateTimeInterface $updateDatetime = null;
     public int $commentCount = 0;
     public int $fileCount = 0;
+
+    /**
+     * The oldest chat message of the space pointing at this task, null when none does (#979).
+     *
+     * Read back through the attachment rows #970 already writes rather than stored on the task, which
+     * is why turning a message into a task needed no column: one row is both the message's card and
+     * the task's way back to the conversation. For a task created from the chat it is the message it
+     * came from; for one referenced later it is the first time the band talked about it.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $linkedMessageId = null;
 }

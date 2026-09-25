@@ -66,6 +66,72 @@ class MessageAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
+     * How many Band Space objects this message already points at, for the cap (#979).
+     */
+    public function countByMessage(Message $message): int
+    {
+        return (int) $this->createQueryBuilder('attachment')
+            ->select('COUNT(attachment.id)')
+            ->where('attachment.message = :message')
+            ->setParameter('message', $message->id)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * The oldest message of this space pointing at each of these targets, in one query whatever their
+     * number, read through `idx_message_attachment_target`: the index the table carries for exactly
+     * this direction.
+     *
+     * Oldest, because for a task created from a message (#979) that is provably the message it came
+     * from: the row on that message is written the moment the task exists, so nothing older can point
+     * at it. For a task created on the board and referenced later it is simply the first time the band
+     * talked about it, which is why the payload calls it linked rather than source.
+     *
+     * A tombstoned message has no attachment rows left, so a deleted conversation never answers here.
+     *
+     * @param string[] $targetIds
+     *
+     * @return array<string, string> lower-cased target id => message id
+     */
+    public function findOldestLinkedMessageIds(
+        BandSpaceSearchResultType $type,
+        array $targetIds,
+        string $bandSpaceId,
+    ): array {
+        if ($targetIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('attachment')
+            ->select('attachment.targetId AS targetId', 'message.id AS messageId')
+            ->join('attachment.message', 'message')
+            ->join('message.thread', 'thread')
+            ->where('attachment.targetType = :type')
+            ->andWhere('attachment.targetId IN (:targetIds)')
+            ->andWhere('thread.bandSpace = :bandSpace')
+            ->orderBy('message.creationDatetime', 'ASC')
+            ->addOrderBy('message.id', 'ASC')
+            ->setParameter('type', $type)
+            ->setParameter('targetIds', $targetIds)
+            ->setParameter('bandSpace', $bandSpaceId)
+            ->getQuery()
+            ->getArrayResult();
+
+        $oldestByTarget = [];
+        foreach ($rows as $row) {
+            // Ascending, so the first row seen for a target is the one kept. The id only breaks a tie
+            // the second-granular datetime cannot, and it is a stable pick rather than a chronology:
+            // Message.id is uuid4 and carries no order. Two messages naming the same task within the
+            // same second are indistinguishable, so this answers with the same one every time instead
+            // of with whatever the database felt like returning.
+            $oldestByTarget[mb_strtolower((string) $row['targetId'])] ??= (string) $row['messageId'];
+        }
+
+        return $oldestByTarget;
+    }
+
+    /**
      * Which of these targets still exist in this space, out of the ids given, in one query whatever
      * their number.
      *

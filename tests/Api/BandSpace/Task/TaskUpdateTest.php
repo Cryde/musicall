@@ -71,6 +71,7 @@ class TaskUpdateTest extends ApiTestCase
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -127,6 +128,7 @@ class TaskUpdateTest extends ApiTestCase
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ]);
     }
 
@@ -179,6 +181,7 @@ class TaskUpdateTest extends ApiTestCase
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
             'file_count' => 1,
+            'linked_message_id' => null,
         ]);
     }
 
@@ -282,6 +285,7 @@ class TaskUpdateTest extends ApiTestCase
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -369,6 +373,7 @@ class TaskUpdateTest extends ApiTestCase
             'update_datetime' => $refreshed->updateDatetime->format(\DateTimeInterface::ATOM),
             'comment_count' => 0,
             'file_count' => 0,
+            'linked_message_id' => null,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);

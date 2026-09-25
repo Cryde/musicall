@@ -18,22 +18,32 @@ readonly class TaskBuilder
      * @param Task[] $entities
      * @param array<string, int> $commentCounts  task id => comment count, missing keys default to 0
      * @param array<string, int> $fileCounts     task id => attached file count, missing keys default to 0
+     * @param array<string, string> $linkedMessageIds lower-cased task id => the chat message linking to it (#979)
      * @return TaskResource[]
      */
-    public function buildFromList(array $entities, array $commentCounts = [], array $fileCounts = []): array
-    {
+    public function buildFromList(
+        array $entities,
+        array $commentCounts = [],
+        array $fileCounts = [],
+        array $linkedMessageIds = [],
+    ): array {
         return array_map(
             fn(Task $entity): TaskResource => $this->buildItem(
                 $entity,
                 $commentCounts[(string) $entity->id] ?? 0,
                 $fileCounts[(string) $entity->id] ?? 0,
+                $linkedMessageIds[mb_strtolower((string) $entity->id)] ?? null,
             ),
             $entities
         );
     }
 
-    public function buildItem(Task $entity, int $commentCount = 0, int $fileCount = 0): TaskResource
-    {
+    public function buildItem(
+        Task $entity,
+        int $commentCount = 0,
+        int $fileCount = 0,
+        ?string $linkedMessageId = null,
+    ): TaskResource {
         $dto = new TaskResource();
         $dto->id = (string) $entity->id;
         $dto->bandSpaceId = (string) $entity->bandSpace->id;
@@ -61,6 +71,7 @@ readonly class TaskBuilder
         $dto->updateDatetime = $entity->updateDatetime;
         $dto->commentCount = $commentCount;
         $dto->fileCount = $fileCount;
+        $dto->linkedMessageId = $linkedMessageId;
 
         return $dto;
     }

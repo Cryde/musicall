@@ -7,9 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Task\TaskMove;
 use App\ApiResource\BandSpace\Task\TaskResource;
 use App\Entity\User;
+use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Procedure\BandSpace\TaskMoveProcedure;
 use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\TaskCommentRepository;
+use App\Repository\Message\MessageAttachmentRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\TaskBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -25,6 +27,7 @@ readonly class TaskMoveProcessor implements ProcessorInterface
         private TaskMoveProcedure $taskMoveProcedure,
         private TaskCommentRepository $taskCommentRepository,
         private BandSpaceFileAttachmentRepository $fileAttachmentRepository,
+        private MessageAttachmentRepository $messageAttachmentRepository,
         private TaskBuilder $taskBuilder,
         private Security $security,
     ) {
@@ -56,11 +59,19 @@ readonly class TaskMoveProcessor implements ProcessorInterface
         $taskId = (string) $task->id;
         $commentCounts = $this->taskCommentRepository->countByTaskIds([$taskId]);
         $fileCounts = $this->fileAttachmentRepository->countActiveBySourceIds('task', [$taskId]);
+        // Re-read rather than left out: the store replaces the held task with this answer, so a null
+        // here would take the link back to the conversation off the drawer until the next refetch.
+        $linkedMessageIds = $this->messageAttachmentRepository->findOldestLinkedMessageIds(
+            BandSpaceSearchResultType::Task,
+            [$taskId],
+            (string) $bandSpace->id,
+        );
 
         return $this->taskBuilder->buildItem(
             $task,
             $commentCounts[$taskId] ?? 0,
             $fileCounts[$taskId] ?? 0,
+            $linkedMessageIds[mb_strtolower($taskId)] ?? null,
         );
     }
 }

@@ -26,8 +26,11 @@ class ChatMessageCreate
     /**
      * A chat reference is a pointer, not a bundle: past a handful the message stops being a sentence
      * and becomes a list, which the band space's own modules already do better.
+     *
+     * Public since #979, which adds a card to a message that already exists and has to hold the same
+     * ceiling: one number, or the two doors disagree about how long a bubble may get.
      */
-    private const int MAX_ATTACHMENTS = 5;
+    public const int MAX_ATTACHMENTS = 5;
 
     /**
      * Optional once the message names an attachment: an attachment is a message on its own. Wrapped

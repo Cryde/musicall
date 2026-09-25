@@ -9,6 +9,7 @@ use App\ApiResource\Message\MessageThreadResource;
 use App\Entity\BandSpace\BandSpace;
 use App\Entity\Message\Message;
 use App\Service\BandSpace\ChatMentionRenderer;
+use App\Service\Message\MessagePlainTextExtractor;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
@@ -21,8 +22,7 @@ readonly class MessageBuilder
     public function __construct(
         #[Target('app.onlybr_sanitizer')]
         private HtmlSanitizerInterface $contentSanitizer,
-        #[Target('app.plain_text_sanitizer')]
-        private HtmlSanitizerInterface $previewSanitizer,
+        private MessagePlainTextExtractor $plainTextExtractor,
         private ChatMentionRenderer $chatMentionRenderer,
     ) {
     }
@@ -106,13 +106,7 @@ readonly class MessageBuilder
             ? $this->chatMentionRenderer->renderPlain($entity->content, $mentionUsernamesById)
             : $entity->content;
 
-        $text = html_entity_decode(
-            $this->previewSanitizer->sanitize($content),
-            ENT_QUOTES | ENT_HTML5,
-            'UTF-8',
-        );
-
-        return trim((string) preg_replace('/\s+/u', ' ', $text));
+        return $this->plainTextExtractor->extractOneLine($content);
     }
 
     private function buildShallowThread(UuidInterface|string|null $threadId): MessageThreadResource

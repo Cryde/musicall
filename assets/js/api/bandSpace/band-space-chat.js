@@ -45,6 +45,20 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * Turns a message into a task (#979). Nothing to send: the title and the description are worked
+   * out from the stored message, server side, because that is the only place its plain text exists.
+   * Answers with the created task.
+   */
+  createTaskFromMessage(bandSpaceId, messageId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_chat_messages_task_post', { bandSpaceId, id: messageId })
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   markAsRead(bandSpaceId) {
     return axios
       .post(Routing.generate('api_band_space_chat_read', { bandSpaceId }))
