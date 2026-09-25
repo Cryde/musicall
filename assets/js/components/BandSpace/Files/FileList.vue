@@ -176,7 +176,7 @@ import {
   canDrop,
   collectFolderAndDescendants
 } from '../../../composables/useFolderDragDrop.js'
-import { fileSourceDetachHint } from '../../../constants/fileSources.js'
+import { deleteBlockingAttachments, fileSourceDetachHint } from '../../../constants/fileSources.js'
 import { useBandSpaceStore } from '../../../store/bandSpace/bandSpace.js'
 import { useBandFilesStore } from '../../../store/bandSpace/bandSpaceFiles.js'
 import { useUserSecurityStore } from '../../../store/user/security.js'
@@ -286,7 +286,7 @@ const canDeleteContextFile = computed(() =>
 )
 
 const contextFileSourceLabel = computed(() => {
-  const attachments = contextMenuFile.value?.attachments ?? []
+  const attachments = deleteBlockingAttachments(contextMenuFile.value?.attachments)
   if (attachments.length === 0) return null
   if (attachments.length > 1) {
     return "Détachez-le d'abord depuis chaque ressource"
@@ -298,7 +298,7 @@ const contextFileSourceLabel = computed(() => {
 const contextMenuItems = computed(() => {
   const f = contextMenuFile.value
   if (!f) return []
-  const isAttached = (f.attachments?.length ?? 0) > 0
+  const isAttached = deleteBlockingAttachments(f.attachments).length > 0
   const deleteLabel = isAttached ? `Supprimer (${contextFileSourceLabel.value})` : 'Supprimer'
   const items = [
     { label: 'Ouvrir', icon: 'pi pi-eye', command: () => emit('select', f) },

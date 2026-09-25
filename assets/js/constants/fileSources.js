@@ -98,8 +98,28 @@ const UNKNOWN_SOURCE = Object.freeze({
   icon: 'pi pi-link text-surface-500'
 })
 
+/**
+ * An image posted in the chat (#973), mirroring `BandSpaceFileSourceTypes::CHAT_MESSAGE`. Kept out of
+ * FILE_SOURCES on purpose, like it is kept out of `ALL`: nobody attaches a file to a message by hand,
+ * and the message owns its image rather than pointing at it, so it never blocks a delete and has no
+ * place in the sentences listing what does.
+ */
+export const CHAT_MESSAGE_SOURCE_TYPE = 'message'
+
+const CHAT_MESSAGE_SOURCE = Object.freeze({
+  type: CHAT_MESSAGE_SOURCE_TYPE,
+  label: 'Message du chat',
+  indefiniteNoun: 'un message du chat',
+  definiteNoun: 'le message',
+  icon: 'pi pi-comments text-sky-600',
+  quotaLabel: 'Chat',
+  color: '#0ea5e9',
+  routeName: 'app_band_chat',
+  routeQueryKey: 'message'
+})
+
 const FILE_SOURCE_BY_TYPE = Object.freeze(
-  Object.fromEntries(FILE_SOURCES.map((source) => [source.type, source]))
+  Object.fromEntries([...FILE_SOURCES, CHAT_MESSAGE_SOURCE].map((source) => [source.type, source]))
 )
 
 /** Mirrors `BandSpaceFileSourceTypes::ALL`. */
@@ -119,10 +139,20 @@ export const FILE_SOURCE_LIST_LABEL = `${FILE_SOURCE_NOUNS.slice(0, -1).join(', 
  */
 export const QUOTA_BREAKDOWN_SOURCES = Object.freeze([
   Object.freeze({ key: 'manual', label: 'Manuels', color: '#3b82f6' }),
-  ...FILE_SOURCES.map((source) =>
+  ...[...FILE_SOURCES, CHAT_MESSAGE_SOURCE].map((source) =>
     Object.freeze({ key: source.type, label: source.quotaLabel, color: source.color })
   )
 ])
+
+/**
+ * The attachments that keep a file from being deleted: every one but a chat image's (#973). Mirrors
+ * `BandSpaceFileAttachmentRepository::findDeleteBlockingSourceTypesByFileIds`.
+ *
+ * @param {{source_type?: string}[]} attachments
+ */
+export function deleteBlockingAttachments(attachments = []) {
+  return attachments.filter((attachment) => attachment.source_type !== CHAT_MESSAGE_SOURCE_TYPE)
+}
 
 /**
  * Enumerates source types as a French list, « une tâche et une note ».

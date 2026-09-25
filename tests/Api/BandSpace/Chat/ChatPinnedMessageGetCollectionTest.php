@@ -351,6 +351,7 @@ class ChatPinnedMessageGetCollectionTest extends ApiTestCase
             'pinned_by_username' => $pinnedByUsername,
             'read_by_usernames' => [],
             'read_count' => 0,
+            'image' => null,
         ];
     }
 

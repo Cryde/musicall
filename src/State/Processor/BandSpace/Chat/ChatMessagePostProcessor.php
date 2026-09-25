@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Chat\ChatMessageCreate;
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
+use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceMembership;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageAttachment;
@@ -15,6 +16,7 @@ use App\Entity\User;
 use App\Event\BandSpaceChatMentionedEvent;
 use App\Repository\Message\MessageThreadRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
+use App\Service\BandSpace\Chat\ChatImageStore;
 use App\Service\BandSpace\ChatMentionResolver;
 use App\Service\Builder\BandSpace\ChatMessageBuilder;
 use App\Service\Message\MessageAttachmentResolver;
@@ -24,6 +26,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
@@ -40,6 +43,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         private ChatMessageBuilder $chatMessageBuilder,
         private ChatMentionResolver $chatMentionResolver,
         private MessageAttachmentResolver $messageAttachmentResolver,
+        private ChatImageStore $chatImageStore,
         private EntityManagerInterface $entityManager,
         private EventDispatcherInterface $eventDispatcher,
         private LoggerInterface $logger,
@@ -75,7 +79,8 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         }
 
         $content = $this->contentOf($data);
-        $message = $this->messageSenderProcedure->processByThread($channel, $user, $content);
+        $image = $data->image instanceof File ? $this->chatImageStore->store($data->image, $bandSpace, $user) : null;
+        $message = $this->sendMessage($channel, $user, $content, $image);
 
         $mentionedUsers = $this->chatMentionResolver->resolve($bandSpace, $content);
         $this->recordMentions($message, $mentionedUsers);
@@ -92,12 +97,61 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
     }
 
     /**
-     * Whitespace beside an attachment is stored as nothing, so an attachment-only message has one
-     * shape. Without attachments the text is kept as sent: NotBlank does not trim, and it never did.
+     * The image is already stored at this point, so a message that could not be sent takes it back
+     * out: otherwise it would sit in the Files root, attached to nothing.
+     */
+    private function sendMessage(MessageThread $channel, User $user, string $content, ?BandSpaceFile $image): Message
+    {
+        try {
+            $message = $this->messageSenderProcedure->processByThread($channel, $user, $content);
+        } catch (\Throwable $e) {
+            if ($image instanceof BandSpaceFile) {
+                $this->discardQuietly($image);
+            }
+            throw $e;
+        }
+
+        if ($image instanceof BandSpaceFile) {
+            $this->attachImage($image, $message, $user);
+        }
+
+        return $message;
+    }
+
+    /**
+     * Best-effort for the reason recordMentions() gives: the message is already committed, so a 500
+     * here would invite a duplicate. The image then goes, rather than lingering unattached in Files.
+     */
+    private function attachImage(BandSpaceFile $image, Message $message, User $user): void
+    {
+        try {
+            $this->chatImageStore->attachToMessage($image, $message, $user);
+        } catch (\Throwable $e) {
+            $this->logger->error('Could not attach the image of a chat message, it will render without it', [
+                'message_id' => (string) $message->id,
+                'file_id' => (string) $image->id,
+                'exception' => $e,
+            ]);
+            $this->discardQuietly($image);
+        }
+    }
+
+    private function discardQuietly(BandSpaceFile $image): void
+    {
+        try {
+            $this->chatImageStore->discard($image);
+        } catch (\Throwable $e) {
+            $this->logger->error('Could not discard an unattached chat image', ['file_id' => (string) $image->id, 'exception' => $e]);
+        }
+    }
+
+    /**
+     * Whitespace beside an attachment or an image is stored as nothing, so an attachment-only message
+     * has one shape. Without attachments the text is kept as sent: NotBlank does not trim, and it never did.
      */
     private function contentOf(ChatMessageCreate $data): string
     {
-        if ($data->attachments !== [] && trim($data->content) === '') {
+        if (($data->attachments !== [] || $data->image instanceof File) && trim($data->content) === '') {
             return '';
         }
 

@@ -10,6 +10,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # pcov rather than xdebug, matching what CI uses for coverage.
 RUN install-php-extensions \
     bcmath \
+    exif \
     gd \
     intl \
     pdo_mysql \

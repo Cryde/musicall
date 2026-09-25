@@ -154,11 +154,11 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
    * sender's own signal can beat their own POST response back, because the server publishes inside the
    * send and answers afterwards, and the refetch it triggers has then already added it (#963).
    */
-  async function sendMessage(bandSpaceId, content, attachments = []) {
+  async function sendMessage(bandSpaceId, content, attachments = [], image = null) {
     isSending.value = true
 
     try {
-      const message = await bandSpaceChatApi.postMessage(bandSpaceId, content, attachments)
+      const message = await bandSpaceChatApi.postMessage(bandSpaceId, content, attachments, image)
       const heldBefore = messages.value.length
       messages.value = mergeMessages(messages.value, [message])
       totalMessages.value += messages.value.length - heldBefore

@@ -7,6 +7,7 @@ use App\Entity\Message\Message;
 use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\Enum\Message\MessageReactionEmoji;
+use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageReactionRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
@@ -27,6 +28,7 @@ readonly class ChatMessageBuilder
         private MessageReactionRepository $messageReactionRepository,
         private MessageThreadMetaRepository $messageThreadMetaRepository,
         private MessageAttachmentResolver $messageAttachmentResolver,
+        private BandSpaceFileRepository $bandSpaceFileRepository,
     ) {
     }
 
@@ -37,7 +39,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
      *                     which rows carry their editable content.
      * @param MessageThread $channel the thread these rows come from, which is what the read positions
@@ -64,6 +66,12 @@ readonly class ChatMessageBuilder
         // position is per member, so the rows are compared against each message here rather than
         // asked for again.
         $readPositions = $this->readPositionsForPage($channel, array_column($rows, 'creationDatetime'));
+        // And for the images (#973): one query for whichever files the page's messages carry.
+        $imageFileIds = array_values(array_filter(array_map(
+            static fn (array $row): ?string => $row['imageFileId'] !== null ? (string) $row['imageFileId'] : null,
+            $rows,
+        )));
+        $availableImageFileIds = $this->bandSpaceFileRepository->findLiveIdsAmong($imageFileIds, $bandSpaceId);
 
         return array_map(
             fn (array $row): ChatMessageResource => $this->build(
@@ -85,6 +93,7 @@ readonly class ChatMessageBuilder
                 $row['pinnedByUsername'],
                 $row['pinnedByDeletionDatetime'] !== null,
                 $this->readersOf($readPositions, $row['creationDatetime'], (string) $row['authorId'], $row['deletionDatetime'] !== null),
+                $this->imageOf($row['imageFileId'] !== null ? (string) $row['imageFileId'] : null, $availableImageFileIds),
             ),
             $rows,
         );
@@ -96,6 +105,7 @@ readonly class ChatMessageBuilder
     public function buildItem(Message $entity, string $bandSpaceId, User $viewer): ChatMessageResource
     {
         $messageId = (string) $entity->id;
+        $imageFileId = $entity->imageFileId !== null ? (string) $entity->imageFileId : null;
 
         return $this->build(
             $messageId,
@@ -121,7 +131,24 @@ readonly class ChatMessageBuilder
                 (string) $entity->author->id,
                 $entity->isDeleted(),
             ),
+            $this->imageOf(
+                $imageFileId,
+                $this->bandSpaceFileRepository->findLiveIdsAmong($imageFileId !== null ? [$imageFileId] : [], $bandSpaceId),
+            ),
         );
+    }
+
+    /**
+     * @param list<string> $availableFileIds the files still live, out of those the page asked about
+     *
+     * @return array{file_id: string, is_available: bool}|null
+     */
+    private function imageOf(?string $fileId, array $availableFileIds): ?array
+    {
+        return $fileId === null ? null : [
+            'file_id' => $fileId,
+            'is_available' => in_array($fileId, $availableFileIds, true),
+        ];
     }
 
     /**
@@ -184,6 +211,7 @@ readonly class ChatMessageBuilder
      * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
      * @param list<array{type: string, target_id: string, label: string, is_available: bool}> $attachments
      * @param list<string> $readByUsernames
+     * @param array{file_id: string, is_available: bool}|null $image
      */
     private function build(
         string $id,
@@ -204,6 +232,7 @@ readonly class ChatMessageBuilder
         ?string $pinnedByUsername = null,
         bool $pinnedByIsDeleted = false,
         array $readByUsernames = [],
+        ?array $image = null,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -238,6 +267,7 @@ readonly class ChatMessageBuilder
         $dto->readByUsernames = $readByUsernames;
         // Counted from the list rather than queried, so the two cannot disagree.
         $dto->readCount = count($readByUsernames);
+        $dto->image = $image;
 
         return $dto;
     }

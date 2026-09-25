@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  CHAT_MESSAGE_SOURCE_TYPE,
+  deleteBlockingAttachments,
   FILE_SOURCE_LIST_LABEL,
   FILE_SOURCE_NOUNS,
   FILE_SOURCE_TYPES,
@@ -227,17 +229,17 @@ describe('fileSourceRoute', () => {
 })
 
 describe('QUOTA_BREAKDOWN_SOURCES', () => {
-  it('covers every source type the API can emit, plus the unattached bucket', () => {
+  it('covers every source type the API can emit, plus the unattached bucket and the chat', () => {
     assert.deepEqual(
       QUOTA_BREAKDOWN_SOURCES.map((source) => source.key),
-      ['manual', ...BACKEND_SOURCE_TYPES]
+      ['manual', ...BACKEND_SOURCE_TYPES, CHAT_MESSAGE_SOURCE_TYPE]
     )
   })
 
   it('labels every bucket in the plural', () => {
     assert.deepEqual(
       QUOTA_BREAKDOWN_SOURCES.map((source) => source.label),
-      ['Manuels', 'Tâches', 'Finances', 'Notes', 'Chansons', 'Setlists']
+      ['Manuels', 'Tâches', 'Finances', 'Notes', 'Chansons', 'Setlists', 'Chat']
     )
   })
 
@@ -253,5 +255,33 @@ describe('QUOTA_BREAKDOWN_SOURCES', () => {
   it('cannot be edited in place by a caller', () => {
     assert.equal(Object.isFrozen(QUOTA_BREAKDOWN_SOURCES), true)
     assert.equal(Object.isFrozen(QUOTA_BREAKDOWN_SOURCES[0]), true)
+  })
+})
+
+describe('chat images (#973)', () => {
+  it('stays out of the sources a member can attach to', () => {
+    assert.equal(FILE_SOURCE_TYPES.includes(CHAT_MESSAGE_SOURCE_TYPE), false)
+  })
+
+  it('never blocks a delete, while every other attachment does', () => {
+    const attachments = [
+      { source_type: 'message', source_id: 'm1' },
+      { source_type: 'task', source_id: 't1' }
+    ]
+
+    assert.deepEqual(deleteBlockingAttachments(attachments), [
+      { source_type: 'task', source_id: 't1' }
+    ])
+    assert.deepEqual(deleteBlockingAttachments([{ source_type: 'message', source_id: 'm1' }]), [])
+    assert.deepEqual(deleteBlockingAttachments(undefined), [])
+  })
+
+  it('names the chat and leads back to the message', () => {
+    assert.equal(fileSourceLabel('message'), 'Message du chat')
+    assert.deepEqual(fileSourceRoute('message', 'space-1', 'm1'), {
+      name: 'app_band_chat',
+      params: { id: 'space-1' },
+      query: { message: 'm1' }
+    })
   })
 })

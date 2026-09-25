@@ -15,12 +15,15 @@ use App\Repository\BandSpace\FinanceEntryRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Repository\BandSpace\SongRepository;
 use App\Repository\BandSpace\TaskRepository;
+use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class BandSpaceFileBuilder
 {
+    private const string CHAT_MESSAGE_LABEL = 'Message du chat';
+
     public function __construct(
         private BandSpaceFileRepository $fileRepository,
         private BandSpaceFileAttachmentRepository $attachmentRepository,
@@ -216,6 +219,7 @@ readonly class BandSpaceFileBuilder
                 'note' => $noteTitles[$sourceId] ?? '—',
                 'song' => $songTitles[$sourceId] ?? '—',
                 'setlist' => $setlistNames[$sourceId] ?? '—',
+                BandSpaceFileSourceTypes::CHAT_MESSAGE => self::CHAT_MESSAGE_LABEL,
                 default => '—',
             };
 

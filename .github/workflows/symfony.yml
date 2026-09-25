@@ -56,7 +56,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php-versions }}
-                  extensions: mbstring, ctype, intl, pdo_mysql, gd, xml
+                  extensions: mbstring, ctype, intl, pdo_mysql, gd, exif, xml
                   coverage: pcov
 
             # —— Composer ——————————————————————————————————————————————————————————

@@ -49,7 +49,10 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
         return self::stream($file, $file->currentVersion, $this->vichStorage);
     }
 
-    public static function stream(BandSpaceFile $file, BandSpaceFileVersion $version, StorageInterface $vichStorage): StreamedResponse
+    /**
+     * @param bool $inline only for a chat image, which the page shows in place (#973)
+     */
+    public static function stream(BandSpaceFile $file, BandSpaceFileVersion $version, StorageInterface $vichStorage, bool $inline = false): StreamedResponse
     {
         $stream = $vichStorage->resolveStream($version, 'uploadedFile');
         if ($stream === null) {
@@ -72,7 +75,7 @@ readonly class BandSpaceFileDownloadProvider implements ProviderInterface
         // authenticated, versioned and public-share paths via ::stream().
         $response->headers->set(
             'Content-Disposition',
-            ContentDisposition::attachment($file->originalName),
+            $inline ? ContentDisposition::inline($file->originalName) : ContentDisposition::attachment($file->originalName),
         );
         if ($version->size !== null) {
             $response->headers->set('Content-Length', (string) $version->size);

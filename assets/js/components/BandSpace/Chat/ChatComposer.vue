@@ -1,5 +1,12 @@
 <template>
-  <div class="border-t border-surface-200 dark:border-surface-700 p-4">
+  <!-- Paste and drop are caught on the whole composer, before the editor sees them, so an image
+       never lands in the text as markup (#973). -->
+  <div
+    class="border-t border-surface-200 dark:border-surface-700 p-4"
+    @paste.capture="handlePaste"
+    @dragover.prevent
+    @drop.prevent="handleDrop"
+  >
     <Message v-if="sendError" severity="error" :closable="false" class="mb-2">
       {{ sendError }}
     </Message>
@@ -7,6 +14,24 @@
     <Message v-if="attachmentError" severity="warn" :closable="false" class="mb-2">
       {{ attachmentError }}
     </Message>
+
+    <div v-if="image" class="relative mb-2 inline-block">
+      <img
+        :src="image.previewUrl"
+        alt="Image à envoyer"
+        class="h-20 w-20 rounded-md object-cover border border-surface-200 dark:border-surface-700"
+      />
+      <Button
+        icon="pi pi-times"
+        rounded
+        size="small"
+        severity="secondary"
+        class="absolute! -right-2 -top-2 h-6! w-6!"
+        aria-label="Retirer l'image"
+        :disabled="isSending"
+        @click="removeImage"
+      />
+    </div>
 
     <ChatComposerAttachments
       v-if="attachments.length > 0"
@@ -24,6 +49,24 @@
         aria-label="Joindre un élément du Band Space"
         :disabled="isSending"
         @click="isPickerVisible = true"
+      />
+      <!-- A button as well as paste and drop: on a phone, the picker is the only way to a photo. -->
+      <Button
+        v-if="canAttach"
+        icon="pi pi-image"
+        severity="secondary"
+        outlined
+        aria-label="Ajouter une image"
+        :disabled="isSending"
+        @click="imageInput?.click()"
+      />
+      <input
+        v-if="canAttach"
+        ref="imageInput"
+        type="file"
+        class="hidden"
+        :accept="ACCEPTED_IMAGE_TYPES.join(',')"
+        @change="handleImagePicked"
       />
       <MentionEditor
         ref="composer"
@@ -59,7 +102,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Message from 'primevue/message'
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import {
   addToDraft,
@@ -68,6 +111,11 @@ import {
   draftIdentifiers,
   removeFromDraft
 } from '../../../utils/chatAttachmentDraft.js'
+import {
+  ACCEPTED_IMAGE_TYPES,
+  firstImageAmong,
+  imageRefusalFor
+} from '../../../utils/chatImageDraft.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import ChatAttachmentPicker from './ChatAttachmentPicker.vue'
 import ChatComposerAttachments from './ChatComposerAttachments.vue'
@@ -99,7 +147,12 @@ const sendError = ref('')
 
 /** The Band Space objects this message will point at, see chatAttachmentDraft. */
 const attachments = ref([])
-const canSend = computed(() => canSendDraft(content.value, attachments.value))
+/** The image this message will carry (#973), with a local preview URL to revoke once it is gone. */
+const image = ref(null)
+const imageInput = ref(null)
+const canSend = computed(
+  () => canSendDraft(content.value, attachments.value) || image.value !== null
+)
 const attachmentError = ref('')
 const isPickerVisible = ref(false)
 
@@ -123,6 +176,55 @@ function removeAttachment(id) {
   attachmentError.value = ''
 }
 
+function setImage(file) {
+  const refusal = imageRefusalFor(file)
+  if (refusal) {
+    attachmentError.value = refusal
+    return
+  }
+
+  removeImage()
+  image.value = { file, previewUrl: URL.createObjectURL(file) }
+}
+
+function removeImage() {
+  if (image.value) {
+    URL.revokeObjectURL(image.value.previewUrl)
+  }
+  image.value = null
+  attachmentError.value = ''
+}
+
+/** Text pastes as it always did; only a clipboard holding an image is taken over. */
+function handlePaste(event) {
+  const file = canAttach.value ? firstImageAmong(event.clipboardData?.files ?? []) : null
+  if (!file) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  setImage(file)
+}
+
+function handleDrop(event) {
+  const file = canAttach.value ? firstImageAmong(event.dataTransfer?.files ?? []) : null
+  if (file) {
+    setImage(file)
+  }
+}
+
+function handleImagePicked(event) {
+  const [file] = event.target.files ?? []
+  if (file) {
+    setImage(file)
+  }
+  // Cleared so picking the same photo again after removing it still fires a change.
+  event.target.value = ''
+}
+
+onBeforeUnmount(removeImage)
+
 async function send() {
   const message = content.value
   if (!canSend.value || props.isSending) {
@@ -134,20 +236,21 @@ async function send() {
   let wasSent = false
 
   try {
-    await props.sendMessage(message, pickedIds.value)
+    await props.sendMessage(message, pickedIds.value, image.value?.file ?? null)
     wasSent = true
   } catch (e) {
     sendError.value = errorMessageFor(e)
   }
 
-  // The text and the references leave together and stay together: a failure keeps both, so the retry
-  // is one click rather than a search for each object again.
+  // The text, the references and the image leave together and stay together: a failure keeps them
+  // all, so the retry is one click rather than a search for each object again.
   attachments.value = draftAfterSend(attachments.value, wasSent)
   if (!wasSent) {
     return
   }
 
   content.value = ''
+  removeImage()
   emit('sent')
   nextTick(() => composer.value?.focus())
 }

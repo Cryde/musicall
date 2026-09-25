@@ -128,6 +128,11 @@
                     bubbleCornerClasses(index, block.messages.length, isMine(message)),
                   ]"
                 >
+                  <ChatMessageImage
+                    v-if="message.image"
+                    :image="message.image"
+                    :band-space-id="bandSpaceId"
+                  />
                   <!-- An attachment-only message has no text (#971), and an empty line here would pad the
                        bubble above its cards. -->
                   <div v-if="message.content" v-html="autoLink(message.content)" />
@@ -268,6 +273,7 @@ import MentionEditor from '../../Global/MentionEditor.vue'
 import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
 import Avatar from '../../User/Avatar.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
+import ChatMessageImage from './ChatMessageImage.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'
 
 const props = defineProps({
