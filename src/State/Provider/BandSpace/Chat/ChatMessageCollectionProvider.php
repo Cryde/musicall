@@ -56,7 +56,7 @@ readonly class ChatMessageCollectionProvider implements ProviderInterface
         $rows = $this->messageRepository->findForThread($channel, $itemsPerPage, $offset);
 
         return new TraversablePaginator(
-            new \ArrayIterator($this->chatMessageBuilder->buildFromProjection($rows, $bandSpaceId, $user)),
+            new \ArrayIterator($this->chatMessageBuilder->buildFromProjection($rows, $bandSpaceId, $user, $channel)),
             $page,
             $itemsPerPage,
             $this->messageRepository->countForThread($channel),

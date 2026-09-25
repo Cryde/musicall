@@ -4,10 +4,12 @@ namespace App\Service\Builder\BandSpace;
 
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\Message\Message;
+use App\Entity\Message\MessageThread;
 use App\Entity\User;
 use App\Enum\Message\MessageReactionEmoji;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageReactionRepository;
+use App\Repository\Message\MessageThreadMetaRepository;
 use App\Service\BandSpace\ChatMentionRenderer;
 use App\Service\Builder\User\UserProfilePictureUrlBuilder;
 use App\Service\Message\MessageAttachmentResolver;
@@ -23,6 +25,7 @@ readonly class ChatMessageBuilder
         private MessageMentionRepository $messageMentionRepository,
         private ChatMentionRenderer $chatMentionRenderer,
         private MessageReactionRepository $messageReactionRepository,
+        private MessageThreadMetaRepository $messageThreadMetaRepository,
         private MessageAttachmentResolver $messageAttachmentResolver,
     ) {
     }
@@ -37,10 +40,12 @@ readonly class ChatMessageBuilder
      * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
      *                     which rows carry their editable content.
+     * @param MessageThread $channel the thread these rows come from, which is what the read positions
+     *                               behind « Vu par » are asked for.
      *
      * @return ChatMessageResource[]
      */
-    public function buildFromProjection(array $rows, string $bandSpaceId, User $viewer): array
+    public function buildFromProjection(array $rows, string $bandSpaceId, User $viewer, MessageThread $channel): array
     {
         $viewerId = (string) $viewer->id;
         $messageIds = array_map(static fn (array $row): string => (string) $row['id'], $rows);
@@ -55,6 +60,10 @@ readonly class ChatMessageBuilder
         // Same rule, and the same reason it lives here: one query for the page's rows plus one per
         // kind of target present, never one per message (#970).
         $attachmentsByMessage = $this->messageAttachmentResolver->resolveForMessages($messageIds, $bandSpaceId);
+        // And again, for the same reason (#977). One query for the page whatever it holds: a read
+        // position is per member, so the rows are compared against each message here rather than
+        // asked for again.
+        $readPositions = $this->readPositionsForPage($channel, array_column($rows, 'creationDatetime'));
 
         return array_map(
             fn (array $row): ChatMessageResource => $this->build(
@@ -75,6 +84,7 @@ readonly class ChatMessageBuilder
                 $row['pinnedDatetime'],
                 $row['pinnedByUsername'],
                 $row['pinnedByDeletionDatetime'] !== null,
+                $this->readersOf($readPositions, $row['creationDatetime'], (string) $row['authorId'], $row['deletionDatetime'] !== null),
             ),
             $rows,
         );
@@ -105,7 +115,58 @@ readonly class ChatMessageBuilder
             $entity->pinnedDatetime,
             $entity->pinnedBy?->username,
             $entity->pinnedBy?->isDeleted() ?? false,
+            $this->readersOf(
+                $this->messageThreadMetaRepository->findReadPositionsForChannel($entity->thread, $entity->creationDatetime),
+                $entity->creationDatetime,
+                (string) $entity->author->id,
+                $entity->isDeleted(),
+            ),
         );
+    }
+
+    /**
+     * The channel's read positions, bounded to the oldest message on the page: an older position has
+     * read nothing on it, and an empty page asks nothing at all.
+     *
+     * @param list<\DateTimeInterface> $creationDatetimes every message on the page
+     *
+     * @return list<array{userId: string, username: string, lastReadDatetime: \DateTimeImmutable}>
+     */
+    private function readPositionsForPage(MessageThread $channel, array $creationDatetimes): array
+    {
+        return $creationDatetimes === []
+            ? []
+            : $this->messageThreadMetaRepository->findReadPositionsForChannel($channel, min($creationDatetimes));
+    }
+
+    /**
+     * Who, of those positions, has read this one message.
+     *
+     * At or after, not after, because that is the exact complement of the unread rule the counters
+     * use (`creationDatetime > lastReadDatetime` is unread), and both columns are second granular:
+     * anything else would have a message count as unread and as read at the same time.
+     *
+     * The author is never a reader of their own message, and a tombstone reports nobody: « Vu par »
+     * under « Message supprimé » would be about content that no longer exists (#967).
+     *
+     * @param list<array{userId: string, username: string, lastReadDatetime: \DateTimeImmutable}> $positions
+     *
+     * @return list<string>
+     */
+    private function readersOf(array $positions, \DateTimeInterface $creationDatetime, string $authorId, bool $isDeleted): array
+    {
+        if ($isDeleted) {
+            return [];
+        }
+
+        $usernames = [];
+        foreach ($positions as $position) {
+            if ($position['userId'] !== $authorId && $position['lastReadDatetime'] >= $creationDatetime) {
+                $usernames[] = $position['username'];
+            }
+        }
+
+        return $usernames;
     }
 
     /**
@@ -122,6 +183,7 @@ readonly class ChatMessageBuilder
      * @param array<string, string> $usernamesById user id => username, for the mentions this message carries
      * @param array<string, array{count: int, hasReacted: bool}> $reactionTallies emoji slug => tally
      * @param list<array{type: string, target_id: string, label: string, is_available: bool}> $attachments
+     * @param list<string> $readByUsernames
      */
     private function build(
         string $id,
@@ -141,6 +203,7 @@ readonly class ChatMessageBuilder
         ?\DateTimeInterface $pinnedDatetime = null,
         ?string $pinnedByUsername = null,
         bool $pinnedByIsDeleted = false,
+        array $readByUsernames = [],
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -172,6 +235,9 @@ readonly class ChatMessageBuilder
         $dto->pinnedByUsername = $pinnedByUsername === null
             ? null
             : ($pinnedByIsDeleted ? User::DELETED_DISPLAY_NAME : $pinnedByUsername);
+        $dto->readByUsernames = $readByUsernames;
+        // Counted from the list rather than queried, so the two cannot disagree.
+        $dto->readCount = count($readByUsernames);
 
         return $dto;
     }

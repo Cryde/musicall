@@ -64,6 +64,8 @@ class ChatMessageReactionTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => 'on répète mardi',
@@ -103,6 +105,8 @@ class ChatMessageReactionTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
             'is_deleted' => false,
             'update_datetime' => null,
             'editable_content' => 'on répète mardi',
@@ -402,6 +406,8 @@ class ChatMessageReactionTest extends ApiTestCase
                     'is_pinned' => false,
                     'pinned_datetime' => null,
                     'pinned_by_username' => null,
+                    'read_by_usernames' => [],
+                    'read_count' => 0,
                     'is_deleted' => false,
                     'update_datetime' => null,
                     'editable_content' => 'on répète mardi',
@@ -453,6 +459,8 @@ class ChatMessageReactionTest extends ApiTestCase
                     'is_pinned' => false,
                     'pinned_datetime' => null,
                     'pinned_by_username' => null,
+                    'read_by_usernames' => [],
+                    'read_count' => 0,
                     'is_deleted' => false,
                     'update_datetime' => null,
                     'editable_content' => 'on répète mardi',
@@ -507,6 +515,8 @@ class ChatMessageReactionTest extends ApiTestCase
                     'is_pinned' => false,
                     'pinned_datetime' => null,
                     'pinned_by_username' => null,
+                    'read_by_usernames' => [],
+                    'read_count' => 0,
                     'is_deleted' => false,
                     'update_datetime' => null,
                     'editable_content' => 'on répète mardi',
@@ -576,11 +586,12 @@ class ChatMessageReactionTest extends ApiTestCase
             );
         }
 
-        // Measured at 9: the eight the page already cost before reactions existed, plus the one
-        // grouped aggregate. The margin is for a change to the firewall, not for a per-message query,
-        // which would put this past twenty.
+        // Measured at 12 for this page, the grouped aggregate and the read positions (#977) included.
+        // A measurement rather than a sum: the breakdown this comment used to carry had drifted, so
+        // re-measure rather than reason about it. The margin is for a change to the firewall, not for a
+        // per-message query, which would put this past twenty.
         $this->assertLessThanOrEqual(
-            11,
+            13,
             $this->client->getProfile()->getCollector('db')->getQueryCount(),
             'The reaction aggregate must cost a fixed number of queries whatever the page holds',
         );

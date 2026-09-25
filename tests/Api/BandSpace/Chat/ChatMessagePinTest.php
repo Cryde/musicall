@@ -81,6 +81,8 @@ class ChatMessagePinTest extends ApiTestCase
             // Stamped by the server, so read back rather than pinned to a literal.
             'pinned_datetime' => $pinned->pinnedDatetime->format('c'),
             'pinned_by_username' => 'batteur',
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ]);
     }
 
@@ -124,6 +126,8 @@ class ChatMessagePinTest extends ApiTestCase
             'is_pinned' => true,
             'pinned_datetime' => '2026-09-11T09:00:00+00:00',
             'pinned_by_username' => 'chanteuse',
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ]);
     }
 
@@ -163,6 +167,8 @@ class ChatMessagePinTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ]);
         $unpinned = self::getContainer()->get(MessageRepository::class)->find($message->id);
         $this->assertNull($unpinned->pinnedDatetime);
@@ -209,6 +215,8 @@ class ChatMessagePinTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ]);
     }
 
@@ -521,6 +529,8 @@ class ChatMessagePinTest extends ApiTestCase
             'is_pinned' => true,
             'pinned_datetime' => '2026-09-11T09:00:00+00:00',
             'pinned_by_username' => 'Utilisateur supprimé',
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ]);
     }
 

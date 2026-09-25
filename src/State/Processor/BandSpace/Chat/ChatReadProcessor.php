@@ -5,10 +5,13 @@ namespace App\State\Processor\BandSpace\Chat;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
+use App\Event\BandSpaceChatReadEvent;
+use App\Repository\Message\MessageRepository;
 use App\Repository\Message\MessageThreadMetaRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<mixed, void>
@@ -18,6 +21,8 @@ readonly class ChatReadProcessor implements ProcessorInterface
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private MessageThreadMetaRepository $messageThreadMetaRepository,
+        private MessageRepository $messageRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -34,6 +39,15 @@ readonly class ChatReadProcessor implements ProcessorInterface
         // there is something unread in a conversation they can still open.
         [$bandSpace] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
+        // Asked first, since afterwards the position is `now`. Only a read that covers somebody
+        // else's message changes a « Vu par », and publishing on every re-read would let each viewer's
+        // refetch-then-read multiply across the band (#977).
+        $changesReceipts = $this->messageRepository->hasChannelMessageUnreadBy($bandSpace, $user);
+
         $this->messageThreadMetaRepository->markChannelsReadForUser($bandSpace, $user);
+
+        if ($changesReceipts) {
+            $this->eventDispatcher->dispatch(new BandSpaceChatReadEvent($bandSpace, $user));
+        }
     }
 }

@@ -55,6 +55,7 @@ readonly class ChatPinnedMessageCollectionProvider implements ProviderInterface
             $this->messageRepository->findPinnedForThread($channel),
             $bandSpaceId,
             $user,
+            $channel,
         );
     }
 }

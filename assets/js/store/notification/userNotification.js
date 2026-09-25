@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { readonly, ref, watch } from 'vue'
 import userNotificationApi from '../../api/notification/userNotification.js'
+import { routeLiveSignal } from '../../utils/liveSignalRouter.js'
 import { createNotificationStream, notificationTopic } from '../../utils/notificationStream.js'
 import { useBandSpaceChatStore } from '../bandSpace/bandSpaceChat.js'
 import { useMessageStore } from '../message/message.js'
@@ -117,30 +118,14 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
 
       return userId ? [notificationTopic(userId)] : []
     },
-    onSignal: (payload) => {
-      // One topic, three kinds of update, so the payload's own type says which. A null payload is a
-      // reconnect, where anything published while we were down is gone for good: refresh all of them.
-      const type = payload?.type ?? null
-      if (type === null || type === 'notification') {
-        loadCount()
-      }
-      if (type === null || type === 'message') {
-        // The navbar count, which is live even for somebody who never opens the inbox, and then the
-        // inbox itself, which no-ops when it was never opened.
-        useNotificationStore().loadNotifications()
-        useMessageStore().handleIncomingMessage(payload?.thread_id ?? null)
-      }
-      if (type === null || type === 'band_space_message') {
-        // A Band Space channel, which both panes can be showing: the band space tab, keyed by space,
-        // and since #994 the inbox, keyed by thread. Each no-ops when its own pane is not on screen,
-        // and they never are at once, since they are different routes.
-        //
-        // The chat store refreshes the sidebar badge itself, because whether the member is looking at
-        // the conversation is also what decides whether the signal marks it read.
-        useBandSpaceChatStore().handleIncomingMessage(payload?.band_space_id ?? null)
-        useMessageStore().handleIncomingMessage(payload?.thread_id ?? null)
-      }
-    },
+    onSignal: (payload) =>
+      routeLiveSignal(payload, {
+        refreshBell: loadCount,
+        refreshNotificationCounts: () => useNotificationStore().loadNotifications(),
+        inboxMessage: (threadId) => useMessageStore().handleIncomingMessage(threadId),
+        chatMessage: (bandSpaceId) => useBandSpaceChatStore().handleIncomingMessage(bandSpaceId),
+        chatRead: (bandSpaceId) => useBandSpaceChatStore().handleChatRead(bandSpaceId)
+      }),
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()
   })
 

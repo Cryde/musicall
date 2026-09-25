@@ -66,6 +66,8 @@ class ChatMessagePostTest extends ApiTestCase
             'is_pinned' => false,
             'pinned_datetime' => null,
             'pinned_by_username' => null,
+            'read_by_usernames' => [],
+            'read_count' => 0,
         ]);
     }
 

@@ -91,6 +91,59 @@ class MessageThreadMetaRepository extends ServiceEntityRepository
     }
 
     /**
+     * Where each active member of a channel has read up to, for the « Vu par » line (#977).
+     *
+     * One query for a whole page, not one per message: a read position belongs to a member rather
+     * than to a message, so the builder compares these few rows against each message itself. Bounded
+     * to $notBefore, the oldest message on the page, since an older position has read none of it.
+     *
+     * The membership join is what keeps a former member out of « Vu par »: their read-state row
+     * survives a leave or a kick (#948 concern 3), like MessageRepository's unread counts allow for.
+     * A direct message thread matches no membership and comes back empty.
+     *
+     * @return list<array{userId: string, username: string, lastReadDatetime: \DateTimeImmutable}>
+     */
+    public function findReadPositionsForChannel(MessageThread $channel, \DateTimeInterface $notBefore): array
+    {
+        /** @var list<array{userId: mixed, username: string, lastReadDatetime: \DateTimeImmutable}> $rows */
+        $rows = $this->createQueryBuilder('message_thread_meta')
+            ->select(
+                'reader.id AS userId',
+                'reader.username AS username',
+                'message_thread_meta.lastReadDatetime AS lastReadDatetime',
+            )
+            ->join('message_thread_meta.thread', 'thread')
+            // Projected, never hydrated: a `User` drags its three profile tables along (#730), and a
+            // roster of them on every page of the chat is the cost this whole read path avoids.
+            ->join('message_thread_meta.user', 'reader')
+            ->join(
+                BandSpaceMembership::class,
+                'membership',
+                Join::WITH,
+                'membership.bandSpace = thread.bandSpace AND membership.user = message_thread_meta.user'
+                . ' AND membership.status = :active'
+            )
+            ->where('message_thread_meta.thread = :thread')
+            ->andWhere('message_thread_meta.lastReadDatetime >= :not_before')
+            // Deterministic, so two identical requests name the readers in the same order.
+            ->orderBy('reader.username', 'ASC')
+            ->setParameter('thread', $channel)
+            ->setParameter('active', MembershipStatus::Active)
+            ->setParameter('not_before', $notBefore)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'userId' => (string) $row['userId'],
+                'username' => $row['username'],
+                'lastReadDatetime' => $row['lastReadDatetime'],
+            ],
+            $rows,
+        );
+    }
+
+    /**
      * Scoped to the owner, so there is no way to load somebody else's row through this method.
      */
     public function findOneByIdAndUser(string $id, User $user): ?MessageThreadMeta

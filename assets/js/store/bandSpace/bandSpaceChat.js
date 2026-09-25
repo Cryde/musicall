@@ -6,6 +6,7 @@ import {
   rolledBackReactions,
   toggledReactions
 } from '../../utils/chatReactionToggle.js'
+import { createCoalescedCall } from '../../utils/coalescedCall.js'
 import {
   hasOlderToLoad,
   mergeMessages,
@@ -13,6 +14,14 @@ import {
 } from '../../utils/messagePagination.js'
 import { isForTheOpenConversation } from '../../utils/messageSignal.js'
 import { useNotificationStore } from '../notification/notification.js'
+
+/**
+ * How long read signals are gathered before « Vu par » is refetched (#977). One message makes every
+ * member watching refetch and then mark read, so their reads land spread over one or two round trips,
+ * well under a second on a decent connection. A second and a half turns that burst into one page
+ * load while the line still moves within two seconds of somebody reading.
+ */
+const READ_RECEIPT_COALESCE_MS = 1500
 
 /**
  * The band's conversation. Held oldest first, which is reading order, while the API answers newest
@@ -356,7 +365,33 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     await useNotificationStore().loadNotifications()
   }
 
+  const readReceiptRefresh = createCoalescedCall({
+    delayMs: READ_RECEIPT_COALESCE_MS,
+    call: () => {
+      if (openBandSpaceId.value) {
+        loadMessages(openBandSpaceId.value, { silent: true })
+      }
+    }
+  })
+
+  /**
+   * Another member read one of this member's channels (#977), so the « Vu par » on screen may be
+   * stale.
+   *
+   * Only the newest page is refetched, because the line is drawn under the last message and the last
+   * message is always on it. And nothing else happens: no markAsRead(), which would publish a read of
+   * our own and feed the cascade this exists to bound, and no badge refresh, because somebody else
+   * reading changes nothing that is unread for us.
+   */
+  function handleChatRead(bandSpaceId) {
+    if (bandSpaceId && bandSpaceId === openBandSpaceId.value) {
+      readReceiptRefresh.request()
+    }
+  }
+
   function clear() {
+    // A refetch gathered for the pane being left would otherwise land in whatever is opened next.
+    readReceiptRefresh.cancel()
     // Bumped so nothing already in flight lands in a pane the member has left, a silent refresh
     // included. Chat.vue clears on unmount, which is the one moment a response has nowhere to go.
     loadToken += 1
@@ -397,6 +432,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     deleteMessage,
     markAsRead,
     handleIncomingMessage,
+    handleChatRead,
     clear
   }
 })

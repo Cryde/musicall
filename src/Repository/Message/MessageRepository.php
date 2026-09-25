@@ -366,6 +366,37 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Whether marking the space's channels read would change anybody's « Vu par » (#977).
+     *
+     * The read receipt rule, not the unread badge's: no membership floor, since a receipt has none,
+     * and tombstones left out, since a deleted message reports no reader. Asked before the position
+     * moves, because afterwards it is `now` and the answer is gone.
+     */
+    public function hasChannelMessageUnreadBy(BandSpace $bandSpace, User $reader): bool
+    {
+        $found = $this->createQueryBuilder('message')
+            ->select('message.id')
+            ->join('message.thread', 'thread')
+            ->leftJoin(
+                MessageThreadMeta::class,
+                'meta',
+                Join::WITH,
+                'meta.thread = message.thread AND meta.user = :reader'
+            )
+            ->where('thread.bandSpace = :band_space')
+            ->andWhere('message.author != :reader')
+            ->andWhere('message.deletionDatetime IS NULL')
+            ->andWhere('(meta.lastReadDatetime IS NULL OR message.creationDatetime > meta.lastReadDatetime)')
+            ->setParameter('band_space', $bandSpace)
+            ->setParameter('reader', $reader)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $found !== null;
+    }
+
+    /**
      * Count messages sent within a date range.
      */
     public function countMessagesSince(\DateTimeImmutable $since): int
