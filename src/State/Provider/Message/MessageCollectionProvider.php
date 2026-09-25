@@ -44,8 +44,12 @@ readonly class MessageCollectionProvider implements ProviderInterface
 
         /** @var User $user */
         $user = $this->security->getUser();
+        // 404 rather than 403, matching MessageThreadItemProvider: a 403 confirms to an authenticated
+        // caller that somebody else's thread exists. A Band Space channel reaches this too and has no
+        // participant rows at all, so it is a 404 here for everyone, members included: a channel is
+        // read through the chat endpoints and never through this one (#994).
         if (!$this->threadAccess->isOneOfParticipant($thread, $user)) {
-            throw new AccessDeniedException('Vous n\'êtes pas autorisé à voir ceci.');
+            throw new NotFoundHttpException('Thread not found.');
         }
 
         /** @var TraversablePaginator $paginator */

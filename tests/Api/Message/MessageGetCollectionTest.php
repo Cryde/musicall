@@ -4,6 +4,8 @@ namespace App\Tests\Api\Message;
 
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
+use App\Tests\Factory\BandSpace\BandSpaceFactory;
+use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
 use App\Tests\Factory\Message\MessageFactory;
 use App\Tests\Factory\Message\MessageParticipantFactory;
 use App\Tests\Factory\Message\MessageThreadFactory;
@@ -20,7 +22,11 @@ class MessageGetCollectionTest extends ApiTestCase
     public function test_not_logged(): void
     {
         $this->client->request('GET', '/api/messages/00000000-0000-0000-0000-000000000000',);
+        // The 401 comes from the guard at the top of MessageCollectionProvider, not from the firewall
+        // refusing the route: its AccessDeniedException on an unauthenticated token sends Symfony's
+        // ExceptionListener to the entry point. Measured: drop that guard and this is a 500, not a 404.
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertJsonEquals(['code' => 401, 'message' => 'JWT Token not found']);
     }
 
     public function test_get_collection(): void
@@ -232,8 +238,11 @@ class MessageGetCollectionTest extends ApiTestCase
         $this->assertSame("line one<br />\nline two<br />\nline three", $response['member'][0]['content']);
     }
 
-    public function test_get_collection_but_not_participant(): void
+    public function test_somebody_elses_thread_is_indistinguishable_from_one_that_does_not_exist(): void
     {
+        // It used to answer 403 here and 404 for an id that does not exist, which told an
+        // authenticated caller that somebody else's conversation exists (#993). The body below is
+        // asserted again, character for character, by the three tests that follow.
         $user1 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
         $user2 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_2', 'email' => 'base_user2@email.com']);
         $user3 = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_3', 'email' => 'base_user3@email.com']);
@@ -241,19 +250,120 @@ class MessageGetCollectionTest extends ApiTestCase
         $thread = MessageThreadFactory::new()->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user1])->create();
         MessageParticipantFactory::new(['thread' => $thread, 'participant' => $user2])->create();
+        // So the 404 is withholding something rather than describing an empty thread.
+        MessageFactory::new(['author' => $user1, 'thread' => $thread, 'content' => 'secret'])->create();
 
         $this->client->loginUser($user3); // user3 is not part of this thread
         $this->client->request('GET', '/api/messages/' . $thread->id);
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
         $this->assertJsonEquals([
-            '@id' => '/api/errors/403',
-            '@type' => 'Error',
-            'title'       => 'An error occurred',
-            'description' => 'Vous n\'êtes pas autorisé à voir ceci.',
-            'detail' => 'Vous n\'êtes pas autorisé à voir ceci.',
-            'status' => 403,
-            'type' => '/errors/403',
             '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'description' => 'Thread not found.',
+            'detail' => 'Thread not found.',
+            'status' => 404,
+            'type' => '/errors/404',
+        ]);
+    }
+
+    public function test_a_thread_that_does_not_exist(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/messages/11111111-2222-4333-8444-555555555555');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'description' => 'Thread not found.',
+            'detail' => 'Thread not found.',
+            'status' => 404,
+            'type' => '/errors/404',
+        ]);
+    }
+
+    public function test_a_band_space_channel_is_not_readable_here_by_a_member_of_the_space(): void
+    {
+        // A channel is a MessageThread with no participant rows: its members come from the space
+        // (#959), and #994 settled that they read it through /api/band_spaces/{id}/chat/messages and
+        // never through this route. So this answers 404, the same as any other thread the caller is
+        // not in, which matters more here than for a direct message: a channel id is visible in Band
+        // Space URLs to people who are not in the band.
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@email.com']);
+        $space = BandSpaceFactory::new()->create(['name' => 'Les Trois Accords']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $channel = MessageThreadFactory::new()->forBandSpace($space)->create();
+        MessageFactory::new(['author' => $member, 'thread' => $channel, 'content' => 'on répète mardi'])->create();
+
+        $this->client->loginUser($member);
+        $this->client->request('GET', '/api/messages/' . $channel->id);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'description' => 'Thread not found.',
+            'detail' => 'Thread not found.',
+            'status' => 404,
+            'type' => '/errors/404',
+        ]);
+    }
+
+    public function test_a_band_space_channel_is_not_readable_here_by_somebody_outside_the_space(): void
+    {
+        $outsider = UserFactory::new()->asBaseUser()->create(['username' => 'inconnu', 'email' => 'inconnu@email.com']);
+        $member = UserFactory::new()->asBaseUser()->create(['username' => 'batteur', 'email' => 'batteur@email.com']);
+        $space = BandSpaceFactory::new()->create(['name' => 'Les Trois Accords']);
+        BandSpaceMembershipFactory::new(['bandSpace' => $space, 'user' => $member])->create();
+        $channel = MessageThreadFactory::new()->forBandSpace($space)->create();
+        MessageFactory::new(['author' => $member, 'thread' => $channel, 'content' => 'on répète mardi'])->create();
+
+        $this->client->loginUser($outsider);
+        $this->client->request('GET', '/api/messages/' . $channel->id);
+
+        // Identical to the member's answer above, so the route says nothing about who is in the band.
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'description' => 'Thread not found.',
+            'detail' => 'Thread not found.',
+            'status' => 404,
+            'type' => '/errors/404',
+        ]);
+    }
+
+    public function test_an_id_that_is_not_a_uuid(): void
+    {
+        // Raised by API Platform resolving the uri variable, before the provider runs, so the detail
+        // is not the provider's. It is still a 404, and it is reachable without knowing any id at all,
+        // so it tells a caller nothing they did not already have.
+        $user = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/messages/not-a-uuid');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/404',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'description' => 'Invalid uri variables.',
+            'detail' => 'Invalid uri variables.',
+            'status' => 404,
+            'type' => '/errors/404',
         ]);
     }
 
