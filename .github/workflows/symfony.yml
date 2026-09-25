@@ -59,6 +59,11 @@ jobs:
                   extensions: mbstring, ctype, intl, pdo_mysql, gd, exif, xml
                   coverage: pcov
 
+            # Chat voice notes are converted and measured by ffmpeg and ffprobe (#974). The runner
+            # image does not ship them.
+            - name: Install ffmpeg
+              run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
             # —— Composer ——————————————————————————————————————————————————————————
             - name: Get Composer Cache Directory
               id: composer-cache

@@ -84,6 +84,7 @@ class ChatMessagePinTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
         ]);
     }
 
@@ -130,6 +131,7 @@ class ChatMessagePinTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
         ]);
     }
 
@@ -172,6 +174,7 @@ class ChatMessagePinTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
         ]);
         $unpinned = self::getContainer()->get(MessageRepository::class)->find($message->id);
         $this->assertNull($unpinned->pinnedDatetime);
@@ -221,6 +224,7 @@ class ChatMessagePinTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
         ]);
     }
 
@@ -536,6 +540,7 @@ class ChatMessagePinTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => null,
+            'voice_note' => null,
         ]);
     }
 

@@ -39,7 +39,7 @@ readonly class ChatMessageBuilder
      * three profile tables it drags along (#730) stay out of a fifty-message page. That is the whole
      * reason this builder does not simply take Message entities.
      *
-     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
+     * @param array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}> $rows
      * @param User $viewer who is reading: it decides both the reaction tallies marked as theirs and
      *                     which rows carry their editable content.
      * @param MessageThread $channel the thread these rows come from, which is what the read positions
@@ -66,12 +66,16 @@ readonly class ChatMessageBuilder
         // position is per member, so the rows are compared against each message here rather than
         // asked for again.
         $readPositions = $this->readPositionsForPage($channel, array_column($rows, 'creationDatetime'));
-        // And for the images (#973): one query for whichever files the page's messages carry.
-        $imageFileIds = array_values(array_filter(array_map(
-            static fn (array $row): ?string => $row['imageFileId'] !== null ? (string) $row['imageFileId'] : null,
-            $rows,
-        )));
-        $availableImageFileIds = $this->bandSpaceFileRepository->findLiveIdsAmong($imageFileIds, $bandSpaceId);
+        // And for the media (#973, #974): one query for whichever files the page's messages carry.
+        $mediaFileIds = [];
+        foreach ($rows as $row) {
+            foreach ([$row['imageFileId'], $row['voiceNoteFileId']] as $fileId) {
+                if ($fileId !== null) {
+                    $mediaFileIds[] = (string) $fileId;
+                }
+            }
+        }
+        $liveMediaFileIds = $this->bandSpaceFileRepository->findLiveIdsAmong($mediaFileIds, $bandSpaceId);
 
         return array_map(
             fn (array $row): ChatMessageResource => $this->build(
@@ -93,7 +97,12 @@ readonly class ChatMessageBuilder
                 $row['pinnedByUsername'],
                 $row['pinnedByDeletionDatetime'] !== null,
                 $this->readersOf($readPositions, $row['creationDatetime'], (string) $row['authorId'], $row['deletionDatetime'] !== null),
-                $this->imageOf($row['imageFileId'] !== null ? (string) $row['imageFileId'] : null, $availableImageFileIds),
+                $this->imageOf($row['imageFileId'] !== null ? (string) $row['imageFileId'] : null, $liveMediaFileIds),
+                $this->voiceNoteOf(
+                    $row['voiceNoteFileId'] !== null ? (string) $row['voiceNoteFileId'] : null,
+                    $row['voiceNoteDurationSeconds'],
+                    $liveMediaFileIds,
+                ),
             ),
             $rows,
         );
@@ -106,6 +115,11 @@ readonly class ChatMessageBuilder
     {
         $messageId = (string) $entity->id;
         $imageFileId = $entity->imageFileId !== null ? (string) $entity->imageFileId : null;
+        $voiceNoteFileId = $entity->voiceNoteFileId !== null ? (string) $entity->voiceNoteFileId : null;
+        $liveMediaFileIds = $this->bandSpaceFileRepository->findLiveIdsAmong(
+            array_values(array_filter([$imageFileId, $voiceNoteFileId], static fn (?string $id): bool => $id !== null)),
+            $bandSpaceId,
+        );
 
         return $this->build(
             $messageId,
@@ -131,10 +145,8 @@ readonly class ChatMessageBuilder
                 (string) $entity->author->id,
                 $entity->isDeleted(),
             ),
-            $this->imageOf(
-                $imageFileId,
-                $this->bandSpaceFileRepository->findLiveIdsAmong($imageFileId !== null ? [$imageFileId] : [], $bandSpaceId),
-            ),
+            $this->imageOf($imageFileId, $liveMediaFileIds),
+            $this->voiceNoteOf($voiceNoteFileId, $entity->voiceNoteDurationSeconds, $liveMediaFileIds),
         );
     }
 
@@ -147,6 +159,20 @@ readonly class ChatMessageBuilder
     {
         return $fileId === null ? null : [
             'file_id' => $fileId,
+            'is_available' => in_array($fileId, $availableFileIds, true),
+        ];
+    }
+
+    /**
+     * @param list<string> $availableFileIds the files still live, out of those the page asked about
+     *
+     * @return array{file_id: string, duration_seconds: int, is_available: bool}|null
+     */
+    private function voiceNoteOf(?string $fileId, ?int $durationSeconds, array $availableFileIds): ?array
+    {
+        return $fileId === null ? null : [
+            'file_id' => $fileId,
+            'duration_seconds' => $durationSeconds ?? 0,
             'is_available' => in_array($fileId, $availableFileIds, true),
         ];
     }
@@ -212,6 +238,7 @@ readonly class ChatMessageBuilder
      * @param list<array{type: string, target_id: string, label: string, is_available: bool}> $attachments
      * @param list<string> $readByUsernames
      * @param array{file_id: string, is_available: bool}|null $image
+     * @param array{file_id: string, duration_seconds: int, is_available: bool}|null $voiceNote
      */
     private function build(
         string $id,
@@ -233,6 +260,7 @@ readonly class ChatMessageBuilder
         bool $pinnedByIsDeleted = false,
         array $readByUsernames = [],
         ?array $image = null,
+        ?array $voiceNote = null,
     ): ChatMessageResource {
         $dto = new ChatMessageResource();
         $dto->id = $id;
@@ -268,6 +296,7 @@ readonly class ChatMessageBuilder
         // Counted from the list rather than queried, so the two cannot disagree.
         $dto->readCount = count($readByUsernames);
         $dto->image = $image;
+        $dto->voiceNote = $voiceNote;
 
         return $dto;
     }

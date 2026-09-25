@@ -16,7 +16,8 @@ use App\Entity\User;
 use App\Event\BandSpaceChatMentionedEvent;
 use App\Repository\Message\MessageThreadRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
-use App\Service\BandSpace\Chat\ChatImageStore;
+use App\Service\BandSpace\Chat\ChatMediaStore;
+use App\Service\BandSpace\Chat\StoredVoiceNote;
 use App\Service\BandSpace\ChatMentionResolver;
 use App\Service\Builder\BandSpace\ChatMessageBuilder;
 use App\Service\Message\MessageAttachmentResolver;
@@ -43,7 +44,7 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         private ChatMessageBuilder $chatMessageBuilder,
         private ChatMentionResolver $chatMentionResolver,
         private MessageAttachmentResolver $messageAttachmentResolver,
-        private ChatImageStore $chatImageStore,
+        private ChatMediaStore $chatMediaStore,
         private EntityManagerInterface $entityManager,
         private EventDispatcherInterface $eventDispatcher,
         private LoggerInterface $logger,
@@ -79,8 +80,22 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
         }
 
         $content = $this->contentOf($data);
-        $image = $data->image instanceof File ? $this->chatImageStore->store($data->image, $bandSpace, $user) : null;
-        $message = $this->sendMessage($channel, $user, $content, $image);
+        $image = $data->image instanceof File ? $this->chatMediaStore->storeImage($data->image, $bandSpace, $user) : null;
+        $voiceNote = $data->voiceNote instanceof File ? $this->chatMediaStore->storeVoiceNote($data->voiceNote, $bandSpace, $user) : null;
+        $media = $image ?? $voiceNote?->file;
+        $message = $this->sendMessage($channel, $user, $content, $media);
+
+        // Set before attachMedia(), whose flush writes them along with the attachment row.
+        if ($image instanceof BandSpaceFile) {
+            $message->imageFileId = (string) $image->id;
+        }
+        if ($voiceNote instanceof StoredVoiceNote) {
+            $message->voiceNoteFileId = (string) $voiceNote->file->id;
+            $message->voiceNoteDurationSeconds = $voiceNote->durationSeconds;
+        }
+        if ($media instanceof BandSpaceFile) {
+            $this->attachMedia($media, $message, $user);
+        }
 
         $mentionedUsers = $this->chatMentionResolver->resolve($bandSpace, $content);
         $this->recordMentions($message, $mentionedUsers);
@@ -97,51 +112,45 @@ readonly class ChatMessagePostProcessor implements ProcessorInterface
     }
 
     /**
-     * The image is already stored at this point, so a message that could not be sent takes it back
+     * The media is already stored at this point, so a message that could not be sent takes it back
      * out: otherwise it would sit in the Files root, attached to nothing.
      */
-    private function sendMessage(MessageThread $channel, User $user, string $content, ?BandSpaceFile $image): Message
+    private function sendMessage(MessageThread $channel, User $user, string $content, ?BandSpaceFile $media): Message
     {
         try {
-            $message = $this->messageSenderProcedure->processByThread($channel, $user, $content);
+            return $this->messageSenderProcedure->processByThread($channel, $user, $content);
         } catch (\Throwable $e) {
-            if ($image instanceof BandSpaceFile) {
-                $this->discardQuietly($image);
+            if ($media instanceof BandSpaceFile) {
+                $this->discardQuietly($media);
             }
             throw $e;
         }
-
-        if ($image instanceof BandSpaceFile) {
-            $this->attachImage($image, $message, $user);
-        }
-
-        return $message;
     }
 
     /**
      * Best-effort for the reason recordMentions() gives: the message is already committed, so a 500
-     * here would invite a duplicate. The image then goes, rather than lingering unattached in Files.
+     * here would invite a duplicate. The media then goes, rather than lingering unattached in Files.
      */
-    private function attachImage(BandSpaceFile $image, Message $message, User $user): void
+    private function attachMedia(BandSpaceFile $media, Message $message, User $user): void
     {
         try {
-            $this->chatImageStore->attachToMessage($image, $message, $user);
+            $this->chatMediaStore->attachToMessage($media, $message, $user);
         } catch (\Throwable $e) {
-            $this->logger->error('Could not attach the image of a chat message, it will render without it', [
+            $this->logger->error('Could not attach the media of a chat message, it will render without it', [
                 'message_id' => (string) $message->id,
-                'file_id' => (string) $image->id,
+                'file_id' => (string) $media->id,
                 'exception' => $e,
             ]);
-            $this->discardQuietly($image);
+            $this->discardQuietly($media);
         }
     }
 
-    private function discardQuietly(BandSpaceFile $image): void
+    private function discardQuietly(BandSpaceFile $media): void
     {
         try {
-            $this->chatImageStore->discard($image);
+            $this->chatMediaStore->discard($media);
         } catch (\Throwable $e) {
-            $this->logger->error('Could not discard an unattached chat image', ['file_id' => (string) $image->id, 'exception' => $e]);
+            $this->logger->error('Could not discard unattached chat media', ['file_id' => (string) $media->id, 'exception' => $e]);
         }
     }
 

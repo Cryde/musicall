@@ -416,6 +416,7 @@ class ChatMessageReadReceiptTest extends ApiTestCase
             'read_by_usernames' => $readByUsernames,
             'read_count' => $readCount,
             'image' => null,
+            'voice_note' => null,
         ];
     }
 

@@ -86,6 +86,18 @@ class Message
         }
     }
 
+    /** The band space file holding the voice note this message carries (#974), no foreign key either. */
+    #[ORM\Column(type: 'uuid', nullable: true)]
+    public UuidInterface|string|null $voiceNoteFileId = null {
+        get {
+            return is_string($this->voiceNoteFileId) ? $this->voiceNoteFileId : $this->voiceNoteFileId?->toString();
+        }
+    }
+
+    /** Measured by ffprobe on the stored file: a MediaRecorder WebM carries no duration of its own. */
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    public ?int $voiceNoteDurationSeconds = null;
+
     public function __construct()
     {
         $this->creationDatetime = new DateTime();

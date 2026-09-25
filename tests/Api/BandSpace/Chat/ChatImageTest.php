@@ -426,7 +426,7 @@ class ChatImageTest extends ApiTestCase
     }
 
     /**
-     * What ChatImageStore leaves behind, seeded directly: the file, its version, its `message`
+     * What ChatMediaStore leaves behind, seeded directly: the file, its version, its `message`
      * attachment, the message pointing back at it, and the bytes in storage.
      *
      * @return array{BandSpaceFile, Message}
@@ -501,6 +501,7 @@ class ChatImageTest extends ApiTestCase
             'read_by_usernames' => [],
             'read_count' => 0,
             'image' => $image,
+            'voice_note' => null,
         ];
 
         return $withContext ? ['@context' => '/api/contexts/ChatMessage'] + $expected : $expected;

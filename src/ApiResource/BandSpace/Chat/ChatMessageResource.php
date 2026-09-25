@@ -125,6 +125,15 @@ class ChatMessageResource
      */
     public ?array $image = null;
 
+    /**
+     * The voice note this message carries (#974), null when it carries none:
+     * `{"file_id": "<uuid>", "duration_seconds": 42, "is_available": true}`. The duration is the
+     * server's measurement, so the player can show it before a byte of audio has loaded.
+     *
+     * @var array{file_id: string, duration_seconds: int, is_available: bool}|null
+     */
+    public ?array $voiceNote = null;
+
     /** Null until the author edits it, which is what the « modifié » marker reads (#966). */
     public ?DateTimeInterface $updateDatetime = null;
 

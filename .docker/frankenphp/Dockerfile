@@ -10,9 +10,11 @@ RUN install-php-extensions \
 
 # Not PHP extensions, so install-php-extensions cannot supply them:
 #  - icu-data-full: Alpine ships English-only ICU data, intl would format French dates as English
+#  - ffmpeg: converts chat voice notes to AAC and measures them with ffprobe (#974)
 #  - jpegoptim / optipng: LiipImagine post-processors, see config/packages/liip_imagine.yaml
 #  - shadow: usermod and groupmod for the UID remap below
 RUN apk add --no-cache \
+    ffmpeg \
     shadow \
     icu-data-full \
     jpegoptim \

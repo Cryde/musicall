@@ -15,6 +15,10 @@
       {{ attachmentError }}
     </Message>
 
+    <Message v-if="recorder.error.value" severity="warn" :closable="false" class="mb-2">
+      {{ recorder.error.value }}
+    </Message>
+
     <div v-if="image" class="relative mb-2 inline-block">
       <img
         :src="image.previewUrl"
@@ -40,7 +44,33 @@
       @remove="removeAttachment"
     />
 
-    <div class="flex gap-2 items-end">
+    <!-- While recording, the row is the recording: nothing else can be added to a voice note (#974). -->
+    <div v-if="recorder.isRecording.value" class="flex gap-2 items-center" role="status">
+      <Button
+        icon="pi pi-trash"
+        severity="secondary"
+        outlined
+        aria-label="Annuler la note vocale"
+        @click="recorder.cancel()"
+      />
+      <div class="flex flex-1 items-center gap-2 rounded-md border border-surface-200 dark:border-surface-700 px-3 py-2 text-sm">
+        <span class="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-red-600" aria-hidden="true" />
+        <span>Enregistrement</span>
+        <span class="tabular-nums text-surface-600 dark:text-surface-300">
+          {{ formatVoiceNoteDuration(recorder.elapsedSeconds.value) }} /
+          {{ formatVoiceNoteDuration(MAX_VOICE_NOTE_SECONDS) }}
+        </span>
+      </div>
+      <Button
+        icon="pi pi-send"
+        aria-label="Envoyer la note vocale"
+        :loading="isSending"
+        :disabled="isSending"
+        @click="stopAndSendVoiceNote"
+      />
+    </div>
+
+    <div v-else class="flex gap-2 items-end">
       <Button
         v-if="canAttach"
         icon="pi pi-paperclip"
@@ -80,7 +110,16 @@
         :disabled="isSending"
         @submit="send"
       />
+      <!-- Offered on an empty draft only, as on every messaging app: a voice note goes alone. -->
       <Button
+        v-if="canRecord && !canSend"
+        icon="pi pi-microphone"
+        aria-label="Enregistrer une note vocale"
+        :disabled="isSending"
+        @click="recorder.start()"
+      />
+      <Button
+        v-else
         icon="pi pi-send"
         aria-label="Envoyer le message"
         :loading="isSending"
@@ -103,6 +142,7 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { useVoiceRecorder } from '../../../composables/useVoiceRecorder.js'
 import { EVERYONE_MEMBER } from '../../../constants/chatMention.js'
 import {
   addToDraft,
@@ -116,6 +156,11 @@ import {
   firstImageAmong,
   imageRefusalFor
 } from '../../../utils/chatImageDraft.js'
+import {
+  formatVoiceNoteDuration,
+  MAX_VOICE_NOTE_SECONDS,
+  recordingExtension
+} from '../../../utils/chatVoiceNote.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import ChatAttachmentPicker from './ChatAttachmentPicker.vue'
 import ChatComposerAttachments from './ChatComposerAttachments.vue'
@@ -157,6 +202,9 @@ const attachmentError = ref('')
 const isPickerVisible = ref(false)
 
 const canAttach = computed(() => !!props.bandSpaceId)
+
+const recorder = useVoiceRecorder({ onLimitReached: sendVoiceNote })
+const canRecord = computed(() => canAttach.value && recorder.isSupported.value)
 const pickedIds = computed(() => draftIdentifiers(attachments.value))
 
 const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
@@ -226,21 +274,15 @@ function handleImagePicked(event) {
 onBeforeUnmount(removeImage)
 
 async function send() {
-  const message = content.value
   if (!canSend.value || props.isSending) {
     return
   }
 
-  sendError.value = ''
-  attachmentError.value = ''
-  let wasSent = false
-
-  try {
-    await props.sendMessage(message, pickedIds.value, image.value?.file ?? null)
-    wasSent = true
-  } catch (e) {
-    sendError.value = errorMessageFor(e)
-  }
+  const wasSent = await deliver(
+    content.value,
+    pickedIds.value,
+    image.value ? { image: image.value.file } : null
+  )
 
   // The text, the references and the image leave together and stay together: a failure keeps them
   // all, so the retry is one click rather than a search for each object again.
@@ -253,6 +295,38 @@ async function send() {
   removeImage()
   emit('sent')
   nextTick(() => composer.value?.focus())
+}
+
+async function stopAndSendVoiceNote() {
+  const recording = await recorder.stop()
+  if (recording) {
+    await sendVoiceNote(recording)
+  }
+}
+
+/** A failure loses the recording, which a retry could not resend anyway once the recorder is gone. */
+async function sendVoiceNote(recording) {
+  const voiceNote = new File([recording], `note-vocale.${recordingExtension(recording.type)}`, {
+    type: recording.type
+  })
+
+  if (await deliver('', [], { voiceNote })) {
+    emit('sent')
+  }
+}
+
+/** @returns {Promise<boolean>} whether the message went out */
+async function deliver(message, attachmentIds, media) {
+  sendError.value = ''
+  attachmentError.value = ''
+
+  try {
+    await props.sendMessage(message, attachmentIds, media)
+    return true
+  } catch (e) {
+    sendError.value = errorMessageFor(e)
+    return false
+  }
 }
 
 /**
