@@ -15,7 +15,19 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
   let songsRequestId = 0
   let archivedRequestId = 0
 
-  async function fetchSongs(bandSpaceId) {
+  // The page and the repertoire both load the songs when they mount, in the same tick: one request serves both.
+  let songsInFlight = null
+
+  function fetchSongs(bandSpaceId) {
+    if (songsInFlight?.bandSpaceId === bandSpaceId) return songsInFlight.promise
+    const promise = loadSongs(bandSpaceId).finally(() => {
+      if (songsInFlight?.promise === promise) songsInFlight = null
+    })
+    songsInFlight = { bandSpaceId, promise }
+    return promise
+  }
+
+  async function loadSongs(bandSpaceId) {
     const requestId = ++songsRequestId
     isLoading.value = songs.value.length === 0
     loadError.value = null
@@ -79,14 +91,24 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
    */
   async function deleteSong(bandSpaceId, songId) {
     await bandSpaceSongsApi.deleteSong(bandSpaceId, songId)
-    const archived = songs.value.find((s) => s.id === songId)
-    songs.value = songs.value.filter((s) => s.id !== songId)
-    if (archived) {
-      archivedSongs.value = [
-        ...archivedSongs.value,
-        { ...archived, archive_datetime: new Date().toISOString() }
-      ].sort((a, b) => a.title.localeCompare(b.title))
-    }
+    moveToTrash([songId])
+  }
+
+  async function archiveSongs(bandSpaceId, songIds) {
+    await bandSpaceSongsApi.archiveSongs(bandSpaceId, songIds)
+    moveToTrash(songIds)
+  }
+
+  function moveToTrash(songIds) {
+    const ids = new Set(songIds)
+    const archivedAt = new Date().toISOString()
+    const moved = songs.value
+      .filter((s) => ids.has(s.id))
+      .map((s) => ({ ...s, archive_datetime: archivedAt }))
+    songs.value = songs.value.filter((s) => !ids.has(s.id))
+    archivedSongs.value = [...archivedSongs.value, ...moved].sort((a, b) =>
+      a.title.localeCompare(b.title)
+    )
   }
 
   async function restoreSong(bandSpaceId, songId) {
@@ -116,6 +138,7 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
     updateSong,
     refreshSong,
     deleteSong,
+    archiveSongs,
     restoreSong,
     clear
   }

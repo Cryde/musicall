@@ -41,6 +41,17 @@ export default {
       .catch(handleApiError)
   },
 
+  /** Several titles to the trash at once (#1063). */
+  archiveSongs(bandSpaceId, songIds) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_songs_archive_bulk', { bandSpaceId }),
+        { song_ids: songIds },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .catch(handleApiError)
+  },
+
   /** Soft delete: the title moves to the trash, it is not destroyed. */
   deleteSong(bandSpaceId, songId) {
     return axios

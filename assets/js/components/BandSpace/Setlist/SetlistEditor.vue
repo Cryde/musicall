@@ -70,7 +70,7 @@
               severity="secondary"
               size="small"
               aria-label="Plus d’actions : fichiers, dupliquer, archiver"
-              aria-haspopup="true"
+              aria-haspopup="menu"
               @click="setlistMenu?.toggle($event)"
             />
           </div>
@@ -153,7 +153,7 @@
             rounded
             size="small"
             aria-label="Choisir les colonnes"
-            aria-haspopup="true"
+            aria-haspopup="menu"
             v-tooltip.top="'Colonnes'"
             @click="columnsPopover?.toggle($event)"
           />

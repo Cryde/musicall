@@ -77,4 +77,37 @@ class SetlistItemRepository extends ServiceEntityRepository
             ['ids' => \Doctrine\DBAL\ArrayParameterType::STRING]
         );
     }
+
+    /**
+     * The live setlists each of these songs is in, by name (#1063), in one query for a whole
+     * repertoire. A song in no live setlist is absent; the trash does not count as playing it.
+     *
+     * @param list<string> $songIds
+     *
+     * @return array<string, list<array{id: string, name: string}>> keyed by song id
+     */
+    public function findLiveSetlistsBySongIds(array $songIds): array
+    {
+        if ($songIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('i')
+            ->select('IDENTITY(i.song) AS songId', 's.id AS setlistId', 's.name AS name')
+            ->distinct()
+            ->innerJoin('i.setlist', 's')
+            ->where('i.song IN (:songIds)')
+            ->andWhere('s.archiveDatetime IS NULL')
+            ->setParameter('songIds', $songIds)
+            ->orderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $bySong = [];
+        foreach ($rows as $row) {
+            $bySong[(string) $row['songId']][] = ['id' => (string) $row['setlistId'], 'name' => (string) $row['name']];
+        }
+
+        return $bySong;
+    }
 }

@@ -70,6 +70,7 @@ class SongRestoreTest extends ApiTestCase
             'reference_duration' => 210,
             'notes' => null,
             'has_lyrics' => false,
+            'setlists' => [],
             'archive_datetime' => null,
             'creation_datetime' => $song->creationDatetime->format(DateTimeInterface::ATOM),
             'update_datetime' => null,

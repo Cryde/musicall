@@ -16,7 +16,7 @@
         icon="pi pi-copy"
         severity="secondary"
         size="small"
-        aria-haspopup="true"
+        aria-haspopup="menu"
         aria-controls="setlist-copy-sources"
         :loading="busy === 'copy'"
         :disabled="busy !== null"
