@@ -7,6 +7,12 @@ import {
   toggledReactions
 } from '../../utils/chatReactionToggle.js'
 import {
+  activeTypists,
+  createTypingNotifier,
+  withoutTypist,
+  withTypist
+} from '../../utils/chatTyping.js'
+import {
   isHeld,
   mayMergeNewestPage,
   paneAfterWindow,
@@ -316,6 +322,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
 
     try {
       const message = await bandSpaceChatApi.postMessage(bandSpaceId, content, attachments, media)
+      typingNotifier.reset()
       // Written from a window far up the history: appending it there would open a gap between the
       // window and today. The member wrote it, so they mean to see it, where it really is.
       if (!isAtTail.value) {
@@ -558,6 +565,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     }
 
     await loadMessages(openId, { silent: true })
+    // A real arrival only: a reconnect resyncs the same newest message, whose author may be writing again.
+    if (bandSpaceId !== null) forgetTypistOf(messages.value.at(-1))
 
     // Arriving while the tab is in front is reading it, the same rule the inbox uses. In a background
     // tab nobody has seen it, and marking it read would make the badge lie.
@@ -675,7 +684,63 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     return new Set([...pendingReactions.value].map((key) => key.split(':')[0]))
   }
 
+  // --- « X écrit… » (#1040) ------------------------------------------------------------------------
+
+  // User id to the moment they stop showing. A clock ticks while anybody is typing so they fade out on
+  // time with no stop signal, and stops once nobody is.
+  const typists = ref({})
+  const typingClock = ref(Date.now())
+  let typingTimer = null
+
+  const currentTypists = computed(() => activeTypists(typists.value, typingClock.value))
+
+  function handleTyping({ bandSpaceId, userId }) {
+    if (!bandSpaceId || bandSpaceId !== openBandSpaceId.value) {
+      return
+    }
+    typingClock.value = Date.now()
+    typists.value = withTypist(typists.value, userId, typingClock.value)
+    if (typingTimer === null) {
+      typingTimer = setInterval(tickTyping, 1000)
+    }
+  }
+
+  function tickTyping() {
+    typingClock.value = Date.now()
+    if (activeTypists(typists.value, typingClock.value).length === 0) {
+      stopTyping()
+    }
+  }
+
+  function stopTyping() {
+    clearInterval(typingTimer)
+    typingTimer = null
+    typists.value = {}
+  }
+
+  /** Their message has landed, so they are no longer writing it. */
+  function forgetTypistOf(message) {
+    if (message?.author_id && typists.value[message.author_id]) {
+      typists.value = withoutTypist(typists.value, message.author_id)
+    }
+  }
+
+  // Best effort: a lost signal only means nobody sees « écrit… » for three seconds.
+  const typingNotifier = createTypingNotifier({
+    send: () => {
+      if (!openBandSpaceId.value) return false
+      bandSpaceChatApi.sendTyping(openBandSpaceId.value).catch(() => {})
+      return true
+    }
+  })
+
+  function notifyTyping() {
+    typingNotifier.notify()
+  }
+
   function clear() {
+    stopTyping()
+    typingNotifier.reset()
     // A refetch gathered for the pane being left would otherwise land in whatever is opened next.
     readReceiptRefresh.cancel()
     messageChangeRefresh.cancel()
@@ -745,6 +810,9 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     handleIncomingMessage,
     handleChatRead,
     handleMessageChanged,
+    handleTyping,
+    notifyTyping,
+    currentTypists,
     clear
   }
 })

@@ -75,6 +75,13 @@ export default {
       .catch(handleApiError)
   },
 
+  /** « I am writing » (#1040); throttled by the caller, see createTypingNotifier(). */
+  sendTyping(bandSpaceId) {
+    return axios
+      .post(Routing.generate('api_band_space_chat_typing', { bandSpaceId }))
+      .catch(handleApiError)
+  },
+
   markAsRead(bandSpaceId) {
     return axios
       .post(Routing.generate('api_band_space_chat_read', { bandSpaceId }))

@@ -44,6 +44,11 @@
       :members="settingsStore.members"
     />
 
+    <!-- Always in the page, so a screen reader hears it change; polite, so it never cuts in. -->
+    <p class="min-h-5 m-0 px-4 text-xs italic text-surface-600 dark:text-surface-300" aria-live="polite">
+      {{ typingText }}
+    </p>
+
     <ChatComposer
       :members="settingsStore.members"
       :band-space-id="bandSpaceId"
@@ -53,6 +58,7 @@
       "
       :is-sending="chatStore.isSending"
       @sent="messageList?.scrollToBottom()"
+      @typing="chatStore.notifyTyping()"
     />
   </div>
 </template>
@@ -61,13 +67,14 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import { onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
 import ChatPinnedBar from '../../components/BandSpace/Chat/ChatPinnedBar.vue'
 import { useBandSpaceChatStore } from '../../store/bandSpace/bandSpaceChat.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
+import { typingSentence, typistNames } from '../../utils/chatTyping.js'
 
 const route = useRoute()
 // Read once: AppBandLayout keys <router-view> on the space id, so this view is remounted rather than
@@ -122,4 +129,8 @@ watch(
 
 onMounted(load)
 onUnmounted(() => chatStore.clear())
+
+const typingText = computed(() =>
+  typingSentence(typistNames(chatStore.currentTypists, settingsStore.members))
+)
 </script>
