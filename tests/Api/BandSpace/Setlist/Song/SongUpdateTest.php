@@ -233,4 +233,75 @@ class SongUpdateTest extends ApiTestCase
         $stored = self::getContainer()->get(SongRepository::class)->find($songId);
         $this->assertSame('Retirée du répertoire', $stored?->title);
     }
+
+    /** A save that changes nothing is not an edit (#1069): no new date, nothing in the feed. */
+    public function test_a_patch_that_changes_nothing_records_nothing(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Neon Tide', 'tempo' => 132, 'tonality' => 'Bm', 'referenceDuration' => 232, 'notes' => null])->create();
+        $songId = (string) $song->id;
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $songId,
+            ['tempo' => 132],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Song',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $songId,
+            '@type' => 'Song',
+            'id' => $songId,
+            'band_space_id' => (string) $bandSpace->id,
+            'title' => 'Neon Tide',
+            'tempo' => 132,
+            'tonality' => 'Bm',
+            'reference_duration' => 232,
+            'notes' => null,
+            'has_lyrics' => false,
+            'setlists' => [],
+            'archive_datetime' => null,
+            'creation_datetime' => $song->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+        ]);
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)->findForResource($bandSpace, BandSpaceModule::Setlist, $songId);
+        $this->assertCount(0, $activities);
+    }
+
+    /** One field per save from the drawer: a member filling a song in is one entry in the feed. */
+    public function test_repeated_edits_by_the_same_member_are_one_entry(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Neon Tide'])->create();
+        $songId = (string) $song->id;
+        \App\Tests\Factory\BandSpace\BandSpaceActivityFactory::new([
+            'bandSpace' => $bandSpace,
+            'module' => BandSpaceModule::Setlist,
+            'type' => 'song_updated',
+            'resourceId' => \Ramsey\Uuid\Uuid::fromString($songId),
+            'actor' => $user,
+            'creationDatetime' => new \DateTime('-2 minutes'),
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'PATCH',
+            '/api/band_spaces/' . $bandSpace->id . '/songs/' . $songId,
+            ['tonality' => 'Bm'],
+            ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseIsSuccessful();
+        $activities = self::getContainer()->get(BandSpaceActivityRepository::class)->findForResource($bandSpace, BandSpaceModule::Setlist, $songId);
+        $this->assertCount(1, $activities);
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertSame('Bm', self::getContainer()->get(SongRepository::class)->find($songId)->tonality);
+    }
 }
