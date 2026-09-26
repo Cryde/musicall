@@ -13,6 +13,7 @@
  * @param {(threadId: string | null) => unknown} handlers.inboxMessage
  * @param {(bandSpaceId: string | null) => unknown} handlers.chatMessage
  * @param {(bandSpaceId: string) => unknown} handlers.chatRead
+ * @param {(change: {bandSpaceId: string, messageId: string, change: string}) => unknown} handlers.chatMessageChanged
  */
 export function routeLiveSignal(payload, handlers) {
   const type = payload?.type ?? null
@@ -41,5 +42,14 @@ export function routeLiveSignal(payload, handlers) {
   // a reconnect either, which already refetches the chat through the message branch above.
   if (type === 'band_space_chat_read' && payload.band_space_id) {
     handlers.chatRead(payload.band_space_id)
+  }
+  // A message on screen changed in place: a reaction, an edit, a delete, a pin (#1056). Like a read,
+  // nothing here touches a badge or marks anything read, since none of it is new content.
+  if (type === 'band_space_message_changed' && payload.band_space_id && payload.message_id) {
+    handlers.chatMessageChanged({
+      bandSpaceId: payload.band_space_id,
+      messageId: payload.message_id,
+      change: payload.change ?? null
+    })
   }
 }

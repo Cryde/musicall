@@ -8,6 +8,8 @@ use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\Message\Message;
 use App\Entity\User;
 use App\Enum\BandSpace\Role;
+use App\Enum\Message\MessageChange;
+use App\Event\BandSpaceChatMessageChangedEvent;
 use App\Repository\BandSpace\BandSpaceFileRepository;
 use App\Repository\Message\MessageAttachmentRepository;
 use App\Repository\Message\MessageMentionRepository;
@@ -19,6 +21,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Deleting a chat message: the author's own, or anybody's for an administrator (#967).
@@ -41,6 +44,7 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
         private ChatMediaStore $chatMediaStore,
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -96,6 +100,9 @@ readonly class ChatMessageDeleteProcessor implements ProcessorInterface
                 $this->discardQuietly($media, $message);
             }
         }
+
+        // Last, so the refetch it triggers finds the attachments and the media gone as well.
+        $this->eventDispatcher->dispatch(new BandSpaceChatMessageChangedEvent($message, MessageChange::Delete));
     }
 
     /**

@@ -7,6 +7,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\Message\Message;
 use App\Entity\User;
+use App\Enum\Message\MessageChange;
+use App\Event\BandSpaceChatMessageChangedEvent;
 use App\Repository\Message\MessageRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\Builder\BandSpace\ChatMessageBuilder;
@@ -15,6 +17,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<mixed, ChatMessageResource>
@@ -32,6 +35,7 @@ readonly class ChatMessagePinProcessor implements ProcessorInterface
         private MessageRepository $messageRepository,
         private ChatMessageBuilder $chatMessageBuilder,
         private EntityManagerInterface $entityManager,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -58,11 +62,17 @@ readonly class ChatMessagePinProcessor implements ProcessorInterface
         // Already pinned is a no-op rather than a conflict: two members reaching for the same message
         // both meant "keep this at the top", and re-stamping it would rewrite who pinned it and move
         // it to the front of the bar for no reason.
-        if ($message->pinnedDatetime === null) {
+        $isNewPin = $message->pinnedDatetime === null;
+        if ($isNewPin) {
             $this->pin($message, $user);
         }
 
-        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
+        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
+        if ($isNewPin) {
+            $this->eventDispatcher->dispatch(new BandSpaceChatMessageChangedEvent($message, MessageChange::Pin));
+        }
+
+        return $result;
     }
 
     private function pin(Message $message, User $user): void
