@@ -128,4 +128,25 @@ class BandSpaceNoteRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette recents (#1046): the most recently created or edited, newest first. DQL takes no
+     * expression in ORDER BY, hence the hidden select.
+     *
+     * @return BandSpaceNote[]
+     */
+    public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
+    {
+        return $this->createQueryBuilder('n')
+            ->addSelect('p')
+            ->leftJoin('n.parent', 'p')
+            ->addSelect('COALESCE(n.updateDatetime, n.creationDatetime) AS HIDDEN recency')
+            ->where('n.bandSpace = :bandSpace')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('n.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -8,7 +8,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
+use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\State\Provider\BandSpace\BandSpaceSearchProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     shortName: 'BandSpaceSearchResult',
@@ -25,6 +27,11 @@ use App\State\Provider\BandSpace\BandSpaceSearchProvider;
             provider: BandSpaceSearchProvider::class,
             parameters: [
                 'q' => new QueryParameter(key: 'q'),
+                // One kind only (#1046): with a query, up to 20 hits of it; without one, its 5 most
+                // recently created or edited items.
+                'type' => new QueryParameter(key: 'type', constraints: [
+                    new Assert\Choice(callback: [BandSpaceSearchResultType::class, 'values'], message: 'Type de résultat inconnu'),
+                ]),
             ],
         ),
     ],

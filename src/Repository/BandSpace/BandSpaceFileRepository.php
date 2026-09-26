@@ -6,6 +6,8 @@ use App\Entity\BandSpace\BandSpace;
 use App\Entity\BandSpace\BandSpaceFile;
 use App\Entity\BandSpace\BandSpaceFolder;
 use App\Repository\BandSpace\Filter\BandSpaceFileFilter;
+use App\Entity\BandSpace\BandSpaceFileAttachment;
+use App\Service\BandSpace\File\BandSpaceFileSourceTypes;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -353,6 +355,34 @@ class BandSpaceFileRepository extends ServiceEntityRepository
             ->setParameter('bandSpace', $bandSpace)
             ->setParameter('search', '%' . $search . '%')
             ->orderBy('bsf.originalName', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Command palette recents (#1046): the most recently created or edited, newest first. DQL takes no
+     * expression in ORDER BY, hence the hidden select.
+     *
+     * Chat images and voice notes are left out (#973, #974): every message carrying one adds a file,
+     * so after any conversation they would fill every slot, and they are reached from the chat and the
+     * « Chat » folder anyway. They stay findable by name through search.
+     *
+     * @return BandSpaceFile[]
+     */
+    public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
+    {
+        return $this->createQueryBuilder('bsf')
+            ->addSelect('f')
+            ->leftJoin('bsf.folder', 'f')
+            ->addSelect('COALESCE(bsf.updateDatetime, bsf.creationDatetime) AS HIDDEN recency')
+            ->where('bsf.bandSpace = :bandSpace')
+            ->andWhere('bsf.archiveDatetime IS NULL')
+            ->andWhere('NOT EXISTS (SELECT 1 FROM ' . BandSpaceFileAttachment::class . ' chatMedia WHERE chatMedia.bandSpaceFile = bsf AND chatMedia.sourceType = :chatMessage)')
+            ->setParameter('chatMessage', BandSpaceFileSourceTypes::CHAT_MESSAGE)
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('bsf.id', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

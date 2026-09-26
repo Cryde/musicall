@@ -41,6 +41,9 @@
 
       <BandSpaceSearchResults
         :groups="groups"
+        :recents="recents"
+        :is-loading-recents="isLoadingRecents"
+        :selected-type="selectedType"
         :active-result="activeResult"
         :query="query"
         :is-searching="isSearching"
@@ -53,6 +56,7 @@
         picked-label="Joint"
         @select="pick"
         @activate="setActiveResult"
+        @toggle-type="toggleType"
       />
     </div>
 
@@ -109,12 +113,16 @@ const {
   flatResults,
   groups,
   hasSearched,
+  isLoadingRecents,
   isSearching,
   moveActive,
   query,
+  recents,
   reset,
   searchError,
-  setActiveResult
+  selectedType,
+  setActiveResult,
+  toggleType
 } = useBandSpaceSearch(() => props.bandSpaceId, listboxId)
 
 const isFull = computed(() => props.pickedIds.length >= MAX_CHAT_ATTACHMENTS)

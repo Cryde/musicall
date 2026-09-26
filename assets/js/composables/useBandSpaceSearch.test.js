@@ -36,13 +36,17 @@ function wait(ms) {
 
 /** Every term the composable actually asked the server for, in order. */
 let askedFor = []
+/** The kind sent with each of those calls, null for every kind. */
+let askedForType = []
 
 beforeEach(() => {
   askedFor = []
-  bandSpaceSearchApi.search = async (_bandSpaceId, term) => {
+  askedForType = []
+  bandSpaceSearchApi.search = async (_bandSpaceId, term, type = null) => {
     askedFor.push(term)
+    askedForType.push(type)
 
-    return [hit('task', term)]
+    return term === '' ? [hit('song', 'recent'), hit('task', 'recent')] : [hit('task', term)]
   }
 })
 
@@ -57,7 +61,8 @@ describe('useBandSpaceSearch', () => {
     state.query.value = 'a'.repeat(MIN_SEARCH_QUERY_LENGTH - 1)
     await wait(PAST_DEBOUNCE_MS)
 
-    assert.deepEqual(askedFor, [])
+    // Only the recents, which an empty or short box shows (#1046): never the short term itself.
+    assert.deepEqual(askedFor, [''])
     assert.deepEqual(state.groups.value, [])
     assert.equal(state.hasSearched.value, false)
     assert.equal(state.isSearching.value, false)
@@ -221,5 +226,76 @@ describe('useBandSpaceSearch', () => {
 
     assert.deepEqual(state.groups.value, [])
     assert.equal(state.hasSearched.value, false)
+  })
+})
+
+describe('useBandSpaceSearch recents and kind filter (#1046)', () => {
+  it('opens on the recent items, flat and in the order the server sent them', async () => {
+    const state = search()
+
+    state.reset()
+    await wait(10)
+
+    assert.deepEqual(askedFor, [''])
+    assert.deepEqual(
+      state.flatResults.value.map((result) => result.id),
+      ['song-recent', 'task-recent']
+    )
+    assert.equal(state.activeResult.value?.id, 'song-recent')
+  })
+
+  it('reloads the recents of the picked kind while nothing is typed', async () => {
+    const state = search()
+
+    state.toggleType('song')
+    await wait(10)
+
+    assert.deepEqual(askedFor, [''])
+    assert.deepEqual(askedForType, ['song'])
+    assert.equal(state.selectedType.value, 'song')
+  })
+
+  it('searches again straight away, for the picked kind only, once a term is typed', async () => {
+    const state = search()
+    state.query.value = 'mix'
+    await wait(PAST_DEBOUNCE_MS)
+
+    state.toggleType('task')
+    await wait(10)
+
+    assert.deepEqual(askedFor, ['mix', 'mix'])
+    assert.deepEqual(askedForType, [null, 'task'])
+  })
+
+  it('goes back to every kind when the picked one is picked again', () => {
+    const state = search()
+
+    state.toggleType('task')
+    state.toggleType('task')
+
+    assert.equal(state.selectedType.value, null)
+  })
+
+  it('never lets a late recents answer land on top of the first results', async () => {
+    let answerRecents
+    bandSpaceSearchApi.search = (_bandSpaceId, term) =>
+      term === ''
+        ? new Promise((resolve) => {
+            answerRecents = () => resolve([hit('song', 'late')])
+          })
+        : Promise.resolve([hit('task', term)])
+
+    const state = search()
+    state.reset()
+    state.query.value = 'mix'
+    await wait(PAST_DEBOUNCE_MS)
+    answerRecents()
+    await wait(10)
+
+    assert.deepEqual(
+      state.flatResults.value.map((result) => result.id),
+      ['task-mix']
+    )
+    assert.deepEqual(state.recents.value, [])
   })
 })

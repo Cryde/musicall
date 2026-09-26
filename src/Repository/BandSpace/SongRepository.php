@@ -80,4 +80,24 @@ class SongRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette recents (#1046): the most recently created or edited, newest first. DQL takes no
+     * expression in ORDER BY, hence the hidden select.
+     *
+     * @return Song[]
+     */
+    public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
+    {
+        return $this->createQueryBuilder('s')
+            ->addSelect('COALESCE(s.updateDatetime, s.creationDatetime) AS HIDDEN recency')
+            ->where('s.bandSpace = :bandSpace')
+            ->andWhere('s.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('s.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

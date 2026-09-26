@@ -18,4 +18,15 @@ enum BandSpaceSearchResultType: string
     case Setlist = 'setlist';
     case Song = 'song';
     case Finance = 'finance';
+
+    /**
+     * The values, for the search endpoint's `type` constraint: Assert\Choice takes a callback where an
+     * attribute cannot compute the list itself.
+     *
+     * @return list<string>
+     */
+    public static function values(): array
+    {
+        return array_map(static fn (self $type): string => $type->value, self::cases());
+    }
 }

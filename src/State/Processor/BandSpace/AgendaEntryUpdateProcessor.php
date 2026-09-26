@@ -144,6 +144,8 @@ readonly class AgendaEntryUpdateProcessor implements ProcessorInterface
         // was in the payload: a cancellation outside the rule is dead data whatever wrote it, and
         // the entries that carry no cancellation at all leave here without expanding anything.
         $this->agendaSeriesReconciler->dropExceptionsOutsideRule($entry);
+        // What the command palette's recents sort on (#1046).
+        $entry->updateDatetime = new \DateTime();
 
         $this->recordChanges(
             $entry,

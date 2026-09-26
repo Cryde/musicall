@@ -117,4 +117,23 @@ class AgendaEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette recents (#1046): the most recently created or edited, newest first. DQL takes no
+     * expression in ORDER BY, hence the hidden select.
+     *
+     * @return AgendaEntry[]
+     */
+    public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('COALESCE(a.updateDatetime, a.creationDatetime) AS HIDDEN recency')
+            ->where('a.bandSpace = :bandSpace')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
