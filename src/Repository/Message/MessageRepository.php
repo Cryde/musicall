@@ -78,6 +78,66 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * The messages written before `$anchor` in the thread, newest first, at most `$limit` of them, for a
+     * window in the middle of the history (#1039). `$inclusive` counts the anchor itself in.
+     *
+     * A keyset on `(creation_datetime, id)` rather than an offset: an offset cannot say where a given
+     * message sits without counting everything newer, and the id breaks the ties the second granular
+     * column produces constantly, in the same direction the list orders them.
+     *
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     */
+    public function findOlderInThread(MessageThread $thread, Message $anchor, int $limit, bool $inclusive = false): array
+    {
+        return $this->projectionForThread($thread)
+            ->andWhere(sprintf(
+                '(message.creationDatetime < :anchorDatetime OR (message.creationDatetime = :anchorDatetime AND message.id %s :anchorId))',
+                $inclusive ? '<=' : '<',
+            ))
+            ->setParameter('anchorDatetime', $anchor->creationDatetime)
+            ->setParameter('anchorId', (string) $anchor->id)
+            ->orderBy('message.creationDatetime', 'DESC')
+            ->addOrderBy('message.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The messages written after `$anchor`, oldest first, at most `$limit` of them. The mirror of
+     * findOlderInThread().
+     *
+     * @return array<int, array{id: string, content: string, creationDatetime: \DateTimeInterface, updateDatetime: ?\DateTimeImmutable, deletionDatetime: ?\DateTimeImmutable, imageFileId: ?string, voiceNoteFileId: ?string, voiceNoteDurationSeconds: ?int, voiceNotePeaks: ?list<int>, authorId: string, authorUsername: string, authorDeletionDatetime: ?\DateTimeImmutable, authorProfilePictureName: ?string, pinnedDatetime: ?\DateTimeImmutable, pinnedByUsername: ?string, pinnedByDeletionDatetime: ?\DateTimeImmutable}>
+     */
+    public function findNewerInThread(MessageThread $thread, Message $anchor, int $limit): array
+    {
+        return $this->projectionForThread($thread)
+            ->andWhere('(message.creationDatetime > :anchorDatetime OR (message.creationDatetime = :anchorDatetime AND message.id > :anchorId))')
+            ->setParameter('anchorDatetime', $anchor->creationDatetime)
+            ->setParameter('anchorId', (string) $anchor->id)
+            ->orderBy('message.creationDatetime', 'ASC')
+            ->addOrderBy('message.id', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * One message of this thread, or null, to anchor a window on (#1039). Scoped to the thread so an
+     * id from another conversation cannot be used to probe it.
+     */
+    public function findOneInThread(string $id, MessageThread $thread): ?Message
+    {
+        return $this->createQueryBuilder('message')
+            ->where('message.id = :id')
+            ->andWhere('message.thread = :thread')
+            ->setParameter('id', $id)
+            ->setParameter('thread', $thread)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * The select and the joins both projections share, so a column added for the list cannot go
      * missing from the pinned bar, which renders the same resource.
      */

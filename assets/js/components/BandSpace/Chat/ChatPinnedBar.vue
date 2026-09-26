@@ -22,7 +22,10 @@
 
     <ul v-show="isExpanded" id="chat-pinned-messages" class="space-y-2 px-4 pb-3">
       <li v-for="message in pinnedMessages" :key="message['@id']" class="flex items-start gap-2">
-        <div class="min-w-0 flex-1">
+        <!-- A convenience for the mouse only: the button beside it is the control, because the excerpt
+             holds links of its own and a button may not contain them (#1039). -->
+        <!-- biome-ignore lint/a11y/useKeyWithClickEvents: the « Aller au message » button is the keyboard path -->
+        <div class="min-w-0 flex-1 cursor-pointer" @click="handleExcerptClick($event, message)">
           <!-- `truncate` keeps the excerpt to one line, and the sanitizer's `<br>` is neutralised so a
                multi line message cannot push the bar open. -->
           <!-- An attachment-only message has no text to excerpt (#971). -->
@@ -42,6 +45,20 @@
           </p>
         </div>
 
+        <button
+          type="button"
+          class="shrink-0 rounded-full px-2 py-1 text-surface-600 hover:bg-surface-200 dark:text-surface-300 dark:hover:bg-surface-700"
+          :aria-label="`Aller au message de ${message.author_username}`"
+          :aria-busy="chatStore.jumpingTo === message.id"
+          :disabled="chatStore.jumpingTo === message.id"
+          @click="goTo(message)"
+        >
+          <i
+            class="pi text-xs"
+            :class="chatStore.jumpingTo === message.id ? 'pi-spin pi-spinner' : 'pi-arrow-right'"
+            aria-hidden="true"
+          />
+        </button>
         <button
           type="button"
           class="shrink-0 rounded-full px-2 py-1 text-surface-600 hover:bg-surface-200 disabled:opacity-50 dark:text-surface-300 dark:hover:bg-surface-700"
@@ -90,5 +107,16 @@ const toggleLabel = computed(() =>
 
 function toggle() {
   manualExpansion.value = !isExpanded.value
+}
+
+/** Wherever the message is in the history, a year back included (#1039). */
+function goTo(message) {
+  chatStore.jumpToMessage(props.bandSpaceId, message.id)
+}
+
+function handleExcerptClick(event, message) {
+  if (!event.target.closest('a')) {
+    goTo(message)
+  }
 }
 </script>
