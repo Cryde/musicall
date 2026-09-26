@@ -279,6 +279,7 @@ class SetlistArchivedWriteGuardTest extends ApiTestCase
                 ],
             ],
             'total_duration_seconds' => 300,
+            'target_duration' => null,
         ]);
     }
 

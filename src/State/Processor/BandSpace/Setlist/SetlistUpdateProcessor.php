@@ -39,7 +39,7 @@ readonly class SetlistUpdateProcessor implements ProcessorInterface
     /**
      * @param SetlistResource $data
      *
-     * Only the `name` field is mutable through PATCH (rename). Other fields on
+     * `name` and `targetDuration` are mutable through PATCH. Other fields on
      * SetlistResource (items, totalDurationSeconds, archive/creation/update dates)
      * are hydrated by the provider but ignored here.
      */
@@ -59,17 +59,22 @@ readonly class SetlistUpdateProcessor implements ProcessorInterface
 
         $this->setlistWriteGuard->assertWritable($setlist);
 
+        // A PATCH can now carry only the duration target (#1061), which is not a rename.
+        $isRename = $data->name !== $setlist->name;
         $setlist->name = $data->name;
+        $setlist->targetDuration = $data->targetDuration;
         $setlist->updateDatetime = new DateTime();
 
-        $this->activityRecorder->record(
-            bandSpace: $bandSpace,
-            module: BandSpaceModule::Setlist,
-            type: BandSpaceSetlistActivityType::SetlistRenamed,
-            resourceId: (string) $setlist->id,
-            actor: $user,
-            payload: ['name' => $setlist->name],
-        );
+        if ($isRename) {
+            $this->activityRecorder->record(
+                bandSpace: $bandSpace,
+                module: BandSpaceModule::Setlist,
+                type: BandSpaceSetlistActivityType::SetlistRenamed,
+                resourceId: (string) $setlist->id,
+                actor: $user,
+                payload: ['name' => $setlist->name],
+            );
+        }
 
         $this->entityManager->flush();
 

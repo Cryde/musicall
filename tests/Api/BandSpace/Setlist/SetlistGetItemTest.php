@@ -106,6 +106,7 @@ class SetlistGetItemTest extends ApiTestCase
                         'tempo' => null,
                         'tonality' => null,
                         'reference_duration' => 180,
+                        'has_lyrics' => false,
                         'archive_datetime' => null,
                         '@type' => 'SetlistItemSongInfo',
                     ],
@@ -128,6 +129,7 @@ class SetlistGetItemTest extends ApiTestCase
                         'tempo' => null,
                         'tonality' => null,
                         'reference_duration' => 240,
+                        'has_lyrics' => false,
                         'archive_datetime' => $songB->archiveDatetime->format(\DateTimeInterface::ATOM),
                         '@type' => 'SetlistItemSongInfo',
                     ],
@@ -167,6 +169,7 @@ class SetlistGetItemTest extends ApiTestCase
                 ],
             ],
             'total_duration_seconds' => 410,
+            'target_duration' => null,
         ]);
     }
 

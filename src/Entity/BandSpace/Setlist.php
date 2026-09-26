@@ -36,6 +36,10 @@ class Setlist
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $name;
 
+    /** How long the band means the set to last, in seconds (#1061). */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    public ?int $targetDuration = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $archiveDatetime = null;
 

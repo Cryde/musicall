@@ -2,104 +2,281 @@
   <div>
     <div v-if="setlistsStore.isLoadingActive && !setlist" class="flex flex-col gap-3">
       <Skeleton width="60%" height="2.5rem" />
-      <Skeleton v-for="i in 4" :key="i" width="100%" height="4rem" borderRadius="0.75rem" />
+      <Skeleton v-for="i in 4" :key="i" width="100%" height="3rem" borderRadius="0.75rem" />
     </div>
 
-    <div v-else-if="!setlist" class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 text-center text-surface-500">
+    <div
+      v-else-if="!setlist"
+      class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-8 border border-surface-200 dark:border-surface-700 text-center text-surface-600 dark:text-surface-300"
+    >
       Sélectionnez une setlist dans la barre latérale.
     </div>
 
-    <div v-else class="flex flex-col gap-4">
-      <Message v-if="isArchived" severity="warn" :closable="false" icon="pi pi-archive">
-        Cette setlist est archivée, elle est en lecture seule. Dupliquez-la pour repartir de son
-        contenu.
-      </Message>
+    <div v-else class="flex gap-4 items-start">
+      <section
+        :aria-label="`Setlist ${setlist.name}`"
+        class="flex-1 min-w-0 flex flex-col bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700"
+      >
+        <div class="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 border-b border-surface-200 dark:border-surface-700">
+          <Message v-if="isArchived" severity="warn" :closable="false" icon="pi pi-archive">
+            Cette setlist est archivée, elle est en lecture seule. Dupliquez-la pour repartir de son contenu.
+          </Message>
 
-      <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
-        <div class="flex flex-wrap items-center gap-3 mb-3">
-          <div class="flex-1 min-w-0">
-            <InputText
-              v-if="editingName"
-              v-model="nameDraft"
-              autofocus
-              class="font-semibold text-xl w-full"
-              @blur="commitRename"
-              @keyup.enter="commitRename"
-              @keyup.esc="cancelRename"
-            />
-            <h2
-              v-else
-              class="font-semibold text-xl truncate"
-              :class="isArchived ? '' : 'cursor-text hover:text-primary'"
-              v-tooltip.top="isArchived ? null : 'Cliquez pour renommer'"
-              @click="startRename"
-            >
-              {{ setlist.name }}
-            </h2>
-            <div class="text-xs text-surface-500 mt-1 flex items-center gap-3">
-              <span>{{ setlist.items.length }} {{ setlist.items.length > 1 ? 'éléments' : 'élément' }}</span>
-              <span>·&nbsp;Durée&nbsp;: <span class="tabular-nums">{{ formattedTotalDuration }}</span></span>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-1 basis-full sm:basis-auto sm:flex-1 min-w-0">
+              <InputText
+                v-if="editingName"
+                v-model="nameDraft"
+                autofocus
+                aria-label="Nom de la setlist"
+                class="font-semibold text-xl w-full"
+                @blur="commitRename"
+                @keyup.enter="commitRename"
+                @keyup.esc="cancelRename"
+              />
+              <template v-else>
+                <h2 class="m-0 font-semibold text-2xl truncate">{{ setlist.name }}</h2>
+                <Button
+                  v-if="!isArchived"
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  text
+                  rounded
+                  size="small"
+                  aria-label="Renommer la setlist"
+                  @click="startRename"
+                />
+              </template>
             </div>
-          </div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <Button label="Fichiers" icon="pi pi-folder" severity="secondary" size="small" @click="filesDrawerOpen = true" />
-            <Button label="Exporter PDF" icon="pi pi-file-pdf" severity="secondary" size="small" @click="openPdfPopover" />
-            <Button label="Dupliquer" icon="pi pi-copy" severity="secondary" size="small" :loading="isDuplicating" @click="handleDuplicate" />
+            <Button
+              v-if="!panelInline || !panelOpen"
+              label="Répertoire"
+              icon="pi pi-book"
+              severity="secondary"
+              size="small"
+              @click="openPanel"
+            />
+            <Button label="Exporter PDF" icon="pi pi-file-pdf" severity="secondary" size="small" @click="pdfPopover?.toggle($event)" />
             <Button
               label="Mode Live"
               icon="pi pi-play"
-              severity="secondary"
               size="small"
               :disabled="setlist.items.length === 0"
               v-tooltip.top="setlist.items.length === 0 ? 'Ajoutez au moins un titre' : null"
               @click="openLiveMode"
             />
-            <Button v-if="!isArchived" label="Archiver" icon="pi pi-archive" severity="danger" outlined size="small" @click="confirmArchive" />
+            <Button
+              icon="pi pi-ellipsis-h"
+              severity="secondary"
+              size="small"
+              aria-label="Plus d’actions : fichiers, dupliquer, archiver"
+              aria-haspopup="true"
+              @click="setlistMenu?.toggle($event)"
+            />
+          </div>
+
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
+            <span><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.songs }}</strong> {{ summary.songs > 1 ? 'titres' : 'titre' }}</span>
+            <span><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.intermissions }}</strong> {{ summary.intermissions > 1 ? 'intermèdes' : 'intermède' }}</span>
+            <span class="flex items-center gap-1.5">
+              <i class="pi pi-clock text-xs" aria-hidden="true" />
+              <strong class="text-surface-900 dark:text-surface-0 font-semibold tabular-nums">{{ formatDuration(summary.total) || '0:00' }}</strong>
+            </span>
+            <button
+              v-if="summary.missingDurations > 0"
+              type="button"
+              class="flex items-center gap-1.5 h-7 px-3 rounded-full border border-amber-400 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs disabled:cursor-default"
+              :disabled="isArchived"
+              @click="promptFirstMissingDuration"
+            >
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />
+              {{ summary.missingDurations }} {{ summary.missingDurations > 1 ? 'durées manquantes' : 'durée manquante' }}
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3 text-xs text-surface-600 dark:text-surface-300">
+            <template v-if="progress">
+              <span class="whitespace-nowrap">
+                Objectif
+                <button
+                  type="button"
+                  class="font-semibold text-surface-900 dark:text-surface-0 underline decoration-dotted underline-offset-2 disabled:no-underline"
+                  :disabled="isArchived"
+                  :aria-label="`Objectif de durée ${formatDuration(setlist.target_duration)}, modifier`"
+                  @click="targetPrompt?.open($event, setlist.target_duration)"
+                >{{ formatDuration(setlist.target_duration) }}</button>
+              </span>
+              <div
+                class="flex-1 h-1.5 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden"
+                role="progressbar"
+                :aria-valuenow="Math.round(progress.ratio * 100)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Progression vers l’objectif de durée"
+              >
+                <div
+                  class="h-full rounded-full"
+                  :class="progress.isOver ? 'bg-red-500' : 'bg-primary'"
+                  :style="{ width: `${progress.ratio * 100}%` }"
+                />
+              </div>
+              <span class="whitespace-nowrap tabular-nums" :class="progress.isOver && 'text-red-700 dark:text-red-400 font-medium'">
+                {{ progress.isOver ? `dépasse de ${formatDuration(-progress.remaining)}` : `reste ${formatDuration(progress.remaining) || '0:00'}` }}
+              </span>
+            </template>
+            <Button
+              v-else-if="!isArchived"
+              label="Définir un objectif de durée"
+              icon="pi pi-flag"
+              severity="secondary"
+              text
+              size="small"
+              class="!px-1"
+              @click="targetPrompt?.open($event)"
+            />
           </div>
         </div>
-      </div>
 
-      <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-4 border border-surface-200 dark:border-surface-700">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-semibold">Programme</h3>
-          <Button v-if="!isArchived" label="Ajouter un titre" icon="pi pi-plus" size="small" @click="addDialogOpen = true" />
-        </div>
-
-        <div v-if="setlist.items.length === 0" class="text-center py-8 text-surface-500">
-          <i class="pi pi-headphones text-3xl mb-3 block"></i>
-          Aucun titre dans cette setlist. Commencez par en ajouter un.
-        </div>
-
-        <VueDraggable
-          v-else
-          v-model="localItems"
-          :animation="200"
-          :disabled="isArchived"
-          ghost-class="opacity-30"
-          handle=".cursor-pointer"
-          class="flex flex-col gap-2"
-          @end="handleDragEnd"
+        <div
+          v-if="rows.length > 0"
+          class="flex items-center gap-2 sm:gap-3 pl-9 sm:pl-12 pr-2 sm:pr-4 pt-3 pb-1 text-[11px] font-semibold tracking-wide uppercase text-surface-600 dark:text-surface-300"
         >
-          <SetlistItemCard
-            v-for="item in localItems"
-            :key="item.id"
-            :item="item"
-            :readonly="isArchived"
-            @edit="openItemEdit"
-            @open-menu="openItemMenu"
+          <span class="w-6">#</span>
+          <span class="flex-1">Programme</span>
+          <span v-if="columns.duration" class="w-16 text-right">Durée</span>
+          <span v-if="columns.cumulative" class="hidden sm:inline w-16 text-right">Cumul</span>
+          <Button
+            icon="pi pi-sliders-h"
+            severity="secondary"
+            text
+            rounded
+            size="small"
+            aria-label="Choisir les colonnes"
+            aria-haspopup="true"
+            v-tooltip.top="'Colonnes'"
+            @click="columnsPopover?.toggle($event)"
           />
-        </VueDraggable>
-      </div>
+        </div>
+
+        <div class="relative px-2 sm:px-4 py-2">
+          <!-- Over the list rather than in it: an empty list still has to be a place to drop a song. -->
+          <p
+            v-if="rows.length === 0"
+            class="absolute inset-x-4 top-8 m-0 text-center text-surface-600 dark:text-surface-300 pointer-events-none"
+          >
+            <i class="pi pi-headphones text-3xl mb-3 block" aria-hidden="true" />
+            Aucun titre pour l’instant. Cliquez sur un titre du répertoire pour l’ajouter, ou glissez-le ici.
+          </p>
+          <SetlistInsertGap
+            v-if="rows.length > 0 && !isArchived"
+            :position="0"
+            :active="insertPosition === 0"
+            @insert-song="startInsertingAt"
+            @insert-intermission="addIntermission"
+            @cancel="stopInserting"
+          />
+          <VueDraggable
+            v-model="localItems"
+            :animation="200"
+            :disabled="isArchived"
+            :group="{ name: DRAG_GROUP, pull: false, put: true }"
+            ghost-class="opacity-30"
+            handle=".drag-handle"
+            :class="['flex flex-col', rows.length === 0 && 'min-h-40']"
+            @start="isDragging = true"
+            @end="handleDragEnd"
+            @add="handleDropFromRepertoire"
+          >
+            <div v-for="(row, index) in rows" :key="row.item.id">
+              <SetlistProgrammeRow
+                :row="row"
+                :columns="columns"
+                :file-count="row.item.song ? (songFileCounts.get(row.item.song.id) ?? 0) : 0"
+                :readonly="isArchived"
+                @edit="openItemEdit"
+                @remove="removeItem"
+                @menu="openItemMenu"
+                @set-duration="promptSongDuration"
+              />
+              <SetlistInsertGap
+                v-if="!isArchived"
+                :position="index + 1"
+                :active="insertPosition === index + 1"
+                @insert-song="startInsertingAt"
+                @insert-intermission="addIntermission"
+                @cancel="stopInserting"
+              />
+            </div>
+          </VueDraggable>
+        </div>
+
+        <div
+          v-if="!isArchived"
+          class="flex flex-wrap items-center gap-2 px-4 sm:px-6 py-3 border-t border-surface-200 dark:border-surface-700"
+        >
+          <Button
+            v-for="kind in INTERMISSION_KINDS"
+            :key="kind.type"
+            :label="kind.label"
+            :icon="kind.icon"
+            severity="secondary"
+            outlined
+            size="small"
+            class="!border-dashed"
+            @click="addIntermission(kind.type, insertPosition)"
+          />
+          <span class="ml-auto text-xs text-surface-600 dark:text-surface-300 hidden md:inline">
+            Glissez un titre du répertoire dans la liste, ou cliquez dessus
+          </span>
+        </div>
+      </section>
+
+      <aside
+        v-if="panelInline && panelOpen"
+        aria-label="Répertoire"
+        class="w-80 shrink-0 sticky top-4 h-[calc(100vh-7rem)] bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 overflow-hidden"
+      >
+        <SetlistRepertoirePanel
+          :songs="songsStore.songs"
+          :items="localItems"
+          :insert-hint="insertHint"
+          :readonly="isArchived"
+          closable
+          @add="addSong"
+          @create-song="songDialogOpen = true"
+          @close="panelOpen = false"
+        />
+      </aside>
     </div>
 
-    <Menu ref="itemMenu" :model="itemMenuModel" :popup="true" />
+    <Drawer v-if="!panelInline" v-model:visible="panelOpen" position="right" :style="{ width: 'min(22rem, 100vw)' }" :show-close-icon="false">
+      <SetlistRepertoirePanel
+        :songs="songsStore.songs"
+        :items="localItems"
+        :insert-hint="insertHint"
+        :readonly="isArchived"
+        closable
+        @add="addSong"
+        @create-song="songDialogOpen = true"
+        @close="panelOpen = false"
+      />
+    </Drawer>
 
-    <AddSetlistItemDialog
-      v-model:visible="addDialogOpen"
-      :band-space-id="bandSpaceId"
-      :setlist-id="setlistId"
-      @added="addDialogOpen = false"
-    />
+    <Menu ref="itemMenu" :model="itemMenuModel" :popup="true" />
+    <Menu ref="setlistMenu" :model="setlistMenuModel" :popup="true" />
+
+    <Popover ref="columnsPopover">
+      <fieldset class="flex flex-col gap-2 border-0 p-0 m-0">
+        <legend class="text-sm font-semibold mb-1">Colonnes affichées</legend>
+        <div v-for="column in COLUMNS" :key="column.key" class="flex items-center gap-2">
+          <Checkbox v-model="columns[column.key]" :binary="true" :input-id="`setlist-column-${column.key}`" />
+          <label :for="`setlist-column-${column.key}`" class="text-sm">{{ column.label }}</label>
+        </div>
+      </fieldset>
+    </Popover>
+
+    <DurationPrompt ref="durationPrompt" :label="durationPromptLabel" :saving="isSavingDuration" @submit="saveSongDuration" />
+    <DurationPrompt ref="targetPrompt" label="Objectif de durée" :min-seconds="60" clearable :saving="isSavingTarget" @submit="saveTarget" />
 
     <SetlistItemEditDrawer
       v-model:visible="editDrawerOpen"
@@ -107,6 +284,8 @@
       :setlist-id="setlistId"
       :item="editingItem"
     />
+
+    <SongFormDialog v-model:visible="songDialogOpen" :band-space-id="bandSpaceId" :song="null" @saved="addSong" />
 
     <PdfExportPopover
       ref="pdfPopover"
@@ -125,24 +304,47 @@
 </template>
 
 <script setup>
+import { useMediaQuery } from '@vueuse/core'
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
+import Drawer from 'primevue/drawer'
 import InputText from 'primevue/inputtext'
 import Menu from 'primevue/menu'
 import Message from 'primevue/message'
+import Popover from 'primevue/popover'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useRouter } from 'vue-router'
+import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
 import { useBandSetlistsStore } from '../../../store/bandSpace/bandSpaceSetlists.js'
+import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
-import AddSetlistItemDialog from './AddSetlistItemDialog.vue'
+import {
+  COLUMNS,
+  programmeRows,
+  programmeSummary,
+  readColumns,
+  targetProgress,
+  writeColumns
+} from '../../../utils/setlistProgramme.js'
+import DurationPrompt from './Editor/DurationPrompt.vue'
+import { INTERMISSION_KINDS, intermissionKind } from './Editor/intermissionKinds.js'
+import SetlistInsertGap from './Editor/SetlistInsertGap.vue'
+import SetlistProgrammeRow from './Editor/SetlistProgrammeRow.vue'
+import SetlistRepertoirePanel from './Editor/SetlistRepertoirePanel.vue'
+import { DRAG_GROUP } from './Editor/setlistDrag.js'
 import PdfExportPopover from './PdfExportPopover.vue'
 import SetlistFileDrawer from './SetlistFileDrawer.vue'
-import SetlistItemCard from './SetlistItemCard.vue'
 import SetlistItemEditDrawer from './SetlistItemEditDrawer.vue'
+import SongFormDialog from './SongFormDialog.vue'
 
+/**
+ * A setlist's running order beside the repertoire (#1061): songs and intermèdes with their running
+ * total, the set's target duration, and the band's songs one click or one drag away.
+ */
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   setlistId: { type: String, required: true }
@@ -151,30 +353,34 @@ const props = defineProps({
 const emit = defineEmits(['archived', 'duplicated'])
 
 const setlistsStore = useBandSetlistsStore()
+const songsStore = useBandSongsStore()
 const confirm = useConfirm()
 const toast = useToast()
 const router = useRouter()
 
-function openLiveMode() {
-  router.push({
-    name: 'app_band_setlist_live',
-    params: { bandSpaceId: props.bandSpaceId, setlistId: props.setlistId }
-  })
-}
-
 const setlist = computed(() => setlistsStore.activeSetlist)
 
-// An archived setlist stays reachable through ?setlist=<id> and through a tab left open, and the
-// API now refuses every write on it. Showing the state and dropping the editing affordances is the
-// visible half of that: without it the buttons are there, they just fail.
+// An archived setlist stays reachable through ?setlist=<id> and a tab left open, and the API refuses
+// every write on it, so the editing affordances go too.
 const isArchived = computed(() => Boolean(setlist.value?.archive_datetime))
 
 const localItems = ref([])
 
+/** Null is the end of the set; a number is the position the next added song takes. */
+const insertPosition = ref(null)
+
+// Not while a row is being dragged: replacing the list under SortableJS mid-gesture desyncs the DOM
+// from the array. The latest items are taken as soon as the drag ends.
+const isDragging = ref(false)
+
+function syncLocalItems() {
+  localItems.value = setlist.value?.items ? [...setlist.value.items] : []
+}
+
 watch(
   () => setlist.value?.items,
-  (items) => {
-    localItems.value = items ? [...items] : []
+  () => {
+    if (!isDragging.value) syncLocalItems()
   },
   { immediate: true }
 )
@@ -182,6 +388,7 @@ watch(
 watch(
   () => props.setlistId,
   (id) => {
+    insertPosition.value = null
     if (id) {
       setlistsStore.fetchActive(props.bandSpaceId, id)
     }
@@ -189,16 +396,107 @@ watch(
   { immediate: true }
 )
 
-const totalDurationSeconds = computed(() =>
-  localItems.value.reduce(
-    (sum, item) => sum + (item.duration_override ?? item.song?.reference_duration ?? 0),
-    0
-  )
+const rows = computed(() => programmeRows(localItems.value))
+const summary = computed(() => programmeSummary(localItems.value))
+const progress = computed(() => targetProgress(summary.value.total, setlist.value?.target_duration))
+
+const { counts: songFileCounts, load: loadSongFileCounts } = useSongFileCounts(
+  () => props.bandSpaceId
 )
+onMounted(loadSongFileCounts)
 
-const formattedTotalDuration = computed(() => formatDuration(totalDurationSeconds.value))
+function showError(e) {
+  toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+}
 
-// Inline rename
+// --- Columns, remembered per browser --------------------------------------------------------------
+
+const columns = reactive(readColumns(globalThis.localStorage))
+watch(columns, (value) => writeColumns(globalThis.localStorage, { ...value }))
+const columnsPopover = ref(null)
+
+// --- Repertoire panel: beside the set on a wide screen, a drawer below ---------------------------
+
+const panelInline = useMediaQuery('(min-width: 1280px)')
+const panelOpen = ref(panelInline.value)
+watch(panelInline, (inline) => {
+  panelOpen.value = inline
+})
+
+function openPanel() {
+  panelOpen.value = true
+}
+
+// --- Inserting: where the next song goes -------------------------------------------------------
+
+// Named after the row it follows rather than numbered: song numbers skip intermèdes, positions do not.
+const insertHint = computed(() => {
+  if (insertPosition.value === null) return null
+  if (insertPosition.value === 0) return 'Les titres s’ajoutent en tête de la setlist.'
+  const previous = localItems.value[insertPosition.value - 1]
+  const name = previous?.song?.title ?? previous?.label ?? intermissionKind(previous?.type).label
+  return `Les titres s’ajoutent après « ${name} ».`
+})
+
+function startInsertingAt(position) {
+  insertPosition.value = position
+  openPanel()
+}
+
+function stopInserting() {
+  insertPosition.value = null
+}
+
+async function addSong(song) {
+  if (!song?.id || isArchived.value) return
+  const position = insertPosition.value
+  try {
+    await setlistsStore.addItem(props.bandSpaceId, props.setlistId, {
+      type: 'song',
+      song_id: song.id,
+      ...(position === null ? {} : { position })
+    })
+    // The next one goes after it, so several clicks read in the order they were made.
+    if (position !== null) insertPosition.value = position + 1
+  } catch (e) {
+    showError(e)
+  }
+}
+
+/** Created with its kind as label, then opened, so naming it is the next step rather than a form first. */
+async function addIntermission(type, position = null) {
+  try {
+    const created = await setlistsStore.addItem(props.bandSpaceId, props.setlistId, {
+      type,
+      label: intermissionKind(type).label,
+      ...(position === null ? {} : { position })
+    })
+    if (position !== null && insertPosition.value !== null) insertPosition.value = position + 1
+    openItemEdit(created)
+  } catch (e) {
+    showError(e)
+  }
+}
+
+// A song dragged in from the repertoire lands in the list as a stand-in; the real item replaces it
+// once the server has placed it at the same position.
+async function handleDropFromRepertoire(event) {
+  const pending = localItems.value[event.newIndex]
+  if (!pending?.song) return
+  try {
+    await setlistsStore.addItem(props.bandSpaceId, props.setlistId, {
+      type: 'song',
+      song_id: pending.song.id,
+      position: event.newIndex
+    })
+  } catch (e) {
+    localItems.value = [...(setlist.value?.items ?? [])]
+    showError(e)
+  }
+}
+
+// --- Rename --------------------------------------------------------------------------------------
+
 const editingName = ref(false)
 const nameDraft = ref('')
 
@@ -222,26 +520,77 @@ async function commitRename() {
     await setlistsStore.renameSetlist(props.bandSpaceId, props.setlistId, trimmed)
     toast.add({ severity: 'success', summary: 'Setlist renommée', life: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    showError(e)
   }
 }
 
-// Reorder
+// --- Durations -----------------------------------------------------------------------------------
+
+const durationPrompt = ref(null)
+const durationTarget = ref(null)
+const isSavingDuration = ref(false)
+const durationPromptLabel = computed(
+  () => `Durée de « ${durationTarget.value?.song?.title ?? ''} »`
+)
+
+function promptSongDuration(event, item) {
+  durationTarget.value = item
+  durationPrompt.value?.open(event)
+}
+
+function promptFirstMissingDuration(event) {
+  const first = rows.value.find((row) => row.missingDuration)
+  if (first) promptSongDuration(event, first.item)
+}
+
+/**
+ * Written on the song, not the item: a song's length is the same in every set, and filling it here
+ * fills it everywhere the song is played.
+ */
+async function saveSongDuration(seconds) {
+  const songId = durationTarget.value?.song?.id
+  if (!songId || seconds === null) return
+  isSavingDuration.value = true
+  try {
+    await songsStore.updateSong(props.bandSpaceId, songId, { reference_duration: seconds })
+    setlistsStore.applySongChange(songId, { reference_duration: seconds })
+    durationPrompt.value?.hide()
+  } catch (e) {
+    showError(e)
+  } finally {
+    isSavingDuration.value = false
+  }
+}
+
+const targetPrompt = ref(null)
+const isSavingTarget = ref(false)
+
+async function saveTarget(seconds) {
+  isSavingTarget.value = true
+  try {
+    await setlistsStore.setTargetDuration(props.bandSpaceId, props.setlistId, seconds)
+    targetPrompt.value?.hide()
+  } catch (e) {
+    showError(e)
+  } finally {
+    isSavingTarget.value = false
+  }
+}
+
+// --- Reorder, edit, remove ------------------------------------------------------------------------
+
 async function handleDragEnd() {
-  const orderedIds = localItems.value.map((i) => i.id)
+  isDragging.value = false
+  const orderedIds = localItems.value.filter((item) => !item.pending).map((item) => item.id)
   try {
     await setlistsStore.reorderItems(props.bandSpaceId, props.setlistId, orderedIds)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+    showError(e)
   }
 }
 
-// Add / Edit / Menu
-const addDialogOpen = ref(false)
 const editDrawerOpen = ref(false)
 const editingItem = ref(null)
-const itemMenu = ref(null)
-const menuTargetItem = ref(null)
 
 function openItemEdit(item) {
   if (isArchived.value) return
@@ -249,8 +598,36 @@ function openItemEdit(item) {
   editDrawerOpen.value = true
 }
 
+/** Only asks when the row carries something the repertoire cannot give back: a note, a transition, its own duration. */
+function removeItem(item) {
+  const loses = item.note || item.transition || item.duration_override !== null
+  if (!loses) {
+    confirmedRemove(item)
+    return
+  }
+  confirm.require({
+    message:
+      'Retirer cet élément de la setlist ? Sa note, sa transition et sa durée propre seront perdues.',
+    header: 'Confirmer',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Retirer',
+    rejectLabel: 'Annuler',
+    accept: () => confirmedRemove(item)
+  })
+}
+
+async function confirmedRemove(item) {
+  try {
+    await setlistsStore.removeItem(props.bandSpaceId, props.setlistId, item.id)
+  } catch (e) {
+    showError(e)
+  }
+}
+
+const itemMenu = ref(null)
+const menuTargetItem = ref(null)
+
 function openItemMenu(event, item) {
-  if (isArchived.value) return
   menuTargetItem.value = item
   itemMenu.value?.toggle(event)
 }
@@ -258,82 +635,74 @@ function openItemMenu(event, item) {
 const itemMenuModel = computed(() => {
   const item = menuTargetItem.value
   if (!item) return []
-  const idx = localItems.value.findIndex((i) => i.id === item.id)
-  const isFirst = idx === 0
-  const isLast = idx === localItems.value.length - 1
+  const index = localItems.value.findIndex((candidate) => candidate.id === item.id)
   return [
     { label: 'Modifier', icon: 'pi pi-pencil', command: () => openItemEdit(item) },
     {
       label: 'Monter',
       icon: 'pi pi-arrow-up',
-      disabled: isFirst,
+      disabled: index === 0,
       command: () => moveItem(item, -1)
     },
     {
       label: 'Descendre',
       icon: 'pi pi-arrow-down',
-      disabled: isLast,
+      disabled: index === localItems.value.length - 1,
       command: () => moveItem(item, +1)
     },
+    { label: 'Insérer avant', icon: 'pi pi-plus', command: () => startInsertingAt(index) },
+    { label: 'Insérer après', icon: 'pi pi-plus', command: () => startInsertingAt(index + 1) },
     { separator: true },
-    { label: 'Retirer', icon: 'pi pi-trash', command: () => confirmRemoveItem(item) }
+    { label: 'Retirer', icon: 'pi pi-trash', command: () => removeItem(item) }
   ]
 })
 
 async function moveItem(item, delta) {
-  const idx = localItems.value.findIndex((i) => i.id === item.id)
-  if (idx < 0) return
-  const target = idx + delta
-  if (target < 0 || target >= localItems.value.length) return
+  const index = localItems.value.findIndex((candidate) => candidate.id === item.id)
+  const target = index + delta
+  if (index < 0 || target < 0 || target >= localItems.value.length) return
   const next = [...localItems.value]
-  const [moved] = next.splice(idx, 1)
+  const [moved] = next.splice(index, 1)
   next.splice(target, 0, moved)
   localItems.value = next
   await handleDragEnd()
 }
 
-function confirmRemoveItem(item) {
-  confirm.require({
-    message: 'Retirer cet élément du setlist ?',
-    header: 'Confirmer',
-    icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Retirer',
-    rejectLabel: 'Annuler',
-    accept: async () => {
-      try {
-        await setlistsStore.removeItem(props.bandSpaceId, props.setlistId, item.id)
-        toast.add({ severity: 'success', summary: 'Élément retiré', life: 3000 })
-      } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
-      }
-    }
+// --- Setlist actions ------------------------------------------------------------------------------
+
+const pdfPopover = ref(null)
+const filesDrawerOpen = ref(false)
+const songDialogOpen = ref(false)
+const setlistMenu = ref(null)
+
+function openLiveMode() {
+  router.push({
+    name: 'app_band_setlist_live',
+    params: { bandSpaceId: props.bandSpaceId, setlistId: props.setlistId }
   })
 }
 
-// PDF + Files
-const pdfPopover = ref(null)
-const filesDrawerOpen = ref(false)
+const setlistMenuModel = computed(() => [
+  { label: 'Fichiers', icon: 'pi pi-folder', command: () => (filesDrawerOpen.value = true) },
+  { label: 'Dupliquer', icon: 'pi pi-copy', command: handleDuplicate },
+  ...(isArchived.value
+    ? []
+    : [
+        { separator: true },
+        { label: 'Archiver', icon: 'pi pi-archive', class: 'text-red-600', command: confirmArchive }
+      ])
+])
 
-function openPdfPopover(event) {
-  pdfPopover.value?.toggle(event)
-}
-
-// Duplicate
-const isDuplicating = ref(false)
 async function handleDuplicate() {
-  isDuplicating.value = true
   try {
     const copy = await setlistsStore.duplicateSetlist(props.bandSpaceId, props.setlistId)
     toast.add({ severity: 'success', summary: 'Setlist dupliquée', life: 3000 })
     emit('duplicated', copy.id)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
-  } finally {
-    isDuplicating.value = false
+    showError(e)
   }
 }
 
-// Archive
 function confirmArchive() {
   confirm.require({
     message: `Archiver la setlist «${setlist.value?.name}» ?`,
@@ -347,7 +716,7 @@ function confirmArchive() {
         toast.add({ severity: 'success', summary: 'Setlist archivée', life: 3000 })
         emit('archived')
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+        showError(e)
       }
     }
   })

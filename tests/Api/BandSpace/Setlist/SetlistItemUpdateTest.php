@@ -348,6 +348,7 @@ class SetlistItemUpdateTest extends ApiTestCase
                 'tempo' => null,
                 'tonality' => null,
                 'reference_duration' => null,
+                'has_lyrics' => false,
                 'archive_datetime' => null,
                 '@type' => 'SetlistItemSongInfo',
             ],
