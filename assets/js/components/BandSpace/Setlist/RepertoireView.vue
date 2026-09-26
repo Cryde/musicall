@@ -179,18 +179,12 @@
 
     <NewSetlistDialog v-model:visible="newSetlistOpen" :band-space-id="bandSpaceId" @created="fillNewSetlist" />
 
-    <SongFormDialog
-      v-model:visible="dialogVisible"
-      :band-space-id="bandSpaceId"
-      :song="editingSong"
-      @saved="handleSaved"
-    />
+    <NewSongDialog v-model:visible="newSongOpen" :band-space-id="bandSpaceId" @created="openDrawer" />
 
     <SongDetailDrawer
       v-model:visible="drawerVisible"
       :band-space-id="bandSpaceId"
       :song="drawerSong"
-      @edit="handleEditFromDrawer"
       @archived="handleArchivedFromDrawer"
       @updated="drawerSong = $event"
     />
@@ -216,8 +210,8 @@ import { filterCounts, filterSongs } from '../../../utils/repertoireFilters.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
 import DurationPrompt from './Editor/DurationPrompt.vue'
 import NewSetlistDialog from './NewSetlistDialog.vue'
+import NewSongDialog from './NewSongDialog.vue'
 import SongDetailDrawer from './SongDetailDrawer.vue'
-import SongFormDialog from './SongFormDialog.vue'
 
 /**
  * The band's songs as a table (#1063): what each one is missing, which setlists play it, and a
@@ -239,8 +233,7 @@ const toast = useToast()
 const query = ref('')
 const withoutLyrics = ref(false)
 const missingInfo = ref(false)
-const dialogVisible = ref(false)
-const editingSong = ref(null)
+const newSongOpen = ref(false)
 const drawerVisible = ref(false)
 const drawerSong = ref(null)
 const actionsMenu = ref(null)
@@ -445,7 +438,7 @@ const menuItems = computed(() => [
   {
     label: 'Modifier',
     icon: 'pi pi-pencil',
-    command: () => openEditDialog(menuTargetSong.value)
+    command: () => openDrawer(menuTargetSong.value)
   },
   {
     label: 'Archiver',
@@ -455,13 +448,7 @@ const menuItems = computed(() => [
 ])
 
 function openCreateDialog() {
-  editingSong.value = null
-  dialogVisible.value = true
-}
-
-function openEditDialog(song) {
-  editingSong.value = song
-  dialogVisible.value = true
+  newSongOpen.value = true
 }
 
 function openDrawer(song) {
@@ -490,19 +477,9 @@ function openMenu(event, song) {
   actionsMenu.value?.toggle(event)
 }
 
-function handleEditFromDrawer(song) {
-  drawerVisible.value = false
-  openEditDialog(song)
-}
-
 function handleArchivedFromDrawer() {
   drawerVisible.value = false
   drawerSong.value = null
-}
-
-function handleSaved() {
-  dialogVisible.value = false
-  editingSong.value = null
 }
 
 function confirmArchive(song) {

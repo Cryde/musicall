@@ -289,7 +289,15 @@
       :item="editingItem"
     />
 
-    <SongFormDialog v-model:visible="songDialogOpen" :band-space-id="bandSpaceId" :song="null" @saved="addSong" />
+    <NewSongDialog v-model:visible="songDialogOpen" :band-space-id="bandSpaceId" @created="addNewSong" />
+
+    <SongDetailDrawer
+      v-model:visible="songDrawerOpen"
+      :band-space-id="bandSpaceId"
+      :song="drawerSong"
+      @updated="handleSongUpdated"
+      @archived="songDrawerOpen = false"
+    />
 
     <PdfExportPopover
       ref="pdfPopover"
@@ -341,10 +349,11 @@ import SetlistInsertGap from './Editor/SetlistInsertGap.vue'
 import SetlistProgrammeRow from './Editor/SetlistProgrammeRow.vue'
 import SetlistRepertoirePanel from './Editor/SetlistRepertoirePanel.vue'
 import { DRAG_GROUP } from './Editor/setlistDrag.js'
+import NewSongDialog from './NewSongDialog.vue'
 import PdfExportPopover from './PdfExportPopover.vue'
 import SetlistFileDrawer from './SetlistFileDrawer.vue'
 import SetlistItemEditDrawer from './SetlistItemEditDrawer.vue'
-import SongFormDialog from './SongFormDialog.vue'
+import SongDetailDrawer from './SongDetailDrawer.vue'
 
 /**
  * A setlist's running order beside the repertoire (#1061): songs and intermèdes with their running
@@ -452,8 +461,9 @@ function stopInserting() {
   insertPosition.value = null
 }
 
+/** Answers whether the song made it into the set. */
 async function addSong(song) {
-  if (!song?.id || isArchived.value) return
+  if (!song?.id || isArchived.value) return false
   const position = insertPosition.value
   try {
     await setlistsStore.addItem(props.bandSpaceId, props.setlistId, {
@@ -463,8 +473,10 @@ async function addSong(song) {
     })
     // The next one goes after it, so several clicks read in the order they were made.
     if (position !== null) insertPosition.value = position + 1
+    return true
   } catch (e) {
     showError(e)
+    return false
   }
 }
 
@@ -717,6 +729,26 @@ async function moveItem(item, delta) {
 const pdfPopover = ref(null)
 const filesDrawerOpen = ref(false)
 const songDialogOpen = ref(false)
+const songDrawerOpen = ref(false)
+const drawerSong = ref(null)
+
+/** Added to the set where songs are going, then opened so its key, BPM and duration come next (#1067). */
+async function addNewSong(song) {
+  // A song the set refused stays in the repertoire, one click away once the error is dealt with.
+  if (!(await addSong(song))) return
+  drawerSong.value = song
+  songDrawerOpen.value = true
+}
+
+function handleSongUpdated(song) {
+  drawerSong.value = song
+  setlistsStore.applySongChange(song.id, {
+    title: song.title,
+    tonality: song.tonality,
+    tempo: song.tempo,
+    reference_duration: song.reference_duration
+  })
+}
 const setlistMenu = ref(null)
 
 function openLiveMode() {
