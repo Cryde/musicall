@@ -3,27 +3,68 @@
     v-model:visible="visible"
     position="right"
     :style="{ width: 'min(40rem, 100vw)' }"
-    :header="song?.title ?? 'Titre'"
   >
+    <!-- Every value is edited where it is shown (#1067): there is no separate edit form. -->
+    <template #header>
+      <InlineEditField
+        v-if="song"
+        :model-value="song.title"
+        label="Titre"
+        required
+        class="flex-1 mr-2"
+        input-class="font-semibold text-lg"
+        :readonly="isLocked('title')"
+        :save="(value) => saveField('title', value)"
+      >
+        <template #default="{ value }"><span class="text-xl font-semibold">{{ value }}</span></template>
+      </InlineEditField>
+    </template>
+
     <div v-if="song" class="flex flex-col gap-4">
       <div class="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <div class="text-xs uppercase text-surface-500 mb-1">Tonalité</div>
-          <div>{{ song.tonality || '—' }}</div>
+          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">Tonalité</div>
+          <InlineEditField
+            :model-value="song.tonality"
+            label="Tonalité"
+            placeholder="ex. Em"
+            :readonly="isLocked('tonality')"
+            :save="(value) => saveField('tonality', value)"
+          />
         </div>
         <div>
-          <div class="text-xs uppercase text-surface-500 mb-1">BPM</div>
-          <div>{{ song.tempo || '—' }}</div>
+          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">BPM</div>
+          <InlineEditField
+            :model-value="song.tempo"
+            label="BPM"
+            kind="number"
+            :readonly="isLocked('tempo')"
+            :save="(value) => saveField('tempo', value)"
+          />
         </div>
         <div>
-          <div class="text-xs uppercase text-surface-500 mb-1">Durée</div>
-          <div>{{ formatDuration(song.reference_duration) || '—' }}</div>
+          <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">Durée</div>
+          <InlineEditField
+            :model-value="song.reference_duration"
+            label="Durée"
+            kind="duration"
+            :readonly="isLocked('reference_duration')"
+            :save="(value) => saveField('reference_duration', value)"
+          />
         </div>
       </div>
 
-      <div v-if="song.notes">
-        <div class="text-xs uppercase text-surface-500 mb-1">Notes</div>
-        <p class="text-sm whitespace-pre-line">{{ song.notes }}</p>
+      <div>
+        <div class="text-xs uppercase text-surface-600 dark:text-surface-300 mb-1">Notes</div>
+        <InlineEditField
+          :model-value="song.notes"
+          label="Notes"
+          multiline
+          placeholder="Ajouter une note…"
+          class="text-sm"
+          :readonly="isLocked('notes')"
+          :save="(value) => saveField('notes', value)"
+        />
       </div>
 
       <Divider />
@@ -31,7 +72,7 @@
       <SongLyricsPanel
         :band-space-id="bandSpaceId"
         :song="song"
-        :read-only="song.archive_datetime !== null"
+        :read-only="readOnly"
         @changed="handleLyricsChanged"
       />
 
@@ -92,8 +133,7 @@
 
       <Divider />
 
-      <div class="flex gap-2">
-        <Button label="Modifier" icon="pi pi-pencil" severity="secondary" @click="emit('edit', song)" />
+      <div v-if="!readOnly" class="flex gap-2">
         <Button label="Archiver" icon="pi pi-archive" severity="danger" outlined @click="confirmArchive" />
       </div>
     </div>
@@ -107,18 +147,18 @@ import Drawer from 'primevue/drawer'
 import Skeleton from 'primevue/skeleton'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
-import { formatDuration } from '../../../utils/setlistDuration.js'
 import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
+import InlineEditField from './Song/InlineEditField.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   song: { type: Object, default: null }
 })
 
-const emit = defineEmits(['edit', 'archived', 'updated'])
+const emit = defineEmits(['archived', 'updated'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const songsStore = useBandSongsStore()
@@ -203,6 +243,31 @@ function confirmDetach(file) {
       }
     }
   })
+}
+
+const readOnly = computed(() => props.song?.archive_datetime != null)
+
+/**
+ * One field per PATCH, and one PATCH at a time: the server writes back every field of the song it
+ * read, so two saves in flight could put the first one's field back. The other fields wait meanwhile.
+ * A refusal is rethrown to the field.
+ */
+const savingField = ref(null)
+
+function isLocked(field) {
+  return readOnly.value || (savingField.value !== null && savingField.value !== field)
+}
+
+async function saveField(field, value) {
+  savingField.value = field
+  try {
+    emit(
+      'updated',
+      await songsStore.updateSong(props.bandSpaceId, props.song.id, { [field]: value })
+    )
+  } finally {
+    savingField.value = null
+  }
 }
 
 // The lyrics live on their own resource; the song only learns about them (has_lyrics, a moved key) here.
