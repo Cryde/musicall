@@ -9,7 +9,9 @@ use App\ApiResource\BandSpace\Chat\ChatMessageUpdate;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageMention;
 use App\Entity\User;
+use App\Enum\Message\MessageChange;
 use App\Event\BandSpaceChatMentionedEvent;
+use App\Event\BandSpaceChatMessageChangedEvent;
 use App\Repository\Message\MessageMentionRepository;
 use App\Repository\Message\MessageRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -99,6 +101,7 @@ readonly class ChatMessageUpdateProcessor implements ProcessorInterface
         if ($newlyMentionedUsers !== []) {
             $this->eventDispatcher->dispatch(new BandSpaceChatMentionedEvent($message, $bandSpace, $newlyMentionedUsers));
         }
+        $this->eventDispatcher->dispatch(new BandSpaceChatMessageChangedEvent($message, MessageChange::Edit));
 
         return $result;
     }

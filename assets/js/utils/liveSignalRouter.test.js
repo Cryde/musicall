@@ -14,7 +14,8 @@ function route(payload) {
     refreshNotificationCounts: record('refreshNotificationCounts'),
     inboxMessage: record('inboxMessage'),
     chatMessage: record('chatMessage'),
-    chatRead: record('chatRead')
+    chatRead: record('chatRead'),
+    chatMessageChanged: record('chatMessageChanged')
   })
 
   return calls
@@ -27,6 +28,31 @@ describe('routeLiveSignal', () => {
     assert.deepEqual(route({ type: 'band_space_chat_read', band_space_id: 'space-1' }), [
       ['chatRead', 'space-1']
     ])
+  })
+
+  it('sends a changed message to its own handler and nowhere else', () => {
+    // No badge refresh and no message handler: a reaction is not new content, and the message
+    // handler would mark the conversation read.
+    assert.deepEqual(
+      route({
+        type: 'band_space_message_changed',
+        band_space_id: 'space-1',
+        thread_id: 'thread-1',
+        message_id: 'message-1',
+        change: 'reaction'
+      }),
+      [
+        [
+          'chatMessageChanged',
+          { bandSpaceId: 'space-1', messageId: 'message-1', change: 'reaction' }
+        ]
+      ]
+    )
+  })
+
+  it('drops a changed message that names no space or no message', () => {
+    assert.deepEqual(route({ type: 'band_space_message_changed', message_id: 'message-1' }), [])
+    assert.deepEqual(route({ type: 'band_space_message_changed', band_space_id: 'space-1' }), [])
   })
 
   it('drops a chat read that names no space', () => {

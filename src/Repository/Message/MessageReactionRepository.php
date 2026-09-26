@@ -86,10 +86,13 @@ class MessageReactionRepository extends ServiceEntityRepository
      *
      * UUID() is MariaDB's version 1 where the ORM mints version 4. Nothing reads the version, and the
      * same trade was already made for the channel backfill in #959.
+     *
+     * Answers whether a row was written: the duplicate path changes nothing and reports no affected
+     * row, which is how a repeated tap stays silent on the live channel (#1056).
      */
-    public function add(Message $message, User $user, MessageReactionEmoji $emoji): void
+    public function add(Message $message, User $user, MessageReactionEmoji $emoji): bool
     {
-        $this->getEntityManager()->getConnection()->executeStatement(
+        return $this->getEntityManager()->getConnection()->executeStatement(
             <<<'SQL'
                 INSERT INTO message_reaction (id, message_id, user_id, emoji)
                 VALUES (UUID(), :message, :user, :emoji)
@@ -100,6 +103,6 @@ class MessageReactionRepository extends ServiceEntityRepository
                 'user' => (string) $user->id,
                 'emoji' => $emoji->value,
             ],
-        );
+        ) > 0;
     }
 }

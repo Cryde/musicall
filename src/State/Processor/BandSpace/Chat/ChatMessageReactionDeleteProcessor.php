@@ -7,7 +7,9 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Message\Message;
 use App\Entity\Message\MessageReaction;
 use App\Entity\User;
+use App\Enum\Message\MessageChange;
 use App\Enum\Message\MessageReactionEmoji;
+use App\Event\BandSpaceChatMessageChangedEvent;
 use App\Repository\Message\MessageReactionRepository;
 use App\Repository\Message\MessageRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -16,6 +18,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Takes back one reaction the member left (#968).
@@ -34,6 +37,7 @@ readonly class ChatMessageReactionDeleteProcessor implements ProcessorInterface
         private MessageReactionRepository $messageReactionRepository,
         private EntityManagerInterface $entityManager,
         private RequestStack $requestStack,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -67,5 +71,7 @@ readonly class ChatMessageReactionDeleteProcessor implements ProcessorInterface
 
         $this->entityManager->remove($reaction);
         $this->entityManager->flush();
+
+        $this->eventDispatcher->dispatch(new BandSpaceChatMessageChangedEvent($message, MessageChange::Reaction));
     }
 }

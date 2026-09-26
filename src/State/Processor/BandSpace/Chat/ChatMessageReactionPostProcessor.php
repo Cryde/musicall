@@ -8,7 +8,9 @@ use App\ApiResource\BandSpace\Chat\ChatMessageReaction;
 use App\ApiResource\BandSpace\Chat\ChatMessageResource;
 use App\Entity\Message\Message;
 use App\Entity\User;
+use App\Enum\Message\MessageChange;
 use App\Enum\Message\MessageReactionEmoji;
+use App\Event\BandSpaceChatMessageChangedEvent;
 use App\Repository\Message\MessageReactionRepository;
 use App\Repository\Message\MessageRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
@@ -16,6 +18,7 @@ use App\Service\Builder\BandSpace\ChatMessageBuilder;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Leaves one reaction on one message (#968).
@@ -37,6 +40,7 @@ readonly class ChatMessageReactionPostProcessor implements ProcessorInterface
         private MessageRepository $messageRepository,
         private MessageReactionRepository $messageReactionRepository,
         private ChatMessageBuilder $chatMessageBuilder,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -61,8 +65,14 @@ readonly class ChatMessageReactionPostProcessor implements ProcessorInterface
 
         // from(), not tryFrom(): Assert\Choice on the input has already refused anything else with a
         // 422 naming the field.
-        $this->messageReactionRepository->add($message, $user, MessageReactionEmoji::from($data->emoji));
+        $added = $this->messageReactionRepository->add($message, $user, MessageReactionEmoji::from($data->emoji));
+        $result = $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
 
-        return $this->chatMessageBuilder->buildItem($message, $bandSpaceId, $membership);
+        // Only a reaction that was not there yet: the repeat is a no-op, and a no-op tells nobody.
+        if ($added) {
+            $this->eventDispatcher->dispatch(new BandSpaceChatMessageChangedEvent($message, MessageChange::Reaction));
+        }
+
+        return $result;
     }
 }

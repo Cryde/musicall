@@ -6,7 +6,12 @@ import {
   rolledBackReactions,
   toggledReactions
 } from '../../utils/chatReactionToggle.js'
-import { isHeld, mayMergeNewestPage, paneAfterWindow } from '../../utils/chatWindow.js'
+import {
+  isHeld,
+  mayMergeNewestPage,
+  paneAfterWindow,
+  withRefreshedHeld
+} from '../../utils/chatWindow.js'
 import { createCoalescedCall } from '../../utils/coalescedCall.js'
 import {
   hasOlderToLoad,
@@ -23,6 +28,12 @@ import { useNotificationStore } from '../notification/notification.js'
  * load while the line still moves within two seconds of somebody reading.
  */
 const READ_RECEIPT_COALESCE_MS = 1500
+
+/**
+ * How long changed-message signals are gathered before the pane re-reads them (#1056). A few emoji
+ * taps in a row, or two members reacting at once, become one refetch.
+ */
+const MESSAGE_CHANGE_COALESCE_MS = 1000
 
 /**
  * The band's conversation. Held oldest first, which is reading order, while the API answers newest
@@ -530,6 +541,12 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
       return
     }
 
+    // A reconnect: a pin or an unpin missed while the stream was down left the bar stale, and the
+    // bar is its own list, which the refetch below does not touch (#1056).
+    if (bandSpaceId === null) {
+      loadPinnedMessages(openId)
+    }
+
     // Reading a window far up the history: splicing today's page into it would break the pane, and the
     // member has not seen the new message, so it waits behind « Revenir aux messages récents » and the
     // badge counts it.
@@ -581,9 +598,89 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     }
   }
 
+  // What the next refresh has to re-read. Plain rather than reactive: nothing renders them.
+  const changedMessageIds = new Set()
+  let pinnedBarIsStale = false
+
+  const messageChangeRefresh = createCoalescedCall({
+    delayMs: MESSAGE_CHANGE_COALESCE_MS,
+    call: () => refreshChangedMessages()
+  })
+
+  /**
+   * A message changed in place (#1056): somebody reacted, edited, deleted, pinned or unpinned.
+   *
+   * Only what is on screen is refreshed, and nothing else happens: no markAsRead() and no badge
+   * refresh, since none of this is new content. The member's own action comes back here too, which
+   * costs one refetch and cannot undo a tap still in flight, see withRefreshedHeld().
+   */
+  function handleMessageChanged({ bandSpaceId, messageId, change }) {
+    if (!bandSpaceId || bandSpaceId !== openBandSpaceId.value) {
+      return
+    }
+    // The bar is its own list: a pin moves it, and an edit or a delete changes a line of it.
+    if (change === 'pin' || pinnedMessages.value.some((pinned) => pinned.id === messageId)) {
+      pinnedBarIsStale = true
+    }
+    if (isHeld(messages.value, messageId)) {
+      changedMessageIds.add(messageId)
+    }
+    if (changedMessageIds.size > 0 || pinnedBarIsStale) {
+      messageChangeRefresh.request()
+    }
+  }
+
+  /**
+   * Re-reads each changed message through the window around it, which also works for one far up the
+   * history (#1039), and swaps in the copies of what the pane holds. One window covers its
+   * neighbours, so a burst of changes close together is one request.
+   */
+  async function refreshChangedMessages() {
+    const bandSpaceId = openBandSpaceId.value
+    const messageIds = [...changedMessageIds]
+    const refreshPinnedBar = pinnedBarIsStale
+    changedMessageIds.clear()
+    pinnedBarIsStale = false
+    if (!bandSpaceId) {
+      return
+    }
+
+    const token = loadToken
+    const refreshed = new Set()
+    for (const messageId of messageIds) {
+      if (refreshed.has(messageId) || !isHeld(messages.value, messageId)) {
+        continue
+      }
+      try {
+        const page = await bandSpaceChatApi.getMessageWindow(bandSpaceId, { around: messageId })
+        if (token !== loadToken) {
+          return
+        }
+        const fetched = page.messages ?? []
+        for (const message of fetched) {
+          refreshed.add(message.id)
+        }
+        messages.value = withRefreshedHeld(messages.value, fetched, messagesWithPendingReaction())
+      } catch (e) {
+        // The next load puts it right; a live refresh must never turn a readable pane into an error.
+        console.error('Failed to refresh a changed chat message:', e)
+      }
+    }
+    if (refreshPinnedBar) {
+      await loadPinnedMessages(bandSpaceId)
+    }
+  }
+
+  function messagesWithPendingReaction() {
+    return new Set([...pendingReactions.value].map((key) => key.split(':')[0]))
+  }
+
   function clear() {
     // A refetch gathered for the pane being left would otherwise land in whatever is opened next.
     readReceiptRefresh.cancel()
+    messageChangeRefresh.cancel()
+    changedMessageIds.clear()
+    pinnedBarIsStale = false
     // Bumped so nothing already in flight lands in a pane the member has left, a silent refresh
     // included. Chat.vue clears on unmount, which is the one moment a response has nowhere to go.
     loadToken += 1
@@ -647,6 +744,7 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     markAsRead,
     handleIncomingMessage,
     handleChatRead,
+    handleMessageChanged,
     clear
   }
 })
