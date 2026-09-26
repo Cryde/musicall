@@ -6,6 +6,7 @@ import {
   announceKindLabel,
   announceStyleTags,
   announceTypeForFilter,
+  frequentSearchLink,
   LOOKING_FOR_BAND,
   LOOKING_FOR_MUSICIAN,
   musicianSearchRoute
@@ -89,5 +90,37 @@ describe('announceTypeForFilter', () => {
     assert.equal(announceTypeForFilter(ANNOUNCE_FILTER_ALL), null)
     assert.equal(announceTypeForFilter(1), 1)
     assert.equal(announceTypeForFilter(2), 2)
+  })
+})
+
+describe('frequentSearchLink', () => {
+  const search = {
+    instrument_id: 'drums-id',
+    instrument_name: 'Batteur',
+    location_name: 'Bruxelles',
+    latitude: 50.84,
+    longitude: 4.35
+  }
+
+  it('names a search for musicians by instrument and city, and runs it again', () => {
+    assert.deepEqual(frequentSearchLink({ ...search, type: 2 }), {
+      label: 'Batteur à Bruxelles',
+      route: {
+        name: 'app_search_musician',
+        query: {
+          type: '2',
+          instrument: 'drums-id',
+          lat: '50.84',
+          lng: '4.35',
+          location: 'Bruxelles'
+        }
+      }
+    })
+  })
+
+  it('says a band is looking when the search was for the bands', () => {
+    const link = frequentSearchLink({ ...search, type: 1 })
+    assert.equal(link.label, 'Groupe cherchant un batteur à Bruxelles')
+    assert.equal(link.route.query.type, '1')
   })
 })

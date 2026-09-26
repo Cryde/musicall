@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Api\Admin\Dashboard;
 
 use App\Entity\Musician\MusicianAnnounce;
+use App\Entity\Search\MusicianSearchLog;
+use App\Enum\Search\MusicianSearchKind;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\Attribute\InstrumentFactory;
@@ -12,6 +14,7 @@ use App\Tests\Factory\Comment\CommentFactory;
 use App\Tests\Factory\Forum\ForumPostFactory;
 use App\Tests\Factory\User\MusicianAnnounceFactory;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
@@ -154,6 +157,38 @@ class TimeSeriesMetricsTest extends ApiTestCase
             '@id' => '/api/admin/dashboard/time-series',
             '@type' => 'TimeSeriesMetrics',
             'metric' => 'musician_announces',
+            'from' => $yesterdayStr,
+            'to' => $todayStr,
+            'data_points' => [
+                ['date_label' => $todayStr, 'count' => 2],
+            ],
+            'total' => 2,
+        ]);
+    }
+
+    public function test_get_time_series_musician_searches_and_ai_searches_apart(): void
+    {
+        $admin = UserFactory::new()->asAdminUser()->create();
+        $today = new \DateTimeImmutable();
+        $todayStr = $today->format('Y-m-d');
+        $yesterdayStr = $today->modify('-1 day')->format('Y-m-d');
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        foreach ([MusicianSearchKind::Filters, MusicianSearchKind::Filters, MusicianSearchKind::Ai] as $kind) {
+            $entityManager->persist(new MusicianSearchLog($kind, hash('sha256', 'visitor'), new \DateTimeImmutable()));
+        }
+        // Outside the range.
+        $entityManager->persist(new MusicianSearchLog(MusicianSearchKind::Filters, hash('sha256', 'visitor'), new \DateTimeImmutable('-7 days')));
+        $entityManager->flush();
+
+        $this->client->loginUser($admin);
+        $this->client->request('GET', '/api/admin/dashboard/time-series?metric=musician_searches&from=' . $yesterdayStr . '&to=' . $todayStr);
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/TimeSeriesMetrics',
+            '@id' => '/api/admin/dashboard/time-series',
+            '@type' => 'TimeSeriesMetrics',
+            'metric' => 'musician_searches',
             'from' => $yesterdayStr,
             'to' => $todayStr,
             'data_points' => [

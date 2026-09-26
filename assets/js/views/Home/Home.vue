@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-16 lg:gap-24">
-    <HomeHero :preview-announces="heroAnnounces" />
+    <HomeHero :preview-announces="heroAnnounces" :frequent-searches="frequentSearches" />
 
     <HomeAnnounces
       v-model:filter="announceFilter"
@@ -74,6 +74,7 @@ import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import musicianSearchApi from '../../api/search/musician.js'
 import teacherProfileApi from '../../api/user/teacherProfile.js'
 import HomeAnnounces from '../../components/Home/HomeAnnounces.vue'
 import HomeBandSpace from '../../components/Home/HomeBandSpace.vue'
@@ -120,6 +121,7 @@ const heroAnnounces = ref([])
 // The skeleton, rather than « Aucune annonce », until the first answer is in.
 const hasLoadedAnnounces = ref(false)
 const teachers = ref([])
+const frequentSearches = ref([])
 
 onMounted(async () => {
   await Promise.all([
@@ -135,7 +137,8 @@ onMounted(async () => {
         .slice(0, HERO_PREVIEW_COUNT)
         .reverse()
     })(),
-    loadTeachers()
+    loadTeachers(),
+    loadFrequentSearches()
   ])
 })
 
@@ -151,6 +154,15 @@ async function loadTeachers() {
     teachers.value = (await teacherProfileApi.getFeaturedTeachers()).member
   } catch {
     teachers.value = []
+  }
+}
+
+// A row the hero does without: a failure only leaves it out.
+async function loadFrequentSearches() {
+  try {
+    frequentSearches.value = await musicianSearchApi.getFrequentSearches()
+  } catch {
+    frequentSearches.value = []
   }
 }
 

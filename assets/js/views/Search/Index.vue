@@ -468,12 +468,7 @@ onMounted(async () => {
   // parallel rather than chaining two round-trips.
   const attributesLoaded = Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
 
-  const hasScopedSearch =
-    !!prefilledInstrumentSlug.value ||
-    !!urlFilters.type ||
-    !!urlFilters.instrument ||
-    urlFilters.styles.length > 0 ||
-    !!(urlFilters.lat && urlFilters.lng && urlFilters.location)
+  const hasScopedSearch = !!prefilledInstrumentSlug.value || hasUrlFilters()
 
   if (hasScopedSearch) {
     // The initial search is scoped by a prefilled instrument or URL filters,
@@ -481,7 +476,8 @@ onMounted(async () => {
     await attributesLoaded
     initializeFiltersFromUrl()
     applyPrefilledInstrument()
-    await loadInitialResults()
+    // A page such as « Rechercher un batteur » opened as is: its list is not a search anybody ran.
+    await loadInitialResults({ landing: !hasUrlFilters() })
   } else {
     // Plain landing: the initial search is unscoped and needs neither list,
     // so run it alongside the attribute loads.
@@ -489,10 +485,19 @@ onMounted(async () => {
   }
 })
 
-async function loadInitialResults() {
+function hasUrlFilters() {
+  return (
+    !!urlFilters.type ||
+    !!urlFilters.instrument ||
+    urlFilters.styles.length > 0 ||
+    !!(urlFilters.lat && urlFilters.lng && urlFilters.location)
+  )
+}
+
+async function loadInitialResults({ landing = false } = {}) {
   isSearching.value = true
   isSearchMade.value = true
-  const params = buildSearchParams()
+  const params = { ...buildSearchParams(), landing }
   await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
 }
@@ -628,6 +633,7 @@ function buildSearchParams() {
   if (selectedLocation.value && typeof selectedLocation.value === 'object') {
     params.latitude = selectedLocation.value.latitude
     params.longitude = selectedLocation.value.longitude
+    params.location = selectedLocation.value.name
   }
   return params
 }

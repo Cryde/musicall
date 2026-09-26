@@ -9,6 +9,8 @@ export default {
     type = null,
     latitude = null,
     longitude = null,
+    location = null,
+    landing = false,
     page = 1
   }) {
     const params = { page }
@@ -24,10 +26,20 @@ export default {
     if (latitude !== null && longitude !== null) {
       params.latitude = latitude
       params.longitude = longitude
+      // Only kept for the frequent searches (#1075); the search goes by the coordinates.
+      if (location) params.location = location
     }
+    // A landing page's list on arrival, which the server does not record as a search (#1075).
+    if (landing) params.landing = '1'
     return axios
       .get(Routing.generate('api_musician_announces_search_collection', params))
       .then((resp) => resp.data)
+  },
+  /** « Recherches fréquentes » (#1075): what enough different people searched for lately. */
+  getFrequentSearches() {
+    return axios
+      .get(Routing.generate('api_musician_search_frequent'))
+      .then((resp) => resp.data.searches)
   },
   getSearchAnnouncesFilters({ search }) {
     return axios

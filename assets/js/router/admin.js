@@ -54,6 +54,11 @@ export default {
       component: () => import('../views/Admin/Forum/Index.vue')
     },
     {
+      name: 'admin_searches_index',
+      path: 'recherches',
+      component: () => import('../views/Admin/Search/Index.vue')
+    },
+    {
       name: 'admin_feedbacks_index',
       path: 'retours',
       component: () => import('../views/Admin/Feedback/Index.vue')

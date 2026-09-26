@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Service\Builder\Search\MusicianSearchResultBuilder;
 use App\Service\Finder\Musician\Builder\SearchModelBuilder;
+use App\Service\Search\MusicianSearchRecorder;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
@@ -26,6 +27,7 @@ readonly class MusicianSearchProvider implements ProviderInterface
         private SearchModelBuilder          $searchModelBuilder,
         private MusicianAnnounceRepository  $musicianAnnounceRepository,
         private MusicianSearchResultBuilder $musicianSearchResultBuilder,
+        private MusicianSearchRecorder      $musicianSearchRecorder,
     ) {
     }
 
@@ -45,6 +47,8 @@ readonly class MusicianSearchProvider implements ProviderInterface
         $longitude = $params?->get('longitude')?->getValue();
         $latitude = $params?->get('latitude')?->getValue();
         $pageValue = $params?->get('page')?->getValue();
+        $location = $params?->get('location')?->getValue();
+        $landing = $params?->get('landing')?->getValue();
 
         $page = $pageValue instanceof ParameterNotFound || $pageValue === null ? 1 : (int)$pageValue;
 
@@ -59,6 +63,12 @@ readonly class MusicianSearchProvider implements ProviderInterface
         );
 
         $results = $this->musicianAnnounceRepository->findByCriteria($searchModel, $user, $limit);
+        $this->musicianSearchRecorder->recordFiltersSearch(
+            $searchModel,
+            is_string($location) ? $location : null,
+            count($results),
+            $landing === '1',
+        );
 
         // We don't expose total count, so we use a large arbitrary number to allow pagination
         // The frontend will know there are no more results when member is empty

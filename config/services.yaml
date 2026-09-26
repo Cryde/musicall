@@ -59,6 +59,10 @@ services:
         arguments:
             $secret: '%env(IDENTIFIER_SECRET)%'
 
+    App\Service\Identifier\DailyVisitorIdentifier:
+        arguments:
+            $secret: '%env(IDENTIFIER_SECRET)%'
+
     # No $release argument: the SDK already stamps `sentry.release` on every log from the same env
     # var, so a second one here would be one value under two names (#1029).
     App\Security\Observability\AuthContextBuilder:

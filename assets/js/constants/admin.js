@@ -16,6 +16,14 @@ export const ADMIN_MODULES = [
     color: '#22c55e'
   },
   {
+    key: 'searches',
+    label: 'Recherches',
+    icon: 'pi-search',
+    route: 'admin_searches_index',
+    description: 'Ce que les visiteurs cherchent, avec les filtres ou en langage naturel',
+    color: '#3a6589'
+  },
+  {
     key: 'forum',
     label: 'Forum',
     icon: 'pi-comments',
