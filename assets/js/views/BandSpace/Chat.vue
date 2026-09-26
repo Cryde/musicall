@@ -2,13 +2,22 @@
   <div
     class="bg-surface-0 dark:bg-surface-900 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-16rem)] min-h-[400px]"
   >
-    <p
-      v-if="onlineNames.length > 0"
-      class="m-0 flex items-center gap-2 px-4 py-2 text-xs text-surface-600 dark:text-surface-300 border-b border-surface-200 dark:border-surface-700"
+    <div
+      v-if="onlineMembers.length > 0"
+      class="flex items-center gap-2 px-4 py-2 text-xs text-surface-600 dark:text-surface-300 border-b border-surface-200 dark:border-surface-700"
     >
-      <span class="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
-      <span>En ligne : {{ onlineNames.join(', ') }}</span>
-    </p>
+      <span class="sr-only">En ligne : {{ onlineMembers.map((member) => member.display_name).join(', ') }}</span>
+      <span aria-hidden="true">En ligne</span>
+      <ul class="m-0 p-0 list-none flex items-center gap-1.5" aria-hidden="true">
+        <li v-for="member in onlineMembers" :key="member.user_id" v-tooltip.bottom="member.display_name">
+          <ChatPresenceAvatar
+            :username="member.display_name"
+            :picture-url="member.profile_picture_url"
+            online
+          />
+        </li>
+      </ul>
+    </div>
 
     <ChatPinnedBar v-if="!chatStore.loadError" :band-space-id="bandSpaceId" />
 
@@ -80,6 +89,7 @@ import { useRoute } from 'vue-router'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
 import ChatPinnedBar from '../../components/BandSpace/Chat/ChatPinnedBar.vue'
+import ChatPresenceAvatar from '../../components/BandSpace/Chat/ChatPresenceAvatar.vue'
 import { useBandSpaceChatStore } from '../../store/bandSpace/bandSpaceChat.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
 import { memberNames, typingSentence } from '../../utils/chatTyping.js'
@@ -176,7 +186,9 @@ onUnmounted(() => {
   presence.leaveNow()
 })
 
-const onlineNames = computed(() => memberNames(chatStore.onlineUserIds, settingsStore.members))
+const onlineMembers = computed(() =>
+  settingsStore.members.filter((member) => chatStore.onlineUserIds.includes(member.user_id))
+)
 onUnmounted(() => chatStore.clear())
 
 const typingText = computed(() =>

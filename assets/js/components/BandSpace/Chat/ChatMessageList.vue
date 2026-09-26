@@ -42,11 +42,11 @@
         class="flex gap-3"
         :class="{ 'flex-row-reverse': isMine(block.messages[0]) }"
       >
-      <Avatar
+      <ChatPresenceAvatar
         :username="block.messages[0].author_username"
         :picture-url="block.messages[0].author_profile_picture_url"
-        size="md"
-        class="mt-1 shrink-0"
+        :online="isOnline(block.messages[0])"
+        class="mt-1"
       />
 
       <div class="min-w-0 max-w-[75%]" :class="{ 'text-right': isMine(block.messages[0]) }">
@@ -56,6 +56,7 @@
         >
           <span class="font-semibold text-surface-700 dark:text-surface-200 truncate">
             {{ block.messages[0].author_username }}
+            <span v-if="isOnline(block.messages[0])" class="sr-only">(en ligne)</span>
           </span>
         </div>
 
@@ -304,11 +305,11 @@ import { bubbleCornerClasses } from '../../../utils/messageBubbleCorners.js'
 import { groupMessages, needsTimeSeparator } from '../../../utils/messageGrouping.js'
 import MentionEditor from '../../Global/MentionEditor.vue'
 import MusicLinkPreview from '../../Message/MusicLinkPreview.vue'
-import Avatar from '../../User/Avatar.vue'
 import ChatMessageAttachments from './ChatMessageAttachments.vue'
 import ChatMessageImage from './ChatMessageImage.vue'
 import ChatMessageReactions from './ChatMessageReactions.vue'
 import ChatMessageVoiceNote from './ChatMessageVoiceNote.vue'
+import ChatPresenceAvatar from './ChatPresenceAvatar.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
@@ -333,6 +334,11 @@ const suggestionSource = computed(() => [EVERYONE_MEMBER, ...props.members])
 
 function isMine(message) {
   return message.author_username === userSecurityStore.user?.username
+}
+
+// The presence answer lists the others only, so my own avatar is never marked.
+function isOnline(message) {
+  return chatStore.onlineUserIds.includes(message.author_id)
 }
 
 // Held oldest first, so the last message of the list is the newest one of the conversation.
