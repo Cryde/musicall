@@ -738,7 +738,45 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     typingNotifier.notify()
   }
 
+  // --- « En ligne » (#1040) --------------------------------------------------------------------------
+
+  // The other members with the chat open, as the last heartbeat answered. Chat.vue runs the heartbeat,
+  // since it owns the page's lifecycle (shown, hidden, left); the store only holds the answer.
+  const onlineUserIds = ref([])
+  // One per page load: the server keeps a member online while any of their tabs still beats.
+  const presenceTab = crypto.randomUUID()
+
+  async function beatPresence(bandSpaceId) {
+    try {
+      const online = await bandSpaceChatApi.beatPresence(bandSpaceId, presenceTab)
+      if (openBandSpaceId.value === bandSpaceId) onlineUserIds.value = online
+    } catch (e) {
+      // A heartbeat that fails leaves the line as it was; the next one puts it right.
+      console.error('Failed to send the chat presence heartbeat:', e)
+    }
+  }
+
+  function leavePresence(bandSpaceId) {
+    bandSpaceChatApi.leavePresence(bandSpaceId, presenceTab)
+    onlineUserIds.value = []
+  }
+
+  // One arrival makes every open chat of the band ask again at once; gathered so a band arriving for
+  // rehearsal is one heartbeat each rather than one per bandmate.
+  const presenceRefresh = createCoalescedCall({
+    delayMs: 500,
+    call: () => {
+      if (openBandSpaceId.value) beatPresence(openBandSpaceId.value)
+    }
+  })
+
+  function handlePresence(bandSpaceId) {
+    if (bandSpaceId && bandSpaceId === openBandSpaceId.value) presenceRefresh.request()
+  }
+
   function clear() {
+    presenceRefresh.cancel()
+    onlineUserIds.value = []
     stopTyping()
     typingNotifier.reset()
     // A refetch gathered for the pane being left would otherwise land in whatever is opened next.
@@ -811,6 +849,10 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     handleChatRead,
     handleMessageChanged,
     handleTyping,
+    handlePresence,
+    beatPresence,
+    leavePresence,
+    onlineUserIds: readonly(onlineUserIds),
     notifyTyping,
     currentTypists,
     clear

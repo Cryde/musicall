@@ -75,6 +75,21 @@
         />
       </div>
 
+      <!-- Band Space section -->
+      <div class="flex flex-col gap-2">
+        <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
+          Band Space
+        </h3>
+        <div class="border-b border-surface-200 dark:border-surface-700" />
+
+        <NotificationToggle
+          v-model="showOnlinePresence"
+          label="Me montrer en ligne"
+          description="Les membres de vos groupes voient quand vous avez leur discussion ouverte"
+          :disabled="isUpdating"
+        />
+      </div>
+
       <!-- Marketing section -->
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-medium text-surface-800 dark:text-surface-100">
@@ -125,6 +140,7 @@ const publicationComment = ref(true)
 const forumReply = ref(true)
 const marketing = ref(false)
 const activityReminder = ref(true)
+const showOnlinePresence = ref(true)
 
 const originalValues = ref({
   siteNews: true,
@@ -133,7 +149,8 @@ const originalValues = ref({
   publicationComment: true,
   forumReply: true,
   marketing: false,
-  activityReminder: true
+  activityReminder: true,
+  showOnlinePresence: true
 })
 
 const hasChanges = computed(() => {
@@ -144,7 +161,8 @@ const hasChanges = computed(() => {
     publicationComment.value !== originalValues.value.publicationComment ||
     forumReply.value !== originalValues.value.forumReply ||
     marketing.value !== originalValues.value.marketing ||
-    activityReminder.value !== originalValues.value.activityReminder
+    activityReminder.value !== originalValues.value.activityReminder ||
+    showOnlinePresence.value !== originalValues.value.showOnlinePresence
   )
 })
 
@@ -156,6 +174,7 @@ function setFormValues(preferences) {
   forumReply.value = preferences?.forum_reply ?? true
   marketing.value = preferences?.marketing ?? false
   activityReminder.value = preferences?.activity_reminder ?? true
+  showOnlinePresence.value = preferences?.show_online_presence ?? true
 
   originalValues.value = {
     siteNews: siteNews.value,
@@ -164,7 +183,8 @@ function setFormValues(preferences) {
     publicationComment: publicationComment.value,
     forumReply: forumReply.value,
     marketing: marketing.value,
-    activityReminder: activityReminder.value
+    activityReminder: activityReminder.value,
+    showOnlinePresence: showOnlinePresence.value
   }
 }
 
@@ -206,7 +226,8 @@ async function savePreferences() {
       publication_comment: publicationComment.value,
       forum_reply: forumReply.value,
       marketing: marketing.value,
-      activity_reminder: activityReminder.value
+      activity_reminder: activityReminder.value,
+      show_online_presence: showOnlinePresence.value
     })
 
     originalValues.value = {
@@ -216,7 +237,8 @@ async function savePreferences() {
       publicationComment: publicationComment.value,
       forumReply: forumReply.value,
       marketing: marketing.value,
-      activityReminder: activityReminder.value
+      activityReminder: activityReminder.value,
+      showOnlinePresence: showOnlinePresence.value
     }
 
     trackUmamiEvent('settings-notification-save')

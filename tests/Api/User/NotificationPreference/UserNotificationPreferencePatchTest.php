@@ -8,6 +8,7 @@ use App\Entity\User\UserNotificationPreference;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -43,6 +44,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => true,
             'marketing' => true,
             'activity_reminder' => true,
+            'show_online_presence' => true,
         ]);
 
         $reloaded = self::getContainer()->get(\App\Repository\UserRepository::class)->find($user->id);
@@ -86,6 +88,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => false,
             'activity_reminder' => true,
+            'show_online_presence' => true,
         ]);
     }
 
@@ -105,6 +108,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'show_online_presence' => false,
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
         $this->assertResponseIsSuccessful();
@@ -119,7 +123,13 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'show_online_presence' => false,
         ]);
+        $stored = self::getContainer()->get(EntityManagerInterface::class)
+            ->getRepository(UserNotificationPreference::class)
+            ->findOneBy(['user' => $user->id]);
+        $this->assertInstanceOf(UserNotificationPreference::class, $stored);
+        $this->assertFalse($stored->showOnlinePresence);
     }
 
     public function test_patch_notification_preferences_requires_authentication(): void

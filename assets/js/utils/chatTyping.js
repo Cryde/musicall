@@ -53,8 +53,8 @@ export function activeTypists(typists, now) {
     .map(([userId]) => userId)
 }
 
-/** The names typists are shown under, from the band's roster; somebody not on it yet is « Un membre ». */
-export function typistNames(userIds, members) {
+/** How the chat names members, typists or online, from the band's roster; somebody not on it yet is « Un membre ». */
+export function memberNames(userIds, members) {
   return userIds.map(
     (userId) => members.find((member) => member.user_id === userId)?.display_name ?? 'Un membre'
   )

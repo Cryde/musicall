@@ -82,6 +82,27 @@ export default {
       .catch(handleApiError)
   },
 
+  /**
+   * « I have the chat open », answered with who else has (#1040). `tab` tells this page apart from the
+   * member's other tabs, so closing one does not take them offline while another is still open.
+   */
+  beatPresence(bandSpaceId, tab) {
+    return axios
+      .post(Routing.generate('api_band_space_chat_presence', { bandSpaceId, tab }))
+      .then((resp) => resp.data.online_user_ids ?? [])
+      .catch(handleApiError)
+  },
+
+  /**
+   * A beacon, because this runs as the page goes and a normal request would be cancelled with it. The
+   * login rides the cookies, which a beacon sends. Best effort either way: the TTL catches the rest.
+   */
+  leavePresence(bandSpaceId, tab) {
+    const url = Routing.generate('api_band_space_chat_presence_leave', { bandSpaceId, tab })
+    if (globalThis.navigator?.sendBeacon?.(url)) return
+    axios.post(url).catch(() => {})
+  },
+
   markAsRead(bandSpaceId) {
     return axios
       .post(Routing.generate('api_band_space_chat_read', { bandSpaceId }))

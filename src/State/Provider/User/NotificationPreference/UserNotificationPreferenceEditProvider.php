@@ -45,6 +45,7 @@ readonly class UserNotificationPreferenceEditProvider implements ProviderInterfa
         $dto->forumReply = $preference->forumReply;
         $dto->marketing = $preference->marketing;
         $dto->activityReminder = $preference->activityReminder;
+        $dto->showOnlinePresence = $preference->showOnlinePresence;
 
         return $dto;
     }

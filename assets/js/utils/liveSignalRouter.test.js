@@ -16,7 +16,8 @@ function route(payload) {
     chatMessage: record('chatMessage'),
     chatRead: record('chatRead'),
     chatMessageChanged: record('chatMessageChanged'),
-    chatTyping: record('chatTyping')
+    chatTyping: record('chatTyping'),
+    chatPresence: record('chatPresence')
   })
 
   return calls
@@ -54,6 +55,13 @@ describe('routeLiveSignal', () => {
   it('drops a changed message that names no space or no message', () => {
     assert.deepEqual(route({ type: 'band_space_message_changed', message_id: 'message-1' }), [])
     assert.deepEqual(route({ type: 'band_space_message_changed', band_space_id: 'space-1' }), [])
+  })
+
+  it('sends a presence signal to its own handler and nowhere else', () => {
+    assert.deepEqual(route({ type: 'band_space_presence', band_space_id: 'space-1' }), [
+      ['chatPresence', 'space-1']
+    ])
+    assert.deepEqual(route({ type: 'band_space_presence' }), [])
   })
 
   it('sends a typing signal to its own handler and nowhere else', () => {

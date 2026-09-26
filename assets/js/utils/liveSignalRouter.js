@@ -15,6 +15,7 @@
  * @param {(bandSpaceId: string) => unknown} handlers.chatRead
  * @param {(change: {bandSpaceId: string, messageId: string, change: string}) => unknown} handlers.chatMessageChanged
  * @param {(typing: {bandSpaceId: string, userId: string}) => unknown} handlers.chatTyping
+ * @param {(bandSpaceId: string) => unknown} handlers.chatPresence
  */
 export function routeLiveSignal(payload, handlers) {
   const type = payload?.type ?? null
@@ -47,6 +48,10 @@ export function routeLiveSignal(payload, handlers) {
   // A message on screen changed in place: a reaction, an edit, a delete, a pin (#1056). Like a read,
   // nothing here touches a badge or marks anything read, since none of it is new content.
   // Somebody is writing (#1040): the chat tab alone shows it, and it is not new content either.
+  // Somebody opened or closed the chat (#1040): ask again who is online, and nothing else.
+  if (type === 'band_space_presence' && payload.band_space_id) {
+    handlers.chatPresence(payload.band_space_id)
+  }
   if (type === 'band_space_typing' && payload.band_space_id && payload.user_id) {
     handlers.chatTyping({ bandSpaceId: payload.band_space_id, userId: payload.user_id })
   }

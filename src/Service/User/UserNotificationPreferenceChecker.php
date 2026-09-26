@@ -50,6 +50,14 @@ readonly class UserNotificationPreferenceChecker
         return $preference instanceof \App\Entity\User\UserNotificationPreference && $preference->marketing;
     }
 
+    /** Absent preferences mean the default, which is shown. */
+    public function showsOnlinePresence(User $user): bool
+    {
+        $preference = $user->notificationPreference;
+
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->showOnlinePresence;
+    }
+
     public function canReceiveActivityReminderNotification(User $user): bool
     {
         $preference = $user->notificationPreference;

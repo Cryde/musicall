@@ -45,6 +45,7 @@ readonly class UserNotificationPreferenceEditProcessor implements ProcessorInter
         $preference->forumReply = $data->forumReply;
         $preference->marketing = $data->marketing;
         $preference->activityReminder = $data->activityReminder;
+        $preference->showOnlinePresence = $data->showOnlinePresence;
         $preference->updateDatetime = new DateTimeImmutable();
 
         $this->entityManager->flush();
@@ -57,6 +58,7 @@ readonly class UserNotificationPreferenceEditProcessor implements ProcessorInter
         $dto->forumReply = $preference->forumReply;
         $dto->marketing = $preference->marketing;
         $dto->activityReminder = $preference->activityReminder;
+        $dto->showOnlinePresence = $preference->showOnlinePresence;
 
         return $dto;
     }

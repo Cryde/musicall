@@ -126,7 +126,8 @@ export const useUserNotificationStore = defineStore('userNotification', () => {
         chatMessage: (bandSpaceId) => useBandSpaceChatStore().handleIncomingMessage(bandSpaceId),
         chatRead: (bandSpaceId) => useBandSpaceChatStore().handleChatRead(bandSpaceId),
         chatMessageChanged: (change) => useBandSpaceChatStore().handleMessageChanged(change),
-        chatTyping: (typing) => useBandSpaceChatStore().handleTyping(typing)
+        chatTyping: (typing) => useBandSpaceChatStore().handleTyping(typing),
+        chatPresence: (bandSpaceId) => useBandSpaceChatStore().handlePresence(bandSpaceId)
       }),
     onAuthRefreshNeeded: () => useUserSecurityStore().checkAuthInfo()
   })
