@@ -20,6 +20,13 @@ framework:
             limit: 20
             interval: '1 minute'
             cache_pool: "rate_limiter.cache"
+        # A typing signal (#1040): the client sends one every 3 seconds at most while a member types,
+        # so 20 a minute is continuous typing. Double that leaves room for two tabs and stops a script.
+        chat_typing:
+            policy: fixed_window
+            limit: 40
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
         thread_creation:
             policy: fixed_window
             limit: 5

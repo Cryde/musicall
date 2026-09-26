@@ -141,7 +141,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Message from 'primevue/message'
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import bandSpaceChatApi from '../../../api/bandSpace/band-space-chat.js'
 import { useVoiceRecorder } from '../../../composables/useVoiceRecorder.js'
@@ -186,7 +186,7 @@ const props = defineProps({
   bandSpaceId: { type: String, default: null }
 })
 
-const emit = defineEmits(['sent'])
+const emit = defineEmits(['sent', 'typing'])
 
 const router = useRouter()
 
@@ -201,6 +201,11 @@ const isResolvingLink = computed(() => pendingLinks.value > 0)
 const composer = ref(null)
 /** What gets sent: the composer's content in the stored `@[uuid]` format, never what is on screen. */
 const content = ref('')
+
+// Each keystroke into a non empty message; the store throttles what actually goes out (#1040).
+watch(content, (value) => {
+  if (value.trim() !== '') emit('typing')
+})
 const sendError = ref('')
 
 /** The Band Space objects this message will point at, see chatAttachmentDraft. */
