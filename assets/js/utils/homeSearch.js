@@ -31,6 +31,25 @@ export function musicianSearchRoute({ lookingFor, instrument = null, city = null
   return { name: 'app_search_musician', query }
 }
 
+/**
+ * A frequent search (#1075) as the homepage shows it: « Batteur à Bruxelles » for musicians, « Groupe
+ * cherchant un batteur à Liège » for the bands looking for one, and the link that runs it again.
+ */
+export function frequentSearchLink(search) {
+  const lookingForBand = search.type === TYPES_ANNOUNCE_MUSICIAN
+  const label = lookingForBand
+    ? `Groupe cherchant un ${search.instrument_name.toLocaleLowerCase()} à ${search.location_name}`
+    : `${search.instrument_name} à ${search.location_name}`
+  return {
+    label,
+    route: musicianSearchRoute({
+      lookingFor: lookingForBand ? LOOKING_FOR_BAND : LOOKING_FOR_MUSICIAN,
+      instrument: { id: search.instrument_id },
+      city: { name: search.location_name, latitude: search.latitude, longitude: search.longitude }
+    })
+  }
+}
+
 /** An announce card's title, from who posted it and the instrument it is about. */
 export function announceHeadline(announce) {
   const instrument = announce.instrument.musician_name

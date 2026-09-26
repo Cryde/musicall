@@ -14,6 +14,8 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
     styles = null,
     latitude = null,
     longitude = null,
+    location = null,
+    landing = false,
     page = 1,
     append = false
   }) {
@@ -28,6 +30,8 @@ export const useMusicianSearchStore = defineStore('musicianSearch', () => {
       type,
       latitude,
       longitude,
+      location,
+      landing,
       page
     })
 

@@ -37,12 +37,12 @@
             <li><strong>Messages privés</strong> échangés avec d'autres utilisateurs</li>
             <li><strong>Band Space</strong> : notes, tâches et leurs commentaires, entrées d'agenda, setlists, fichiers déposés, entrées financières (libellés, montants, catégories, échéances, répartitions), invitations, appartenances et journal d'activité de l'espace</li>
             <li><strong>Notifications</strong> et préférences d'envoi d'emails</li>
-            <li><strong>Recherche assistée de musiciens</strong> : le texte libre que vous saisissez dans cette recherche</li>
+            <li><strong>Recherche de musiciens et de groupes</strong> : les critères de vos recherches (type, instrument, styles, ville), le nombre de résultats obtenus et, pour la recherche assistée, le texte libre que vous saisissez. Ces recherches sont enregistrées sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer le service</li>
             <li><strong>Données techniques</strong> : adresse IP, journaux du serveur, rapports d'erreur applicative</li>
             <li><strong>Mesure d'audience</strong> : statistiques de visite agrégées, sans cookie</li>
           </ul>
           <p class="text-surface-600 dark:text-surface-300 mt-4">
-            Votre adresse IP sert à sécuriser le service et à limiter le débit des requêtes, et figure dans les journaux du serveur. Elle n'est pas conservée en base de données : les votes et les compteurs de vues reposent sur un identifiant haché qui ne permet pas de remonter à votre adresse.
+            Votre adresse IP sert à sécuriser le service et à limiter le débit des requêtes, et figure dans les journaux du serveur. Elle n'est pas conservée en base de données : les votes et les compteurs de vues reposent sur un identifiant haché qui ne permet pas de remonter à votre adresse. Les recherches enregistrées portent un identifiant haché qui change chaque jour : il sert à compter les personnes différentes sans permettre de relier vos recherches d'un jour à l'autre.
           </p>
         </section>
 
@@ -57,6 +57,7 @@
             <li>Détecter et corriger les erreurs techniques : <strong>intérêt légitime</strong></li>
             <li>Mesurer l'audience du site de façon agrégée afin de l'améliorer : <strong>intérêt légitime</strong></li>
             <li>Interpréter votre recherche de musiciens en langage naturel pour la convertir en filtres : <strong>intérêt légitime</strong></li>
+            <li>Enregistrer les recherches de musiciens et de groupes, sans lien avec votre compte, pour afficher les recherches fréquentes et améliorer la recherche : <strong>intérêt légitime</strong></li>
             <li>Vous envoyer les emails nécessaires au fonctionnement de votre compte (validation d'adresse, réinitialisation de mot de passe, invitations) : <strong>exécution du contrat</strong></li>
             <li>Vous envoyer les emails de suivi de votre activité (réponses, commentaires, messages reçus, récapitulatifs, actualités du site), que vous pouvez désactiver à tout moment depuis vos paramètres : <strong>intérêt légitime</strong></li>
             <li>Vous envoyer des emails à caractère promotionnel : <strong>consentement</strong> (art. 6.1.a), désactivé par défaut et retirable à tout moment</li>
@@ -132,6 +133,7 @@
             <li><strong>Versions remplacées d'un fichier Band Space :</strong> 30 jours</li>
             <li><strong>Fichiers Band Space supprimés :</strong> 30 jours, puis effacement définitif</li>
             <li><strong>Band Space supprimé :</strong> 30 jours, puis effacement définitif de l'espace et de tous ses contenus</li>
+            <li><strong>Recherches de musiciens et de groupes :</strong> 6 mois, puis effacement définitif</li>
             <li><strong>Statistiques d'audience :</strong> conservées sous forme agrégée et non nominative</li>
           </ul>
         </section>
@@ -225,5 +227,5 @@ import { useTitle } from '@vueuse/core'
 
 useTitle('Politique de confidentialité - MusicAll')
 
-const lastUpdate = '31 juillet 2026'
+const lastUpdate = '27 septembre 2026'
 </script>

@@ -14,6 +14,7 @@ use App\Entity\Attribute\Instrument as InstrumentEntity;
 use App\Entity\Attribute\Style as StyleEntity;
 use App\Entity\Musician\MusicianAnnounce;
 use App\State\Provider\Search\MusicianSearchProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[GetCollection(
     uriTemplate: 'musicians/search',
@@ -50,6 +51,18 @@ use App\State\Provider\Search\MusicianSearchProvider;
             key: 'longitude',
             schema: ['type' => 'number', 'format' => 'float'],
             description: 'The longitude coordinate for location-based search',
+        ),
+        // Only recorded, for the frequent searches (#1075): the search itself goes by the coordinates.
+        'location' => new QueryParameter(
+            key: 'location',
+            description: 'The name of the city the coordinates were picked from (optional)',
+            constraints: [new Assert\Length(max: 255)],
+        ),
+        // Set by a landing page's list on arrival, which is not a search anybody asked for (#1075).
+        'landing' => new QueryParameter(
+            key: 'landing',
+            description: 'Set to 1 when the list is a landing page opening, not a search (optional)',
+            constraints: [new Assert\Choice(choices: ['1'])],
         ),
         'page' => new QueryParameter(
             key: 'page',

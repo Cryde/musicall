@@ -7,11 +7,13 @@ namespace App\State\Provider\Admin\Dashboard;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Admin\Dashboard\TimeSeriesMetrics;
+use App\Enum\Search\MusicianSearchKind;
 use App\Repository\Comment\CommentRepository;
 use App\Repository\Forum\ForumPostRepository;
 use App\Repository\Message\MessageRepository;
 use App\Repository\Musician\MusicianAnnounceRepository;
 use App\Repository\PublicationRepository;
+use App\Repository\Search\MusicianSearchLogRepository;
 use App\Repository\UserRepository;
 
 /**
@@ -26,6 +28,7 @@ readonly class TimeSeriesMetricsProvider implements ProviderInterface
         private CommentRepository $commentRepository,
         private ForumPostRepository $forumPostRepository,
         private MusicianAnnounceRepository $musicianAnnounceRepository,
+        private MusicianSearchLogRepository $musicianSearchLogRepository,
     ) {
     }
 
@@ -45,6 +48,8 @@ readonly class TimeSeriesMetricsProvider implements ProviderInterface
             'comments' => $this->commentRepository->countCommentsByDate($from, $to),
             'forum_posts' => $this->forumPostRepository->countForumPostsByDate($from, $to),
             'musician_announces' => $this->musicianAnnounceRepository->countMusicianAnnouncesByDate($from, $to),
+            'musician_searches' => $this->musicianSearchLogRepository->countByDate(MusicianSearchKind::Filters, $from, $to),
+            'ai_searches' => $this->musicianSearchLogRepository->countByDate(MusicianSearchKind::Ai, $from, $to),
             default => [],
         };
 

@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Constraints\Sequentially;
             constraints: [
                 new Sequentially(constraints: [
                     new NotBlank(),
-                    new Choice(choices: ['registrations', 'logins', 'messages', 'publications', 'comments', 'forum_posts', 'musician_announces']),
+                    new Choice(choices: ['registrations', 'logins', 'messages', 'publications', 'comments', 'forum_posts', 'musician_announces', 'musician_searches', 'ai_searches']),
                 ]),
             ],
         ),
