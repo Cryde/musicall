@@ -345,4 +345,26 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Command palette recents (#1046): the most recently created or edited, newest first. DQL takes no
+     * expression in ORDER BY, hence the hidden select.
+     *
+     * @return Task[]
+     */
+    public function findRecentByBandSpace(BandSpace $bandSpace, int $limit): array
+    {
+        return $this->createQueryBuilder('t')
+            ->addSelect('c')
+            ->leftJoin('t.category', 'c')
+            ->addSelect('COALESCE(t.updateDatetime, t.creationDatetime) AS HIDDEN recency')
+            ->where('t.bandSpace = :bandSpace')
+            ->andWhere('t.archiveDatetime IS NULL')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('t.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

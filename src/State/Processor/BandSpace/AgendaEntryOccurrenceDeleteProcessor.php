@@ -105,6 +105,8 @@ readonly class AgendaEntryOccurrenceDeleteProcessor implements ProcessorInterfac
         $exception->occurrenceDate = $occurrenceDate;
 
         $this->entityManager->persist($exception);
+        // Cancelling one date changes the series, so it counts as an edit of the entry (#1046).
+        $entry->updateDatetime = new \DateTime();
 
         $this->activityRecorder->record(
             bandSpace: $bandSpace,

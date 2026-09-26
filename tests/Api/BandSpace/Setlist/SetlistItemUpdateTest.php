@@ -7,6 +7,7 @@ use App\Enum\BandSpace\SetlistItemType;
 use App\Repository\BandSpace\BandSpaceActivityRepository;
 use App\Repository\BandSpace\SetlistItemRepository;
 use App\Tests\ApiTestAssertionsTrait;
+use App\Repository\BandSpace\SetlistRepository;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\BandSpace\BandSpaceFactory;
 use App\Tests\Factory\BandSpace\BandSpaceMembershipFactory;
@@ -76,6 +77,9 @@ class SetlistItemUpdateTest extends ApiTestCase
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Setlist, (string) $setlist->id);
         $this->assertCount(1, $activities);
         $this->assertSame('setlist_item_updated', $activities[0]->type);
+
+        // Its running order is what a setlist is, so this counts as editing it (#1046).
+        $this->assertNotNull(self::getContainer()->get(SetlistRepository::class)->find((string) $setlist->id)?->updateDatetime);
     }
 
     public function test_update_item_cross_setlist_404(): void

@@ -83,6 +83,9 @@ readonly class SetlistItemUpdateProcessor implements ProcessorInterface
             payload: ['item_id' => (string) $item->id],
         );
 
+        // Its running order is what a setlist is, so changing it is changing the setlist, and is what
+        // makes it come up among the palette's recents before a gig (#1046).
+        $setlist->updateDatetime = new \DateTime();
         $this->entityManager->flush();
 
         return $this->itemBuilder->buildItem($item);

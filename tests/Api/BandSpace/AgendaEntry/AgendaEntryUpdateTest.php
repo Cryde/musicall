@@ -80,6 +80,9 @@ class AgendaEntryUpdateTest extends ApiTestCase
         $activities = $activityRepo->findForResource($bandSpace, BandSpaceModule::Agenda, $entry->id);
         $types = array_map(fn($a) => $a->type, $activities);
         $this->assertEqualsCanonicalizing(['title_changed', 'event_datetime_changed'], $types);
+
+        // What the command palette's recents sort on (#1046).
+        $this->assertNotNull(self::getContainer()->get(AgendaEntryRepository::class)->find((string) $entry->id)?->updateDatetime);
     }
 
     /**

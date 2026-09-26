@@ -100,6 +100,9 @@ readonly class AgendaEntryFromOccurrenceDeleteProcessor implements ProcessorInte
             return;
         }
 
+        // Cutting the series short changes the entry, so it counts as an edit of it (#1046).
+        $entry->updateDatetime = new \DateTime();
+
         $this->activityRecorder->record(
             bandSpace: $bandSpace,
             module: BandSpaceModule::Agenda,

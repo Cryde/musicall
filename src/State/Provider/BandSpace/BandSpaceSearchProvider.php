@@ -5,6 +5,15 @@ namespace App\State\Provider\BandSpace;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\BandSpace\BandSpaceSearchResult;
+use App\Entity\BandSpace\AgendaEntry;
+use App\Entity\BandSpace\BandSpace;
+use App\Entity\BandSpace\BandSpaceFile;
+use App\Entity\BandSpace\BandSpaceMembership;
+use App\Entity\BandSpace\BandSpaceNote;
+use App\Entity\BandSpace\FinanceEntry;
+use App\Entity\BandSpace\Setlist;
+use App\Entity\BandSpace\Song;
+use App\Entity\BandSpace\Task;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceSearchResultType;
 use App\Repository\BandSpace\AgendaEntryRepository;
@@ -40,6 +49,9 @@ readonly class BandSpaceSearchProvider implements ProviderInterface
 
     private const int TOTAL_LIMIT = 20;
 
+    /** How many recent items the palette opens on (#1046), across every kind or of the one picked. */
+    private const int RECENT_LIMIT = 5;
+
     public function __construct(
         private BandSpaceMemberChecker $memberChecker,
         private BandSpaceSearchResultBuilder $builder,
@@ -68,47 +80,116 @@ readonly class BandSpaceSearchProvider implements ProviderInterface
         // Once, not once per module. Everything below may assume the space is already authorised.
         [$bandSpace, $viewer] = $this->memberChecker->checkMember((string) $uriVariables['bandSpaceId'], $user);
 
-        $search = mb_strtolower(trim($this->requestStack->getCurrentRequest()?->query->getString('q') ?? ''));
+        $query = $this->requestStack->getCurrentRequest()?->query;
+        $search = mb_strtolower(trim($query?->getString('q') ?? ''));
+        // Already one of the enum's values when sent: the operation's Assert\Choice refused anything else.
+        $onlyType = BandSpaceSearchResultType::tryFrom($query?->getString('type') ?? '');
+        $types = $onlyType instanceof BandSpaceSearchResultType ? [$onlyType] : BandSpaceSearchResultType::cases();
+
         if (mb_strlen($search) < self::MIN_QUERY_LENGTH) {
-            return [];
+            return $this->recent($bandSpace, $viewer, $types);
         }
 
-        // Keyed and ordered by BandSpaceSearchResultType, which is the order the palette groups in.
-        // Should per-module permissions ever land (#785), this map is where they have to be applied:
-        // a palette is precisely the surface that leaks a module a member may not open.
-        $groups = [
-            BandSpaceSearchResultType::Agenda->value => array_map(
-                $this->builder->buildFromAgendaEntry(...),
-                $this->agendaEntryRepository->searchByBandSpace($bandSpace, $search, self::PER_TYPE_LIMIT),
-            ),
-            BandSpaceSearchResultType::Task->value => array_map(
-                $this->builder->buildFromTask(...),
-                $this->taskRepository->searchByBandSpace($bandSpace, $search, self::PER_TYPE_LIMIT),
-            ),
-            BandSpaceSearchResultType::Note->value => array_map(
-                $this->builder->buildFromNote(...),
-                $this->noteRepository->searchByBandSpace($bandSpace, $search, self::PER_TYPE_LIMIT),
-            ),
-            BandSpaceSearchResultType::File->value => array_map(
-                $this->builder->buildFromFile(...),
-                $this->fileRepository->searchByBandSpace($bandSpace, $search, self::PER_TYPE_LIMIT),
-            ),
-            BandSpaceSearchResultType::Setlist->value => array_map(
-                $this->builder->buildFromSetlist(...),
-                $this->setlistRepository->searchByBandSpace($bandSpace, $search, self::PER_TYPE_LIMIT),
-            ),
-            BandSpaceSearchResultType::Song->value => array_map(
-                $this->builder->buildFromSong(...),
-                $this->songRepository->searchByBandSpace($bandSpace, $search, self::PER_TYPE_LIMIT),
-            ),
-            // The viewer is load bearing: a personal finance entry belongs to the member it names.
-            BandSpaceSearchResultType::Finance->value => array_map(
-                $this->builder->buildFromFinanceEntry(...),
-                $this->financeEntryRepository->searchByBandSpace($bandSpace, $viewer, $search, self::PER_TYPE_LIMIT),
-            ),
-        ];
+        // With one kind picked there is no budget to share, and picking it is asking to see more of it.
+        $perTypeLimit = $onlyType instanceof BandSpaceSearchResultType ? self::TOTAL_LIMIT : self::PER_TYPE_LIMIT;
+
+        $groups = [];
+        foreach ($types as $type) {
+            $groups[$type->value] = array_map(
+                fn (object $entity): BandSpaceSearchResult => $this->build($type, $entity),
+                $this->search($type, $bandSpace, $viewer, $search, $perTypeLimit),
+            );
+        }
 
         return $this->trimToTotalCap($groups);
+    }
+
+    /**
+     * What the palette opens on before anything is typed (#1046): the items the band most recently
+     * created or edited, newest first across the kinds asked for. One small query per kind, then a
+     * merge on the same date each one was ordered by.
+     *
+     * @param BandSpaceSearchResultType[] $types
+     *
+     * @return BandSpaceSearchResult[]
+     */
+    private function recent(BandSpace $bandSpace, BandSpaceMembership $viewer, array $types): array
+    {
+        $candidates = [];
+        foreach ($types as $type) {
+            foreach ($this->findRecent($type, $bandSpace, $viewer) as $entity) {
+                $candidates[] = ['recency' => $this->recencyOf($entity), 'result' => $this->build($type, $entity)];
+            }
+        }
+
+        // Newest first, then the result id, so a tie between two kinds reads the same on every call,
+        // as the per-kind queries break theirs on the id.
+        usort($candidates, static fn (array $a, array $b): int => [$b['recency'], $b['result']->id] <=> [$a['recency'], $a['result']->id]);
+
+        return array_column(array_slice($candidates, 0, self::RECENT_LIMIT), 'result');
+    }
+
+    /**
+     * One entry per kind, so there is a single place deciding what each kind may show. Should
+     * per-module permissions ever land (#785), this is where they have to be applied, search and
+     * recents alike: a palette is precisely the surface that leaks a module a member may not open.
+     *
+     * @return object[]
+     */
+    private function search(BandSpaceSearchResultType $type, BandSpace $bandSpace, BandSpaceMembership $viewer, string $search, int $limit): array
+    {
+        return match ($type) {
+            BandSpaceSearchResultType::Agenda => $this->agendaEntryRepository->searchByBandSpace($bandSpace, $search, $limit),
+            BandSpaceSearchResultType::Task => $this->taskRepository->searchByBandSpace($bandSpace, $search, $limit),
+            BandSpaceSearchResultType::Note => $this->noteRepository->searchByBandSpace($bandSpace, $search, $limit),
+            BandSpaceSearchResultType::File => $this->fileRepository->searchByBandSpace($bandSpace, $search, $limit),
+            BandSpaceSearchResultType::Setlist => $this->setlistRepository->searchByBandSpace($bandSpace, $search, $limit),
+            BandSpaceSearchResultType::Song => $this->songRepository->searchByBandSpace($bandSpace, $search, $limit),
+            // The viewer is load bearing: a personal finance entry belongs to the member it names.
+            BandSpaceSearchResultType::Finance => $this->financeEntryRepository->searchByBandSpace($bandSpace, $viewer, $search, $limit),
+        };
+    }
+
+    /**
+     * @return object[]
+     */
+    private function findRecent(BandSpaceSearchResultType $type, BandSpace $bandSpace, BandSpaceMembership $viewer): array
+    {
+        return match ($type) {
+            BandSpaceSearchResultType::Agenda => $this->agendaEntryRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
+            BandSpaceSearchResultType::Task => $this->taskRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
+            BandSpaceSearchResultType::Note => $this->noteRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
+            BandSpaceSearchResultType::File => $this->fileRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
+            BandSpaceSearchResultType::Setlist => $this->setlistRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
+            BandSpaceSearchResultType::Song => $this->songRepository->findRecentByBandSpace($bandSpace, self::RECENT_LIMIT),
+            BandSpaceSearchResultType::Finance => $this->financeEntryRepository->findRecentByBandSpace($bandSpace, $viewer, self::RECENT_LIMIT),
+        };
+    }
+
+    private function build(BandSpaceSearchResultType $type, object $entity): BandSpaceSearchResult
+    {
+        return match (true) {
+            $type === BandSpaceSearchResultType::Agenda && $entity instanceof AgendaEntry => $this->builder->buildFromAgendaEntry($entity),
+            $type === BandSpaceSearchResultType::Task && $entity instanceof Task => $this->builder->buildFromTask($entity),
+            $type === BandSpaceSearchResultType::Note && $entity instanceof BandSpaceNote => $this->builder->buildFromNote($entity),
+            $type === BandSpaceSearchResultType::File && $entity instanceof BandSpaceFile => $this->builder->buildFromFile($entity),
+            $type === BandSpaceSearchResultType::Setlist && $entity instanceof Setlist => $this->builder->buildFromSetlist($entity),
+            $type === BandSpaceSearchResultType::Song && $entity instanceof Song => $this->builder->buildFromSong($entity),
+            $type === BandSpaceSearchResultType::Finance && $entity instanceof FinanceEntry => $this->builder->buildFromFinanceEntry($entity),
+            default => throw new \LogicException(sprintf('A %s result cannot be built from %s', $type->value, $entity::class)),
+        };
+    }
+
+    /** The date every recents query orders on: the last edit, or the creation before the first one. */
+    private function recencyOf(object $entity): \DateTimeInterface
+    {
+        if (!property_exists($entity, 'creationDatetime')) {
+            throw new \LogicException(sprintf('%s has no creation date to sort on', $entity::class));
+        }
+
+        return property_exists($entity, 'updateDatetime') && $entity->updateDatetime instanceof \DateTimeInterface
+            ? $entity->updateDatetime
+            : $entity->creationDatetime;
     }
 
     /**

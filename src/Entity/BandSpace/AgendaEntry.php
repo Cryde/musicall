@@ -70,6 +70,13 @@ class AgendaEntry
     public DateTimeInterface $creationDatetime;
 
     /**
+     * Null until the first edit (#1046), like every other band space module. Set by the processors that
+     * change the entry, which is what the command palette's recents sort on.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    public ?DateTimeInterface $updateDatetime = null;
+
+    /**
      * Cancelled occurrences for this recurring entry. Aggregator skips any
      * occurrence whose date matches one of these during expansion.
      *

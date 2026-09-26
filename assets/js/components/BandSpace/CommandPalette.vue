@@ -39,6 +39,9 @@
     <div class="border-t border-surface p-4">
       <BandSpaceSearchResults
         :groups="groups"
+        :recents="recents"
+        :is-loading-recents="isLoadingRecents"
+        :selected-type="selectedType"
         :active-result="activeResult"
         :query="query"
         :is-searching="isSearching"
@@ -48,6 +51,7 @@
         label="Résultats de la recherche"
         @select="openResult"
         @activate="setActiveResult"
+        @toggle-type="toggleType"
       />
     </div>
 
@@ -105,16 +109,29 @@ const {
   flatResults,
   groups,
   hasSearched,
+  isLoadingRecents,
   isSearching,
   moveActive,
   query,
+  recents,
   reset,
   searchError,
-  setActiveResult
+  selectedType,
+  setActiveResult,
+  toggleType
 } = useBandSpaceSearch(currentSpaceId, listboxId)
 
 const resultCountLabel = computed(() => {
-  if (!hasSearched.value || isSearching.value) {
+  // The recents have a count of their own wording (#1046), and the same announcement as the hits.
+  if (!hasSearched.value) {
+    const count = recents.value.length
+    if (isLoadingRecents.value || count === 0) {
+      return ''
+    }
+
+    return count === 1 ? '1 élément récent' : `${count} éléments récents`
+  }
+  if (isSearching.value) {
     return ''
   }
   const count = flatResults.value.length

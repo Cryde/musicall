@@ -577,4 +577,41 @@ class FinanceEntryRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Command palette recents (#1046): the most recently created or edited entries this member can
+     * see, newest first, and only the latest entry of each recurrence. Editing a recurrence bumps every
+     * entry it regenerates, so without that one edit would fill every slot with the same label.
+     *
+     * @return FinanceEntry[]
+     */
+    public function findRecentByBandSpace(BandSpace $bandSpace, BandSpaceMembership $viewer, int $limit): array
+    {
+        $newerOfTheSameRecurrence = $this->getEntityManager()->createQueryBuilder()
+            ->select('1')
+            ->from(FinanceEntry::class, 'sibling')
+            ->where('sibling.recurrence = e.recurrence')
+            // Only siblings this member can see may outrank an entry: an occurrence reassigned to
+            // someone else's personal scope would otherwise hide the whole series from everyone else.
+            ->andWhere('sibling.scope = :bandScope OR sibling.member = :viewer')
+            ->andWhere(
+                'COALESCE(sibling.updateDatetime, sibling.creationDatetime) > COALESCE(e.updateDatetime, e.creationDatetime)'
+                . ' OR (COALESCE(sibling.updateDatetime, sibling.creationDatetime) = COALESCE(e.updateDatetime, e.creationDatetime) AND sibling.id > e.id)',
+            );
+
+        $qb = $this->createQueryBuilder('e')
+            ->addSelect('c')
+            ->innerJoin('e.category', 'c')
+            ->addSelect('COALESCE(e.updateDatetime, e.creationDatetime) AS HIDDEN recency')
+            ->where('c.bandSpace = :bandSpace')
+            ->andWhere('e.recurrence IS NULL OR NOT EXISTS (' . $newerOfTheSameRecurrence->getDQL() . ')')
+            ->setParameter('bandSpace', $bandSpace)
+            ->orderBy('recency', 'DESC')
+            ->addOrderBy('e.id', 'DESC')
+            ->setMaxResults($limit);
+
+        $this->applyVisibleTo($qb, $viewer);
+
+        return $qb->getQuery()->getResult();
+    }
 }
