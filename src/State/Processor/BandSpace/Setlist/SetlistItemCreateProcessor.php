@@ -19,6 +19,7 @@ use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Security\BandSpace\SetlistWriteGuard;
 use App\Security\BandSpace\SongWriteGuard;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\Setlist\SetlistRunningOrder;
 use App\Service\Builder\BandSpace\SetlistItemBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -40,6 +41,7 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         private SongRepository $songRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private SetlistItemBuilder $itemBuilder,
+        private SetlistRunningOrder $runningOrder,
         private Security $security,
     ) {
     }
@@ -84,14 +86,13 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         }
 
         $item = new SetlistItem();
-        $item->setlist = $setlist;
         $item->type = $type;
         $item->song = $song;
         $item->label = $type === SetlistItemType::Song ? null : $data->label;
         $item->durationOverride = $data->durationOverride;
         $item->note = $data->note;
         $item->transition = $data->transition;
-        $this->insertAt($setlist, $item, $data->position);
+        $this->runningOrder->insert($setlist, [$item], $data->position);
 
         $this->entityManager->persist($item);
 
@@ -114,24 +115,5 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         $this->entityManager->flush();
 
         return $this->itemBuilder->buildItem($item);
-    }
-
-    /**
-     * Renumbers the whole running order around the new item rather than shifting the tail by one.
-     * Removals and reorders keep positions dense today, so this is defensive: were a gap ever to
-     * appear, "insert at 3" would still land third.
-     */
-    private function insertAt(Setlist $setlist, SetlistItem $item, ?int $position): void
-    {
-        $ordered = $setlist->items->toArray();
-        usort($ordered, static fn (SetlistItem $a, SetlistItem $b): int => $a->position <=> $b->position);
-
-        $index = $position === null ? count($ordered) : min($position, count($ordered));
-        array_splice($ordered, $index, 0, [$item]);
-
-        foreach ($ordered as $newPosition => $each) {
-            $each->position = $newPosition;
-        }
-        $setlist->items->add($item);
     }
 }
