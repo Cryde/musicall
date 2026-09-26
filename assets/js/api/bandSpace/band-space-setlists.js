@@ -177,6 +177,11 @@ export default {
       params.set('showTransitions', options.showTransitions ? '1' : '0')
     if (options.fitToOnePage !== undefined)
       params.set('fitToOnePage', options.fitToOnePage ? '1' : '0')
+    if (options.showLyrics !== undefined) params.set('showLyrics', options.showLyrics ? '1' : '0')
+    if (options.lyricsChords !== undefined)
+      params.set('lyricsChords', options.lyricsChords ? '1' : '0')
+    if (options.lyricsSingers !== undefined)
+      params.set('lyricsSingers', options.lyricsSingers ? '1' : '0')
     const qs = params.toString()
     return qs ? `${baseUrl}?${qs}` : baseUrl
   },

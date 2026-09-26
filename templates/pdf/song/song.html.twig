@@ -1,0 +1,11 @@
+{% extends 'pdf/setlist/_base.html.twig' %}
+
+{% block title %}{{ sheet.title }}{% endblock %}
+
+{% block extra_styles %}
+    {% include 'pdf/song/_sheet_styles.html.twig' %}
+{% endblock %}
+
+{% block body %}
+    {% include 'pdf/song/_sheet.html.twig' with {sheet: sheet, first: true} only %}
+{% endblock %}

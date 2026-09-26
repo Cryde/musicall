@@ -1,0 +1,146 @@
+/* Lyrics, chords and singers (#1055), shared by the sheet and the simple editor. */
+
+.lyrics-singer-tag {
+  display: inline-block;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.4;
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  margin-left: 0.2rem;
+  white-space: nowrap;
+}
+
+.lyrics-section {
+  border-left: 3px solid var(--p-primary-color);
+  background: var(--p-surface-100);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.4rem 0.75rem;
+  margin: 0.6rem 0;
+}
+/* One colour per kind of part, so a break or a solo stands out from a verse. Same as the PDF. */
+.lyrics-section--chorus {
+  border-left-color: #f5b400;
+}
+.lyrics-section--prechorus {
+  border-left-color: #fb923c;
+}
+.lyrics-section--bridge {
+  border-left-color: #8b5cf6;
+}
+.lyrics-section--break {
+  border-left-color: #dc2626;
+}
+.lyrics-section--solo {
+  border-left-color: #059669;
+}
+.lyrics-section--intro,
+.lyrics-section--interlude,
+.lyrics-section--outro {
+  border-left-color: #64748b;
+}
+.dark-mode .lyrics-section {
+  background: var(--p-surface-800);
+}
+
+.lyrics-comment {
+  font-style: italic;
+  color: var(--p-surface-600);
+  margin: 0.35rem 0;
+}
+.lyrics-directive {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8em;
+  color: var(--p-surface-500);
+  margin: 0.35rem 0;
+}
+.dark-mode .lyrics-comment {
+  color: var(--p-surface-300);
+}
+.dark-mode .lyrics-directive {
+  color: var(--p-surface-400);
+}
+
+/* The sheet: a chord row over each chunk, the names in a margin on the left. */
+.lyrics-sheet-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-height: 1.5em;
+  line-height: 1.5;
+}
+.lyrics-sheet-gutter {
+  width: 5.5rem;
+  flex-shrink: 0;
+  text-align: right;
+  padding-bottom: 0.15em;
+}
+.lyrics-sheet-chord {
+  color: #b45309;
+  font-weight: 700;
+  font-size: 0.9em;
+  padding-right: 0.4rem;
+  min-height: 1.4em;
+}
+.dark-mode .lyrics-sheet-chord {
+  color: #fbbf24;
+}
+@media (max-width: 640px) {
+  .lyrics-sheet-gutter {
+    width: 3.75rem;
+  }
+}
+
+/* The simple editor: every line keeps room for a chord row, a chord takes no width of its own. */
+.lyrics-editor .ProseMirror {
+  outline: none;
+  padding: 0.5rem 0.5rem 2rem 6.5rem;
+  min-height: 18rem;
+  font-size: 1rem;
+}
+.lyrics-editor .lyrics-line {
+  position: relative;
+  margin: 0;
+  padding-top: 1.25em;
+  line-height: 1.5;
+  min-height: 2.75em;
+}
+.lyrics-editor .lyrics-chord {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1em;
+  cursor: pointer;
+}
+.lyrics-editor .lyrics-chord::before {
+  content: attr(data-chord);
+  position: absolute;
+  left: 0;
+  bottom: 1.15em;
+  color: #b45309;
+  font-weight: 700;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+.dark-mode .lyrics-editor .lyrics-chord::before {
+  color: #fbbf24;
+}
+.lyrics-editor .lyrics-chord.ProseMirror-selectednode::before {
+  outline: 2px solid var(--p-primary-color);
+  border-radius: 3px;
+}
+.lyrics-editor .lyrics-gutter {
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  bottom: 0.2em;
+  width: 6rem;
+  text-align: right;
+  user-select: none;
+}
+.lyrics-editor .lyrics-section .lyrics-gutter {
+  right: calc(100% + 1.3rem);
+}
+.lyrics-editor .lyrics-directive.ProseMirror-selectednode {
+  outline: 2px solid var(--p-primary-color);
+}

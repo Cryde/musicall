@@ -30,6 +30,7 @@ readonly class SongBuilder
         $dto->tonality = $entity->tonality;
         $dto->referenceDuration = $entity->referenceDuration;
         $dto->notes = $entity->notes;
+        $dto->hasLyrics = $entity->lyrics !== null;
         $dto->archiveDatetime = $entity->archiveDatetime;
         $dto->creationDatetime = $entity->creationDatetime;
         $dto->updateDatetime = $entity->updateDatetime;

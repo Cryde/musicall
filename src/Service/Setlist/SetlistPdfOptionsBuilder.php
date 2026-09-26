@@ -23,6 +23,10 @@ final readonly class SetlistPdfOptionsBuilder
         $font = SetlistPdfFont::tryFrom((string) ($query?->get('font') ?? ''));
         // Orthogonal to the per-field toggles, so it applies to both layouts.
         $fitToOnePage = $query?->getBoolean('fitToOnePage', false) ?? false;
+        // The lyrics pages follow the list whatever its layout.
+        $showLyrics = $query?->getBoolean('showLyrics', false) ?? false;
+        $lyricsChords = $query?->getBoolean('lyricsChords', true) ?? true;
+        $lyricsSingers = $query?->getBoolean('lyricsSingers', true) ?? true;
 
         if ($layout === SetlistPdfLayout::Compact) {
             return new SetlistPdfOptions(
@@ -34,6 +38,9 @@ final readonly class SetlistPdfOptionsBuilder
                 showTransitions: false,
                 font: $font,
                 fitToOnePage: $fitToOnePage,
+                showLyrics: $showLyrics,
+                lyricsChords: $lyricsChords,
+                lyricsSingers: $lyricsSingers,
             );
         }
 
@@ -46,6 +53,9 @@ final readonly class SetlistPdfOptionsBuilder
             showTransitions: $query?->getBoolean('showTransitions', false) ?? false,
             font: $font,
             fitToOnePage: $fitToOnePage,
+            showLyrics: $showLyrics,
+            lyricsChords: $lyricsChords,
+            lyricsSingers: $lyricsSingers,
         );
     }
 }

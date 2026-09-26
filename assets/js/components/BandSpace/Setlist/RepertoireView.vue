@@ -79,6 +79,7 @@
       :song="drawerSong"
       @edit="handleEditFromDrawer"
       @archived="handleArchivedFromDrawer"
+      @updated="drawerSong = $event"
     />
   </div>
 </template>

@@ -16,6 +16,10 @@ final readonly class SetlistPdfOptions
         public bool $showTransitions = false,
         public ?SetlistPdfFont $font = null,
         public bool $fitToOnePage = false,
+        /** Each song's lyrics after the list, one per page (#1055). */
+        public bool $showLyrics = false,
+        public bool $lyricsChords = true,
+        public bool $lyricsSingers = true,
     ) {
     }
 

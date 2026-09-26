@@ -29,7 +29,7 @@
         />
       </div>
 
-      <div v-tooltip.top="canFitOnePage ? '' : 'Trop de titres pour tenir sur une page (max 15)'">
+      <div v-tooltip.top="fitHint">
         <div class="flex items-center gap-2" :class="!canFitOnePage && 'opacity-50'">
           <Checkbox
             v-model="options.fitToOnePage"
@@ -92,6 +92,23 @@
         </div>
       </div>
 
+      <div class="flex flex-col gap-2 pt-1 border-t border-surface-200 dark:border-surface-700">
+        <div class="flex items-center gap-2 pt-2">
+          <Checkbox v-model="options.showLyrics" :binary="true" input-id="pdf-lyrics" />
+          <label for="pdf-lyrics" class="text-sm">Inclure les paroles (une page par titre)</label>
+        </div>
+        <div class="flex flex-col gap-2 pl-6" :class="!options.showLyrics && 'opacity-50'">
+          <div class="flex items-center gap-2">
+            <Checkbox v-model="options.lyricsChords" :binary="true" input-id="pdf-lyrics-chords" :disabled="!options.showLyrics" />
+            <label for="pdf-lyrics-chords" class="text-sm">Avec les accords</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <Checkbox v-model="options.lyricsSingers" :binary="true" input-id="pdf-lyrics-singers" :disabled="!options.showLyrics" />
+            <label for="pdf-lyrics-singers" class="text-sm">Avec qui chante</label>
+          </div>
+        </div>
+      </div>
+
       <Button
         :label="isExporting ? 'Génération...' : 'Télécharger le PDF'"
         :icon="isExporting ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
@@ -146,11 +163,19 @@ const options = reactive({
   showNotes: false,
   showTransitions: false,
   font: 'inter',
-  fitToOnePage: false
+  fitToOnePage: false,
+  showLyrics: false,
+  lyricsChords: true,
+  lyricsSingers: true
 })
 
 const isCompact = computed(() => options.layout === 'compact')
-const canFitOnePage = computed(() => props.itemCount <= MAX_FIT_ITEMS)
+// With the lyrics the document is several pages by design, so the server ignores the fit then too.
+const canFitOnePage = computed(() => props.itemCount <= MAX_FIT_ITEMS && !options.showLyrics)
+const fitHint = computed(() => {
+  if (options.showLyrics) return 'Les paroles ajoutent une page par titre'
+  return props.itemCount > MAX_FIT_ITEMS ? 'Trop de titres pour tenir sur une page (max 15)' : ''
+})
 
 function toggle(event) {
   popover.value?.toggle(event)
@@ -170,7 +195,7 @@ async function handleExport() {
     const { blob, filename } = await bandSpaceSetlistsApi.downloadPdf(
       props.bandSpaceId,
       props.setlistId,
-      { ...options }
+      { ...options, fitToOnePage: options.fitToOnePage && canFitOnePage.value }
     )
     downloadBlob(blob, filename ?? 'setlist.pdf')
     popover.value?.hide()

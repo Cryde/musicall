@@ -2,7 +2,7 @@
   <Drawer
     v-model:visible="visible"
     position="right"
-    :style="{ width: '420px' }"
+    :style="{ width: 'min(40rem, 100vw)' }"
     :header="song?.title ?? 'Titre'"
   >
     <div v-if="song" class="flex flex-col gap-4">
@@ -25,6 +25,15 @@
         <div class="text-xs uppercase text-surface-500 mb-1">Notes</div>
         <p class="text-sm whitespace-pre-line">{{ song.notes }}</p>
       </div>
+
+      <Divider />
+
+      <SongLyricsPanel
+        :band-space-id="bandSpaceId"
+        :song="song"
+        :read-only="song.archive_datetime !== null"
+        @changed="handleLyricsChanged"
+      />
 
       <Divider />
 
@@ -102,13 +111,14 @@ import { ref, watch } from 'vue'
 import bandSpaceSongsApi from '../../../api/bandSpace/band-space-songs.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
+import SongLyricsPanel from './Lyrics/SongLyricsPanel.vue'
 
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   song: { type: Object, default: null }
 })
 
-const emit = defineEmits(['edit', 'archived'])
+const emit = defineEmits(['edit', 'archived', 'updated'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
 const songsStore = useBandSongsStore()
@@ -193,6 +203,15 @@ function confirmDetach(file) {
       }
     }
   })
+}
+
+// The lyrics live on their own resource; the song only learns about them (has_lyrics, a moved key) here.
+async function handleLyricsChanged() {
+  try {
+    emit('updated', await songsStore.refreshSong(props.bandSpaceId, props.song.id))
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 })
+  }
 }
 
 function confirmArchive() {

@@ -244,4 +244,29 @@ class BandSpaceMembershipRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Every membership these users ever held in the space, former ones included: a song keeps naming
+     * a singer who left (#1055).
+     *
+     * @param list<string> $userIds
+     *
+     * @return BandSpaceMembership[]
+     */
+    public function findByBandSpaceIdAndUserIds(string $bandSpaceId, array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.user', 'u')
+            ->addSelect('u')
+            ->where('m.bandSpace = :bandSpace')
+            ->andWhere('u.id IN (:userIds)')
+            ->setParameter('bandSpace', $bandSpaceId)
+            ->setParameter('userIds', $userIds)
+            ->getQuery()
+            ->getResult();
+    }
 }

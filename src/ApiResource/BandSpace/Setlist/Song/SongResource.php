@@ -95,6 +95,10 @@ class SongResource
 
     public ?string $notes = null;
 
+    /** Whether the song has lyrics, which live on their own resource (SongLyrics). */
+    #[ApiProperty(writable: false)]
+    public bool $hasLyrics = false;
+
     public ?\DateTimeInterface $archiveDatetime = null;
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;

@@ -1,0 +1,792 @@
+{
+  "palette": {
+    "singers": [
+      "#4f46e5",
+      "#b45309",
+      "#047857",
+      "#e11d48",
+      "#0369a1",
+      "#7c3aed",
+      "#4d7c0f",
+      "#c2410c"
+    ],
+    "all": "#64748b"
+  },
+  "sheets": [
+    {
+      "source": "[Am]Hello from the [G]other side",
+      "expected": [
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [
+                "Am"
+              ],
+              "segments": [
+                {
+                  "text": "Hello from the ",
+                  "singers": null
+                }
+              ]
+            },
+            {
+              "chords": [
+                "G"
+              ],
+              "segments": [
+                {
+                  "text": "other side",
+                  "singers": null
+                }
+              ]
+            }
+          ],
+          "singerSets": []
+        }
+      ]
+    },
+    {
+      "source": "Au clair de la [G]lune, <span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301]\">mon [C]ami</span> Pierrot",
+      "expected": [
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [],
+              "segments": [
+                {
+                  "text": "Au clair de la ",
+                  "singers": null
+                }
+              ]
+            },
+            {
+              "chords": [
+                "G"
+              ],
+              "segments": [
+                {
+                  "text": "lune, ",
+                  "singers": null
+                },
+                {
+                  "text": "mon ",
+                  "singers": [
+                    "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+                  ]
+                }
+              ]
+            },
+            {
+              "chords": [
+                "C"
+              ],
+              "segments": [
+                {
+                  "text": "ami",
+                  "singers": [
+                    "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+                  ]
+                },
+                {
+                  "text": " Pierrot",
+                  "singers": null
+                }
+              ]
+            }
+          ],
+          "singerSets": [
+            [
+              "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "source": "{start_of_chorus: Refrain}\n<span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301] @[6ba7b810-9dad-11d1-80b4-00c04fd430c8]\">[G]Ma chandelle</span> est morte\n<span singer=\"all\">Ouvre-moi</span>\n{end_of_chorus}",
+      "expected": [
+        {
+          "type": "section",
+          "kind": "chorus",
+          "label": "Refrain",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [
+                    "G"
+                  ],
+                  "segments": [
+                    {
+                      "text": "Ma chandelle",
+                      "singers": [
+                        "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                        "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                      ]
+                    },
+                    {
+                      "text": " est morte",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": [
+                [
+                  "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+                  "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                ]
+              ]
+            },
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [],
+                  "segments": [
+                    {
+                      "text": "Ouvre-moi",
+                      "singers": [
+                        "all"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "singerSets": [
+                [
+                  "all"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "{soc}\nLa la\n{eoc}\n{c: Pause}\n{title: Au clair}\n\nFin[C]",
+      "expected": [
+        {
+          "type": "section",
+          "kind": "chorus",
+          "label": "",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [],
+                  "segments": [
+                    {
+                      "text": "La la",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        },
+        {
+          "type": "comment",
+          "text": "Pause"
+        },
+        {
+          "type": "directive",
+          "raw": "{title: Au clair}"
+        },
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [],
+              "segments": []
+            }
+          ],
+          "singerSets": []
+        },
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [],
+              "segments": [
+                {
+                  "text": "Fin",
+                  "singers": null
+                }
+              ]
+            },
+            {
+              "chords": [
+                "C"
+              ],
+              "segments": []
+            }
+          ],
+          "singerSets": []
+        }
+      ]
+    },
+    {
+      "source": "{sov: Couplet 1}\nUn\n{soc}\nDeux<span singer=\"@[6ba7b810-9dad-11d1-80b4-00c04fd430c8]\">",
+      "expected": [
+        {
+          "type": "section",
+          "kind": "verse",
+          "label": "Couplet 1",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [],
+                  "segments": [
+                    {
+                      "text": "Un",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "kind": "chorus",
+          "label": "",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [],
+                  "segments": [
+                    {
+                      "text": "Deux",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "[Am7][D/F#]Deux accords [ ]crochet [vide",
+      "expected": [
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [
+                "Am7",
+                "D/F#"
+              ],
+              "segments": [
+                {
+                  "text": "Deux accords [ ]crochet [vide",
+                  "singers": null
+                }
+              ]
+            }
+          ],
+          "singerSets": []
+        }
+      ]
+    },
+    {
+      "source": "<span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301]\">a<span singer=\"all\">b</span>c</span>",
+      "expected": [
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [],
+              "segments": [
+                {
+                  "text": "a",
+                  "singers": [
+                    "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+                  ]
+                },
+                {
+                  "text": "b",
+                  "singers": [
+                    "all"
+                  ]
+                },
+                {
+                  "text": "c",
+                  "singers": null
+                }
+              ]
+            }
+          ],
+          "singerSets": [
+            [
+              "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+            ],
+            [
+              "all"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "source": "🎸 Intro [Am]😀 la <span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301]\">[G]fête 🎉</span> fin",
+      "expected": [
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [],
+              "segments": [
+                {
+                  "text": "🎸 Intro ",
+                  "singers": null
+                }
+              ]
+            },
+            {
+              "chords": [
+                "Am"
+              ],
+              "segments": [
+                {
+                  "text": "😀 la ",
+                  "singers": null
+                }
+              ]
+            },
+            {
+              "chords": [
+                "G"
+              ],
+              "segments": [
+                {
+                  "text": "fête 🎉",
+                  "singers": [
+                    "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+                  ]
+                },
+                {
+                  "text": " fin",
+                  "singers": null
+                }
+              ]
+            }
+          ],
+          "singerSets": [
+            [
+              "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "source": "{start_of_intro}\n[E5]\n{end_of_intro}\n{start_of_break: Breakdown}\n[E5]Chugga\n{end_of_break}\n{start_of_solo}\n[Am] [G]\n{end_of_solo}",
+      "expected": [
+        {
+          "type": "section",
+          "kind": "intro",
+          "label": "",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [
+                    "E5"
+                  ],
+                  "segments": []
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "kind": "break",
+          "label": "Breakdown",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [
+                    "E5"
+                  ],
+                  "segments": [
+                    {
+                      "text": "Chugga",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "kind": "solo",
+          "label": "",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [
+                    "Am"
+                  ],
+                  "segments": [
+                    {
+                      "text": " ",
+                      "singers": null
+                    }
+                  ]
+                },
+                {
+                  "chords": [
+                    "G"
+                  ],
+                  "segments": []
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "{start_of_pre_chorus}\nMonte\n{end_of_pre_chorus}\n{start_of_outro}\nFin\n{eoc}\n{start_of_tab}\ne|---0---|\n{end_of_tab}",
+      "expected": [
+        {
+          "type": "section",
+          "kind": "prechorus",
+          "label": "",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [],
+                  "segments": [
+                    {
+                      "text": "Monte",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "kind": "outro",
+          "label": "",
+          "content": [
+            {
+              "type": "line",
+              "chunks": [
+                {
+                  "chords": [],
+                  "segments": [
+                    {
+                      "text": "Fin",
+                      "singers": null
+                    }
+                  ]
+                }
+              ],
+              "singerSets": []
+            }
+          ]
+        },
+        {
+          "type": "directive",
+          "raw": "{start_of_tab}"
+        },
+        {
+          "type": "line",
+          "chunks": [
+            {
+              "chords": [],
+              "segments": [
+                {
+                  "text": "e|---0---|",
+                  "singers": null
+                }
+              ]
+            }
+          ],
+          "singerSets": []
+        },
+        {
+          "type": "directive",
+          "raw": "{end_of_tab}"
+        }
+      ]
+    }
+  ],
+  "singers": [
+    {
+      "source": "Au clair de la [G]lune, <span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301]\">mon [C]ami</span> Pierrot",
+      "expected": [
+        "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+      ]
+    },
+    {
+      "source": "{start_of_chorus: Refrain}\n<span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301] @[6ba7b810-9dad-11d1-80b4-00c04fd430c8]\">[G]Ma chandelle</span> est morte\n<span singer=\"all\">Ouvre-moi</span>\n{end_of_chorus}",
+      "expected": [
+        "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+        "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+        "all"
+      ]
+    },
+    {
+      "source": "<span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301]\">a<span singer=\"all\">b</span>c</span>",
+      "expected": [
+        "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+        "all"
+      ]
+    },
+    {
+      "source": "🎸 Intro [Am]😀 la <span singer=\"@[3f2504e0-4f89-41d3-9a0c-0305e82c3301]\">[G]fête 🎉</span> fin",
+      "expected": [
+        "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+      ]
+    }
+  ],
+  "chords": [
+    {
+      "chord": "C",
+      "steps": 2,
+      "flats": false,
+      "expected": "D"
+    },
+    {
+      "chord": "Am7",
+      "steps": 3,
+      "flats": false,
+      "expected": "Cm7"
+    },
+    {
+      "chord": "D/F#",
+      "steps": 2,
+      "flats": false,
+      "expected": "E/G#"
+    },
+    {
+      "chord": "Bb",
+      "steps": 2,
+      "flats": true,
+      "expected": "C"
+    },
+    {
+      "chord": "F#m",
+      "steps": -1,
+      "flats": true,
+      "expected": "Fm"
+    },
+    {
+      "chord": "G",
+      "steps": 5,
+      "flats": false,
+      "expected": "C"
+    },
+    {
+      "chord": "Lam",
+      "steps": 2,
+      "flats": false,
+      "expected": "Sim"
+    },
+    {
+      "chord": "Sib7",
+      "steps": -2,
+      "flats": true,
+      "expected": "Lab7"
+    },
+    {
+      "chord": "Fa#m/Do#",
+      "steps": 1,
+      "flats": false,
+      "expected": "Solm/Ré"
+    },
+    {
+      "chord": "N.C.",
+      "steps": 3,
+      "flats": false,
+      "expected": "N.C."
+    },
+    {
+      "chord": "Ebmaj7",
+      "steps": 0,
+      "flats": true,
+      "expected": "Ebmaj7"
+    },
+    {
+      "chord": "C",
+      "steps": 12,
+      "flats": false,
+      "expected": "C"
+    },
+    {
+      "chord": "E",
+      "steps": -5,
+      "flats": true,
+      "expected": "B"
+    },
+    {
+      "chord": "Ré",
+      "steps": 1,
+      "flats": true,
+      "expected": "Mib"
+    },
+    {
+      "chord": "Re",
+      "steps": 1,
+      "flats": false,
+      "expected": "Ré#"
+    },
+    {
+      "chord": "B♭m",
+      "steps": 1,
+      "flats": false,
+      "expected": "Bm"
+    }
+  ],
+  "keys": [
+    {
+      "key": "C",
+      "steps": 5,
+      "expected": "F"
+    },
+    {
+      "key": "Em",
+      "steps": 1,
+      "expected": "Fm"
+    },
+    {
+      "key": "Am",
+      "steps": -2,
+      "expected": "Gm"
+    },
+    {
+      "key": "Mi mineur",
+      "steps": 3,
+      "expected": "Sol mineur"
+    },
+    {
+      "key": "Do majeur",
+      "steps": -2,
+      "expected": "Sib majeur"
+    },
+    {
+      "key": "F#",
+      "steps": 1,
+      "expected": "G"
+    },
+    {
+      "key": "?",
+      "steps": 2,
+      "expected": null
+    },
+    {
+      "key": null,
+      "steps": 2,
+      "expected": null
+    },
+    {
+      "key": "G",
+      "steps": 0,
+      "expected": "G"
+    },
+    {
+      "key": "Dm",
+      "steps": -2,
+      "expected": "Cm"
+    }
+  ],
+  "sources": [
+    {
+      "source": "{soc: Refrain [G]}\n[C]Au [G/B]clair <span singer=\"all\">[Am]lune</span>",
+      "steps": 5,
+      "key": "C",
+      "expected": "{soc: Refrain [G]}\n[F]Au [C/E]clair <span singer=\"all\">[Dm]lune</span>"
+    },
+    {
+      "source": "[A]Hey [E]you",
+      "steps": 1,
+      "key": null,
+      "expected": "[A#]Hey [F]you"
+    },
+    {
+      "source": "[A]Hey [E]you",
+      "steps": -1,
+      "key": null,
+      "expected": "[Ab]Hey [Eb]you"
+    },
+    {
+      "source": "[Do]Au [Sol]clair",
+      "steps": 3,
+      "key": "Do",
+      "expected": "[Mib]Au [Sib]clair"
+    }
+  ],
+  "section_kinds": [
+    {
+      "value": "intro",
+      "label": "Intro"
+    },
+    {
+      "value": "verse",
+      "label": "Couplet"
+    },
+    {
+      "value": "prechorus",
+      "label": "Pré-refrain"
+    },
+    {
+      "value": "chorus",
+      "label": "Refrain"
+    },
+    {
+      "value": "bridge",
+      "label": "Pont"
+    },
+    {
+      "value": "break",
+      "label": "Break"
+    },
+    {
+      "value": "solo",
+      "label": "Solo"
+    },
+    {
+      "value": "interlude",
+      "label": "Interlude"
+    },
+    {
+      "value": "outro",
+      "label": "Outro"
+    }
+  ]
+}

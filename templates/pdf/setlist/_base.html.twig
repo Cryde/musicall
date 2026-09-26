@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>{{ setlist.name }}</title>
+    <title>{% block title %}{{ setlist.name }}{% endblock %}</title>
     <style>
         {#
             No @page rule. Paper size and margins are set through the Gotenberg builder in
@@ -53,10 +53,17 @@
         }
 
         {% block extra_styles %}{% endblock %}
+        {% if lyrics_sheets is defined and lyrics_sheets is not empty %}
+            {% include 'pdf/song/_sheet_styles.html.twig' %}
+        {% endif %}
     </style>
 </head>
 <body>
     {% block header %}{% endblock %}
     {% block body %}{% endblock %}
+    {# « Inclure les paroles » (#1055): each song with lyrics, one per page after the list. #}
+    {% for sheet in lyrics_sheets ?? [] %}
+        {% include 'pdf/song/_sheet.html.twig' with {sheet: sheet} only %}
+    {% endfor %}
 </body>
 </html>

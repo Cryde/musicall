@@ -1,0 +1,22 @@
+{# A song sheet (#1055): chords over the syllable they start on, singers as a tint plus their names in the margin. #}
+.song-sheet { break-before: page; }
+.song-sheet.first { break-before: auto; }
+.song-sheet-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #f5b400; padding-bottom: 2mm; margin-bottom: 5mm; }
+.song-sheet-title { font-size: 18pt; font-weight: bold; }
+.song-sheet-meta { font-size: 10pt; color: #555; }
+.song-legend { display: flex; flex-wrap: wrap; gap: 2mm; margin-bottom: 4mm; font-size: 8.5pt; }
+.singer-tag { display: inline-block; color: #ffffff; font-weight: bold; font-size: 7.5pt; border-radius: 2mm; padding: 0.3mm 1.6mm; margin-left: 0.8mm; white-space: nowrap; }
+.song-section { border-left: 0.8mm solid #3a6589; padding: 1.5mm 0 1.5mm 3mm; margin: 3mm 0; break-inside: avoid; }
+.song-section.chorus { border-left-color: #f5b400; background: #fbf8ef; }
+.song-section.prechorus { border-left-color: #fb923c; }
+.song-section.bridge { border-left-color: #8b5cf6; }
+.song-section.break { border-left-color: #dc2626; }
+.song-section.solo { border-left-color: #059669; }
+.song-section.intro, .song-section.interlude, .song-section.outro { border-left-color: #64748b; }
+.song-section-label { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.5pt; color: #777; font-weight: bold; margin-bottom: 1mm; }
+.song-comment { font-style: italic; color: #666; font-size: 9.5pt; margin: 2mm 0; }
+.song-line { display: flex; align-items: flex-end; break-inside: avoid; min-height: 5mm; }
+.song-gutter { width: 26mm; flex-shrink: 0; text-align: right; padding: 0 2mm 0.6mm 0; }
+.song-lyrics { display: flex; flex-wrap: wrap; font-size: 11.5pt; line-height: 1.35; }
+.song-chunk { display: inline-flex; flex-direction: column; white-space: pre; }
+.song-chord { color: #b45309; font-weight: bold; font-size: 10pt; min-height: 1.25em; padding-right: 1.5mm; }
