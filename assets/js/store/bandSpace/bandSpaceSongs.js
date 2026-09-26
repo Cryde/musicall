@@ -66,6 +66,13 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
     return updated
   }
 
+  /** Re-reads one title after a write elsewhere changed it: its lyrics, or the key a transposition moved. */
+  async function refreshSong(bandSpaceId, songId) {
+    const fresh = await bandSpaceSongsApi.getSong(bandSpaceId, songId)
+    songs.value = songs.value.map((s) => (s.id === songId ? fresh : s))
+    return fresh
+  }
+
   /**
    * Archiving moves the title from the repertoire to the trash rather than destroying it, so both
    * lists are updated: the trash entry is what the sidebar counts and what offers the way back.
@@ -107,6 +114,7 @@ export const useBandSongsStore = defineStore('bandSongs', () => {
     fetchArchivedSongs,
     createSong,
     updateSong,
+    refreshSong,
     deleteSong,
     restoreSong,
     clear

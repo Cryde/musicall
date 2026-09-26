@@ -45,6 +45,14 @@ class Song
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $notes = null;
 
+    /** ChordPro, with singers as `<span singer="@[userId]">` (#1055). See ChordProParser. */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    public ?string $lyrics = null;
+
+    /** Bumped on every real lyrics change, so a save from a stale copy is refused rather than lost. */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1])]
+    public int $lyricsVersion = 1;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?DateTimeImmutable $archiveDatetime = null;
 

@@ -683,4 +683,44 @@ class SetlistPdfExportTest extends ApiTestCase
             'description' => "Vous n'êtes pas membre de ce Band Space",
         ]);
     }
+    /** « Inclure les paroles » (#1055): each song with lyrics once, after the list, and no fit. */
+    public function test_the_lyrics_follow_the_list_once_per_song(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Live 2026'])->create();
+        $withLyrics = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Au clair de la lune', 'lyrics' => '[C]Au clair de la lune'])->create();
+        $withoutLyrics = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Instrumental'])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withLyrics, 'label' => null, 'position' => 0])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withoutLyrics, 'label' => null, 'position' => 1])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $withLyrics, 'label' => null, 'position' => 2])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf?showLyrics=1&lyricsChords=0&fitToOnePage=1');
+
+        $this->assertResponseIsSuccessful();
+        $gotenberg = self::getContainer()->get(RecordingGotenbergClient::class);
+        $this->assertCount(1, $gotenberg->calls(), 'A set with its lyrics is not measured for one page');
+        $html = $gotenberg->sentHtml();
+        $this->assertSame(1, substr_count($html, '<section class="song-sheet'));
+        $this->assertStringContainsString('<div class="song-sheet-title">Au clair de la lune</div>', $html);
+        $this->assertStringNotContainsString('class="song-chord"', $html);
+    }
+
+    public function test_the_lyrics_are_left_out_by_default(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace, 'name' => 'Live 2026'])->create();
+        $song = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Au clair de la lune', 'lyrics' => '[C]Au clair de la lune'])->create();
+        SetlistItemFactory::new(['setlist' => $setlist, 'type' => SetlistItemType::Song, 'song' => $song, 'label' => null, 'position' => 0])->create();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/pdf');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertStringNotContainsString('song-sheet', self::getContainer()->get(RecordingGotenbergClient::class)->sentHtml());
+    }
 }

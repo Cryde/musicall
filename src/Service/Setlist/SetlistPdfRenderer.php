@@ -5,18 +5,10 @@ namespace App\Service\Setlist;
 use App\Entity\BandSpace\Setlist;
 use App\Enum\BandSpace\SetlistPdfFont;
 use App\Enum\BandSpace\SetlistPdfLayout;
-use Sensiolabs\GotenbergBundle\Builder\BuilderFileInterface;
-use Sensiolabs\GotenbergBundle\Builder\BuilderInterface;
-use Sensiolabs\GotenbergBundle\Builder\Pdf\HtmlPdfBuilder;
-use Sensiolabs\GotenbergBundle\Enumeration\PaperSize;
+use App\Service\BandSpace\Song\SongSheetBuilder;
+use App\Service\BandSpace\Song\SongSheetOptions;
+use App\Service\Pdf\HtmlPdfGenerator;
 use Sensiolabs\GotenbergBundle\Enumeration\Unit;
-use Sensiolabs\GotenbergBundle\Exception\ExceptionInterface as GotenbergException;
-use Sensiolabs\GotenbergBundle\GotenbergPdfInterface;
-use Sensiolabs\GotenbergBundle\Processor\InMemoryProcessor;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpClientException;
 use Twig\Environment;
 
 /**
@@ -29,20 +21,6 @@ use Twig\Environment;
  */
 readonly class SetlistPdfRenderer
 {
-    /** Relative to the project root. The two TTFs of the chosen family are uploaded from here. */
-    private const string FONT_DIRECTORY = 'assets/fonts/pdf';
-
-    /**
-     * The page box lives here and nowhere else. It used to be a CSS @page rule, which cannot stay:
-     * a CSS margin silently overrides the builder's margin fields, so the fit arithmetic below and
-     * the real page would have disagreed with no way to tell which had won.
-     */
-    private const float PAGE_HEIGHT_MM = 297.0;
-    private const float PAGE_WIDTH_MM = 210.0;
-    private const float MARGIN_TOP_MM = 18.0;
-    private const float MARGIN_BOTTOM_MM = 14.0;
-    private const float MARGIN_SIDE_MM = 14.0;
-
     private const float POINTS_PER_MM = 72 / 25.4;
 
     /**
@@ -74,9 +52,8 @@ readonly class SetlistPdfRenderer
 
     public function __construct(
         private Environment $twig,
-        private GotenbergPdfInterface $gotenberg,
-        #[Autowire('%kernel.project_dir%')]
-        private string $projectDir,
+        private HtmlPdfGenerator $pdf,
+        private SongSheetBuilder $sheetBuilder,
     ) {
     }
 
@@ -89,7 +66,7 @@ readonly class SetlistPdfRenderer
         $font = $options->effectiveFont();
         $scale = $this->resolveFitScale($setlist, $options, $totalDurationSeconds, $missingDurationItems, $font);
 
-        $builder = $this->builder(
+        $builder = $this->pdf->builder(
             $this->renderHtml($setlist, $options, $totalDurationSeconds, $missingDurationItems, $font),
             $font,
         );
@@ -101,7 +78,7 @@ readonly class SetlistPdfRenderer
             $builder->scale($scale);
         }
 
-        return $this->generate($builder);
+        return $this->pdf->generate($builder);
     }
 
     /**
@@ -118,7 +95,8 @@ readonly class SetlistPdfRenderer
         int $missingDurationItems,
         SetlistPdfFont $font,
     ): ?float {
-        if (!$options->fitToOnePage || $setlist->items->count() > self::MAX_FIT_ITEMS) {
+        // With the lyrics the document is several pages by design; one page only ever meant the list.
+        if (!$options->fitToOnePage || $options->showLyrics || $setlist->items->count() > self::MAX_FIT_ITEMS) {
             return null;
         }
 
@@ -127,7 +105,7 @@ readonly class SetlistPdfRenderer
             return null;
         }
 
-        $availableHeightPt = (self::PAGE_HEIGHT_MM - self::MARGIN_TOP_MM - self::MARGIN_BOTTOM_MM) * self::POINTS_PER_MM;
+        $availableHeightPt = (HtmlPdfGenerator::PAGE_HEIGHT_MM - HtmlPdfGenerator::MARGIN_TOP_MM - HtmlPdfGenerator::MARGIN_BOTTOM_MM) * self::POINTS_PER_MM;
         if ($naturalHeightPt <= $availableHeightPt) {
             // Already fits, so shrinking would only make it smaller for no reason.
             return null;
@@ -164,11 +142,11 @@ readonly class SetlistPdfRenderer
             $totalDurationSeconds,
             $missingDurationItems,
             $font,
-            measureWidthMm: self::PAGE_WIDTH_MM - (2 * self::MARGIN_SIDE_MM),
+            measureWidthMm: HtmlPdfGenerator::PAGE_WIDTH_MM - (2 * HtmlPdfGenerator::MARGIN_SIDE_MM),
         );
 
-        $measurement = $this->generate(
-            $this->builder($html, $font)
+        $measurement = $this->pdf->generate(
+            $this->pdf->builder($html, $font)
                 ->singlePage()
                 ->margins(0, 0, 0, 0, Unit::Millimeters),
         );
@@ -188,70 +166,6 @@ readonly class SetlistPdfRenderer
         return preg_match($pattern, $pdf, $matches) === 1 ? (float) $matches[1] : 0.0;
     }
 
-    /**
-     * Returns the marker interface rather than HtmlPdfBuilder on purpose: in dev the bundle wraps
-     * every builder in a TraceableBuilder for its profiler, which proxies the option methods through
-     * __call, so a concrete return type here type errors on the first call. The docblock is what
-     * keeps the fluent chain statically checked.
-     *
-     * @return HtmlPdfBuilder
-     */
-    private function builder(string $html, SetlistPdfFont $font): BuilderInterface
-    {
-        $fontDirectory = $this->projectDir . '/' . self::FONT_DIRECTORY;
-
-        return $this->gotenberg->html()
-            ->contentRaw($html)
-            // Only the chosen family, two files. dompdf had to register all three on every render.
-            ->assets(
-                $fontDirectory . '/' . $font->regularFile(),
-                $fontDirectory . '/' . $font->boldFile(),
-            )
-            ->paperStandardSize(PaperSize::A4)
-            ->margins(
-                self::MARGIN_TOP_MM,
-                self::MARGIN_BOTTOM_MM,
-                self::MARGIN_SIDE_MM,
-                self::MARGIN_SIDE_MM,
-                Unit::Millimeters,
-            )
-            ->printBackground()
-            // InMemoryProcessor warns against production use because it holds the whole document in
-            // a string. That is the right trade here and changes nothing: the caller already puts
-            // the full body into a Response, as dompdf's output() did, and a setlist PDF measures in
-            // hundreds of kilobytes. Streaming instead would mean giving up the bytes seam, and with
-            // it the Content-Disposition handling that #731 exists for.
-            ->processor(new InMemoryProcessor());
-    }
-
-    /**
-     * A failed render is a dependency failure, not a client mistake, so it becomes a 502 rather than
-     * the 500 an uncaught transport error would produce. Only Gotenberg's own failures and transport
-     * errors are caught; a Twig or logic error still surfaces as itself.
-     */
-    private function generate(BuilderFileInterface $builder): string
-    {
-        try {
-            /**
-             * InMemoryProcessor is declared ProcessorInterface<string>, but HtmlPdfBuilder extends
-             * AbstractBuilder without an @extends annotation, so the processor generic never reaches
-             * it and PHPStan resolves process() to the default NullProcessor's null. This states the
-             * contract the processor does carry.
-             *
-             * @var string $pdf
-             */
-            $pdf = $builder->generate()->process();
-        } catch (GotenbergException|HttpClientException $e) {
-            throw new HttpException(
-                Response::HTTP_BAD_GATEWAY,
-                'Le service de génération PDF est momentanément indisponible. Veuillez réessayer.',
-                $e,
-            );
-        }
-
-        return $pdf;
-    }
-
     private function renderHtml(
         Setlist $setlist,
         SetlistPdfOptions $options,
@@ -266,6 +180,7 @@ readonly class SetlistPdfRenderer
             'total_duration_seconds' => $totalDurationSeconds,
             'missing_duration_items' => $missingDurationItems,
             'font' => $font,
+            'lyrics_sheets' => $options->showLyrics ? $this->lyricsSheets($setlist, $options) : [],
         ];
 
         if ($measureWidthMm !== null) {
@@ -273,6 +188,26 @@ readonly class SetlistPdfRenderer
         }
 
         return $this->twig->render($this->template($options->layout), $context);
+    }
+
+    /**
+     * Every song of the set that has lyrics, in running order, once even when it is played twice.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function lyricsSheets(Setlist $setlist, SetlistPdfOptions $options): array
+    {
+        $sheetOptions = new SongSheetOptions(showChords: $options->lyricsChords, showSingers: $options->lyricsSingers);
+        $sheets = [];
+        foreach ($setlist->items as $item) {
+            $song = $item->song;
+            if ($song === null || $song->lyrics === null || isset($sheets[(string) $song->id])) {
+                continue;
+            }
+            $sheets[(string) $song->id] = $this->sheetBuilder->build($song, $sheetOptions);
+        }
+
+        return array_values($sheets);
     }
 
     private function template(SetlistPdfLayout $layout): string

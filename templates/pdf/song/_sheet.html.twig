@@ -1,0 +1,84 @@
+{#
+    One song, from SongSheetBuilder. `first` drops the page break before it.
+    Singer tints are the singer's colour at 20% (the `33` suffix); several singers share the line as stripes.
+#}
+{% macro tint(singers, palette) -%}
+    {%- if singers|length == 1 -%}
+        background: {{ palette[singers|first].color ?? '#64748b' }}33;
+    {%- else -%}
+        {%- set step = 100 / singers|length -%}
+        background: linear-gradient(180deg{% for id in singers %}, {{ palette[id].color ?? '#64748b' }}40 {{ loop.index0 * step }}% {{ loop.index * step }}%{% endfor %});
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro line(line, sheet) %}
+    {% set has_chords = sheet.show_chords and (line.chunks|filter(chunk => chunk.chords|length > 0)|length > 0) %}
+    <div class="song-line">
+        {% if sheet.show_singers and sheet.singers|length > 0 %}
+            <div class="song-gutter">
+                {% for set in line.singerSets %}
+                    {% for id in set %}
+                        <span class="singer-tag" style="background: {{ sheet.singers[id].color ?? '#64748b' }}">{{ sheet.singers[id].name ?? 'Membre inconnu' }}</span>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="song-lyrics">
+            {% for chunk in line.chunks %}
+                <span class="song-chunk">
+                    {% if has_chords %}<span class="song-chord">{{ chunk.chords|join(' ') ?: ' ' }}</span>{% endif %}
+                    <span>
+                        {%- for segment in chunk.segments -%}
+                            {%- if sheet.show_singers and segment.singers -%}
+                                <span style="{{ _self.tint(segment.singers, sheet.singers) }}">{{ segment.text }}</span>
+                            {%- else -%}
+                                {{ segment.text }}
+                            {%- endif -%}
+                        {%- endfor -%}
+                        {%- if chunk.segments is empty %} {% endif -%}
+                    </span>
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro leaf(block, sheet) %}
+    {% if block.type == 'line' %}
+        {{ _self.line(block, sheet) }}
+    {% elseif block.type == 'comment' %}
+        <div class="song-comment">{{ block.text }}</div>
+    {% else %}
+        <div class="song-comment">{{ block.raw }}</div>
+    {% endif %}
+{% endmacro %}
+
+<section class="song-sheet {{ first|default(false) ? 'first' : '' }}">
+    <div class="song-sheet-head">
+        <div class="song-sheet-title">{{ sheet.title }}</div>
+        <div class="song-sheet-meta">
+            {% if sheet.tonality %}Tonalité : {{ sheet.tonality }}{% endif %}
+            {% if sheet.tonality and sheet.tempo %} · {% endif %}
+            {% if sheet.tempo %}{{ sheet.tempo }} BPM{% endif %}
+        </div>
+    </div>
+
+    {% if sheet.show_singers and sheet.singers|length > 0 %}
+        <div class="song-legend">
+            {% for singer in sheet.singers %}
+                <span><span class="singer-tag" style="background: {{ singer.color }}">{{ singer.name }}</span>{% if singer.former %} (ancien membre){% endif %}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% for block in sheet.blocks %}
+        {% if block.type == 'section' %}
+            <div class="song-section {{ block.kind }}">
+                <div class="song-section-label">{{ block.label ?: sheet.section_labels[block.kind] }}</div>
+                {% for child in block.content %}{{ _self.leaf(child, sheet) }}{% endfor %}
+            </div>
+        {% else %}
+            {{ _self.leaf(block, sheet) }}
+        {% endif %}
+    {% endfor %}
+</section>
