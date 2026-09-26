@@ -45,4 +45,6 @@ class UserNotificationPreferenceEdit
     public bool $marketing = false;
 
     public bool $activityReminder = true;
+
+    public bool $showOnlinePresence = true;
 }

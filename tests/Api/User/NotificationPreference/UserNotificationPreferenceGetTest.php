@@ -37,6 +37,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'forum_reply' => true,
             'marketing' => false,
             'activity_reminder' => true,
+            'show_online_presence' => true,
         ]);
     }
 
@@ -73,6 +74,7 @@ class UserNotificationPreferenceGetTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'show_online_presence' => true,
         ]);
     }
 

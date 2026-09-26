@@ -2,6 +2,14 @@
   <div
     class="bg-surface-0 dark:bg-surface-900 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-16rem)] min-h-[400px]"
   >
+    <p
+      v-if="onlineNames.length > 0"
+      class="m-0 flex items-center gap-2 px-4 py-2 text-xs text-surface-600 dark:text-surface-300 border-b border-surface-200 dark:border-surface-700"
+    >
+      <span class="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
+      <span>En ligne : {{ onlineNames.join(', ') }}</span>
+    </p>
+
     <ChatPinnedBar v-if="!chatStore.loadError" :band-space-id="bandSpaceId" />
 
     <Message
@@ -74,7 +82,9 @@ import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue
 import ChatPinnedBar from '../../components/BandSpace/Chat/ChatPinnedBar.vue'
 import { useBandSpaceChatStore } from '../../store/bandSpace/bandSpaceChat.js'
 import { useBandSpaceSettingsStore } from '../../store/bandSpace/bandSpaceSettings.js'
-import { typingSentence, typistNames } from '../../utils/chatTyping.js'
+import { memberNames, typingSentence } from '../../utils/chatTyping.js'
+import { createHeartbeat } from '../../utils/heartbeat.js'
+import { createPresenceSession } from '../../utils/presenceSession.js'
 
 const route = useRoute()
 // Read once: AppBandLayout keys <router-view> on the space id, so this view is remounted rather than
@@ -128,9 +138,48 @@ watch(
 )
 
 onMounted(load)
+
+// « En ligne » (#1040): only while this page is open and on screen. A tab hidden for longer than the
+// grace says it has gone, and beats again, at once, when it is shown.
+const PRESENCE_INTERVAL_MS = 30000
+const PRESENCE_HIDDEN_GRACE_MS = 15000
+const presence = createPresenceSession({
+  heartbeat: createHeartbeat({
+    intervalMs: PRESENCE_INTERVAL_MS,
+    beat: () => chatStore.beatPresence(bandSpaceId)
+  }),
+  leave: () => chatStore.leavePresence(bandSpaceId),
+  graceMs: PRESENCE_HIDDEN_GRACE_MS
+})
+
+function syncPresenceWithVisibility() {
+  if (document.visibilityState === 'visible') presence.shown()
+  else presence.hidden()
+}
+
+// A page restored from the browser's back-forward cache fires no visibilitychange, only pageshow.
+function resumeOnPageShow(event) {
+  if (event.persisted) syncPresenceWithVisibility()
+}
+
+onMounted(() => {
+  syncPresenceWithVisibility()
+  document.addEventListener('visibilitychange', syncPresenceWithVisibility)
+  window.addEventListener('pagehide', presence.leaveNow)
+  window.addEventListener('pageshow', resumeOnPageShow)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', syncPresenceWithVisibility)
+  window.removeEventListener('pagehide', presence.leaveNow)
+  window.removeEventListener('pageshow', resumeOnPageShow)
+  presence.leaveNow()
+})
+
+const onlineNames = computed(() => memberNames(chatStore.onlineUserIds, settingsStore.members))
 onUnmounted(() => chatStore.clear())
 
 const typingText = computed(() =>
-  typingSentence(typistNames(chatStore.currentTypists, settingsStore.members))
+  typingSentence(memberNames(chatStore.currentTypists, settingsStore.members))
 )
 </script>

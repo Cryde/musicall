@@ -27,6 +27,13 @@ framework:
             limit: 40
             interval: '1 minute'
             cache_pool: "rate_limiter.cache"
+        # Presence (#1040): a heartbeat every 30 seconds, plus one per arrival or departure of a
+        # bandmate. 20 a minute covers a busy band with room to spare.
+        chat_presence:
+            policy: fixed_window
+            limit: 20
+            interval: '1 minute'
+            cache_pool: "rate_limiter.cache"
         thread_creation:
             policy: fixed_window
             limit: 5

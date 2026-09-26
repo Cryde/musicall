@@ -3,8 +3,8 @@ import { describe, it } from 'node:test'
 import {
   activeTypists,
   createTypingNotifier,
+  memberNames,
   typingSentence,
-  typistNames,
   withoutTypist,
   withTypist
 } from './chatTyping.js'
@@ -76,11 +76,11 @@ describe('createTypingNotifier, a send that did not go out', () => {
   })
 })
 
-describe('typistNames', () => {
+describe('memberNames', () => {
   it('names typists from the roster, with a fallback', () => {
     const members = [{ user_id: 'lea', display_name: 'Léa' }]
 
-    assert.deepEqual(typistNames(['lea', 'ghost'], members), ['Léa', 'Un membre'])
+    assert.deepEqual(memberNames(['lea', 'ghost'], members), ['Léa', 'Un membre'])
   })
 })
 
