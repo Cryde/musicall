@@ -55,6 +55,7 @@ class SongGetCollectionTest extends ApiTestCase
                     'reference_duration' => null,
                     'notes' => null,
                     'has_lyrics' => false,
+                    'setlists' => [],
                     'archive_datetime' => null,
                     'creation_datetime' => $active->creationDatetime->format(\DateTimeInterface::ATOM),
                     'update_datetime' => null,
@@ -111,6 +112,7 @@ class SongGetCollectionTest extends ApiTestCase
                     'reference_duration' => null,
                     'notes' => null,
                     'has_lyrics' => false,
+                    'setlists' => [],
                     'archive_datetime' => $archived->archiveDatetime->format(\DateTimeInterface::ATOM),
                     'creation_datetime' => $archived->creationDatetime->format(\DateTimeInterface::ATOM),
                     'update_datetime' => null,
@@ -194,6 +196,7 @@ class SongGetCollectionTest extends ApiTestCase
                     'reference_duration' => null,
                     'notes' => null,
                     'has_lyrics' => false,
+                    'setlists' => [],
                     'archive_datetime' => null,
                     'creation_datetime' => $mine->creationDatetime->format(\DateTimeInterface::ATOM),
                     'update_datetime' => null,
@@ -223,6 +226,62 @@ class SongGetCollectionTest extends ApiTestCase
             'status' => 403,
             'type' => '/errors/403',
             'description' => "Vous n'êtes pas membre de ce Band Space",
+        ]);
+    }
+
+    /** « Dans les setlists » (#1063): the live ones by name, once each, the trash left out. */
+    public function test_each_song_carries_the_live_setlists_it_is_in(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $played = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Neon Tide', 'creationDatetime' => new \DateTime('2026-05-01T10:00:00+00:00')])->create();
+        $never = SongFactory::new(['bandSpace' => $bandSpace, 'title' => 'Kite Season', 'creationDatetime' => new \DateTime('2026-05-02T10:00:00+00:00')])->create();
+        $tour = \App\Tests\Factory\BandSpace\SetlistFactory::new()->create(['bandSpace' => $bandSpace, 'name' => 'Tour 2026']);
+        $acoustic = \App\Tests\Factory\BandSpace\SetlistFactory::new()->create(['bandSpace' => $bandSpace, 'name' => 'Set acoustique']);
+        $trashed = \App\Tests\Factory\BandSpace\SetlistFactory::new()->create(['bandSpace' => $bandSpace, 'name' => 'Vieux set', 'archiveDatetime' => new \DateTimeImmutable('2026-05-10')]);
+        foreach ([[$tour, 0], [$tour, 1], [$acoustic, 0], [$trashed, 0]] as [$setlist, $position]) {
+            \App\Tests\Factory\BandSpace\SetlistItemFactory::new([
+                'setlist' => $setlist,
+                'type' => \App\Enum\BandSpace\SetlistItemType::Song,
+                'song' => $played,
+                'label' => null,
+                'position' => $position,
+            ])->create();
+        }
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/api/band_spaces/' . $bandSpace->id . '/songs');
+
+        $this->assertResponseIsSuccessful();
+        $song = static fn ($entity, string $title, array $setlists): array => [
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs/' . $entity->id,
+            '@type' => 'Song',
+            'id' => $entity->id,
+            'band_space_id' => $bandSpace->id,
+            'title' => $title,
+            'tempo' => $entity->tempo,
+            'tonality' => $entity->tonality,
+            'reference_duration' => $entity->referenceDuration,
+            'notes' => $entity->notes,
+            'has_lyrics' => false,
+            'setlists' => $setlists,
+            'archive_datetime' => null,
+            'creation_datetime' => $entity->creationDatetime->format(\DateTimeInterface::ATOM),
+            'update_datetime' => null,
+        ];
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Song',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/songs',
+            '@type' => 'Collection',
+            'member' => [
+                $song($never, 'Kite Season', []),
+                $song($played, 'Neon Tide', [
+                    ['id' => (string) $acoustic->id, 'name' => 'Set acoustique'],
+                    ['id' => (string) $tour->id, 'name' => 'Tour 2026'],
+                ]),
+            ],
+            'totalItems' => 2,
         ]);
     }
 }

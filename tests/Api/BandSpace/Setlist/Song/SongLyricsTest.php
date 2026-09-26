@@ -533,6 +533,7 @@ class SongLyricsTest extends ApiTestCase
             'reference_duration' => $song->referenceDuration,
             'notes' => $song->notes,
             'has_lyrics' => true,
+            'setlists' => [],
             'archive_datetime' => null,
             'creation_datetime' => $song->creationDatetime->format(\DateTimeInterface::ATOM),
             'update_datetime' => null,

@@ -117,6 +117,10 @@ const SENTENCES = {
   'setlist.song_updated': (a) => `a modifié la chanson « ${a.payload?.title ?? '—'} »`,
   'setlist.song_archived': (a) =>
     `a retiré la chanson « ${a.payload?.title ?? '—'} » du répertoire`,
+  'setlist.songs_archived': (a) =>
+    a.payload?.count === 1
+      ? 'a archivé un titre du répertoire'
+      : `a archivé ${a.payload?.count ?? 'des'} titres du répertoire`,
   'setlist.song_unarchived': (a) =>
     `a réintégré la chanson « ${a.payload?.title ?? '—'} » au répertoire`,
   'setlist.song_file_attached': (a) =>
@@ -137,7 +141,9 @@ const SENTENCES = {
       ? `a ajouté « ${a.payload.label} » à une setlist`
       : 'a ajouté un titre à une setlist',
   'setlist.setlist_items_added': (a) =>
-    `a ajouté ${a.payload?.count ?? 'des'} titres à la setlist « ${a.payload?.name ?? '—'} »`,
+    a.payload?.count === 1
+      ? `a ajouté un titre à la setlist « ${a.payload?.name ?? '—'} »`
+      : `a ajouté ${a.payload?.count ?? 'des'} titres à la setlist « ${a.payload?.name ?? '—'} »`,
   'setlist.setlist_items_copied': (a) =>
     `a repris « ${a.payload?.source_name ?? '—'} » dans la setlist « ${a.payload?.name ?? '—'} »`,
   'setlist.setlist_item_removed': () => "a retiré un titre d'une setlist",

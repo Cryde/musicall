@@ -8,6 +8,8 @@ enum BandSpaceSetlistActivityType: string
     case SongAdded = 'song_added';
     case SongUpdated = 'song_updated';
     case SongArchived = 'song_archived';
+    /** Several at once from the repertoire's selection (#1063). */
+    case SongsArchived = 'songs_archived';
     case SongUnarchived = 'song_unarchived';
     case SongFileAttached = 'song_file_attached';
     case SongFileDetached = 'song_file_detached';

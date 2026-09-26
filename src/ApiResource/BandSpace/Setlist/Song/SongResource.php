@@ -99,6 +99,14 @@ class SongResource
     #[ApiProperty(writable: false)]
     public bool $hasLyrics = false;
 
+    /**
+     * The live setlists it is in, by name (#1063): « Jamais joué » when empty.
+     *
+     * @var list<array{id: string, name: string}>
+     */
+    #[ApiProperty(writable: false)]
+    public array $setlists = [];
+
     public ?\DateTimeInterface $archiveDatetime = null;
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;
