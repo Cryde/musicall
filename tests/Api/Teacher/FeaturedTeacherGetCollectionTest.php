@@ -110,4 +110,41 @@ class FeaturedTeacherGetCollectionTest extends ApiTestCase
             'totalItems' => 0,
         ]);
     }
+
+    public function test_a_username_with_a_dot_is_listed(): void
+    {
+        $user = UserFactory::new()->create(['username' => 'alice.martin']);
+        $profile = TeacherProfileFactory::new()->create([
+            'user' => $user,
+            'offersTrial' => false,
+            'creationDatetime' => new \DateTimeImmutable('2024-01-01T10:00:00+00:00'),
+        ]);
+        $guitar = InstrumentFactory::new()->asGuitar()->create();
+        TeacherProfileInstrumentFactory::new()->create(['teacherProfile' => $profile, 'instrument' => $guitar]);
+
+        $this->client->request('GET', '/api/teachers/featured');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/FeaturedTeacher',
+            '@id' => '/api/teachers/featured',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/featured_teachers/alice.martin',
+                    '@type' => 'FeaturedTeacher',
+                    'username' => 'alice.martin',
+                    'instruments' => [
+                        [
+                            '@type' => 'TeacherProfileInstrument',
+                            'instrument_id' => (string) $guitar->id,
+                            'instrument_name' => 'Guitare',
+                        ],
+                    ],
+                    'offers_trial' => false,
+                ],
+            ],
+            'totalItems' => 1,
+        ]);
+    }
 }

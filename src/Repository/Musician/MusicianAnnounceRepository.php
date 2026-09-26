@@ -33,15 +33,17 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
      *
      * @return MusicianAnnounce[]
      */
-    public function findLastAnnounces(int $limit): array
+    public function findLastAnnounces(int $limit, ?int $type = null): array
     {
-        $announces = $this->createQueryBuilder('announce')
+        $queryBuilder = $this->createQueryBuilder('announce')
             ->addSelect('instrument')
             ->leftJoin('announce.instrument', 'instrument')
             ->orderBy('announce.creationDatetime', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->setMaxResults($limit);
+        if ($type !== null) {
+            $queryBuilder->andWhere('announce.type = :type')->setParameter('type', $type);
+        }
+        $announces = $queryBuilder->getQuery()->getResult();
 
         if ($announces === []) {
             return [];

@@ -20,6 +20,11 @@ html {
     font-family: "Open Sans", serif;
 }
 
+/* The brand's gradient on a heading's second line, the same in every hero card. */
+@utility text-brand-gradient {
+    @apply bg-gradient-to-r from-primary-600 via-fuchsia-500 to-cyan-500 dark:from-primary-400 dark:via-fuchsia-400 dark:to-cyan-400 bg-clip-text text-transparent;
+}
+
 /* Cosmic hero particles */
 @keyframes particle-drift {
     0%, 100% { transform: translate(0, 0); }

@@ -22,7 +22,7 @@
             <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
               <span class="text-surface-900 dark:text-white">Trouvez votre</span>
               <br />
-              <span class="bg-gradient-to-r from-primary-600 via-fuchsia-500 to-cyan-500 dark:from-primary-400 dark:via-fuchsia-400 dark:to-cyan-400 bg-clip-text text-transparent">professeur de musique</span>
+              <span class="text-brand-gradient">professeur de musique</span>
             </h1>
 
             <p class="text-lg text-surface-600 dark:text-surface-400 mb-8 max-w-lg mx-auto lg:mx-0">

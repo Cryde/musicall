@@ -117,6 +117,19 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 2,
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/musician_announces/last{?type}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'type',
+                        'property' => 'type',
+                        'required' => false,
+                    ],
+                ],
+            ],
         ]);
     }
 
@@ -248,6 +261,19 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
                 ],
             ],
             'totalItems' => 3,
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/musician_announces/last{?type}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'type',
+                        'property' => 'type',
+                        'required' => false,
+                    ],
+                ],
+            ],
         ]);
 
         // The endpoint must stay flat regardless of the number of distinct authors:
@@ -255,5 +281,177 @@ class MusicianAnnounceGetLastCollectionTest extends ApiTestCase
         $profile = $this->client->getProfile();
         $this->assertNotFalse($profile, 'The profiler must be enabled to assert the query count.');
         $this->assertLessThanOrEqual(3, $profile->getCollector('db')->getQueryCount());
+    }
+
+    public function test_last_announces_can_be_narrowed_to_one_type(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $drum = InstrumentFactory::new()->asDrum()->create();
+        $bandAnnounce = MusicianAnnounceFactory::new()->create([
+            'author' => $author,
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
+            'instrument' => $drum,
+            'locationName' => 'Mons',
+            'note' => 'a band looking for a drummer',
+            'type' => 1,
+            'styles' => [],
+        ]);
+        MusicianAnnounceFactory::new()->create([
+            'author' => $author,
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2022-01-02T02:03:04+00:00'),
+            'instrument' => $drum,
+            'locationName' => 'Paris',
+            'note' => 'a drummer looking for a band',
+            'type' => 2,
+            'styles' => [],
+        ]);
+
+        $this->client->request('GET', '/api/musician_announces/last?type=1');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianAnnounce',
+            '@id' => '/api/musician_announces/last',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/musician_announces/' . $bandAnnounce->id,
+                    '@type' => 'MusicianAnnounce',
+                    'id' => $bandAnnounce->id,
+                    'creation_datetime' => '2020-01-02T02:03:04+00:00',
+                    'type' => 1,
+                    'instrument' => [
+                        '@type' => 'Instrument',
+                        'id' => $drum->id,
+                        'musician_name' => 'Batteur',
+                    ],
+                    'styles' => [],
+                    'location_name' => 'Mons',
+                    'note' => 'a band looking for a drummer',
+                    'author' => [
+                        '@type' => 'Author',
+                        'id' => $author->id,
+                        'username' => 'base_user_1',
+                        'has_musician_profile' => false,
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+            'view' => [
+                '@id' => '/api/musician_announces/last?type=1',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/musician_announces/last{?type}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'type',
+                        'property' => 'type',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_last_announces_can_be_narrowed_to_the_musicians(): void
+    {
+        $author = UserFactory::new()->asBaseUser()->create(['username' => 'base_user_1', 'email' => 'base_user1@email.com']);
+        $drum = InstrumentFactory::new()->asDrum()->create();
+        MusicianAnnounceFactory::new()->create([
+            'author' => $author,
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2020-01-02T02:03:04+00:00'),
+            'instrument' => $drum,
+            'locationName' => 'Mons',
+            'note' => 'a band looking for a drummer',
+            'type' => 1,
+            'styles' => [],
+        ]);
+        $musicianAnnounce = MusicianAnnounceFactory::new()->create([
+            'author' => $author,
+            'creationDatetime' => \DateTime::createFromFormat(\DateTimeInterface::ATOM, '2022-01-02T02:03:04+00:00'),
+            'instrument' => $drum,
+            'locationName' => 'Paris',
+            'note' => 'a drummer looking for a band',
+            'type' => 2,
+            'styles' => [],
+        ]);
+
+        $this->client->request('GET', '/api/musician_announces/last?type=2');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/MusicianAnnounce',
+            '@id' => '/api/musician_announces/last',
+            '@type' => 'Collection',
+            'member' => [
+                [
+                    '@id' => '/api/musician_announces/' . $musicianAnnounce->id,
+                    '@type' => 'MusicianAnnounce',
+                    'id' => $musicianAnnounce->id,
+                    'creation_datetime' => '2022-01-02T02:03:04+00:00',
+                    'type' => 2,
+                    'instrument' => [
+                        '@type' => 'Instrument',
+                        'id' => $drum->id,
+                        'musician_name' => 'Batteur',
+                    ],
+                    'styles' => [],
+                    'location_name' => 'Paris',
+                    'note' => 'a drummer looking for a band',
+                    'author' => [
+                        '@type' => 'Author',
+                        'id' => $author->id,
+                        'username' => 'base_user_1',
+                        'has_musician_profile' => false,
+                    ],
+                ],
+            ],
+            'totalItems' => 1,
+            'view' => [
+                '@id' => '/api/musician_announces/last?type=2',
+                '@type' => 'PartialCollectionView',
+            ],
+            'search' => [
+                '@type' => 'IriTemplate',
+                'template' => '/api/musician_announces/last{?type}',
+                'variableRepresentation' => 'BasicRepresentation',
+                'mapping' => [
+                    [
+                        '@type' => 'IriTemplateMapping',
+                        'variable' => 'type',
+                        'property' => 'type',
+                        'required' => false,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_an_unknown_type_is_refused(): void
+    {
+        $this->client->request('GET', '/api/musician_announces/last?type=3');
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'type',
+                    'message' => 'Le type d\'annonce est invalide',
+                    'code' => '8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+                ],
+            ],
+            'detail' => 'type: Le type d\'annonce est invalide',
+            'description' => 'type: Le type d\'annonce est invalide',
+            'type' => '/validation_errors/8e179f1b-97aa-4560-a02f-2a8b42e49df7',
+            'title' => 'An error occurred',
+        ]);
     }
 }

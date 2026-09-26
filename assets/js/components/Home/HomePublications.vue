@@ -1,7 +1,7 @@
 <template>
-  <section class="mb-12">
+  <section>
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-0">
+      <h2 class="m-0 text-2xl lg:text-3xl font-bold text-surface-900 dark:text-surface-0">
         Dernières publications
       </h2>
       <div class="flex gap-2">
