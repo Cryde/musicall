@@ -21,6 +21,10 @@ enum BandSpaceSetlistActivityType: string
 
     // Setlist items
     case SetlistItemAdded = 'setlist_item_added';
+    /** Several songs at once, « Ajouter tout le répertoire » (#1062). */
+    case SetlistItemsAdded = 'setlist_items_added';
+    /** The running order of another setlist copied in (#1062). */
+    case SetlistItemsCopied = 'setlist_items_copied';
     case SetlistItemRemoved = 'setlist_item_removed';
     case SetlistItemReordered = 'setlist_item_reordered';
     case SetlistItemUpdated = 'setlist_item_updated';

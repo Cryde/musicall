@@ -136,6 +136,10 @@ const SENTENCES = {
     a.payload?.label
       ? `a ajouté « ${a.payload.label} » à une setlist`
       : 'a ajouté un titre à une setlist',
+  'setlist.setlist_items_added': (a) =>
+    `a ajouté ${a.payload?.count ?? 'des'} titres à la setlist « ${a.payload?.name ?? '—'} »`,
+  'setlist.setlist_items_copied': (a) =>
+    `a repris « ${a.payload?.source_name ?? '—'} » dans la setlist « ${a.payload?.name ?? '—'} »`,
   'setlist.setlist_item_removed': () => "a retiré un titre d'une setlist",
   'setlist.setlist_item_reordered': (a) =>
     a.payload?.count

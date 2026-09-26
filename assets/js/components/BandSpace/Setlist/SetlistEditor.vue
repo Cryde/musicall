@@ -75,7 +75,8 @@
             />
           </div>
 
-          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
+          <p v-if="rows.length === 0" class="m-0 text-sm text-surface-600 dark:text-surface-300">Aucun titre pour l’instant</p>
+          <div v-else class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-surface-600 dark:text-surface-300">
             <span><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.songs }}</strong> {{ summary.songs > 1 ? 'titres' : 'titre' }}</span>
             <span><strong class="text-surface-900 dark:text-surface-0 font-semibold">{{ summary.intermissions }}</strong> {{ summary.intermissions > 1 ? 'intermèdes' : 'intermède' }}</span>
             <span class="flex items-center gap-1.5">
@@ -160,13 +161,16 @@
 
         <div class="relative px-2 sm:px-4 py-2">
           <!-- Over the list rather than in it: an empty list still has to be a place to drop a song. -->
-          <p
+          <SetlistEmptyState
             v-if="rows.length === 0"
-            class="absolute inset-x-4 top-8 m-0 text-center text-surface-600 dark:text-surface-300 pointer-events-none"
-          >
-            <i class="pi pi-headphones text-3xl mb-3 block" aria-hidden="true" />
-            Aucun titre pour l’instant. Cliquez sur un titre du répertoire pour l’ajouter, ou glissez-le ici.
-          </p>
+            class="absolute inset-x-0 top-0 z-10"
+            :sources="copySources"
+            :song-count="songsStore.songs.length"
+            :busy="emptyStateBusy"
+            :readonly="isArchived"
+            @copy-from="copyFrom"
+            @add-all="addWholeRepertoire"
+          />
           <SetlistInsertGap
             v-if="rows.length > 0 && !isArchived"
             :position="0"
@@ -182,7 +186,7 @@
             :group="{ name: DRAG_GROUP, pull: false, put: true }"
             ghost-class="opacity-30"
             handle=".drag-handle"
-            :class="['flex flex-col', rows.length === 0 && 'min-h-40']"
+            :class="['flex flex-col', rows.length === 0 && 'min-h-80']"
             @start="isDragging = true"
             @end="handleDragEnd"
             @add="handleDropFromRepertoire"
@@ -332,6 +336,7 @@ import {
 } from '../../../utils/setlistProgramme.js'
 import DurationPrompt from './Editor/DurationPrompt.vue'
 import { INTERMISSION_KINDS, intermissionKind } from './Editor/intermissionKinds.js'
+import SetlistEmptyState from './Editor/SetlistEmptyState.vue'
 import SetlistInsertGap from './Editor/SetlistInsertGap.vue'
 import SetlistProgrammeRow from './Editor/SetlistProgrammeRow.vue'
 import SetlistRepertoirePanel from './Editor/SetlistRepertoirePanel.vue'
@@ -492,6 +497,45 @@ async function handleDropFromRepertoire(event) {
   } catch (e) {
     localItems.value = [...(setlist.value?.items ?? [])]
     showError(e)
+  }
+}
+
+// --- Starting from nothing (#1062) --------------------------------------------------------------
+
+const emptyStateBusy = ref(null)
+
+// The trash too: an archived setlist is still a fine starting point, as it is for « Dupliquer ».
+const copySources = computed(() =>
+  [...setlistsStore.setlists, ...setlistsStore.archivedSetlists].filter(
+    (candidate) => candidate.id !== props.setlistId && candidate.items?.length > 0
+  )
+)
+
+async function copyFrom(source) {
+  emptyStateBusy.value = 'copy'
+  try {
+    await setlistsStore.copyItemsFrom(props.bandSpaceId, props.setlistId, source.id)
+    toast.add({ severity: 'success', summary: `Setlist « ${source.name} » reprise`, life: 3000 })
+  } catch (e) {
+    showError(e)
+  } finally {
+    emptyStateBusy.value = null
+  }
+}
+
+/** In repertoire order, which is alphabetical: a starting point to cut down, not a running order. */
+async function addWholeRepertoire() {
+  emptyStateBusy.value = 'all'
+  try {
+    await setlistsStore.addSongs(
+      props.bandSpaceId,
+      props.setlistId,
+      songsStore.songs.map((song) => song.id)
+    )
+  } catch (e) {
+    showError(e)
+  } finally {
+    emptyStateBusy.value = null
   }
 }
 

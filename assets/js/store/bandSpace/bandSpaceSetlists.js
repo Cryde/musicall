@@ -94,12 +94,7 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
   }
 
   async function patchSetlist(bandSpaceId, setlistId, data) {
-    const updated = await bandSpaceSetlistsApi.updateSetlist(bandSpaceId, setlistId, data)
-    setlists.value = setlists.value.map((s) => (s.id === setlistId ? updated : s))
-    if (activeSetlist.value?.id === setlistId) {
-      activeSetlist.value = updated
-    }
-    return updated
+    return replaceSetlist(await bandSpaceSetlistsApi.updateSetlist(bandSpaceId, setlistId, data))
   }
 
   /**
@@ -185,6 +180,27 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     return created
   }
 
+  async function addSongs(bandSpaceId, setlistId, songIds, position = null) {
+    return replaceSetlist(
+      await bandSpaceSetlistsApi.addSongs(bandSpaceId, setlistId, songIds, position)
+    )
+  }
+
+  async function copyItemsFrom(bandSpaceId, setlistId, fromSetlistId) {
+    return replaceSetlist(
+      await bandSpaceSetlistsApi.copyItems(bandSpaceId, setlistId, fromSetlistId)
+    )
+  }
+
+  /** A write answered with the whole setlist: it replaces both the open copy and its sidebar entry. */
+  function replaceSetlist(updated) {
+    setlists.value = setlists.value.map((s) => (s.id === updated.id ? updated : s))
+    if (activeSetlist.value?.id === updated.id) {
+      activeSetlist.value = updated
+    }
+    return updated
+  }
+
   async function updateItem(bandSpaceId, setlistId, itemId, data) {
     const updated = await bandSpaceSetlistsApi.updateItem(bandSpaceId, setlistId, itemId, data)
     if (activeSetlist.value?.id === setlistId) {
@@ -254,6 +270,8 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     duplicateSetlist,
     reorderItems,
     addItem,
+    addSongs,
+    copyItemsFrom,
     updateItem,
     applySongChange,
     removeItem,

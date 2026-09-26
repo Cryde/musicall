@@ -7,7 +7,6 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\BandSpace\Setlist\SetlistResource;
 use App\Entity\BandSpace\BandSpaceFileAttachment;
 use App\Entity\BandSpace\Setlist;
-use App\Entity\BandSpace\SetlistItem;
 use App\Entity\User;
 use App\Enum\BandSpace\BandSpaceModule;
 use App\Enum\BandSpace\BandSpaceSetlistActivityType;
@@ -15,6 +14,8 @@ use App\Repository\BandSpace\BandSpaceFileAttachmentRepository;
 use App\Repository\BandSpace\SetlistRepository;
 use App\Security\BandSpace\BandSpaceMemberChecker;
 use App\Service\BandSpace\BandSpaceActivityRecorder;
+use App\Service\BandSpace\Setlist\SetlistItemCopier;
+use App\Service\BandSpace\Setlist\SetlistRunningOrder;
 use App\Service\Builder\BandSpace\SetlistBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
@@ -36,6 +37,8 @@ readonly class SetlistDuplicateProcessor implements ProcessorInterface
         private BandSpaceFileAttachmentRepository $attachmentRepository,
         private BandSpaceActivityRecorder $activityRecorder,
         private SetlistBuilder $setlistBuilder,
+        private SetlistItemCopier $itemCopier,
+        private SetlistRunningOrder $runningOrder,
         private Security $security,
     ) {
     }
@@ -59,19 +62,10 @@ readonly class SetlistDuplicateProcessor implements ProcessorInterface
 
         $this->entityManager->persist($copy);
 
-        foreach ($source->items as $sourceItem) {
-            $itemCopy = new SetlistItem();
-            $itemCopy->setlist = $copy;
-            $itemCopy->type = $sourceItem->type;
-            $itemCopy->song = $sourceItem->song;
-            $itemCopy->label = $sourceItem->label;
-            $itemCopy->durationOverride = $sourceItem->durationOverride;
-            $itemCopy->note = $sourceItem->note;
-            $itemCopy->transition = $sourceItem->transition;
-            $itemCopy->position = $sourceItem->position;
-
+        $itemCopies = $this->itemCopier->copyItems($source);
+        $this->runningOrder->insert($copy, $itemCopies);
+        foreach ($itemCopies as $itemCopy) {
             $this->entityManager->persist($itemCopy);
-            $copy->items->add($itemCopy);
         }
 
         $this->copyFileAttachments($source, $copy, $user);

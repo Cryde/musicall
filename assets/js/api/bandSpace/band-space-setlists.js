@@ -82,6 +82,30 @@ export default {
       .catch(handleApiError)
   },
 
+  /** Several songs in one request, in that order (#1062); answers with the whole setlist. */
+  addSongs(bandSpaceId, setlistId, songIds, position = null) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_setlist_items_bulk_post', { bandSpaceId, id: setlistId }),
+        { song_ids: songIds, ...(position === null ? {} : { position }) },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  /** Another setlist's running order copied to the end of this one (#1062). */
+  copyItems(bandSpaceId, setlistId, fromSetlistId) {
+    return axios
+      .post(
+        Routing.generate('api_band_space_setlist_items_copy', { bandSpaceId, id: setlistId }),
+        { from_setlist_id: fromSetlistId },
+        { headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' } }
+      )
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
   addItem(bandSpaceId, setlistId, data) {
     return axios
       .post(
