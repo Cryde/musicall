@@ -84,6 +84,9 @@ class SetlistResource
     #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
     public string $name;
 
+    #[Assert\Range(min: 60, max: 86400, notInRangeMessage: 'L\'objectif doit être entre 1 minute et 24 heures')]
+    public ?int $targetDuration = null;
+
     public ?\DateTimeInterface $archiveDatetime = null;
     public \DateTimeInterface $creationDatetime;
     public ?\DateTimeInterface $updateDatetime = null;

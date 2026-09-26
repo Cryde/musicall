@@ -74,6 +74,7 @@ class SetlistRestoreTest extends ApiTestCase
             'update_datetime' => null,
             'items' => [],
             'total_duration_seconds' => 0,
+            'target_duration' => null,
         ]);
 
         $activityRepository = self::getContainer()->get(BandSpaceActivityRepository::class);
@@ -195,6 +196,7 @@ class SetlistRestoreTest extends ApiTestCase
                         'tempo' => 128,
                         'tonality' => 'Am',
                         'reference_duration' => 210,
+                        'has_lyrics' => false,
                         'archive_datetime' => $archivedSong->archiveDatetime->format(DateTimeInterface::ATOM),
                         '@type' => 'SetlistItemSongInfo',
                     ],
@@ -206,6 +208,7 @@ class SetlistRestoreTest extends ApiTestCase
                 ],
             ],
             'total_duration_seconds' => 210,
+            'target_duration' => null,
         ]);
 
         self::getContainer()->get(EntityManagerInterface::class)->clear();

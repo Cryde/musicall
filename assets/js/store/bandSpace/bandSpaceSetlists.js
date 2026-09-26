@@ -85,7 +85,16 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
   }
 
   async function renameSetlist(bandSpaceId, setlistId, name) {
-    const updated = await bandSpaceSetlistsApi.updateSetlist(bandSpaceId, setlistId, { name })
+    return patchSetlist(bandSpaceId, setlistId, { name })
+  }
+
+  /** In seconds, or null to take the target away (#1061). */
+  async function setTargetDuration(bandSpaceId, setlistId, targetDuration) {
+    return patchSetlist(bandSpaceId, setlistId, { target_duration: targetDuration })
+  }
+
+  async function patchSetlist(bandSpaceId, setlistId, data) {
+    const updated = await bandSpaceSetlistsApi.updateSetlist(bandSpaceId, setlistId, data)
     setlists.value = setlists.value.map((s) => (s.id === setlistId ? updated : s))
     if (activeSetlist.value?.id === setlistId) {
       activeSetlist.value = updated
@@ -161,12 +170,15 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     setlists.value = setlists.value.map((s) => (s.id === setlistId ? { ...s, items } : s))
   }
 
+  /** `data.position` inserts there (#1061); the server answers with where the item really landed. */
   async function addItem(bandSpaceId, setlistId, data) {
     const created = await bandSpaceSetlistsApi.addItem(bandSpaceId, setlistId, data)
     if (activeSetlist.value?.id === setlistId) {
+      const items = [...activeSetlist.value.items]
+      items.splice(created.position, 0, created)
       activeSetlist.value = {
         ...activeSetlist.value,
-        items: [...activeSetlist.value.items, created]
+        items: items.map((item, position) => ({ ...item, position }))
       }
       syncSetlistsEntry(setlistId)
     }
@@ -183,6 +195,21 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
       syncSetlistsEntry(setlistId)
     }
     return updated
+  }
+
+  /**
+   * A song changed elsewhere (its duration filled in from a row, #1061): its copy in the open setlist
+   * follows locally. A refetch instead would race any add, move or remove made meanwhile.
+   */
+  function applySongChange(songId, fields) {
+    if (!activeSetlist.value) return
+    activeSetlist.value = {
+      ...activeSetlist.value,
+      items: activeSetlist.value.items.map((item) =>
+        item.song?.id === songId ? { ...item, song: { ...item.song, ...fields } } : item
+      )
+    }
+    syncSetlistsEntry(activeSetlist.value.id)
   }
 
   async function removeItem(bandSpaceId, setlistId, itemId) {
@@ -221,12 +248,14 @@ export const useBandSetlistsStore = defineStore('bandSetlists', () => {
     fetchActive,
     createSetlist,
     renameSetlist,
+    setTargetDuration,
     archiveSetlist,
     restoreSetlist,
     duplicateSetlist,
     reorderItems,
     addItem,
     updateItem,
+    applySongChange,
     removeItem,
     clear
   }

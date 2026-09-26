@@ -140,14 +140,16 @@ async function handleSubmit() {
       reference_duration: duration.seconds,
       notes: form.value.notes?.trim() || null
     }
+    let saved
     if (isEdit.value) {
-      await songsStore.updateSong(props.bandSpaceId, props.song.id, payload)
+      saved = await songsStore.updateSong(props.bandSpaceId, props.song.id, payload)
       toast.add({ severity: 'success', summary: 'Titre mis à jour', life: 3000 })
     } else {
-      await songsStore.createSong(props.bandSpaceId, payload)
+      saved = await songsStore.createSong(props.bandSpaceId, payload)
       toast.add({ severity: 'success', summary: 'Titre ajouté', life: 3000 })
     }
-    emit('saved')
+    // The song, so a caller can use it: the setlist editor adds a title it just created (#1061).
+    emit('saved', saved)
     visible.value = false
   } catch (e) {
     if (e.isValidationError && e.violationsByField) {

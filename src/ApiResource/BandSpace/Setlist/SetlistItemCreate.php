@@ -43,4 +43,8 @@ class SetlistItemCreate
 
     #[Assert\Length(max: 50, maxMessage: 'La transition ne peut pas dépasser {{ limit }} caractères')]
     public ?string $transition = null;
+
+    /** Where to insert, 0 being first (#1061). Left out, or past the end, the item goes last. */
+    #[Assert\PositiveOrZero(message: 'La position doit être positive ou zéro')]
+    public ?int $position = null;
 }

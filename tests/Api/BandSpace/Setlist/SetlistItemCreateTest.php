@@ -64,6 +64,7 @@ class SetlistItemCreateTest extends ApiTestCase
                 'tempo' => 120,
                 'tonality' => 'C',
                 'reference_duration' => 200,
+                'has_lyrics' => false,
                 'archive_datetime' => null,
                 '@type' => 'SetlistItemSongInfo',
             ],
@@ -400,5 +401,130 @@ class SetlistItemCreateTest extends ApiTestCase
             0,
             self::getContainer()->get(SetlistItemRepository::class)->findBy(['setlist' => $setlistId]),
         );
+    }
+
+    /** « Insérer ici » (#1061): the new item takes that place and the rest move down, gaps closed. */
+    public function test_create_item_at_a_position_renumbers_the_running_order(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        // A gap at 1, left by an earlier removal.
+        foreach (['Premier' => 0, 'Deuxième' => 2, 'Troisième' => 3] as $label => $position) {
+            \App\Tests\Factory\BandSpace\SetlistItemFactory::new([
+                'setlist' => $setlist,
+                'type' => \App\Enum\BandSpace\SetlistItemType::Talk,
+                'label' => $label,
+                'position' => $position,
+            ])->create();
+        }
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items',
+            ['type' => 'break', 'label' => 'Pause', 'position' => 1],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        self::getContainer()->get(\Doctrine\ORM\EntityManagerInterface::class)->clear();
+        $items = self::getContainer()->get(SetlistItemRepository::class)
+            ->findBy(['setlist' => $setlist->id], ['position' => 'ASC']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/SetlistItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items/' . $items[1]->id,
+            '@type' => 'SetlistItem',
+            'id' => (string) $items[1]->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'setlist_id' => (string) $setlist->id,
+            'type' => 'break',
+            'song' => null,
+            'label' => 'Pause',
+            'duration_override' => null,
+            'note' => null,
+            'transition' => null,
+            'position' => 1,
+        ]);
+        $this->assertSame(
+            [['Premier', 0], ['Pause', 1], ['Deuxième', 2], ['Troisième', 3]],
+            array_map(static fn ($item): array => [$item->label, $item->position], $items),
+        );
+    }
+
+    public function test_create_item_past_the_end_goes_last(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+        \App\Tests\Factory\BandSpace\SetlistItemFactory::new([
+            'setlist' => $setlist,
+            'type' => \App\Enum\BandSpace\SetlistItemType::Talk,
+            'label' => 'Seul',
+            'position' => 0,
+        ])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items',
+            ['type' => 'talk', 'label' => 'Merci', 'position' => 40],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $created = self::getContainer()->get(SetlistItemRepository::class)->findOneBy(['setlist' => $setlist->id, 'label' => 'Merci']);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/SetlistItem',
+            '@id' => '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items/' . $created->id,
+            '@type' => 'SetlistItem',
+            'id' => (string) $created->id,
+            'band_space_id' => (string) $bandSpace->id,
+            'setlist_id' => (string) $setlist->id,
+            'type' => 'talk',
+            'song' => null,
+            'label' => 'Merci',
+            'duration_override' => null,
+            'note' => null,
+            'transition' => null,
+            'position' => 1,
+        ]);
+    }
+
+    public function test_create_item_at_a_negative_position_is_refused(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+        $bandSpace = BandSpaceFactory::new()->create();
+        BandSpaceMembershipFactory::new(['bandSpace' => $bandSpace, 'user' => $user])->create();
+        $setlist = SetlistFactory::new(['bandSpace' => $bandSpace])->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest(
+            'POST',
+            '/api/band_spaces/' . $bandSpace->id . '/setlists/' . $setlist->id . '/items',
+            ['type' => 'talk', 'label' => 'Merci', 'position' => -1],
+            ['CONTENT_TYPE' => 'application/ld+json', 'HTTP_ACCEPT' => 'application/ld+json']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@id' => '/api/validation_errors/ea4e51d1-3342-48bd-87f1-9e672cd90cad',
+            '@type' => 'ConstraintViolation',
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'position',
+                    'message' => 'La position doit être positive ou zéro',
+                    'code' => 'ea4e51d1-3342-48bd-87f1-9e672cd90cad',
+                ],
+            ],
+            'detail' => 'position: La position doit être positive ou zéro',
+            'type' => '/validation_errors/ea4e51d1-3342-48bd-87f1-9e672cd90cad',
+            'title' => 'An error occurred',
+            'description' => 'position: La position doit être positive ou zéro',
+        ]);
     }
 }

@@ -91,7 +91,7 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         $item->durationOverride = $data->durationOverride;
         $item->note = $data->note;
         $item->transition = $data->transition;
-        $item->position = $this->nextPosition($setlist);
+        $this->insertAt($setlist, $item, $data->position);
 
         $this->entityManager->persist($item);
 
@@ -116,15 +116,22 @@ readonly class SetlistItemCreateProcessor implements ProcessorInterface
         return $this->itemBuilder->buildItem($item);
     }
 
-    private function nextPosition(Setlist $setlist): int
+    /**
+     * Renumbers the whole running order around the new item rather than shifting the tail by one.
+     * Removals and reorders keep positions dense today, so this is defensive: were a gap ever to
+     * appear, "insert at 3" would still land third.
+     */
+    private function insertAt(Setlist $setlist, SetlistItem $item, ?int $position): void
     {
-        $max = -1;
-        foreach ($setlist->items as $existing) {
-            if ($existing->position > $max) {
-                $max = $existing->position;
-            }
-        }
+        $ordered = $setlist->items->toArray();
+        usort($ordered, static fn (SetlistItem $a, SetlistItem $b): int => $a->position <=> $b->position);
 
-        return $max + 1;
+        $index = $position === null ? count($ordered) : min($position, count($ordered));
+        array_splice($ordered, $index, 0, [$item]);
+
+        foreach ($ordered as $newPosition => $each) {
+            $each->position = $newPosition;
+        }
+        $setlist->items->add($item);
     }
 }

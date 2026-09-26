@@ -38,7 +38,7 @@
             <td class="px-4 py-3 font-medium">
               <span>{{ song.title }}</span>
               <i
-                v-if="songsWithFiles.has(song.id)"
+                v-if="songFileCounts.has(song.id)"
                 class="pi pi-paperclip text-xs text-surface-400 ml-1.5"
                 v-tooltip.top="'Au moins un fichier attaché'"
                 aria-hidden="true"
@@ -95,7 +95,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import bandSpaceFilesApi from '../../../api/bandSpace/band-space-files.js'
+import { useSongFileCounts } from '../../../composables/useSongFileCounts.js'
 import { useBandSongsStore } from '../../../store/bandSpace/bandSpaceSongs.js'
 import { formatDuration } from '../../../utils/setlistDuration.js'
 import SongDetailDrawer from './SongDetailDrawer.vue'
@@ -121,35 +121,10 @@ const drawerSong = ref(null)
 const actionsMenu = ref(null)
 const menuTargetSong = ref(null)
 
-// Set of song ids that have at least one file attached. Derived from a
-// single getFiles({ source: 'song' }) call so we don't fan out N requests
-// per song. Refreshed on mount and when the song drawer closes (attach /
-// detach happens inside it).
-const songsWithFiles = ref(new Set())
-
-async function loadSongsWithFiles() {
-  try {
-    // itemsPerPage hits the backend's paginationMaximumItemsPerPage (200) so
-    // we don't silently drop paperclip indicators for songs whose attached
-    // files fall past the first page. A dedicated has-files endpoint on
-    // SongResource would be cleaner — tracked as a follow-up.
-    const data = await bandSpaceFilesApi.getFiles(props.bandSpaceId, {
-      source: 'song',
-      itemsPerPage: 200
-    })
-    const ids = new Set()
-    for (const file of data.member ?? []) {
-      for (const att of file.attachments ?? []) {
-        if (att.source_type === 'song' && att.source_id) {
-          ids.add(att.source_id)
-        }
-      }
-    }
-    songsWithFiles.value = ids
-  } catch {
-    // Silent: indicator is informational, not blocking.
-  }
-}
+// Refreshed on mount and when the song drawer closes, where files are attached and detached.
+const { counts: songFileCounts, load: loadSongsWithFiles } = useSongFileCounts(
+  () => props.bandSpaceId
+)
 
 onMounted(() => {
   loadSongsWithFiles()

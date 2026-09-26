@@ -51,6 +51,7 @@ class SetlistCreateTest extends ApiTestCase
             'update_datetime' => null,
             'items' => [],
             'total_duration_seconds' => 0,
+            'target_duration' => null,
         ]);
 
         $activityRepo = self::getContainer()->get(BandSpaceActivityRepository::class);
