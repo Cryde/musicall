@@ -154,24 +154,7 @@
                 />
             </div>
             <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-                <AutoComplete
-                    v-model="selectedLocation"
-                    :suggestions="locationSuggestions"
-                    optionLabel="name"
-                    placeholder="Ville (optionnel)"
-                    fluid
-                    @complete="searchLocation"
-                >
-                    <template #option="{ option }">
-                        <div class="flex items-center gap-2">
-                            <i class="pi pi-map-marker text-primary" />
-                            <div>
-                                <div class="font-medium">{{ option.name }}</div>
-                                <div v-if="option.context" class="text-sm text-surface-500">{{ option.context }}</div>
-                            </div>
-                        </div>
-                    </template>
-                </AutoComplete>
+                <CityAutoComplete v-model="selectedLocation" placeholder="Ville (optionnel)" />
             </div>
             <!-- Desktop: Search buttons inside filters row -->
             <div class="hidden lg:block">
@@ -372,8 +355,7 @@
 defineOptions({ name: 'MusicianSearch' })
 
 import { trackUmamiEvent } from '@jaseeey/vue-umami-plugin'
-import { useDebounceFn, useMediaQuery, useTitle } from '@vueuse/core'
-import AutoComplete from 'primevue/autocomplete'
+import { useMediaQuery, useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import Divider from 'primevue/divider'
@@ -384,6 +366,7 @@ import Skeleton from 'primevue/skeleton'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
+import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
@@ -422,7 +405,6 @@ const isSearchMade = ref(false)
 const selectedInstrument = ref(null)
 const selectedStyles = ref([])
 const selectedLocation = ref(null)
-const locationSuggestions = ref([])
 const selectSearchType = ref(null)
 const selectSearchTypeOption = [
   { key: 2, name: 'Musiciens' },
@@ -564,21 +546,6 @@ function scheduleAutoFilledClear() {
   autoFilledTimeout = setTimeout(() => {
     clearAutoFilledIndicators()
   }, 3000)
-}
-
-const debouncedLocationSearch = useDebounceFn(async (query) => {
-  try {
-    locationSuggestions.value = await geocodingApi.searchCities(query)
-  } catch (error) {
-    console.error('Error searching location:', error)
-    locationSuggestions.value = []
-  }
-}, 300)
-
-function searchLocation(event) {
-  if (event.query.length >= 2) {
-    debouncedLocationSearch(event.query)
-  }
 }
 
 const isQuickSearchParamEnough = computed(() => {
@@ -843,7 +810,6 @@ function clearAllFilters(skipTracking = false) {
   selectedInstrument.value = null
   selectedStyles.value = []
   selectedLocation.value = null
-  locationSuggestions.value = []
   quickSearch.value = ''
   selectSearchType.value = null
   // Reset results to initial state

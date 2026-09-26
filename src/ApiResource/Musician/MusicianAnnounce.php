@@ -7,15 +7,18 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\ApiResource\Musician\Announce\Author;
 use App\ApiResource\Musician\Announce\Instrument;
 use App\ApiResource\Musician\Announce\Style;
+use App\Entity\Musician\MusicianAnnounce as MusicianAnnounceEntity;
 use App\State\Processor\Musician\AnnounceDeleteProcessor;
 use App\State\Provider\Musician\AnnounceDeleteProvider;
 use App\State\Provider\Musician\MusicianAnnounceItemProvider;
 use App\State\Provider\Musician\MusicianAnnounceLastProvider;
 use App\State\Provider\Musician\MusicianAnnounceSelfProvider;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -24,7 +27,16 @@ use App\State\Provider\Musician\MusicianAnnounceSelfProvider;
             openapi: new Operation(tags: ['Musician announce']),
             paginationEnabled: false,
             name: 'api_musician_announces_get_last_collection',
-            provider: MusicianAnnounceLastProvider::class
+            provider: MusicianAnnounceLastProvider::class,
+            parameters: [
+                // The homepage filters: a band looking for a musician (1) or a musician looking for a band (2).
+                'type' => new QueryParameter(key: 'type', constraints: [
+                    new Assert\Choice(
+                        choices: [MusicianAnnounceEntity::TYPE_MUSICIAN_STR, MusicianAnnounceEntity::TYPE_BAND_STR],
+                        message: 'Le type d\'annonce est invalide',
+                    ),
+                ]),
+            ],
         ),
         new GetCollection(
             uriTemplate: '/musician_announces/self',

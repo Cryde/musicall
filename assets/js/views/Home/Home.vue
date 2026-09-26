@@ -1,6 +1,16 @@
 <template>
-  <div>
-    <HomeHero />
+  <div class="flex flex-col gap-16 lg:gap-24">
+    <HomeHero :preview-announces="heroAnnounces" />
+
+    <HomeAnnounces
+      v-model:filter="announceFilter"
+      :announces="musicianAnnounceStore.lastAnnounces"
+      :is-loading="!hasLoadedAnnounces || musicianAnnounceStore.isLoadingLast"
+      @open-announce-modal="handleOpenAnnounceModal"
+      @contact-announce="handleContactAnnounce"
+    />
+
+    <HomeBandSpace />
 
     <HomePublications
       :publications="publicationsStore.lastPublications"
@@ -8,12 +18,7 @@
       @open-discover-modal="handleOpenDiscoverModal"
     />
 
-    <HomeAnnounces
-      :announces="musicianAnnounceStore.lastAnnounces"
-      :is-loading="isLoadingAnnounces"
-      @open-announce-modal="handleOpenAnnounceModal"
-      @contact-announce="handleContactAnnounce"
-    />
+    <HomeTeachers :teachers="teachers" @create-teacher-profile="handleCreateTeacherProfile" />
 
     <!-- CTA Section - Cosmic Style -->
     <section v-if="!userSecurityStore.isAuthenticated" class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-surface-950 via-primary-950/50 to-surface-950 dark:from-surface-950 dark:via-primary-950/50 dark:to-surface-950">
@@ -39,7 +44,7 @@
       <div class="relative z-10 text-center py-16 px-8">
         <h2 class="text-3xl md:text-4xl font-bold mb-4">
           <span class="text-surface-900 dark:text-white">Rejoignez la communauté </span>
-          <span class="bg-gradient-to-r from-primary-600 via-fuchsia-500 to-cyan-500 dark:from-primary-400 dark:via-fuchsia-400 dark:to-cyan-400 bg-clip-text text-transparent">MusicAll</span>
+          <span class="text-brand-gradient">MusicAll</span>
         </h2>
         <p class="text-lg text-surface-600 dark:text-surface-400 mb-8 max-w-md mx-auto">
           Des milliers de passionné·e·s échangent déjà sur MusicAll
@@ -67,15 +72,20 @@
 <script setup>
 import { useTitle } from '@vueuse/core'
 import Button from 'primevue/button'
-import { defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import teacherProfileApi from '../../api/user/teacherProfile.js'
 import HomeAnnounces from '../../components/Home/HomeAnnounces.vue'
+import HomeBandSpace from '../../components/Home/HomeBandSpace.vue'
 import HomeHero from '../../components/Home/HomeHero.vue'
 import HomePublications from '../../components/Home/HomePublications.vue'
+import HomeTeachers from '../../components/Home/HomeTeachers.vue'
 import AddDiscoverModal from '../../components/Publication/AddDiscoverModal.vue'
 import { useMusicianAnnounceStore } from '../../store/announce/musician.js'
 import { usePublicationsStore } from '../../store/publication/publications.js'
 import { useVideoStore } from '../../store/publication/video.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import { ANNOUNCE_FILTER_ALL, announceTypeForFilter } from '../../utils/homeSearch.js'
 
 // Heavy modals (message / announce / auth) only appear on a user action — load their
 // chunks on demand (paired with v-if below) so they stay out of the initial bundle.
@@ -94,13 +104,22 @@ const musicianAnnounceStore = useMusicianAnnounceStore()
 const videoStore = useVideoStore()
 const userSecurityStore = useUserSecurityStore()
 
+const router = useRouter()
+
+const HERO_PREVIEW_COUNT = 3
+
 const isLoadingPublications = ref(true)
-const isLoadingAnnounces = ref(true)
 const showAuthModal = ref(false)
 const showMessageModal = ref(false)
 const showAnnounceModal = ref(false)
 const selectedRecipient = ref(null)
 const authModalMessage = ref('')
+const announceFilter = ref(ANNOUNCE_FILTER_ALL)
+// Taken from the first, unfiltered answer, so the hero keeps its glimpse while the list below is filtered.
+const heroAnnounces = ref([])
+// The skeleton, rather than « Aucune annonce », until the first answer is in.
+const hasLoadedAnnounces = ref(false)
+const teachers = ref([])
 
 onMounted(async () => {
   await Promise.all([
@@ -110,12 +129,39 @@ onMounted(async () => {
       isLoadingPublications.value = false
     })(),
     (async () => {
-      isLoadingAnnounces.value = true
-      await musicianAnnounceStore.loadLastAnnounces()
-      isLoadingAnnounces.value = false
-    })()
+      await loadAnnounces()
+      hasLoadedAnnounces.value = true
+      heroAnnounces.value = musicianAnnounceStore.lastAnnounces
+        .slice(0, HERO_PREVIEW_COUNT)
+        .reverse()
+    })(),
+    loadTeachers()
   ])
 })
+
+function loadAnnounces() {
+  return musicianAnnounceStore.loadLastAnnounces(announceTypeForFilter(announceFilter.value))
+}
+
+watch(announceFilter, loadAnnounces)
+
+// A strip of faces: without them it still stands, so a failure only leaves them out.
+async function loadTeachers() {
+  try {
+    teachers.value = (await teacherProfileApi.getFeaturedTeachers()).member
+  } catch {
+    teachers.value = []
+  }
+}
+
+function handleCreateTeacherProfile() {
+  if (!userSecurityStore.isAuthenticated) {
+    authModalMessage.value = 'Vous devez vous connecter pour créer votre profil professeur.'
+    showAuthModal.value = true
+    return
+  }
+  router.push({ name: 'app_user_settings_profile_teacher' })
+}
 
 function handleOpenDiscoverModal() {
   if (!userSecurityStore.isAuthenticated) {
@@ -137,7 +183,7 @@ function handleOpenAnnounceModal() {
 }
 
 async function handleAnnounceCreated() {
-  await musicianAnnounceStore.loadLastAnnounces()
+  await loadAnnounces()
 }
 
 function handleContactAnnounce(author) {

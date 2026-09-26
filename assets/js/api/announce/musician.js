@@ -3,9 +3,10 @@
 import axios from 'axios'
 
 export default {
-  getLastAnnounces() {
+  /** `type` narrows to the announces bands (1) or musicians (2) posted; none is all of them. */
+  getLastAnnounces(type = null) {
     return axios
-      .get(Routing.generate('api_musician_announces_get_last_collection'))
+      .get(Routing.generate('api_musician_announces_get_last_collection', type ? { type } : {}))
       .then((resp) => resp.data)
   },
 

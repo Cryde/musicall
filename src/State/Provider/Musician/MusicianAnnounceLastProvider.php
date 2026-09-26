@@ -24,7 +24,11 @@ readonly class MusicianAnnounceLastProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $entities = $this->musicianAnnounceRepository->findLastAnnounces(MusicianAnnounce::LIMIT_LAST_ANNOUNCES);
+        $type = $operation->getParameters()?->get('type')?->getValue();
+        $entities = $this->musicianAnnounceRepository->findLastAnnounces(
+            MusicianAnnounce::LIMIT_LAST_ANNOUNCES,
+            is_string($type) && $type !== '' ? (int) $type : null,
+        );
         $authorsByAnnounceId = $this->musicianAnnounceRepository->findAuthorsDataForAnnounces($entities);
 
         return $this->musicianAnnounceBuilder->buildListWithProjectedAuthors($entities, $authorsByAnnounceId);
