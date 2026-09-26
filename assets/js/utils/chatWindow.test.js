@@ -1,0 +1,69 @@
+import assert from 'node:assert/strict'
+import { describe, it } from 'node:test'
+import { isHeld, mayMergeNewestPage, paneAfterWindow } from './chatWindow.js'
+
+/**
+ * Run with `npm test`.
+ */
+
+describe('paneAfterWindow', () => {
+  it('stays a window while the thread goes on past it', () => {
+    assert.deepEqual(paneAfterWindow({ has_older: true, has_newer: true, total_items: 190 }, 51), {
+      isAtTail: false,
+      hasOlder: true,
+      hasNewer: true,
+      total: null
+    })
+  })
+
+  it('says so when nothing older is left above the window', () => {
+    assert.equal(
+      paneAfterWindow({ has_older: false, has_newer: true, total_items: 190 }, 28).hasOlder,
+      false
+    )
+  })
+
+  it('becomes the tail again once it reaches the newest message', () => {
+    assert.deepEqual(
+      paneAfterWindow({ has_older: true, has_newer: false, total_items: 193 }, 179),
+      {
+        isAtTail: true,
+        hasOlder: false,
+        hasNewer: false,
+        total: 193
+      }
+    )
+  })
+
+  it('never reports a total below what is held, a message written meanwhile included', () => {
+    assert.equal(
+      paneAfterWindow({ has_older: true, has_newer: false, total_items: 40 }, 42).total,
+      42
+    )
+  })
+})
+
+describe('mayMergeNewestPage', () => {
+  it('merges a load the member asked for, wherever the pane is', () => {
+    assert.equal(mayMergeNewestPage({ silent: false, isAtTail: true }), true)
+    assert.equal(mayMergeNewestPage({ silent: false, isAtTail: false }), true)
+  })
+
+  it('merges a live refetch into the newest messages', () => {
+    assert.equal(mayMergeNewestPage({ silent: true, isAtTail: true }), true)
+  })
+
+  it('never splices the newest page into a window, a jump that started meanwhile included', () => {
+    assert.equal(mayMergeNewestPage({ silent: true, isAtTail: false }), false)
+  })
+})
+
+describe('isHeld', () => {
+  it('tells a message on screen from one that needs a window', () => {
+    const held = [{ id: 'a' }, { id: 'b' }]
+
+    assert.equal(isHeld(held, 'b'), true)
+    assert.equal(isHeld(held, 'z'), false)
+    assert.equal(isHeld([], 'a'), false)
+  })
+})

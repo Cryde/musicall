@@ -18,6 +18,22 @@ export default {
   },
 
   /**
+   * A stretch of the conversation anchored on one message (#1039), oldest first: `around` to land on
+   * it, `before` and `after` to read on from a window in either direction. Answers `messages`,
+   * `has_older`, `has_newer` and `total_items`.
+   *
+   * @param {{around?: string, before?: string, after?: string}} anchor exactly one of the three
+   */
+  getMessageWindow(bandSpaceId, anchor) {
+    return axios
+      .get(Routing.generate('api_band_space_chat_message_window_get', { bandSpaceId }), {
+        params: anchor
+      })
+      .then((resp) => resp.data)
+      .catch(handleApiError)
+  },
+
+  /**
    * The channel's pinned messages, newest pin first. Its own collection because a pinned message is
    * nearly always far up the history, so the pane has not loaded the page it lives on (#969).
    */

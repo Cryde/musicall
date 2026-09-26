@@ -4,6 +4,16 @@
   >
     <ChatPinnedBar v-if="!chatStore.loadError" :band-space-id="bandSpaceId" />
 
+    <Message
+      v-if="chatStore.jumpError"
+      severity="warn"
+      :closable="true"
+      class="m-2"
+      @close="chatStore.dismissJumpError()"
+    >
+      {{ chatStore.jumpError }}
+    </Message>
+
     <div
       v-if="chatStore.loadError"
       class="flex flex-col items-center justify-center flex-1 p-8 gap-4"
@@ -32,7 +42,6 @@
       ref="messageList"
       :band-space-id="bandSpaceId"
       :members="settingsStore.members"
-      :focus-message-id="focusMessageId"
     />
 
     <ChatComposer
@@ -52,7 +61,7 @@
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import { onMounted, onUnmounted, useTemplateRef } from 'vue'
+import { onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ChatComposer from '../../components/BandSpace/Chat/ChatComposer.vue'
 import ChatMessageList from '../../components/BandSpace/Chat/ChatMessageList.vue'
@@ -65,9 +74,14 @@ const route = useRoute()
 // reused when the member switches band.
 const bandSpaceId = route.params.id
 
-// Where a task's « Voir la discussion » link points (#979). Read once, like the space id above:
-// the view is remounted rather than reused, so there is nothing to react to.
-const focusMessageId = typeof route.query.message === 'string' ? route.query.message : null
+/**
+ * The message a link asks to land on (#1039): a task's « Voir la discussion » (#979), a mention
+ * notification, a pinned message. Unlike the space id it can change while the view stays mounted,
+ * when a notification is opened from the bell with the tab already on screen.
+ */
+function requestedMessageId() {
+  return typeof route.query.message === 'string' ? route.query.message : null
+}
 
 const chatStore = useBandSpaceChatStore()
 // The roster the `@` dropdown filters. Reused from the settings store, which already carries it with a
@@ -90,8 +104,21 @@ async function load() {
   // After the load rather than before, so a failed load does not claim the member read anything.
   if (!chatStore.loadError) {
     await chatStore.markAsRead(bandSpaceId)
+    const messageId = requestedMessageId()
+    if (messageId) {
+      await chatStore.jumpToMessage(bandSpaceId, messageId)
+    }
   }
 }
+
+watch(
+  () => route.query.message,
+  (messageId) => {
+    if (typeof messageId === 'string' && !chatStore.isLoading) {
+      chatStore.jumpToMessage(bandSpaceId, messageId)
+    }
+  }
+)
 
 onMounted(load)
 onUnmounted(() => chatStore.clear())

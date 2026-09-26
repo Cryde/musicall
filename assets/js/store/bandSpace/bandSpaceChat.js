@@ -6,6 +6,7 @@ import {
   rolledBackReactions,
   toggledReactions
 } from '../../utils/chatReactionToggle.js'
+import { isHeld, mayMergeNewestPage, paneAfterWindow } from '../../utils/chatWindow.js'
 import { createCoalescedCall } from '../../utils/coalescedCall.js'
 import {
   hasOlderToLoad,
@@ -56,9 +57,29 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   // Same idea for « créer une tâche » (#979), where a double click would create two tasks.
   const pendingTaskMessageId = ref(null)
 
+  // Whether `messages` runs back from the newest message with no gap (#1039). It does, except after a
+  // jump to a message far up the history, when the pane holds a window in the middle of it instead:
+  // the page arithmetic then means nothing, reading on goes through the window endpoint in both
+  // directions, and a live signal must not splice today's page into last March.
+  const isAtTail = ref(true)
+  const windowHasOlder = ref(false)
+  const windowHasNewer = ref(false)
+  const isLoadingNewer = ref(false)
+  const loadNewerError = ref(null)
+  const jumpError = ref(null)
+  // The message a jump is fetching a window for, so a double click on « Aller au message » is one
+  // request, and its button can say it is busy.
+  const jumpingTo = ref(null)
+  // What the list should scroll to and light up. A fresh object each time, so asking for the same
+  // message twice still moves the pane.
+  const focusRequest = ref(null)
+
   const hasOlderMessages = computed(() =>
-    hasOlderToLoad(messages.value.length, totalMessages.value)
+    isAtTail.value
+      ? hasOlderToLoad(messages.value.length, totalMessages.value)
+      : windowHasOlder.value
   )
+  const hasNewerMessages = computed(() => !isAtTail.value && windowHasNewer.value)
 
   /**
    * The total can only go up. A response that was issued before a send lands with a total that
@@ -97,7 +118,9 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
 
     try {
       const response = await bandSpaceChatApi.getMessages(bandSpaceId)
-      if (token !== loadToken) {
+      // A silent refetch is page 1, which only belongs in a pane that runs back from the newest
+      // message: one that left for a window meanwhile must not have today spliced into it (#1039).
+      if (token !== loadToken || !mayMergeNewestPage({ silent, isAtTail: isAtTail.value })) {
         return
       }
       // Merged, not replaced: the composer is usable while this is in flight, and a message sent
@@ -133,6 +156,19 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     loadOlderError.value = null
 
     try {
+      if (!isAtTail.value) {
+        const page = await bandSpaceChatApi.getMessageWindow(bandSpaceId, {
+          before: messages.value[0]?.id
+        })
+        if (token !== loadToken) {
+          return
+        }
+        messages.value = mergeMessages(messages.value, page.messages ?? [])
+        windowHasOlder.value = page.has_older
+
+        return
+      }
+
       const response = await bandSpaceChatApi.getMessages(bandSpaceId, {
         page: nextOlderPageToLoad(messages.value.length)
       })
@@ -150,6 +186,116 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   /**
+   * Reads on towards the present from a window (#1039). Reaching the newest message ends the window:
+   * the pane is a contiguous tail again, so the page arithmetic, the live refetch and marking read all
+   * apply once more.
+   */
+  async function loadNewerMessages(bandSpaceId) {
+    if (isLoadingNewer.value || !hasNewerMessages.value) {
+      return
+    }
+
+    const token = loadToken
+    isLoadingNewer.value = true
+    loadNewerError.value = null
+
+    try {
+      const page = await bandSpaceChatApi.getMessageWindow(bandSpaceId, {
+        after: messages.value.at(-1)?.id
+      })
+      if (token !== loadToken) {
+        return
+      }
+      messages.value = mergeMessages(messages.value, page.messages ?? [])
+      applyWindow(page)
+      if (isAtTail.value) {
+        await markAsRead(bandSpaceId)
+      }
+    } catch (e) {
+      console.error('Failed to load newer chat messages:', e)
+      loadNewerError.value = 'Impossible de charger les messages plus récents.'
+    } finally {
+      isLoadingNewer.value = false
+    }
+  }
+
+  /** After a window answer has been merged in: see paneAfterWindow(). */
+  function applyWindow(page) {
+    const pane = paneAfterWindow(page, messages.value.length)
+    isAtTail.value = pane.isAtTail
+    windowHasOlder.value = pane.hasOlder
+    windowHasNewer.value = pane.hasNewer
+    if (pane.total !== null) {
+      totalMessages.value = pane.total
+    }
+  }
+
+  /**
+   * Shows one message in context, wherever it is (#1039): a pinned one, the one a mention points at,
+   * a link to it. Already held, the pane just scrolls to it; otherwise the pane is replaced by a
+   * window around it, which is what saves a pin from a year ago dozens of page loads.
+   */
+  async function jumpToMessage(bandSpaceId, messageId) {
+    jumpError.value = null
+    if (isHeld(messages.value, messageId)) {
+      focusRequest.value = { messageId }
+
+      return
+    }
+
+    if (jumpingTo.value === messageId) {
+      return
+    }
+
+    const token = ++loadToken
+    // Out of the live end before the request rather than after it: a message landing while this is in
+    // flight must take the window branch of handleIncomingMessage(), not splice today's page into the
+    // pane the window is about to replace. Put back if the jump fails.
+    const wasAtTail = isAtTail.value
+    isAtTail.value = false
+    jumpingTo.value = messageId
+    try {
+      const page = await bandSpaceChatApi.getMessageWindow(bandSpaceId, { around: messageId })
+      if (token !== loadToken) {
+        return
+      }
+      messages.value = page.messages ?? []
+      loadOlderError.value = null
+      loadNewerError.value = null
+      applyWindow(page)
+      focusRequest.value = { messageId }
+    } catch (e) {
+      console.error('Failed to jump to a chat message:', e)
+      if (token === loadToken) {
+        isAtTail.value = wasAtTail
+        jumpError.value =
+          e.status === 404
+            ? "Ce message n'est plus disponible."
+            : "Impossible d'afficher ce message, veuillez réessayer."
+      }
+    } finally {
+      if (jumpingTo.value === messageId) {
+        jumpingTo.value = null
+      }
+    }
+  }
+
+  function dismissJumpError() {
+    jumpError.value = null
+  }
+
+  /** Back to the live end of the conversation from a window, as it is when the tab opens. */
+  async function returnToLatest(bandSpaceId) {
+    loadToken += 1
+    messages.value = []
+    applyWindow({ has_older: false, has_newer: false, total_items: 0 })
+    await loadMessages(bandSpaceId)
+    if (!loadError.value) {
+      await markAsRead(bandSpaceId)
+    }
+  }
+
+  /**
    * Appends through the merge rather than pushing, so the message is de-duplicated by `@id`: the
    * sender's own signal can beat their own POST response back, because the server publishes inside the
    * send and answers afterwards, and the refetch it triggers has then already added it (#963).
@@ -159,6 +305,13 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
 
     try {
       const message = await bandSpaceChatApi.postMessage(bandSpaceId, content, attachments, media)
+      // Written from a window far up the history: appending it there would open a gap between the
+      // window and today. The member wrote it, so they mean to see it, where it really is.
+      if (!isAtTail.value) {
+        await returnToLatest(bandSpaceId)
+
+        return
+      }
       const heldBefore = messages.value.length
       messages.value = mergeMessages(messages.value, [message])
       totalMessages.value += messages.value.length - heldBefore
@@ -168,12 +321,13 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   }
 
   async function loadPinnedMessages(bandSpaceId) {
-    // Same token as the message list: switching band while this is in flight must not hang another
-    // band's pins over the conversation that is now on screen.
-    const token = loadToken
+    // Checked against the space on screen, not against the load token: switching band while this is in
+    // flight must not hang another band's pins over the conversation now open, but the token moves on
+    // every load and every jump (#1039), and Chat.vue starts the list load right after this one, which
+    // used to throw every first answer away and leave the bar hidden.
     try {
       const pinned = await bandSpaceChatApi.getPinnedMessages(bandSpaceId)
-      if (token === loadToken) {
+      if (openBandSpaceId.value === bandSpaceId) {
         pinnedMessages.value = pinned
       }
     } catch (e) {
@@ -376,6 +530,16 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
       return
     }
 
+    // Reading a window far up the history: splicing today's page into it would break the pane, and the
+    // member has not seen the new message, so it waits behind « Revenir aux messages récents » and the
+    // badge counts it.
+    if (!isAtTail.value) {
+      windowHasNewer.value = true
+      await useNotificationStore().loadNotifications()
+
+      return
+    }
+
     await loadMessages(openId, { silent: true })
 
     // Arriving while the tab is in front is reading it, the same rule the inbox uses. In a background
@@ -395,7 +559,8 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
   const readReceiptRefresh = createCoalescedCall({
     delayMs: READ_RECEIPT_COALESCE_MS,
     call: () => {
-      if (openBandSpaceId.value) {
+      // The « Vu par » line sits under the newest message, which a window up the history does not hold.
+      if (openBandSpaceId.value && isAtTail.value) {
         loadMessages(openBandSpaceId.value, { silent: true })
       }
     }
@@ -435,6 +600,14 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     pinnedMessages.value = []
     pendingPinMessageId.value = null
     pendingTaskMessageId.value = null
+    isAtTail.value = true
+    windowHasOlder.value = false
+    windowHasNewer.value = false
+    isLoadingNewer.value = false
+    loadNewerError.value = null
+    jumpError.value = null
+    jumpingTo.value = null
+    focusRequest.value = null
   }
 
   return {
@@ -449,9 +622,20 @@ export const useBandSpaceChatStore = defineStore('bandSpaceChat', () => {
     pinnedMessages: readonly(pinnedMessages),
     pendingPinMessageId: readonly(pendingPinMessageId),
     pendingTaskMessageId: readonly(pendingTaskMessageId),
+    isAtTail: readonly(isAtTail),
+    isLoadingNewer: readonly(isLoadingNewer),
+    loadNewerError: readonly(loadNewerError),
+    jumpError: readonly(jumpError),
+    jumpingTo: readonly(jumpingTo),
+    focusRequest: readonly(focusRequest),
     hasOlderMessages,
+    hasNewerMessages,
     loadMessages,
     loadOlderMessages,
+    loadNewerMessages,
+    jumpToMessage,
+    dismissJumpError,
+    returnToLatest,
     loadPinnedMessages,
     pinMessage,
     unpinMessage,

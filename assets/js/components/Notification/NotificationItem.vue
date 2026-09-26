@@ -246,7 +246,12 @@ const TYPE_CONFIG = {
     title: payload.actor_username,
     preview: `vous a mentionné dans la discussion de « ${payload.band_space_name} »`,
     actions: null,
-    target: { name: BAND_SPACE_ROUTES.CHAT, params: { id: payload.band_space_id } }
+    // Straight to the message that names you, wherever it is in the history (#1039).
+    target: {
+      name: BAND_SPACE_ROUTES.CHAT,
+      params: { id: payload.band_space_id },
+      query: payload.message_id ? { message: payload.message_id } : {}
+    }
   }),
   task_comment: (payload) => ({
     icon: 'pi pi-comment',

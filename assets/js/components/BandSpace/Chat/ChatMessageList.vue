@@ -248,12 +248,40 @@
     <!-- Under the last message only, whoever wrote it: « Vu par » repeated under fifty bubbles is
          noise, and the question a band asks is always about the newest one (#977). -->
     <p
-      v-if="readReceipt"
+      v-if="readReceipt && chatStore.isAtTail"
       class="text-xs text-surface-500 dark:text-surface-400"
       :class="{ 'text-right': lastMessageIsMine }"
     >
       {{ readReceipt }}
     </p>
+
+    <!-- Reading a window up the history (#1039): the conversation goes on below it, and the way back
+         to the present stays in reach however far the member has scrolled. -->
+    <template v-if="chatStore.hasNewerMessages">
+      <Message v-if="chatStore.loadNewerError" severity="error" :closable="false">
+        {{ chatStore.loadNewerError }}
+      </Message>
+      <div class="flex justify-center">
+        <Button
+          label="Charger les messages plus récents"
+          severity="secondary"
+          outlined
+          size="small"
+          :loading="chatStore.isLoadingNewer"
+          @click="handleLoadNewer"
+        />
+      </div>
+      <div class="sticky bottom-0 flex justify-center pb-1">
+        <Button
+          label="Revenir aux messages récents"
+          icon="pi pi-arrow-down"
+          size="small"
+          rounded
+          class="shadow-md"
+          @click="chatStore.returnToLatest(bandSpaceId)"
+        />
+      </div>
+    </template>
   </div>
 </template>
 
@@ -285,9 +313,7 @@ import ChatMessageVoiceNote from './ChatMessageVoiceNote.vue'
 const props = defineProps({
   bandSpaceId: { type: String, required: true },
   /** The roster the `@` dropdown of an open edit box filters, supplied by the view that holds it. */
-  members: { type: Array, default: () => [] },
-  /** The message a task's « Voir la discussion » link asks to land on (#979), if it is on this page. */
-  focusMessageId: { type: String, default: null }
+  members: { type: Array, default: () => [] }
 })
 
 const chatStore = useBandSpaceChatStore()
@@ -490,6 +516,22 @@ async function handleLoadOlder() {
 }
 
 /**
+ * Reading on towards the present from a window: the new rows land below the reader, who keeps their
+ * place, so the follow rule below must not take them to the bottom of what was just loaded.
+ */
+let isLoadingNewer = false
+
+async function handleLoadNewer() {
+  isLoadingNewer = true
+  try {
+    await chatStore.loadNewerMessages(props.bandSpaceId)
+    await nextTick()
+  } finally {
+    isLoadingNewer = false
+  }
+}
+
+/**
  * Deliberately not `flush: 'post'`: the scroll position is read before the DOM updates, so it tells
  * us where the reader was rather than where the browser has already put them.
  *
@@ -506,7 +548,8 @@ watch(
     const grewAtTheEnd = tailIri !== lastTailIri
     lastTailIri = tailIri
 
-    if (grewAtTheEnd && isFollowingTheConversation()) {
+    // Never while a window is shown or read on: following only means something at the live end.
+    if (grewAtTheEnd && chatStore.isAtTail && !isLoadingNewer && isFollowingTheConversation()) {
       scrollToBottom()
     }
   },
@@ -520,33 +563,46 @@ const highlightedMessageId = ref(null)
 let highlightTimer = null
 
 /**
- * Best effort, and deliberately so: the pane holds the newest page, so a task created from a message
- * far up the history lands on the conversation with nothing lit up rather than paging backwards
- * looking for it. Being in the right conversation is most of what the link is for.
+ * Scrolls to the message the store was asked to show and lights it up (#1039). By the time a request
+ * arrives the message is held, whether it was already on the page or a window was loaded around it,
+ * so there is always something to land on. A frame after the DOM update rather than on it, so the
+ * landing wins over anything else moving the pane in the same tick.
  */
-function focusRequestedMessage() {
-  if (!props.focusMessageId) {
-    return
-  }
-
+function focusMessage(messageId) {
   nextTick(() => {
-    const element = document.getElementById(`chat-message-${props.focusMessageId}`)
-    if (!element) {
-      return
-    }
+    requestAnimationFrame(() => {
+      const element = document.getElementById(`chat-message-${messageId}`)
+      if (!element) {
+        return
+      }
 
-    element.scrollIntoView({ block: 'center' })
-    highlightedMessageId.value = props.focusMessageId
-    clearTimeout(highlightTimer)
-    highlightTimer = setTimeout(() => {
-      highlightedMessageId.value = null
-    }, HIGHLIGHT_DURATION_MS)
+      element.scrollIntoView({ block: 'center' })
+      highlightedMessageId.value = messageId
+      clearTimeout(highlightTimer)
+      highlightTimer = setTimeout(() => {
+        highlightedMessageId.value = null
+      }, HIGHLIGHT_DURATION_MS)
+    })
   })
 }
 
+watch(
+  () => chatStore.focusRequest,
+  (request) => {
+    if (request) {
+      focusMessage(request.messageId)
+    }
+  }
+)
+
 onMounted(() => {
+  // A jump that replaced an empty pane mounts this list with its request already made.
+  if (chatStore.focusRequest) {
+    focusMessage(chatStore.focusRequest.messageId)
+
+    return
+  }
   scrollToBottom()
-  focusRequestedMessage()
 })
 
 onUnmounted(() => clearTimeout(highlightTimer))
