@@ -5,8 +5,11 @@
         <h2 id="home-member-announces-title" class="m-0 text-2xl font-bold text-surface-900 dark:text-surface-0">
           {{ title }}
         </h2>
+        <router-link v-if="source === SOURCE_MATCHES" :to="{ name: 'app_user_announces' }" :class="CHIP">
+          D'après vos annonces · Gérer
+        </router-link>
         <router-link
-          v-if="criteria"
+          v-else-if="criteria"
           :to="{ name: 'app_user_settings_profile_musician' }"
           :class="CHIP"
           :aria-label="`Groupes cherchant : ${criteria.instrumentName}. Modifier mon profil musicien`"
@@ -14,7 +17,7 @@
           Groupes cherchant : {{ criteria.instrumentName }} · Modifier
         </router-link>
         <button
-          v-if="city && !isChangingCity"
+          v-if="source !== SOURCE_MATCHES && city && !isChangingCity"
           type="button"
           :class="[CHIP, 'cursor-pointer']"
           :aria-label="`Autour de ${city.name}. Changer de ville`"
@@ -31,14 +34,14 @@
     </div>
 
     <HomeMemberCityPrompt
-      v-if="!isLoading && (!city || isChangingCity)"
+      v-if="!isLoading && source !== SOURCE_MATCHES && (!city || isChangingCity)"
       :current-city="isChangingCity ? city : null"
       :cancellable="isChangingCity"
       @saved="handleCitySaved"
       @cancel="isChangingCity = false"
     />
 
-    <p v-if="!isLoading && !criteria" class="m-0 text-surface-700 dark:text-surface-300">
+    <p v-if="!isLoading && source !== SOURCE_MATCHES && !criteria" class="m-0 text-surface-700 dark:text-surface-300">
       Indiquez vos instruments dans votre
       <router-link :to="{ name: 'app_user_settings_profile_musician' }" class="font-semibold text-primary hover:underline">profil musicien</router-link>
       pour voir ici les groupes qui vous cherchent.
@@ -70,17 +73,26 @@ import searchApi from '../../../api/search/musician.js'
 import musicianProfileApi from '../../../api/user/musicianProfile.js'
 import profileApi from '../../../api/user/profile.js'
 import { LOOKING_FOR_BAND, musicianSearchRoute } from '../../../utils/homeSearch.js'
-import { announceCriteriaFor, searchResultAsAnnounce } from '../../../utils/memberHome.js'
+import {
+  announceCriteriaFor,
+  matchAsAnnounce,
+  searchResultAsAnnounce
+} from '../../../utils/memberHome.js'
 import { profileCity } from '../../../utils/profileLocation.js'
 import AnnounceCardSkeleton from '../../Skeleton/AnnounceCardSkeleton.vue'
 import HomeAnnounceCard from '../HomeAnnounceCard.vue'
 import HomeMemberCityPrompt from './HomeMemberCityPrompt.vue'
 
 /**
- * « Annonces pour vous » (#1078): the bands looking for the member's instrument, the nearest first
- * when their profile has a city, which the block asks for otherwise (#1079). Without an instrument,
- * every announce near that city, or the latest ones, and a nudge to fill in a musician profile.
+ * « Annonces pour vous »: first the announces answering the member's own (#1082), each saying why.
+ * Otherwise the bands looking for their profile instrument (#1078), the nearest first when their
+ * profile has a city, which the block asks for (#1079). Without an instrument, every announce near
+ * that city, or the latest ones, and a nudge to fill in a musician profile.
  */
+const SOURCE_MATCHES = 'matches'
+const SOURCE_SEARCH = 'search'
+const SOURCE_LATEST = 'latest'
+
 const CHIP =
   'inline-flex items-center gap-1.5 rounded-full bg-primary-100 dark:bg-primary-400/15 px-3 py-1 text-sm text-primary-800 dark:text-primary-200 hover:underline'
 
@@ -98,13 +110,21 @@ const criteria = ref(null)
 const city = ref(null)
 const isChangingCity = ref(false)
 const announces = ref([])
+const source = ref(null)
 
 const title = computed(() => {
-  if (criteria.value) return 'Annonces pour vous'
+  if (source.value === SOURCE_MATCHES || criteria.value) return 'Annonces pour vous'
   return city.value ? 'Annonces près de chez vous' : 'Dernières annonces'
 })
 
 const allAnnouncesRoute = computed(() => {
+  if (source.value === SOURCE_MATCHES) {
+    // Filtered by type only when every match is of the same one.
+    const types = new Set(announces.value.map((announce) => announce.type))
+    return types.size === 1
+      ? { name: 'app_search_musician', query: { type: String([...types][0]) } }
+      : { name: 'app_search_musician' }
+  }
   if (criteria.value) {
     return musicianSearchRoute({
       lookingFor: LOOKING_FOR_BAND,
@@ -122,10 +142,23 @@ const allAnnouncesRoute = computed(() => {
 
 onMounted(async () => {
   try {
-    const [musicianProfile, profile] = await Promise.all([loadMusicianProfile(), loadProfile()])
+    const [matches, musicianProfile, profile] = await Promise.all([
+      loadMatches(),
+      loadMusicianProfile(),
+      loadProfile()
+    ])
     criteria.value = announceCriteriaFor(musicianProfile)
     city.value = profileCity(profile)
-    announces.value = criteria.value || city.value ? await loadMatching() : await loadLatest()
+    if (matches.length > 0) {
+      source.value = SOURCE_MATCHES
+      announces.value = matches.slice(0, props.limit).map(matchAsAnnounce)
+    } else if (criteria.value || city.value) {
+      source.value = SOURCE_SEARCH
+      announces.value = await loadMatching()
+    } else {
+      source.value = SOURCE_LATEST
+      announces.value = await loadLatest()
+    }
   } catch {
     announces.value = []
   } finally {
@@ -136,6 +169,7 @@ onMounted(async () => {
 async function handleCitySaved(savedCity) {
   city.value = savedCity
   isChangingCity.value = false
+  source.value = SOURCE_SEARCH
   isLoading.value = true
   try {
     announces.value = await loadMatching()
@@ -143,6 +177,15 @@ async function handleCitySaved(savedCity) {
     announces.value = []
   } finally {
     isLoading.value = false
+  }
+}
+
+// Without a recent announce of their own a member has none, and the block falls back.
+async function loadMatches() {
+  try {
+    return await musicianAnnounceApi.getMatches()
+  } catch {
+    return []
   }
 }
 

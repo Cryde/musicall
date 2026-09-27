@@ -6,6 +6,8 @@ import {
   lastChangedSetlist,
   MEMBER_LAYOUT_BAND,
   MEMBER_LAYOUT_SEARCH,
+  matchAsAnnounce,
+  matchReason,
   memberLayoutFor,
   openTasks,
   pickBandSpace,
@@ -123,5 +125,53 @@ describe('announces for a member', () => {
         creation_datetime: null
       }
     )
+  })
+})
+
+describe('matchReason', () => {
+  const answered = { id: 'own', type: 2, instrument_name: 'Batteur', location_name: 'Bruxelles' }
+
+  it('names the announce it answers, how far and the styles in common', () => {
+    assert.equal(
+      matchReason({ announce: { distance: 5.53 }, answered, shared_styles: ['Rock', 'Pop'] }),
+      'Répond à votre annonce « Batteur cherche un groupe » · à 6 km · 2 styles en commun'
+    )
+  })
+
+  it('says one style, a kilometre for nearer than that, and nothing for no style in common', () => {
+    assert.equal(
+      matchReason({ announce: { distance: 0.2 }, answered, shared_styles: ['Rock'] }),
+      'Répond à votre annonce « Batteur cherche un groupe » · à 1 km · 1 style en commun'
+    )
+    assert.equal(
+      matchReason({
+        announce: { distance: 12.4 },
+        answered: { ...answered, type: 1 },
+        shared_styles: []
+      }),
+      'Répond à votre annonce « Groupe cherche un batteur » · à 12 km'
+    )
+  })
+})
+
+describe('matchAsAnnounce', () => {
+  it('reads as a search result, with the reason it is shown', () => {
+    const user = { id: 'u', username: 'legroupe' }
+    const announce = matchAsAnnounce({
+      announce: {
+        id: 'x',
+        type: 1,
+        instrument: { name: 'Batteur' },
+        styles: [],
+        location_name: 'Ixelles',
+        user,
+        distance: 2.16
+      },
+      answered: { id: 'own', type: 2, instrument_name: 'Batteur', location_name: 'Bruxelles' },
+      shared_styles: []
+    })
+    assert.equal(announce.id, 'x')
+    assert.equal(announce.author, user)
+    assert.equal(announce.reason, 'Répond à votre annonce « Batteur cherche un groupe » · à 2 km')
   })
 })

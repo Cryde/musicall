@@ -8,12 +8,14 @@ use App\ApiResource\Musician\MusicianAnnounce;
 use App\ApiResource\Musician\MusicianAnnounceCreate;
 use App\Entity\Musician\MusicianAnnounce as MusicianAnnounceEntity;
 use App\Entity\User;
+use App\Event\MusicianAnnouncePostedEvent;
 use App\Service\Builder\Musician\MusicianAnnounceBuilder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements ProcessorInterface<MusicianAnnounceCreate, MusicianAnnounce>
@@ -28,6 +30,7 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
         private RateLimiterFactoryInterface $musicianAnnounceLimiter,
         #[Target('musician_announce_daily')]
         private RateLimiterFactoryInterface $musicianAnnounceDailyLimiter,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -54,6 +57,9 @@ readonly class MusicianAnnouncePostProcessor implements ProcessorInterface
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        // After the flush: the members it answers are notified of a saved announce (#1082).
+        $this->eventDispatcher->dispatch(new MusicianAnnouncePostedEvent($entity));
 
         return $this->musicianAnnounceBuilder->buildItem($entity);
     }

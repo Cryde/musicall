@@ -45,6 +45,10 @@ class UserNotificationPreference
     #[ORM\Column(type: Types::BOOLEAN)]
     public bool $activityReminder = true;
 
+    /** Emails about new announces answering the member's (#1082). */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    public bool $announceMatch = true;
+
     /** Seen « en ligne » by the members of one's bands while their chat is open (#1040). */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     public bool $showOnlinePresence = true;

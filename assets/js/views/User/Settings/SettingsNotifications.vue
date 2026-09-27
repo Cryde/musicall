@@ -36,6 +36,13 @@
           description="Recevez un email lorsqu'un utilisateur répond à un de vos sujets sur le forum"
           :disabled="isUpdating"
         />
+
+        <NotificationToggle
+          v-model="announceMatch"
+          label="Annonces qui correspondent aux vôtres"
+          description="Recevez un email lorsqu'une nouvelle annonce répond à l'une des vôtres, au plus une fois par jour"
+          :disabled="isUpdating"
+        />
       </div>
 
       <!-- Updates section -->
@@ -140,6 +147,7 @@ const publicationComment = ref(true)
 const forumReply = ref(true)
 const marketing = ref(false)
 const activityReminder = ref(true)
+const announceMatch = ref(true)
 const showOnlinePresence = ref(true)
 
 const originalValues = ref({
@@ -150,6 +158,7 @@ const originalValues = ref({
   forumReply: true,
   marketing: false,
   activityReminder: true,
+  announceMatch: true,
   showOnlinePresence: true
 })
 
@@ -162,6 +171,7 @@ const hasChanges = computed(() => {
     forumReply.value !== originalValues.value.forumReply ||
     marketing.value !== originalValues.value.marketing ||
     activityReminder.value !== originalValues.value.activityReminder ||
+    announceMatch.value !== originalValues.value.announceMatch ||
     showOnlinePresence.value !== originalValues.value.showOnlinePresence
   )
 })
@@ -174,6 +184,7 @@ function setFormValues(preferences) {
   forumReply.value = preferences?.forum_reply ?? true
   marketing.value = preferences?.marketing ?? false
   activityReminder.value = preferences?.activity_reminder ?? true
+  announceMatch.value = preferences?.announce_match ?? true
   showOnlinePresence.value = preferences?.show_online_presence ?? true
 
   originalValues.value = {
@@ -184,6 +195,7 @@ function setFormValues(preferences) {
     forumReply: forumReply.value,
     marketing: marketing.value,
     activityReminder: activityReminder.value,
+    announceMatch: announceMatch.value,
     showOnlinePresence: showOnlinePresence.value
   }
 }
@@ -227,6 +239,7 @@ async function savePreferences() {
       forum_reply: forumReply.value,
       marketing: marketing.value,
       activity_reminder: activityReminder.value,
+      announce_match: announceMatch.value,
       show_online_presence: showOnlinePresence.value
     })
 
@@ -238,6 +251,7 @@ async function savePreferences() {
       forumReply: forumReply.value,
       marketing: marketing.value,
       activityReminder: activityReminder.value,
+      announceMatch: announceMatch.value,
       showOnlinePresence: showOnlinePresence.value
     }
 

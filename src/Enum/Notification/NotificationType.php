@@ -27,4 +27,5 @@ enum NotificationType: string
     case BandSpaceFinanceSplitAssigned = 'band_space_finance_split_assigned';
     case BandSpaceDeletionScheduled = 'band_space_deletion_scheduled';
     case BandSpaceDeletionCancelled = 'band_space_deletion_cancelled';
+    case MusicianAnnounceMatch = 'musician_announce_match';
 }

@@ -53,7 +53,83 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             return [];
         }
 
-        // Side effect: initialise the styles collections on the managed entities.
+        $this->initializeStyles($announces);
+
+        return $announces;
+    }
+
+    /**
+     * An author's latest announces still young enough to be matched (#1082), newest first.
+     *
+     * @return MusicianAnnounce[]
+     */
+    public function findRecentByAuthor(User $author, \DateTimeInterface $since, int $limit): array
+    {
+        $announces = $this->createQueryBuilder('announce')
+            ->addSelect('instrument')
+            ->join('announce.instrument', 'instrument')
+            ->where('announce.author = :author')
+            ->andWhere('announce.creationDatetime >= :since')
+            ->setParameter('author', $author)
+            ->setParameter('since', $since)
+            ->orderBy('announce.creationDatetime', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+        $this->initializeStyles($announces);
+
+        return $announces;
+    }
+
+    /**
+     * The announces that answer this one (#1082): the mirror type, the same instrument, within the
+     * radius and young enough, by somebody else whose account still exists. The closest ones, with
+     * their styles loaded so the caller can rank by the styles they share.
+     *
+     * @return list<array{0: MusicianAnnounce, distance: float}>
+     */
+    public function findAnswering(MusicianAnnounce $announce, \DateTimeInterface $since, int $radiusKm, int $limit): array
+    {
+        $mirrorType = $announce->type === MusicianAnnounce::TYPE_MUSICIAN ? MusicianAnnounce::TYPE_BAND : MusicianAnnounce::TYPE_MUSICIAN;
+
+        /** @var list<array{0: MusicianAnnounce, distance: float}> $rows */
+        $rows = $this->createQueryBuilder('musician_announce')
+            ->addSelect('instrument', 'author')
+            ->addSelect(self::DISTANCE . ' as distance')
+            ->join('musician_announce.instrument', 'instrument')
+            ->join('musician_announce.author', 'author')
+            ->where('musician_announce.type = :type')
+            ->andWhere('musician_announce.instrument = :instrument')
+            ->andWhere('musician_announce.author != :author')
+            ->andWhere('author.deletionDatetime IS NULL')
+            ->andWhere('musician_announce.creationDatetime >= :since')
+            ->andWhere(self::DISTANCE . ' <= :radius')
+            ->setParameter('type', $mirrorType)
+            ->setParameter('instrument', $announce->instrument)
+            ->setParameter('author', $announce->author)
+            ->setParameter('since', $since)
+            ->setParameter('point', 'POINT(' . $announce->longitude . ' ' . $announce->latitude . ')')
+            ->setParameter('radius', $radiusKm * 1000)
+            ->orderBy('distance', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+        $this->initializeStyles(array_map(static fn (array $row): MusicianAnnounce => $row[0], $rows));
+
+        return $rows;
+    }
+
+    /**
+     * Loads the styles of these announces in one query. A fetch join cannot sit with a SQL LIMIT, and
+     * lazy loading would query once per announce.
+     *
+     * @param MusicianAnnounce[] $announces
+     */
+    private function initializeStyles(array $announces): void
+    {
+        if ($announces === []) {
+            return;
+        }
         $this->createQueryBuilder('announce')
             ->addSelect('styles')
             ->leftJoin('announce.styles', 'styles')
@@ -61,8 +137,6 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             ->setParameter('announces', $announces)
             ->getQuery()
             ->getResult();
-
-        return $announces;
     }
 
     /**
