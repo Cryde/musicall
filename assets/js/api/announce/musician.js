@@ -10,6 +10,13 @@ export default {
       .then((resp) => resp.data)
   },
 
+  /** « Annonces pour vous » (#1082): the announces answering the member's latest ones, best first. */
+  getMatches() {
+    return axios
+      .get(Routing.generate('api_user_musician_announce_matches'))
+      .then((resp) => resp.data.matches)
+  },
+
   getByCurrentUser() {
     return axios
       .get(Routing.generate('api_musician_announces_get_self_collection'))

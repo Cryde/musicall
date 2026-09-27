@@ -73,6 +73,7 @@ import relativeDate from '../../helper/date/relative-date.js'
 import { useUserNotificationStore } from '../../store/notification/userNotification.js'
 import { withoutAllDayPin } from '../../utils/agendaDate.js'
 import { formatDateLong } from '../../utils/date.js'
+import { announceHeadline } from '../../utils/homeSearch.js'
 
 const props = defineProps({
   notification: { type: Object, required: true }
@@ -276,6 +277,20 @@ const TYPE_CONFIG = {
     preview: `vous a attribué une dépense sur « ${payload.entry_label} »`,
     actions: null,
     target: { name: BAND_SPACE_ROUTES.FINANCE, params: { id: payload.band_space_id } }
+  }),
+  // A new announce answering one of the member's (#1082): it links to its author, who outlives it.
+  musician_announce_match: (payload) => ({
+    icon: 'pi pi-megaphone',
+    avatarClass: 'bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300',
+    title: payload.actor_username,
+    preview: `« ${announceHeadline({ type: payload.announce_type, instrument: { musician_name: payload.instrument_name } })} » à ${payload.location_name}, à ${payload.distance_km} km de votre annonce « ${payload.answered_headline} »`,
+    actions: null,
+    target: {
+      name: payload.actor_has_musician_profile
+        ? 'app_user_musician_profile'
+        : 'app_user_public_profile',
+      params: { username: payload.actor_username }
+    }
   }),
   band_space_deletion_scheduled: (payload) => ({
     icon: 'pi pi-trash',

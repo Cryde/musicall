@@ -64,4 +64,11 @@ readonly class UserNotificationPreferenceChecker
 
         return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->activityReminder;
     }
+
+    public function canReceiveAnnounceMatchNotification(User $user): bool
+    {
+        $preference = $user->notificationPreference;
+
+        return !$preference instanceof \App\Entity\User\UserNotificationPreference || $preference->announceMatch;
+    }
 }

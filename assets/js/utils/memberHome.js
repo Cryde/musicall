@@ -1,4 +1,5 @@
 import { TYPES_ANNOUNCE_MUSICIAN } from '../constants/types.js'
+import { announceHeadline } from './homeSearch.js'
 
 /**
  * The logged in home's rules (#1078), apart from its components so they are tested without a browser.
@@ -85,4 +86,26 @@ export function announceCriteriaFor(musicianProfile) {
     instrumentId: instrument.instrument_id,
     instrumentName: instrument.instrument_name
   }
+}
+
+/**
+ * Why a match is on « Annonces pour vous » (#1082): « Répond à votre annonce « Groupe cherche un
+ * batteur » · à 6 km · 2 styles en commun ». Nearer than a kilometre still reads « à 1 km ».
+ */
+export function matchReason(match) {
+  const answered = announceHeadline({
+    type: match.answered.type,
+    instrument: { musician_name: match.answered.instrument_name }
+  })
+  const parts = [`Répond à votre annonce « ${answered} »`]
+  if (match.announce.distance != null)
+    parts.push(`à ${Math.max(1, Math.round(match.announce.distance))} km`)
+  const shared = match.shared_styles.length
+  if (shared > 0) parts.push(`${shared} style${shared > 1 ? 's' : ''} en commun`)
+  return parts.join(' · ')
+}
+
+/** A match as the homepage announce card reads it, with the reason it is shown. */
+export function matchAsAnnounce(match) {
+  return { ...searchResultAsAnnounce(match.announce), reason: matchReason(match) }
 }

@@ -46,6 +46,11 @@
     </div>
 
     <h3 class="m-0 text-lg font-bold text-surface-900 dark:text-surface-0">{{ announceHeadline(announce) }}</h3>
+    <!-- Why a match is shown (#1082). -->
+    <p v-if="announce.reason" class="m-0 flex items-start gap-1.5 text-sm text-teal-800 dark:text-teal-300">
+      <i class="pi pi-check-circle text-xs mt-1" aria-hidden="true" />
+      <span>{{ announce.reason }}</span>
+    </p>
 
     <ul v-if="styleTags.tags.length > 0" class="m-0 p-0 list-none flex flex-wrap gap-1.5" aria-label="Styles">
       <li

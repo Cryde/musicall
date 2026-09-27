@@ -44,6 +44,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => true,
             'marketing' => true,
             'activity_reminder' => true,
+            'announce_match' => true,
             'show_online_presence' => true,
         ]);
 
@@ -88,6 +89,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => false,
             'activity_reminder' => true,
+            'announce_match' => true,
             'show_online_presence' => true,
         ]);
     }
@@ -108,6 +110,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'announce_match' => false,
             'show_online_presence' => false,
         ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
 
@@ -123,6 +126,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             'forum_reply' => false,
             'marketing' => true,
             'activity_reminder' => false,
+            'announce_match' => false,
             'show_online_presence' => false,
         ]);
         $stored = self::getContainer()->get(EntityManagerInterface::class)
@@ -130,6 +134,7 @@ class UserNotificationPreferencePatchTest extends ApiTestCase
             ->findOneBy(['user' => $user->id]);
         $this->assertInstanceOf(UserNotificationPreference::class, $stored);
         $this->assertFalse($stored->showOnlinePresence);
+        $this->assertFalse($stored->announceMatch);
     }
 
     public function test_patch_notification_preferences_requires_authentication(): void

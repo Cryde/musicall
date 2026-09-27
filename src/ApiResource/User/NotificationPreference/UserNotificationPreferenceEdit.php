@@ -46,5 +46,7 @@ class UserNotificationPreferenceEdit
 
     public bool $activityReminder = true;
 
+    public bool $announceMatch = true;
+
     public bool $showOnlinePresence = true;
 }
