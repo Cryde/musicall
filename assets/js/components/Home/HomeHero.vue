@@ -26,17 +26,7 @@
 
         <HomeSearchForm />
 
-        <nav v-if="frequentLinks.length > 0" class="flex flex-wrap items-center gap-2" aria-label="Recherches fréquentes">
-          <span class="text-sm text-surface-700 dark:text-surface-300">Recherches fréquentes :</span>
-          <router-link
-            v-for="link in frequentLinks"
-            :key="link.label"
-            :to="link.route"
-            class="rounded-full border border-surface-300 dark:border-surface-600 bg-surface-0/70 dark:bg-surface-800/70 px-3 py-1 text-sm text-surface-800 dark:text-surface-100 hover:bg-surface-0 dark:hover:bg-surface-700"
-          >
-            {{ link.label }}
-          </router-link>
-        </nav>
+        <HomeFrequentSearches :searches="frequentSearches" />
       </div>
 
       <!-- A glimpse of the latest announces. Decorative here, since the same announces are listed,
@@ -61,19 +51,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { frequentSearchLink } from '../../utils/homeSearch.js'
 import HomeAnnounceCard from './HomeAnnounceCard.vue'
+import HomeFrequentSearches from './HomeFrequentSearches.vue'
 import HomeSearchForm from './HomeSearchForm.vue'
 
-const props = defineProps({
+defineProps({
   /** Up to three announces, oldest at the back. */
   previewAnnounces: { type: Array, default: () => [] },
   /** What enough different people searched for lately (#1075); the row stays out when there is none. */
   frequentSearches: { type: Array, default: () => [] }
 })
-
-const frequentLinks = computed(() => props.frequentSearches.map(frequentSearchLink))
 
 const STACK_POSITIONS = [
   // Dimmed rather than faded: a translucent card would show the text of the one behind it.

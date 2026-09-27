@@ -75,12 +75,15 @@ describe('announce card text', () => {
     assert.equal(announceKindLabel(byMusician), 'Musicien·ne')
   })
 
-  it('shows the first styles and counts the rest', () => {
+  it('shows the first styles and keeps the others for the « +N »', () => {
     const styles = ['Rock', 'Pop', 'Jazz', 'Funk', 'Métal'].map((name) => ({ name }))
-    assert.deepEqual(announceStyleTags({ styles }), { tags: ['Rock', 'Pop', 'Jazz'], remaining: 2 })
+    assert.deepEqual(announceStyleTags({ styles }), {
+      tags: ['Rock', 'Pop', 'Jazz'],
+      hidden: ['Funk', 'Métal']
+    })
     assert.deepEqual(announceStyleTags({ styles: styles.slice(0, 2) }), {
       tags: ['Rock', 'Pop'],
-      remaining: 0
+      hidden: []
     })
   })
 })
