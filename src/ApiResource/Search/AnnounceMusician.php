@@ -52,6 +52,16 @@ use Symfony\Component\Validator\Constraints as Assert;
             schema: ['type' => 'number', 'format' => 'float'],
             description: 'The longitude coordinate for location-based search',
         ),
+        // Only around the coordinates, when both are given (#1084).
+        'radius' => new QueryParameter(
+            key: 'radius',
+            schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 500],
+            description: 'The distance in km around the coordinates to search within (optional)',
+            constraints: [new Assert\Sequentially([
+                new Assert\Regex(pattern: '/^\d+\z/', message: 'La distance doit être un nombre entier de kilomètres'),
+                new Assert\Range(min: 1, max: 500, notInRangeMessage: 'La distance doit être comprise entre {{ min }} et {{ max }} km'),
+            ])],
+        ),
         // Only recorded, for the frequent searches (#1075): the search itself goes by the coordinates.
         'location' => new QueryParameter(
             key: 'location',

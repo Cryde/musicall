@@ -13,6 +13,8 @@ class MusicianSearch
     public array $styles = [];
     public ?float $latitude = null;
     public ?float $longitude = null;
+    /** In km around the point; none keeps every distance, only sorted by it. */
+    public ?int $radius = null;
     public int $page = 1;
     public int $limit = 12;
 }
