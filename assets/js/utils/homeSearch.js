@@ -1,5 +1,4 @@
 import { TYPES_ANNOUNCE_BAND, TYPES_ANNOUNCE_MUSICIAN } from '../constants/types.js'
-import { formatStyles } from './styles.js'
 
 export const LOOKING_FOR_MUSICIAN = 'musician'
 export const LOOKING_FOR_BAND = 'band'
@@ -63,11 +62,8 @@ export function announceKindLabel(announce) {
   return announce.type === TYPES_ANNOUNCE_MUSICIAN ? 'Groupe' : 'Musicien·ne'
 }
 
-/** The first styles of an announce, and how many more there are, for the tags of a card. */
+/** The first styles of an announce as the tags of a card, and the others behind its « +N ». */
 export function announceStyleTags(announce, limit = 3) {
-  const { remaining } = formatStyles(announce.styles, limit)
-  return {
-    tags: announce.styles.slice(0, limit).map((style) => style.name),
-    remaining: Math.max(remaining, 0)
-  }
+  const names = announce.styles.map((style) => style.name)
+  return { tags: names.slice(0, limit), hidden: names.slice(limit) }
 }

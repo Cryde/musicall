@@ -3,6 +3,10 @@
 import axios from 'axios'
 
 export default {
+  /** The topics that moved last across the forums (#1078). */
+  getRecentTopics() {
+    return axios.get(Routing.generate('api_forum_recent_topics')).then((resp) => resp.data.topics)
+  },
   getCategories() {
     return axios
       .get(Routing.generate('api_forum_categories_list'))

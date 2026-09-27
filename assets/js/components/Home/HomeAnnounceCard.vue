@@ -29,7 +29,7 @@
           {{ authorName }}
         </router-link>
         <span v-else class="font-semibold truncate text-surface-600 dark:text-surface-300">{{ authorName }}</span>
-        <span class="text-sm text-surface-600 dark:text-surface-300">
+        <span v-if="announce.creation_datetime" class="text-sm text-surface-600 dark:text-surface-300">
           {{ relativeDate(announce.creation_datetime, { showHours: false }) }}
         </span>
       </div>
@@ -55,12 +55,16 @@
       >
         {{ tag }}
       </li>
-      <li
-        v-if="styleTags.remaining > 0"
-        class="rounded-full bg-surface-100 dark:bg-surface-800 px-2.5 py-1 text-sm text-surface-700 dark:text-surface-200"
-        :aria-label="`et ${styleTags.remaining} autres`"
-      >
-        +{{ styleTags.remaining }}
+      <!-- A button so the other styles show on focus as well as on hover, and are read out. -->
+      <li v-if="styleTags.hidden.length > 0">
+        <button
+          v-tooltip.top="styleTags.hidden.join(', ')"
+          type="button"
+          class="rounded-full bg-surface-100 dark:bg-surface-800 px-2.5 py-1 text-sm text-surface-700 dark:text-surface-200 cursor-help"
+          :aria-label="`Et aussi : ${styleTags.hidden.join(', ')}`"
+        >
+          +{{ styleTags.hidden.length }}
+        </button>
       </li>
     </ul>
 

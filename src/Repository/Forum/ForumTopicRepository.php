@@ -58,6 +58,26 @@ class ForumTopicRepository extends ServiceEntityRepository
     }
 
     /**
+     * The topics that moved last, across every forum: by their last post, which a new topic has
+     * too as its opening post, and by their creation for one that somehow has none.
+     *
+     * @return ForumTopic[]
+     */
+    public function findRecentlyActive(int $limit): array
+    {
+        return $this->createQueryBuilder('ft')
+            ->innerJoin('ft.forum', 'f')
+            ->addSelect('f')
+            ->leftJoin('ft.lastPost', 'lp')
+            ->addSelect('lp')
+            ->addSelect('COALESCE(lp.creationDatetime, ft.creationDatetime) AS HIDDEN lastActivity')
+            ->orderBy('lastActivity', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Full-text search across topic titles and post bodies. Returns one row per
      * matching topic, ranked: title hits first (highest MATCH score), then
      * body-only hits, both tiers tie-broken by creation_datetime DESC.
