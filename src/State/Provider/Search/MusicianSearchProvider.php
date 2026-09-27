@@ -4,7 +4,6 @@ namespace App\State\Provider\Search;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\TraversablePaginator;
-use ApiPlatform\State\ParameterNotFound;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Search\AnnounceMusician;
 use App\Entity\User;
@@ -41,26 +40,11 @@ readonly class MusicianSearchProvider implements ProviderInterface
 
         $params = $operation->getParameters();
 
-        $typeValue = $params?->get('type')?->getValue();
-        $instrument = $params?->get('instrument')?->getValue();
-        $styles = $params?->get('styles')?->getValue();
-        $longitude = $params?->get('longitude')?->getValue();
-        $latitude = $params?->get('latitude')?->getValue();
-        $pageValue = $params?->get('page')?->getValue();
         $location = $params?->get('location')?->getValue();
         $landing = $params?->get('landing')?->getValue();
 
-        $page = $pageValue instanceof ParameterNotFound || $pageValue === null ? 1 : (int)$pageValue;
-
-        $searchModel = $this->searchModelBuilder->build(
-            $typeValue instanceof ParameterNotFound || $typeValue === null ? null : (int)$typeValue,
-            $instrument instanceof ParameterNotFound ? null : $instrument,
-            $styles instanceof ParameterNotFound ? [] : ($styles ?? []),
-            $longitude instanceof ParameterNotFound ? null : (float)$longitude,
-            $latitude instanceof ParameterNotFound ? null : (float)$latitude,
-            $page,
-            $limit,
-        );
+        $searchModel = $this->searchModelBuilder->buildFromParameters($params, $limit);
+        $page = $searchModel->page;
 
         $results = $this->musicianAnnounceRepository->findByCriteria($searchModel, $user, $limit);
         $this->musicianSearchRecorder->recordFiltersSearch(

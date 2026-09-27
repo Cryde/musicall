@@ -18,6 +18,23 @@
         />
     </div>
 
+    <!-- The guided mode (#1084): three questions instead of the filters, over the same results. -->
+    <GuidedSearch
+        v-if="isGuided && isGuidedReady"
+        v-model:instrument="selectedInstrument"
+        v-model:location="selectedLocation"
+        v-model:radius="selectedRadius"
+        v-model:selected-styles="selectedStyles"
+        :instruments="instrumentStore.instruments"
+        :styles="styleStore.styles"
+        :looking-for-band="guidedLookingForBand"
+        :initially-answered="guidedInitiallyAnswered"
+        class="mb-2"
+        @answer="handleGuidedAnswer"
+        @toggle-type="handleGuidedToggleType"
+    />
+
+    <template v-else-if="!isGuided">
     <!-- Quick Search Section -->
     <div class="mb-6">
         <Message severity="error" v-if="quickSearchErrors.length" class="mb-4">
@@ -221,7 +238,7 @@
             class="text-sm"
         />
     </div>
-
+    </template>
 
     <!-- LLM processing state (quick search) -->
     <div v-if="isFilterGenerating" class="mt-8">
@@ -270,6 +287,17 @@
         </div>
     </div>
 
+    <!-- No results, guided: the wider searches that would find something -->
+    <GuidedNoResults
+        v-else-if="isGuided && musicianSearchStore.announces.length === 0"
+        :sought="guidedSought"
+        :where="selectedLocation?.name ? `autour de ${selectedLocation.name}` : ''"
+        :widening="guidedWidening"
+        @widen-radius="handleGuidedWidenRadius"
+        @all-styles="handleGuidedAllStyles"
+        @publish="handleOpenAnnounceModalFromSearch"
+    />
+
     <!-- No results state -->
     <div v-else-if="musicianSearchStore.announces.length === 0" class="mt-8">
         <div class="flex flex-col items-center justify-center py-12 px-4 bg-surface-50 dark:bg-surface-800 rounded-2xl">
@@ -298,7 +326,12 @@
 
     <!-- Results state -->
     <template v-else>
-        <div v-if="hasActiveFilters" class="flex flex-wrap items-center justify-end gap-4 mt-6">
+        <!-- Guided: the list follows each answer, and says so. -->
+        <p v-if="isGuided" class="mt-6 mb-0 flex items-center gap-2 text-surface-700 dark:text-surface-300">
+            <span class="w-2 h-2 rounded-full bg-teal-500" aria-hidden="true" />
+            Ces <strong class="text-surface-900 dark:text-surface-0">{{ guidedSought }}</strong> correspondent{{ guidedComplete ? '' : ' déjà' }}
+        </p>
+        <div v-else-if="hasActiveFilters" class="flex flex-wrap items-center justify-end gap-4 mt-6">
             <Button
                 label="Créer une annonce depuis cette recherche"
                 icon="pi pi-plus"
@@ -317,12 +350,14 @@
                 :location_name="announce.location_name"
                 :distance="announce.distance"
                 :instrument="announce.instrument.name"
+                :highlighted-styles="isGuided ? selectedStyles.map((style) => style.name) : []"
                 from="search"
             />
+            <GuidedSignupCard v-if="showGuidedSignup" :headline="guidedSignupHeadline" />
         </div>
 
         <!-- Load more button -->
-        <div v-if="showLoadMoreButton" class="flex justify-center mt-8 mb-9">
+        <div v-if="showLoadMoreButton && !showGuidedSignup" class="flex justify-center mt-8 mb-9">
             <Button
                 :label="userSecurityStore.isAuthenticated ? 'Voir plus de résultats' : 'Voir plus'"
                 :icon="isLoadingMore ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-down'"
@@ -366,12 +401,22 @@ import Skeleton from 'primevue/skeleton'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
+import searchApi from '../../api/search/musician.js'
 import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
+import GuidedNoResults from '../../components/Search/Guided/GuidedNoResults.vue'
+import GuidedSearch from '../../components/Search/Guided/GuidedSearch.vue'
+import GuidedSignupCard from '../../components/Search/Guided/GuidedSignupCard.vue'
 import { useUrlFilters } from '../../composables/useUrlFilters.js'
 import { useInstrumentStore } from '../../store/attribute/instrument.js'
 import { useStyleStore } from '../../store/attribute/style.js'
 import { useMusicianSearchStore } from '../../store/search/musician.js'
 import { useUserSecurityStore } from '../../store/user/security.js'
+import {
+  DEFAULT_RADIUS,
+  GUIDED_MODE,
+  signupHeadline,
+  soughtLabel
+} from '../../utils/guidedSearch.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
@@ -405,6 +450,8 @@ const isSearchMade = ref(false)
 const selectedInstrument = ref(null)
 const selectedStyles = ref([])
 const selectedLocation = ref(null)
+// Only the guided search bounds the distance (#1084); the filters sort by it and keep every one.
+const selectedRadius = ref(null)
 const selectSearchType = ref(null)
 const selectSearchTypeOption = [
   { key: 2, name: 'Musiciens' },
@@ -420,8 +467,9 @@ const {
   clear: clearUrlFilters,
   push: pushUrlFilters
 } = useUrlFilters(
-  { type: '', instrument: '', styles: [], lat: '', lng: '', location: '' },
-  { autoSync: false }
+  { type: '', instrument: '', styles: [], lat: '', lng: '', location: '', radius: '' },
+  // `mode` kept as it is, so a guided search stays guided whatever the search writes to the address.
+  { autoSync: false, preserveKeys: ['page', 'mode'] }
 )
 
 const showAnnounceModal = ref(false)
@@ -467,6 +515,11 @@ onMounted(async () => {
   // Instruments and styles only feed the filter dropdowns — load them in
   // parallel rather than chaining two round-trips.
   const attributesLoaded = Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
+
+  if (isGuided.value) {
+    await startGuided(attributesLoaded)
+    return
+  }
 
   const hasScopedSearch = !!prefilledInstrumentSlug.value || hasUrlFilters()
 
@@ -581,6 +634,101 @@ const showLoadMoreButton = computed(() => {
   return musicianSearchStore.lastBatchSize >= 4
 })
 
+// --- Guided mode (#1084) ---------------------------------------------------------------------------
+
+const isGuided = computed(() => route.query.mode === GUIDED_MODE)
+// Its questions need the instrument and style lists, so it shows once they are in.
+const isGuidedReady = ref(false)
+const guidedInitiallyAnswered = ref([])
+const guidedComplete = ref(false)
+const guidedWidening = ref(null)
+// The search's key 1 is the bands' announces, which a musician looking for a band searches.
+const guidedLookingForBand = computed(() => selectSearchType.value?.key === 1)
+const guidedSought = computed(() =>
+  soughtLabel({ lookingForBand: guidedLookingForBand.value, instrument: selectedInstrument.value })
+)
+const guidedSignupHeadline = computed(() =>
+  signupHeadline({
+    lookingForBand: guidedLookingForBand.value,
+    instrument: selectedInstrument.value,
+    styles: selectedStyles.value,
+    location: selectedLocation.value
+  })
+)
+// Where the modal opens on the filters page: the card takes the place of « Voir plus ».
+const showGuidedSignup = computed(
+  () =>
+    isGuided.value &&
+    !userSecurityStore.isAuthenticated &&
+    guestPagesLoaded.value >= MAX_GUEST_PAGES &&
+    showLoadMoreButton.value
+)
+
+/** Guided arrival: the questions the address already answers are skipped, the rest asked. */
+async function startGuided(attributesLoaded) {
+  await attributesLoaded
+  initializeFiltersFromUrl()
+  await prepareGuided()
+}
+
+/** The questions for what the page already holds, then the results for it. */
+async function prepareGuided() {
+  if (!selectSearchType.value)
+    selectSearchType.value = selectSearchTypeOption.find((t) => t.key === 2)
+  if (selectedLocation.value && !selectedRadius.value) selectedRadius.value = DEFAULT_RADIUS
+  guidedInitiallyAnswered.value = [
+    selectedInstrument.value ? 'instrument' : null,
+    selectedLocation.value ? 'location' : null,
+    selectedStyles.value.length > 0 ? 'styles' : null
+  ].filter(Boolean)
+  guidedComplete.value = guidedInitiallyAnswered.value.length === 3
+  isGuidedReady.value = true
+  await loadInitialResults({ landing: !guidedComplete.value })
+  loadGuidedWidening()
+}
+
+// The view is kept alive between the search routes, so a guided address can reach an instance
+// that mounted without it. Its filters are read once, at setup, so the questions start from what
+// the page holds rather than from an address it would read stale.
+watch(isGuided, async (guided) => {
+  if (!guided || isGuidedReady.value) return
+  await Promise.all([instrumentStore.loadInstruments(), styleStore.loadStyles()])
+  await prepareGuided()
+})
+
+function handleGuidedAnswer({ complete }) {
+  guidedComplete.value = complete
+  search({ record: complete })
+}
+
+function handleGuidedToggleType() {
+  selectSearchType.value = selectSearchTypeOption.find(
+    (t) => t.key === (guidedLookingForBand.value ? 2 : 1)
+  )
+  search({ record: guidedComplete.value })
+}
+
+function handleGuidedWidenRadius(km) {
+  selectedRadius.value = km
+  search({ record: guidedComplete.value })
+}
+
+function handleGuidedAllStyles() {
+  selectedStyles.value = []
+  search({ record: guidedComplete.value })
+}
+
+// Asked only for an empty list: which wider search would show something.
+async function loadGuidedWidening() {
+  guidedWidening.value = null
+  if (musicianSearchStore.announces.length > 0) return
+  try {
+    guidedWidening.value = await searchApi.getWidening(buildSearchParams())
+  } catch {
+    // Without it the empty state still offers to publish an announce.
+  }
+}
+
 function removeStyle(style) {
   selectedStyles.value = selectedStyles.value.filter((s) => s.id !== style.id)
 }
@@ -634,6 +782,8 @@ function buildSearchParams() {
     params.latitude = selectedLocation.value.latitude
     params.longitude = selectedLocation.value.longitude
     params.location = selectedLocation.value.name
+    // Only the guided search bounds the distance, even if an address kept a radius.
+    if (isGuided.value && selectedRadius.value) params.radius = selectedRadius.value
   }
   return params
 }
@@ -658,6 +808,8 @@ function initializeFiltersFromUrl() {
       longitude: Number.parseFloat(urlFilters.lng),
       name: urlFilters.location
     }
+    const radius = Number.parseInt(urlFilters.radius, 10)
+    selectedRadius.value = Number.isFinite(radius) ? radius : null
   }
 }
 
@@ -669,14 +821,20 @@ function syncEntityRefsToUrlFilters() {
     urlFilters.lat = String(selectedLocation.value.latitude)
     urlFilters.lng = String(selectedLocation.value.longitude)
     urlFilters.location = selectedLocation.value.name
+    urlFilters.radius = selectedRadius.value ? String(selectedRadius.value) : ''
   } else {
     urlFilters.lat = ''
     urlFilters.lng = ''
     urlFilters.location = ''
+    urlFilters.radius = ''
   }
 }
 
-async function search() {
+/**
+ * `record: false` for the guided search's partial answers (#1084): they refresh the results, but
+ * only its final answer is a search somebody ran (#1075).
+ */
+async function search({ record = true } = {}) {
   quickSearchErrors.value = []
   isSearching.value = true
   guestPagesLoaded.value = 1 // Reset on new search
@@ -686,8 +844,11 @@ async function search() {
     styles: selectedStyles.value.map((s) => s.name).join(', ') || null,
     location: selectedLocation.value?.name || null
   }
-  trackUmamiEvent('musician-search-submit', searchFilters)
-  const params = buildSearchParams()
+  trackUmamiEvent(
+    isGuided.value ? 'musician-guided-search' : 'musician-search-submit',
+    searchFilters
+  )
+  const params = { ...buildSearchParams(), landing: record !== true }
   await musicianSearchStore.searchAnnounces(params)
   isSearching.value = false
   isSearchMade.value = true
@@ -699,6 +860,7 @@ async function search() {
   if (musicianSearchStore.announces.length === 0) {
     trackUmamiEvent('musician-search-no-results', searchFilters)
   }
+  if (isGuided.value) await loadGuidedWidening()
 }
 
 const isLoadingMore = ref(false)

@@ -6,6 +6,7 @@ use App\Entity\Musician\MusicianAnnounce;
 use App\Entity\User;
 use App\Model\Search\MusicianSearch;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -13,6 +14,9 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class MusicianAnnounceRepository extends ServiceEntityRepository
 {
+    /** Metres between the searched point and an announce. */
+    private const string DISTANCE = 'ST_Distance_Sphere(ST_GeomFromText(:point), ST_POINT(musician_announce.longitude, musician_announce.latitude))';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MusicianAnnounce::class);
@@ -224,13 +228,48 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
             $qb->setFirstResult($offset);
         }
 
-        // Filter by type if provided
+        $this->applyCriteria($qb, $musician, $currentUser);
+
+        if ($this->hasPoint($musician)) {
+            $qb->addSelect(self::DISTANCE . ' as distance')
+                ->setParameter('point', $this->pointOf($musician))
+                ->orderBy('distance', 'ASC');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Whether a search would find anything at all, without counting it (#1084): the guided search
+     * offers a wider search only when it would show something.
+     */
+    public function hasAnyByCriteria(MusicianSearch $musician, ?User $currentUser): bool
+    {
+        $qb = $this->createQueryBuilder('musician_announce')
+            ->select('musician_announce.id')
+            ->setMaxResults(1);
+        $this->applyCriteria($qb, $musician, $currentUser);
+
+        return $qb->getQuery()->getOneOrNullResult() !== null;
+    }
+
+    private function hasPoint(MusicianSearch $musician): bool
+    {
+        return $musician->latitude && $musician->longitude;
+    }
+
+    private function pointOf(MusicianSearch $musician): string
+    {
+        return 'POINT(' . $musician->longitude . ' ' . $musician->latitude . ')';
+    }
+
+    private function applyCriteria(QueryBuilder $qb, MusicianSearch $musician, ?User $currentUser): void
+    {
         if ($musician->type !== null) {
             $qb->andWhere('musician_announce.type = :type')
                 ->setParameter('type', $musician->type);
         }
 
-        // Filter by instrument if provided
         if ($musician->instrument instanceof \App\Entity\Attribute\Instrument) {
             $qb->andWhere('musician_announce.instrument = :instrument')
                 ->setParameter('instrument', $musician->instrument);
@@ -241,20 +280,17 @@ class MusicianAnnounceRepository extends ServiceEntityRepository
                 ->setParameter('current_user', $currentUser);
         }
 
+        // Any of the styles, as a subquery rather than a join: a join returns an announce once per
+        // matching style, so one with two of them took two places in the page.
         if ($styles = $musician->styles) {
-            $qb->leftJoin('musician_announce.styles', 'styles')
-                ->andWhere('styles IN (:styles)')
+            $qb->andWhere('EXISTS (SELECT 1 FROM ' . MusicianAnnounce::class . ' styled JOIN styled.styles styled_style WHERE styled = musician_announce AND styled_style IN (:styles))')
                 ->setParameter('styles', $styles);
         }
 
-        if ($musician->latitude && $musician->longitude) {
-            $qb->addSelect("
-            ST_Distance_Sphere(ST_GeomFromText(:point), ST_POINT(musician_announce.longitude, musician_announce.latitude)) as distance
-            ")
-                ->setParameter('point', 'POINT(' . $musician->longitude . ' ' . $musician->latitude . ')')
-                ->orderBy('distance', 'ASC');
+        if ($musician->radius !== null && $this->hasPoint($musician)) {
+            $qb->andWhere(self::DISTANCE . ' <= :radius')
+                ->setParameter('point', $this->pointOf($musician))
+                ->setParameter('radius', $musician->radius * 1000);
         }
-
-        return $qb->getQuery()->getResult();
     }
 }

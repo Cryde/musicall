@@ -48,9 +48,12 @@
                 <span
                     v-for="style in visibleStyles"
                     :key="style.name"
-                    class="inline-block px-3 py-1 text-xs font-medium rounded-full mr-2 mb-2 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300"
+                    class="inline-block px-3 py-1 text-xs font-medium rounded-full mr-2 mb-2"
+                    :class="isHighlighted(style)
+                        ? 'bg-teal-100 text-teal-800 ring-1 ring-teal-300 dark:bg-teal-400/15 dark:text-teal-200 dark:ring-teal-400/40'
+                        : 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300'"
                 >
-                    {{ style.name }}
+                    {{ style.name }}<span v-if="isHighlighted(style)" class="sr-only"> (recherché)</span>
                 </span>
                 <span
                     v-if="hasMoreStyles(styles)"
@@ -110,12 +113,23 @@ const props = defineProps({
   styles: { type: Array, required: true },
   location_name: { type: String, required: true },
   distance: { type: [Number, String], default: null },
-  from: { type: String, default: null }
+  from: { type: String, default: null },
+  /** Style names the search asked for (#1084): shown first and highlighted. */
+  highlightedStyles: { type: Array, default: () => [] }
 })
 
 const userName = computed(() => displayName(props.user))
 
-const visibleStyles = computed(() => props.styles.slice(0, MAX_VISIBLE_STYLES))
+function isHighlighted(style) {
+  return props.highlightedStyles.includes(style.name)
+}
+
+// The searched styles first, so the ones that match are among the visible tags.
+const visibleStyles = computed(() =>
+  [...props.styles]
+    .sort((a, b) => Number(isHighlighted(b)) - Number(isHighlighted(a)))
+    .slice(0, MAX_VISIBLE_STYLES)
+)
 const allStylesText = computed(() => props.styles.map((s) => s.name).join(', '))
 
 const userSecurityStore = useUserSecurityStore()

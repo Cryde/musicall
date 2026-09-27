@@ -10,6 +10,13 @@ framework:
             limit: 10
             interval: '20 minutes'
             cache_pool: "rate_limiter.cache"
+        # The guided search's « would a wider search find something » (#1084): public, one or two
+        # distance queries a call, and asked only after a search that found nothing.
+        musician_search_widen:
+            policy: sliding_window
+            limit: 60
+            interval: '10 minutes'
+            cache_pool: "rate_limiter.cache"
         # Recording musician searches (#1075), not the searches themselves: past it a search still answers.
         search_log:
             policy: sliding_window
