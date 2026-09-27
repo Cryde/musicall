@@ -26,6 +26,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Operation(tags: ['Profile']),
             security: 'is_granted("IS_AUTHENTICATED_REMEMBERED")',
             name: 'api_user_profile_edit',
+            // No URI variable, so API Platform would not read by default: every field left out of the
+            // merge patch then fell back to its default, a private profile becoming public included.
+            read: true,
             provider: UserProfileEditProvider::class,
             processor: UserProfileEditProcessor::class,
         ),
@@ -41,6 +44,12 @@ class UserProfileEdit
 
     #[Assert\Length(max: 255, maxMessage: 'La localisation ne doit pas dépasser {{ limit }} caractères')]
     public ?string $location = null;
+
+    #[Assert\Range(notInRangeMessage: 'La latitude doit être comprise entre {{ min }} et {{ max }}', min: -90, max: 90)]
+    public ?float $latitude = null;
+
+    #[Assert\Range(notInRangeMessage: 'La longitude doit être comprise entre {{ min }} et {{ max }}', min: -180, max: 180)]
+    public ?float $longitude = null;
 
     public bool $isPublic = true;
 

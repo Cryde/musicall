@@ -32,6 +32,13 @@ class UserProfile implements ViewableInterface
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     public ?string $location = null;
 
+    /** Only set when the location is a city picked from the geocoder, never for free text (#1079). */
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    public ?float $latitude = null;
+
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    public ?float $longitude = null;
+
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
     public ?string $displayName = null;
 

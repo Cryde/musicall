@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Api\User\Profile;
 
+use App\Entity\User\UserProfile;
 use App\Tests\ApiTestAssertionsTrait;
 use App\Tests\ApiTestCase;
 use App\Tests\Factory\User\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\Range;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
 
 
@@ -66,6 +68,7 @@ class UserProfilePatchTest extends ApiTestCase
             '@id' => '/api/user/profile',
             '@type' => 'UserProfileEdit',
             'bio' => 'Updated bio content',
+            'location' => 'Original location',
             'is_public' => true,
         ]);
     }
@@ -92,6 +95,7 @@ class UserProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/UserProfileEdit',
             '@id' => '/api/user/profile',
             '@type' => 'UserProfileEdit',
+            'bio' => 'My bio',
             'location' => 'New City, Country',
             'is_public' => true,
         ]);
@@ -117,6 +121,27 @@ class UserProfilePatchTest extends ApiTestCase
             '@context' => '/api/contexts/UserProfileEdit',
             '@id' => '/api/user/profile',
             '@type' => 'UserProfileEdit',
+            'is_public' => false,
+        ]);
+    }
+
+    public function test_patch_profile_left_out_visibility_keeps_a_private_profile_private(): void
+    {
+        $profile = new UserProfile();
+        $profile->isPublic = false;
+        $user = UserFactory::new()->asBaseUser()->create(['profile' => $profile]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'display_name' => 'Jean Dupont',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'display_name' => 'Jean Dupont',
             'is_public' => false,
         ]);
     }
@@ -268,6 +293,203 @@ class UserProfilePatchTest extends ApiTestCase
             '@id' => '/api/user/profile',
             '@type' => 'UserProfileEdit',
             'is_public' => true,
+        ]);
+    }
+
+    public function test_patch_profile_location_with_a_picked_city(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'location' => 'Liège',
+            'latitude' => 50.6451,
+            'longitude' => 5.5736,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'location' => 'Liège',
+            'latitude' => 50.6451,
+            'longitude' => 5.5736,
+            'is_public' => true,
+        ]);
+    }
+
+    public function test_patch_profile_other_field_keeps_the_city_coordinates(): void
+    {
+        $profile = new UserProfile();
+        $profile->location = 'Liège';
+        $profile->latitude = 50.6451;
+        $profile->longitude = 5.5736;
+        $user = UserFactory::new()->asBaseUser()->create(['profile' => $profile]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'bio' => 'Batteur',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'bio' => 'Batteur',
+            'location' => 'Liège',
+            'latitude' => 50.6451,
+            'longitude' => 5.5736,
+            'is_public' => true,
+        ]);
+    }
+
+    public function test_patch_profile_retyped_location_drops_the_previous_city_coordinates(): void
+    {
+        $profile = new UserProfile();
+        $profile->location = 'Liège';
+        $profile->latitude = 50.6451;
+        $profile->longitude = 5.5736;
+        $user = UserFactory::new()->asBaseUser()->create(['profile' => $profile]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'location' => 'Quelque part en Wallonie',
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'location' => 'Quelque part en Wallonie',
+            'is_public' => true,
+        ]);
+    }
+
+    public function test_patch_profile_cleared_location_drops_the_city_coordinates(): void
+    {
+        $profile = new UserProfile();
+        $profile->location = 'Liège';
+        $profile->latitude = 50.6451;
+        $profile->longitude = 5.5736;
+        $user = UserFactory::new()->asBaseUser()->create(['profile' => $profile]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'location' => null,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/UserProfileEdit',
+            '@id' => '/api/user/profile',
+            '@type' => 'UserProfileEdit',
+            'is_public' => true,
+        ]);
+    }
+
+    public function test_patch_profile_one_coordinate_alone_is_refused(): void
+    {
+        $profile = new UserProfile();
+        $profile->location = 'Liège';
+        $profile->latitude = 50.6451;
+        $profile->longitude = 5.5736;
+        $user = UserFactory::new()->asBaseUser()->create(['profile' => $profile]);
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'latitude' => 50.9,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+        ]);
+    }
+
+    public function test_patch_profile_latitude_without_longitude(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'location' => 'Liège',
+            'latitude' => 50.6451,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+        ]);
+    }
+
+    public function test_patch_profile_coordinates_without_a_location(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'latitude' => 50.6451,
+            'longitude' => 5.5736,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/Error',
+            '@id' => '/api/errors/422',
+            '@type' => 'Error',
+            'title' => 'An error occurred',
+            'detail' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+            'status' => 422,
+            'type' => '/errors/422',
+            'description' => 'Choisissez une ville dans la liste pour enregistrer sa position',
+        ]);
+    }
+
+    public function test_patch_profile_latitude_out_of_range(): void
+    {
+        $user = UserFactory::new()->asBaseUser()->create();
+
+        $this->client->loginUser($user);
+        $this->client->jsonRequest('PATCH', '/api/user/profile', [
+            'location' => 'Liège',
+            'latitude' => 91,
+            'longitude' => 5.5736,
+        ], ['CONTENT_TYPE' => 'application/merge-patch+json', 'HTTP_ACCEPT' => 'application/ld+json']);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonEquals([
+            '@context' => '/api/contexts/ConstraintViolation',
+            '@type' => 'ConstraintViolation',
+            '@id' => '/api/validation_errors/' . Range::NOT_IN_RANGE_ERROR,
+            'status' => 422,
+            'violations' => [
+                [
+                    'propertyPath' => 'latitude',
+                    'message' => 'La latitude doit être comprise entre -90 et 90',
+                    'code' => Range::NOT_IN_RANGE_ERROR,
+                ],
+            ],
+            'detail' => 'latitude: La latitude doit être comprise entre -90 et 90',
+            'description' => 'latitude: La latitude doit être comprise entre -90 et 90',
+            'type' => '/validation_errors/' . Range::NOT_IN_RANGE_ERROR,
+            'title' => 'An error occurred',
         ]);
     }
 }

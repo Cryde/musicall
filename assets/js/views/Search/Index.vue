@@ -402,6 +402,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import geocodingApi from '../../api/geocoding.js'
 import searchApi from '../../api/search/musician.js'
+import profileApi from '../../api/user/profile.js'
 import CityAutoComplete from '../../components/Global/CityAutoComplete.vue'
 import GuidedNoResults from '../../components/Search/Guided/GuidedNoResults.vue'
 import GuidedSearch from '../../components/Search/Guided/GuidedSearch.vue'
@@ -417,6 +418,7 @@ import {
   signupHeadline,
   soughtLabel
 } from '../../utils/guidedSearch.js'
+import { profileCity } from '../../utils/profileLocation.js'
 import Breadcrumb from '../Global/Breadcrumb.vue'
 import MusicianAnnounceBlockItem from './MusicianAnnounceBlockItem.vue'
 
@@ -675,6 +677,7 @@ async function startGuided(attributesLoaded) {
 async function prepareGuided() {
   if (!selectSearchType.value)
     selectSearchType.value = selectSearchTypeOption.find((t) => t.key === 2)
+  if (!selectedLocation.value) selectedLocation.value = await memberCity()
   if (selectedLocation.value && !selectedRadius.value) selectedRadius.value = DEFAULT_RADIUS
   guidedInitiallyAnswered.value = [
     selectedInstrument.value ? 'instrument' : null,
@@ -685,6 +688,16 @@ async function prepareGuided() {
   isGuidedReady.value = true
   await loadInitialResults({ landing: !guidedComplete.value })
   loadGuidedWidening()
+}
+
+/** A logged in member's profile city (#1079), which answers « où ? » for them. */
+async function memberCity() {
+  if (!userSecurityStore.isAuthenticated) return null
+  try {
+    return profileCity(await profileApi.getMyProfile())
+  } catch {
+    return null
+  }
 }
 
 // The view is kept alive between the search routes, so a guided address can reach an instance

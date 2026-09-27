@@ -78,6 +78,8 @@ readonly class DeleteAccountProcedure
         $profile->bio = null;
         $profile->displayName = null;
         $profile->location = null;
+        $profile->latitude = null;
+        $profile->longitude = null;
         $profile->isPublic = false;
         $profile->coverPicture = null;
         $profile->socialLinks->clear();
