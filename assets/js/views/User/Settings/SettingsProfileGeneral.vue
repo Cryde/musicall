@@ -111,17 +111,20 @@
 
       <!-- Location -->
       <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 py-3 border-b border-surface-200 dark:border-surface-700">
-        <div class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
+        <label for="settings-location" class="md:w-1/3 text-surface-600 dark:text-surface-400 font-medium">
           Localisation
-        </div>
+        </label>
         <div class="md:w-2/3">
-          <InputText
+          <CityAutoComplete
             v-model="location"
-            placeholder="Votre ville, région..."
+            input-id="settings-location"
+            placeholder="Votre ville"
             :disabled="isUpdating"
             class="w-full md:w-80"
-            :maxlength="255"
           />
+          <small class="block mt-1 text-surface-500 dark:text-surface-400">
+            Choisissez votre ville dans la liste pour voir les annonces près de chez vous.
+          </small>
         </div>
       </div>
 
@@ -238,7 +241,9 @@ import Textarea from 'primevue/textarea'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watch } from 'vue'
+import CityAutoComplete from '../../../components/Global/CityAutoComplete.vue'
 import { useUserProfileStore } from '../../../store/user/profile.js'
+import { editedLocationPayload, locationFieldValue } from '../../../utils/profileLocation.js'
 import CoverPictureModal from './CoverPictureModal.vue'
 
 const userProfileStore = useUserProfileStore()
@@ -260,12 +265,12 @@ const coverPictureInputRef = ref(null)
 // Profile form
 const displayName = ref('')
 const bio = ref('')
-const location = ref('')
+const location = ref(null)
 
 // Original values for change detection
 const originalDisplayName = ref('')
 const originalBio = ref('')
-const originalLocation = ref('')
+const originalLocation = ref(null)
 
 // Social links
 const newLinkPlatform = ref(null)
@@ -306,7 +311,7 @@ const hasChanges = computed(() => {
   return (
     displayName.value !== originalDisplayName.value ||
     bio.value !== originalBio.value ||
-    location.value !== originalLocation.value
+    editedLocationPayload(location.value, originalLocation.value) !== null
   )
 })
 
@@ -317,7 +322,7 @@ const canAddLink = computed(() => {
 function setFormValues(profile) {
   displayName.value = profile?.display_name || ''
   bio.value = profile?.bio || ''
-  location.value = profile?.location || ''
+  location.value = locationFieldValue(profile)
   originalDisplayName.value = displayName.value
   originalBio.value = bio.value
   originalLocation.value = location.value
@@ -371,7 +376,7 @@ async function saveProfile() {
     await userProfileStore.updateProfile({
       display_name: displayName.value || null,
       bio: bio.value || null,
-      location: location.value || null
+      ...editedLocationPayload(location.value, originalLocation.value)
     })
     originalDisplayName.value = displayName.value
     originalBio.value = bio.value

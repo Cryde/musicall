@@ -41,6 +41,8 @@ readonly class UserProfileEditProvider implements ProviderInterface
         $dto->displayName = $profile->displayName;
         $dto->bio = $profile->bio;
         $dto->location = $profile->location;
+        $dto->latitude = $profile->latitude;
+        $dto->longitude = $profile->longitude;
         $dto->isPublic = $profile->isPublic;
 
         if ($user->profilePicture && $path = $this->uploaderHelper->asset($user->profilePicture, 'imageFile')) {

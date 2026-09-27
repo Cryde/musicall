@@ -52,14 +52,10 @@
         <label for="location" class="font-medium text-surface-900 dark:text-surface-0">
           Localisation
         </label>
-        <InputText
-          id="location"
-          v-model="location"
-          placeholder="Votre ville, région..."
-          :disabled="isSaving"
-          :maxlength="255"
-          class="w-full"
-        />
+        <CityAutoComplete v-model="location" input-id="location" placeholder="Votre ville" :disabled="isSaving" />
+        <small class="text-surface-500">
+          Choisissez votre ville dans la liste pour voir les annonces près de chez vous.
+        </small>
       </div>
 
       <!-- Profile visibility -->
@@ -103,7 +99,9 @@ import Message from 'primevue/message'
 import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, ref, watch } from 'vue'
-import { useUserProfileStore } from '../../../store/user/profile.js'
+import profileApi from '../../../api/user/profile.js'
+import { editedLocationPayload } from '../../../utils/profileLocation.js'
+import CityAutoComplete from '../../Global/CityAutoComplete.vue'
 
 const props = defineProps({
   visible: {
@@ -118,6 +116,7 @@ const props = defineProps({
     type: String,
     default: null
   },
+  /** The public profile's, so text only: the modal saves the location only when it is changed. */
   initialLocation: {
     type: String,
     default: null
@@ -130,11 +129,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'saved'])
 
-const userProfileStore = useUserProfileStore()
-
 const displayName = ref('')
 const bio = ref('')
-const location = ref('')
+const location = ref(null)
 const isPublic = ref(true)
 const error = ref('')
 const isSaving = ref(false)
@@ -150,7 +147,7 @@ watch(
     if (visible) {
       displayName.value = props.initialDisplayName || ''
       bio.value = props.initialBio || ''
-      location.value = props.initialLocation || ''
+      location.value = props.initialLocation || null
       isPublic.value = props.initialIsPublic
       error.value = ''
     }
@@ -167,10 +164,12 @@ async function handleSave() {
   isSaving.value = true
 
   try {
-    await userProfileStore.updateProfile({
+    // Not through the profile store: on the public profile page it holds the public profile, which
+    // the edit response (no username, no pictures) would replace until the page reloads it.
+    await profileApi.updateMyProfile({
       display_name: displayName.value || null,
       bio: bio.value || null,
-      location: location.value || null,
+      ...editedLocationPayload(location.value, props.initialLocation),
       is_public: isPublic.value
     })
     emit('update:visible', false)
