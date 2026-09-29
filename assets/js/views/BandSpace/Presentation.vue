@@ -1,254 +1,196 @@
 <template>
-  <div class="flex-auto py-6 lg:py-8 px-8 lg:px-20">
-    <div class="max-w-4xl mx-auto py-8 lg:py-16">
-      <!-- Hero -->
-      <div class="flex flex-col items-center text-center">
-        <i class="pi pi-users !text-6xl text-primary mb-6" aria-hidden="true" />
-        <h1 class="text-3xl lg:text-4xl font-semibold text-surface-900 dark:text-surface-0 mb-4">
-          Répétitions, concerts, morceaux : tout le groupe au même endroit
+  <div class="max-w-6xl w-full mx-auto py-6 lg:py-12 flex flex-col gap-24">
+    <section class="flex flex-col gap-10">
+      <div class="flex flex-col gap-4 max-w-3xl">
+        <span class="text-sm font-bold tracking-wider uppercase text-primary">Band Space · gratuit</span>
+        <h1 class="m-0 text-4xl lg:text-5xl font-extrabold leading-tight text-surface-900 dark:text-surface-0">
+          Votre groupe mérite mieux qu'une conversation de groupe.
         </h1>
-        <p class="text-surface-600 dark:text-surface-300 text-lg max-w-2xl mb-8">
-          Un Band Space réunit l'agenda, les tâches, les notes, les setlists, les fichiers et les
-          finances de votre groupe dans un espace partagé. Fini l'info retrouvée à la main dans la
-          conversation de groupe, trois jours après la répét.
-        </p>
-
-        <div class="flex flex-col sm:flex-row items-center gap-3 mb-4">
-          <Button
-            label="Créer un Band Space"
-            icon="pi pi-plus"
-            size="large"
-            @click="goToRegister"
-          />
-          <Button
-            label="J'ai déjà un compte"
-            severity="secondary"
-            outlined
-            size="large"
-            @click="goToLogin"
-          />
-        </div>
-        <p class="text-sm text-surface-500 dark:text-surface-400">
-          Gratuit, et compris dans votre compte MusicAll.
+        <p class="m-0 text-lg leading-relaxed text-surface-600 dark:text-surface-300">
+          Répondez à trois questions : on vous montre l'espace de votre groupe, et vous pouvez déjà
+          cocher, réordonner et ajouter.
         </p>
       </div>
 
-      <!-- Module tour. Tabs rather than one section per module: all six labels stay visible at once,
-           the screenshot is big enough to read, and only the selected one is ever downloaded. -->
-      <div class="mt-16">
-        <div
-          class="flex flex-wrap justify-center gap-2 mb-6"
-          role="tablist"
-          aria-label="Modules du Band Space"
+      <div class="grid lg:grid-cols-[26rem_minmax(0,1fr)] gap-8 items-start">
+        <form
+          class="flex flex-col gap-7 p-6 lg:p-8 rounded-2xl bg-surface-0 dark:bg-surface-900"
+          @submit.prevent="handleCreate"
         >
-          <button
-            v-for="module in BAND_SPACE_MODULES"
-            :id="`module-tab-${module.key}`"
-            :key="module.key"
-            role="tab"
-            :aria-selected="module.key === activeModuleKey"
-            :aria-controls="`module-panel-${module.key}`"
-            :tabindex="module.key === activeModuleKey ? 0 : -1"
-            :class="[
-              'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer',
-              module.key === activeModuleKey
-                ? 'bg-primary text-white'
-                : 'bg-surface-0 dark:bg-surface-900 text-surface-700 dark:text-surface-200 hover:bg-surface-200 dark:hover:bg-surface-700'
-            ]"
-            @click="activeModuleKey = module.key"
-            @keydown.left.prevent="moveByArrow(-1)"
-            @keydown.right.prevent="moveByArrow(1)"
-            @keydown.home.prevent="moveToEdge('first')"
-            @keydown.end.prevent="moveToEdge('last')"
-          >
-            <i :class="module.icon" aria-hidden="true" />
-            {{ module.label }}
-          </button>
-        </div>
+          <div class="flex flex-col gap-2.5">
+            <label for="demo-band-name" :class="QUESTION">1 · Le nom du groupe</label>
+            <InputText
+              id="demo-band-name"
+              v-model="bandName"
+              placeholder="Ex : ElectricNight"
+              maxlength="40"
+              size="large"
+              class="w-full"
+            />
+          </div>
 
-        <!-- Every panel stays mounted so each tab's aria-controls always points at a real element,
-             which is why this uses v-show. The image itself keeps a v-if scoped to the active module,
-             so only one <img> exists and the browser still fetches a single screenshot. -->
+          <fieldset class="m-0 p-0 border-0 flex flex-col gap-2.5">
+            <legend :class="[QUESTION, 'mb-2.5']">2 · Vous êtes combien ?</legend>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="size in DEMO_SIZES"
+                :key="size"
+                type="button"
+                :aria-pressed="size === bandSize"
+                :class="[PILL, size === bandSize ? PILL_ON : PILL_OFF]"
+                @click="bandSize = size"
+              >
+                {{ sizeLabel(size) }}
+              </button>
+            </div>
+          </fieldset>
+
+          <fieldset class="m-0 p-0 border-0 flex flex-col gap-2.5">
+            <legend :class="[QUESTION, 'mb-1']">3 · Qu'est-ce qui coince aujourd'hui ?</legend>
+            <span class="text-sm text-surface-600 dark:text-surface-400">Plusieurs réponses possibles.</span>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="pain in DEMO_PAINS"
+                :key="pain.key"
+                type="button"
+                :aria-pressed="pickedPains.includes(pain.key)"
+                :class="[PILL, pickedPains.includes(pain.key) ? PILL_ON : PILL_OFF]"
+                @click="togglePain(pain.key)"
+              >
+                {{ pain.label }}
+              </button>
+            </div>
+          </fieldset>
+
+          <div class="flex flex-col gap-3">
+            <Button type="submit" :label="ctaLabel(bandName)" icon="pi pi-plus" size="large" class="w-full" />
+            <span class="text-sm text-center text-surface-600 dark:text-surface-400">
+              Le nom est pré-rempli à la création. Rien n'est enregistré avant.
+            </span>
+            <span v-if="!userSecurityStore.isAuthenticated" class="text-sm text-center text-surface-600 dark:text-surface-400">
+              Déjà un compte ?
+              <RouterLink :to="{ name: 'app_login' }" class="font-semibold text-primary hover:underline">Se connecter</RouterLink>
+            </span>
+          </div>
+        </form>
+
+        <BandSpaceDemoPreview :name="bandName" :size="bandSize" :picked-pains="pickedPains" />
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-7">
+      <h2 class="m-0 text-3xl font-extrabold text-surface-900 dark:text-surface-0">Six outils, un seul endroit</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           v-for="module in BAND_SPACE_MODULES"
-          v-show="module.key === activeModuleKey"
-          :id="`module-panel-${module.key}`"
           :key="module.key"
-          role="tabpanel"
-          :aria-labelledby="`module-tab-${module.key}`"
+          class="flex flex-col gap-2 p-6 rounded-2xl bg-surface-0 dark:bg-surface-900"
         >
-          <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 text-center mb-2">
+          <span :class="['flex items-center gap-2 font-bold', MODULE_ACCENTS[module.key].text]">
+            <i :class="module.icon" aria-hidden="true" />
             {{ module.label }}
-          </h2>
-          <p class="text-surface-600 dark:text-surface-300 text-center max-w-2xl mx-auto mb-6">
-            {{ module.description }}
-          </p>
-          <!-- Two files per module, because dark mode is a deliberate choice here rather than a media
-               query, and a light screenshot inside a dark page reads as broken. -->
-          <img
-            v-if="module.key === activeModuleKey"
-            :src="(isDarkMode ? darkShots : lightShots)[module.key]"
-            :alt="`Le module ${module.label} d'un Band Space`"
-            width="1440"
-            height="900"
-            loading="lazy"
-            class="w-full h-auto rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700"
-          />
-          <p class="text-xs text-surface-500 dark:text-surface-400 text-center mt-3">
-            Capture d'un Band Space de démonstration.
-          </p>
+          </span>
+          <p class="m-0 leading-relaxed text-surface-600 dark:text-surface-300">{{ module.description }}</p>
         </div>
       </div>
+    </section>
 
-      <!-- Plenty of musicians play in more than one band, and the switcher is a real differentiator
-           against a per-band group chat, which cannot separate anything. -->
-      <div class="mt-16 flex flex-col sm:flex-row items-start gap-5 p-6 lg:p-8 bg-surface-0 dark:bg-surface-900 rounded-xl">
-        <i class="pi pi-sync !text-3xl text-primary shrink-0" aria-hidden="true" />
-        <div>
-          <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-            Vous jouez dans plusieurs groupes ?
-          </h2>
-          <p class="text-surface-600 dark:text-surface-300">
-            Créez un Band Space par groupe et passez de l'un à l'autre en un clic. Chaque espace garde
-            son agenda, ses fichiers, ses setlists et ses comptes, sans jamais les mélanger. Vos
-            groupes ne voient que le leur.
-          </p>
-        </div>
+    <section class="grid lg:grid-cols-3 gap-5" aria-label="Pourquoi un Band Space">
+      <div v-for="reason in REASONS" :key="reason.title" class="flex flex-col gap-3 p-7 rounded-2xl bg-surface-0 dark:bg-surface-900">
+        <i :class="[reason.icon, '!text-2xl', reason.accent]" aria-hidden="true" />
+        <h2 class="m-0 text-lg font-bold text-surface-900 dark:text-surface-0">{{ reason.title }}</h2>
+        <p class="m-0 leading-relaxed text-surface-600 dark:text-surface-300">{{ reason.body }}</p>
       </div>
+    </section>
 
-      <!-- What it replaces. The honest comparison is what bands use today, not another product. -->
-      <div class="mt-16 p-6 lg:p-8 bg-surface-100 dark:bg-surface-800 rounded-xl">
-        <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-5">
-          Ce que ça remplace
-        </h2>
-        <ul class="flex flex-col gap-4">
-          <li v-for="item in replacements" :key="item.before" class="flex items-start gap-3">
-            <i class="pi pi-arrow-right text-primary mt-1 shrink-0" aria-hidden="true" />
-            <p class="text-surface-700 dark:text-surface-200">
-              <span class="text-surface-500 dark:text-surface-400">{{ item.before }}</span>
-              {{ item.after }}
-            </p>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Invitations, shown rather than described: the roster is what a visitor is really buying. -->
-      <div class="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        <div>
-          <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
-            Invitez votre groupe par mail
-          </h2>
-          <p class="text-surface-600 dark:text-surface-300">
-            Chaque membre reçoit un lien, rejoint l'espace et voit tout de suite l'agenda, les
-            fichiers et les setlists. Vous choisissez qui est administrateur, et vous pouvez retirer
-            un membre quand quelqu'un quitte le groupe.
-          </p>
-        </div>
-        <img
-          :src="isDarkMode ? darkMembres : lightMembres"
-          alt="La liste des membres d'un Band Space"
-          width="1440"
-          height="900"
-          loading="lazy"
-          class="w-full h-auto rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700"
-        />
-      </div>
-
-      <!-- Closing call to action, for anyone who scrolled instead of clicking above -->
-      <div class="flex flex-col items-center text-center mt-16">
-        <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-0 mb-3">
-          Prêt à organiser votre groupe ?
-        </h2>
-        <p class="text-surface-600 dark:text-surface-300 mb-6 max-w-xl">
-          Créez votre espace, invitez les autres membres par mail, et travaillez à plusieurs dès la
-          prochaine répét.
+    <section class="flex flex-col md:flex-row md:items-center justify-between gap-8 p-8 lg:p-14 rounded-3xl bg-surface-0 dark:bg-surface-900">
+      <div class="flex flex-col gap-2.5">
+        <h2 class="m-0 text-3xl font-extrabold text-surface-900 dark:text-surface-0">{{ closingTitle }}</h2>
+        <p class="m-0 text-lg text-surface-600 dark:text-surface-300">
+          Créez l'espace, invitez les autres, et travaillez à plusieurs dès la prochaine répète.
         </p>
-        <Button label="Créer un Band Space" icon="pi pi-plus" size="large" @click="goToRegister" />
       </div>
-    </div>
+      <Button :label="ctaLabel(bandName)" icon="pi pi-plus" size="large" class="shrink-0" @click="handleCreate" />
+    </section>
   </div>
 </template>
 
 <script setup>
 import Button from 'primevue/button'
-import { ref } from 'vue'
+import InputText from 'primevue/inputtext'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import darkAgenda from '../../../image/band-space/dark-agenda.webp'
-import darkFiles from '../../../image/band-space/dark-files.webp'
-import darkFinances from '../../../image/band-space/dark-finances.webp'
-import darkMembres from '../../../image/band-space/dark-membres.webp'
-import darkNotes from '../../../image/band-space/dark-notes.webp'
-import darkSetlists from '../../../image/band-space/dark-setlists.webp'
-import darkTaches from '../../../image/band-space/dark-taches.webp'
-import lightAgenda from '../../../image/band-space/light-agenda.webp'
-import lightFiles from '../../../image/band-space/light-files.webp'
-import lightFinances from '../../../image/band-space/light-finances.webp'
-import lightMembres from '../../../image/band-space/light-membres.webp'
-import lightNotes from '../../../image/band-space/light-notes.webp'
-import lightSetlists from '../../../image/band-space/light-setlists.webp'
-import lightTaches from '../../../image/band-space/light-taches.webp'
-import { useDarkMode } from '../../composables/useDarkMode.js'
+import BandSpaceDemoPreview from '../../components/BandSpace/Presentation/BandSpaceDemoPreview.vue'
 import { BAND_SPACE_MODULES } from '../../constants/bandSpace.js'
-import { adjacentTabKey } from '../../utils/tabNavigation.js'
+import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
+import { useUserSecurityStore } from '../../store/user/security.js'
+import {
+  ctaLabel,
+  DEMO_PAINS,
+  DEMO_SIZES,
+  MODULE_ACCENTS,
+  sizeLabel
+} from '../../utils/bandSpaceDemo.js'
+import { openDraftNameStorage, saveDraftName } from '../../utils/bandSpaceDraftName.js'
 
-const router = useRouter()
-const { isDarkMode } = useDarkMode()
+const QUESTION = 'text-sm font-bold tracking-wider uppercase text-primary'
+const PILL =
+  'h-11 min-w-14 px-4 rounded-lg border text-[15px] font-semibold cursor-pointer transition-colors'
+const PILL_ON = 'bg-primary border-primary text-primary-contrast'
+const PILL_OFF =
+  'bg-transparent border-surface-300 dark:border-surface-600 text-surface-700 dark:text-surface-200 hover:border-primary'
 
-// Keyed by module, so a module added to BAND_SPACE_MODULES without a capture fails visibly here
-// rather than rendering a broken image.
-const lightShots = {
-  agenda: lightAgenda,
-  taches: lightTaches,
-  notes: lightNotes,
-  setlists: lightSetlists,
-  files: lightFiles,
-  finances: lightFinances
-}
-const darkShots = {
-  agenda: darkAgenda,
-  taches: darkTaches,
-  notes: darkNotes,
-  setlists: darkSetlists,
-  files: darkFiles,
-  finances: darkFinances
-}
-
-const activeModuleKey = ref(BAND_SPACE_MODULES[0].key)
-
-function selectModule(key) {
-  activeModuleKey.value = key
-  document.getElementById(`module-tab-${key}`)?.focus()
-}
-
-/** Arrows move between tabs, Home and End jump to the ends, as a tablist is expected to. */
-function moveByArrow(step) {
-  selectModule(adjacentTabKey(BAND_SPACE_MODULES, activeModuleKey.value, step))
-}
-
-function moveToEdge(edge) {
-  selectModule(edge === 'first' ? BAND_SPACE_MODULES[0].key : BAND_SPACE_MODULES.at(-1).key)
-}
-
-const replacements = [
+const REASONS = [
   {
-    before: 'La conversation de groupe où la date du concert est remontée à la main :',
-    after: 'un agenda que tout le monde voit.'
+    icon: 'pi pi-envelope',
+    accent: 'text-primary',
+    title: 'Invitez le groupe par mail',
+    body: "Chaque membre reçoit un lien et voit tout de suite l'agenda, les fichiers et les setlists. Vous choisissez qui est admin."
   },
   {
-    before: "Le tableur des comptes que personne n'ose modifier :",
-    after: 'des dépenses et une part par membre, calculées.'
+    icon: 'pi pi-sync',
+    accent: 'text-fuchsia-700 dark:text-fuchsia-300',
+    title: 'Plusieurs groupes ?',
+    body: "Un Band Space par groupe, on passe de l'un à l'autre en un clic. Chaque groupe ne voit que le sien."
   },
   {
-    before: 'Le dossier partagé où traînent quatre versions de la même setlist :',
-    after: 'une setlist, à jour, imprimable.'
+    icon: 'pi pi-lock',
+    accent: 'text-teal-700 dark:text-teal-300',
+    title: 'Privé à votre groupe',
+    body: "Rien n'est public. Pas de pub, pas de revente de données. Gratuit, et ça le restera."
   }
 ]
 
-function goToRegister() {
-  router.push({ name: 'app_register' })
+const router = useRouter()
+const bandSpaceStore = useBandSpaceStore()
+const userSecurityStore = useUserSecurityStore()
+
+const bandName = ref('')
+const bandSize = ref(4)
+const pickedPains = ref(['agenda', 'finances'])
+
+const closingTitle = computed(() => {
+  const name = bandName.value.trim()
+  return `${name || 'Votre groupe'} n'attend plus que vous.`
+})
+
+function togglePain(key) {
+  pickedPains.value = pickedPains.value.includes(key)
+    ? pickedPains.value.filter((picked) => picked !== key)
+    : [...pickedPains.value, key]
 }
 
-function goToLogin() {
-  router.push({ name: 'app_login' })
+// A visitor signs up first and finds the name waiting in the create modal afterwards. A member goes
+// straight to the band layout, which mounts the modal already open.
+function handleCreate() {
+  saveDraftName(openDraftNameStorage(), bandName.value)
+
+  if (!userSecurityStore.isAuthenticated) {
+    router.push({ name: 'app_register' })
+    return
+  }
+
+  bandSpaceStore.openCreateModal()
+  router.push({ name: 'app_band_index' })
 }
 </script>

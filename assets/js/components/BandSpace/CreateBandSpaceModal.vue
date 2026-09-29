@@ -48,6 +48,7 @@ import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { computed, ref, watch } from 'vue'
 import { useBandSpaceStore } from '../../store/bandSpace/bandSpace.js'
+import { openDraftNameStorage, takeDraftName } from '../../utils/bandSpaceDraftName.js'
 
 const emit = defineEmits(['created'])
 
@@ -66,12 +67,18 @@ const isVisible = computed({
   }
 })
 
-watch(isVisible, (newValue) => {
-  if (newValue) {
-    name.value = ''
-    error.value = ''
-  }
-})
+// Immediate because /band-space opens the modal before navigating, so it can already be open when
+// the band layout mounts this component.
+watch(
+  isVisible,
+  (newValue) => {
+    if (newValue) {
+      name.value = takeDraftName(openDraftNameStorage())
+      error.value = ''
+    }
+  },
+  { immediate: true }
+)
 
 function handleClose() {
   bandSpaceStore.closeCreateModal()
