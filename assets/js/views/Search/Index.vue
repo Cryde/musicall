@@ -139,7 +139,8 @@
         <Button
             severity="info"
             icon="pi pi-search"
-            :disabled="isSearching || isFilterGenerating"
+            :disabled="isSearching || isFilterGenerating || isCityLoading"
+            :loading="isCityLoading"
             label="Rechercher"
             size="small"
             @click="search"
@@ -171,14 +172,20 @@
                 />
             </div>
             <div :class="['transition-all duration-300 rounded-lg w-full lg:w-auto', autoFilledFields.location ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900' : '']">
-                <CityAutoComplete v-model="selectedLocation" placeholder="Ville (optionnel)" />
+                <CityAutoComplete
+                    ref="cityField"
+                    v-model="selectedLocation"
+                    v-model:loading="isCityLoading"
+                    placeholder="Ville (optionnel)"
+                />
             </div>
             <!-- Desktop: Search buttons inside filters row -->
             <div class="hidden lg:block">
                 <Button
                     severity="info"
                     icon="pi pi-search"
-                    :disabled="isSearching || isFilterGenerating"
+                    :disabled="isSearching || isFilterGenerating || isCityLoading"
+                    :loading="isCityLoading"
                     label="Rechercher"
                     @click="search"
                 />
@@ -452,6 +459,8 @@ const isSearchMade = ref(false)
 const selectedInstrument = ref(null)
 const selectedStyles = ref([])
 const selectedLocation = ref(null)
+const cityField = ref(null)
+const isCityLoading = ref(false)
 // Only the guided search bounds the distance (#1084); the filters sort by it and keep every one.
 const selectedRadius = ref(null)
 const selectSearchType = ref(null)
@@ -848,8 +857,12 @@ function syncEntityRefsToUrlFilters() {
  * only its final answer is a search somebody ran (#1075).
  */
 async function search({ record = true } = {}) {
-  quickSearchErrors.value = []
+  // First, so the buttons are already disabled while the city below settles.
   isSearching.value = true
+  // Typed but never picked, the city used to be dropped from the search without a word.
+  await cityField.value?.pickFirstSuggestion()
+
+  quickSearchErrors.value = []
   guestPagesLoaded.value = 1 // Reset on new search
   const searchFilters = {
     type: selectSearchType.value?.name || null,

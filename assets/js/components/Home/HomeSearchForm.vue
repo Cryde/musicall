@@ -36,9 +36,23 @@
         <label for="home-search-city" class="text-xs font-semibold uppercase tracking-wide text-surface-600 dark:text-surface-300">
           Où
         </label>
-        <CityAutoComplete v-model="city" input-id="home-search-city" placeholder="Ville (optionnel)" />
+        <CityAutoComplete
+          ref="cityField"
+          v-model="city"
+          v-model:loading="isCityLoading"
+          input-id="home-search-city"
+          placeholder="Ville (optionnel)"
+        />
       </div>
-      <Button type="submit" label="Rechercher" icon="pi pi-search" severity="info" class="md:h-[2.625rem] shrink-0" />
+      <Button
+        type="submit"
+        label="Rechercher"
+        icon="pi pi-search"
+        severity="info"
+        :loading="isCityLoading || isSubmitting"
+        :disabled="isCityLoading || isSubmitting"
+        class="md:h-[2.625rem] shrink-0"
+      />
     </div>
   </form>
 </template>
@@ -69,18 +83,28 @@ const instrumentStore = useInstrumentStore()
 const lookingFor = ref(LOOKING_FOR_MUSICIAN)
 const instrument = ref(null)
 const city = ref(null)
+const cityField = ref(null)
+const isCityLoading = ref(false)
+const isSubmitting = ref(false)
 
 onMounted(() => {
   if (instrumentStore.instruments.length === 0) instrumentStore.loadInstruments()
 })
 
-function submit() {
-  router.push(
-    musicianSearchRoute({
-      lookingFor: lookingFor.value,
-      instrument: instrument.value,
-      city: city.value
-    })
-  )
+async function submit() {
+  if (isCityLoading.value || isSubmitting.value) return
+
+  isSubmitting.value = true
+  try {
+    await router.push(
+      musicianSearchRoute({
+        lookingFor: lookingFor.value,
+        instrument: instrument.value,
+        city: await cityField.value.pickFirstSuggestion()
+      })
+    )
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
